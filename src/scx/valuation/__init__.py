@@ -10,6 +10,7 @@ from .noise_score import NoiseScore
 from .redundancy import RedundancyScore
 from .classifier import DataClassifier
 from .state_value import StateValue
+from .adaptive import AdaptiveThreshold
 
 __all__ = [
     "LearnabilityScore",
@@ -17,4 +18,5 @@ __all__ = [
     "RedundancyScore",
     "DataClassifier",
     "StateValue",
+    "AdaptiveThreshold",
 ]

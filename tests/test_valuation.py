@@ -566,3 +566,124 @@ class TestStateValue:
 
 # Avoid runtime pandas import issues in some test runners
 import pandas as pd  # noqa: E402 (needed for class-level type hints)
+
+# ======================================================================
+# AdaptiveThreshold tests
+# ======================================================================
+
+
+class TestAdaptiveThresholdInit:
+    """AdaptiveThreshold construction and validation."""
+
+    def test_default_init(self):
+        at = AdaptiveThreshold()
+        assert at.target_metric == "f1"
+
+    def test_custom_metric(self):
+        at = AdaptiveThreshold(target_metric="precision")
+        assert at.target_metric == "precision"
+
+    def test_invalid_metric_raises(self):
+        with pytest.raises(ValueError, match="Unknown target_metric"):
+            AdaptiveThreshold(target_metric="auc")
+
+
+class TestAdaptiveThresholdCalibrate:
+    """Grid-search calibration."""
+
+    def test_calibrate_returns_thresholds(self, state_metrics_dict):
+        at = AdaptiveThreshold(target_metric="f1")
+        dc = DataClassifier()
+        X_dummy = np.empty((100, 2))
+        y_dummy = np.ones(100)
+        thresholds = at.calibrate(dc, X_dummy, y_dummy, state_metrics_dict)
+        assert isinstance(thresholds, dict)
+        assert "error_high" in thresholds
+        assert "density_high" in thresholds
+
+    def test_calibrate_thresholds_are_positive(self, state_metrics_dict):
+        at = AdaptiveThreshold(target_metric="f1")
+        dc = DataClassifier()
+        X_dummy = np.empty((100, 2))
+        y_dummy = np.ones(100)
+        thresholds = at.calibrate(dc, X_dummy, y_dummy, state_metrics_dict)
+        for v in thresholds.values():
+            assert v > 0
+
+
+class TestAdaptiveThresholdSensitivity:
+    """Sensitivity analysis results."""
+
+    def test_sensitivity_returns_dataframe(self, state_metrics_dict):
+        at = AdaptiveThreshold()
+        dc = DataClassifier()
+        X_dummy = np.empty((100, 2))
+        y_dummy = np.ones(100)
+        df = at.sensitivity_analysis(dc, X_dummy, y_dummy, state_metrics_dict)
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) > 0
+
+    def test_sensitivity_columns(self, state_metrics_dict):
+        at = AdaptiveThreshold()
+        dc = DataClassifier()
+        X_dummy = np.empty((100, 2))
+        y_dummy = np.ones(100)
+        df = at.sensitivity_analysis(dc, X_dummy, y_dummy, state_metrics_dict)
+        expected = {
+            "threshold_name", "perturbation", "base_value",
+            "perturbed_value", "accuracy_change", "f1_change",
+        }
+        assert expected.issubset(set(df.columns))
+
+
+class TestAdaptiveThresholdAuto:
+    """Unsupervised auto-threshold method."""
+
+    def test_auto_threshold_percentile(self, state_metrics_dict):
+        at = AdaptiveThreshold()
+        X_dummy = np.empty((100, 2))
+        th = at.auto_threshold(X_dummy, state_metrics_dict, method="percentile")
+        assert isinstance(th, dict)
+        assert "error_high" in th
+        assert th["error_high"] > 0
+
+    def test_auto_threshold_gap(self, state_metrics_dict):
+        at = AdaptiveThreshold()
+        X_dummy = np.empty((100, 2))
+        th = at.auto_threshold(X_dummy, state_metrics_dict, method="gap")
+        assert isinstance(th, dict)
+        assert "error_high" in th
+
+    def test_auto_threshold_invalid_method(self, state_metrics_dict):
+        at = AdaptiveThreshold()
+        X_dummy = np.empty((100, 2))
+        with pytest.raises(ValueError, match="Unknown method"):
+            at.auto_threshold(X_dummy, state_metrics_dict, method="unknown")
+
+    def test_auto_threshold_empty_metrics(self):
+        at = AdaptiveThreshold()
+        X_dummy = np.empty((0, 2))
+        th = at.auto_threshold(X_dummy, {}, method="percentile")
+        assert th["error_high"] == 0.05
+
+
+class TestAdaptiveThresholdEvaluate:
+    """Full evaluation comparing default / calibrated / adaptive."""
+
+    def test_evaluate_returns_all_keys(self, state_metrics_dict):
+        at = AdaptiveThreshold()
+        dc = DataClassifier()
+        X_dummy = np.empty((100, 2))
+        y_dummy = np.ones(100)
+        result = at.evaluate(dc, X_dummy, y_dummy, state_metrics_dict)
+        expected = {
+            "default_score", "calibrated_score", "adaptive_score",
+            "default_thresholds", "calibrated_thresholds",
+            "adaptive_thresholds",
+            "improvement_calibrated", "improvement_adaptive",
+        }
+        assert set(result.keys()) == expected
+
+
+# re-import is safe; included at end for clarity
+from scx.valuation.adaptive import AdaptiveThreshold  # noqa: E402, F811

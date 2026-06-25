@@ -5,6 +5,7 @@ from .space import StateInfo, StateSpace
 from .discovery import StateDiscovery
 from .assignment import StateAssignment
 from .metrics import StateMetrics
+from .robustness import StateRobustness
 
 __all__ = [
     "StateInfo",
@@ -12,4 +13,5 @@ __all__ = [
     "StateDiscovery",
     "StateAssignment",
     "StateMetrics",
+    "StateRobustness",
 ]
