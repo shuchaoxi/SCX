@@ -1,0 +1,568 @@
+"""Tests for the Valuation module: LearnabilityScore, NoiseScore, RedundancyScore, DataClassifier, StateValue."""
+
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+from scx.valuation.learnability import LearnabilityScore
+from scx.valuation.noise_score import NoiseScore
+from scx.valuation.redundancy import RedundancyScore
+from scx.valuation.classifier import DataClassifier
+from scx.valuation.state_value import StateValue
+
+
+# ======================================================================
+# LearnabilityScore tests
+# ======================================================================
+
+
+class TestLearnabilityScore:
+    """Consistency (label/expert/both), learnability in [0,1], noise_score."""
+
+    def test_consistency_label_discrete_perfect(self):
+        ls = LearnabilityScore()
+        X = np.random.randn(10, 2)
+        y = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+        c = ls.consistency(X_s=X, y_s=y)
+        assert 0.0 <= c <= 1.0
+
+    def test_consistency_label_all_same(self):
+        ls = LearnabilityScore()
+        X = np.random.randn(5, 2)
+        y = np.array([0, 0, 0, 0, 0])
+        c = ls.consistency(X_s=X, y_s=y)
+        assert c == 1.0
+
+    def test_consistency_label_single_sample(self):
+        ls = LearnabilityScore()
+        c = ls.consistency(X_s=np.random.randn(1, 2), y_s=np.array([0]))
+        assert c == 1.0
+
+    def test_consistency_label_empty(self):
+        ls = LearnabilityScore()
+        c = ls.consistency(X_s=np.empty((0, 2)), y_s=np.array([]))
+        assert c == 0.0
+
+    def test_consistency_label_continuous(self):
+        ls = LearnabilityScore()
+        X = np.random.randn(10, 2)
+        y = np.random.randn(10)
+        c = ls.consistency(X_s=X, y_s=y)
+        assert 0.0 <= c <= 1.0
+
+    def test_consistency_expert_only(self):
+        ls = LearnabilityScore()
+        expert_preds = np.random.randn(3, 10)
+        X = np.random.randn(10, 2)
+        c = ls.consistency(X_s=X, expert_preds=expert_preds)
+        assert 0.0 <= c <= 1.0
+
+    def test_consistency_expert_single(self):
+        ls = LearnabilityScore()
+        expert_preds = np.random.randn(1, 10)
+        X = np.random.randn(10, 2)
+        c = ls.consistency(X_s=X, expert_preds=expert_preds)
+        assert c == 0.5  # single expert -> neutral
+
+    def test_consistency_both(self):
+        ls = LearnabilityScore()
+        X = np.random.randn(10, 2)
+        y = np.random.randint(0, 3, 10)
+        expert_preds = np.random.randn(3, 10)
+        c = ls.consistency(X_s=X, y_s=y, expert_preds=expert_preds)
+        assert 0.0 <= c <= 1.0
+
+    def test_consistency_no_input(self):
+        ls = LearnabilityScore()
+        c = ls.consistency(X_s=np.random.randn(10, 2))
+        assert c == 0.5  # neutral
+
+    def test_noise_score(self):
+        ls = LearnabilityScore()
+        residuals = np.array([0.1, 0.2, 0.3])
+        ns = ls.noise_score(residuals, state_proportion=0.5, consistency=0.8)
+        assert ns.shape == (3,)
+        assert np.all(ns >= 0)
+
+    def test_learnability_in_range(self):
+        ls = LearnabilityScore()
+        L = ls.learnability(consistency=0.8, noise_score=0.3)
+        assert 0.0 <= L <= 1.0
+
+    def test_learnability_perfect(self):
+        ls = LearnabilityScore()
+        L = ls.learnability(consistency=1.0, noise_score=0.0)
+        assert L == 1.0
+
+    def test_learnability_zero_consistency(self):
+        ls = LearnabilityScore()
+        L = ls.learnability(consistency=0.0, noise_score=0.5)
+        assert L == 0.0
+
+    def test_compute_all(self):
+        ls = LearnabilityScore()
+        X = np.random.randn(10, 2)
+        y = np.random.randint(0, 2, 10)
+        residuals = np.random.rand(10)
+        result = ls.compute_all(X, y, residuals, state_proportion=0.5)
+        assert "consistency" in result
+        assert "noise_score" in result
+        assert "learnability" in result
+        assert 0.0 <= result["learnability"] <= 1.0
+
+    def test_compute_all_no_residuals(self):
+        ls = LearnabilityScore()
+        X = np.random.randn(10, 2)
+        y = np.random.randint(0, 2, 10)
+        result = ls.compute_all(X, y, state_proportion=0.5)
+        assert result["noise_score"] == 0.0
+        assert result["learnability"] >= 0.0
+
+    def test_negative_eps_raises(self):
+        with pytest.raises(ValueError, match="eps must be positive"):
+            LearnabilityScore(eps=-1.0)
+
+
+# ======================================================================
+# NoiseScore tests
+# ======================================================================
+
+
+class TestNoiseScore:
+    """compute, compute_state_level, detect_noisy_states, detect_noisy_samples."""
+
+    def test_compute_shape(self):
+        ns = NoiseScore()
+        scores = ns.compute(
+            residuals=np.array([0.1, 0.2, 0.3]),
+            state_proportion=0.5,
+            consistency=0.8,
+        )
+        assert scores.shape == (3,)
+        assert np.all(scores >= 0)
+
+    def test_compute_empty(self):
+        ns = NoiseScore()
+        scores = ns.compute(
+            residuals=np.array([]),
+            state_proportion=0.5,
+            consistency=0.8,
+        )
+        assert scores.shape == (0,)
+
+    def test_compute_zero_residual(self):
+        ns = NoiseScore()
+        scores = ns.compute(
+            residuals=np.zeros(5),
+            state_proportion=0.5,
+            consistency=0.8,
+        )
+        assert np.allclose(scores, 0.0)
+
+    def test_compute_state_level_consistency(self):
+        """compute_state_level should match compute with mean residual."""
+        ns = NoiseScore()
+        residuals = np.array([0.1, 0.3, 0.5])
+        per_sample = ns.compute(residuals, state_proportion=0.5, consistency=0.8)
+        per_state = ns.compute_state_level(
+            mean_residual=float(np.mean(residuals)),
+            state_proportion=0.5,
+            consistency=0.8,
+        )
+        assert abs(np.mean(per_sample) - per_state) < 1e-6
+
+    def test_detect_noisy_states(self):
+        ns = NoiseScore()
+        scores = np.array([0.1, 0.6, 0.9])
+        flagged = ns.detect_noisy_states(scores, threshold=0.5)
+        np.testing.assert_array_equal(flagged, [1, 2])
+
+    def test_detect_noisy_states_no_match(self):
+        ns = NoiseScore()
+        scores = np.array([0.1, 0.2, 0.3])
+        flagged = ns.detect_noisy_states(scores, threshold=0.5)
+        assert len(flagged) == 0
+
+    def test_detect_noisy_samples_iqr(self):
+        ns = NoiseScore()
+        scores = np.array([0.1, 0.1, 0.2, 0.2, 0.3, 0.3, 5.0])  # 5.0 is outlier
+        flagged = ns.detect_noisy_samples(scores)
+        assert len(flagged) > 0
+
+    def test_detect_noisy_samples_manual_threshold(self):
+        ns = NoiseScore()
+        scores = np.array([0.1, 0.6, 0.9])
+        flagged = ns.detect_noisy_samples(scores, threshold=0.5)
+        np.testing.assert_array_equal(flagged, [1, 2])
+
+    def test_detect_noisy_samples_empty(self):
+        ns = NoiseScore()
+        flagged = ns.detect_noisy_samples(np.array([]))
+        assert len(flagged) == 0
+
+    def test_negative_eps_raises(self):
+        with pytest.raises(ValueError, match="eps must be positive"):
+            NoiseScore(eps=-1.0)
+
+
+# ======================================================================
+# RedundancyScore tests
+# ======================================================================
+
+
+class TestRedundancyScore:
+    """state_similarity, boundary_score, coverage_score, redundancy in [0,1]."""
+
+    def test_state_similarity_identical(self):
+        rs = RedundancyScore()
+        X_s = np.ones((5, 3))
+        sim = rs.state_similarity(X_s)
+        assert 0.0 <= sim <= 1.0
+        assert sim > 0.99  # all identical -> near 1
+
+    def test_state_similarity_single_sample(self):
+        rs = RedundancyScore()
+        sim = rs.state_similarity(np.array([[1.0, 2.0]]))
+        assert sim == 0.0
+
+    def test_state_similarity_empty(self):
+        rs = RedundancyScore()
+        sim = rs.state_similarity(np.empty((0, 2)))
+        assert sim == 0.0
+
+    def test_state_similarity_1d_input(self):
+        rs = RedundancyScore()
+        sim = rs.state_similarity(np.array([1.0, 2.0, 3.0]))
+        assert 0.0 <= sim <= 1.0
+
+    def test_boundary_score_single_state(self):
+        """Single state -> boundary = 1.0 (trivially well-separated)."""
+        rs = RedundancyScore()
+        X_s = np.random.randn(5, 2)
+        centroids = np.array([[0.0, 0.0]])
+        b = rs.boundary_score(X_s, centroids, state_id=0)
+        assert b == 1.0
+
+    def test_boundary_score_two_states(self):
+        rs = RedundancyScore()
+        X_s = np.random.randn(5, 2)
+        centroids = np.array([[0.0, 0.0], [10.0, 10.0]])
+        b = rs.boundary_score(X_s, centroids, state_id=0)
+        assert 0.0 <= b <= 1.0
+
+    def test_boundary_score_empty(self):
+        rs = RedundancyScore()
+        b = rs.boundary_score(np.empty((0, 2)), np.array([[0.0, 0.0], [1.0, 1.0]]), state_id=0)
+        assert b == 0.0
+
+    def test_coverage_score(self):
+        rs = RedundancyScore()
+        cov = rs.coverage_score(
+            np.random.randn(20, 2),
+            np.random.randn(100, 2),
+        )
+        assert cov == 0.2
+
+    def test_redundancy_in_range(self):
+        rs = RedundancyScore()
+        D = rs.redundancy(
+            state_proportion=0.5,
+            mean_residual=0.1,
+            similarity=0.8,
+            boundary=0.3,
+        )
+        assert 0.0 <= D <= 1.0
+
+    def test_redundancy_high_proportion(self):
+        rs = RedundancyScore()
+        D = rs.redundancy(
+            state_proportion=0.8,
+            mean_residual=0.01,
+            similarity=1.0,
+            boundary=0.0,
+        )
+        assert D > 0.5
+
+    def test_redundancy_zero_proportion(self):
+        rs = RedundancyScore()
+        D = rs.redundancy(
+            state_proportion=0.0,
+            mean_residual=0.0,
+            similarity=1.0,
+            boundary=0.0,
+        )
+        assert D == 0.0
+
+    def test_compute_all_shape(self):
+        rs = RedundancyScore()
+        X_s = np.random.randn(20, 2)
+        result = rs.compute_all(
+            X_s=X_s,
+            state_proportion=0.5,
+            mean_residual=0.1,
+            centroids=np.array([[0.0, 0.0], [5.0, 5.0]]),
+            state_id=0,
+            X_all=np.random.randn(100, 2),
+        )
+        assert "similarity" in result
+        assert "boundary" in result
+        assert "coverage" in result
+        assert "redundancy" in result
+        assert 0.0 <= result["redundancy"] <= 1.0
+
+    def test_negative_eps_raises(self):
+        with pytest.raises(ValueError, match="eps must be positive"):
+            RedundancyScore(eps=-1.0)
+
+
+# ======================================================================
+# DataClassifier tests
+# ======================================================================
+
+
+class TestDataClassifier:
+    """Four-class classification: valuable, redundant, noisy, expert_dependent."""
+
+    def test_classify_state_valuable(self):
+        """High error + high density + high consistency + low redundancy -> valuable."""
+        dc = DataClassifier()
+        cat = dc.classify_state(
+            mean_residual=0.1,   # > error_high=0.05
+            proportion=0.4,      # > density_high=0.05
+            consistency=0.9,     # > consistency_high=0.7
+            redundancy=0.2,      # < redundancy_high=0.8
+            noise_score=0.05,
+        )
+        assert cat == "valuable"
+
+    def test_classify_state_redundant(self):
+        """Low error + high density + high redundancy -> redundant."""
+        dc = DataClassifier()
+        cat = dc.classify_state(
+            mean_residual=0.01,   # < error_high/2=0.025
+            proportion=0.4,       # > density_high=0.05
+            consistency=0.9,
+            redundancy=0.85,      # > redundancy_high=0.8
+            noise_score=0.02,
+        )
+        assert cat == "redundant"
+
+    def test_classify_state_noisy(self):
+        """High error + low density + low consistency -> noisy."""
+        dc = DataClassifier()
+        cat = dc.classify_state(
+            mean_residual=0.1,    # > error_high=0.05
+            proportion=0.01,      # < density_high=0.05
+            consistency=0.3,      # < consistency_high=0.7
+            redundancy=0.1,
+            noise_score=0.6,
+        )
+        assert cat == "noisy"
+
+    def test_classify_state_expert_dependent(self):
+        """Expert gap > threshold -> expert_dependent regardless of other metrics."""
+        dc = DataClassifier()
+        cat = dc.classify_state(
+            mean_residual=0.05,
+            proportion=0.3,
+            consistency=0.8,
+            redundancy=0.3,
+            noise_score=0.1,
+            expert_gap=0.5,  # > expert_gap=0.3
+        )
+        assert cat == "expert_dependent"
+
+    def test_classify_state_default_valuable(self):
+        """Default fallback is 'valuable'."""
+        dc = DataClassifier()
+        cat = dc.classify_state(
+            mean_residual=0.03,
+            proportion=0.03,
+            consistency=0.7,
+            redundancy=0.79,
+            noise_score=0.1,
+        )
+        assert cat == "valuable"
+
+    def test_custom_thresholds(self):
+        dc = DataClassifier(config={"error_high": 0.2, "redundancy_high": 0.9})
+        assert dc.thresholds["error_high"] == 0.2
+        assert dc.thresholds["redundancy_high"] == 0.9
+
+    def test_classify_all_dataframe(self, state_metrics_dict):
+        dc = DataClassifier()
+        df = dc.classify_all(state_metrics_dict)
+        assert isinstance(df, type(pd.DataFrame()))
+        assert list(df.columns) == [
+            "state_id", "category", "mean_residual", "proportion",
+            "consistency", "redundancy", "noise_score", "expert_gap",
+        ]
+        assert len(df) == 4
+
+    def test_classify_all_with_R_matrix(self, state_metrics_dict):
+        dc = DataClassifier()
+        R = np.array([
+            [0.1, 0.5, 0.2, 0.3],
+            [0.2, 0.4, 0.3, 0.1],
+        ])
+        df = dc.classify_all(state_metrics_dict, R_matrix=R)
+        assert len(df) == 4
+        assert not df["expert_gap"].isna().all()
+
+    def test_classify_all_with_explicit_gap(self, state_metrics_dict):
+        dc = DataClassifier()
+        metrics = state_metrics_dict.copy()
+        metrics[0]["expert_gap"] = 0.5
+        df = dc.classify_all(metrics)
+        assert df.loc[df["state_id"] == 0, "expert_gap"].values[0] == 0.5
+
+    def test_recommend_action(self):
+        mapping = {
+            "valuable": "acquire",
+            "redundant": "compress",
+            "noisy": "downweight",
+            "expert_dependent": "route",
+        }
+        for cat, expected in mapping.items():
+            assert DataClassifier.recommend_action(cat) == expected
+
+    def test_recommend_action_unknown(self):
+        assert DataClassifier.recommend_action("unknown") == "acquire"
+
+    def test_summary_output(self, state_metrics_dict):
+        dc = DataClassifier()
+        df = dc.classify_all(state_metrics_dict)
+        summary = DataClassifier.summary(df)
+        assert isinstance(summary, str)
+        assert "Data Classification Summary" in summary
+        assert "Total states" in summary
+
+    def test_summary_empty(self):
+        import pandas as pd
+        df = pd.DataFrame()
+        summary = DataClassifier.summary(df)
+        assert "No states" in summary
+
+
+# ======================================================================
+# StateValue tests
+# ======================================================================
+
+
+class TestStateValue:
+    """V_add > 0 for high-error states, V_remove correlates with redundancy."""
+
+    def test_acquisition_value_high_error(self):
+        sv = StateValue()
+        V = sv.acquisition_value(
+            mean_residual=0.5,
+            proportion=0.3,
+            learnability=0.8,
+            redundancy=0.2,
+            best_scx=0.9,
+        )
+        assert V > 0
+
+    def test_acquisition_value_zero_learnability(self):
+        sv = StateValue()
+        V = sv.acquisition_value(
+            mean_residual=0.5,
+            proportion=0.3,
+            learnability=0.0,
+            redundancy=0.2,
+            best_scx=0.9,
+        )
+        assert V == 0.0
+
+    def test_acquisition_value_zero_proportion(self):
+        sv = StateValue()
+        V = sv.acquisition_value(
+            mean_residual=0.5,
+            proportion=0.0,
+            learnability=0.8,
+            redundancy=0.2,
+            best_scx=0.9,
+        )
+        assert V == 0.0
+
+    def test_compression_value(self):
+        sv = StateValue()
+        V = sv.compression_value(
+            mean_residual=0.1,
+            proportion=0.4,
+            similarity=0.8,
+            boundary=0.3,
+        )
+        assert V > 0
+
+    def test_compression_value_redundancy_correlation(self):
+        """Higher proportion + lower error + higher similarity -> higher V_remove."""
+        sv = StateValue()
+        V1 = sv.compression_value(
+            mean_residual=0.1, proportion=0.5, similarity=0.9, boundary=0.2,
+        )
+        V2 = sv.compression_value(
+            mean_residual=0.5, proportion=0.1, similarity=0.3, boundary=0.8,
+        )
+        assert V1 > V2
+
+    def test_compute_all_dataframe(self, state_metrics_dict):
+        sv = StateValue()
+        scx = np.array([
+            [0.9, 0.8, 0.3, 0.7],
+            [0.7, 0.6, 0.4, 0.9],
+        ])
+        df = sv.compute_all(state_metrics_dict, scx)
+        assert "state_id" in df.columns
+        assert "V_add" in df.columns
+        assert "V_remove" in df.columns
+        assert "best_scx" in df.columns
+        assert len(df) == 4
+
+    def test_compute_all_no_missing_states(self, state_metrics_dict):
+        """If state_metrics doesn't contain all states, skip missing."""
+        sv = StateValue()
+        scx = np.array([[0.9, 0.8], [0.7, 0.6]])
+        partial = {0: state_metrics_dict[0], 1: state_metrics_dict[1]}
+        df = sv.compute_all(partial, scx)
+        assert len(df) == 2
+
+    def test_rank_states_acquire(self, state_metrics_dict):
+        sv = StateValue()
+        scx = np.array([
+            [0.9, 0.8, 0.3, 0.7],
+            [0.7, 0.6, 0.4, 0.9],
+        ])
+        df = sv.compute_all(state_metrics_dict, scx)
+        ranked = sv.rank_states(df, mode="acquire")
+        assert len(ranked) == 4
+        # Should be sorted descending by V_add
+        V_adds = [df.loc[df["state_id"] == s, "V_add"].values[0] for s in ranked]
+        for i in range(len(V_adds) - 1):
+            assert V_adds[i] >= V_adds[i + 1]
+
+    def test_rank_states_compress(self, state_metrics_dict):
+        sv = StateValue()
+        scx = np.array([
+            [0.9, 0.8, 0.3, 0.7],
+            [0.7, 0.6, 0.4, 0.9],
+        ])
+        df = sv.compute_all(state_metrics_dict, scx)
+        ranked = sv.rank_states(df, mode="compress")
+        assert len(ranked) == 4
+
+    def test_rank_states_missing_column(self):
+        sv = StateValue()
+        import pandas as pd
+        df = pd.DataFrame({"state_id": [0], "V_add": [1.0]})
+        with pytest.raises(KeyError):
+            sv.rank_states(df, mode="compress")
+
+    def test_negative_eps_raises(self):
+        with pytest.raises(ValueError, match="eps must be positive"):
+            StateValue(eps=-1.0)
+
+
+# Avoid runtime pandas import issues in some test runners
+import pandas as pd  # noqa: E402 (needed for class-level type hints)
