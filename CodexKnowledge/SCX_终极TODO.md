@@ -254,6 +254,82 @@
 
 ---
 
+## v4 通用模块化路线（2026-06-26 追加）
+
+> 通用模块化架构是 SCX v4.0 的核心重构方向。详细规划见 `SCX_规划_v4_通用模块化.md`，详细 TODO 见 `SCX_TODO_v4_通用模块化.md`。
+
+### 核心命题
+
+> "框架还是需要更通用一些，避免一直加模块迭代麻烦，应该模块化，不同的行业可以调用相同的代码。"
+
+### 总体路线
+
+```
+v0.3.0 (当前)        v0.4.0 (Phase A)        v0.5.0 (Phase B)        v0.6.0 (Phase C/D)
+──────────           ──────────────           ──────────────           ──────────────
+
+紧耦合              抽象接口 + Encoder        YAML 驱动               插件系统
+各领域独立pipeline  核心模块解耦              CLI 接口                 社区贡献
+配置散落代码         3 领域示例               自动报告                  Benchmark
+                    336 tests 通过           encoder 开发指南
+```
+
+### Phase A: 核心重构 (2-4 周) 🔴 P0
+
+| # | TODO | 优先级 | 预估 |
+|---|------|--------|------|
+| A.1 | 定义 `SCXStateEncoder` / `SCXExpert` / `SCXDataPoint` 抽象基类 | P0 | 3d |
+| A.2 | 提取 MLIP/Vision/CIFAR 三个 encoder 到 `encoders/` 目录 | P0 | 3d |
+| A.3 | 重构 `state/expert/valuation/action/online` 只依赖抽象接口 | P0 | 5d |
+| A.4 | 创建 YAML 配置原型 + 3 领域示例配置 | P0 | 2d |
+| A.5 | 验证：336 tests 全部通过，无回归 | P0 | 2d |
+
+### Phase B: 声明式配置 (2-3 周) 🟡 P1
+
+| # | TODO | 优先级 | 预估 |
+|---|------|--------|------|
+| B.1 | YAML → SCXFramework 自动构建 | P1 | 6d |
+| B.2 | `scx run --config domains/mlip.yaml` CLI | P1 | 2d |
+| B.3 | 审计报告自动生成 | P1 | 3d |
+| B.4 | Encoder 开发指南 + YAML 配置参考 | P1 | 2d |
+
+### Phase C: 新领域扩展 (4-8 周) 🟡 P1
+
+| # | TODO | 优先级 | 预估 |
+|---|------|--------|------|
+| C.1 | SCX-Robot: TrajectoryEncoder + robot.yaml + 失败/冗余实验 | P1 | 2-3w |
+| C.2 | SCX-FEM: SimulationEncoder + fem.yaml + 多保真调度 | P1 | 2-3w |
+| C.3 | SCX-LLM: TextEncoder + llm.yaml (minimal, 聚焦可验证任务) | P1 | 1-2w |
+
+### Phase D: 插件系统 (长期) 🟢 P2
+
+| # | TODO | 优先级 | 预估 |
+|---|------|--------|------|
+| D.1 | 插件注册机制 + compress/online/influence 插件化 | P2 | 2w |
+| D.2 | 社区贡献指南 + CLA | P2 | 1w |
+| D.3 | SCX-Bench 标准化 API + 5-10 数据集 | P2 | 2w |
+
+### 商业模式映射
+
+| 行业 | 产品 | 定价锚点 |
+|------|------|---------|
+| MLIP/DFT | SCX-Potential Compiler | 节省核时 |
+| 医学图像 | SCX-Health Audit | 节省标注成本 |
+| 机器人 | SCX-Robot Data Audit | 节省遥操作/真机时间 |
+| 工程仿真 | SCX-FEM Scheduler | 节省仿真时间 |
+| 工业质检 | SCX-Vision Audit | 减少人工复检量 |
+| 3D 打印 | SCX-AM Audit | 减少打样次数 |
+| 半导体 | SCX-Semi OPC Router | 节省 EDA license 费用 |
+
+### 与旧路线的衔接
+
+- **GPU 等待项**（CIFAR/MedMNIST/HAM10000 GPU 重跑）— 保留，8月中旬
+- **DFT 等待项**（GaN/AlN VASP 结果）— 保留，2-4周
+- **论文写作**（EGP Paper 1, SCX-Theory arXiv）— 保留，并行推进
+- 通用架构重构**不影响**论文进度，反而让实验更易复现
+
+---
+
 ## 依赖关系总图
 
 ```

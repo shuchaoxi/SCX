@@ -33,7 +33,7 @@ EGP 关系：
 v0.2.0 added: Compress theorem, Governance protocol, robustness analysis, adaptive threshold.
 v0.3.0 added: StateConditionedInfluence, OnlineSCXFramework, CIFAR experiments, clean-room certified.
 
-> **Code goal**: v0.4.0 target — synthetic experiment figures + benchmark suite + SCX-Health polish.
+> **Code goal**: v0.4.0 target — 通用模块化重构 (抽象接口 + Encoder 插件 + YAML 配置), 336 tests 保持通过.
 
 ## Operating Mode
 
@@ -41,12 +41,13 @@ Before substantial work:
 
 1. Run `codegraph status`.
 2. Read `CodexKnowledge\START_HERE_CODEX.md` (this file).
-3. Read `CodexKnowledge\SCX_TODO_2026-06-26.md` for current work items.
-4. Read `CodexKnowledge\SCX_终极TODO.md` for comprehensive TODO list (supersedes old SCX_TODO.md).
-5. Read `CodexKnowledge\决策日志.md` when relevant.
-6. Read `CodexKnowledge\工具状态.md` for tool configuration.
-7. Read `CodexKnowledge\archive\项目状态_2026-06-25.md` for prior state (archived).
-8. Read `CodexKnowledge\archive\后续任务.md` for prior task list (archived).
+3. Read `CodexKnowledge\SCX_规划_v4_通用模块化.md` for vision and architecture plan.
+4. Read `CodexKnowledge\SCX_TODO_v4_通用模块化.md` for current work items (通用模块化重构).
+5. Read `CodexKnowledge\SCX_终极TODO.md` for comprehensive TODO list.
+6. Read `CodexKnowledge\决策日志.md` when relevant.
+7. Read `CodexKnowledge\工具状态.md` for tool configuration.
+8. Read `CodexKnowledge\archive\项目状态_2026-06-25.md` for prior state (archived).
+9. Read `CodexKnowledge\archive\后续任务.md` for prior task list (archived).
 
 ## Source Priority
 
@@ -129,10 +130,13 @@ V(s) = r̄(s) · ρ(s) · L(s) · [1-D(s)] · max_m SCX_m(s)
 
 | 想了解什么 | 读哪个 |
 |---|---|
-| 完整对话记录 | `CodexKnowledge/与GPT的讨论2026-06-26-07-49.md` |
+| 完整对话记录 (v4 版) | `CodexKnowledge/与gpt的对话202606261332.md` (5814行) |
+| v4 通用模块化规划 | `CodexKnowledge/SCX_规划_v4_通用模块化.md` |
+| 当前 TODO (v4) | `CodexKnowledge/SCX_TODO_v4_通用模块化.md` |
+| 完整对话记录 (旧版) | `CodexKnowledge/与GPT的讨论2026-06-26-07-49.md` (9011行) |
 | AI 恢复入口 | `CodexKnowledge/START_HERE_CODEX.md` (本文件) |
 | 核心数学定义 | `CodexKnowledge/SCX_核心定义.md` |
-| 开发 TODO (当前) | `CodexKnowledge/SCX_TODO_2026-06-26.md` |
+| 开发 TODO (旧，已替代) | `CodexKnowledge/SCX_TODO_2026-06-26.md` |
 | 综合 TODO (全部) | `CodexKnowledge/SCX_终极TODO.md` |
 | 理论框架总览 | `theory/README.md` |
 | 项目状态概览 | `CodexKnowledge/SCX_思想扩展_综合方案.md` (v0.2.0→v0.3.0) |
