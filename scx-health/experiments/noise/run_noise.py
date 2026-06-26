@@ -9,10 +9,11 @@ Uses real SCX library calls:
 Workflow:
   1. Load DermaMNIST (small, challenging dataset)
   2. Inject synthetic label noise (10%, 20%, 40% random flips)
-  3. Train model on noisy data
-  4. Extract features and compute SCX NoiseScore per sample
-  5. Evaluate: can NoiseScore separate noisy from clean samples?
-  6. Compare: SCX-Noise vs loss-based filtering vs random
+  3. Also inject per-class (non-uniform) noise for harder detection
+  4. Train model on noisy data
+  5. Extract features and compute SCX NoiseScore per sample
+  6. Evaluate: can NoiseScore separate noisy from clean samples?
+  7. Compare: SCX-Noise vs Loss-based vs Confidence-based vs ErrorDriven
 """
 
 import os
@@ -50,10 +51,10 @@ from scx.valuation.learnability import LearnabilityScore
 class NoiseConfig:
     dataset: str = 'dermamnist'
     data_root: str = './data'
-    model: str = 'resnet18'
+    model: str = 'simple_cnn'
     in_channels: int = 3
     num_classes: int = 7
-    batch_size: int = 64
+    batch_size: int = 128
     epochs: int = 30
     lr: float = 1e-3
     weight_decay: float = 1e-4
@@ -62,6 +63,7 @@ class NoiseConfig:
     noise_rates: list = field(default_factory=lambda: [0.0, 0.1, 0.2, 0.4])
     output_dir: str = './results/noise'
     seed: int = 42
+    per_class_noise: bool = False  # Non-uniform per-class noise
 
 
 # ──────────────────────────────────────────────
@@ -229,6 +231,153 @@ def loss_based_detection(residuals: np.ndarray, threshold: float = None):
 
 
 # ──────────────────────────────────────────────
+# Per-class (non-uniform) noise injection
+# ──────────────────────────────────────────────
+
+def inject_per_class_label_noise(
+    labels: torch.Tensor,
+    base_noise_rate: float,
+    num_classes: int,
+    seed: int,
+    factor_range: tuple = (0.3, 2.5),
+) -> tuple:
+    """Inject non-uniform label noise.
+
+    Each class gets a different noise rate drawn from
+    base_noise_rate * factor, where factor varies per class.
+    This simulates real-world conditions where some classes
+    are noisier than others.
+
+    Returns:
+        (noisy_labels, noise_mask)
+    """
+    rng = np.random.RandomState(seed)
+    n = len(labels)
+    noisy = labels.clone()
+    noise_mask = torch.zeros(n, dtype=torch.bool)
+
+    # Per-class noise factors
+    factors = rng.uniform(factor_range[0], factor_range[1], size=num_classes)
+
+    for cls in range(num_classes):
+        cls_mask = (labels == cls).numpy().ravel()
+        cls_idx = np.where(cls_mask)[0]
+        cls_rate = base_noise_rate * factors[cls]
+        cls_rate = min(cls_rate, 0.8)  # Cap at 80%
+        n_flip = max(1, int(len(cls_idx) * cls_rate))
+
+        flip_idx = rng.choice(cls_idx, n_flip, replace=False)
+        for idx in flip_idx:
+            choices = [c for c in range(num_classes) if c != int(labels[idx])]
+            noisy[idx] = rng.choice(choices)
+            noise_mask[idx] = True
+
+    return noisy, noise_mask
+
+
+# ──────────────────────────────────────────────
+# Confidence-based detection
+# ──────────────────────────────────────────────
+
+def confidence_based_detection(
+    logits: np.ndarray,
+) -> tuple:
+    """Use softmax confidence as noise proxy.
+
+    Low-confidence samples (softmax probability < threshold)
+    are flagged as potentially noisy.
+
+    Returns:
+        (confidence_scores, flagged_indices)
+    """
+    # Softmax
+    shifted = logits - logits.max(axis=1, keepdims=True)
+    softmax = np.exp(shifted) / np.exp(shifted).sum(axis=1, keepdims=True)
+    confidence = softmax.max(axis=1)  # max probability per sample
+
+    # IQR-based threshold on low confidence
+    low_conf = 1.0 - confidence
+    q3 = float(np.percentile(low_conf, 75))
+    iqr = float(np.percentile(low_conf, 75) - np.percentile(low_conf, 25))
+    threshold = q3 + 1.5 * iqr
+    flagged = np.where(low_conf > threshold)[0]
+
+    return confidence, flagged
+
+
+# ──────────────────────────────────────────────
+# ErrorDriven detection
+# ──────────────────────────────────────────────
+
+def error_driven_detection(
+    model: nn.Module,
+    loader: torch.utils.data.DataLoader,
+    device: str,
+    n_perturbations: int = 3,
+) -> tuple:
+    """ErrorDriven: measure prediction instability under small model perturbations.
+
+    The idea: noisy-label samples have unstable predictions because the model
+    is memorizing wrong labels.  By injecting small random noise into the
+    model parameters and observing prediction changes, we can detect samples
+    whose predictions are fragile (i.e., likely noisy).
+
+    This is inspired by the "Error-Driven Detection" paradigm:
+    samples with high prediction variance under model perturbation are
+    likely to be noisy.
+
+    Returns:
+        (instability_scores, flagged_indices)
+    """
+    model.eval()
+    orig_state = {k: v.clone() for k, v in model.state_dict().items()}
+
+    N = len(loader.dataset)
+    all_preds = []
+    rng_state = torch.get_rng_state()
+
+    for p_idx in range(n_perturbations):
+        # Restore original weights
+        model.load_state_dict(orig_state)
+
+        # Add small noise to classifier weights
+        with torch.no_grad():
+            for name, param in model.named_parameters():
+                if 'classifier' in name or 'fc' in name:
+                    noise = torch.randn_like(param) * 0.01
+                    param.add_(noise)
+
+        # Predict on all samples
+        epoch_preds = []
+        for inputs, _ in loader:
+            inputs = inputs.to(device)
+            with torch.no_grad():
+                outputs = model(inputs)
+                preds = outputs.argmax(dim=1).cpu().numpy()
+            epoch_preds.append(preds)
+        all_preds.append(np.concatenate(epoch_preds))
+
+    # Restore original model state
+    model.load_state_dict(orig_state)
+    torch.set_rng_state(rng_state)
+
+    # Compute prediction instability: fraction of perturbations where
+    # prediction differs from the majority vote
+    all_preds = np.stack(all_preds, axis=0)  # (n_perturbations, N)
+    majority = np.zeros(N, dtype=int)
+    for i in range(N):
+        votes = np.bincount(all_preds[:, i])
+        majority[i] = np.argmax(votes)
+
+    instability = np.mean(all_preds != majority, axis=0)  # fraction disagreeing
+
+    # Flag samples with instability > 0 (at least 1 perturbation disagrees)
+    flagged = np.where(instability > 0.0)[0]
+
+    return instability, flagged
+
+
+# ──────────────────────────────────────────────
 # Main experiment
 # ──────────────────────────────────────────────
 
@@ -238,11 +387,12 @@ def run_noise_detection(cfg: NoiseConfig) -> dict:
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
 
-    print(f"=== SCX-Noise Experiment ===")
+    print(f"=== SCX-Noise Experiment (v2) ===")
     print(f"Dataset: {cfg.dataset}")
     print(f"Model:   {cfg.model}")
     print(f"Device:  {cfg.device}")
     print(f"States:  {cfg.n_states}")
+    print(f"Per-class noise: {cfg.per_class_noise}")
     print()
 
     # 1. Load clean data
@@ -269,9 +419,23 @@ def run_noise_detection(cfg: NoiseConfig) -> dict:
         print(f"\n[2/5] Injecting {noise_rate*100:.0f}% label noise...")
         clean_labels = torch.tensor(train_set.labels if hasattr(train_set, 'labels')
                                     else train_set.label)
-        noisy_labels, noise_mask = inject_label_noise(
-            clean_labels, noise_rate, cfg.num_classes, seed=cfg.seed,
-        )
+
+        if cfg.per_class_noise and noise_rate > 0:
+            # Non-uniform per-class noise
+            noisy_labels, noise_mask = inject_per_class_label_noise(
+                clean_labels, noise_rate, cfg.num_classes, seed=cfg.seed,
+            )
+            # Print per-class noise statistics
+            for cls in range(cfg.num_classes):
+                cls_mask = (clean_labels == cls).numpy().ravel()
+                cls_noisy = noise_mask.numpy()[cls_mask]
+                if len(cls_noisy) > 0:
+                    cls_rate = cls_noisy.mean()
+                    print(f"    Class {cls}: {cls_rate*100:.1f}% noisy ({cls_noisy.sum()}/{len(cls_noisy)})")
+        else:
+            noisy_labels, noise_mask = inject_label_noise(
+                clean_labels, noise_rate, cfg.num_classes, seed=cfg.seed,
+            )
 
         # Patch dataset with noisy labels
         train_set_noisy = train_set
@@ -306,20 +470,37 @@ def run_noise_detection(cfg: NoiseConfig) -> dict:
         test_acc = evaluate(model, test_loader, cfg.device)
         print(f"  Test Accuracy (noisy train): {test_acc:.4f}")
 
-        # 4. Extract features & compute SCX noise scores
-        print(f"\n[4/5] Computing SCX noise scores...")
+        # 4. Extract features & compute noise scores from all methods
+        print(f"\n[4/5] Computing noise detection scores...")
         features, pred_labels = extract_features(model, noisy_loader, cfg.device)
         residuals = compute_residuals(model, noisy_loader, cfg.device)
 
-        # Real SCX noise detection
+        # ── a) SCX Noise detection ──
         noise_scores, state_labels, noisy_indices, state_metrics = \
             scx_compute_noise_scores(
                 features, noisy_labels.numpy(), residuals,
                 n_states=cfg.n_states, seed=cfg.seed,
             )
 
-        # Baseline: raw loss-based detection
+        # ── b) Loss-based detection ──
         loss_scores, loss_noisy_idx = loss_based_detection(residuals)
+
+        # ── c) Confidence-based detection ──
+        # Collect logits for all training samples
+        model.eval()
+        all_logits = []
+        with torch.no_grad():
+            for inputs, _ in noisy_loader:
+                inputs = inputs.to(cfg.device)
+                logits = model(inputs).cpu().numpy()
+                all_logits.append(logits)
+        all_logits = np.concatenate(all_logits, axis=0)
+        conf_scores, conf_noisy_idx = confidence_based_detection(all_logits)
+
+        # ── d) ErrorDriven detection ──
+        inst_scores, errdriven_noisy_idx = error_driven_detection(
+            model, noisy_loader, cfg.device, n_perturbations=3,
+        )
 
         n_scx_detected = len(noisy_indices)
         n_scx_actually_noisy = int(noise_mask.numpy()[noisy_indices].sum()) if n_scx_detected > 0 else 0
@@ -330,32 +511,36 @@ def run_noise_detection(cfg: NoiseConfig) -> dict:
         print(f"\n[5/5] Evaluating noise detection...")
         y_true = noise_mask.numpy().astype(int)
 
-        # SCX-Noise ROC-AUC
-        if len(np.unique(y_true)) > 1:
-            scx_roc_auc = roc_auc_score(y_true, noise_scores)
-            scx_pr_auc = average_precision_score(y_true, noise_scores)
-        else:
-            scx_roc_auc = float('nan')
-            scx_pr_auc = float('nan')
+        def safe_auc(y_true, scores):
+            if len(np.unique(y_true)) > 1:
+                return (
+                    float(roc_auc_score(y_true, scores)),
+                    float(average_precision_score(y_true, scores)),
+                )
+            return float('nan'), float('nan')
 
-        # Loss-based ROC-AUC
-        if len(np.unique(y_true)) > 1:
-            loss_roc_auc = roc_auc_score(y_true, loss_scores)
-            loss_pr_auc = average_precision_score(y_true, loss_scores)
-        else:
-            loss_roc_auc = float('nan')
-            loss_pr_auc = float('nan')
+        scx_roc_auc, scx_pr_auc = safe_auc(y_true, noise_scores)
+        loss_roc_auc, loss_pr_auc = safe_auc(y_true, loss_scores)
+        conf_roc_auc, conf_pr_auc = safe_auc(y_true, 1.0 - conf_scores)  # invert confidence
+        errdriven_roc_auc, errdriven_pr_auc = safe_auc(y_true, inst_scores)
 
-        print(f"  SCX-Noise  ROC-AUC: {scx_roc_auc:.4f}  PR-AUC: {scx_pr_auc:.4f}")
-        print(f"  Loss-based ROC-AUC: {loss_roc_auc:.4f}  PR-AUC: {loss_pr_auc:.4f}")
+        print(f"  SCX-Noise        ROC-AUC: {scx_roc_auc:.4f}  PR-AUC: {scx_pr_auc:.4f}")
+        print(f"  Loss-based       ROC-AUC: {loss_roc_auc:.4f}  PR-AUC: {loss_pr_auc:.4f}")
+        print(f"  Confidence-based ROC-AUC: {conf_roc_auc:.4f}  PR-AUC: {conf_pr_auc:.4f}")
+        print(f"  ErrorDriven      ROC-AUC: {errdriven_roc_auc:.4f}  PR-AUC: {errdriven_pr_auc:.4f}")
 
         all_results[f'noise_rate_{noise_rate:.0%}'] = {
             'noise_rate': noise_rate,
+            'per_class_noise': cfg.per_class_noise,
             'test_accuracy': float(test_acc),
-            'scx_roc_auc': float(scx_roc_auc),
-            'scx_pr_auc': float(scx_pr_auc),
-            'loss_roc_auc': float(loss_roc_auc),
-            'loss_pr_auc': float(loss_pr_auc),
+            'scx_roc_auc': scx_roc_auc,
+            'scx_pr_auc': scx_pr_auc,
+            'loss_roc_auc': loss_roc_auc,
+            'loss_pr_auc': loss_pr_auc,
+            'confidence_roc_auc': conf_roc_auc,
+            'confidence_pr_auc': conf_pr_auc,
+            'errdriven_roc_auc': errdriven_roc_auc,
+            'errdriven_pr_auc': errdriven_pr_auc,
             'n_flagged_scx': n_scx_detected,
             'n_actually_noisy': int(noise_mask.sum().item()),
             'state_metrics': {str(k): v for k, v in state_metrics.items()},
@@ -375,13 +560,15 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default='dermamnist',
                         choices=['pathmnist', 'dermamnist', 'bloodmnist'])
     parser.add_argument('--data-root', default='./data')
-    parser.add_argument('--model', default='resnet18',
+    parser.add_argument('--model', default='simple_cnn',
                         choices=['simple_cnn', 'resnet18'])
-    parser.add_argument('--batch-size', type=int, default=64)
+    parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--epochs', type=int, default=30)
     parser.add_argument('--n-states', type=int, default=8)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--output-dir', default='./results/noise')
+    parser.add_argument('--per-class-noise', action='store_true',
+                        help='Use non-uniform per-class noise injection')
     args = parser.parse_args()
 
     cfg = NoiseConfig(
@@ -393,5 +580,6 @@ if __name__ == '__main__':
         lr=args.lr,
         n_states=args.n_states,
         output_dir=args.output_dir,
+        per_class_noise=args.per_class_noise,
     )
     run_noise_detection(cfg)

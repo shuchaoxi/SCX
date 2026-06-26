@@ -7,9 +7,13 @@ Uses real SCX library calls:
   - scx.expert.reliability.ExpertReliability for state-conditioned reliability
   - scx.expert.router.ExpertRouter for state-conditioned routing
 
+Key improvement (v2): Each expert is trained on ALL classes with different
+random seeds, so the routing problem is meaningful (experts differ in
+which data subspaces they handle well).
+
 Workflow:
   1. Load BloodMNIST (8-class blood cell classification)
-  2. Train N experts (ResNet-18 with different initializations)
+  2. Train 5 experts (SimpleCNN with different random seeds on full 8 classes)
   3. Extract features and define "diagnostic states" via SCX StateDiscovery
   4. Evaluate: SCX-Routing vs Uniform Ensemble vs Single Best Expert
 """
@@ -50,12 +54,12 @@ from scx.expert.router import ExpertRouter
 class RoutingConfig:
     dataset: str = 'bloodmnist'
     data_root: str = './data'
-    model: str = 'resnet18'
+    model: str = 'simple_cnn'
     in_channels: int = 3
     num_classes: int = 8
     n_experts: int = 5
     n_states: int = 8
-    batch_size: int = 64
+    batch_size: int = 128
     expert_epochs: int = 30
     lr: float = 1e-3
     weight_decay: float = 1e-4
@@ -309,11 +313,12 @@ def run_routing(cfg: RoutingConfig) -> dict:
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
 
-    print(f"=== SCX-Routing Experiment ===")
+    print(f"=== SCX-Routing Experiment (v2) ===")
     print(f"Dataset:  {cfg.dataset}")
-    print(f"Experts:  {cfg.n_experts} ({cfg.model})")
+    print(f"Experts:  {cfg.n_experts} ({cfg.model}, all classes)")
     print(f"States:   {cfg.n_states}")
     print(f"Device:   {cfg.device}")
+    print(f"Epochs:   {cfg.expert_epochs}")
     print()
 
     # 1. Load data
@@ -418,11 +423,11 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default='bloodmnist',
                         choices=['pathmnist', 'dermamnist', 'bloodmnist'])
     parser.add_argument('--data-root', default='./data')
-    parser.add_argument('--model', default='resnet18',
+    parser.add_argument('--model', default='simple_cnn',
                         choices=['simple_cnn', 'resnet18'])
     parser.add_argument('--n-experts', type=int, default=5)
     parser.add_argument('--n-states', type=int, default=8)
-    parser.add_argument('--batch-size', type=int, default=64)
+    parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--expert-epochs', type=int, default=30)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--output-dir', default='./results/routing')

@@ -122,7 +122,7 @@ class TwoLayerStateDiscovery:
 
         # Use StateDiscovery for layer 1
         method = discovery_kwargs.pop("method", "kmeans")
-        rs = discovery_kwargs.get("random_state", 42)
+        rs = discovery_kwargs.pop("random_state", 42)
         sd = StateDiscovery(
             method=method,
             n_states=layer1_k,

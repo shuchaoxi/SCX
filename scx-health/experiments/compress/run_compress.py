@@ -8,12 +8,12 @@ Uses real SCX library calls:
 
 Workflow:
   1. Load PathMNIST
-  2. Train baseline ResNet-18 (or SimpleCNN for speed)
+  2. Train baseline SimpleCNN
   3. Extract penultimate-layer features + per-sample residuals
   4. Run SCX StateDiscovery + CompressStrategy.redundancy_score
   5. Compress training set per-state (20%, 30%, 40%, 50%)
   6. Retrain on compressed set + evaluate
-  7. Compare: SCX-Compress vs Random vs Full data
+  7. Compare: SCX-Compress vs Random vs Coreset vs Full data
 """
 
 import os
@@ -50,10 +50,10 @@ from scx.valuation.redundancy import RedundancyScore
 class CompressConfig:
     dataset: str = 'pathmnist'
     data_root: str = './data'
-    model: str = 'resnet18'
+    model: str = 'simple_cnn'
     in_channels: int = 3
     num_classes: int = 9
-    batch_size: int = 64
+    batch_size: int = 128
     epochs: int = 30
     lr: float = 1e-3
     weight_decay: float = 1e-4
@@ -62,6 +62,7 @@ class CompressConfig:
     compression_rates: list = field(default_factory=lambda: [0.0, 0.2, 0.3, 0.4, 0.5])
     output_dir: str = './results/compress'
     seed: int = 42
+    augment: bool = False
 
 
 # ──────────────────────────────────────────────
@@ -300,6 +301,70 @@ def random_compress_indices(
 
 
 # ──────────────────────────────────────────────
+# Coreset baseline (k-center greedy)
+# ──────────────────────────────────────────────
+
+def coreset_compress_indices(
+    features: np.ndarray,
+    labels: np.ndarray,
+    rate: float,
+    seed: int = 42,
+) -> np.ndarray:
+    """Coreset selection via k-center greedy, stratified by class.
+
+    Iteratively picks the sample farthest from its nearest already-selected
+    sample in feature space.  This maximises coverage / diversity.
+
+    Args:
+        features: (N, D) feature vectors.
+        labels: (N,) class labels.
+        rate: Compression rate (0.2 = remove 20%).
+        seed: Random seed.
+
+    Returns:
+        keep_mask: (N,) bool array, True for samples to keep.
+    """
+    N = len(features)
+    keep_mask = np.zeros(N, dtype=bool)
+    rng = np.random.RandomState(seed)
+
+    for cls in np.unique(labels):
+        cls_mask = labels == cls
+        cls_idx = np.where(cls_mask)[0]
+        n_cls = len(cls_idx)
+        n_keep = max(1, int(n_cls * (1.0 - rate)))
+
+        if n_keep >= n_cls:
+            keep_mask[cls_idx] = True
+            continue
+
+        X_cls = features[cls_idx]
+        # Start with a random sample
+        first = rng.randint(n_cls)
+        selected = [first]
+        selected_set = {first}
+
+        # Precompute pairwise distances (or compute on the fly)
+        # For n_cls up to ~10k this is fine; for larger sets we do incremental
+        dists = np.full(n_cls, np.inf)  # min distance to selected set
+
+        while len(selected) < n_keep:
+            # Update distances to the newest selected point
+            newest = selected[-1]
+            d_new = np.linalg.norm(X_cls - X_cls[newest], axis=1)
+            dists = np.minimum(dists, d_new)
+
+            # Pick farthest
+            cand = np.argmax(dists)
+            selected.append(cand)
+            selected_set.add(cand)
+
+        keep_mask[cls_idx[np.array(selected)]] = True
+
+    return keep_mask
+
+
+# ──────────────────────────────────────────────
 # Main experiment
 # ──────────────────────────────────────────────
 
@@ -309,20 +374,51 @@ def run_compress(cfg: CompressConfig) -> dict:
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
 
-    print(f"=== SCX-Compress Experiment ===")
+    print(f"=== SCX-Compress Experiment (v2) ===")
     print(f"Dataset: {cfg.dataset}")
     print(f"Model:   {cfg.model}")
     print(f"Device:  {cfg.device}")
     print(f"States:  {cfg.n_states}")
+    print(f"Augment: {cfg.augment}")
     print()
 
-    # 1. Load data
+    # 1. Load data (with optional augmentation)
     print("[1/7] Loading dataset...")
+    import torchvision.transforms as T
+    base_transform = T.Compose([
+        T.ToTensor(),
+        T.Normalize(mean=[0.5], std=[0.5]),
+    ])
+    if cfg.augment:
+        train_transform = T.Compose([
+            T.RandomHorizontalFlip(p=0.5),
+            T.RandomRotation(degrees=10),
+            T.ToTensor(),
+            T.Normalize(mean=[0.5], std=[0.5]),
+        ])
+    else:
+        train_transform = base_transform
+
     loaders = load_medmnist(
         name=cfg.dataset,
         root=cfg.data_root,
         batch_size=cfg.batch_size,
+        transform=base_transform,
     )
+    # Re-create train loader with optional augmentation transform
+    DatasetClass = None
+    import medmnist
+    for name_c, cls in [('pathmnist', medmnist.PathMNIST),
+                         ('dermamnist', medmnist.DermaMNIST),
+                         ('bloodmnist', medmnist.BloodMNIST)]:
+        if cfg.dataset.lower() == name_c:
+            DatasetClass = cls
+            break
+    train_set_aug = DatasetClass(split='train', transform=train_transform, download=False, root=cfg.data_root)
+    train_loader_aug = torch.utils.data.DataLoader(
+        train_set_aug, batch_size=cfg.batch_size, shuffle=True,
+    )
+    loaders['train'] = train_loader_aug
     train_set = loaders['train'].dataset
     val_loader = loaders['val']
     test_loader = loaders['test']
@@ -388,75 +484,91 @@ def run_compress(cfg: CompressConfig) -> dict:
         print(f"\n  --- Compression rate: {rate*100:.0f}% ---")
 
         if rate == 0.0:
-            # Full data baseline
-            test_acc = baseline_test_acc
-            n_kept = len(train_set)
-            method_name = 'full'
-        else:
-            # ---- SCX-Compress ----
-            scx_keep = scx_compress_indices(
-                scores, state_labels, residuals, rate,
-                n_states=cfg.n_states, seed=cfg.seed,
-            )
-            scx_indices = np.where(scx_keep)[0]
-            scx_subset = torch.utils.data.Subset(train_set, scx_indices)
-            scx_loader = torch.utils.data.DataLoader(
-                scx_subset, batch_size=cfg.batch_size, shuffle=True,
-            )
-
-            scx_model = create_encoder(
-                model_name=cfg.model,
-                in_channels=cfg.in_channels,
-                num_classes=cfg.num_classes,
-                pretrained=False,
-            ).to(cfg.device)
-            scx_opt = optim.Adam(scx_model.parameters(), lr=cfg.lr,
-                                  weight_decay=cfg.weight_decay)
-            for epoch in range(cfg.epochs):
-                train_epoch(scx_model, scx_loader, scx_opt, criterion, cfg.device)
-            scx_acc = evaluate(scx_model, test_loader, cfg.device)
-            test_acc = scx_acc
-            n_kept = len(scx_indices)
-
-            # ---- Random baseline ----
-            rnd_keep = random_compress_indices(labels, rate, seed=cfg.seed)
-            rnd_indices = np.where(rnd_keep)[0]
-            rnd_subset = torch.utils.data.Subset(train_set, rnd_indices)
-            rnd_loader = torch.utils.data.DataLoader(
-                rnd_subset, batch_size=cfg.batch_size, shuffle=True,
-            )
-            rnd_model = create_encoder(
-                model_name=cfg.model,
-                in_channels=cfg.in_channels,
-                num_classes=cfg.num_classes,
-                pretrained=False,
-            ).to(cfg.device)
-            rnd_opt = optim.Adam(rnd_model.parameters(), lr=cfg.lr,
-                                  weight_decay=cfg.weight_decay)
-            for epoch in range(cfg.epochs):
-                train_epoch(rnd_model, rnd_loader, rnd_opt, criterion, cfg.device)
-            rnd_acc = evaluate(rnd_model, test_loader, cfg.device)
-
-            print(f"  SCX-Compress:  {scx_acc:.4f} (delta: {scx_acc - baseline_test_acc:+.4f})")
-            print(f"  Random:        {rnd_acc:.4f} (delta: {rnd_acc - baseline_test_acc:+.4f})")
-
             results['compression_results'].append({
                 'rate': rate,
-                'n_train_kept': n_kept,
-                'scx_accuracy': float(scx_acc),
-                'scx_delta': float(scx_acc - baseline_test_acc),
-                'random_accuracy': float(rnd_acc),
-                'random_delta': float(rnd_acc - baseline_test_acc),
+                'n_train_kept': len(train_set),
+                'scx_accuracy': float(baseline_test_acc),
+                'scx_delta': 0.0,
+                'random_accuracy': float(baseline_test_acc),
+                'random_delta': 0.0,
+                'coreset_accuracy': float(baseline_test_acc),
+                'coreset_delta': 0.0,
             })
-            continue  # skip the append below for rate>0
+            continue
+
+        # ---- SCX-Compress ----
+        scx_keep = scx_compress_indices(
+            scores, state_labels, residuals, rate,
+            n_states=cfg.n_states, seed=cfg.seed,
+        )
+        scx_indices = np.where(scx_keep)[0]
+        scx_subset = torch.utils.data.Subset(train_set, scx_indices)
+        scx_loader = torch.utils.data.DataLoader(
+            scx_subset, batch_size=cfg.batch_size, shuffle=True,
+        )
+
+        scx_model = create_encoder(
+            model_name=cfg.model,
+            in_channels=cfg.in_channels,
+            num_classes=cfg.num_classes,
+            pretrained=False,
+        ).to(cfg.device)
+        scx_opt = optim.Adam(scx_model.parameters(), lr=cfg.lr,
+                              weight_decay=cfg.weight_decay)
+        for epoch in range(cfg.epochs):
+            train_epoch(scx_model, scx_loader, scx_opt, criterion, cfg.device)
+        scx_acc = evaluate(scx_model, test_loader, cfg.device)
+        print(f"  SCX-Compress:  {scx_acc:.4f} (delta: {scx_acc - baseline_test_acc:+.4f})")
+
+        # ---- Random baseline ----
+        rnd_keep = random_compress_indices(labels, rate, seed=cfg.seed)
+        rnd_indices = np.where(rnd_keep)[0]
+        rnd_subset = torch.utils.data.Subset(train_set, rnd_indices)
+        rnd_loader = torch.utils.data.DataLoader(
+            rnd_subset, batch_size=cfg.batch_size, shuffle=True,
+        )
+        rnd_model = create_encoder(
+            model_name=cfg.model,
+            in_channels=cfg.in_channels,
+            num_classes=cfg.num_classes,
+            pretrained=False,
+        ).to(cfg.device)
+        rnd_opt = optim.Adam(rnd_model.parameters(), lr=cfg.lr,
+                              weight_decay=cfg.weight_decay)
+        for epoch in range(cfg.epochs):
+            train_epoch(rnd_model, rnd_loader, rnd_opt, criterion, cfg.device)
+        rnd_acc = evaluate(rnd_model, test_loader, cfg.device)
+        print(f"  Random:        {rnd_acc:.4f} (delta: {rnd_acc - baseline_test_acc:+.4f})")
+
+        # ---- Coreset baseline ----
+        coreset_keep = coreset_compress_indices(features, labels, rate, seed=cfg.seed)
+        coreset_indices = np.where(coreset_keep)[0]
+        coreset_subset = torch.utils.data.Subset(train_set, coreset_indices)
+        coreset_loader = torch.utils.data.DataLoader(
+            coreset_subset, batch_size=cfg.batch_size, shuffle=True,
+        )
+        coreset_model = create_encoder(
+            model_name=cfg.model,
+            in_channels=cfg.in_channels,
+            num_classes=cfg.num_classes,
+            pretrained=False,
+        ).to(cfg.device)
+        coreset_opt = optim.Adam(coreset_model.parameters(), lr=cfg.lr,
+                                  weight_decay=cfg.weight_decay)
+        for epoch in range(cfg.epochs):
+            train_epoch(coreset_model, coreset_loader, coreset_opt, criterion, cfg.device)
+        coreset_acc = evaluate(coreset_model, test_loader, cfg.device)
+        print(f"  Coreset:       {coreset_acc:.4f} (delta: {coreset_acc - baseline_test_acc:+.4f})")
 
         results['compression_results'].append({
             'rate': rate,
-            'n_train_kept': n_kept,
-            'scx_accuracy': float(test_acc),
-            'scx_delta': float(test_acc - baseline_test_acc),
-            'random_accuracy': float(test_acc),
-            'random_delta': float(test_acc - baseline_test_acc),
+            'n_train_kept': len(scx_indices),
+            'scx_accuracy': float(scx_acc),
+            'scx_delta': float(scx_acc - baseline_test_acc),
+            'random_accuracy': float(rnd_acc),
+            'random_delta': float(rnd_acc - baseline_test_acc),
+            'coreset_accuracy': float(coreset_acc),
+            'coreset_delta': float(coreset_acc - baseline_test_acc),
         })
 
     print()
@@ -469,7 +581,8 @@ def run_compress(cfg: CompressConfig) -> dict:
             continue
         rate_pct = int(r['rate'] * 100)
         print(f"  Rate {rate_pct}% | SCX: {r['scx_accuracy']:.4f} (delta={r['scx_delta']:+.4f})"
-              f" | Random: {r['random_accuracy']:.4f} (delta={r['random_delta']:+.4f})")
+              f" | Random: {r['random_accuracy']:.4f} (delta={r['random_delta']:+.4f})"
+              f" | Coreset: {r['coreset_accuracy']:.4f} (delta={r['coreset_delta']:+.4f})")
 
     # Save results
     output_path = os.path.join(cfg.output_dir, 'compress_results.json')
@@ -497,6 +610,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--device', default=None)
     parser.add_argument('--output-dir', default='./results/compress')
+    parser.add_argument('--augment', action='store_true', help='Enable data augmentation')
     args = parser.parse_args()
 
     cfg = CompressConfig(
@@ -508,6 +622,7 @@ if __name__ == '__main__':
         lr=args.lr,
         n_states=args.n_states,
         output_dir=args.output_dir,
+        augment=args.augment,
     )
     if args.device:
         cfg.device = args.device
