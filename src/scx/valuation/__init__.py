@@ -11,6 +11,7 @@ from .redundancy import RedundancyScore
 from .classifier import DataClassifier
 from .state_value import StateValue
 from .adaptive import AdaptiveThreshold
+from .influence import StateConditionedInfluence
 
 __all__ = [
     "LearnabilityScore",
@@ -19,4 +20,5 @@ __all__ = [
     "DataClassifier",
     "StateValue",
     "AdaptiveThreshold",
+    "StateConditionedInfluence",
 ]

@@ -22,10 +22,12 @@ Before substantial work:
 
 1. Run `codegraph status`.
 2. Read `CodexKnowledge\START_HERE_CODEX.md` (this file).
-3. Read `CodexKnowledge\项目状态_*.md` (latest).
-4. Read `CodexKnowledge\决策日志.md` when relevant.
-5. Read `CodexKnowledge\后续任务.md` for next actions.
+3. Read `CodexKnowledge\SCX_TODO.md` for current work items.
+4. Read `CodexKnowledge\SCX_终极TODO.md` for comprehensive TODO list.
+5. Read `CodexKnowledge\决策日志.md` when relevant.
 6. Read `CodexKnowledge\工具状态.md` for tool configuration.
+7. Read `CodexKnowledge\archive\项目状态_2026-06-25.md` for prior state (archived).
+8. Read `CodexKnowledge\archive\后续任务.md` for prior task list (archived).
 
 ## Source Priority
 
@@ -47,15 +49,16 @@ Before substantial work:
 SCX/
 ├── CodexKnowledge/          # 项目知识库
 │   ├── START_HERE_CODEX.md # ← 本文件
-│   ├── 项目状态_*.md        # 项目状态快照
-│   ├── 决策日志.md          # 关键决策记录
-│   ├── 后续任务.md          # 待办事项
-│   ├── 工具状态.md          # 工具链状态
-│   ├── SCX_核心定义.md      # 核心数学定义速查
-│   └── archive/            # 归档文档
-├── theory/                  # 数学框架
+│   ├── SCX_终极TODO.md     # 综合 TODO（含 IP/商业）
+│   ├── SCX_TODO.md         # 开发待办
+│   ├── SCX_核心定义.md     # 核心数学定义速查
+│   ├── 决策日志.md         # 关键决策记录
+│   ├── 工具状态.md         # 工具链状态
+│   ├── agent_outputs/      # 6 Agent 分析文档
+│   ├── archive/            # 过期文档归档
+│   └── images/             # 讨论/会议配图
+├── theory/                  # 数学框架（5 命题 + 证明）
 │   ├── README.md           # 框架总览
-│   ├── definitions/        # 形式化定义
 │   └── propositions/       # 定理与命题
 ├── paper/                   # 论文相关
 │   ├── paper_text/         # 论文草稿
@@ -63,10 +66,12 @@ SCX/
 │   └── papers/             # 收集的论文 PDF
 ├── experiments/             # 验证实验
 │   ├── synthetic/          # 合成 2D 实验
+│   ├── cifar/              # CIFAR-10/100
 │   ├── ml_benchmarks/      # 通用 ML 基准
 │   └── mlip_case/          # MLIP 科学案例
-├── src/scx/                 # SCX 框架代码
-├── tests/                   # 单元测试
+├── scx-health/              # 医学数据估值子项目
+├── src/scx/                 # SCX 框架代码（6 子包, 34 模块）
+├── tests/                   # 单元测试（9 文件, 336 tests）
 ├── outputs/                 # 实验输出/图表
 └── images/                  # 概念图/示意图
 ```
@@ -105,11 +110,14 @@ V(s) = r̄(s) · ρ(s) · L(s) · [1-D(s)] · max_m SCX_m(s)
 
 | 想了解什么 | 读哪个 |
 |---|---|
-| 完整对话记录 | `CodexKnowledge/新建文本文档 (2).txt` (从 EGP 复制) |
-| AI 恢复入口 | `CodexKnowledge/新建会话_AI恢复prompt_2026-06-25.md` (从 EGP 复制) |
+| 完整对话记录 | `CodexKnowledge/与GPT的讨论2026-06-26-07-49.md` |
+| AI 恢复入口 | `CodexKnowledge/START_HERE_CODEX.md` (本文件) |
 | 核心数学定义 | `CodexKnowledge/SCX_核心定义.md` |
+| 开发 TODO | `CodexKnowledge/SCX_TODO.md` |
+| 综合 TODO | `CodexKnowledge/SCX_终极TODO.md` |
 | 理论框架总览 | `theory/README.md` |
-| 项目当前状态 | `CodexKnowledge/项目状态_2026-06-25.md` |
+| 项目当前状态 | `CodexKnowledge/SCX_思想扩展_综合方案.md` (v0.2.0 概览) |
+| 过期文档 | `CodexKnowledge/archive/` (历史状态/旧计划) |
 
 ## 环境
 

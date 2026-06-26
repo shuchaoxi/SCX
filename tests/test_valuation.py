@@ -685,5 +685,171 @@ class TestAdaptiveThresholdEvaluate:
         assert set(result.keys()) == expected
 
 
+# ======================================================================
+# StateConditionedInfluence tests (Task A: Direction 3)
+# ======================================================================
+
+
+class TestStateConditionedInfluence:
+    """SCX + Influence fusion: two-stage data valuation."""
+
+    def _dummy_loss_fn(self, X, y, params):
+        """Simple MSE loss: pred = X @ w, where w has shape (d, 1) or (d,)."""
+        w = params[0]
+        if w.ndim == 2 and w.shape[0] == 1:
+            w = w.T  # (1, d) -> (d, 1)
+        pred = X @ w
+        if pred.ndim == 2 and pred.shape[1] == 1:
+            pred = pred.ravel()
+        return float(np.mean((pred - y) ** 2))
+
+    def _oracle_value_fn(self, X, y):
+        """Oracle: label magnitude as proxy for value."""
+        return np.abs(y).ravel()
+
+    def test_init_default_alpha(self):
+        sci = StateConditionedInfluence()
+        assert sci.alpha == 0.5
+
+    def test_init_custom_alpha(self):
+        sci = StateConditionedInfluence(alpha=0.8)
+        assert sci.alpha == 0.8
+
+    def test_init_alpha_boundary(self):
+        sci = StateConditionedInfluence(alpha=0.0)
+        assert sci.alpha == 0.0
+        sci = StateConditionedInfluence(alpha=1.0)
+        assert sci.alpha == 1.0
+
+    def test_init_alpha_out_of_range_raises(self):
+        with pytest.raises(ValueError, match="alpha must be in"):
+            StateConditionedInfluence(alpha=-0.1)
+        with pytest.raises(ValueError, match="alpha must be in"):
+            StateConditionedInfluence(alpha=1.5)
+
+    def test_compute_influence_scores_returns_positive(self):
+        sci = StateConditionedInfluence()
+        rng = np.random.default_rng(42)
+        X = rng.normal(0, 1, (20, 3))
+        y = rng.normal(0, 1, 20)
+        theta = np.array([[0.5, -0.3, 0.2]])
+        scores = sci.compute_influence_scores(X, y, self._dummy_loss_fn, [theta])
+        assert scores.shape == (20,)
+        assert np.all(scores >= 0)
+
+    def test_compute_influence_scores_empty(self):
+        sci = StateConditionedInfluence()
+        scores = sci.compute_influence_scores(
+            np.empty((0, 3)), np.empty(0), self._dummy_loss_fn, [np.array([[1.0, 0.0, 0.0]])]
+        )
+        assert scores.shape == (0,)
+
+    def test_compute_influence_scores_fast(self):
+        sci = StateConditionedInfluence()
+        rng = np.random.default_rng(42)
+        X = rng.normal(0, 1, (10, 2))
+        y = rng.normal(0, 1, 10)
+        predict_fn = lambda x: x @ np.array([[0.5], [-0.3]])  # (d, 1) weights
+        scores = sci.compute_influence_scores_fast(X, y, predict_fn, lambda yt, yp: float(np.mean((yt - yp) ** 2)))
+        assert scores.shape == (10,)
+        assert np.all(scores >= 0)
+
+    def test_combined_value_shape_and_range(self):
+        sci = StateConditionedInfluence(alpha=0.5)
+        state_values = {0: 0.9, 1: 0.3}
+        influence_scores = np.array([0.1, 0.5, 0.7, 0.2])
+        state_labels = np.array([0, 1, 0, 1])
+        combined = sci.combined_value(state_values, influence_scores, state_labels)
+        assert combined.shape == (4,)
+        assert np.all(combined >= 0.0) and np.all(combined <= 1.0 + 1e-10)
+
+    def test_combined_value_empty(self):
+        sci = StateConditionedInfluence()
+        combined = sci.combined_value({}, np.array([]), np.array([]))
+        assert combined.shape == (0,)
+
+    def test_combined_value_uniform(self):
+        """When all state values and influence scores are equal, result is uniform."""
+        sci = StateConditionedInfluence(alpha=0.5)
+        state_values = {0: 0.5, 1: 0.5}
+        influence_scores = np.array([0.3, 0.3])
+        state_labels = np.array([0, 1])
+        combined = sci.combined_value(state_values, influence_scores, state_labels)
+        np.testing.assert_allclose(combined, 0.0, atol=1e-8)
+
+    def test_select_samples_scx_only(self):
+        sci = StateConditionedInfluence()
+        X = np.zeros((10, 2))
+        y = np.zeros(10)
+        state_values = {0: 1.0, 1: 0.0}
+        state_labels = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+        selected = sci.select_samples(X, y, n_select=3, scx_state_values=state_values,
+                                       state_labels=state_labels, strategy="scx_only")
+        assert len(selected) == 3
+        assert all(state_labels[i] == 0 for i in selected)
+
+    def test_select_samples_two_stage(self):
+        sci = StateConditionedInfluence()
+        X = np.zeros((10, 2))
+        y = np.array([10, 1, 1, 1, 1, 0, 0, 0, 0, 0])
+        state_values = {0: 1.0, 1: 0.0}
+        state_labels = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+        selected = sci.select_samples(X, y, n_select=3, scx_state_values=state_values,
+                                       state_labels=state_labels, strategy="two_stage")
+        assert len(selected) == 3
+
+    def test_select_samples_empty(self):
+        sci = StateConditionedInfluence()
+        selected = sci.select_samples(
+            np.empty((0, 2)), np.empty(0), n_select=5,
+            scx_state_values={}, state_labels=np.array([]), strategy="scx_only"
+        )
+        assert len(selected) == 0
+
+    def test_select_samples_n_select_zero(self):
+        sci = StateConditionedInfluence()
+        X = np.zeros((10, 2))
+        y = np.zeros(10)
+        selected = sci.select_samples(
+            X, y, n_select=0, scx_state_values={0: 1.0}, state_labels=np.zeros(10, dtype=int),
+            strategy="scx_only"
+        )
+        assert len(selected) == 0
+
+    def test_select_samples_invalid_strategy_raises(self):
+        sci = StateConditionedInfluence()
+        with pytest.raises(ValueError, match="Unknown strategy"):
+            sci.select_samples(
+                np.zeros((5, 2)), np.zeros(5), n_select=2,
+                scx_state_values={0: 1.0}, state_labels=np.zeros(5, dtype=int),
+                strategy="invalid"
+            )
+
+    def test_compare_strategies_returns_dict(self):
+        sci = StateConditionedInfluence(alpha=0.5)
+        rng = np.random.default_rng(42)
+        X = rng.normal(0, 1, (50, 2))
+        y = rng.normal(0, 5, 50)
+        state_values = {0: 0.9, 1: 0.4, 2: 0.1, 3: 0.7}
+        state_labels = rng.integers(0, 4, 50)
+        result = sci.compare_strategies(
+            X, y, n_select=10, scx_state_values=state_values,
+            state_labels=state_labels, oracle_value_fn=self._oracle_value_fn
+        )
+        assert "scx_only" in result
+        assert "two_stage" in result
+        assert all(v >= 0 for v in result.values())
+
+    def test_compare_strategies_empty(self):
+        sci = StateConditionedInfluence()
+        result = sci.compare_strategies(
+            np.empty((0, 2)), np.empty(0), n_select=5,
+            scx_state_values={}, state_labels=np.array([]),
+            oracle_value_fn=self._oracle_value_fn
+        )
+        assert result["scx_only"] == 0.0
+
+
 # re-import is safe; included at end for clarity
 from scx.valuation.adaptive import AdaptiveThreshold  # noqa: E402, F811
+from scx.valuation.influence import StateConditionedInfluence  # noqa: E402, F811

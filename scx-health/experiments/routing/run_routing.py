@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 """SCX-Routing: state-conditioned expert selection on MedMNIST.
 
+Uses real SCX library calls:
+  - scx.state.discovery.StateDiscovery for state discovery
+  - scx.expert.registry.ExpertRegistry for managing multiple experts
+  - scx.expert.reliability.ExpertReliability for state-conditioned reliability
+  - scx.expert.router.ExpertRouter for state-conditioned routing
+
 Workflow:
   1. Load BloodMNIST (8-class blood cell classification)
   2. Train N experts (ResNet-18 with different initializations)
-  3. Extract validation features and define "diagnostic states"
-     via SCX StateDiscovery
-  4. Train a routing network to assign each state to the best expert
-  5. Evaluate: SCX-Routing vs Uniform Ensemble vs Single Best Expert
+  3. Extract features and define "diagnostic states" via SCX StateDiscovery
+  4. Evaluate: SCX-Routing vs Uniform Ensemble vs Single Best Expert
 """
 
 import os
@@ -15,19 +19,27 @@ import sys
 import argparse
 import json
 from dataclasses import dataclass, field, asdict
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from sklearn.cluster import KMeans
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+# Add src to path (scx_health + scx framework)
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(_script_dir, '..', '..', 'src'))       # scx_health
+sys.path.insert(0, os.path.join(_script_dir, '..', '..', '..', 'src')) # scx framework
 
 from scx_health.data_loader import load_medmnist, extract_features
 from scx_health.encoder import create_encoder
+
+# ── SCX imports ─────────────────────────────────────
+from scx.state.discovery import StateDiscovery
+from scx.state.assignment import StateAssignment
+from scx.expert.registry import ExpertRegistry
+from scx.expert.reliability import ExpertReliability
+from scx.expert.router import ExpertRouter
 
 
 # ──────────────────────────────────────────────
@@ -39,46 +51,17 @@ class RoutingConfig:
     dataset: str = 'bloodmnist'
     data_root: str = './data'
     model: str = 'resnet18'
-    in_channels: int = 1
+    in_channels: int = 3
     num_classes: int = 8
     n_experts: int = 5
-    n_states: int = 8  # number of routing states (clusters)
+    n_states: int = 8
     batch_size: int = 64
     expert_epochs: int = 30
-    router_epochs: int = 20
     lr: float = 1e-3
     weight_decay: float = 1e-4
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     output_dir: str = './results/routing'
     seed: int = 42
-
-
-# ──────────────────────────────────────────────
-# Router network
-# ──────────────────────────────────────────────
-
-class StateRouter(nn.Module):
-    """Learns to route a state embedding to the best expert."""
-
-    def __init__(self, feat_dim: int, n_states: int, n_experts: int):
-        super().__init__()
-        self.router = nn.Sequential(
-            nn.Linear(feat_dim, 128),
-            nn.ReLU(inplace=True),
-            nn.Linear(128, n_states),
-        )
-        # State-to-expert assignment matrix (learned)
-        self.state_to_expert = nn.Parameter(
-            torch.zeros(n_states, n_experts)
-        )
-
-    def forward(self, features: torch.Tensor) -> torch.Tensor:
-        """Return expert weights per sample."""
-        state_logits = self.router(features)
-        state_weights = torch.softmax(state_logits, dim=-1)
-        # Soft assignment from states to experts
-        expert_weights = state_weights @ torch.softmax(self.state_to_expert, dim=-1)
-        return expert_weights
 
 
 # ──────────────────────────────────────────────
@@ -90,6 +73,7 @@ def train_epoch(model, loader, optimizer, criterion, device):
     total_loss = 0.0
     for inputs, targets in loader:
         inputs, targets = inputs.to(device), targets.to(device)
+        targets = targets.view(-1)  # MedMNIST labels are (N, 1)
         optimizer.zero_grad()
         outputs = model(inputs)
         loss = criterion(outputs, targets)
@@ -105,6 +89,7 @@ def evaluate(model, loader, device):
     correct, total = 0, 0
     for inputs, targets in loader:
         inputs, targets = inputs.to(device), targets.to(device)
+        targets = targets.view(-1)  # MedMNIST labels are (N, 1)
         outputs = model(inputs)
         preds = outputs.argmax(dim=1)
         correct += (preds == targets).sum().item()
@@ -120,12 +105,13 @@ def train_expert(
     lr: float,
     weight_decay: float,
     seed: int,
+    model_name: str = 'resnet18',
 ) -> nn.Module:
     """Train a single expert model."""
     torch.manual_seed(seed)
     model = create_encoder(
-        model_name='resnet18',
-        in_channels=1,
+        model_name=model_name,
+        in_channels=3,
         num_classes=num_classes,
         pretrained=False,
     ).to(device)
@@ -137,87 +123,163 @@ def train_expert(
 
 
 # ──────────────────────────────────────────────
-# SCX-Routing core (placeholder)
+# Raw image collector for ExpertRegistry
 # ──────────────────────────────────────────────
 
-def discover_states(
-    features: np.ndarray,
-    n_states: int,
-    seed: int = 42,
-) -> np.ndarray:
-    """Placeholder for SCX StateDiscovery.
-
-    TODO: Replace with actual SCX StateDiscovery (Bayesian nonparametric).
+@torch.no_grad()
+def collect_raw_data(
+    loader: torch.utils.data.DataLoader,
+    device: str,
+) -> tuple:
+    """Collect raw image arrays and labels from a DataLoader.
 
     Returns:
-        State assignments for each sample.
+        (images_np, labels_np)
+        images_np: np.ndarray, shape (N, C, H, W)
+        labels_np: np.ndarray, shape (N,)
     """
-    kmeans = KMeans(n_clusters=n_states, random_state=seed, n_init=10)
-    return kmeans.fit_predict(features)
+    all_imgs, all_labels = [], []
+    for inputs, targets in loader:
+        all_imgs.append(inputs.cpu().numpy())
+        all_labels.append(targets.cpu().numpy().ravel())
+    return np.concatenate(all_imgs, axis=0), np.concatenate(all_labels, axis=0)
 
 
 # ──────────────────────────────────────────────
-# Ensemble / Routing evaluation
+# SCX-Routing evaluation — real SCX calls
 # ──────────────────────────────────────────────
 
-@torch.no_grad()
-def evaluate_ensemble(
-    experts: List[nn.Module],
-    loader: torch.utils.data.DataLoader,
+def make_expert_predict_fn(
+    model: nn.Module,
     device: str,
-) -> float:
-    """Uniform ensemble: average predictions across all experts."""
-    for expert in experts:
-        expert.eval()
+) -> Callable:
+    """Wrap a PyTorch model as a numpy-compatible predict_fn for ExpertRegistry.
 
-    correct, total = 0, 0
-    for inputs, targets in loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        all_logits = []
-        for expert in experts:
-            logits = expert(inputs)
-            all_logits.append(logits)
-        avg_logits = torch.stack(all_logits).mean(dim=0)
-        preds = avg_logits.argmax(dim=1)
-        correct += (preds == targets).sum().item()
-        total += targets.size(0)
-    return correct / total
-
-
-@torch.no_grad()
-def evaluate_routing(
-    experts: List[nn.Module],
-    router: StateRouter,
-    loader: torch.utils.data.DataLoader,
-    device: str,
-) -> float:
-    """SCX-Routing: router selects expert weights per sample."""
-    for expert in experts:
-        expert.eval()
-    router.eval()
-
-    correct, total = 0, 0
-    for inputs, targets in loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-
-        # Get router weights
+    Input: numpy array of shape (N, C, H, W) -- raw images.
+    Output: numpy array of shape (N, num_classes) -- logits.
+    """
+    def predict_fn(X: np.ndarray) -> np.ndarray:
+        model.eval()
+        # Ensure 4D input (N, C, H, W)
+        if X.ndim == 3:
+            X = X[np.newaxis, ...]
+        X_t = torch.tensor(X, dtype=torch.float32, device=device)
         with torch.no_grad():
-            # Use first expert as feature extractor for routing
-            features = experts[0].forward_features(inputs)
-        expert_weights = router(features)
+            logits = model(X_t).cpu().numpy()
+        return logits
+    return predict_fn
 
-        # Weighted ensemble
-        all_logits = []
-        for expert in experts:
-            logits = expert(inputs)
-            all_logits.append(logits)
-        stacked = torch.stack(all_logits, dim=-1)  # (B, C, N)
-        weights = expert_weights.unsqueeze(1)      # (B, 1, N)
-        weighted = (stacked * weights).sum(dim=-1)
-        preds = weighted.argmax(dim=1)
-        correct += (preds == targets).sum().item()
-        total += targets.size(0)
-    return correct / total
+
+def scx_routing_evaluation(
+    experts: List[nn.Module],
+    train_state_assignments: np.ndarray,
+    n_states: int,
+    X_val_images: np.ndarray,
+    y_val: np.ndarray,
+    X_test_images: np.ndarray,
+    y_test: np.ndarray,
+    val_state_assignments: np.ndarray,
+    test_state_assignments: np.ndarray,
+    device: str,
+) -> dict:
+    """Evaluate SCX-Routing using SCX ExpertRegistry, ExpertReliability, ExpertRouter.
+
+    Pipeline:
+      1. Register experts in ExpertRegistry
+      2. Estimate state-conditioned reliability via ExpertReliability (val set)
+      3. Route via ExpertRouter (weighted mode vs hard mode vs uniform)
+      4. Compare routing strategies on test set
+    """
+    # 1. Register experts
+    registry = ExpertRegistry()
+    for i, expert in enumerate(experts):
+        registry.register(
+            name=f'expert_{i}',
+            predict_fn=make_expert_predict_fn(expert, device),
+            cost=1.0,
+        )
+    M = len(registry)
+    print(f"  Registered {M} experts in SCX ExpertRegistry")
+
+    # 2. Estimate state-conditioned reliability on validation set
+    reliability = ExpertReliability(method='supervised', alpha=1.0, min_samples=5)
+    result = reliability.estimate(
+        registry,
+        X=X_val_images,
+        y=y_val,
+        state_assignments=val_state_assignments,
+        n_states=n_states,
+    )
+    R_matrix = result['R_matrix']
+    SCX_matrix = result['SCX_matrix']
+    n_per_state = result['n_per_state']
+    print(f"  ExpertReliability: R_matrix shape={R_matrix.shape}")
+    print(f"  Per-state val samples: {n_per_state}")
+
+    # 3. Setup ExpertRouter
+    router = ExpertRouter(registry, reliability, alpha=1.0)
+
+    # 4. Evaluate all strategies on test set
+    N_test = len(y_test)
+
+    # ── a) Uniform ensemble ──
+    all_preds = registry.predict_all(X_test_images)  # (M, N, C)
+    uniform_logits = all_preds.mean(axis=0)
+    uniform_preds = np.argmax(uniform_logits, axis=1)
+    ensemble_acc = float(np.mean(uniform_preds == y_test))
+
+    # ── b) Single best expert ──
+    expert_accs = []
+    for m in range(M):
+        preds_m = np.argmax(all_preds[m], axis=1)
+        acc_m = float(np.mean(preds_m == y_test))
+        expert_accs.append(acc_m)
+    single_best_acc = max(expert_accs)
+    worst_expert_acc = min(expert_accs)
+
+    # ── c) SCX-Weighted Routing ──
+    weights = router.route_weighted(X_test_images, test_state_assignments, R_matrix)
+    w_reshaped = weights.T.reshape(M, N_test, 1)
+    weighted_logits = np.sum(w_reshaped * all_preds, axis=0)
+    weighted_preds = np.argmax(weighted_logits, axis=1)
+    routing_weighted_acc = float(np.mean(weighted_preds == y_test))
+
+    # ── d) SCX-Hard Routing ──
+    expert_ids = router.route_hard(X_test_images, test_state_assignments, R_matrix)
+    hard_correct = 0
+    for i in range(N_test):
+        eid = expert_ids[i]
+        info = registry.get(eid)
+        single_X = X_test_images[i:i+1]
+        pred = info.predict_fn(single_X)
+        if pred.ndim > 1:
+            pred_class = int(np.argmax(pred[0]))
+        else:
+            pred_class = int(pred[0])
+        hard_correct += int(pred_class == y_test[i])
+    routing_hard_acc = hard_correct / N_test
+
+    print(f"\n  === SCX-Routing Evaluation ===")
+    print(f"  Worst Expert:          {worst_expert_acc:.4f}")
+    print(f"  Single Best Expert:    {single_best_acc:.4f}")
+    print(f"  Uniform Ensemble:      {ensemble_acc:.4f}")
+    print(f"  SCX-Hard Routing:      {routing_hard_acc:.4f}")
+    print(f"  SCX-Weighted Routing:  {routing_weighted_acc:.4f}")
+    print(f"  Weighted vs Best:      {routing_weighted_acc - single_best_acc:+.4f}")
+    print(f"  Weighted vs Ensemble:  {routing_weighted_acc - ensemble_acc:+.4f}")
+
+    return {
+        'n_experts': M,
+        'n_states': n_states,
+        'worst_expert_accuracy': worst_expert_acc,
+        'single_best_expert_accuracy': single_best_acc,
+        'ensemble_accuracy': ensemble_acc,
+        'scx_hard_routing_accuracy': routing_hard_acc,
+        'scx_weighted_routing_accuracy': routing_weighted_acc,
+        'improvement_vs_best': float(routing_weighted_acc - single_best_acc),
+        'improvement_vs_ensemble': float(routing_weighted_acc - ensemble_acc),
+        'expert_test_accuracies': expert_accs,
+    }
 
 
 # ──────────────────────────────────────────────
@@ -225,14 +287,14 @@ def evaluate_routing(
 # ──────────────────────────────────────────────
 
 def run_routing(cfg: RoutingConfig) -> dict:
-    """Run the routing experiment."""
+    """Run the routing experiment with real SCX calls."""
     os.makedirs(cfg.output_dir, exist_ok=True)
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
 
     print(f"=== SCX-Routing Experiment ===")
     print(f"Dataset:  {cfg.dataset}")
-    print(f"Experts:  {cfg.n_experts}")
+    print(f"Experts:  {cfg.n_experts} ({cfg.model})")
     print(f"States:   {cfg.n_states}")
     print(f"Device:   {cfg.device}")
     print()
@@ -244,9 +306,10 @@ def run_routing(cfg: RoutingConfig) -> dict:
         root=cfg.data_root,
         batch_size=cfg.batch_size,
     )
+    train_loader = loaders['train']
     val_loader = loaders['val']
     test_loader = loaders['test']
-    print(f"  Train: {len(loaders['train'].dataset)} samples")
+    print(f"  Train: {len(train_loader.dataset)} samples")
     print(f"  Val:   {len(val_loader.dataset)} samples")
     print(f"  Test:  {len(test_loader.dataset)} samples")
     print()
@@ -260,84 +323,69 @@ def run_routing(cfg: RoutingConfig) -> dict:
         expert = train_expert(
             loaders, cfg.num_classes, cfg.device,
             cfg.expert_epochs, cfg.lr, cfg.weight_decay, expert_seed,
+            model_name=cfg.model,
         )
         experts.append(expert)
         acc = evaluate(expert, val_loader, cfg.device)
         print(f"    Val accuracy: {acc:.4f}")
     print()
 
-    # 3. Discover states
-    print("[3/6] Discovering diagnostic states...")
-    # Extract features using first expert
-    feats, _ = extract_features(experts[0], loaders['train'], cfg.device)
-    state_assignments = discover_states(feats, cfg.n_states, cfg.seed)
-    print(f"  State distribution: {np.bincount(state_assignments)}")
-    print()
-
-    # 4. Train router
-    print("[4/6] Training state-conditioned router...")
-    feat_dim = feats.shape[1]
-    router = StateRouter(feat_dim, cfg.n_states, cfg.n_experts).to(cfg.device)
-    router_opt = optim.Adam(router.parameters(), lr=cfg.lr)
-
-    # Create state label mapping for router training
-    # (learn to predict which expert is best per sample)
-    for epoch in range(cfg.router_epochs):
-        router.train()
-        total_loss = 0.0
-        for inputs, targets in loaders['train']:
-            inputs, targets = inputs.to(cfg.device), targets.to(cfg.device)
-
-            # Get features from first expert
-            with torch.no_grad():
-                features = experts[0].forward_features(inputs)
-
-            # Compute per-expert accuracy on this batch as routing target
-            with torch.no_grad():
-                expert_correct = []
-                for expert in experts:
-                    logits = expert(inputs)
-                    preds = logits.argmax(dim=1)
-                    expert_correct.append((preds == targets).float())
-                # Best expert index per sample
-                best_expert = torch.stack(expert_correct).argmax(dim=0)
-
-            # Router predicts expert weights
-            expert_weights = router(features)
-            router_loss = nn.CrossEntropyLoss()(expert_weights, best_expert)
-
-            router_opt.zero_grad()
-            router_loss.backward()
-            router_opt.step()
-            total_loss += router_loss.item() * inputs.size(0)
-
-        if (epoch + 1) % 10 == 0:
-            print(f"  Epoch {epoch+1:2d}/{cfg.router_epochs} | "
-                  f"Router Loss: {total_loss/len(loaders['train'].dataset):.4f}")
-    print()
-
-    # 5. Evaluate
-    print("[5/6] Evaluating...")
-    single_best_acc = max(
-        evaluate(expert, test_loader, cfg.device) for expert in experts
+    # 3. Discover states via SCX StateDiscovery
+    print("[3/6] Discovering diagnostic states via SCX StateDiscovery...")
+    train_features, train_labels = extract_features(
+        experts[0], train_loader, cfg.device
     )
-    ensemble_acc = evaluate_ensemble(experts, test_loader, cfg.device)
-    routing_acc = evaluate_routing(experts, router, test_loader, cfg.device)
+    print(f"  Train features: {train_features.shape}")
 
-    print(f"\n  Single Best Expert:  {single_best_acc:.4f}")
-    print(f"  Uniform Ensemble:    {ensemble_acc:.4f}")
-    print(f"  SCX-Routing:         {routing_acc:.4f}")
+    discovery = StateDiscovery(
+        method='kmeans', n_states=cfg.n_states, random_state=cfg.seed
+    )
+    train_state_assignments = discovery.fit_predict(train_features)
+    centroids = discovery.get_centroids()
+    print(f"  State distribution: {np.bincount(train_state_assignments)}")
+    print()
+
+    # 4. Extract features for val and test + collect raw images
+    print("[4/6] Extracting features & collecting raw images...")
+
+    # State assignments for val/test via nearest-centroid projection
+    val_features, val_labels = extract_features(experts[0], val_loader, cfg.device)
+    test_features, test_labels = extract_features(experts[0], test_loader, cfg.device)
+
+    val_state_assignments = discovery.predict(val_features)
+    test_state_assignments = discovery.predict(test_features)
+
+    print(f"  Val state dist:  {np.bincount(val_state_assignments, minlength=cfg.n_states)}")
+    print(f"  Test state dist: {np.bincount(test_state_assignments, minlength=cfg.n_states)}")
+
+    # Collect raw images for ExpertRegistry
+    X_val_raw, y_val_raw = collect_raw_data(val_loader, cfg.device)
+    X_test_raw, y_test_raw = collect_raw_data(test_loader, cfg.device)
+    print(f"  Raw val images:  {X_val_raw.shape}")
+    print(f"  Raw test images: {X_test_raw.shape}")
+    print()
+
+    # 5. SCX Routing evaluation
+    print("[5/6] Evaluating SCX-Routing...")
+    routing_results = scx_routing_evaluation(
+        experts=experts,
+        train_state_assignments=train_state_assignments,
+        n_states=cfg.n_states,
+        X_val_images=X_val_raw,
+        y_val=y_val_raw,
+        X_test_images=X_test_raw,
+        y_test=y_test_raw,
+        val_state_assignments=val_state_assignments,
+        test_state_assignments=test_state_assignments,
+        device=cfg.device,
+    )
     print()
 
     # 6. Save results
     print("[6/6] Saving results...")
     results = {
         'config': asdict(cfg),
-        'single_best_accuracy': float(single_best_acc),
-        'ensemble_accuracy': float(ensemble_acc),
-        'routing_accuracy': float(routing_acc),
-        'routing_improvement_vs_best': float(routing_acc - single_best_acc),
-        'routing_improvement_vs_ensemble': float(routing_acc - ensemble_acc),
+        **routing_results,
     }
 
     output_path = os.path.join(cfg.output_dir, 'routing_results.json')
@@ -353,11 +401,12 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default='bloodmnist',
                         choices=['pathmnist', 'dermamnist', 'bloodmnist'])
     parser.add_argument('--data-root', default='./data')
+    parser.add_argument('--model', default='resnet18',
+                        choices=['simple_cnn', 'resnet18'])
     parser.add_argument('--n-experts', type=int, default=5)
     parser.add_argument('--n-states', type=int, default=8)
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--expert-epochs', type=int, default=30)
-    parser.add_argument('--router-epochs', type=int, default=20)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--output-dir', default='./results/routing')
     args = parser.parse_args()
@@ -365,11 +414,11 @@ if __name__ == '__main__':
     cfg = RoutingConfig(
         dataset=args.dataset,
         data_root=args.data_root,
+        model=args.model,
         n_experts=args.n_experts,
         n_states=args.n_states,
         batch_size=args.batch_size,
         expert_epochs=args.expert_epochs,
-        router_epochs=args.router_epochs,
         lr=args.lr,
         output_dir=args.output_dir,
     )

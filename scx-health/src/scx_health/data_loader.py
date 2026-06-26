@@ -166,4 +166,5 @@ def extract_features(
             all_features.append(feats.cpu().numpy())
             all_labels.append(labels.numpy())
 
-    return np.concatenate(all_features, axis=0), np.concatenate(all_labels, axis=0)
+    labels_arr = np.concatenate(all_labels, axis=0)
+    return np.concatenate(all_features, axis=0), labels_arr.ravel()
