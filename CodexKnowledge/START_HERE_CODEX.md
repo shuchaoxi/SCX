@@ -1,6 +1,6 @@
 # Codex Project Knowledge Start — SCX
 
-Date: 2026-06-25
+Date: 2026-06-26
 
 Project root:
 
@@ -26,14 +26,23 @@ EGP 关系：
 - **EGP** (`G:\Xiaogan_Supercomputing_data\egp`)：Paper 1（ACE/PACE 专家合并）
 - **SCX**（本项目）：Paper 2–5
 
+## 版本状态
+
+**v0.3.0** (2026-06-26) — 35 Python files, 336 tests, 5 propositions.
+
+v0.2.0 added: Compress theorem, Governance protocol, robustness analysis, adaptive threshold.
+v0.3.0 added: StateConditionedInfluence, OnlineSCXFramework, CIFAR experiments, clean-room certified.
+
+> **Code goal**: v0.4.0 target — synthetic experiment figures + benchmark suite + SCX-Health polish.
+
 ## Operating Mode
 
 Before substantial work:
 
 1. Run `codegraph status`.
 2. Read `CodexKnowledge\START_HERE_CODEX.md` (this file).
-3. Read `CodexKnowledge\SCX_TODO.md` for current work items.
-4. Read `CodexKnowledge\SCX_终极TODO.md` for comprehensive TODO list.
+3. Read `CodexKnowledge\SCX_TODO_2026-06-26.md` for current work items.
+4. Read `CodexKnowledge\SCX_终极TODO.md` for comprehensive TODO list (supersedes old SCX_TODO.md).
 5. Read `CodexKnowledge\决策日志.md` when relevant.
 6. Read `CodexKnowledge\工具状态.md` for tool configuration.
 7. Read `CodexKnowledge\archive\项目状态_2026-06-25.md` for prior state (archived).
@@ -123,10 +132,11 @@ V(s) = r̄(s) · ρ(s) · L(s) · [1-D(s)] · max_m SCX_m(s)
 | 完整对话记录 | `CodexKnowledge/与GPT的讨论2026-06-26-07-49.md` |
 | AI 恢复入口 | `CodexKnowledge/START_HERE_CODEX.md` (本文件) |
 | 核心数学定义 | `CodexKnowledge/SCX_核心定义.md` |
-| 开发 TODO | `CodexKnowledge/SCX_TODO.md` |
-| 综合 TODO | `CodexKnowledge/SCX_终极TODO.md` |
+| 开发 TODO (当前) | `CodexKnowledge/SCX_TODO_2026-06-26.md` |
+| 综合 TODO (全部) | `CodexKnowledge/SCX_终极TODO.md` |
 | 理论框架总览 | `theory/README.md` |
-| 项目当前状态 | `CodexKnowledge/SCX_思想扩展_综合方案.md` (v0.2.0 概览) |
+| 项目状态概览 | `CodexKnowledge/SCX_思想扩展_综合方案.md` (v0.2.0→v0.3.0) |
+| 过期 TODO | `CodexKnowledge/SCX_TODO.md` (被 SCX_TODO_2026-06-26.md 替代) |
 | 过期文档 | `CodexKnowledge/archive/` (历史状态/旧计划) |
 
 ## 环境

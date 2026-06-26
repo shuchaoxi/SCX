@@ -6,7 +6,7 @@
 
 专家可靠性不是全局常数，而是状态条件函数。数据价值不是样本固有属性，而是由状态、专家可靠性和当前模型缺陷共同决定的条件量。
 
-## 版本状态 — v0.2.0
+## 版本状态 — v0.3.0
 
 | 指标 | 数值 |
 |------|------|
@@ -17,6 +17,14 @@
 | 单元测试 | **336 tests** (9 文件, 全部通过) |
 | 数学命题/定理 | 5 (定义 + 命题 + 证明, `theory/propositions/`) |
 | Agent 分析文档 | 6 份 (`CodexKnowledge/agent_outputs/`) |
+
+### v0.3.0 新增功能
+
+- **StateConditionedInfluence** — `valuation/influence.py`: 状态条件影响力，SCX 粗筛状态 + Influence 细筛样本
+- **OnlineSCXFramework** — `core/online.py`: 增量状态更新 + 在线专家可靠性追踪 + 数据流实验
+- **CIFAR 实验** — `experiments/cifar/`: 3 组实验（baselines, noise, routing），SCX-Noise F1=0.617 超 loss-based 2.5x
+- **MedMNIST 实验** — `scx-health/experiments/`: 3 组实验（compress, noise, routing），30% 压缩 +6.00% 精度
+- **Clean-room 认证** — `IP_NOTE.md` + `DEVELOPMENT_LOG.md` + `CLEAN_ROOM_CHECK.md`: 30 源文件零学校引用
 
 ## 5 篇论文谱系
 
