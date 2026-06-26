@@ -6,6 +6,7 @@ from .discovery import StateDiscovery
 from .assignment import StateAssignment
 from .metrics import StateMetrics
 from .robustness import StateRobustness
+from .two_layer import TwoLayerStateDiscovery
 
 __all__ = [
     "StateInfo",
@@ -14,4 +15,5 @@ __all__ = [
     "StateAssignment",
     "StateMetrics",
     "StateRobustness",
+    "TwoLayerStateDiscovery",
 ]

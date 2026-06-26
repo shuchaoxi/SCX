@@ -11,6 +11,7 @@ from scx.encoders.base import SCXStateEncoder, SCXExpert
 from scx.encoders.mlip import MLIPEncoder
 from scx.encoders.vision import VisionEncoder
 from scx.encoders.tabular import TabularEncoder
+from scx.encoders.error_driven import ErrorDrivenEncoder
 
 __all__ = [
     "SCXStateEncoder",
@@ -18,4 +19,5 @@ __all__ = [
     "MLIPEncoder",
     "VisionEncoder",
     "TabularEncoder",
+    "ErrorDrivenEncoder",
 ]
