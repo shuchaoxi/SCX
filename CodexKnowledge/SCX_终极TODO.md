@@ -43,7 +43,7 @@
 
 | #    | TODO                                                                                          | 优先级 | 依赖                | 预估 | 维度   | 可执行性 |
 | ---- | --------------------------------------------------------------------------------------------- | ------ | ------------------- | ---- | ------ | -------- |
-| 0.9  | 写 SCX-MLIP 论文草稿核心部分（gauge fixing、energy alignment、residual maps、expert merging） | P0     | 无（已有 ACE 资产） | 40h  | [A][C] | ⚡       |
+| 0.9  | 写 EGP Paper 1 草稿（ACE gauge merging、energy alignment、expert merging） | P0     | 无（已有 ACE 资产 + AlN v3 DFT 数据） | 40h  | [A][C] | ⚡       |
 | 0.10 | 写 SCX-Theory 论文草稿（arXiv 先占坑）：定义、命题、可识别性边界、合成实验                    | P0     | 0.5                 | 30h  | [A]    | ⚡       |
 
 ### 代码基础
@@ -215,7 +215,7 @@ Phase 0                              Phase 1                          Phase 2   
 0.4 协议检查 ─────────────────────────→ 1.1
 0.5 Clean-room 重写 ─────────────────→ 0.11 整理 v0.2.0 ────────────→ 2.19 SCX-Core 接口 ──────→ 2.20-2.25 各 Encoder
                                       │                                    │
-0.9 SCX-MLIP 草稿 ───────────────────→ 1.5 SCX-MLIP 论文 ────────────→ 2.1 SCX-Sim 大论文 ─────→ 3.1 投稿 Nature 系列
+0.9 EGP Paper 1 (ACE merging) ───────→ 1.5 SCX-MLIP 论文 ────────────→ 2.1 SCX-Sim 大论文 ─────→ 3.1 投稿 Nature 系列
 0.10 SCX-Theory 草稿 ───────────────→ 1.7 arXiv 占坑 ───────────────→ 2.5 identifiability 小节
                                       │
 0.13 ACE pipeline 整理 ──────────────→ 2.11-2.18 Potential Compiler ──→ 3.3 势函数编译器论文
@@ -253,13 +253,14 @@ Phase 0                              Phase 1                          Phase 2   
 ### 学术 [A]
 
 ```
-SCX-MLIP (根据地, npj/NC)
-  → SCX-Theory (命名权, arXiv/TMLR)
-    → SCX-Sim (跨领域范式, Nature Computational Science)
-      → SCX-Health (医学开源, npj Digital Medicine)
+EGP Paper 1 — ACE gauge merging (根据地, npj Computational Materials / PRM / JCTC)
+  → SCX-Theory — 数学地基 (命名权, arXiv / TMLR / SIMODS / JMLR)
+    → SCX-MLIP — 理论→应用闭环 (Nature Communications / npj Computational Materials)
+      → SCX-Sim — 跨领域仿真 (Nature Computational Science)
+        → SCX-Health — 医学数据估值 (npj Digital Medicine)
 ```
 
-总纲：4 篇论文，不同层级，不同目标，避免 salami slicing。
+总纲：5 篇论文谱系，EGP Paper 1 优先（有完整 DFT 数据），SCX 理论→应用→扩展。
 
 ### 代码 [C]
 
@@ -314,7 +315,7 @@ Phase 4: SCX Institute (中立标准方) + CEO/COO 运营
 1. **私人仓库 + 证据链** (0.1, 0.2, 0.3) —— IP 安全的生命线
 2. **查协议** (0.4) —— 了解权属风险范围
 3. **Clean-room 重写 SCX 代码** (0.5, 0.11) —— 从源头切割
-4. **写 SCX-MLIP 论文草稿 + SCX-Theory arXiv 草稿** (0.9, 0.10) —— 抢学术优先权
+4. **写 EGP Paper 1 草稿 + SCX-Theory arXiv 草稿** (0.9, 0.10) —— 抢学术优先权
 5. **建立 SCX-Health 开源仓库 + 跑 MedMNIST 实验** (1.9, 1.10) —— 开源影响力入口
 
 > **一句话战略：论文抢概念 + 轻量开源建生态 + 闭源工程炼商业 + IP 隔离保安全。大模型是远期外延，不是你的主战场。**

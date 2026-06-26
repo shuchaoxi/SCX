@@ -10,11 +10,21 @@ Project root:
 
 **SCX: State-Conditioned eXpertise** — 面向数据价值评估与专家引导学习的状态条件专家性框架。
 
-这是第 4 篇论文的工作目录，主题是**数学理论 + 合成实验 + 轻量 ML 验证**，不涉及大规模 DFT 计算。
+SCX 项目包含 **Paper 2–5**（SCX-Theory, SCX-MLIP, SCX-Sim, SCX-Health）。Paper 1 (EGP) 在 `../egp/` 目录。
 
-与 EGP 的关系：
-- **EGP** (`G:\Xiaogan_Supercomputing_data\egp`)：第 1-3 篇（ACE/PACE 专家合并、残差态误差地图、专家编译蒸馏）
-- **SCX**（本项目）：第 4 篇（状态条件专家可靠性 → 数据价值理论）
+完整的 5 篇论文谱系：
+
+| 顺序 | 论文 | 工作目录 | 定位 |
+|------|------|---------|------|
+| **1** | **EGP Paper 1**: ACE gauge-normalized expert merging | `egp/` | 材料势函数专门方法，有完整 DFT 数据 |
+| **2** | **SCX-Theory**: 数学框架 | **`SCX/`**（本项目） | 数学地基，arXiv 占坑 |
+| **3** | **SCX-MLIP**: SCX 应用于 MLIP | `SCX/` | 理论→应用闭环 |
+| **4** | **SCX-Sim**: 多保真仿真 | `SCX/` | 跨领域扩展 |
+| **5** | **SCX-Health**: 医学数据估值 | `SCX/scx-health/` | 跨领域扩展 + 开源影响力 |
+
+EGP 关系：
+- **EGP** (`G:\Xiaogan_Supercomputing_data\egp`)：Paper 1（ACE/PACE 专家合并）
+- **SCX**（本项目）：Paper 2–5
 
 ## Operating Mode
 

@@ -352,16 +352,18 @@
 
 | 顺序 | 论文 | 定位 | 目标期刊 |
 |------|------|------|---------|
-| 1 | **SCX-MLIP**: Gauge-normalized residual expert merging | 材料势函数专门方法 | npj Computational Materials / Nature Communications |
+| 1 | **EGP Paper 1**: ACE gauge-normalized expert merging | 材料势函数方法，根据地（有完整 DFT 数据） | npj Computational Materials / PRM / JCTC |
 | 2 | **SCX-Theory**: 数学定义、命题、可识别性边界 | 理论地基，arXiv 占坑 | TMLR / SIMODS / JMLR |
-| 3 | **SCX-Sim**: 科学与工程仿真多保真调度 | 跨领域大文章，主冲 Nature 系列 | Nature Computational Science / Nature Communications |
-| 4 | **SCX-Health/Science-Vision**: 医学/视觉数据审计 | 开源影响力 + 商业入口 | npj Digital Medicine / MedIA |
+| 3 | **SCX-MLIP**: SCX 理论应用于 MLIP | 理论→应用闭环 | Nature Communications / npj Computational Materials |
+| 4 | **SCX-Sim**: 科学与工程仿真多保真调度 | 跨领域大文章，主冲 Nature 系列 | Nature Computational Science |
+| 5 | **SCX-Health**: 医学/视觉数据审计 | 开源影响力 + 商业入口 | npj Digital Medicine |
 
 ### 每篇的独立性要求
 
-- **SCX-MLIP** 解决 MLIP expert 的 gauge/energy/expert merge 专门问题。
+- **EGP Paper 1** 解决 ACE expert 的 gauge/energy 规范化与合并方法。
 - **SCX-Theory** 提出状态条件专家性与数据价值的数学定义和可识别性边界。
+- **SCX-MLIP** 将 SCX 理论应用回 MLIP 领域，完成理论→应用闭环。
 - **SCX-Sim** 把 SCX 发展成高保真科学/工程仿真的多保真调度系统。
-- **SCX-Vision/Health** 解决视觉/医学数据中的标签噪声、长尾、专家复核和冗余压缩。
+- **SCX-Health** 解决医学数据中的标签噪声、长尾、专家复核和冗余压缩。
 
 不要把 SCX 当成一个方法拆成很多应用论文；要把 SCX 当成一个理论母体，每篇论文解决一个不同层级的问题。

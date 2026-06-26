@@ -191,17 +191,19 @@ Phase 3 (3-6 月): 扩展
 
 ---
 
-## 4. 与 Paper 1-4 的对应关系
+## 4. 与论文谱系的对应关系
+
+`EGP Paper 1 (egp/)` → `SCX-Theory` → `SCX-MLIP` → `SCX-Sim` → `SCX-Health`
 
 | 方向 | 贡献给 | 具体位置 |
 |------|--------|---------|
-| 1. SCX-Compress 理论 | **Paper 4** | §4 State-Conditioned Data Value → §4.3 Compression Theory |
-| 2. State Discovery 鲁棒性 | **Paper 4** | §3 State Discovery → §3.4 Robustness Analysis |
-| 3. SCX + Influence 融合 | **Paper 4** | §6 Experiments → §6.3 Comparison with Influence Methods |
-| 4. Expert Governance | **Paper 3** | §3 Expert Compilation Protocol |
-| 5. 通用 ML 实验 | **Paper 4** | §6.2 General ML Experiments |
-| 6. 自适应阈值 | **Paper 4** | §5.1 Adaptive Threshold Calibration |
-| 7. Online SCX | **Paper 5** (未来) | — |
+| 1. SCX-Compress 理论 | **SCX-Theory (Paper 2)** | §4 Data Value → §4.3 Compression Theory |
+| 2. State Discovery 鲁棒性 | **SCX-Theory (Paper 2)** | §3 State Discovery → §3.4 Robustness Analysis |
+| 3. SCX + Influence 融合 | **SCX-MLIP (Paper 3)** | §6 Experiments → §6.3 Comparison with Influence |
+| 4. Expert Governance | **SCX-MLIP (Paper 3)** | §3 Expert Compilation Protocol |
+| 5. 通用 ML 实验 | **SCX-MLIP (Paper 3)** | §6.2 General ML Experiments |
+| 6. 自适应阈值 | **SCX-MLIP (Paper 3)** | §5.1 Adaptive Threshold Calibration |
+| 7. Online SCX | **SCX-Sim (Paper 4)** | 未来方向 |
 | 8. Benchmark Suite | 社区贡献 | 独立 release |
 
 ---

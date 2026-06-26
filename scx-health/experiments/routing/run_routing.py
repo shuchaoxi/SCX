@@ -149,6 +149,22 @@ def collect_raw_data(
 # SCX-Routing evaluation — real SCX calls
 # ──────────────────────────────────────────────
 
+def logit_cross_entropy_loss(y_pred_logits: np.ndarray, y_true: np.ndarray) -> np.ndarray:
+    """Per-sample cross-entropy loss from logits and integer labels.
+
+    y_pred_logits: (N, C) — raw logits
+    y_true: (N,) — integer class labels
+    Returns: (N,) per-sample loss
+    """
+    y_pred = np.asarray(y_pred_logits, dtype=float)
+    y_true = np.asarray(y_true, dtype=int).ravel()
+    # Numerically stable softmax
+    shifted = y_pred - y_pred.max(axis=1, keepdims=True)
+    softmax = np.exp(shifted) / np.exp(shifted).sum(axis=1, keepdims=True)
+    n = len(y_true)
+    return -np.log(softmax[np.arange(n), y_true] + 1e-10)
+
+
 def make_expert_predict_fn(
     model: nn.Module,
     device: str,
@@ -209,6 +225,7 @@ def scx_routing_evaluation(
         y=y_val,
         state_assignments=val_state_assignments,
         n_states=n_states,
+        loss_fn=logit_cross_entropy_loss,
     )
     R_matrix = result['R_matrix']
     SCX_matrix = result['SCX_matrix']
