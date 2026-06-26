@@ -1,0 +1,310 @@
+# SCX 终极 TODO 列表
+
+> 生成时间：2026-06-26
+> 来源：综合 GPT 讨论 (`与GPT的讨论2026-06-26-07-49.md`，9011行)
+> 目标：一份可执行的终极 TODO 列表，标注优先级、依赖、预估时间、维度和可立即执行项
+
+---
+
+## 维度和标记说明
+
+| 标记 | 维度 | 说明 |
+|------|------|------|
+| [A] | Academic / 学术 | 论文、投稿、学术影响力 |
+| [C] | Code / 代码 | 软件工程、实现、开源 |
+| [B] | Business / 商业 | 商业模式、合作、收入 |
+| [IP] | Intellectual Property / 知识产权 | 专利、权属、保护 |
+| [LLM] | LLM / 大模型 | 大模型数据评价方向 |
+
+**优先级**: P0=立即做, P1=1-2月内, P2=3-6月内, P3=6-12月
+
+**依赖标记**: `A → B` 表示 A 阻塞 B
+
+**时间标记**: ⚡=现在就能做, ⏳=需要等待前置条件
+
+---
+
+## Phase 0: 立即（本周，零成本）
+
+### IP 权属与证据链 —— 第一优先级
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 0.1 | 新建私人 SCX 仓库（个人邮箱、个人 GitHub/GitLab，个人电脑），不要再放学校资源 | P0 | 无 | 1h | [IP][C] | ⚡ |
+| 0.2 | 写 `DEVELOPMENT_LOG.md`，记录 SCX 核心思想的产生时间、开发地点、设备、数据来源 | P0 | 无 | 2h | [IP] | ⚡ |
+| 0.3 | 把所有旧代码/旧数据的来源整理成表，标注哪些用了学校资源、哪些是个人独立产生 | P0 | 无 | 3h | [IP] | ⚡ |
+| 0.4 | 查你签过的所有协议：入学协议、助研/奖学金协议、课题组规定、学校 IP 政策、超算使用协议 | P0 | 无 | 4h | [IP] | ⚡ |
+| 0.5 | SCX 代码 clean-room 重写：不要从旧项目复制粘贴，数学思想保留但代码/数据/注释全部重写 | P0 | 0.1 | 8h | [IP][C] | ⚡ |
+| 0.6 | 写私人"成果归属说明"文档（SCX 项目独立于 AlGaN/DFT 的证据），存档但不对外 | P0 | 无 | 1h | [IP] | ⚡ |
+| 0.7 | 停止将 SCX 核心代码上传学校服务器/使用学校超算跑 SCX 实验 | P0 | 无 | 0h | [IP] | ⚡ |
+| 0.8 | 不再用学校邮箱注册 SCX 相关仓库，repo 权限不给课题组任何人 | P0 | 无 | 0h | [IP] | ⚡ |
+
+### 论文策略 —— 快速占位
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 0.9 | 写 SCX-MLIP 论文草稿核心部分（gauge fixing、energy alignment、residual maps、expert merging） | P0 | 无（已有 ACE 资产） | 40h | [A][C] | ⚡ |
+| 0.10 | 写 SCX-Theory 论文草稿（arXiv 先占坑）：定义、命题、可识别性边界、合成实验 | P0 | 0.5 | 30h | [A] | ⚡ |
+
+### 代码基础
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 0.11 | 整理已有 SCX Python 包 (v0.2.0) 的 clean-room 版本，确认没有混入学校代码 | P0 | 0.1, 0.5 | 6h | [C] | ⚡ |
+| 0.12 | 写 SCX implementation note (method fix)：Input→Residual→State→Statistics→Action→Validation 骨架 | P0 | 无 | 3h | [A][C] | ⚡ |
+| 0.13 | 将 ACE descriptor + residual map + redundancy pipeline 整理成可复现脚本 | P0 | 0.11 | 8h | [C][A] | ⚡ |
+
+### VASP 任务 —— 超算计算
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 0.14 | 检查 GaN_v1（540 jobs）和 AlN_v4_targeted（164 jobs）输入文件完整性 | P0 | 无 | 2h | [A][C] | ⚡ |
+| 0.15 | 分批提交 VASP 任务（注意 240核负载，不要一次占满） | P0 | 0.14 | 4h | [A][C] | ⚡ |
+| 0.16 | 设置任务监控脚本，自动化检查收敛状态（grep OUTCAR energy） | P0 | 0.15 | 2h | [C] | ⚡ |
+
+---
+
+## Phase 1: 短期（1-2 月）
+
+### IP 与权属
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 1.1 | 找校外 IP 律师/专利代理人做一次正式权属评估 | P1 | 0.4 | 1-2 周 | [IP] | ⚡ |
+| 1.2 | 判断 SCX 核心流程是否有专利价值（数据压缩、专家路由、状态价值函数、审计报告系统） | P1 | 1.1 | 附带 | [IP] | ⏳等 1.1 |
+| 1.3 | 如值得，先提交发明披露/专利预审，再发 arXiv | P1 | 1.2 | 1-3 月 | [IP][A] | ⏳等 1.2 |
+| 1.4 | 关键代码做时间戳存证（Sha-256 + 可信第三方/区块链存证） | P1 | 0.1 | 2h | [IP] | ⚡ |
+
+### 论文发表
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 1.5 | 完成 SCX-MLIP 论文（gauge-normalized expert potentials + residual-state maps） | P1 | 0.9, 0.13, VASP 结果 | 60h | [A] | ⏳等 VASP 结果 |
+| 1.6 | 投稿目标：npj Computational Materials / Nature Communications / Computer Physics Communications | P1 | 1.5 | 投稿日 | [A] | ⏳ |
+| 1.7 | SCX-Theory 发 arXiv 占概念（State-Conditioned eXpertise: From Expert Reliability to Data Valuation） | P1 | 0.10 | 2 周 | [A] | ⚡ |
+| 1.8 | SCX-Theory 投稿 TMLR / AISTATS / SIMODS / JMLR | P2 | 1.7 | 1-2 月 | [A] | ⏳ |
+
+### 医学数据实验（开源 + 论文双用）
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 1.9 | 搭建 SCX-Health 开源仓库（独立于主仓库，公开） | P1 | 0.11 | 4h | [C][A] | ⚡ |
+| 1.10 | MedMNIST v2 实验：SCX-Compress（冗余压缩 20%-40% 保持性能） | P1 | 1.9 | 10h | [C][A] | ⚡ |
+| 1.11 | MedMNIST v2 实验：SCX-Noise（人工标签噪声，区分 noisy state 和 learnable high-error） | P1 | 1.9 | 10h | [C][A] | ⚡ |
+| 1.12 | MedMNIST v2 实验：SCX-Routing（多弱专家，状态条件路由优于平均 ensemble） | P1 | 1.9 | 10h | [C][A] | ⚡ |
+| 1.13 | HAM10000/ISIC 实验：类别长尾、状态异质性、冗余压缩 | P1 | 1.9 | 15h | [C][A] | ⚡ |
+| 1.14 | 写 SCX-Health 论文草稿（目标 npj Digital Medicine / Nature Communications） | P2 | 1.10-1.13 | 40h | [A] | ⏳ |
+
+### 商业基础（零成本准备）
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 1.15 | 写 SCX one-pager 非保密版（痛点、方法、demo、收益、合作模式，不列核心实现） | P1 | 无 | 6h | [B] | ⚡ |
+| 1.16 | 定义三层开放策略文档：论文公开级 / 开源 reference 级 / 商业闭源级 | P1 | 无 | 3h | [B][IP] | ⚡ |
+| 1.17 | 调研华为健康/穿戴团队合作入口（是否有公开合作通道/open innovation lab） | P1 | 1.9 | 4h | [B] | ⚡ |
+| 1.18 | 调研国产 EDA/TCAD 公司与材料计算公司的潜在技术合作 | P2 | 1.15 | 4h | [B] | ⚡ |
+
+### 大模型方向（最小验证）
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 1.19 | 小规模 LLM SFT 实验：选公开 instruction dataset (几千条)，LoRA 微调 0.5B-3B 模型 | P2 | 1.9 | 20h | [A][LLM] | ⚡ |
+| 1.20 | 比较 SCX selection vs random/diversity/high-loss/uncertainty (20% data) | P2 | 1.19 | 10h | [A][LLM] | ⏳ |
+| 1.21 | 写 LLM-SCX 的定位文档：SCX 不是通用 judge，而是"评价器编排框架" | P2 | 1.19 | 4h | [LLM][A] | ⚡ |
+
+---
+
+## Phase 2: 中期（3-6 月）
+
+### 论文深化
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 2.1 | SCX-Sim 大论文：多保真调度 + 科学工程仿真数据价值（DFT/MLIP + FEM/PDE + OPC/CMP toy） | P2 | 1.5, 1.7 | 80h | [A][C] | ⏳等 SCX-MLIP 投稿 |
+| 2.2 | 投稿目标：Nature Computational Science / Nature Communications / Nature Machine Intelligence | P2 | 2.1 | 投稿日 | [A] | ⏳ |
+| 2.3 | FEM/PDE toy demo：悬臂梁 + 压电双悬臂梁 + Poisson/elasticity PDE | P2 | 0.11 | 20h | [C][A] | ⚡ |
+| 2.4 | SCX-Semi toy demo：简化光刻模型 + layout pattern state + 多 OPC 专家路由 | P2 | 0.11 | 25h | [C][A] | ⚡ |
+| 2.5 | 将 SCX 的 identifiability limits 小节正式化（论文必要内容） | P2 | 1.7 | 6h | [A] | ⚡ |
+
+### 商业拓展
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 2.6 | 找 1-2 个 paid pilot 甲方（材料计算团队 / AI 数据公司 / 医学影像团队） | P2 | 1.15, 1.9 | 1-3 月 | [B] | ⏳ |
+| 2.7 | Pilot 交付物：数据价值审计报告（冗余分析 + 噪声风险 + 高价值状态 + 建议动作） | P2 | 2.6 | 每 pilot 2-4 周 | [B] | ⏳ |
+| 2.8 | 设计 SCX Consortium 产业联盟提案（会员费、参与规则、CLA、中立治理） | P3 | 2.6（需至少 2 家兴趣方） | 20h | [B][IP] | ⏳ |
+| 2.9 | 建立 Contributor License Agreement (CLA) 模板 | P2 | 无 | 4h | [IP] | ⚡ |
+| 2.10 | 设计三层商业产品线：SCX-Core(开源) / SCX-Health(开源) / SCX-Pro(商业闭源) | P2 | 无 | 6h | [B][C] | ⚡ |
+
+### SCX-Potential Compiler（势函数编译器）
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 2.11 | 构建 Expert Registry：登记 ACE/NEP/MACE/DeepMD 势函数的 metadata | P2 | 0.13 | 10h | [C][A] | ⚡ |
+| 2.12 | 实现 energy gauge alignment（species shift + coefficient gauge fixing） | P2 | 0.13 | 15h | [C][A] | ⚡ |
+| 2.13 | 构建 ACE-State Encoder / ACE-Critic（统一状态表示） | P2 | 0.13 | 10h | [C][A] | ⚡ |
+| 2.14 | 构建 Expert Reliability Map（每个势函数在每个状态下的估计误差） | P2 | 2.13 | 10h | [C][A] | ⏳ |
+| 2.15 | 构建 Input Quality Judge（OOD 检测 + 专家分歧 + 误差风险） | P2 | 2.13 | 10h | [C][A] | ⏳ |
+| 2.16 | 最小可行性验证：ACE + NEP + MACE + DeepMD 在 AlN/GaN 上做状态条件 ensemble 和蒸馏 | P2 | 2.11-2.15 | 30h | [C][A] | ⏳ |
+| 2.17 | 验证：SCX teacher > naive ensemble > best single expert | P2 | 2.16 | 10h | [A] | ⏳ |
+| 2.18 | 验证：SCX distillation student 保持 endpoint 不遗忘、OOD 风险更低 | P2 | 2.16 | 10h | [A] | ⏳ |
+
+### 代码平台化
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 2.19 | 设计 SCX-Core 抽象接口：`SCXStateEncoder`（featurize/distance/cluster/state_statistics） | P2 | 0.11 | 8h | [C] | ⚡ |
+| 2.20 | 实现 SCX-MLIP Encoder（ACE descriptor） | P2 | 2.19 | 6h | [C] | ⚡ |
+| 2.21 | 实现 SCX-Vision Encoder（DINO/CLIP/ViT embedding） | P2 | 2.19 | 6h | [C] | ⚡ |
+| 2.22 | 实现 SCX-FEM Encoder（几何/网格/响应 embedding） | P2 | 2.19 | 8h | [C] | ⚡ |
+| 2.23 | 写数据价值策略模块：per-state budget allocation | P2 | 2.19 | 6h | [C][A] | ⚡ |
+| 2.24 | 写训练集构造策略模块：每个状态保留多少数据、加权/采样策略 | P2 | 2.19 | 6h | [C][A] | ⚡ |
+| 2.25 | 写模型选择模块：根据数据状态推荐 NEP/MACE/ACE/DeepMD 等后端 | P2 | 2.19 | 6h | [C][A] | ⚡ |
+
+### 可穿戴健康数据
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 2.26 | 公开可穿戴数据 toy benchmark（心率/活动识别/睡眠状态/运动传感器） | P2 | 1.9 | 15h | [C][A] | ⚡ |
+| 2.27 | SCX-Health 增加可穿戴模块：连续数据冗余压缩、运动伪影噪声、长尾异常状态 | P2 | 2.26 | 15h | [C][A] | ⏳ |
+
+---
+
+## Phase 3: 长期（6-12 月）
+
+### 论文发表（最高目标）
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 3.1 | SCX-Sim 论文正式投稿（Nature Computational Science / Nature Communications / Nature Machine Intelligence） | P3 | 2.1-2.5 | 投稿日 | [A] | ⏳ |
+| 3.2 | SCX-Health 论文投稿（npj Digital Medicine / Medical Image Analysis / Nature Communications 视数据强度） | P3 | 1.14 | 投稿日 | [A] | ⏳ |
+| 3.3 | SCX-Potential Compiler 论文（目标 npj Computational Materials / Nature Communications） | P3 | 2.16-2.18 | 40h | [A] | ⏳ |
+| 3.4 | 如医学数据很强（多中心 + 医生标注），升级 SCX-Health 投稿 Nature Biomedical Engineering | P3 | 3.2（需更硬数据） | 投稿日 | [A] | ⏳ |
+
+### 商业落地
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 3.5 | 形成 SCX 数据价值审计标准化报告模板（8 个模块） | P3 | 2.6, 2.7 | 15h | [B] | ⏳ |
+| 3.6 | 建 SCX 认证体系（SCX-certified dataset / SCX-compressed dataset / SCX expert reliability report） | P3 | 3.5 | 20h | [B][IP] | ⏳ |
+| 3.7 | 找 CEO/COO 运营合伙人（你当 scientific founder） | P3 | 2.6（有成熟 pilot 后） | 1-3 月 | [B] | ⏳ |
+| 3.8 | 设 SCX Institute / SCX Lab（中立数据价值评估实验室） | P3 | 3.5, 3.7 | 数月 | [B][IP] | ⏳ |
+| 3.9 | 找华为/小米健康团队做私有试点合作 | P3 | 2.26, 2.27 | 1-3 月 | [B] | ⏳ |
+| 3.10 | 找 EDA/半导体公司（华大九天/概伦/广立微等）做 SCX-Semi 技术合作 | P3 | 2.4 | 2-4 月 | [B] | ⏳ |
+
+### SCX 生态建设
+
+| # | TODO | 优先级 | 依赖 | 预估 | 维度 | 可执行性 |
+|---|------|--------|------|------|------|----------|
+| 3.11 | SCX-Health 开源项目建立社区（GitHub Stars, 文档, CI, 贡献指南） | P3 | 2.26, 2.27 | 持续 | [C][B] | ⏳ |
+| 3.12 | SCX-Semi 扩展：从 toy demo 升级到真实 PDK/layout 数据（需找到产业合作方） | P3 | 3.10 | 2-4 月 | [C][A] | ⏳ |
+| 3.13 | SCX-Music 趣味 demo（作为展示 SCX 泛化能力的 showcase，非主线） | P3 | 2.19 | 20h | [C][B] | ⚡ |
+| 3.14 | LLM-SCX 方向：状态条件评价器编排框架（讨论/外延，不作为主战场） | P3 | 1.19-1.21 | 30h | [LLM][A] | ⏳ |
+
+---
+
+## 依赖关系总图
+
+```
+Phase 0                              Phase 1                          Phase 2                              Phase 3
+───────                              ───────                          ───────                              ───────
+
+0.1 私人仓库 ─────────────────────────→ 1.4 时间戳存证
+0.2 DEVELOPMENT_LOG.md                1.1 校外 IP 律师 ──────────────→ 1.2 专利价值判断 ─────────→ 1.3 专利申请
+0.3 代码来源表
+0.4 协议检查 ─────────────────────────→ 1.1
+0.5 Clean-room 重写 ─────────────────→ 0.11 整理 v0.2.0 ────────────→ 2.19 SCX-Core 接口 ──────→ 2.20-2.25 各 Encoder
+                                      │                                    │
+0.9 SCX-MLIP 草稿 ───────────────────→ 1.5 SCX-MLIP 论文 ────────────→ 2.1 SCX-Sim 大论文 ─────→ 3.1 投稿 Nature 系列
+0.10 SCX-Theory 草稿 ───────────────→ 1.7 arXiv 占坑 ───────────────→ 2.5 identifiability 小节
+                                      │
+0.13 ACE pipeline 整理 ──────────────→ 2.11-2.18 Potential Compiler ──→ 3.3 势函数编译器论文
+                                      │
+0.14 VASP 任务检查 ─────────────────→ 0.15 提交 ────────────────────→ 0.16 监控脚本
+                                      │
+                                      │
+                                      1.9 SCX-Health 仓库 ──────────→ 1.10-1.13 医学实验 ────→ 1.14 SCX-Health 论文 ──→ 3.2 投稿
+                                      │                                │
+                                      1.15 One-pager ─────────────────→ 2.6 找 paid pilot ─────→ 2.7 交付审计报告 ───→ 3.5 标准化报告
+                                                                        │                        │
+                                      1.18 国产 EDA/TCAD 调研 ────────→ 2.4 SCX-Semi toy ───────→ 3.10 产业合作
+                                                                                                3.7 找 CEO/COO ────→ 3.8 SCX Institute
+```
+
+---
+
+## 核心风险提示
+
+| 风险 | 严重程度 | 缓解措施 |
+|------|----------|----------|
+| 学校主张 SCX IP 权属 | 🔴 高 | Phase 0 证据隔离 + 1.1 校外律师评估 + 切割 DFT/AlGaN 和 SCX 数学 |
+| 导师/同事抢先发表类似概念 | 🔴 高 | 1.7 arXiv 尽快占坑 + 0.2 开发日志存证 |
+| 大厂平替通用 LLM 数据评价 | 🟡 中 | 主战场不放在 LLM，放 DFT/MLIP/FEM/医学 |
+| 审稿人质疑 salami slicing | 🟡 中 | 每篇论文有独立贡献（见论文谱系设计） |
+| 论文实验不充分被拒 | 🟡 中 | 先出 MLIP 根据地论文，再扩展 Sim/Health |
+| 商业化过早/被甲方绑定 | 🟡 中 | 坚持非独占授权、CLA、不卖断 |
+| VASP 任务占满 240 核影响他人 | 🟢 低 | 分批提交、监控负载 |
+| 医学数据伦理/隐私违规 | 🔴 高 | 先用公开数据，不碰真实患者数据；合规前置 |
+
+---
+
+## 五个维度的核心策略
+
+### 学术 [A]
+```
+SCX-MLIP (根据地, npj/NC)
+  → SCX-Theory (命名权, arXiv/TMLR)
+    → SCX-Sim (跨领域范式, Nature Computational Science)
+      → SCX-Health (医学开源, npj Digital Medicine)
+```
+总纲：4 篇论文，不同层级，不同目标，避免 salami slicing。
+
+### 代码 [C]
+```
+SCX-Core (抽象接口)
+  ├── SCX-MLIP Encoder (ACE descriptor)
+  ├── SCX-Vision Encoder (DINO/CLIP)
+  ├── SCX-FEM Encoder (几何/网格)
+  ├── SCX-Semi Encoder (layout/process)
+  └── SCX-LLM Encoder (task embedding)
+```
+开源策略：Core 开源，Encoders 按领域开源，Pro 版闭源。
+
+### 商业 [B]
+```
+Phase 1: One-pager + 合作调研（零成本）
+Phase 2: Paid pilots + 数据价值审计报告
+Phase 3: 标准化报告 + 认证体系 + 产业联盟
+Phase 4: SCX Institute (中立标准方) + CEO/COO 运营
+```
+不卖断、不独占、保持中立。
+
+### IP [IP]
+```
+证据隔离 (Phase 0)
+  → 校外律师评估 (Phase 1)
+    → 专利/软著/存证 (Phase 1-2)
+      → CLA + 授权协议 (Phase 2)
+        → 认证体系商标 (Phase 3)
+```
+核心原则：先保护再公开，学校资产和个人资产切割。
+
+### LLM [LLM]
+```
+最小验证 (Phase 1-2)
+  → 方向定位：评价器编排框架，不是万能 judge
+    → 作为 SCX 远期外延，不作为主战场
+```
+明确：大厂内部化严重，SCX 不适合正面切入。
+
+---
+
+## 总结：现在立刻做的 5 件事
+
+1. **私人仓库 + 证据链** (0.1, 0.2, 0.3) —— IP 安全的生命线
+2. **查协议** (0.4) —— 了解权属风险范围
+3. **Clean-room 重写 SCX 代码** (0.5, 0.11) —— 从源头切割
+4. **写 SCX-MLIP 论文草稿 + SCX-Theory arXiv 草稿** (0.9, 0.10) —— 抢学术优先权
+5. **建立 SCX-Health 开源仓库 + 跑 MedMNIST 实验** (1.9, 1.10) —— 开源影响力入口
+
+> **一句话战略：论文抢概念 + 轻量开源建生态 + 闭源工程炼商业 + IP 隔离保安全。大模型是远期外延，不是你的主战场。**
