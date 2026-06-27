@@ -26,7 +26,7 @@
 
 ## 2. Abstract (200 words)
 
-The dominant paradigm in data-centric machine learning prescribes data cleaning as a preprocessing step: identify and remove noisy samples before training. This paper identifies a fundamental flaw in this approach. Without trained expert models, noise and intrinsic sample difficulty are mathematically indistinguishable (Theorem 3, paper_theory). Premature curation therefore cannot distinguish what to remove from what to keep — it operates in the dark. We propose an inversion of the standard pipeline: train multiple experts on raw data first, allow state-conditioned expertise to develop, then use multi-expert consistency to distinguish noise from hardness. This approach, which we call the Curation-Exploration Tradeoff, reveals that exploration (training on noisy data) must precede curation (cleaning). The key parameter is eta(t), a time-dependent exploration rate that governs how aggressively the system explores ambiguous regions before committing to curation decisions. We validate across four domains: materials science (AlN MLIP, 29-48% force RMSE improvement), medical imaging (MedMNIST/DermaMNIST, SCX routing +2.0% over best expert), drug discovery (DrugBank drug-target, 15K molecules x 5K targets), and computer vision (CIFAR-10 controlled noise). Results show that the curation-exploration curve has a characteristic shape: initial exploration yields rapidly diminishing returns, followed by a phase transition where further cleaning becomes harmful. We characterize this curve theoretically and provide practical guidelines for optimal eta(t) scheduling.
+The dominant paradigm in data-centric machine learning prescribes data cleaning as a preprocessing step: identify and remove noisy samples before training. This paper identifies a fundamental flaw in this approach. Without trained expert models, noise and intrinsic sample difficulty are mathematically indistinguishable (Theorem 3, nature_theory). Premature curation therefore cannot distinguish what to remove from what to keep — it operates in the dark. We propose an inversion of the standard pipeline: train multiple experts on raw data first, allow state-conditioned expertise to develop, then use multi-expert consistency to distinguish noise from hardness. This approach, which we call the Curation-Exploration Tradeoff, reveals that exploration (training on noisy data) must precede curation (cleaning). The key parameter is eta(t), a time-dependent exploration rate that governs how aggressively the system explores ambiguous regions before committing to curation decisions. We validate across four domains: materials science (AlN MLIP, 29-48% force RMSE improvement), medical imaging (MedMNIST/DermaMNIST, SCX routing +2.0% over best expert), drug discovery (DrugBank drug-target, 15K molecules x 5K targets), and computer vision (CIFAR-10 controlled noise). Results show that the curation-exploration curve has a characteristic shape: initial exploration yields rapidly diminishing returns, followed by a phase transition where further cleaning becomes harmful. We characterize this curve theoretically and provide practical guidelines for optimal eta(t) scheduling.
 
 ---
 
@@ -74,7 +74,7 @@ This paper can be read independently but gains depth from the other two.
 |-----------|---------|----------|
 | 1 | **The paradox**: Every ML textbook says "clean your data first." But cleaning requires knowing what is noise vs what is hard — which requires trained models. You need models to clean data, but clean data to train models. | This circular dependency is the Curation-Exploration Tradeoff. |
 | 2 | **Why this matters**: Small-data regimes (scientific ML, medical imaging, drug discovery) cannot afford to waste samples. But they also cannot afford to remove informative hard samples. Cleaning 14% of AlN frames improves error 29-48%. Cleaning 14% of another dataset could destroy performance. | Stakes are high and symmetric. |
-| 3 | **The impossibility result** (Theorem 3 from paper_theory): Noise and hardness are observationally indistinguishable without expert diversity. This is not a practical difficulty — it is a theorem. Premature curation is provably operating in the dark. | Formal statement of the problem. |
+| 3 | **The impossibility result** (Theorem 3 from nature_theory): Noise and hardness are observationally indistinguishable without expert diversity. This is not a practical difficulty — it is a theorem. Premature curation is provably operating in the dark. | Formal statement of the problem. |
 | 4 | **The resolution**: Train multiple experts on raw data first. Let state-conditioned expertise develop. *Then* use consistency to separate noise from hardness. Exploration must precede curation. | Core thesis in one sentence. |
 | 5 | **The Curation-Exploration Tradeoff formalized**: Define eta(t) as the exploration rate. At t=0, eta is maximal (all data accepted). As the system learns, eta decays, and the curation gate tightens. The tradeoff: too-fast decay (premature curation) imprints residual noise on the expert ensemble. Too-slow decay wastes compute on known-bad data. | The tradeoff curve. |
 | 6 | **Contributions**: (1) Identification and formalization of the Curation-Exploration Tradeoff. (2) Practical eta(t) scheduling with theoretical motivation. (3) Validation across 4 domains with 8 datasets. (4) Boundary characterization: when features are too weak, even this framework signals its own failure. | Paper's four contributions. |
@@ -141,7 +141,7 @@ Three regimes:
 
 **How the tradeoff manifests**: Traditional loss-based detection achieves ROC-AUC ~0.65 for noisy vs clean detection. SCX-Noise achieves ROC-AUC 0.72-0.82 depending on noise rate. The improvement comes from the exploration phase: training multiple experts on the raw noisy data creates diverse failure patterns that expose the noise structure.
 
-**Weak features case**: DermaMNIST's CNN features are weaker than AlN's SOAP descriptors. Per Theorem 2 (paper_theory), the achievable improvement is bounded — SCX-Noise outperforms baselines but cannot reach perfect detection. The framework self-diagnoses this via degraded state consistency (Prop 6, paper_theory).
+**Weak features case**: DermaMNIST's CNN features are weaker than AlN's SOAP descriptors. Per Theorem 2 (nature_theory), the achievable improvement is bounded — SCX-Noise outperforms baselines but cannot reach perfect detection. The framework self-diagnoses this via degraded state consistency (Prop 6, nature_theory).
 
 **Result**: SCX-Routing on BloodMNIST achieves 93.2% accuracy vs 91.2% best single expert (+2.0%). SCX-Compress on PathMNIST achieves <2% accuracy loss at 20-40% compression.
 
@@ -172,7 +172,7 @@ This natural layering validates the tradeoff concept: the pipeline explores broa
 
 #### 4.1 When Features Are Too Weak (Theorem 2)
 
-The Curation-Exploration Tradeoff framework inherits Theorem 2 from paper_theory: when features are too weak to separate data states, even multi-expert consistency cannot distinguish noise from hardness. In these cases:
+The Curation-Exploration Tradeoff framework inherits Theorem 2 from nature_theory: when features are too weak to separate data states, even multi-expert consistency cannot distinguish noise from hardness. In these cases:
 
 - State discovery collapses (random state assignments)
 - Expert consistency is uniformly high (all experts agree or all disagree)
@@ -344,7 +344,7 @@ Start → Bootstrap ARI > 0.5? → Yes → Use exponential eta(t)
 
 ### Figure 6: Extensions and Future Directions
 
-**Type**: Concept map / branching diagram (following paper_gatekeeper figure6_concept.md)
+**Type**: Concept map / branching diagram (following nature_curation figure6_concept.md)
 
 **Central node**: "Curation-Exploration Tradeoff"
 
@@ -378,7 +378,7 @@ Start → Bootstrap ARI > 0.5? → Yes → Use exponential eta(t)
 ### Tone and Style
 
 - **Opening**: Contrarian but constructive — not "everyone is wrong" but "everyone has been operating under an implicit assumption we challenge."
-- **Mathematical depth**: Reference theorems from paper_theory but do not reprove them. Theorems are cited as established results.
+- **Mathematical depth**: Reference theorems from nature_theory but do not reprove them. Theorems are cited as established results.
 - **Empirical weight**: Heavy on the AlN story (most complete validation), then show replication across domains.
 - **Practicality**: The eta(t) scheduling guide (Section 5) should be immediately implementable.
 

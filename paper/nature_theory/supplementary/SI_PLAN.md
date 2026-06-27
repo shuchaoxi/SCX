@@ -22,7 +22,7 @@
 
 ## 与 paper1_nature 的关系
 
-| | paper1_nature (已有) | paper_theory (新建) |
+| | paper1_nature (Nat Mach Intell) | nature_theory (Nature) |
 |---|---|---|
 | 叙事 | "SCX 是一个好方法" | "数据质量有不可逾越的数学边界" |
 | 核心 | 两层状态发现 + 多专家一致性 | 不可辨识定理 + 匹配上下界 |
@@ -30,9 +30,11 @@
 | 数学深度 | 中等 | **最深 (Bahadur-Rao + Chernoff-Stein)** |
 | Nature 适配度 | 中 (方法论文) | **高 (基础发现)** |
 
-**建议**: paper1_nature 转为 Nature Computational Science 投稿 (方法+实验)。
-         paper_theory 投稿 Nature (理论发现)。
-         两篇独立，互相引用。
+**投稿策略**: 参见 `../PAPER_MATRIX.md`。
+         nature_theory → Nature (理论发现)。
+         paper1_nature → Nature Machine Intelligence (方法+实验)。
+         nature_curation → Nature Computational Science (实践原则)。
+         三篇独立，互相引用。
 
 ## SI 写作优先级
 

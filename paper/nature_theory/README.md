@@ -1,8 +1,8 @@
-# Theory Paper — 正文 + 附加材料
+# Nature Theory Paper — 正文 + 附加材料
 
-> 目标期刊: Annals of Statistics → IEEE Trans. Information Theory → JMLR
+> 目标期刊: **Nature** (首选) → Nature Computational Science (备选)
 > 论文类型: 纯数学理论（6 定理 + 1 命题）
-> 状态: 框架已就绪，正文写作待启动
+> 状态: 正文已起草，SI 待 LaTeX 转译
 
 ## 文件结构
 
