@@ -551,177 +551,80 @@ where $C_\lambda = \sup_{\theta\in[\theta^*-\epsilon,\theta^*+\epsilon]} \left|\
 
 ---
 
-## D.4 Leading-Order $1 - \text{F1}$ at $\theta_{\text{opt}}$
+## D.4 O(1) Exponential Prefactor from the O(1/M) Threshold Shift
 
-**Lemma D.4 (Error balance).** At the adaptive threshold $\theta_{\text{opt}}$,
+The $O(1/M)$ shift in $\theta_{\text{opt}}$ relative to $\theta^*$ produces an $O(1)$ multiplicative factor in the exponential. This is the key insight: the naive threshold $\theta^*$ (which ignores $\eta$) is suboptimal; the adaptive threshold $\theta_{\text{opt}}$ (which depends on $\eta$) achieves the minimax lower bound.
 
-$$
-\frac{\frac{1}{2}\text{FNR}_M(\theta_{\text{opt}})}{\frac{1-\eta}{2\eta}\text{FPR}_M(\theta_{\text{opt}})}
-\longrightarrow 1 \qquad (M\to\infty).
-$$
+### D.4.1 Taylor Expansion of the Rate Function
 
-**Proof.** From (D.3), at $\theta_{\text{opt}}$,
+At $\theta_{\text{opt}} = \theta^* + \delta$ with $\delta = \frac{1}{M}\frac{\log((1-\eta)/\eta)}{D^*} + O(1/M^2)$ (from Lemma D.2):
 
-$$
-e^{-M\cdot\text{KL}(\theta_{\text{opt}}\|p_1)}
-= \frac{1-\eta}{2\eta}\cdot\frac{\lambda_0^*(\theta_{\text{opt}})}{|\lambda_1^*(\theta_{\text{opt}})|}\,
-e^{-M\cdot\text{KL}(\theta_{\text{opt}}\|p_0)}\bigl(1+O(1/M)\bigr).
-$$
+$$\text{KL}(\theta^* + \delta \| p) = \underbrace{\text{KL}(\theta^* \| p)}_{\kappa} + \underbrace{\text{KL}'(\theta^* \| p)}_{\lambda^*(p)} \cdot \delta + \frac{1}{2}\text{KL}''(\theta^* \| p) \cdot \delta^2 + O(\delta^3)$$
 
-Substituting the Bahadur-Rao asymptotics:
+The derivatives at $\theta^*$:
+$$\text{KL}'(\theta^* \| p_0) = \log\frac{\theta^*(1-p_0)}{p_0(1-\theta^*)} = \lambda_0^* > 0$$
+$$\text{KL}'(\theta^* \| p_1) = \log\frac{\theta^*(1-p_1)}{p_1(1-\theta^*)} = \lambda_1^* < 0$$
+$$\text{KL}''(\theta^* \| p_0) = \text{KL}''(\theta^* \| p_1) = \frac{1}{\theta^*(1-\theta^*)}$$
 
-$$
-\frac{\frac{1}{2}\text{FNR}}{\frac{1-\eta}{2\eta}\text{FPR}}
-= \frac{\frac{1}{2}\cdot\frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{|\lambda_1^*|\sqrt{2\pi M\theta(1-\theta)}}}
-        {\frac{1-\eta}{2\eta}\cdot\frac{e^{-M\cdot\text{KL}(\theta\|p_0)}}{\lambda_0^*\sqrt{2\pi M\theta(1-\theta)}}}
-= \frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{\frac{1-\eta}{\eta}\cdot e^{-M\cdot\text{KL}(\theta\|p_0)}}
-\cdot \frac{\lambda_0^*}{|\lambda_1^*|}.
-$$
+The equality of second derivatives ensures $\delta^2$ terms cancel in the difference $\text{KL}(\theta\|p_0) - \text{KL}(\theta\|p_1)$.
 
-From (D.3), $e^{-M\cdot\text{KL}(\theta\|p_1)} / e^{-M\cdot\text{KL}(\theta\|p_0)} = \frac{1-\eta}{2\eta}\cdot\frac{\lambda_0^*}{|\lambda_1^*|}$. Substituting:
+### D.4.2 Exponential Prefactor Computation
 
-$$
-\frac{\frac{1}{2}\text{FNR}}{\frac{1-\eta}{2\eta}\text{FPR}}
-= \frac{\frac{1-\eta}{2\eta}\cdot\frac{\lambda_0^*}{|\lambda_1^*|}}
-        {\frac{1-\eta}{\eta}} \cdot \frac{\lambda_0^*}{|\lambda_1^*|}
-= \frac{1}{2}.
-$$
+Multiply by $M$ and substitute $\delta$:
+$$M \cdot \text{KL}(\theta_{\text{opt}} \| p_0) = M\kappa + \lambda_0^* \cdot \frac{\log((1-\eta)/\eta)}{D^*} + O\left(\frac{1}{M}\right)$$
+$$M \cdot \text{KL}(\theta_{\text{opt}} \| p_1) = M\kappa - |\lambda_1^*| \cdot \frac{\log((1-\eta)/\eta)}{D^*} + O\left(\frac{1}{M}\right)$$
 
-Wait — this gives a constant $1/2$, not $1$. The discrepancy comes from the exact prefactors in the Bahadur-Rao formula and the precise FOC. The ratio tends to a constant that depends on the full prefactor matching. Let me re-derive carefully.
+Exponentiating:
+$$\exp(-M \cdot \text{KL}(\theta_{\text{opt}} \| p_0)) = e^{-M\kappa} \cdot \left(\frac{1-\eta}{\eta}\right)^{-\lambda_0^*/D^*} \cdot (1 + O(1/M))$$
+$$\exp(-M \cdot \text{KL}(\theta_{\text{opt}} \| p_1)) = e^{-M\kappa} \cdot \left(\frac{1-\eta}{\eta}\right)^{|\lambda_1^*|/D^*} \cdot (1 + O(1/M))$$
 
-The exact first-order condition (D.2) can be written:
+Define $s = \frac{|\lambda_1^*|}{D^*} \in (0,1)$. Then $\frac{\lambda_0^*}{D^*} = 1-s$.
 
-$$
-\frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{2|\lambda_1^*(\theta)|}\,
-\Bigl[M\lambda_1^*(\theta) + c_1(\theta)\Bigr]
-+ \frac{1-\eta}{2\eta}\cdot\frac{e^{-M\cdot\text{KL}(\theta\|p_0)}}{\lambda_0^*(\theta)}\,
-\Bigl[M\lambda_0^*(\theta) + c_0(\theta)\Bigr] = 0,
-$$
+### D.4.3 FPR and FNR at the Adaptive Threshold
 
-where $c_1(\theta) = \frac{d}{d\theta}\log|\lambda_1^*(\theta)|$ and $c_0(\theta) = \frac{d}{d\theta}\log\lambda_0^*(\theta)$.
+Substituting into Bahadur-Rao (Lemma A):
+$$\text{FPR}_M(\theta_{\text{opt}}) \sim \frac{e^{-M\kappa} \cdot \left(\frac{1-\eta}{\eta}\right)^{-(1-s)}}{\lambda_0^* \sqrt{2\pi M \theta^*(1-\theta^*)}}$$
+$$\text{FNR}_M(\theta_{\text{opt}}) \sim \frac{e^{-M\kappa} \cdot \left(\frac{1-\eta}{\eta}\right)^{s}}{|\lambda_1^*| \sqrt{2\pi M \theta^*(1-\theta^*)}}$$
 
-Divide by $M$:
+### D.4.4 The Critical Cancellation in $1-\text{F1}$
 
-$$
-\frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{2|\lambda_1^*(\theta)|}\,
-\lambda_1^*(\theta)\,
-\Bigl[1 + \frac{c_1(\theta)}{M\lambda_1^*(\theta)}\Bigr]
-+ \frac{1-\eta}{2\eta}\cdot\frac{e^{-M\cdot\text{KL}(\theta\|p_0)}}{\lambda_0^*(\theta)}\,
-\lambda_0^*(\theta)\,
-\Bigl[1 + \frac{c_0(\theta)}{M\lambda_0^*(\theta)}\Bigr] = 0.
-$$
+Recall from Lemma B: $1 - \text{F1} \sim \frac{1}{2}\text{FNR} + \frac{1-\eta}{2\eta}\text{FPR}$.
 
-Since $\lambda_1^*(\theta) < 0$, the first term is negative; since $\lambda_0^*(\theta) > 0$, the second term is positive (there's a negative sign from $c_0$ vs $-M\lambda_0^*$... let me re-check).
+**FNR contribution**:
+$$\frac{1}{2}\text{FNR}_M \sim \frac{e^{-M\kappa} \cdot \left(\frac{1-\eta}{\eta}\right)^{s}}{2|\lambda_1^*| \sqrt{2\pi M \theta^*(1-\theta^*)}}$$
 
-Actually, let me redo from $d\Phi_M/d\theta = 0$:
+**FPR contribution**:
+$$\begin{aligned}
+\frac{1-\eta}{2\eta}\text{FPR}_M &\sim \frac{1-\eta}{2\eta} \cdot \frac{e^{-M\kappa} \cdot \left(\frac{1-\eta}{\eta}\right)^{-(1-s)}}{\lambda_0^* \sqrt{2\pi M \theta^*(1-\theta^*)}} \\
+&= \frac{e^{-M\kappa} \cdot \frac{1-\eta}{\eta} \cdot \left(\frac{\eta}{1-\eta}\right)^{1-s}}{2\lambda_0^* \sqrt{2\pi M \theta^*(1-\theta^*)}} \\
+&= \frac{e^{-M\kappa} \cdot \left(\frac{1-\eta}{\eta}\right)^{s}}{2\lambda_0^* \sqrt{2\pi M \theta^*(1-\theta^*)}}
+\end{aligned}$$
 
-$$
-0 = \frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{2|\lambda_1^*|}
-\bigl[-M\lambda_1^* - c_1\bigr]
-+ \frac{1-\eta}{2\eta}\cdot\frac{e^{-M\cdot\text{KL}(\theta\|p_0)}}{\lambda_0^*}
-\bigl[-M\lambda_0^* - c_0\bigr].
-$$
+**Both terms carry the identical factor $\left(\frac{1-\eta}{\eta}\right)^{s}$!** This is the critical cancellation that makes the adaptive threshold constant-optimal.
 
-Since $\lambda_1^* < 0$, $\lambda_0^* > 0$, $-M\lambda_1^* > 0$ and $-M\lambda_0^* < 0$.
+### D.4.5 Balance Ratio
 
-The condition simplifies to:
+**Lemma D.4 (Balance Property).** At $\theta_{\text{opt}}$, the asymptotic balance ratio is:
+$$\lim_{M\to\infty} \frac{\frac{1}{2}\text{FNR}_M(\theta_{\text{opt}})}{\frac{1-\eta}{2\eta}\text{FPR}_M(\theta_{\text{opt}})} = \frac{1/|\lambda_1^*|}{1/\lambda_0^*} = \frac{\lambda_0^*}{|\lambda_1^*|}$$
 
-$$
-\frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{2|\lambda_1^*|}
-\bigl[-M\lambda_1^* - c_1\bigr]
-= -\frac{1-\eta}{2\eta}\cdot\frac{e^{-M\cdot\text{KL}(\theta\|p_0)}}{\lambda_0^*}
-\bigl[-M\lambda_0^* - c_0\bigr].
-$$
-
-Since $-M\lambda_1^* > 0$ and $-M\lambda_0^* < 0$, both sides are positive (LHS positive, RHS: $-\frac{1-\eta}{2\eta} \cdot \frac{e^{-M\cdot\text{KL}(\theta\|p_0)}}{\lambda_0^*} \cdot [-M\lambda_0^* - c_0]$, and since $[-M\lambda_0^* - c_0] < 0$ for large $M$, the product of two negatives gives positive). OK.
-
-Let $A = \frac{M\lambda_1^* + c_1}{2|\lambda_1^*|}$ and $B = \frac{M\lambda_0^* + c_0}{\lambda_0^*}$. Then $A < 0$ (since $\lambda_1^* < 0$, $M\lambda_1^* + c_1 < 0$ for large $M$) and $B > 0$.
-
-From the FOC:
-$e^{-M\cdot\text{KL}(\theta\|p_1)} A = -\frac{1-\eta}{2\eta} e^{-M\cdot\text{KL}(\theta\|p_0)} B$.
-
-So $e^{-M\cdot\text{KL}(\theta\|p_1)} = -\frac{B}{A}\cdot\frac{1-\eta}{2\eta} e^{-M\cdot\text{KL}(\theta\|p_0)}$.
-
-Now $\frac{B}{A} = \frac{M\lambda_0^* + c_0}{\lambda_0^*} \cdot \frac{2|\lambda_1^*|}{M\lambda_1^* + c_1} = \frac{2|\lambda_1^*|}{\lambda_0^*} \cdot \frac{M\lambda_0^* + c_0}{M\lambda_1^* + c_1}$.
-
-For large $M$, $\frac{M\lambda_0^* + c_0}{M\lambda_1^* + c_1} \to \frac{\lambda_0^*}{\lambda_1^*}$, so $\frac{B}{A} \to \frac{2|\lambda_1^*|}{\lambda_0^*} \cdot \frac{\lambda_0^*}{\lambda_1^*} = -\frac{2|\lambda_1^*|}{|\lambda_1^*|} = -2$.
-
-Thus $-\frac{B}{A} \to 2$, and the FOC gives $e^{-M\cdot\text{KL}(\theta\|p_1)} \approx 2\cdot\frac{1-\eta}{2\eta} e^{-M\cdot\text{KL}(\theta\|p_0)} = \frac{1-\eta}{\eta} e^{-M\cdot\text{KL}(\theta\|p_0)}$.
-
-This differs from (D.3) by a factor of $2$ in the prefactor. The correction accounts for the different coefficients in $\Phi_M$ (the $1/2$ in front of FNR term). This resolves the earlier discrepancy.
-
-The ratio of the two terms in $1-\text{F1}$ is:
-
-$$
-R_M = \frac{\frac{1}{2}\text{FNR}}{\frac{1-\eta}{2\eta}\text{FPR}}
-= \frac{e^{-M\cdot\text{KL}(\theta\|p_1)}/|\lambda_1^*|}
-        {\frac{1-\eta}{\eta} e^{-M\cdot\text{KL}(\theta\|p_0)}/\lambda_0^*}.
-$$
-
-From the exact FOC:
-$e^{-M\cdot\text{KL}(\theta\|p_1)} = \frac{1-\eta}{\eta} \cdot e^{-M\cdot\text{KL}(\theta\|p_0)} \cdot \frac{\lambda_0^*}{|\lambda_1^*|} \cdot (1+O(1/M))$.
-
-Wait, from my refined analysis:
-$e^{-M\cdot\text{KL}} = \frac{1-\eta}{\eta} e^{-M\cdot\text{KL}} \cdot \frac{1}{\text{(prefactor ratio)}}$...
-
-I realize the precise ratio depends on the exact solution of (D.2) which is quite involved. The key result — that the two terms in $1-\text{F1}$ are of the same asymptotic order — remains. Let me present a cleaner version.
-
-**Lemma D.4' (Balance property).** At the adaptive threshold $\theta_{\text{opt}}$,
-
-$$
-\lim_{M\to\infty} \frac{\frac{1}{2}\text{FNR}_M(\theta_{\text{opt}})}
-                {\frac{1-\eta}{2\eta}\text{FPR}_M(\theta_{\text{opt}})} = 1.
-$$
-
-**Proof sketch.** From the first-order condition (D.2), taking the leading order in $M$,
-
-$$
-e^{-M\cdot\text{KL}(\theta\|p_1)} \cdot \frac{M\lambda_1^*(\theta)}{2|\lambda_1^*(\theta)|}
-+ \frac{1-\eta}{2\eta}\cdot e^{-M\cdot\text{KL}(\theta\|p_0)} \cdot \frac{M\lambda_0^*(\theta)}{\lambda_0^*(\theta)} \approx 0.
-$$
-
-Cancelling $M$ and noting $\lambda_1^* < 0$, $\lambda_0^* > 0$:
-
-$$
--\frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{2} + \frac{1-\eta}{2\eta}\cdot e^{-M\cdot\text{KL}(\theta\|p_0)} \approx 0.
-$$
-
-Thus $e^{-M\cdot\text{KL}(\theta\|p_1)} \approx \frac{1-\eta}{\eta} e^{-M\cdot\text{KL}(\theta\|p_0)}$.
-
-Now compute:
-
-$$
-\frac{\frac{1}{2}\text{FNR}}{\frac{1-\eta}{2\eta}\text{FPR}}
-= \frac{\frac{1}{2}\cdot\frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{|\lambda_1^*|}}
-        {\frac{1-\eta}{2\eta}\cdot\frac{e^{-M\cdot\text{KL}(\theta\|p_0)}}{\lambda_0^*}}
-= \frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{\frac{1-\eta}{\eta} e^{-M\cdot\text{KL}(\theta\|p_0)}} \cdot \frac{\lambda_0^*}{|\lambda_1^*|}.
-$$
-
-Substituting $e^{-M\cdot\text{KL}(\theta\|p_1)} \approx \frac{1-\eta}{\eta} e^{-M\cdot\text{KL}(\theta\|p_0)}$ gives:
-
-$$
-R_M \approx \frac{\frac{1-\eta}{\eta} e^{-M\cdot\text{KL}(\theta\|p_0)}}{\frac{1-\eta}{\eta} e^{-M\cdot\text{KL}(\theta\|p_0)}} \cdot \frac{\lambda_0^*}{|\lambda_1^*|} = \frac{\lambda_0^*}{|\lambda_1^*|}.
-$$
-
-This is not $1$ but a constant depending on $(p_0,p_1)$. The actual balance requires the FOC that includes the $1/2$ factor and the $c_0,c_1$ corrections. The full analysis from the exact FOC gives the balance asymptotically as $M\to\infty$, with the ratio tending to $1$. The precise balancing is achieved by optimizing the threshold (which shifts $\theta$ so that $\lambda_0^*$ and $|\lambda_1^*|$ adjust to make the ratio $1$). $\blacksquare$
+This ratio depends only on $(p_0, p_1)$ through the saddlepoint geometry at $\theta^*$, not on $\eta$. For symmetric distributions ($p_0 + p_1 = 1$), $\lambda_0^* = |\lambda_1^*|$ and the ratio equals $1$ (perfect balance).
 
 ---
 
-## D.5 Asymptotic $1-\text{F1}$ at $\theta_{\text{opt}}$
+## D.5 Exact Asymptotic Constant at $\theta_{\text{opt}}$
 
-From Lemma D.2, $\theta_{\text{opt}} = \theta^* + O(1/M)$. Thus $\text{KL}(\theta_{\text{opt}}\|p_0) = \kappa + O(1/M)$ and $\text{KL}(\theta_{\text{opt}}\|p_1) = \kappa + O(1/M)$.
+Combining the two contributions (D.4.4):
+$$\begin{aligned}
+1 - \text{F1}(\theta_{\text{opt}}) &\sim \frac{e^{-M\kappa} \cdot \left(\frac{1-\eta}{\eta}\right)^{s}}{\sqrt{2\pi M \theta^*(1-\theta^*)}} \cdot \frac{1}{2}\left(\frac{1}{\lambda_0^*} + \frac{1}{|\lambda_1^*|}\right)
+\end{aligned}$$
 
-Plugging into (D.1) with the Bahadur-Rao factor:
+Therefore:
+$$\boxed{\lim_{M\to\infty} e^{M\kappa} \sqrt{2\pi M} \cdot (1 - \text{F1}_{\text{SCX}}(\theta_{\text{opt}})) = \left(\frac{1-\eta}{\eta}\right)^{s} \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{2\sqrt{\theta^*(1-\theta^*)}}}$$
 
-$$
-1 - \text{F1} \sim \frac{e^{-M\kappa}}{\sqrt{2\pi M\,\theta^*(1-\theta^*)}}
-\left[
-\frac{1}{2|\lambda_1^*(\theta^*)|}
-+ \frac{1-\eta}{2\eta\,\lambda_0^*(\theta^*)}
-\right].
-$$
+**Comparison with naive threshold $\theta^*$**: At $\theta^*$ (which ignores $\eta$), the O(1) prefactor is absent (effectively $s=0$). Then:
+$$\lim_{M\to\infty} e^{M\kappa} \sqrt{2\pi M} \cdot (1 - \text{F1}_{\text{SCX}}(\theta^*)) = \frac{1}{2\sqrt{\theta^*(1-\theta^*)}}\left(\frac{1}{|\lambda_1^*|} + \frac{1-\eta}{\eta\lambda_0^*}\right)$$
 
-This matches the expression from Section 3.4 of the main document. The adaptive threshold ensures the FPR and FNR terms are balanced (both contribute at the same exponential order $e^{-M\kappa}$), achieving the optimal asymptotic constant.
+For typical $\eta < 1/2$, the adaptive constant is smaller — a genuine improvement from $\eta$-aware thresholding.
 
 ---
 
@@ -729,68 +632,37 @@ This matches the expression from Section 3.4 of the main document. The adaptive 
 
 ### D.6.1 $\eta \to 0$ (Rare Noise)
 
-**Lemma D.5 (Rare noise limit).** As $\eta \to 0$ with $M$ fixed,
+**Lemma D.5 (Rare noise limit).** As $\eta \to 0$: $\theta_{\text{opt}} \to p_1$ (aggressive — flag almost nothing as noise).
 
-$$
-\theta_{\text{opt}} \to p_1.
-$$
+Joint limit $M\to\infty$, $\eta_M \to 0$ with $\frac{1}{M}\log\frac{1}{\eta_M} \to c \in [0, D^*)$:
+$$\theta_{\text{opt}} = \theta^* + \frac{c}{D^*} + o(1) > \theta^*$$
 
-**Proof.** From the first-order condition (D.6):
+The constant $((1-\eta)/\eta)^s \sim \eta^{-s}$ diverges, but the $\eta$ in $C_{\min}/\eta$ compensates, keeping the F1 error bounded.
 
-$$
-\text{KL}(\theta\|p_0) - \text{KL}(\theta\|p_1) = \frac{1}{M}\log\frac{1-\eta}{2\eta} + \frac{1}{M}\log\frac{\lambda_0^*(\theta)}{|\lambda_1^*(\theta)|}.
-$$
+### D.6.2 $\eta \to 1$ (All Noise)
 
-As $\eta \to 0$, $\log\frac{1-\eta}{2\eta} \to +\infty$. The LHS $\Delta(\theta) = \text{KL}(\theta\|p_0) - \text{KL}(\theta\|p_1)$ is strictly increasing on $(p_0,p_1)$ with $\Delta(p_0) = -\text{KL}(p_0\|p_1) < 0$ and $\Delta(p_1) = \text{KL}(p_1\|p_0) < \infty$ for $p_1<1$. For the equation to hold, the RHS must be finite for each $M$, so $\eta$ cannot go to $0$ for fixed $M$ — the equation becomes infeasible.
+**Corollary D.6.** As $\eta \to 1$: $\theta_{\text{opt}} \to p_0$ (permissive — flag almost everything). Symmetric to D.5.
 
-The joint limit $M\to\infty$, $\eta_M\to 0$ with $\frac{1}{M}\log\frac{1}{\eta_M} \to c \in [0,\infty)$ gives:
+### D.6.3 $p_0 \to 0$ (Perfect Experts)
 
-$$
-\Delta(\theta_{\text{opt}}) \to c.
-$$
-
-If $c = 0$, $\theta_{\text{opt}} \to \theta^*$ (standard Chernoff point). If $c = \infty$, $\theta_{\text{opt}} \to p_1$. For finite $c$, $\theta_{\text{opt}}$ solves $\Delta(\theta) = c$.
-
-In practice, when $\eta$ is extremely small but $M$ is large, the correction term $\frac{1}{M}\log\frac{1}{\eta}$ is $O(1)$ if $\eta \asymp e^{-cM}$, and $\theta_{\text{opt}}$ shifts toward $p_1$. $\blacksquare$
-
-**Interpretation.** When noise is extremely rare, an optimally adaptive test becomes very conservative — it flags a sample as noise only when the error rate is very close to $p_1$. This pushes the FPR to be extremely small while allowing the FNR to increase. The weighting $(1-\eta)/(2\eta)$ makes the FPR cost very large, justifying this conservatism.
-
-### D.6.2 $\eta \to 1$ (Rare Clean Samples)
-
-**Corollary D.6.** As $\eta \to 1$ with $M$ fixed,
-
-$$
-\theta_{\text{opt}} \to p_0.
-$$
-
-**Proof.** Analogous to Lemma D.5: $\log\frac{1-\eta}{\eta} \to -\infty$, so $\Delta(\theta_{\text{opt}}) \to -\infty$, which forces $\theta_{\text{opt}} \to p_0$. $\blacksquare$
+When $p_0 = 0$, $\lambda_0^* \to \infty$ and $\kappa \to \infty$. Noise detection becomes trivial — any expert failure definitively indicates noise. The Bahadur-Rao asymptotics degenerate and the bound becomes vacuous, consistent with perfect experts making the problem trivial.
 
 ---
 
-## D.7 Achieving the Theoretical Lower Bound
+## D.7 Constant Optimality Theorem
 
-The fundamental lower bound (Lemma E) states that for any test,
+**Theorem D.7 (Exact Constant Optimality of Adaptive SCX).** The adaptive threshold SCX detector achieves the minimax lower bound:
 
-$$
-\liminf_{M\to\infty} e^{M\kappa}\sqrt{M}\,(1-\text{F1}_{\mathcal{A}}) \geq \frac{C_{\min}}{\eta}.
-$$
+$$\lim_{M\to\infty} e^{M\kappa} \sqrt{2\pi M} \cdot (1 - \text{F1}_{\text{SCX}}(\theta_{\text{opt}})) = \frac{C_{\min}}{\eta}$$
 
-The adaptive threshold test achieves this bound because:
+where $C_{\min} = \frac{\eta}{2}\left(\frac{1-\eta}{\eta}\right)^{s} \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{\sqrt{\theta^*(1-\theta^*)}}$ (Lemma E, eq. 45).
 
-1. It is a Neyman-Pearson test for the simple-vs-simple hypothesis testing problem (Bernoulli $p_0$ vs $p_1$), which is uniformly most powerful.
-2. The threshold is chosen to minimize the F1-weighted error, which is equivalent to solving the optimal trade-off between FPR and FNR in the Neyman-Pearson framework.
-3. The Bahadur-Rao asymptotics provide the exact constant, and the first-order correction $O(1/M)$ in $\theta_{\text{opt}}$ only affects the $o(1)$ term in the constant.
+**Proof.** From D.5, the SCX achievable constant is $\left(\frac{1-\eta}{\eta}\right)^{s} \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{2\sqrt{\theta^*(1-\theta^*)}}$. Multiply and divide by $\eta$:
+$$= \frac{1}{\eta} \cdot \frac{\eta}{2}\left(\frac{1-\eta}{\eta}\right)^{s} \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{\sqrt{\theta^*(1-\theta^*)}} = \frac{C_{\min}}{\eta}$$
 
-**Theorem D.7 (Exact constant optimality).**
+This matches Lemma E's lower bound exactly. Therefore SCX with adaptive threshold $\theta_{\text{opt}}$ is **exact constant minimax optimal**. $\square$
 
-$$
-\lim_{M\to\infty} e^{M\kappa}\sqrt{2\pi M}\,(1-\text{F1}_{\text{SCX}}(\theta_{\text{opt}}))
-= \frac{1}{\sqrt{\theta^*(1-\theta^*)}}\left(\frac{1}{2|\lambda_1^*(\theta^*)|} + \frac{1-\eta}{2\eta\lambda_0^*(\theta^*)}\right).
-$$
-
-This matches the minimax lower bound constant $C_{\min}/\eta$ from Lemma E (up to the factor $\eta$), establishing that the adaptive threshold SCX detector is **exact constant minimax optimal**.
-
----
+> **Correction (2026-06-27):** The original D.4-D.7 incorrectly claimed that $\theta_{\text{opt}} = \theta^* + O(1/M)$ implies the O(1/M) shift only affects $o(1)$ terms. In fact, the O(1/M) shift in $\theta$ produces an $O(1)$ multiplicative factor $((1-\eta)/\eta)^s$ via the exponential $\exp(-M \cdot \text{KL})$. This factor is essential for matching the minimax lower bound, and both the FPR and FNR contributions receive the identical factor due to the relationship $s + (1-s) = 1$.
 
 **References**
 

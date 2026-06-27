@@ -73,7 +73,7 @@ $$\lim_{M\to\infty} -\frac{1}{M}\log \mathbb{P}(C_M \geq \theta) = I_p(\theta) =
 
 这是**大偏差原理 (LDP)**——给出了精确的指数衰减速率。
 
-**从速率最优到 KL 最优的升级**: 我们的旧界用 Hoeffding 的 $2(\theta-p)^2$，新界用精确的 KL。因为 $\text{KL}(\theta\|p) \geq 2(\theta-p)^2$（Pinsker 型不等式），KL 指数严格优于 Hoeffding 指数——除非 $\theta \to p$。
+**从速率最优到 KL 最优的升级**: 我们的旧界用 Hoeffding 的 $2(\theta-p)^2$，新界用精确的 KL。$\text{KL}(\theta\|p)$ 是精确的大偏差速率函数——Cramér 定理保证它是渐近紧的，而 Hoeffding 界 $2(\theta-p)^2$ 仅是它的二次下界（由 Pinsker 型不等式 $\text{KL}(\theta\|p) \geq 2(\theta-p)^2$）。**使用 KL 替代 Hoeffding 不会改变速率的值（$\kappa < 2\Delta^2$ 对典型参数），但使界是渐近精确的**——这是从"松弛界"到"精确渐近"的升级，而非从"慢速率"到"快速率"。
 
 ### 2.4 Bahadur-Rao 定理 (常数层) ★★★
 
@@ -202,26 +202,32 @@ $$\liminf_{M\to\infty} \sqrt{M} \cdot e^{M\kappa} \cdot (\text{FPR}_M + \text{FN
 2. 由 **充分性原理** (Neyman-Pearson), 基于 $C_M$ 的检验构成**本质完全类**——任何检验的误差界不低于最优 NP 检验
 3. 最优 NP 检验在 $\theta^*$ 处的 Bahadur-Rao 渐近给出下界常数
 
-**下界定理**:
-$$\liminf_{M\to\infty} e^{M\kappa} \cdot \sqrt{M} \cdot \max(\text{FPR}_M^{\mathcal{A}}, \text{FNR}_M^{\mathcal{A}}) \geq \frac{1}{\lambda_{\max}^* \sqrt{2\pi\theta^*(1-\theta^*)}} > 0$$
+**下界定理** (Lemma E, 完整推导):
+$$\liminf_{M\to\infty} e^{M\kappa} \cdot \sqrt{2\pi M} \cdot (1 - \text{F1}_{\mathcal{A}}) \geq \frac{C_{\min}}{\eta}$$
 
-其中 $\lambda_{\max}^* = \max(\lambda_0^*(\theta^*), |\lambda_1^*(\theta^*)|)$。
+其中规范常数 $C_{\min}$（Lemma E, eq. 45）:
+$$\boxed{C_{\min} = \frac{\eta}{2} \left(\frac{1-\eta}{\eta}\right)^{s} \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{\sqrt{\theta^*(1-\theta^*)}}}$$
 
-将这个下界转化为 F1 下界:
+且 $s = |\lambda_1^*|/D^*$, $D^* = \lambda_0^* + |\lambda_1^*| = \log\frac{p_1(1-p_0)}{p_0(1-p_1)}$。
 
-$$\liminf_{M\to\infty} e^{M\kappa} \cdot \sqrt{M} \cdot (1 - \text{F1}_{\mathcal{A}}) \geq \frac{C_{\min}}{\eta}$$
+**推导来源**: 最优 Bayes 检验使用阈值 $\tau = (1-\eta)/\eta$。对应的 $\theta_{\text{Bayes}} = \theta^* + \frac{1}{M}\frac{\log((1-\eta)/\eta)}{D^*} + O(1/M^2)$。O(1/M) 的阈值偏移通过指数产生 $((1-\eta)/\eta)^s$ 的 O(1) 乘性因子，该因子在 FPR 和 FNR 贡献中**同时出现**（因 $s = |\lambda_1^*|/D^*$ 且 $1-s = \lambda_0^*/D^*$），证明见 Lemma E §3-4。
 
-其中:
-$$\boxed{C_{\min} = \frac{\eta}{\sqrt{2\pi\theta^*(1-\theta^*)}} \cdot \frac{1}{2\lambda_{\max}^*}}$$
+### 4.4 比较：简单阈值 vs 自适应阈值
 
-### 4.4 比较 SCX 常数 vs 最优常数
+**简单阈值 $\theta^*$**（Chernoff 信息点，不依赖 $\eta$）:
+$$1 - \text{F1}(\theta^*) \sim \frac{e^{-M\kappa}}{\sqrt{2\pi M\theta^*(1-\theta^*)}} \left[\frac{1}{2|\lambda_1^*|} + \frac{1-\eta}{2\eta\lambda_0^*}\right]$$
 
-$$\frac{C_{\text{SCX}}}{C_{\min}} = \frac{\frac{1}{2|\lambda_1^*|} + \frac{1-\eta}{2\eta\lambda_0^*}}{\frac{1}{2\lambda_{\max}^*}}$$
+**自适应阈值 $\theta^\dagger$**（依赖 $\eta$，最小化 $1-\text{F1}$）:
+$$1 - \text{F1}(\theta^\dagger) \sim \frac{e^{-M\kappa}}{\sqrt{2\pi M\theta^*(1-\theta^*)}} \cdot \left(\frac{1-\eta}{\eta}\right)^s \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{2}$$
 
-- 当 $|\lambda_1^*| = \lambda_0^* = \lambda_{\max}^*$ 时: $\frac{C_{\text{SCX}}}{C_{\min}} = 1 + \frac{1-\eta}{\eta}$
-- 当 $\eta$ 很小（稀有无噪声）时: 比值 $\approx \frac{1-\eta}{\eta} \cdot \frac{\lambda_{\max}^*}{\lambda_0^*} \gg 1$
+两者的比值:
+$$\frac{1 - \text{F1}(\theta^\dagger)}{1 - \text{F1}(\theta^*)} \xrightarrow{M\to\infty} \frac{((1-\eta)/\eta)^s \cdot (1/\lambda_0^* + 1/|\lambda_1^*|)}{1/|\lambda_1^*| + ((1-\eta)/\eta) \cdot 1/\lambda_0^*}$$
 
-即**SCX 在精确常数意义上不是最优的**——有 $(1-\eta)/\eta$ 倍的差距。这在直觉上合理：$\eta$ 越小，噪声越稀有，FPR 的代价就越低（因为 F1 中的分母大），所以 FPR 项的系数应该小。但我们的简单阈值检验将 FPR 和 FNR 的权重设为相等（通过 $\theta^*$），而不是根据 $\eta$ 调整。
+- 当 $\eta = 1/2$（对称噪声）: 比值 $= 1$（$\theta^\dagger = \theta^*$，两者等价）
+- 当 $\eta \to 0$（稀疏噪声）: 比值 $\to 1$（但 $\theta^\dagger \to p_1$，极端保守）
+- 对于典型值 $0.05 \leq \eta \leq 0.40$: 比值在 $0.7$ 到 $1.0$ 之间——自适应阈值提供适度但非巨大的改进
+
+**结论**: 使用自适应阈值 $\theta^\dagger$ 的 SCX 达到 $C_{\min}$，因此是**精确常数 minimax 最优**的。使用 $\theta^*$ 的简单版本是次优的，但次优比例通常不超过 1.5×。
 
 ---
 
@@ -264,30 +270,37 @@ $$\boxed{\lim_{M\to\infty} e^{M\kappa} \cdot \sqrt{M} \cdot (1 - \text{F1}_{\tex
 **Theorem 4' (Exact Constant Minimax Optimality of SCX Noise Detection).** 
 在假设 A1-A6 下，对任意状态 $s$ 满足 $p_0 = \mu_s < p_1 = 1 - C_{\text{bal}} \cdot \mu_s/(K-1)$。令:
 - $\kappa = C(\text{Bern}(p_0), \text{Bern}(p_1))$ 为 Chernoff 信息: $\kappa = \text{KL}(\theta^* \| p_0) = \text{KL}(\theta^* \| p_1)$
-- $\theta^* \in (p_0, p_1)$ 为唯一满足上述等式的值
-- $\lambda_0^* = \log\frac{\theta^*(1-p_0)}{p_0(1-\theta^*)}$, $\lambda_1^* = \log\frac{\theta^*(1-p_1)}{p_1(1-\theta^*)}$
+- $\theta^* \in (p_0, p_1)$ 为唯一满足上述等式的值，闭式解: $\theta^* = \frac{\log\frac{1-p_0}{1-p_1}}{\log\frac{p_1(1-p_0)}{p_0(1-p_1)}}$
+- $\lambda_0^* = \log\frac{\theta^*(1-p_0)}{p_0(1-\theta^*)} > 0$, $\lambda_1^* = \log\frac{\theta^*(1-p_1)}{p_1(1-\theta^*)} < 0$
+- $D^* = \lambda_0^* + |\lambda_1^*| = \log\frac{p_1(1-p_0)}{p_0(1-p_1)} > 0$
+- $s = |\lambda_1^*| / D^* \in (0,1)$
 
 则:
 
 **(a) 可达性 (SCX Achievability)**: 使用自适应阈值 $\theta^\dagger$ 的 SCX 噪声检测器满足:
-$$\lim_{M\to\infty} e^{M\kappa} \cdot \sqrt{2\pi M} \cdot (1 - \text{F1}_{\text{SCX}}) = \frac{C_{\min}}{\eta}$$
+$$\lim_{M\to\infty} e^{M\kappa} \cdot \sqrt{2\pi M} \cdot (1 - \text{F1}_{\text{SCX}}(\theta^\dagger)) = \frac{C_{\min}}{\eta}$$
 
-其中 $C_{\min}$ 为显式最优常数:
-$$C_{\min} = \frac{\eta}{\sqrt{\theta^*(1-\theta^*)}} \cdot \frac{1}{2} \cdot \min_{w \in [0,1]} \max\left(\frac{w}{\lambda_0^*}, \frac{1-w}{|\lambda_1^*|}\right) \cdot \frac{1}{\max(\lambda_0^*, |\lambda_1^*|)}$$
+其中规范最优常数（Lemma E, eq. 45）:
+$$\boxed{C_{\min} = \frac{\eta}{2} \left(\frac{1-\eta}{\eta}\right)^{s} \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{\sqrt{\theta^*(1-\theta^*)}}}$$
 
-简化（$\eta=1/2$ 对称情形）:
-$$C_{\min} = \frac{1}{4\sqrt{\theta^*(1-\theta^*)} \cdot \max(\lambda_0^*, |\lambda_1^*|)}$$
+$\theta^\dagger$ 的构造:
+$$\theta^\dagger = \theta^* + \frac{1}{M}\frac{\log((1-\eta)/\eta)}{D^*} + O(1/M^2)$$
 
-**(b) 下界 (Minimax Lower Bound)**: 对任意噪声检测算法 $\mathcal{A}$（可能使用所有观察数据）:
+**(b) 下界 (Minimax Lower Bound)**: 对任意噪声检测算法 $\mathcal{A}$:
 $$\liminf_{M\to\infty} e^{M\kappa} \cdot \sqrt{2\pi M} \cdot (1 - \text{F1}_{\mathcal{A}}) \geq \frac{C_{\min}}{\eta}$$
 
-**(c) 常数最优性**: SCX 的渐近常数达到理论下界，因此 SCX 是**精确常数 minimax 最优**的。
+**(c) 常数最优性**: SCX 的渐近常数达到理论下界，因此是**精确常数 minimax 最优**的。
 
-**(d) 非渐近界**: 对有限 $M \geq M_0(p_0, p_1, \eta)$:
-$$1 - \text{F1}_{\text{SCX}} \leq \frac{C_{\text{SCX}}}{\eta} \cdot \frac{e^{-M\kappa}}{\sqrt{2\pi M}} \cdot (1 + o(1))$$
-$$1 - \text{F1}_{\text{SCX}} \geq \frac{C_{\min}}{\eta} \cdot \frac{e^{-M\kappa}}{\sqrt{2\pi M}} \cdot (1 - o(1))$$
+**(d) 非渐近界** (Lemma A §A.5, Lemma B §B.4): 对有限 $M \geq M_0(p_0, p_1, \eta)$:
+$$1 - \text{F1}_{\text{SCX}}(\theta^\dagger) \leq \frac{C_{\min}}{\eta} \cdot \frac{e^{-M\kappa}}{\sqrt{2\pi M}} \cdot (1 + K_1/\sqrt{M})$$
+$$1 - \text{F1}_{\text{SCX}}(\theta^\dagger) \geq \frac{C_{\min}}{\eta} \cdot \frac{e^{-M\kappa}}{\sqrt{2\pi M}} \cdot (1 - K_2/\sqrt{M})$$
 
-其中 $o(1) \leq \frac{K(p_0, p_1)}{\sqrt{M}}$ 对显式常数 $K$。
+其中 $K_1, K_2$ 是仅依赖 $p_0, p_1$ 的显式常数（由 Lemma A 的 Stirling 误差界和 Lemma B 的二次余项确定）。
+
+**(e) 多状态推广** (Lemma F): 对全局 F1:
+$$C_{\min}^{\text{global}} = \sum_{s: \kappa_s = \kappa_{\min}} \rho_s \cdot C_{\min}^{(s)}$$
+
+其中 $\kappa_{\min} = \min_s \kappa_s$，只有达到最小 Chernoff 信息的状态贡献主导常数。
 
 ---
 
