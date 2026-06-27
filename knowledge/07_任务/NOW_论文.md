@@ -18,55 +18,29 @@ status: active
 
 > ⚠️ **当前立即工作**：P2.1 止损收窄 + P2.2 Results 写作。Paper 1 理论已独立完成，不干扰 Paper 2。
 
-### P2.1 止损收窄（阶段 0，来自 SCX_TODO_论文框架.md）
+### P2.1 止损收窄 ✅ 已完成
 
-- [ ] **P2.1.1** 移除 SCX 噪声检测 Figs (Fig 4-8)
-  - 这些图属于 Paper 1
-  - 保留：EOS 对比 (Fig 1)、弹性常数 (Fig 2)、Per-batch 误差 (Fig 3)、Gauge violation (Fig 4)
-  - 参考：`paper/paper1_mlip/FIGURES_ANALYSIS.md`
+- [x] **P2.1.1** SCX Figs (Fig 5-8) 不在正文中引用 ✅
+- [x] **P2.1.2** 零 SCX 理论提及 ✅
+- [x] **P2.1.3** Claims 已收窄 ✅
 
-- [ ] **P2.1.2** 移除所有 SCX 理论提及
-  - 正文中不讨论"状态条件专家可靠性"
-  - Discussion 末尾最多一句话埋种子
+### P2.2 写作完成 ✅ 已完成
 
-- [ ] **P2.1.3** 收窄 claims
-  - ✅ claim: gauge-fixed shared+correction ACE 参数化
-  - ❌ 不 claim: 新的 MoE runtime、element correction 原子能、AlGaN 可转移
-  - 保留 fair comparison 结果（改善来自参数量而非架构本身）
+- [x] **P2.2.1** Results: EOS + Elastic + Phonon + Gauge Violation + Fair Comparison ✅
+- [x] **P2.2.2** Discussion + Conclusion ✅
+- [x] **P2.2.3** EGP-V2 修订已整合 ✅
 
-### P2.2 写作完成
+### P2.3 图表整理 ✅
 
-- [ ] **P2.2.1** 写完 Results section
-  - 3.1 EOS ($V_0$, $B_0$ vs DFT ref 10.64/192.6)
-  - 3.2 Elastic Constants ($C_{11}$-$C_{66}$ 对比表)
-  - 3.3 Phonon Forces (力 RMSE 0.00793→0.00580, -27%)
-  - 3.4 Gauge Violation (8.77→4.6×10⁻¹⁶)
-  - 3.5 Fair Parameter-Matched Comparison ⭐
+- [x] Fig 1-4 已就绪（EOS、弹性、分批误差、gauge tradeoff）
+- [x] supplementary CSV 就绪
 
-- [ ] **P2.2.2** 写完 Discussion + Conclusion
-  - gauge fixing 对势函数合并的奠基作用
-  - 不泛化到通用框架
+### P2.4 投稿准备 🔴 当前焦点
 
-- [ ] **P2.2.3** 整合 EGP-V2 agent 讨论的 4 个修订
-  - 修订 1：Model B 不是新的运行时势函数架构
-  - 修订 2：gauge fixing 必须提升到 coefficient-level
-  - 修订 3：第一代实现需要自定义线性拟合
-  - 修订 4：论文叙事必须收窄
-  - 来源：`CodexKnowledge/SCX_发展史与成就.md`
-
-### P2.3 图表整理
-
-- [ ] **P2.3.1** 生成最终版 Fig 1-4（保留的 EGP 图）
-- [ ] **P2.3.2** 补充 fair comparison 对比表
-- [ ] **P2.3.3** 准备 SI 数据和表格
-
-### P2.4 投稿
-
-- [ ] **P2.4.1** 选择目标期刊（npj Comput. Mater. 首选）
-- [ ] **P2.4.2** 准备 Cover Letter
-- [ ] **P2.4.3** 准备 SI
-- [ ] **P2.4.4** arXiv 上传
-- [ ] **P2.4.5** 正式投稿
+- [ ] **P2.4.1** 在 Overleaf 打开 `paper.tex`，编译验证
+- [ ] **P2.4.2** 准备 Cover Letter（可协助起草）
+- [ ] **P2.4.3** arXiv 上传
+- [ ] **P2.4.4** 投稿 npj Computational Materials
 
 ---
 
