@@ -8,15 +8,85 @@ status: active
 
 ---
 
-## Paper 2：EGP Gauge Fixing（根据地论文）🔴 最高优先级 — 当前焦点
+## Paper 2：Consistency-Constrained Expert Merging for ACE（根据地论文）🔴
 
-**当前状态**：`paper/paper1_mlip/paper.tex` 已完成 Abstract + Introduction + Methods。Fig 1-8 就绪。**定理 1+2 已完成**，不再占用 Paper 2 精力，可全速推进。
+> **已采纳 V3 方案**（`egp/CodexKnowledge/实验重设计_综合方案_v3.md`）。
+> 旧版 659 行 gauge-fixing-only → 归档；新版 785 行 merging framework → 当前。
+> 故事：**独立训练的专家势函数能不能安全合并？能，但必须经过 gauge fixing + energy alignment + residual construction。**
 
+**文件**：`paper/paper1_mlip/paper_v3.tex`（785 行，全部章节）
 **目标期刊**：npj Computational Materials
+**核心叙事**：四种不一致（energy reference, species shift, gauge ambiguity, residual meaning）→ 三步解决 → naive merge 惨败 → gauge-fixed merge 成功
 
-**时间估计**：1-2 周可投稿
+### M1-M6 实验矩阵（V3 方案）
 
-> ⚠️ **当前立即工作**：P2.1 止损收窄 + P2.2 Results 写作。Paper 1 理论已独立完成，不干扰 Paper 2。
+#### M1: Naive merge 产生物理错误 ⭐ 最关键的实验
+| 项目 | 内容 |
+|------|------|
+| **命题** | P1a: 不 fix gauge/energy zero 的 naive merge 产生物理错误 |
+| **对比** | Naive merge vs Gauge-fixed merge vs Full retrain baseline |
+| **测试** | EOS (V0,B0), Elastic (Cij), 形成能, 声子 |
+| **预期** | C33 偏差 >50%, 形成能符号可能错误 |
+| **新增 DFT** | **0** |
+| **致命风险** | 如果 naive merge 没崩 → P1a 不成立 → 转 "negative result" |
+| **状态** | ⬜ 待 GPU/超算 |
+
+#### M2: 域精度保留
+| 项目 | 内容 |
+|------|------|
+| **命题** | P1b: Gauge-fixed merge 保持各 expert 域内精度 |
+| **对比** | Merged vs Single ACE_AlN (on AlN) + vs Single ACE_GaN (on GaN) |
+| **判据** | Force RMSE 增 <5%, Energy RMSE 增 <2 meV/atom |
+| **新增 DFT** | **0** |
+| **状态** | ⬜ 待 GPU/超算 |
+
+#### M3: Species shift 对齐必要性
+| 项目 | 内容 |
+|------|------|
+| **命题** | P1c: Species shift 歧义导致形成能偏差 |
+| **对比** | Shift-aligned vs unaligned merge → 形成能 |
+| **预期** | 未对齐 >0.5 eV; 对齐后 <0.05 eV |
+| **新增 DFT** | ~50 帧 AlGaN mixed |
+| **状态** | ⬜ 需 DFT |
+
+#### M4: Residual expert 防遗忘
+| 项目 | 内容 |
+|------|------|
+| **命题** | P1d: Residual construction 增量添加不遗忘 |
+| **对比** | Residual sequential (AlN→GaN→AlGaN) vs Full joint retrain |
+| **判据** | <20% 数据量达到 Full retrain >85% 精度 |
+| **新增 DFT** | ~150 帧 AlGaN mixed |
+| **状态** | ⬜ 需 DFT |
+
+#### M5: 跨域优势
+| 项目 | 内容 |
+|------|------|
+| **命题** | P1e: Merged model 在跨域优于单域 expert |
+| **对比** | Merged vs SA_AlN vs SA_GaN on 5 properties |
+| **新增 DFT** | ~100 帧 surface/defect |
+| **状态** | ⬜ 需 DFT |
+
+#### M6: 统计可重复性
+| 项目 | 内容 |
+|------|------|
+| **命题** | 5 seeds × mean±std, p-value, Cohen's d |
+| **新增 DFT** | **0** |
+| **状态** | ⬜ |
+
+### 新增 DFT 汇总
+| 实验 | 新增 DFT | 用途 |
+|------|---------|------|
+| M1+M2 | 0 | 已有数据 |
+| M3 | ~50 | AlGaN formation energies |
+| M4 | ~150 | AlGaN mixed training |
+| M5 | ~100 | Surface/defect reference |
+| **总计** | **~300** | 对比原计划 9000+ 帧减少 97% |
+
+### 投稿准备
+- [ ] M1+M2 GPU 实测（最高优先，零新增 DFT）
+- [ ] Overleaf 编译 paper_v3.tex
+- [ ] Cover Letter
+- [ ] arXiv → npj Comput. Mater.
 
 ### P2.1 止损收窄 ✅ 已完成
 
@@ -44,13 +114,18 @@ status: active
 
 ---
 
-## Paper 1：Nature Computational Science 旗舰论文 🟡 并行准备
+## Paper 1：Data Quality > Model Architecture（Nature 旗舰）🟡
 
-**当前状态**：仅有规划，无草稿。**理论部分已就绪**（定理 1+2 完整证明 + Dawid-Skene 对比分析于 2026-06-27 完成），现在可以开始写论文正文的理论 Section。实验等 GPU。
+> ⚠️ **标题策略**：Nature 卖的是发现，不是方法名。标题用 "Training Data Quality Dominates Model Architecture in Scientific Machine Learning"，不用 "State-Conditioned eXpertise"。SCX 在 Methods 里解释，在 Discussion 里命名。品牌在论文里建立，不在标题里。
 
-> ✅ **定理 1+2 可用**：`../../../theory/theorems/01_noise_detection_guarantee.md` 和 `02_weak_feature_failure.md`
-> ✅ **方案 D 决策**：Paper 1 正文 2-3 页轻量版，Paper 3 (JMLR) 深度版
-> ✅ **V(s) 循环定义**已标记待移除（Paper 3 修复）
+**文件**：`paper/paper1_nature/theory_methods.tex`（156 行，~2000 words，Nature 风格）
+**目标期刊**：Nature Computational Science（首选）/ Nature Machine Intelligence
+**核心发现**：数据清洗 → 29-48% 提升 vs 架构改进 → 2.5%。12-19 倍差距。
+
+### 理论部分 ✅ 已起草
+- [x] 两层状态发现 + 多专家一致性 + 弱特征检测 ✅
+- [x] Thm 1+2+3 Nature 风格陈述（无 Lemma/Proof） ✅
+- [x] 实践实现指南 + 计算成本 ✅
 
 ### P1.1 理论部分 ✅ 证明已完成，可开始写作
 
