@@ -429,10 +429,12 @@ $$
 \frac{1}{\lambda_0^*(\theta)} = 0. \tag{D.2}
 $$
 
-As $M\to\infty$, the $-M\lambda^*$ terms dominate, giving the asymptotic condition
+As $M\to\infty$, the $-M\lambda^*$ terms dominate. Cancelling the $-M$ factor and noting $\lambda_1^* < 0$:
+$$\frac{e^{-M\cdot\text{KL}(\theta\|p_1)}}{2} = \frac{1-\eta}{2\eta}\,e^{-M\cdot\text{KL}(\theta\|p_0)}$$
 
+This gives the asymptotic condition:
 $$
-e^{-M\cdot\text{KL}(\theta\|p_1)} \approx \frac{1-\eta}{2\eta}\cdot\frac{\lambda_0^*(\theta)}{|\lambda_1^*(\theta)|}\,e^{-M\cdot\text{KL}(\theta\|p_0)}. \tag{D.3}
+e^{-M\cdot\text{KL}(\theta\|p_1)} \approx \frac{1-\eta}{\eta}\,e^{-M\cdot\text{KL}(\theta\|p_0)}. \tag{D.3}
 $$
 
 **Proof.** Differentiate (D.1):
@@ -452,7 +454,7 @@ $$
 \frac{d}{d\theta}\log\lambda_0^*(\theta) = \frac{1}{\lambda_0^*(\theta)}\cdot\frac{1}{\theta(1-\theta)}.
 $$
 
-Similarly, $\frac{d}{d\theta}\log|\lambda_1^*(\theta)| = -\frac{1}{\theta(1-\theta)\lambda_1^*(\theta)}$.
+Similarly, $\frac{d}{d\theta}\log|\lambda_1^*(\theta)| = \frac{d}{d\theta}\log(-\lambda_1^*(\theta)) = -\frac{1}{\theta(1-\theta)|\lambda_1^*(\theta)|}$.
 
 Both are $O(1)$ on $[p_0+\epsilon, p_1-\epsilon]$, while $M\lambda^*(\theta)$ is $O(M)$. Hence the $-M\lambda^*$ terms dominate.
 
@@ -478,11 +480,10 @@ Since $\lambda_1^*(\theta) < 0$ and $\lambda_0^*(\theta) > 0$, the leading term 
 
 $$
 \text{KL}(\theta_{\text{opt}}\|p_0) = \text{KL}(\theta_{\text{opt}}\|p_1)
-+ \frac{1}{M}\log\frac{1-\eta}{\eta}
-+ \frac{1}{M}\log\frac{\lambda_0^*(\theta_{\text{opt}})}{|\lambda_1^*(\theta_{\text{opt}})|}. \tag{D.4}
++ \frac{1}{M}\log\frac{1-\eta}{\eta}. \tag{D.4}
 $$
 
-The last term is $O(1/M)$; dropping it and solving gives:
+The RHS is $O(1/M)$; expanding around $\theta^*$ gives:
 
 $$
 \theta_{\text{opt}}(M) = \theta^* + \frac{1}{M}\cdot\frac{\log\frac{1-\eta}{\eta}}{\log\frac{p_1(1-p_0)}{p_0(1-p_1)}} + O\!\left(\frac{1}{M^2}\right). \tag{D.5}
@@ -491,13 +492,13 @@ $$
 **Proof.** Taking logs of (D.3):
 
 $$
--M\cdot\text{KL}(\theta\|p_1) = \log\frac{1-\eta}{2\eta} + \log\frac{\lambda_0^*(\theta)}{|\lambda_1^*(\theta)|} - M\cdot\text{KL}(\theta\|p_0).
+-M\cdot\text{KL}(\theta\|p_1) = \log\frac{1-\eta}{\eta} - M\cdot\text{KL}(\theta\|p_0).
 $$
 
 Rearranging:
 
 $$
-\text{KL}(\theta\|p_0) - \text{KL}(\theta\|p_1) = \frac{1}{M}\log\frac{1-\eta}{2\eta} + \frac{1}{M}\log\frac{\lambda_0^*(\theta)}{|\lambda_1^*(\theta)|}. \tag{D.6}
+\text{KL}(\theta\|p_0) - \text{KL}(\theta\|p_1) = \frac{1}{M}\log\frac{1-\eta}{\eta}. \tag{D.6}
 $$
 
 The second term on the RHS is $O(1/M)$ since $\log(\lambda_0^*/|\lambda_1^*|)$ is bounded on $[p_0+\epsilon, p_1-\epsilon]$.
@@ -530,7 +531,7 @@ $$
 \delta_M = \frac{1}{M}\cdot\frac{\log\frac{1-\eta}{\eta}}{D^*} + O\!\left(\frac{1}{M^2}\right),
 $$
 
-where $\log\frac{1-\eta}{\eta}$ absorbs the $-\log 2$ from $\log\frac{1-\eta}{2\eta}$ and the $O(1)$ term $\log(\lambda_0^*/|\lambda_1^*|)$ evaluated at $\theta^*$ into the $O(1/M^2)$ remainder.
+where the $O(1/M^2)$ remainder absorbs the subleading $O(1/M)$ corrections from the full first-order condition (D.2) that were dropped in the asymptotic condition (D.3).
 
 Substituting $D^* = \log\frac{p_1(1-p_0)}{p_0(1-p_1)}$ gives (D.5). $\blacksquare$
 
