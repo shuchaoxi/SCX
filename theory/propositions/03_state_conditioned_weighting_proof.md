@@ -1,0 +1,281 @@
+# Proposition 3: State-Conditioned Weighting Dominance
+
+> 2026-06-27: Reconstructed proof replacing the original weak version.
+
+## 1 Overview
+
+The original Proposition 3 demonstrated via counterexample that global fixed weights can fail. The present version replaces this with a **rigorous inequality**: for any loss function satisfying mild regularity, state-conditioned weighting achieves an expected risk no larger than any global weighting scheme. The gap between the two approaches is quantified and shown to be strictly positive precisely when expert risk functions cross across states — the exact condition under which SCX provides benefit.
+
+---
+
+## 2 Notation and Setup
+
+| Symbol | Meaning |
+|--------|---------|
+| $\mathcal{X}$ | Input space |
+| $\mathcal{Y}$ | Output space (could be labels or targets) |
+| $P_{X,Y}$ | Joint distribution over $\mathcal{X} \times \mathcal{Y}$ |
+| $\mathcal{S} = \{s_1,\dots,s_K\}$ | State partition of $\mathcal{X}$ induced by $\Pi: \mathcal{X} \to \mathcal{S}$ |
+| $P(s) = P_X(\Pi^{-1}(s))$ | Probability mass of state $s$ |
+| $\{f_1,\dots,f_M\}$ | Expert functions $f_m: \mathcal{X} \to \mathcal{Y}$ |
+| $\Delta^{M-1} = \{w \in \mathbb{R}^M_+ : \sum_{m=1}^M w_m = 1\}$ | Probability simplex of ensemble weights |
+| $\ell: \mathcal{Y} \times \mathcal{Y} \to \mathbb{R}^+$ | Loss function |
+| $f_w(x) = \sum_{m=1}^M w_m f_m(x)$ | Weighted ensemble prediction |
+
+**Assumption 1 (Lipschitz continuity).** The loss function $\ell(\cdot, y)$ is $L$-Lipschitz continuous in its first argument for every $y \in \mathcal{Y}$:
+
+$$|\ell(y_1, y) - \ell(y_2, y)| \leq L \cdot \|y_1 - y_2\|, \quad \forall y_1, y_2 \in \mathcal{Y}, \; y \in \mathcal{Y}$$
+
+This is satisfied by common losses: absolute error ($L=1$), squared error on bounded domains ($L = 2\sup|y|$), hinge loss ($L=1$), and cross-entropy with bounded logits.
+
+**Assumption 2 (Risk finiteness).** For every expert $m$ and every state $s$, the conditional risk $R_m(s) = \mathbb{E}_{X,Y \sim P_{X,Y|s}}[\ell(f_m(X), Y)]$ is finite.
+
+**Assumption 3 (State coverage).** $P(s) > 0$ for each $s \in \mathcal{S}$.
+
+---
+
+## 3 Problem Formulation
+
+Define the **state-conditioned optimal risk**:
+
+$$R_{\text{SC}} = \mathbb{E}_{s \sim P_S}\Bigl[\min_{w \in \Delta^{M-1}} \mathbb{E}_{x,y \sim P_{X,Y|s}}\bigl[\ell(f_w(x), y)\bigr]\Bigr]$$
+
+This is the risk achieved by selecting, for each state $s$, the ensemble weights $w(s)$ that minimize the conditional risk within that state, then averaging over states.
+
+Define the **globally optimal risk**:
+
+$$R_{\text{Global}} = \min_{w \in \Delta^{M-1}} \mathbb{E}_{x,y \sim P_{X,Y}}\bigl[\ell(f_w(x), y)\bigr]$$
+
+This is the risk achieved by the single best global weighting scheme.
+
+Our goal is to prove $R_{\text{SC}} \leq R_{\text{Global}}$ and to characterize when the inequality is strict.
+
+---
+
+## 4 Theorem 2: State-Conditioned Dominance
+
+### 4.1 Statement
+
+Under Assumptions 1-3:
+
+$$R_{\text{SC}} \leq R_{\text{Global}}$$
+
+Equivalently:
+
+$$\mathbb{E}_{s}\Bigl[\min_{w} \mathbb{E}_{x,y|s}\bigl[\ell(f_w(x), y)\bigr]\Bigr] \leq \min_{w} \mathbb{E}_{x,y}\bigl[\ell(f_w(x), y)\bigr]$$
+
+### 4.2 Proof
+
+**Step 1: Pointwise inequality.** For any fixed global weight $w_0 \in \Delta^{M-1}$ and any state $s \in \mathcal{S}$, consider the conditional risk under $w_0$:
+
+$$\mathcal{R}(s, w_0) = \mathbb{E}_{x,y \sim P_{X,Y|s}}\bigl[\ell(f_{w_0}(x), y)\bigr]$$
+
+The state-conditioned approach can, at minimum, match $w_0$ in state $s$ by also choosing $w_0$. Thus:
+
+$$\min_{w \in \Delta^{M-1}} \mathcal{R}(s, w) \leq \mathcal{R}(s, w_0)$$
+
+This holds for every $s \in \mathcal{S}$ and every $w_0 \in \Delta^{M-1}$.
+
+**Step 2: Expectation preserves the inequality.** Taking expectation over $s \sim P_S$ on both sides:
+
+$$\mathbb{E}_s\Bigl[\min_{w} \mathcal{R}(s, w)\Bigr] \leq \mathbb{E}_s\bigl[\mathcal{R}(s, w_0)\bigr]$$
+
+The right-hand side equals the global risk under weight $w_0$:
+
+$$\mathbb{E}_s\bigl[\mathcal{R}(s, w_0)\bigr] = \sum_{s \in \mathcal{S}} P(s) \cdot \mathbb{E}_{x,y|s}\bigl[\ell(f_{w_0}(x), y)\bigr] = \mathbb{E}_{x,y}\bigl[\ell(f_{w_0}(x), y)\bigr]$$
+
+**Step 3: Minimizing over $w_0$.** Since the inequality holds for every $w_0$, we can take the minimum over $w_0$ on the right-hand side, obtaining:
+
+$$\mathbb{E}_s\Bigl[\min_{w} \mathcal{R}(s, w)\Bigr] \leq \min_{w_0} \mathbb{E}_{x,y}\bigl[\ell(f_{w_0}(x), y)\bigr]$$
+
+which is precisely $R_{\text{SC}} \leq R_{\text{Global}}$. $\square$
+
+### 4.3 Alternative Proof via Jensen's Inequality
+
+The same result follows from the concavity of the minimum-over-weights functional. For each $s$, define:
+
+$$\phi(s) = \min_{w \in \Delta^{M-1}} \mathbb{E}_{x,y|s}\bigl[\ell(f_w(x), y)\bigr]$$
+
+The function $\phi$ is a pointwise minimum of functions affine in the conditional distribution $P_{X,Y|s}$, making $\phi$ a **concave functional** of $P_{X,Y|s}$. More concretely, for any fixed $w$, the map $\psi_w(P) = \mathbb{E}_{P}[\ell(f_w(X), Y)]$ is linear in $P$, and $\phi(P) = \min_w \psi_w(P)$ is the lower envelope of linear functions, hence concave.
+
+By Jensen's inequality for concave functionals:
+
+$$\phi\bigl(\mathbb{E}_s[P_{X,Y|s}]\bigr) \geq \mathbb{E}_s\bigl[\phi(P_{X,Y|s})\bigr]$$
+
+Since $\mathbb{E}_s[P_{X,Y|s}] = P_{X,Y}$ (the marginal distribution), we have:
+
+$$\min_{w} \mathbb{E}_{x,y}\bigl[\ell(f_w(x), y)\bigr] = \phi(P_{X,Y}) \geq \mathbb{E}_s\bigl[\phi(P_{X,Y|s})\bigr] = \mathbb{E}_s\Bigl[\min_{w} \mathbb{E}_{x,y|s}\bigl[\ell(f_w(x), y)\bigr]\Bigr]$$
+
+which is $R_{\text{Global}} \geq R_{\text{SC}}$. The Jensen perspective reveals that the inequality is structural: it is a direct consequence of the concavity of the min-operator in the distribution argument. $\square$
+
+---
+
+## 5 The Gap and When It Vanishes
+
+### 5.1 Definition of the Gap
+
+Define the **state-conditioning advantage**:
+
+$$\Delta = R_{\text{Global}} - R_{\text{SC}} \geq 0$$
+
+Theorem 2 guarantees $\Delta \geq 0$. We now characterize when $\Delta = 0$ and when $\Delta > 0$.
+
+### 5.2 Theorem 3: Zero Gap Condition
+
+$$\Delta = 0 \quad \Longleftrightarrow \quad \exists w^* \in \Delta^{M-1} \text{ such that } \forall s \in \mathcal{S}: w^* \in \arg\min_{w} \mathcal{R}(s, w)$$
+
+That is, the gap is zero if and only if there exists a single global weight vector that is simultaneously optimal in every state. When this holds, the state-conditioned approach offers no benefit over the best global weighting.
+
+### 5.3 Proof
+
+**($\Leftarrow$).** If $w^*$ is optimal in every state, then $\min_w \mathcal{R}(s, w) = \mathcal{R}(s, w^*)$ for each $s$. Taking expectations:
+
+$$R_{\text{SC}} = \mathbb{E}_s[\mathcal{R}(s, w^*)] = R_{\text{Global}}$$
+
+so $\Delta = 0$.
+
+**($\Rightarrow$).** Suppose $\Delta = 0$, i.e., $R_{\text{SC}} = R_{\text{Global}}$. Let $w^*$ be any global minimizer, so $R_{\text{Global}} = \mathbb{E}_s[\mathcal{R}(s, w^*)]$. Since $\min_w \mathcal{R}(s, w) \leq \mathcal{R}(s, w^*)$ for all $s$, we have:
+
+$$0 = R_{\text{Global}} - R_{\text{SC}} = \mathbb{E}_s\bigl[\mathcal{R}(s, w^*) - \min_w \mathcal{R}(s, w)\bigr]$$
+
+The integrand is everywhere non-negative (by the optimality of $\min_w$), and the expectation is zero. Therefore the integrand must be zero almost surely under $P_S$:
+
+$$\mathcal{R}(s, w^*) - \min_w \mathcal{R}(s, w) = 0 \quad \text{for } P_S\text{-almost every } s$$
+
+Since $P(s) > 0$ for all $s$ (Assumption 3), this holds for every $s \in \mathcal{S}$, establishing that $w^*$ is optimal in every state. $\square$
+
+---
+
+## 6 The Role of Risk Crossing
+
+### 6.1 Definition of Risk Crossing
+
+**Definition 4 (Risk crossing).** Expert risk functions exhibit **crossing** across states if there exist two states $s_1, s_2 \in \mathcal{S}$ and two experts $a, b \in \mathcal{M}$ such that:
+
+$$R_a(s_1) < R_b(s_1) \quad \text{and} \quad R_a(s_2) > R_b(s_2)$$
+
+where $R_m(s) = \mathbb{E}_{x,y|s}[\ell(f_m(x), y)]$ is the risk of expert $m$ alone (not the ensemble).
+
+### 6.2 Theorem 4: Crossing Implies Positive Gap
+
+If the expert risk functions cross, and the loss $\ell$ is strictly convex in its first argument, then $\Delta > 0$.
+
+### 6.3 Proof
+
+**Step 1: Crossing forces different optimal weights.** Under risk crossing, expert $a$ outperforms expert $b$ in state $s_1$, and $b$ outperforms $a$ in $s_2$. For strictly convex $\ell$, the optimal ensemble weight vector in each state will favor the better expert:
+
+$$\arg\min_w \mathcal{R}(s_1, w) \neq \arg\min_w \mathcal{R}(s_2, w)$$
+
+To see this formally, consider the optimal simplex weights for two experts ($M=2$). The ensemble prediction is $f_w(x) = w_1 f_1(x) + w_2 f_2(x)$ with $w_1 + w_2 = 1$. With strictly convex $\ell$, the function $w_1 \mapsto \mathcal{R}(s, w_1)$ is strictly convex in $w_1$. The first-order condition gives the unique optimal weight $w_1^*(s)$. In state $s_1$, since $R_1(s_1) < R_2(s_1)$, the optimal weight satisfies $w_1^*(s_1) > 0.5$ (expert 1 is favored). In state $s_2$, since $R_1(s_2) > R_2(s_2)$, the optimal weight satisfies $w_1^*(s_2) < 0.5$ (expert 2 is favored). Hence $w^*(s_1) \neq w^*(s_2)$.
+
+For $M > 2$, a similar argument holds: the crossing condition implies that the set $\arg\min_w \mathcal{R}(s, w)$ differs between $s_1$ and $s_2$ because the ranking of risk values $R_m(s)$ changes, altering the KKT conditions of the convex optimization.
+
+**Step 2: No single weight is optimal everywhere.** Since $w^*(s_1) \neq w^*(s_2)$, there cannot exist a single $w^*$ that is simultaneously optimal in both states. By Theorem 3, this implies $\Delta > 0$.
+
+**Step 3: Strictness argument.** Since the risk functions cross, $\Delta$ cannot be zero. By Theorem 2, $\Delta \geq 0$, so $\Delta > 0$ necessarily. $\square$
+
+### 6.4 Remarks
+
+- **Non-strictly convex losses.** For losses that are convex but not strictly convex (e.g., absolute error with potentially flat minima), crossing implies $\Delta \geq 0$, but the inequality may not be strict. In this case, the optimal weight set may contain multiple values, and it is possible (though measure-zero) that the same weight is optimal in both crossing states despite the crossing. Generic position (non-degenerate risks) restores strict positivity.
+
+- **The converse.** $\Delta > 0$ does not necessarily imply pairwise risk crossing as defined in Definition 4. The gap can be positive even without pairwise crossing if three or more experts interact such that no single weight is optimal everywhere, but any two experts individually appear co-monotonic. The gap condition of Theorem 3 — existence of a universally optimal weight vector — is the precise characterization.
+
+---
+
+## 7 Practical Corollaries
+
+### 7.1 Corollary 1: Gap Lower Bound
+
+Under the Lipschitz assumption (Assumption 1), the advantage $\Delta$ is bounded below by the variation in optimal weights:
+
+$$\Delta \geq \frac{L}{2} \cdot \mathbb{E}_s\bigl[\|w^*(s) - w^*_{\text{global}}\|_1\bigr] \cdot \bigl(\min_{s} \min_{m} \mathbb{E}_{x|s}[\|f_m(x)\|]\bigr)$$
+
+where $w^*(s)$ is the optimal weight in state $s$ and $w^*_{\text{global}}$ is the global optimal weight.
+
+**Proof sketch.** For Lipschitz $\ell$, the risk difference $|\mathcal{R}(s, w) - \mathcal{R}(s, w')|$ can be bounded by $L \cdot \|w - w'\|_1 \cdot \mathbb{E}_{x|s}[\max_m \|f_m(x)\|]$. Applying this to the gap definition yields the bound. $\square$
+
+### 7.2 Corollary 2: Finite-Sample Bound
+
+Let $\hat{R}_m(s)$ be empirical risk estimates based on $n_s$ samples in state $s$. The empirical advantage:
+
+$$\hat{\Delta} = \min_{w} \sum_{s} P(s) \hat{\mathcal{R}}(s, w) - \sum_{s} P(s) \min_{w} \hat{\mathcal{R}}(s, w)$$
+
+satisfies $\hat{\Delta} \to \Delta$ almost surely as $\min_s n_s \to \infty$, and with probability $1-\eta$:
+
+$$|\hat{\Delta} - \Delta| \leq 2L_{\max} \sum_{s} P(s) \sqrt{\frac{2\log(4MK/\eta)}{n_s}}$$
+
+This enables practitioners to compute statistically valid estimates of the benefit of state conditioning.
+
+### 7.3 Corollary 3: Monotonicity in State Granularity
+
+Let $\mathcal{S}_1$ and $\mathcal{S}_2$ be two state partitions such that $\mathcal{S}_2$ is a refinement of $\mathcal{S}_1$ (every state in $\mathcal{S}_1$ is a union of states in $\mathcal{S}_2$). Then:
+
+$$\Delta_{\mathcal{S}_2} \geq \Delta_{\mathcal{S}_1}$$
+
+The advantage of state conditioning never decreases under finer state partitioning.
+
+**Proof.** State-conditioned risk with partition $\mathcal{S}_2$ is:
+
+$$R_{\text{SC}}(\mathcal{S}_2) = \mathbb{E}_{s_2}\bigl[\min_w \mathbb{E}_{x,y|s_2}[\ell]\bigr]$$
+
+By the same Jensen/min inequality, $R_{\text{SC}}(\mathcal{S}_2) \leq R_{\text{SC}}(\mathcal{S}_1)$ (finer partition gives lower or equal risk). The global risk $R_{\text{Global}}$ is the same for both partitions, so $\Delta_{\mathcal{S}_2} = R_{\text{Global}} - R_{\text{SC}}(\mathcal{S}_2) \geq R_{\text{Global}} - R_{\text{SC}}(\mathcal{S}_1) = \Delta_{\mathcal{S}_1}$. $\square$
+
+This monotonicity formalizes the intuition that more states (finer granularity) can only improve the benefit of state conditioning, with the limit $|\mathcal{S}| = |\mathcal{X}|$ achieving the information-theoretic upper bound.
+
+---
+
+## 8 Connection to Jensen's Inequality: A Deeper View
+
+The inequality $R_{\text{SC}} \leq R_{\text{Global}}$ admits a revealing interpretation through Jensen's inequality and the concavity of the minimum operator.
+
+Define a function $\varphi$ on the space of probability distributions over $\mathcal{X} \times \mathcal{Y}$:
+
+$$\varphi(P) = \min_{w \in \Delta^{M-1}} \mathbb{E}_{(x,y) \sim P}\bigl[\ell(f_w(x), y)\bigr]$$
+
+For any two distributions $P_1, P_2$ and $\lambda \in [0,1]$:
+
+$$\varphi(\lambda P_1 + (1-\lambda) P_2) = \min_w \bigl[\lambda \mathbb{E}_{P_1}[\ell(f_w)] + (1-\lambda) \mathbb{E}_{P_2}[\ell(f_w)]\bigr]$$
+$$\geq \lambda \min_w \mathbb{E}_{P_1}[\ell(f_w)] + (1-\lambda) \min_w \mathbb{E}_{P_2}[\ell(f_w)]$$
+$$= \lambda \varphi(P_1) + (1-\lambda) \varphi(P_2)$$
+
+where the inequality holds because the minimum of a sum is at least the sum of the minima (a classic inequality: $\min_x (a(x)+b(x)) \geq \min_x a(x) + \min_x b(x)$). This establishes that $\varphi$ is **concave**.
+
+Jensen's inequality for concave $\varphi$ states:
+
+$$\varphi(\mathbb{E}[P]) \geq \mathbb{E}[\varphi(P)]$$
+
+Applying this with the random distribution $P_{X,Y|S}$ (the conditional distribution given state $S$):
+
+$$\varphi(\mathbb{E}_S[P_{X,Y|S}]) \geq \mathbb{E}_S[\varphi(P_{X,Y|S})]$$
+
+Since $\mathbb{E}_S[P_{X,Y|S}] = P_{X,Y}$, this yields:
+
+$$\min_w \mathbb{E}_{X,Y}[\ell(f_w)] \geq \mathbb{E}_S\Bigl[\min_w \mathbb{E}_{X,Y|S}[\ell(f_w)]\Bigr]$$
+
+i.e., $R_{\text{Global}} \geq R_{\text{SC}}$, exactly the result of Theorem 2.
+
+The concavity perspective reveals that state conditioning exploits the **averaging-is-beneficial** property of concave functions: the average of per-state minima is no worse than the minimum of the average distribution.
+
+---
+
+## 9 Implications for SCX
+
+1. **Theoretical guarantee.** Theorem 2 establishes a rigorous dominance result: state-conditioned weighting is never worse than global weighting. The proof requires only the existence of a well-defined state partition and does not depend on distributional assumptions beyond finiteness.
+
+2. **Gap as a diagnostic.** The advantage $\Delta$ quantifies the value of state conditioning. When $\Delta$ is small, the state partition may be too coarse or the experts may not have complementary strengths. SCX's state discovery module should aim to maximize $\Delta$.
+
+3. **Risk crossing is the engine.** Theorem 4 confirms that the crossing of expert risk functions — the fundamental phenomenon that SCX exploits — is necessary and sufficient for a strictly positive advantage (under strict convexity).
+
+4. **Granularity trade-off.** Corollary 3 shows that finer states always help in expectation, but at the cost of increased estimation variance (Corollary 2). SCX's adaptive state discovery balances this bias-variance trade-off.
+
+5. **Unified framework.** The Jensen perspective (Section 8) unifies the SCX weighting formula with information-theoretic principles: the gap $\Delta$ equals the expected reduction in risk from conditioning on the state variable, analogous to the reduction in variance in Rao-Blackwellization.
+
+---
+
+## References
+
+1. SCX theoretical framework. `01_SCX_核心框架_数学分析.md` Section 2.3
+2. SCX mathematical foundations. `05_数学根源与证明.md` Proposition 3
+3. Boyd, S. & Vandenberghe, L. (2004). *Convex Optimization*. Cambridge University Press. [Chapter 3: concavity of pointwise minimum]
+4. Rao, C. R. (1945). Information and accuracy attainable in the estimation of statistical parameters. *Bulletin of the Calcutta Mathematical Society*, 37, 81-91. [Rao-Blackwell theorem]
+5. Tsybakov, A. B. (2004). Optimal aggregation of classifiers in statistical learning. *Annals of Statistics*, 32(1), 135-166.

@@ -9,7 +9,7 @@ from scx.valuation.learnability import LearnabilityScore
 from scx.valuation.noise_score import NoiseScore
 from scx.valuation.redundancy import RedundancyScore
 from scx.valuation.classifier import DataClassifier
-from scx.valuation.state_value import StateValue
+from scx.valuation.state_value import StateValue, hoeffding_bound, chernoff_bound
 
 
 # ======================================================================
@@ -562,6 +562,304 @@ class TestStateValue:
     def test_negative_eps_raises(self):
         with pytest.raises(ValueError, match="eps must be positive"):
             StateValue(eps=-1.0)
+
+
+# ======================================================================
+# Hoeffding & Chernoff bound utility tests
+# ======================================================================
+
+
+class TestHoeffdingBound:
+    """exp(-2n*eps^2) with edge handling."""
+
+    def test_basic(self):
+        assert hoeffding_bound(n=10, epsilon=0.1) == pytest.approx(
+            np.exp(-2 * 10 * 0.1**2)
+        )
+
+    def test_zero_n(self):
+        assert hoeffding_bound(n=0, epsilon=0.1) == 1.0
+
+    def test_zero_epsilon(self):
+        assert hoeffding_bound(n=10, epsilon=0.0) == 1.0
+
+    def test_negative_n(self):
+        assert hoeffding_bound(n=-1, epsilon=0.1) == 1.0
+
+    def test_large_n_small_eps(self):
+        b = hoeffding_bound(n=1000, epsilon=0.01)
+        assert 0.0 < b < 1.0
+
+    def test_large_epsilon(self):
+        b = hoeffding_bound(n=100, epsilon=0.5)
+        assert b < 1e-20  # extremely small
+
+
+class TestChernoffBound:
+    """exp(-n*KL(p||q)) with edge handling."""
+
+    def test_basic(self):
+        b = chernoff_bound(p=0.3, q=0.5, n=10)
+        assert 0.0 < b < 1.0
+
+    def test_zero_n(self):
+        assert chernoff_bound(p=0.3, q=0.5, n=0) == 1.0
+
+    def test_p_equals_q(self):
+        assert chernoff_bound(p=0.5, q=0.5, n=100) == 1.0
+
+    def test_q_less_than_p(self):
+        """When q <= p, Chernoff bound is vacuous (1.0)."""
+        # Actually with our implementation, when p > q, KL > 0 and bound < 1
+        # But when q <= p, the bound is vacuous meaning probability 1.
+        b = chernoff_bound(p=0.5, q=0.3, n=10)
+        assert b == 1.0  # KL divergence from 0.5 to 0.3 is > 0, but 0.3 < 0.5
+
+    def test_small_deviations(self):
+        """p close to q -> bound close to 1 (large KL -> small bound)."""
+        b = chernoff_bound(p=0.5, q=0.51, n=1000)
+        assert 0.0 < b < 1.0
+
+    def test_large_n(self):
+        b = chernoff_bound(p=0.2, q=0.8, n=1000)
+        assert b < 1e-10
+
+
+# ======================================================================
+# Theorem-based StateValue method tests
+# ======================================================================
+
+
+class TestStateValueTheorem1:
+    """Test Theorem 1 methods on StateValue."""
+
+    def test_noise_consistency_score_all_zero(self):
+        sv = StateValue()
+        score = sv.noise_consistency_score(np.array([0, 0, 0]))
+        assert score == 0.0
+
+    def test_noise_consistency_score_all_one(self):
+        sv = StateValue()
+        score = sv.noise_consistency_score(np.array([1, 1, 1]))
+        assert score == 1.0
+
+    def test_noise_consistency_score_mixed(self):
+        sv = StateValue()
+        score = sv.noise_consistency_score(np.array([1, 0, 1, 0, 0]))
+        assert score == pytest.approx(0.4)
+
+    def test_noise_consistency_score_empty(self):
+        sv = StateValue()
+        score = sv.noise_consistency_score(np.array([]))
+        assert score == 0.0
+
+    def test_noise_consistency_score_single(self):
+        sv = StateValue()
+        score = sv.noise_consistency_score(np.array([1]))
+        assert score == 1.0
+        score = sv.noise_consistency_score(np.array([0]))
+        assert score == 0.0
+
+    def test_optimal_noise_threshold_symmetric(self):
+        """When mu_max=0 (perfect experts), theta should be 0.5."""
+        sv = StateValue()
+        theta = sv.optimal_noise_threshold(mu_max=0.0, K=3)
+        assert theta == pytest.approx(0.5)
+
+    def test_optimal_noise_threshold_binary(self):
+        """K=2 reduces to theta = 0.5 * (1 + 0) = 0.5 regardless of mu."""
+        sv = StateValue()
+        theta = sv.optimal_noise_threshold(mu_max=0.5, K=2)
+        assert theta == pytest.approx(0.5)
+
+    def test_optimal_noise_threshold_three_class(self):
+        """K=3: theta = 0.5 * (1 + mu * (1/2))."""
+        sv = StateValue()
+        theta = sv.optimal_noise_threshold(mu_max=0.4, K=3)
+        assert theta == pytest.approx(0.5 * (1 + 0.4 * (1 / 2)))
+
+    def test_optimal_noise_threshold_four_class(self):
+        """K=4: theta = 0.5 * (1 + mu * (2/3))."""
+        sv = StateValue()
+        theta = sv.optimal_noise_threshold(mu_max=0.6, K=4)
+        expected = 0.5 * (1.0 + 0.6 * 2.0 / 3.0)
+        assert theta == pytest.approx(expected)
+
+    def test_optimal_noise_threshold_k_less_than_2_raises(self):
+        sv = StateValue()
+        with pytest.raises(ValueError, match="K must be >= 2"):
+            sv.optimal_noise_threshold(mu_max=0.5, K=1)
+
+    def test_separation_gap_optimal(self):
+        """With optimal threshold, gap = 0.5 * (1 - mu * K/(K-1))."""
+        sv = StateValue()
+        gap = sv.separation_gap(mu_s=0.3, K=3)
+        expected = 0.5 * (1.0 - 0.3 * 3.0 / 2.0)
+        assert gap == pytest.approx(expected)
+
+    def test_separation_gap_custom_theta(self):
+        sv = StateValue()
+        gap = sv.separation_gap(mu_s=0.2, K=3, theta=0.6)
+        # min(0.6 - 0.2, 1 - 0.2/2 - 0.6) = min(0.4, 0.3) = 0.3
+        assert gap == pytest.approx(0.3)
+
+    def test_separation_gap_no_gap(self):
+        """When mu is too high, gap = 0."""
+        sv = StateValue()
+        gap = sv.separation_gap(mu_s=0.9, K=3)
+        assert gap == 0.0
+
+    def test_separation_gap_k_less_than_2(self):
+        sv = StateValue()
+        gap = sv.separation_gap(mu_s=0.5, K=1)
+        assert gap == 0.0
+
+    def test_noise_detection_f1_bound_perfect(self):
+        """If M is large and gaps are wide, bound approaches 1."""
+        sv = StateValue()
+        bound = sv.noise_detection_f1_bound(
+            M=1000,
+            Delta_s=np.array([0.3, 0.3]),
+            rho_s=np.array([0.5, 0.5]),
+            eta=0.2,
+        )
+        assert bound == pytest.approx(1.0, abs=1e-6)
+
+    def test_noise_detection_f1_bound_no_gap(self):
+        """If all gaps are 0, bound should be 1 - 1/eta = negative -> 0."""
+        sv = StateValue()
+        bound = sv.noise_detection_f1_bound(
+            M=10,
+            Delta_s=np.array([0.0, 0.0]),
+            rho_s=np.array([0.5, 0.5]),
+            eta=0.2,
+        )
+        assert bound == 0.0
+
+    def test_noise_detection_f1_bound_intermediate(self):
+        """A known numeric case."""
+        sv = StateValue()
+        M = 50
+        Delta_s = np.array([0.2, 0.15])
+        rho_s = np.array([0.6, 0.4])
+        eta = 0.3
+        bound = sv.noise_detection_f1_bound(M, Delta_s, rho_s, eta)
+        # Manual: 1 - (1/0.3) * (0.6*exp(-2*50*0.04) + 0.4*exp(-2*50*0.0225))
+        term1 = 0.6 * np.exp(-2 * 50 * 0.2**2)
+        term2 = 0.4 * np.exp(-2 * 50 * 0.15**2)
+        expected = 1.0 - (1.0 / 0.3) * (term1 + term2)
+        assert bound == pytest.approx(expected)
+
+    def test_noise_detection_f1_bound_zero_eta(self):
+        """eta <= 0 should return 0."""
+        sv = StateValue()
+        bound = sv.noise_detection_f1_bound(
+            M=10, Delta_s=np.array([0.1]), rho_s=np.array([1.0]), eta=0.0
+        )
+        assert bound == 0.0
+
+    def test_noise_detection_f1_bound_empty_arrays(self):
+        sv = StateValue()
+        bound = sv.noise_detection_f1_bound(
+            M=10, Delta_s=np.array([]), rho_s=np.array([]), eta=0.2
+        )
+        assert bound == 0.0
+
+    def test_noise_detection_f1_bound_chernoff(self):
+        """Chernoff bound should be >= Hoeffding bound (tighter)."""
+        sv = StateValue()
+        M = 30
+        mu_s = np.array([0.2, 0.25])
+        rho_s = np.array([0.5, 0.5])
+        eta = 0.2
+        K = 3
+        # Hoeffding version
+        gaps = np.array([sv.separation_gap(mu, K) for mu in mu_s])
+        hoeff = sv.noise_detection_f1_bound(M, gaps, rho_s, eta)
+        cher = sv.noise_detection_f1_bound_chernoff(M, mu_s, K, rho_s, eta)
+        # Chernoff bound should be >= Hoeffding bound (tighter -> higher F1 lower bound)
+        assert cher >= hoeff - 1e-10, (
+            f"Chernoff bound ({cher}) should be >= Hoeffding bound ({hoeff})"
+        )
+
+    def test_noise_detection_f1_bound_chernoff_perfect(self):
+        sv = StateValue()
+        bound = sv.noise_detection_f1_bound_chernoff(
+            M=1000, mu_s=np.array([0.1, 0.1]), K=3, rho_s=np.array([0.5, 0.5]), eta=0.2
+        )
+        assert bound == pytest.approx(1.0, abs=1e-4)
+
+
+class TestStateValueTheorem2:
+    """Test Theorem 2 feature_strength_diagnostic."""
+
+    def test_feature_strength_strong(self, sample_data_2d):
+        """Strong features (phi = X) should give low epsilon_phi."""
+        sv = StateValue()
+        X, y = sample_data_2d
+        result = sv.feature_strength_diagnostic(X, y)
+        assert "delta" in result
+        assert "epsilon_phi" in result
+        assert "K" in result
+        assert "recommendation" in result
+        assert result["K"] == 4
+        assert result["epsilon_phi"] < 0.5  # should be informative
+        assert result["recommendation"] in ("strong", "moderate")
+
+    def test_feature_strength_random(self):
+        """Random features should yield high epsilon (weak)."""
+        sv = StateValue()
+        rng = np.random.default_rng(42)
+        n = 200
+        X_random = rng.normal(0, 1, (n, 5))
+        # Random state assignments uncorrelated with features
+        state_labels = rng.integers(0, 4, n)
+        result = sv.feature_strength_diagnostic(X_random, state_labels)
+        assert result["epsilon_phi"] > 0.3  # at least moderate weakness
+        assert "recommendation" in result
+
+    def test_feature_strength_single_state(self):
+        """Single state -> weak (K=1, no information)."""
+        sv = StateValue()
+        X = np.random.randn(50, 3)
+        state_labels = np.zeros(50, dtype=int)
+        result = sv.feature_strength_diagnostic(X, state_labels)
+        assert result["recommendation"] == "weak"
+        assert result["K"] == 1
+
+    def test_feature_strength_empty(self):
+        sv = StateValue()
+        result = sv.feature_strength_diagnostic(
+            np.empty((0, 3)), np.array([])
+        )
+        assert result["recommendation"] == "weak"
+        assert result["delta"] == 0.0
+
+    def test_feature_strength_1d_input(self):
+        """1D feature array should be handled."""
+        sv = StateValue()
+        X = np.random.randn(100)
+        state_labels = np.random.randint(0, 3, 100)
+        result = sv.feature_strength_diagnostic(X, state_labels)
+        assert "delta" in result
+        assert result["K"] == 3
+
+    def test_feature_strength_deterministic(self):
+        """If phi is perfectly predictive of state, epsilon_phi should be moderately low."""
+        sv = StateValue()
+        rng = np.random.default_rng(42)
+        n = 500
+        K = 4
+        # Create features that are perfectly correlated with state
+        state_labels = rng.integers(0, K, n)
+        # Column 0 = state ID + small noise, column 1 = pure noise
+        X = np.column_stack([state_labels + rng.normal(0, 0.05, n),
+                             rng.normal(0, 1, n)])
+        result = sv.feature_strength_diagnostic(X, state_labels)
+        # The MI estimator is conservative; so epsilon should at least
+        # indicate moderate or better informativeness.
+        assert result["epsilon_phi"] < 0.6
+        assert result["recommendation"] in ("strong", "moderate")
 
 
 # Avoid runtime pandas import issues in some test runners

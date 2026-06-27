@@ -29,6 +29,9 @@ from scx.encoders.vision import VisionEncoder
 from scx.encoders.tabular import TabularEncoder
 from scx.domains.registry import DomainRegistry
 
+# --- 雅洁: Elegant data sanitizer ---
+from scx.yajie import Yajie, yajie, clean
+
 __all__ = [
     # Core (existing, stable)
     "SCXFramework",
@@ -42,4 +45,8 @@ __all__ = [
     "TabularEncoder",
     # Domains (new in v4.0)
     "DomainRegistry",
+    # 雅洁 — named after the most elegant cleaner
+    "Yajie",
+    "yajie",
+    "clean",
 ]

@@ -309,17 +309,20 @@ def coreset_compress_indices(
     labels: np.ndarray,
     rate: float,
     seed: int = 42,
+    max_sample: int = 3000,  # limit for greedy search
 ) -> np.ndarray:
     """Coreset selection via k-center greedy, stratified by class.
 
-    Iteratively picks the sample farthest from its nearest already-selected
-    sample in feature space.  This maximises coverage / diversity.
+    For very large classes (>max_sample), first subsamples to max_sample,
+    runs greedy k-center on the subsample, then uses nearest-neighbor
+    assignment for the full set.
 
     Args:
         features: (N, D) feature vectors.
         labels: (N,) class labels.
         rate: Compression rate (0.2 = remove 20%).
         seed: Random seed.
+        max_sample: Max samples per class for greedy search.
 
     Returns:
         keep_mask: (N,) bool array, True for samples to keep.
@@ -339,27 +342,57 @@ def coreset_compress_indices(
             continue
 
         X_cls = features[cls_idx]
-        # Start with a random sample
-        first = rng.randint(n_cls)
-        selected = [first]
-        selected_set = {first}
 
-        # Precompute pairwise distances (or compute on the fly)
-        # For n_cls up to ~10k this is fine; for larger sets we do incremental
-        dists = np.full(n_cls, np.inf)  # min distance to selected set
+        if n_cls <= max_sample:
+            # ── Greedy k-center on full class ──
+            idx_map = np.arange(n_cls)
+            sub_X = X_cls
+        else:
+            # ── Subsample, then nearest-neighbor project ──
+            sub_idx = rng.choice(n_cls, size=max_sample, replace=False)
+            sub_idx.sort()
+            idx_map = sub_idx
+            sub_X = X_cls[sub_idx]
 
-        while len(selected) < n_keep:
-            # Update distances to the newest selected point
-            newest = selected[-1]
-            d_new = np.linalg.norm(X_cls - X_cls[newest], axis=1)
+        # Greedy k-center on (sub)set
+        n_sub = len(sub_X)
+        n_keep_sub = max(1, int(n_sub * (1.0 - rate)))
+
+        first = rng.randint(n_sub)
+        selected_local = [first]
+        dists = np.full(n_sub, np.inf)
+
+        while len(selected_local) < n_keep_sub:
+            newest = selected_local[-1]
+            d_new = np.linalg.norm(sub_X - sub_X[newest], axis=1)
             dists = np.minimum(dists, d_new)
-
-            # Pick farthest
             cand = np.argmax(dists)
-            selected.append(cand)
-            selected_set.add(cand)
+            selected_local.append(cand)
 
-        keep_mask[cls_idx[np.array(selected)]] = True
+        selected_indices = cls_idx[idx_map[np.array(selected_local)]]
+
+        if n_cls > max_sample:
+            # Nearest-neighbor assignment for remaining samples
+            sub_selected = sub_X[np.array(selected_local)]
+            # For each non-selected sample, find nearest selected
+            remaining = np.setdiff1d(np.arange(n_cls), idx_map[selected_local])
+            if len(remaining) > 0:
+                X_rem = X_cls[remaining]
+                # Compute distances to all selected points
+                nn_dists = np.linalg.norm(X_rem[:, None] - sub_selected[None, :], axis=2)
+                nearest = np.argmin(nn_dists, axis=1)
+                # Keep the nearest samples to each selected center
+                for s_idx in range(len(selected_local)):
+                    assigned = remaining[nearest == s_idx]
+                    assigned_sorted = assigned[np.argsort(np.linalg.norm(X_cls[assigned] - sub_selected[s_idx], axis=1))]
+                    # Keep up to original n_keep_sub per cluster (spread evenly)
+                    per_cluster_budget = max(1, (n_keep - len(selected_indices)) // len(selected_local))
+                    take = assigned_sorted[:per_cluster_budget]
+                    selected_indices = np.concatenate([selected_indices, cls_idx[take]])
+
+            selected_indices = selected_indices[:n_keep]
+
+        keep_mask[selected_indices] = True
 
     return keep_mask
 
