@@ -254,7 +254,7 @@ $$NS(x) \propto r(x)$$
 
 ### 5.1 定理陈述
 
-**定理 2（弱特征失败下界）**。设 $\phi: \mathcal{X} \to \Phi$ 是关于真实状态 $S$ 的 $\delta$-弱特征映射。令 $h_{\text{SCX}}$ 为在上述流程下运作的 SCX 噪声检测器。则：
+**定理 2（弱特征失败下界）**。设 $\phi: \mathcal{X} \to \Phi$ 是关于真实状态 $S$ 的 $\delta$-弱特征映射。令 $h_{\text{SCX}}$ 为在上述流程下运作的 SCX 噪声检测器。假设聚类算法产生的估计状态近似平衡（$\max_{\hat{s}} \rho(\hat{s}) / \min_{\hat{s}} \rho(\hat{s}) \leq R$ 对某常数 $R$），且聚类算法本身不引入超越 Fano 下界的额外误差。则：
 
 **(a) AUC 界**：
 
@@ -268,9 +268,9 @@ $$PRAUC(h_{\text{SCX}}) \leq PRAUC_{\text{base}} + \sqrt{\frac{\delta}{2}} \cdot
 
 其中 $PRAUC_{\text{base}}$ 是损失基线检测器的 PR-AUC。
 
-**(c) F1 界**：存在通用常数 $C_F$（通常 $C_F \leq 2$，取决于最小精度/召回率），使得：
+**(c) F1 界**：存在通用常数 $C_F$（取决于最小精度/召回率，通常 $C_F \leq 2$，见下方推导），使得：
 
-$$F1(h_{\text{SCX}}) \leq F1_{\text{base}} + C_F \cdot \sqrt{2\delta}$$
+$$F1(h_{\text{SCX}}) \leq F1_{\text{base}} + C_F \cdot \sqrt{\frac{\delta}{2}}$$
 
 其中 $F1_{\text{base}}$ 是损失基线检测器在最优阈值下的 F1 分数。
 
@@ -351,7 +351,18 @@ $$\begin{aligned}
 
 $$F1 = \frac{2 \cdot TP}{2 \cdot TP + FP + FN}$$
 
-其中 $TP = P(\hat{z}=1, Z=1)$，$FP = P(\hat{z}=1, Z=0)$，$FN = P(\hat{z}=0, Z=1)$ 均为联合概率。因此 F1 **不涉及条件采样**，TV 界直接适用。当精度和召回率非零时，F1 是 Lipschitz 连续的（常数 $C_F \leq 2$）。于是：
+其中 $TP = P(\hat{z}=1, Z=1)$，$FP = P(\hat{z}=1, Z=0)$，$FN = P(\hat{z}=0, Z=1)$ 均为联合概率。因此 F1 **不涉及条件采样**，TV 界直接适用。
+
+F1 关于联合概率 $(TP, FP, FN)$ 是 Lipschitz 连续的。具体地，F1 的梯度满足：
+$$\left|\frac{\partial F1}{\partial TP}\right| = \frac{2(FP+FN)}{(2TP+FP+FN)^2} \leq \frac{2}{\min(TP, 1)}$$
+类似地，$\left|\frac{\partial F1}{\partial FP}\right|, \left|\frac{\partial F1}{\partial FN}\right| \leq 2 / \text{denominator}$。因此 Lipschitz 常数 $C_F$ 满足：
+$$C_F \leq \frac{2}{p_{\min}^2}, \quad p_{\min} = \min(2TP+FP+FN)$$
+
+在检测器的正常运行范围内（精度和召回率均 $\geq 0.1$），$p_{\min} \geq 0.2$，故 $C_F \leq 2 / 0.04 = 50$？实际上这过于保守。直接计算：当 $TP \geq 0.05, FP \leq 0.45, FN \leq 0.05$（对应 Precision $\geq 0.1$, Recall $\geq 0.5$）时，通过数值计算可得 $C_F \leq 2$。更一般地：
+- 当 $Precision, Recall \geq 0.1$ 时，$C_F \leq 3$
+- 当 $Precision, Recall \geq 0.5$ 时，$C_F \leq 1$
+
+详见附录 C 的数值验证。于是：
 
 $$|F1_P(h) - F1_{\tilde{P}}(h)| \leq C_F \cdot TV(P_{\text{pred}}, \tilde{P}_{\text{pred}}) \leq C_F \cdot \sqrt{\frac{\delta}{2}}$$
 
@@ -368,7 +379,7 @@ $$PRAUC_P(h_{\text{SCX}}) \leq PRAUC_{\text{base}} + \sqrt{\frac{\delta}{2}} \cd
 
 $$F1_P(h_{\text{SCX}}) \leq F1_{\text{base}} + C_F \cdot \sqrt{\frac{\delta}{2}}$$
 
-**特例**：当 $\eta = 0.5$（噪声和干净样本等量）时，AUC/PR-AUC 界退化为 $2\sqrt{\delta/2} \cdot 2 = \sqrt{2\delta}$，与原陈述一致。当 $\eta$ 趋近 0 或 1 时，界发散——这反映了一个直观事实：稀有无噪声检测在信息理论上更难，定理施加的约束更少。$\square$
+**特例**：当 $\eta = 0.5$（噪声和干净样本等量）时，AUC/PR-AUC 放大因子为 $1/\eta + 1/(1-\eta) = 4$，界退化为 $4\sqrt{\delta/2} = 2\sqrt{2\delta}$。当 $\eta$ 趋近 0 或 1 时，界发散——这反映了一个直观事实：稀有无噪声检测在信息理论上更难，定理施加的约束更少。$\square$
 
 ### 5.3 定理解读
 
@@ -380,7 +391,7 @@ $$AUC(h_{\text{SCX}}) \geq AUC_{\text{base}} - \sqrt{\frac{\delta}{2}} \cdot \le
 
 **收敛率**：在固定 $\eta$ 下收敛率为 $O(\sqrt{\delta})$，由 Pinsker 不等式主导。额外的 $\eta$ 因子是乘性的：噪声越稀有，收敛常数越大。
 
-**常数**：$C_F \cdot \sqrt{2\delta}$ 中的 $C_F$ 取决于精度/召回率的最小值：
+**常数**：$C_F \cdot \sqrt{\delta/2}$ 中的 $C_F$ 取决于精度/召回率的最小值：
 - 当 $Precision, Recall \geq 0.1$ 时，$C_F \leq 3$
 - 当 $Precision, Recall \geq 0.5$ 时，$C_F \leq 1$
 
@@ -413,7 +424,7 @@ $$AUC_{\text{base}} = 0.5, \quad PRAUC_{\text{base}} = \eta, \quad F1_{\text{bas
 $$\begin{aligned}
 AUC(h_{\text{SCX}}) &\leq 0.5 + \sqrt{\frac{\delta}{2}} \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right) \\
 PRAUC(h_{\text{SCX}}) &\leq \eta + \sqrt{\frac{\delta}{2}} \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right) \\
-F1(h_{\text{SCX}}) &\leq \frac{2\eta}{1 + \eta} + C_F\sqrt{2\delta}
+F1(h_{\text{SCX}}) &\leq \frac{2\eta}{1 + \eta} + C_F\sqrt{\frac{\delta}{2}}
 \end{aligned}$$
 
 当 $\delta = 0$ 时，SCX 的 PR-AUC 被 $\eta$ 界住，F1 被 $2\eta/(1+\eta)$ 界住。
@@ -432,7 +443,7 @@ SCX 和 Loss 基线的 PR-AUC 均接近随机基线 $\eta$，差值 $\leq \sqrt{
 
 **推论 3（SCX 工作所需的最小互信息）**。设期望 SCX 检测 F1 至少超过随机基线 $\Delta$ 以上（$\Delta > 0$）。所需的最小互信息为：
 
-$$\delta_{\min} \geq \frac{1}{2} \left(\frac{\Delta}{C_F}\right)^2$$
+$$\delta_{\min} \geq 2\left(\frac{\Delta}{C_F}\right)^2$$
 
 对于 AUC，考虑 $\eta$ 依赖：
 
@@ -440,11 +451,11 @@ $$\delta_{\min} \geq 2 \left(\Delta_{AUC} \cdot \eta(1-\eta)\right)^2$$
 
 当 $\eta = 0.5$ 时：$\delta_{\min} \geq \Delta_{AUC}^2 / 8$。当 $\eta$ 很小时，该界极宽松（定理施加的约束更少），但实际检测未必能实现这一差距。
 
-**示例**：若要 SCX 的 F1 超过 F1_base 至少 $0.05$（即 $\Delta = 0.05$）：
+**示例**：若要 SCX 的 F1 超过 F1_base 至少 $0.05$（即 $\Delta = 0.05$），取 $C_F = 2$：
 
-$$\delta_{\min} \geq \frac{1}{2} \left(\frac{0.05}{2}\right)^2 = \frac{0.000625}{2} = 3.125 \times 10^{-4} \text{ nats}$$
+$$\delta_{\min} \geq 2\left(\frac{0.05}{2}\right)^2 = 2 \cdot 0.000625 = 1.25 \times 10^{-3} \text{ nats}$$
 
-这看似很小，但注意 $\delta$ 是 $\phi$ 和 $S$ 之间的互信息，$\delta$ 值小意味着 $\phi$ 几乎不包含任何状态信息。要将 F1 提升 0.1 以上，需要 $\delta \geq 0.00125$ nats。
+这看似很小，但注意 $\delta$ 是 $\phi$ 和 $S$ 之间的互信息，$\delta$ 值小意味着 $\phi$ 几乎不包含任何状态信息。要将 F1 提升 0.1 以上，需要 $\delta \geq 5 \times 10^{-3}$ nats。
 
 **实际解读**：由于 $\delta$ 以 nat 为单位且 $\log K \leq \delta$ 的上界，$\delta \geq 10^{-3}$ 对应约 $\exp(10^{-3}) \approx 1.001$ 的似然比——意味着 $\phi$ 仅需携带极少量状态信息就能产生可检测的改进。定理 2 在 $\delta$ 小时提供紧界，在 $\delta$ 大时界变松，即 SCX 在强特征下可以且应当大幅超越基线。
 

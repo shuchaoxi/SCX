@@ -45,7 +45,7 @@
 
 $$\mathcal{P}_1\bigl(x, y, \{f_m(x)\}_{m=1}^M\bigr) = \mathcal{P}_2\bigl(x, y, \{f_m(x)\}_{m=1}^M\bigr), \quad \forall (x, y, \{f_m\}) \in \mathcal{X} \times \mathcal{Y} \times \mathcal{Y}^M$$
 
-**(iv)** 因此，任意算法 $\mathcal{A}: (\mathcal{X} \times \mathcal{Y} \times \mathcal{Y}^M)^n \to \{0,1\}^n$（将 $n$ 个观测映射到"噪声/非噪声"判定）无法同时正确识别两个世界中的噪声：存在 $n$ 使得 $\mathcal{A}$ 在至少一个世界中的错误率 $\geq 1/2$。
+**(iv)** 因此，任意算法 $\mathcal{A}: (\mathcal{X} \times \mathcal{Y} \times \mathcal{Y}^M)^n \to \{0,1\}^n$（将 $n$ 个观测映射到"噪声/非噪声"判定）无法同时正确识别两个世界中的噪声：在至少一个世界中的期望错误率至少为 $\eta\rho/2$（其中 $\eta$ 为噪声率，$\rho$ 为歧义状态的比例）。特别地，当 $\eta > 0$ 且 $\rho > 0$ 时该下界严格为正，证明两个世界无法被完美区分。
 
 > **解读**: 定理 3 表明，在不附加额外假设的条件下，"这个样本的标签是错的"和"这个样本太难了所以专家都做错"是观测上等价的命题。SCX 框架必须引入假设 (A1)-(A6) 来打破这种等价性。
 
@@ -192,11 +192,11 @@ $$\mathcal{L}_{\mathcal{P}_{\text{noise}}}(\mathcal{A}(D_n)) = \mathcal{L}_{\mat
 - $\mathcal{P}_{\text{noise}}$ 中真正噪声样本集 $\mathcal{Z}_{\text{noise}}^* = \{i: y_i \neq y_i^*\} = \{i: x_i \in s_1, y_i = 1\}$
 - $\mathcal{P}_{\text{hard}}$ 中真正噪声样本集 $\mathcal{Z}_{\text{hard}}^* = \varnothing$（无噪声）
 
-由于 $\mathcal{A}$ 无法区分两世界，其输出标记集 $\hat{\mathcal{Z}}$ 必须同时适用于两世界。因此必然存在误分类：
+由于 $\mathcal{A}$ 无法区分两世界，其输出标记集 $\hat{\mathcal{Z}}$ 必须同时适用于两世界。令 $a$ 为算法在歧义子集 $\{i: x_i \in s_1, y_i = 1\}$ 上的期望标记率（该值在两世界中相同，因为观测分布相同）。在世界 A 中，这些样本均为噪声（正确标记为 $1$），错误率为 $(1-a)$；在世界 B 中，这些样本均非噪声（正确标记为 $0$），错误率为 $a$。因此：
 
-$$\max\bigl(\text{Error}_{\mathcal{P}_{\text{noise}}}(\mathcal{A}), \text{Error}_{\mathcal{P}_{\text{hard}}}(\mathcal{A})\bigr) \geq \frac{1}{2}$$
+$$\max\bigl(\text{Error}_{\mathcal{P}_{\text{noise}}}(\mathcal{A}), \text{Error}_{\mathcal{P}_{\text{hard}}}(\mathcal{A})\bigr) \geq \frac{\text{Error}_{\text{noise}} + \text{Error}_{\text{hard}}}{2} \geq \frac{\eta\rho}{2}$$
 
-其中 $\text{Error}_{\mathcal{P}}(\mathcal{A}) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}\{\hat{z}_i \neq z_i^*\}$。事实上，任何确定性的标签分配 $\hat{\mathcal{Z}}$ 在至少一个世界中至少有一半的样本被误标——因为两个世界在 $s_1$ 中的 $\eta$ 比例样本（即标签 $y=1$ 的样本）上的"正确标注"是相反的。$\square$ (证毕第 (iv) 部分)
+其中 $\eta\rho$ 是歧义子集在全部样本中的占比。该下界在 $a = 1/2$ 时达到（算法在歧义样本上等同于随机猜测）。对于典型噪声率 $\eta = 0.1$ 和 $s_1$ 占比 $\rho = 0.5$，下界为 $0.025$——虽小但严格为正，证明了两世界的不完全可区分性。定性的不可识别性结论（无法完美区分噪声与困难）仍然成立。$\square$ (证毕第 (iv) 部分)
 
 ### 2.6 扩展：一般 K 类分类
 
@@ -458,28 +458,37 @@ Theorem 3 提供了评价其他噪声检测方法的框架：
 
 ## 附录 A：K 类推广
 
-将定理 3 推广到 $K > 2$。构造如下：
+将定理 3 推广到 $K > 2$。采用与二分类不同的构造策略——在世界 B 中，专家被构造为**完全随机**（不依赖真实标签），这使得联合分布在任意 $K$ 下保持恒等。
 
 **世界 A（噪声）**：对所有 $x \in s_1$，$y^* = 0$。噪声机制：以概率 $\eta$ 将标签均匀翻转到 $\mathcal{Y} \setminus \{0\}$：
 $$\mathbb{P}(y = c \mid \text{noise}, x \in s_1) = \frac{1}{K-1}, \quad c \neq 0$$
 
-专家准确率：$\mathbb{P}(f_m(x) = y^* \mid x \in s_1) = 1 - \varepsilon_1$。
+专家准确率：$\mathbb{P}(f_m(x) = y^* \mid x \in s_1) = 1 - \varepsilon_1$，错误均匀分布：
+$$\mathbb{P}(f_m = c \mid s_1) = \frac{\varepsilon_1}{K-1}, \quad c \neq 0$$
 
 观测分布为：
 $$\mathcal{P}_{\text{noise}}(y = 0 \mid s_1) = 1 - \eta, \quad \mathcal{P}_{\text{noise}}(y = c \mid s_1) = \frac{\eta}{K-1}, \; c \neq 0$$
-
 $$\mathcal{P}_{\text{noise}}(f_m = 0 \mid s_1) = 1 - \varepsilon_1, \quad \mathcal{P}_{\text{noise}}(f_m = c \mid s_1) = \frac{\varepsilon_1}{K-1}, \; c \neq 0$$
+
+且由于 (A4) 噪声与专家独立，$y$ 与 $f_m$ 在给定 $s_1$ 下独立。
 
 **世界 B（困难）**：对 $x \in s_1$，所有标签均为真实标签（无噪声）：
 $$\mathbb{P}(y^* = 0 \mid s_1) = 1 - \eta, \quad \mathbb{P}(y^* = c \mid s_1) = \frac{\eta}{K-1}, \; c \neq 0$$
 
-专家条件准确率：对所有真实标签 $y^* = c$，专家的预测分布为：
-$$\mathbb{P}(f_m = c \mid s_1, y^* = c) = 1 - \varepsilon_1 \quad \text{(正确类别)}$$
-$$\mathbb{P}(f_m = c' \mid s_1, y^* = c) = \frac{\varepsilon_1}{K-1}, \quad c' \neq c \quad \text{(均匀错误)}$$
+**关键构造**：在世界 B 中，专家**不学习**——其预测完全随机且独立于真实标签：
+$$\mathbb{P}(f_m = 0 \mid s_1) = 1 - \varepsilon_1, \quad \mathbb{P}(f_m = c \mid s_1) = \frac{\varepsilon_1}{K-1}, \; c \neq 0$$
+且 $f_m \perp y^* \mid s_1$（专家预测与真实标签独立）。
 
-即专家在给定真实标签下以 $1-\varepsilon_1$ 的概率正确，其余错误均匀分布在 $K-1$ 个错误类别中。
+在此构造下：
+- $y$ 的边际分布：两世界相同（世界 A 的噪声标签分布 = 世界 B 的真实标签分布）
+- $f_m$ 的边际分布：两世界相同（均为 $1-\varepsilon_1$ 在类别 0，$\varepsilon_1/(K-1)$ 在其他类别）
+- $(y, f_m)$ 的联合分布：两世界均为独立乘积（世界 A 中 $y$ 和 $f_m$ 因 (A4) 独立；世界 B 中 $f_m$ 是纯随机故也与 $y$ 独立）
 
-**检验**：此构造下，两世界的观测分布恒等（验证与 2.4 节类似）。而世界 A 中标签 $y \neq 0$ 的样本为"噪声"，世界 B 中则没有噪声，仅有真实标签为不同类别的"困难"样本。不可识别性成立。$\square$
+因此对任意 $K \geq 2$，$\mathcal{P}_{\text{noise}}(x, y, \{f_m\}) = \mathcal{P}_{\text{hard}}(x, y, \{f_m\})$ 恒成立。$\square$
+
+**解释**：世界 B 的构造中，"困难"的语义是极端的——该状态中**所有**样本对所有专家都同样困难（专家等同于随机猜测），无论真实标签是什么。这对应了实际中"特征完全无信息"的极限情况（Theorem 2 中 $\delta = 0$）。虽然极端，但它作为**存在性反例**已足够：存在至少一个以"困难"为解释的世界，其观测分布与以"噪声"为解释的世界完全相同，因此两者无法从观测数据中区分。
+
+> **2026-06-27 修正**：原版附录 A 的构造中，世界 B 的专家在给定真实标签下具有非平凡的准确率 $1-\varepsilon_1$，这导致对于 $K>2$ 时专家边际分布与世界 A 不匹配。修正后的构造采用"完全随机专家"，保证了对任意 $K \geq 2$ 联合分布的恒等性。
 
 ---
 

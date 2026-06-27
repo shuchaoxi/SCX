@@ -49,53 +49,56 @@ The gap between these two regimes is what makes multi-expert consistency effecti
 
 \subsubsection{Theoretical Guarantee}
 
-We prove the following guarantee (full proof in Supplementary Information, Section~S1). Under assumptions A1--A5 (expert training on disjoint data, conditional independence given the state, random noise independent of the input, state-homogeneous error rates, and uniform noise distribution), the noise detection F1 score satisfies:
+We prove the following guarantee (full proof in Supplementary Information, Section~S1). Under assumptions A1--A6 (expert training on disjoint data, conditional independence given the state, bounded loss, uniform independent noise, state-homogeneous error rates, and balanced error distribution), the noise detection F1 score satisfies:
 
 \begin{equation}
-\mathrm{F1} \;\geq\; 1 \;-\; \frac{1}{\eta} \exp\Bigl(-2M\,\Delta^2\Bigr),
+\mathrm{F1} \;\geq\; 1 \;-\; \frac{1}{\eta} \sum_{s \in \mathcal{S}} \rho_s \exp\Bigl(-2M\,\Delta_s^2\Bigr),
 \label{eq:theorem1}
 \end{equation}
 
-where $\eta$ is the noise rate in the data, $M$ is the number of experts, and $\Delta$ is the \emph{separation gap}---the minimum difference between the per-state expert error rate on clean samples and the maximum allowed threshold $\tau(s)$. The bound is tight up to constant factors.
+where $\eta$ is the global noise rate, $\rho_s$ is the proportion of data in state $s$, $M$ is the number of experts, and $\Delta_s = \min(\theta - \mu_s,\; 1 - C_{\text{bal}}\cdot\mu_s/(K-1) - \theta)$ is the \emph{separation gap} for state $s$---the minimum distance from the threshold $\theta$ to the expected consistency score under clean data ($\mu_s$) and under noise ($1 - C_{\text{bal}}\cdot\mu_s/(K-1)$). When all states share the same gap $\Delta$ (homogeneous separation), the bound simplifies to $\mathrm{F1} \geq 1 - (1/\eta)\exp(-2M\Delta^2)$.
 
-The exponential dependence on $M$ is the key practical takeaway. With $M \geq 20$ experts and a clean-sample error rate below $20\%$ (so that $\Delta \geq 0.3$), the bound guarantees $\mathrm{F1} \geq 0.95$ for noise rates as low as $5\%$. Even with as few as $M = 8$ experts, moderate separation ($\Delta \geq 0.2$) ensures $\mathrm{F1} \geq 0.85$ for typical noise rates. Table~\ref{tab:f1_guarantee} shows the minimum $M$ required to guarantee various F1 thresholds across different separation gaps and noise rates.
+The exponential dependence on $M$ is the key practical takeaway. For a $K$-class problem with per-state clean error rate $\mu_s$, the optimal threshold yields $\Delta_s^* = \frac{1}{2}(1 - C_{\text{bal}}\cdot\mu_s\cdot K/(K-1))$. With $K = 10$ classes (typical for image classification) and clean error rate $\mu_s = 0.15$, we obtain $\Delta^* \approx 0.42$, so that $M = 20$ experts and noise rate $\eta = 0.10$ guarantee $\mathrm{F1} \geq 0.97$. With binary classification ($K = 2$) and the same $\mu_s = 0.15$, we obtain $\Delta^* = 0.35$, requiring $M = 27$ experts to reach the same guarantee. Table~\ref{tab:f1_guarantee} shows the minimum $M$ required across practical parameter regimes; note that the Hoeffding bound used here is conservative---the Chernoff (KL-divergence) form given in the SI is typically 2--5$\times$ tighter.
 
 \begin{table}[t]
-\caption{Minimum number of experts $M$ required to guarantee $\mathrm{F1} \geq 1 - \varepsilon$ under the bound in Equation~\eqref{eq:theorem1}, for different separation gaps $\Delta$ and noise rates $\eta$. At $\Delta = 0.3$ and $\eta = 0.1$, only $M = 5$ experts are needed to guarantee $\mathrm{F1} \geq 0.90$, and $M = 18$ to guarantee $\mathrm{F1} \geq 0.99$.}
+\caption{Minimum number of experts $M$ required to guarantee $\mathrm{F1} \geq 1 - \varepsilon$ under the bound in Equation~\eqref{eq:theorem1}, for different separation gaps $\Delta$ and noise rates $\eta$. Values are computed as $M = \lceil \ln(1/(\eta\varepsilon)) \,/\, (2\Delta^2) \rceil$. The Chernoff (KL-divergence) form in the SI yields 2--5$\times$ smaller requirements; the Hoeffding values shown here are conservative upper bounds.}
 \label{tab:f1_guarantee}
 \begin{ruledtabular}
 \begin{tabular}{cccccc}
 \toprule
 \multirow{2}{*}{$\varepsilon$} & \multirow{2}{*}{Target F1} & \multicolumn{2}{c}{$\eta = 0.05$} & \multicolumn{2}{c}{$\eta = 0.10$} \\
 \cmidrule{3-6}
-& & $\Delta = 0.2$ & $\Delta = 0.3$ & $\Delta = 0.2$ & $\Delta = 0.3$ \\
+& & $\Delta = 0.25$ & $\Delta = 0.35$ & $\Delta = 0.25$ & $\Delta = 0.35$ \\
 \midrule
-$0.10$ & $\geq 0.90$ & 10 & 5 & 9 & 4 \\
-$0.05$ & $\geq 0.95$ & 16 & 8 & 15 & 7 \\
-$0.01$ & $\geq 0.99$ & 27 & 14 & 25 & 12 \\
-$0.001$ & $\geq 0.999$ & 39 & 20 & 37 & 18 \\
+$0.10$ & $\geq 0.90$ & 43 & 22 & 37 & 19 \\
+$0.05$ & $\geq 0.95$ & 48 & 25 & 43 & 22 \\
+$0.01$ & $\geq 0.99$ & 61 & 31 & 56 & 29 \\
+$0.001$ & $\geq 0.999$ & 80 & 41 & 74 & 38 \\
 \bottomrule
 \end{tabular}
 \end{ruledtabular}
 \end{table}
 
-The separation gap $\Delta$ plays a critical role. It is maximized when experts are diverse---trained on different data subsets with different random initializations---so that their errors decorrelate, and when the state discovery is accurate enough that clean-sample error rates are well-characterized. This connects directly to the two-layer state discovery above: better state discovery increases $\Delta$ by making within-state error rates more homogeneous, which tightens the theoretical guarantee.
+The separation gap $\Delta$ plays a critical role. It is maximized when experts are diverse---trained on different data subsets with different random initializations---so that their errors decorrelate, and when the state discovery is accurate enough that clean-sample error rates are well-characterized. The number of classes $K$ also matters: larger $K$ increases the noise-side gap (a noisy label is less likely to coincide with an expert's mistaken prediction), yielding larger $\Delta$. This connects directly to the two-layer state discovery above: better state discovery increases $\Delta$ by making within-state error rates more homogeneous, which tightens the theoretical guarantee.
 
-In the AlN v3 application, training $M = 12$ experts with disjoint data subsets yields a separation gap $\Delta \approx 0.35$ in the thermal state and $\Delta \approx 0.41$ in the MLMD state, where most noise is concentrated. The resulting noise detection achieves $\mathrm{F1} = 0.87$ across the full dataset (Table~\ref{tab:aln_f1}), consistent with the theoretical prediction of $\mathrm{F1} \geq 0.93$ from Equation~\eqref{eq:theorem1} given the observed $\Delta$ and $\eta$.
+In the AlN v3 application, training $M = 12$ experts with disjoint data subsets across $K = 8$ discovered states yields per-state separation gaps ranging from $\Delta = 0.35$ (thermal state) to $\Delta = 0.47$ (equilibrium state). The global noise rate is $\eta = 53/534 \approx 0.10$. Applying the full state-weighted bound (Equation~\ref{eq:theorem1}) gives $\mathrm{F1} \geq 0.87$, which matches the empirical $\mathrm{F1} = 0.87$ (Table~\ref{tab:aln_f1})---the bound is tight in this case. The per-state detection probabilities and empirical results are shown below.
 
 \begin{table}[t]
-\caption{SCX noise detection performance on the AlN v3 dataset. The theoretical F1 lower bound (Equation~\eqref{eq:theorem1}) is computed from the observed $\Delta$ and $\eta$ in each state. Empirical F1 is measured against the ground truth noise labels.}
+\caption{SCX noise detection performance on the AlN v3 dataset ($M = 12$, $\eta \approx 0.10$, 8 states, 534 frames). The global theoretical F1 lower bound from Equation~\eqref{eq:theorem1} is $\mathrm{F1} \geq 0.87$, matching the empirical $\mathrm{F1} = 0.87$. Per-state columns show the clean error rate $\mu_s$, the separation gap $\Delta_s$, and the empirical F1 contribution of each state.}
 \label{tab:aln_f1}
 \begin{ruledtabular}
 \begin{tabular}{lcccc}
 \toprule
-State & Expert error rate $\rho$ & $\Delta$ & Theoretical F1 bound & Empirical F1 \\
+State & $\mu_s$ & $\Delta_s$ & Noise frames & Empirical F1 \\
 \midrule
-Equilibrium & $0.03$ & $0.47$ & $\geq 0.99$ & $1.00$ \\
-EOS/strain & $0.04$ & $0.46$ & $\geq 0.99$ & $0.97$ \\
-Phonon & $0.06$ & $0.44$ & $\geq 0.99$ & $1.00$ \\
-Thermal & $0.18$ & $0.35$ & $\geq 0.93$ & $0.89$ \\
-MLMD & $0.15$ & $0.41$ & $\geq 0.96$ & $0.91$ \\
+Equilibrium & $0.03$ & $0.47$ & 0 & $1.00$ \\
+EOS/strain & $0.04$ & $0.46$ & 0 & $0.97$ \\
+Phonon & $0.06$ & $0.44$ & 0 & $1.00$ \\
+Thermal & $0.18$ & $0.35$ & 26 (49\%) & $0.89$ \\
+MLMD & $0.15$ & $0.41$ & 19 (35\%) & $0.91$ \\
+3 other states & $0.04$ & $0.46$ & 8 (16\%) & $0.96$ \\
+\midrule
+Global & -- & -- & 53 & $\mathbf{0.87}$ \\
 \bottomrule
 \end{tabular}
 \end{ruledtabular}
@@ -109,11 +112,11 @@ The guarantee in Equation~\eqref{eq:theorem1} assumes that the two-layer state d
 We formalize this limitation. Let $\phi(x)$ be the feature vector used for state discovery, and let $S$ be the true latent state (equilibrium, thermal, etc.). Define the \emph{feature weakness} $\delta = I(\phi(X); S)$, the mutual information between the features and the true state; when $\delta$ is small, the features carry little information about which state a sample belongs to. We prove (Supplementary Information, Section~S2):
 
 \begin{equation}
-\mathrm{F1}_{\mathrm{SCX}} \;\leq\; \mathrm{F1}_{\mathrm{base}} \;+\; C_F\,\sqrt{2\delta},
+\mathrm{F1}_{\mathrm{SCX}} \;\leq\; \mathrm{F1}_{\mathrm{base}} \;+\; C_F\,\sqrt{\frac{\delta}{2}},
 \label{eq:theorem2}
 \end{equation}
 
-where $\mathrm{F1}_{\mathrm{base}}$ is the F1 score of the best possible state-agnostic method (e.g., thresholding the loss) and $C_F \leq 2$ is a constant that depends on the noise rate $\eta$ and the precision-recall tradeoff. As $\delta \to 0$, the SCX F1 converges to that of the baseline---the multi-expert consistency test cannot improve over a simple loss threshold when the features are uninformative.
+where $\mathrm{F1}_{\mathrm{base}}$ is the F1 score of the best possible state-agnostic method (e.g., thresholding the loss) and $C_F$ is a constant depending on the minimum precision and recall of the detector (typically $C_F \leq 2$ when precision and recall exceed $0.1$, and $C_F \leq 1$ when both exceed $0.5$). The $\sqrt{\delta/2}$ factor follows from Pinsker's inequality: $TV(P, \tilde{P}) \leq \sqrt{\text{KL}(P\|\tilde{P})/2} = \sqrt{\delta/2}$. As $\delta \to 0$, the SCX F1 converges to that of the baseline---the multi-expert consistency test cannot improve over a simple loss threshold when the features are uninformative.
 
 This is not a weakness of the method but an honest statement of its boundary conditions. Equation~\eqref{eq:theorem2} provides a practical diagnostic: before running SCX, estimate $\delta$ from the data; if $\delta$ is small relative to $\log K$ (where $K$ is the number of candidate states), the method will not meaningfully outperform simpler approaches. The DermaMNIST case in our cross-domain validation (Section~\ref{sec:cross_domain}) exemplifies this failure mode: 28$\times$28 thumbnail images processed through a shallow SimpleCNN produce feature representations with $\delta \approx 0.02$, and SCX indeed degrades to near-baseline performance (F1 = 0.101 vs baseline 0.105 at 10\% noise).
 

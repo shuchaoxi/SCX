@@ -250,7 +250,7 @@ $$\begin{aligned}
 代入 TPR $\geq 1 - \delta_1$ 和 FPR $\leq \delta_2$，其中：
 
 $$\begin{aligned}
-\delta_1 &= \sum_s \rho_s \cdot \exp(-2M(1 - \mu_s/(K-1) - \theta)^2) \\
+\delta_1 &= \sum_s \rho_s \cdot \exp(-2M(1 - C_{\text{bal}} \cdot \mu_s/(K-1) - \theta)^2) \\
 \delta_2 &= \sum_s \rho_s \cdot \exp(-2M(\theta - \mu_s)^2)
 \end{aligned}$$
 
@@ -263,7 +263,7 @@ $$\begin{aligned}
 &= 1 - \delta_1 - \frac{1-\eta}{\eta}\delta_2
 \end{aligned}$$
 
-代入 $\delta_1, \delta_2$ 的表达式，并注意当 $\Delta_s = \min(\theta - \mu_s, 1 - \mu_s/(K-1) - \theta)$ 时有 $\exp(-2M(\theta - \mu_s)^2) \leq \exp(-2M\Delta_s^2)$ 和 $\exp(-2M(1 - \mu_s/(K-1) - \theta)^2) \leq \exp(-2M\Delta_s^2)$，因此：
+代入 $\delta_1, \delta_2$ 的表达式，并注意当 $\Delta_s = \min(\theta - \mu_s, \; 1 - C_{\text{bal}} \cdot \mu_s/(K-1) - \theta)$ 时有 $\exp(-2M(\theta - \mu_s)^2) \leq \exp(-2M\Delta_s^2)$ 和 $\exp(-2M(1 - C_{\text{bal}} \cdot \mu_s/(K-1) - \theta)^2) \leq \exp(-2M\Delta_s^2)$，因此：
 
 $$ \text{F1} \geq 1 - \sum_s \rho_s \left[\exp(-2M\Delta_s^2) + \frac{1-\eta}{\eta}\exp(-2M\Delta_s^2)\right] = 1 - \frac{1}{\eta}\sum_s \rho_s \exp(-2M\Delta_s^2) $$
 
@@ -301,9 +301,9 @@ $$\Delta_{\min}^* = \frac{1}{2}\left(1 - \mu_{\max} \cdot \frac{K}{K-1}\right)$$
 
 所需的最少专家数（达到 F1 $\geq 1 - \varepsilon_0$）为：
 
-$$M \geq \frac{1}{2\Delta_{\min}^{*2}} \log\left(\frac{2}{\eta \varepsilon_0}\right)$$
+$$M \geq \frac{1}{2\Delta_{\min}^{*2}} \log\left(\frac{1}{\eta \varepsilon_0}\right)$$
 
-**证明**: 直接解 $1 - \frac{1}{\eta}e^{-2M\Delta^2} \geq 1 - \varepsilon_0$。$\square$
+**证明**: 直接解 $1 - \frac{1}{\eta}e^{-2M\Delta^2} \geq 1 - \varepsilon_0$ 得 $e^{-2M\Delta^2} \leq \eta\varepsilon_0$，取对数即得。若需同时控制多个状态的误差（联合界），分子中的 $1$ 替换为状态数 $|\mathcal{S}|$。$\square$
 
 ### 3.3 推论 3：一致可检测的充分条件 (Uniform Detectability)
 
@@ -355,7 +355,7 @@ $$\text{F1} \geq 1 - \frac{1}{\min_s \eta_s} \sum_s \rho_s \exp(-2M\Delta_s^2)$$
 
 $$\Delta_s = \frac{1}{2}(1 - 0.2 \cdot 10/9) \approx 0.389, \quad \text{F1} \geq 1 - 10 \cdot e^{-2\cdot 20 \cdot 0.389^2} \approx 1 - 10 \cdot e^{-6.05} > 0.976$$
 
-经验验证（CIFAR-10 实验中 $M=20$、$\eta=0.1$ 时 SCX-Noise F1=0.617）表明定理下界在此参数配置下非紧致——实际 F1 远高于下界。这是因为实验中的 $\mu_s$ 远低于 $0.2$（深度网络可接近零训练错误），且 Hoeffding 界在经验概率 $\approx 1$ 时保守。
+**注意**：上述计算假设 $\mu_s = 0.2$，即专家在清洁数据上的错误率为 20%。在实际 CIFAR-10 实验中（$M=20$，$\eta=0.1$），SCX-Noise 的 F1 实测为 $0.617$。这个值远低于 $0.976$ 的下界，说明 CIFAR-10 实验中**假设不满足**——最可能的原因是：(i) 专家仅在 3 epoch 的 CPU 训练后使用，实际 $\mu_s \approx 0.45$（而非假定的 $0.2$），此时 $\Delta_s \approx 0.25$，下界退化为 $\text{F1} \geq 0.18$（与实测 $0.617 > 0.18$ 一致）；(ii) (A5) 状态同质性在低质特征下不严格成立。**教训**：定理下界对 $\mu_s$ 高度敏感，实践中必须在验证集上准确估计 $\mu_s$ 后再应用公式。在 AlN v3 全 GPU 训练场景中，$\mu_s$ 可低至 $0.03\text{--}0.18$，下界得以紧致（见正文 Table 2）。
 
 ---
 
