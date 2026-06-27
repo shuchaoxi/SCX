@@ -19,7 +19,7 @@ updated: 2026-06-27
 | 单元测试 | **427 tests**（10 文件, 全部通过） |
 | 核心定理 | **3**：定理 1（噪声检测保证）+ 定理 2（弱特征失败下界）+ 定理 3（噪声不可辨识性），全部验证+bug修复 |
 | 旧命题 | 6 个 → 重构完成：Props 1'+3' 在新定理框架下重建，其余归档 |
-| 深水区理论 | 3 个方向探索 → 全部首轮审查 reject，已延期至 Paper 1 后（见 [[../../07_任务/深水区理论]]） |
+| 深水区理论 | 3 个方向探索 → v1 全部 reject → v2（收盘前）全部修复/转向：Minimax 下界 ✅ Resurrected（Hellinger）、聚类一致性 ✅ Rewritten（固定 K）、BBP 谱代理 ♻️ Pivoted（Bootstrap ARI 稳定性诊断）（见 [[../../07_任务/深水区理论]]） |
 | Agent 分析文档 | 8 份 |
 | **08_说明书/** | 7 文件（非专家定理解释），新增 |
 
@@ -49,7 +49,7 @@ updated: 2026-06-27
 | v0.2.0 | 06-26 | 理论扩展：Compress Theorem + Governance Protocol |
 | v0.3.0 | 06-26 | Influence + Online SCX + CIFAR/MedMNIST 实验 |
 | v4.0 Plan | 06-26 | 通用模块化架构：抽象基类 + YAML 域配置 |
-| v0.4.0-pre | 06-27 | **定理 1+2+3 完成**：噪声检测保证 + 弱特征失败下界 + 不可辨识性；StateValue 重构（V(s) deprecated）；Yajie 模块创建；427 tests；独立验证修复 5 bugs；08_说明书/ 7 文件；论文路线图 4→5；Arrow analogy 归档；**深水区理论探索**：3 方向全部首轮 reject，已延期 |
+| v0.4.0-pre | 06-27 | **定理 1+2+3 完成**：噪声检测保证 + 弱特征失败下界 + 不可辨识性；StateValue 重构（V(s) deprecated）；Yajie 模块创建；427 tests；独立验证修复 5 bugs；08_说明书/ 7 文件；论文路线图 4→5；Arrow analogy 归档；**深水区理论两轮冲锋**：v1 三方向全部 reject → v2 全部修复/转向（Minimax 下界 ✅ Resurrected via Hellinger，聚类一致性 ✅ Rewritten 固定 K，BBP 谱代理 ♻️ Pivoted to Bootstrap ARI 稳定性诊断） |
 | v0.4.0 | ⏳ 待发布 | code review complete, stable API freeze |
 
 ## v4+ 路线图

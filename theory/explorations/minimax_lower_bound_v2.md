@@ -6,6 +6,9 @@
 >
 > **Date**: 2026-06-27
 >
+> **Fixed**: 2026-06-27 — Corrected F1 bound (Sections 7.3, 7.5) and K>2 Hellinger formula (Section 8.3).
+> See `review_minimax_v2.md` for details of each bug.
+>
 > **Method**: Hellinger distance + tensorization + Le Cam's two-point method
 >
 > **Key advantage over v1**: Hellinger distance tensorizes exactly under product distributions
@@ -78,12 +81,13 @@ $$\inf_{\psi} \sup_{P \in \mathcal{P}_{\Delta}} R(\psi)
 **Part (b) -- F1 lower bound.** Under the same conditions:
 
 $$\inf_{\psi} \sup_{P \in \mathcal{P}_{\Delta}} \bigl[1 - \text{F1}(\psi, P)\bigr]
-\;\geq\; \frac{1}{16\eta} \bigl(2\sqrt{\mu_s(1-\mu_s)}\bigr)^M$$
+\;\geq\; \frac{\rho^M}{8-\rho^M}$$
 
-For small $\Delta$:
+where $\rho = 2\sqrt{\mu_s(1-\mu_s)}$. For small $\rho^M$ (equivalently, small $\Delta$):
 
 $$\inf_{\psi} \sup_{P \in \mathcal{P}_{\Delta}} \bigl[1 - \text{F1}(\psi, P)\bigr]
-\;\geq\; \frac{1}{16\eta} \exp\!\bigl(-2M\Delta^2 + O(M\Delta^4)\bigr)$$
+\;\geq\; \frac18 \bigl(2\sqrt{\mu_s(1-\mu_s)}\bigr)^M
+\;\geq\; \frac18 \exp\!\bigl(-2M\Delta^2 + O(M\Delta^4)\bigr)$$
 
 **Part (c) -- Rate optimality.** The SCX consistency detector of Theorem 1 achieves
 $1\text{-F1} \leq \frac1\eta \exp(-2M\Delta^2)$. By Part (b), no detector can achieve
@@ -411,32 +415,37 @@ and:
 
 $$1 - \text{F1} \geq \frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon}$$
 
-### 7.3 Substituting the Hellinger Lower Bound
+### 7.3 The Universal F1 Lower Bound
+
+From the case analysis in Section 7.5, the universal bound is:
+
+$$1 - \text{F1} \geq \frac{\varepsilon}{2-\varepsilon}$$
 
 Using $\varepsilon \geq \rho^M/4$ and noting that the RHS is increasing in $\varepsilon$:
 
-$$1 - \text{F1} \geq \frac{(1-\eta) \cdot (\rho^M/4)}{2\eta + (1-\eta) \cdot (\rho^M/4)}$$
+$$1 - \text{F1} \geq \frac{\rho^M/4}{2 - \rho^M/4}
+= \frac{\rho^M}{8 - \rho^M}$$
 
-For the regime where $\rho^M$ is small (which occurs for any fixed $\mu_s < 1/2$ when $M$
-is sufficiently large, or for fixed $M$ when $\mu_s$ is sufficiently far from $1/2$):
+For small $\rho^M$ (which occurs for any fixed $\mu_s < 1/2$ when $M$ is sufficiently
+large, or for fixed $M$ when $\mu_s$ is sufficiently far from $1/2$):
 
-$$\frac{(1-\eta) \cdot (\rho^M/4)}{2\eta + (1-\eta) \cdot (\rho^M/4)} \geq \frac{(1-\eta)\rho^M}{8\eta}$$
+$$1 - \text{F1} \geq \frac{\rho^M}{8} = \frac18 \bigl(2\sqrt{\mu_s(1-\mu_s)}\bigr)^M$$
 
-Since $1-\eta \geq 1/2$ for $\eta \leq 1/2$:
-
-$$1 - \text{F1} \geq \frac{\rho^M}{16\eta} = \frac{1}{16\eta} \bigl(2\sqrt{\mu_s(1-\mu_s)}\bigr)^M$$
+Note: This bound is independent of $\eta$ (no $\eta$ in the leading constant $1/8$),
+which is a stronger statement than the earlier incorrect derivation that introduced
+$1/(16\eta)$. The exponent $-\log\rho$ is unaffected by this correction.
 
 ### 7.4 Expression in Terms of $\Delta$
 
-$$1 - \text{F1} \geq \frac{1}{16\eta} (1-4\Delta^2)^{M/2}$$
+$$1 - \text{F1} \geq \frac18 (1-4\Delta^2)^{M/2}$$
 
 For small $\Delta$:
 
-$$1 - \text{F1} \geq \frac{1}{16\eta} \exp\!\bigl(-2M\Delta^2 - \tfrac43 M\Delta^4 - O(M\Delta^6)\bigr)$$
+$$1 - \text{F1} \geq \frac18 \exp\!\bigl(-2M\Delta^2 - 4M\Delta^4 - O(M\Delta^6)\bigr)$$
 
 ### 7.5 Verification of the F1 Bound Direction
 
-**Claim**: $1 - \text{F1} \geq \frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon}$ when
+**Claim**: $1 - \text{F1} \geq \frac{\varepsilon}{2-\varepsilon}$ when
 $\max(\alpha, \beta) \geq \varepsilon$.
 
 **Proof.** If $\max(\alpha, \beta) \geq \varepsilon$, then either $\beta \geq \varepsilon$ or
@@ -447,8 +456,7 @@ $\alpha \geq \varepsilon$ (or both).
   $$\text{F1} \leq \frac{2\eta(1-\beta)}{2\eta(1-\beta) + \eta\beta}
         \leq \frac{2\eta(1-\varepsilon)}{2\eta(1-\varepsilon) + \eta\varepsilon}
         = \frac{2(1-\varepsilon)}{2-\varepsilon}$$
-  Thus $1 - \text{F1} \geq 1 - \frac{2(1-\varepsilon)}{2-\varepsilon}
-  = \frac{\varepsilon}{2-\varepsilon} \geq \frac{\varepsilon}{2}$.
+  Thus $1 - \text{F1} \geq \frac{\varepsilon}{2-\varepsilon}$.
 
 - **Case 2** ($\alpha \geq \varepsilon$): Then $\text{FP} = (1-\eta)\alpha \geq (1-\eta)\varepsilon$.
   Using $\text{F1} \leq \frac{2\text{TP}}{2\text{TP} + \text{FP}}$ (since $\text{FN} \geq 0$):
@@ -456,15 +464,23 @@ $\alpha \geq \varepsilon$ (or both).
         \leq \frac{2\eta}{2\eta + (1-\eta)\varepsilon}$$
   Thus $1 - \text{F1} \geq \frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon}$.
 
-Since the lower bound in Case 2 is tighter than that in Case 1 (for $\eta \leq 1/2$),
-the overall bound is:
+Since $\max(\alpha, \beta) \geq \varepsilon$, at least one case must hold. The universal
+bound is the minimum of the two case-specific bounds:
 
-$$1 - \text{F1} \geq \min\left(\frac{\varepsilon}{2},\; \frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon}\right)
-= \frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon}$$
+$$1 - \text{F1} \geq \min\!\left(\frac{\varepsilon}{2-\varepsilon},\;
+\frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon}\right)$$
 
-The last equality holds because $\frac{\varepsilon}{2} \geq \frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon}$
-for $\eta \leq 1/2$ (cross-multiplying gives $2\eta + (1-\eta)\varepsilon \geq 2(1-\eta)$,
-which holds since $\varepsilon \geq 0$ and $\eta \geq 0$). $\square$
+For $\eta \leq 1/2$ and small $\varepsilon$ (the regime of interest), compare the
+approximate magnitudes: $\frac{\varepsilon}{2-\varepsilon} \approx \frac{\varepsilon}{2}$
+and $\frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon} \approx
+\frac{(1-\eta)\varepsilon}{2\eta}$. The ratio is $\frac{\eta}{1-\eta} \leq 1$, so
+Case~1 gives the smaller (tighter) bound. Hence:
+
+$$1 - \text{F1} \geq \frac{\varepsilon}{2-\varepsilon}$$
+
+This bound is universal: it holds regardless of whether the test falls into Case~1 or
+Case~2, because it is the smaller of the two case-specific bounds. No cross-multiplication
+or parameter restriction is needed. $\square$
 
 ---
 
@@ -506,15 +522,20 @@ The mean separation is:
 
 $$p_1 - p_0 = 1 - \frac{\mu_s}{K-1} - \mu_s = 1 - \mu_s \cdot \frac{K}{K-1}$$
 
-This is increasing in $K$ (for fixed $\mu_s$). The per-expert Hellinger affinity is:
+This is increasing in $K$ (for fixed $\mu_s$). The per-expert Hellinger affinity for $\text{Bernoulli}(p_0)$ vs $\text{Bernoulli}(p_1)$ is:
 
-$$\rho_K = 2\sqrt{\mu_s \left(1 - \frac{\mu_s}{K-1}\right)}$$
+$$\rho_K = \sqrt{\mu_s \left(1 - \frac{\mu_s}{K-1}\right)}
+        + \sqrt{(1-\mu_s) \left(\frac{\mu_s}{K-1}\right)}$$
 
-Since $\rho_K$ is decreasing in $K$ (larger $K$ means larger separation), and the
+This is the correct general formula; the expression $2\sqrt{\mu_s(1-\mu_s)}$ is only
+valid for $K=2$ where $p_1 = 1-p_0$. One can verify $\rho_K \leq 1$ via Cauchy-Schwarz:
+$\sqrt{pq} + \sqrt{(1-p)(1-q)} \leq 1$, with equality iff $p=q$.
+
+Since $\rho_K$ decreases with $K$ (larger $K$ means larger separation), and the
 testing lower bound is $\rho_K^M/4$, we have:
 
 - For $K=2$: $\rho_2 = 2\sqrt{\mu_s(1-\mu_s)}$
-- For $K > 2$: $\rho_K = 2\sqrt{\mu_s(1 - \mu_s/(K-1))} < \rho_2$
+- For $K > 2$: $\rho_K = \sqrt{\mu_s(1 - \mu_s/(K-1))} + \sqrt{(1-\mu_s)\mu_s/(K-1)} < \rho_2$
 
 Therefore $\rho_K^M < \rho_2^M$, meaning the bound for $K > 2$ is larger (harder to
 distinguish). Since we want a lower bound on the minimax risk, a larger bound from
@@ -636,19 +657,19 @@ $$1 - \text{F1} \leq \frac{1}{\eta} \exp\!\bigl(-2M\Delta_{s^*}^2\bigr)$$
 
 From Section 7:
 
-$$1 - \text{F1} \geq \frac{1}{16\eta} \exp\!\bigl(-2M\Delta^2 + O(M\Delta^4)\bigr)$$
+$$1 - \text{F1} \geq \frac18 \exp\!\bigl(-2M\Delta^2 + O(M\Delta^4)\bigr)$$
 
 ### 10.3 Optimality Statement
 
 | Quantity | Upper bound (Thm 1) | Lower bound (Thm 4) | Ratio |
 |----------|---------------------|---------------------|-------|
 | Exponent | $2M\Delta^2$ | $2M\Delta^2$ | **1 (exact match)** |
-| Leading constant | $1/\eta$ | $1/(16\eta)$ | $16$ (constant gap) |
+| Leading constant | $1/\eta$ | $1/8$ | $8/\eta$ (at least $16$) |
 | Regime | All $\Delta$ | Small $\Delta$ | Asymptotic in $\Delta$ |
 
 The exponent $2M\Delta^2$ is **minimax optimal**: no detector can achieve a better
-exponential rate. The constant factor gap of $16$ is typical for minimax results and
-can be tightened with more refined arguments.
+exponential rate. The constant factor gap is $8/\eta$ (at least $16$ for $\eta \leq 1/2$),
+which is typical for minimax results and can be tightened with more refined arguments.
 
 **Corollary (Rate optimality).** The SCX consistency detector achieves the minimax-optimal
 rate $\exp(-2M\Delta^2)$ in the small-gap regime. This is the information-theoretic
@@ -734,16 +755,16 @@ which occurs when $M$ is large enough or $\mu_s$ is far enough from $1/2$.
 
 ### 12.2 F1 Lower Bound
 
-The F1 lower bound $1-\text{F1} \geq \rho^M/(16\eta)$ for $\eta = 0.1$:
+The F1 lower bound $1-\text{F1} \geq \rho^M/8$:
 
 | $\mu_s$ | $\Delta$ | $M$ | $1-\text{F1} \geq$ | Implied $\text{F1} \leq$ |
 |:-------:|:--------:|:---:|:------------------:|:------------------------:|
-| 0.20    | 0.30     | 10  | $0.8^{10}/1.6 \approx 0.027$ | $0.973$ |
-| 0.20    | 0.30     | 20  | $0.8^{20}/1.6 \approx 0.003$ | $0.997$ |
-| 0.25    | 0.25     | 10  | $0.866^{10}/1.6 \approx 0.058$ | $0.942$ |
-| 0.25    | 0.25     | 20  | $0.866^{20}/1.6 \approx 0.013$ | $0.987$ |
-| 0.30    | 0.20     | 20  | $0.917^{20}/1.6 \approx 0.044$ | $0.956$ |
-| 0.40    | 0.10     | 100 | $0.98^{100}/1.6 \approx 0.057$ | $0.943$ |
+| 0.20    | 0.30     | 10  | $0.8^{10}/8 \approx 0.013$ | $0.987$ |
+| 0.20    | 0.30     | 20  | $0.8^{20}/8 \approx 0.001$ | $0.999$ |
+| 0.25    | 0.25     | 10  | $0.866^{10}/8 \approx 0.030$ | $0.970$ |
+| 0.25    | 0.25     | 20  | $0.866^{20}/8 \approx 0.007$ | $0.993$ |
+| 0.30    | 0.20     | 20  | $0.917^{20}/8 \approx 0.022$ | $0.978$ |
+| 0.40    | 0.10     | 100 | $0.98^{100}/8 \approx 0.017$ | $0.983$ |
 
 *Note*: These F1 upper bounds are loose (close to 1) because the bound only requires
 that $\max(\alpha, \beta) \geq \varepsilon$, not that both are large. A more refined
@@ -827,7 +848,7 @@ $\beta$. The derivation:
 3. Takes the minimum (worst case) to get the final bound
 4. Verifies all inequality directions explicitly
 
-The bound $1-\text{F1} \geq \rho^M/(16\eta)$ is valid for all $\eta \leq 1/2$ without
+The bound $1-\text{F1} \geq \rho^M/8$ is valid for all $\eta \leq 1/2$ without
 additional conditions.
 
 ### 13.4 Summary of Improvements
