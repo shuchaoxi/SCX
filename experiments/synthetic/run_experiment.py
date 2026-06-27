@@ -185,6 +185,19 @@ def run_scx_pipeline(
 
     # --- 4. Data classification ---
     print("  [SCX] Data classification...")
+    # NOTE: The default DataClassifier uses empirical thresholds.
+    # For theorem-based alternatives, replace consistency_high with the
+    # optimal noise threshold from Theorem 1:
+    #
+    #   from scx.valuation.state_value import StateValue
+    #   sv = StateValue()
+    #   # mu_max = max over states of state-level clean error rate
+    #   theta_star = sv.optimal_noise_threshold(mu_max=mu_max, K=n_states)
+    #   classifier = DataClassifier(config={"consistency_high": theta_star,
+    #                                       "noise_high": theta_star})
+    #
+    # See also: scx.valuation.adaptive.AdaptiveThreshold for data-driven
+    # calibration of all six threshold keys.
     classifier = DataClassifier()
     class_df = classifier.classify_all(state_metrics, R_matrix=R_matrix)
     print(classifier.summary(class_df))

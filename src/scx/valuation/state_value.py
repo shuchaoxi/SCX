@@ -110,9 +110,19 @@ class StateValue:
     .. deprecated::
         The :meth:`acquisition_value` and :meth:`compression_value` methods
         are deprecated in favor of the theorem-based methods introduced in
-        v0.6.  See :meth:`noise_detection_f1_bound`,
-        :meth:`feature_strength_diagnostic`, :meth:`noise_consistency_score`,
-        and :meth:`optimal_noise_threshold`.
+        v0.6.  See the following replacements:
+
+        * :meth:`noise_detection_f1_bound` — Theorem 1 F1 lower bound
+          (Hoeffding form)
+        * :meth:`noise_detection_f1_bound_chernoff` — Theorem 1 F1 lower
+          bound (tighter Chernoff / KL form)
+        * :meth:`noise_consistency_score` — Theorem 1 C(x) multi-expert
+          consistency score
+        * :meth:`optimal_noise_threshold` — Theorem 1, Corollary 2 optimal
+          threshold theta*
+        * :meth:`separation_gap` — Theorem 1 separation gap Delta_s
+        * :meth:`feature_strength_diagnostic` — Theorem 2 weak-feature
+          diagnostic (I(phi; S) estimation)
 
     Parameters
     ----------
@@ -171,7 +181,8 @@ class StateValue:
         """
         warnings.warn(
             "StateValue.acquisition_value() is deprecated; use "
-            "noise_detection_f1_bound() or feature_strength_diagnostic() instead.",
+            "noise_detection_f1_bound(), noise_consistency_score(), "
+            "optimal_noise_threshold(), or feature_strength_diagnostic() instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -223,7 +234,8 @@ class StateValue:
         """
         warnings.warn(
             "StateValue.compression_value() is deprecated; use "
-            "noise_detection_f1_bound() or feature_strength_diagnostic() instead.",
+            "noise_detection_f1_bound(), noise_consistency_score(), "
+            "optimal_noise_threshold(), or feature_strength_diagnostic() instead.",
             DeprecationWarning,
             stacklevel=2,
         )

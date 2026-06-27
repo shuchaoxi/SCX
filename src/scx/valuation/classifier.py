@@ -27,6 +27,29 @@ import pandas as pd
 class DataClassifier:
     """Four-way state classifier: Valuable / Redundant / Noisy / Expert-dependent.
 
+    .. note::
+
+        All thresholds below are **empirical defaults** and may need
+        calibration for specific datasets.  Theorem-based alternatives
+        are available in :class:`~scx.valuation.state_value.StateValue`:
+
+        * ``error_high`` → :meth:`StateValue.separation_gap()
+          <scx.valuation.state_value.StateValue.separation_gap>`
+          (uses Theorem 1's :math:`\\mu_s` to derive state-level
+          clean-error bounds).
+
+        * ``consistency_high`` and ``noise_high`` → :meth:`StateValue.optimal_noise_threshold()
+          <scx.valuation.state_value.StateValue.optimal_noise_threshold>`
+          (Theorem 1, Corollary 2)::
+
+              theta* = 1/2 * (1 + mu_max * (K-2)/(K-1))
+
+          replaces the ad-hoc consistency threshold with the optimal
+          noise/clean separation threshold.
+
+        * For end-to-end data-driven calibration see
+          :class:`~scx.valuation.adaptive.AdaptiveThreshold`.
+
     Parameters
     ----------
     config : dict, optional

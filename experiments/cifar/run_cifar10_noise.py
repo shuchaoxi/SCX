@@ -33,6 +33,7 @@ from torchvision import datasets
 from scx.state.discovery import StateDiscovery
 from scx.valuation.noise_score import NoiseScore
 from scx.valuation.learnability import LearnabilityScore
+from scx.valuation.state_value import StateValue  # Theorem 1 optimal threshold
 
 # Local utilities
 from utils import (
@@ -142,12 +143,42 @@ def detect_noise_scx(
     residuals: np.ndarray,
     state_labels: np.ndarray,
     n_states: int,
+    n_classes: int = 10,
 ) -> np.ndarray:
     """SCX NoiseScore-based noise detection.
 
     Uses residual consistency within each state: samples with anomalously high
     residual compared to their state-mates are flagged.
+
+    The detection threshold is derived from Theorem 1's optimal consistency
+    threshold, replacing the previously hardcoded z > 2.0 heuristic.
+
+    Using Theorem 1 optimal threshold
+        theta* = 1/2 * (1 + mu_max * (K-2)/(K-1))
+    where mu_max = maximum state-level expert error rate and K = number of classes.
     """
+    # --- Compute theorem-based threshold ---------------------------------
+    # Estimate mu_max as the maximum state-level mean residual, normalised
+    # to [0, 1] across states (proxy for state-level expert error rate).
+    state_means = []
+    for s in range(n_states):
+        mask_s = state_labels == s
+        if mask_s.sum() > 0:
+            state_means.append(float(residuals[mask_s].mean()))
+    state_means = np.array(state_means)
+
+    if len(state_means) > 1 and state_means.max() > state_means.min():
+        normalised = (state_means - state_means.min()) / (state_means.max() - state_means.min())
+        estimated_mu_max = float(normalised.max())
+    elif len(state_means) == 1:
+        estimated_mu_max = 0.3  # fallback: moderate error rate
+    else:
+        estimated_mu_max = 0.5  # fallback: high uncertainty
+
+    # Theorem 1, Corollary 2: optimal threshold maximises separation gap
+    sv = StateValue()
+    theta_star = sv.optimal_noise_threshold(mu_max=estimated_mu_max, K=n_classes)
+
     noise_detected = np.zeros(len(features), dtype=bool)
 
     for s in range(n_states):
@@ -164,8 +195,8 @@ def detect_noise_scx(
         std_r = state_residuals.std() + 1e-8
         z_scores = (state_residuals - mean_r) / std_r
 
-        # Flag samples with z > 2 (anomalously high residual)
-        flagged = z_scores > 2.0
+        # Flag samples with z > theta_star (derived from Theorem 1)
+        flagged = z_scores > theta_star
         noise_detected[state_idx[flagged]] = True
 
     return noise_detected

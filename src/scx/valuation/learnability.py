@@ -43,6 +43,20 @@ class LearnabilityScore:
     ) -> float:
         """Compute state-level consistency C(s).
 
+        .. note::
+
+            This C(s) is **state-level label consistency** (purity / variance
+            compression), **NOT** the multi-expert consistency C(x) from
+            Theorem 1.  The Theorem 1 C(x) represents the fraction of experts
+            that fail on a given sample:
+
+                C(x) = (1/M) * sum_m e_m(x, y)
+
+            and is computed by :meth:`StateValue.noise_consistency_score()
+            <scx.valuation.state_value.StateValue.noise_consistency_score>`.
+            The symbol C is reused for two different concepts; treat them
+            as independent measures.
+
         Three measurement modes:
 
         - **y_s only** (label-based):  ``C_label(s) = 1 - Var(y_s) / Var_total``
