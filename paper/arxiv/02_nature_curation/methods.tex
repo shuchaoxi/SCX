@@ -1,0 +1,102 @@
+% ============================================================
+% Nature Computational Science — Methods
+% Paper II: The Curation-Exploration Tradeoff
+% ============================================================
+
+\section{Methods}
+
+\subsection{SCX Noise Detection Algorithm}
+
+The SCX (Soft-Consensus Cross-Validation) algorithm detects label noise by measuring multi-expert consistency. Let $D = \{(x_i, y_i)\}_{i=1}^N$ be the full dataset. The algorithm proceeds as follows.
+
+\textbf{Expert training.} Partition $D$ into $M$ disjoint subsets $D_1, \dots, D_M$ of approximately equal size, $|D_m| \approx N/M$. Train one expert model $f_m$ on each $D_m$ using the same architecture but independent random seeds. For datasets with $N < 1000$ samples, we recommend bootstrap sampling (with replacement) instead of disjoint partitioning, ensuring each expert sees approximately $0.63N$ unique samples while sharing the $N$-sample draw.
+
+\textbf{Consensus scoring.} For each sample $(x_i, y_i)$, compute the consensus score:
+\begin{equation}
+C_M(x_i) = \frac{1}{M} \sum_{m=1}^M \mathbf{1}\{f_m(x_i) \neq y_i\},
+\end{equation}
+the fraction of experts that misclassify sample $i$. Under the assumptions of Paper~I (A1--A6), clean samples have expected consensus $\mathbb{E}[C \mid \text{clean}] \leq \mu_s$ and noisy samples have $\mathbb{E}[C \mid \text{noise}] \geq 1 - \mu_s/(K-1)$, where $\mu_s$ is the state-$s$ clean error rate and $K$ is the number of classes.
+
+\textbf{State discovery (two-layer clustering).} We perform two-layer $K$-means clustering on the feature representations. The first layer operates on per-expert feature vectors $\{\phi_m(x_i)\}_{m=1}^M$ (typically the penultimate layer activations, concatenated across experts, dimensionality $M \times d_\phi$). The second layer refines the cluster boundaries by running $K$-means on the consensus scores within each first-layer cluster, producing the final state partition $\{\hat{s}_1, \dots, \hat{s}_{K_S}\}$. The number of clusters $K_S$ is selected via the elbow method on the silhouette score over the range $K_S \in [2, 15]$.
+
+\textbf{Adaptive threshold selection.} For each state $\hat{s}$, we estimate the state-specific parameters using the method-of-moments fit to a two-component beta mixture on the consensus scores $\{C_M(x_i): x_i \in \hat{s}\}$. Let $\widehat{\eta}_s$, $\widehat{p}_{0,s}$, and $\widehat{p}_{1,s}$ be the estimated noise proportion, clean error rate, and noise error rate, respectively. The adaptive threshold is:
+\begin{equation}
+\theta_{\mathrm{opt},s} = \theta_s^* + \frac{1}{M} \cdot \frac{\log((1-\widehat{\eta}_s)/\widehat{\eta}_s)}{D_s^*},
+\end{equation}
+where $\theta_s^*$ is the Chernoff point solving $\mathrm{KL}(\theta\|p_{0,s}) = \mathrm{KL}(\theta\|p_{1,s})$ and $D_s^* = \log(p_{1,s}(1-p_{0,s})/(p_{0,s}(1-p_{1,s})))$ is the log-odds gap. This threshold is exact-constant minimax optimal (Paper~I, Theorem~4').
+
+\subsection{Practical Exploration Scheduling}
+
+The exploration rate $\eta(t)$ governs how much of the data is accepted at iteration $t$ of the iterative refinement loop (optional; single-pass curation is sufficient for most applications). We recommend:
+
+\begin{itemize}
+	\item \textbf{Exponential decay} (strong features, $\varepsilon_\phi < 0.3$): $\eta(t) = \eta_0 \cdot 0.5^{t/T_{1/2}}$ with half-life $T_{1/2} = 3$--$5$ iterations.
+	\item \textbf{Harmonic decay} (weak features, $0.3 \leq \varepsilon_\phi \leq 0.5$): $\eta(t) = \eta_0 / (1 + \beta t)$ with $\beta = 0.2$.
+\end{itemize}
+
+In single-pass mode (used throughout this paper), we set $\eta_0 = 1.0$ (accept all data during exploration), train $M$ experts once, compute consistency, and curate in one step with $\theta_{\mathrm{opt}}$ as the final threshold.
+
+\subsection{Bootstrap Stability Diagnostic}
+
+The bootstrap stability diagnostic (Paper~I, Proposition~6) estimates whether the feature representation is sufficiently informative for SCX to succeed. The procedure:
+
+\begin{enumerate}
+	\item Draw $B = 100$ bootstrap resamples of the dataset (each of size $N$, with replacement).
+	\item For each resample $b$, run $K$-means clustering on $\{\phi(x_i)\}$ with $K = K_S$ (using the elbow-determined state count from the full data).
+	\item Compute the adjusted Rand index (ARI) between the full-data clustering and each bootstrap clustering: $S_b = \text{ARI}(\hat{s}_{\text{full}}, \hat{s}_b)$.
+	\item Report the mean bootstrap stability $S(\Phi, K) = \frac{1}{B} \sum_{b=1}^B S_b$.
+\end{enumerate}
+
+If $S(\Phi, K) > 0.7$, features are strong and SCX is likely to succeed. If $S(\Phi, K) < 0.3$, features are too weak for SCX to outperform a loss baseline, and effort should be directed toward feature engineering.
+
+\subsection{Computational Cost}
+
+For a dataset of size $N$ with $d$-dimensional inputs, training $M$ expert models costs approximately $M$ times the cost of a single model training. State discovery via $K$-means on $M \times d_\phi$ dimensional features costs $\mathcal{O}(N \cdot K_S \cdot M \cdot d_\phi)$. Consensus scoring requires one forward pass per expert per sample, $\mathcal{O}(M \cdot N)$ evaluations. The total cost is dominated by expert training. For $N < 10^6$ and $M \leq 12$, the full pipeline completes in under 24 hours on a single GPU.
+
+\subsection{Domain-Specific Configurations}
+
+\subsubsection{AlN MLIP}
+\textbf{Dataset.} 534 DFT frames for aluminium nitride, each containing atomic positions, species, energies, and forces. 74 frames (14\%) carry label noise from thermal and molecular dynamics simulations at 1800~K (force error $> 5$~eV/{\AA}).
+
+\textbf{Descriptors.} ACE~(Atomic Cluster Expansion) descriptors with $N_{\text{max}} = 8$, $L_{\text{max}} = 4$, yielding $d_\phi = 124$ features per atom, averaged to frame-level features via element-wise summation and normalization.
+
+\textbf{Experts.} $M = 8$ MLIP models, each trained on a bootstrap sample of $N = 534$ frames (with replacement), using the same ACE descriptor basis but independent random seeds for optimizer initialization. Training: 5000 L-BFGS steps per expert, convergence criterion of $10^{-8}$ on energy RMSE.
+
+\textbf{State discovery.} Two-layer $K$-means on concatenated frame-level ACE features ($8 \times 124 = 992$ dimensions). Elbow method identifies $K_S = 5$ states. States correspond to physical regimes: low-temperature equilibrium (State~1, 48\% of frames), thermal excitation (State~2, 22\%), MLMD trajectory (State~3, 16\%), surface relaxation (State~4, 9\%), and high-temperature disorder (State~5, 5\%).
+
+\textbf{Evaluation.} Held-out test set of 134 frames (25\% of data) with clean labels verified by DFT recalculation. Metrics: force RMSE (eV/{\AA}), energy MAE (meV/atom), noise detection F1.
+
+\subsubsection{CIFAR-10}
+\textbf{Dataset.} 50,000 training images, 10 classes, 5,000 images per class. Symmetric label noise injected at rates $\eta \in \{0.1, 0.2, 0.4\}$ by flipping the label uniformly over the other 9 classes.
+
+\textbf{Architecture.} ResNet-18 with initial learning rate 0.1, cosine annealing schedule, batch size 128, 200 epochs. Standard augmentation: random crop, horizontal flip.
+
+\textbf{Experts.} $M = 5$ ResNet-18 models trained on disjoint subsets of 10,000 images each. Each expert trained for 200 epochs. No data augmentation applied during consensus computation.
+
+\textbf{State discovery.} $K$-means on concatenated penultimate-layer activations (512 dimensions $\times$ 5 experts = 2,560 total). $K_S = 4$ states, corresponding roughly to easy (high-confidence), moderate, hard, and ambiguous classes.
+
+\textbf{Evaluation.} Standard CIFAR-10 test set (10,000 images). Metrics: test accuracy, noise detection F1, precision/recall at various noise rates.
+
+\subsubsection{MedMNIST}
+\textbf{Dataset.} DermaMNIST: 10,015 dermoscopic images (7 classes). BloodMNIST: 17,092 blood cell images (8 classes). Both from the MedMNIST v2 collection. Natural (not injected) label noise present in clinical annotations.
+
+\textbf{Architecture.} SimpleCNN (3 convolutional layers + 2 fully connected layers, ~1.2M parameters) for DermaMNIST. ResNet-18 for BloodMNIST. Training: Adam optimizer, learning rate $10^{-3}$, batch size 64, 100 epochs.
+
+\textbf{Experts.} $M = 8$ for DermaMNIST, $M = 6$ for BloodMNIST. Disjoint subsets of size $\lfloor N/M\rfloor$.
+
+\textbf{State discovery.} $K$-means on penultimate-layer features (128 dimensions for SimpleCNN, 512 for ResNet-18). $K_S = 3$ for DermaMNIST, $K_S = 4$ for BloodMNIST.
+
+\textbf{Evaluation.} Official MedMNIST test splits. Metrics: ROC-AUC for noise detection, routing accuracy for SCX-Routing, compression accuracy for SCX-Compress.
+
+\subsubsection{DrugBank Drug-Target}
+\textbf{Dataset.} 15,000 drug molecules from DrugBank v5.1, 5,000 human protein targets. Total 75M drug-target pairs. Labels: known interactions from DrugBank annotations (binary, ~2\% positive rate).
+
+\textbf{Fingerprints.} Extended-connectivity fingerprints (ECFP4, radius 2, 1024 bits). Target features: sequence composition + Pfam domain profiles (768 dimensions combined).
+
+\textbf{Four-layer pipeline.} Layer~1 (knowledge base): direct DrugBank annotations. Layer~2 (similarity): chemical similarity transfer using Tanimoto $\geq 0.7$ threshold. Layer~3 (deep ML): gradient-boosted trees on concatenated drug-target features. Layer~4 (docking): AutoDock Vina on top-100 candidates per target.
+
+\textbf{SCX integration.} Each pipeline layer treated as an "expert" ($M = 4$). Consistency scored as agreement across layers on interaction prediction. State discovery on molecular feature space (ECFP4) with $K_S = 6$ states corresponding to chemical clusters (aromatic, aliphatic, heterocyclic, peptide-like, carbohydrate, and macrocyclic).
+
+\textbf{Evaluation.} Holdout set of 1,500 drugs $\times$ 2,000 targets (3M pairs) with verified interaction labels from ChEMBL. Metrics: precision@k, recall@k, targetome coverage.
+
+\end{document}

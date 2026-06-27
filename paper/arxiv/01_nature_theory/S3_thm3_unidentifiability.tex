@@ -1,0 +1,466 @@
+% ============================================================
+% S3: Theorem 3 -- Noise-Difficulty Unidentifiability
+% Supplementary Information for Nature submission:
+% "A Fundamental Impossibility in Data Quality"
+% ============================================================
+
+\section{Theorem 3: Noise-Difficulty Unidentifiability}
+\label{sec:thm3}
+
+\subsection{Statement and Implications}
+\label{sec:thm3_statement}
+
+The central discovery of this paper is that distinguishing label noise from
+intrinsic sample difficulty is mathematically impossible from observational data
+alone.  Theorem~3 formalizes this impossibility.
+
+\begin{theorem}[Noise-Difficulty Unidentifiability]
+  \label{thm:unidentifiability}
+  For any $K \ge 2$ classification problem, any $M \ge 1$ experts, and any finite
+  state space~$\mathcal{S}$, there exist two data-generating processes
+  $\mathcal{P}_{\text{noise}}$ and $\mathcal{P}_{\text{hard}}$ such that:
+  \begin{enumerate}[(i)]
+    \item Under $\mathcal{P}_{\text{noise}}$, label errors are caused by
+      \textbf{label noise}---the observed label differs from the true label.
+    \item Under $\mathcal{P}_{\text{hard}}$, all observed labels equal the true
+      labels, but some samples are intrinsically
+      \textbf{difficult}---expert errors arise from label ambiguity, not from
+      label errors.
+    \item The two processes produce identical observable joint distributions:
+      \[
+      \mathcal{P}_{\text{noise}}\bigl(x,\,y,\,\{f_m(x)\}\bigr)
+      = \mathcal{P}_{\text{hard}}\bigl(x,\,y,\,\{f_m(x)\}\bigr),
+      \qquad \forall\,(x,y,\{f_m\}) \in \mathcal{X}\times\mathcal{Y}\times\mathcal{Y}^M.
+      \]
+    \item Consequently, for any algorithm $\mathcal{A}$ that maps $n$ i.i.d.\
+      observations to per-sample noise flags, the expected error rate on the
+      ambiguous subset satisfies
+      \[
+      \max\bigl(\mathrm{Error}_{\mathcal{P}_{\text{noise}}}(\mathcal{A}),\,
+             \mathrm{Error}_{\mathcal{P}_{\text{hard}}}(\mathcal{A})\bigr)
+      \ge \frac{\eta\rho}{2},
+      \]
+      where $\eta$ is the noise rate and $\rho$ is the proportion of the
+      ambiguous state.  The bound is strictly positive whenever $\eta>0$ and
+      $\rho>0$, proving that the two worlds cannot be perfectly distinguished.
+  \end{enumerate}
+\end{theorem}
+
+\begin{remark}
+  Theorem~3 asserts that the two statements ``this sample's label is wrong''
+  and ``this sample is so difficult that experts systematically err on it'' are
+  observationally equivalent.  The SCX framework must introduce assumptions
+  (A1)--(A6) to break this equivalence; Theorem~3 shows that these assumptions
+  are not arbitrary technical conditions but rather the minimal structure
+  required for identifiability.  See \S\ref{sec:thm3_minimal} for the minimal
+  sufficient set.
+\end{remark}
+
+\subsection{Proof for $K=2$ (Binary Classification)}
+\label{sec:thm3_proof_K2}
+
+We prove Theorem~3 by explicit construction.  Fix $K=2$, label space
+$\mathcal{Y}=\{0,1\}$, $M\ge 1$ experts, and two states $s_1,s_2\in\mathcal{S}$.
+Let $\rho\in(0,1)$ and $\eta\in(0,\tfrac12)$ be parameters to be specified.
+
+\subsubsection{World A: Noise-Driven Construction}
+\label{sec:thm3_worldA}
+
+In the noise world $\mathcal{P}_{\text{noise}}$:
+
+\begin{itemize}
+  \item \textbf{State $s_1$} (``clean but noisy''), with
+    $\mathbb{P}(X\in s_1)=\rho$.  All samples have true label $y^*\equiv0$.
+    Labels are flipped with probability $\eta$:
+    \[
+    \mathbb{P}(y\neq y^* \mid x\in s_1)=\eta.
+    \]
+    Expert accuracy on clean samples is $1-\varepsilon_1$:
+    \[
+    \mathbb{P}(f_m(x)=y^* \mid x\in s_1,\text{ clean})=1-\varepsilon_1,
+    \qquad \varepsilon_1\in(0,\tfrac12).
+    \]
+  \item \textbf{State $s_2$} (``clean and easy''), with
+    $\mathbb{P}(X\in s_2)=1-\rho$.  True label $y^*\equiv0$, no noise
+    ($\eta=0$).  Expert accuracy is $1-\varepsilon_2$ with
+    $\varepsilon_1<\varepsilon_2\le\tfrac12$ (the state is genuinely harder
+    for experts).
+\end{itemize}
+
+Expert predictions depend only on the true label $y^*$ (through training on
+clean data) and are conditionally independent given $x$.
+
+\subsubsection{World B: Difficulty-Driven Construction}
+\label{sec:thm3_worldB}
+
+In the hardness world $\mathcal{P}_{\text{hard}}$:
+
+\begin{itemize}
+  \item \textbf{State $s_1$}, with the same marginal probability $\rho$.
+    All observed labels are correct: $y=y^*$ for every sample.  However, the
+    true label itself is random:
+    \[
+    \mathbb{P}(y^*=0 \mid x\in s_1)=1-\eta,\qquad
+    \mathbb{P}(y^*=1 \mid x\in s_1)=\eta.
+    \]
+    Experts are biased toward class~0: for every $m$,
+    \[
+    \mathbb{P}(f_m(x)=0 \mid x\in s_1,\,y^*=0)=1-\varepsilon_1,\qquad
+    \mathbb{P}(f_m(x)=0 \mid x\in s_1,\,y^*=1)=1-\varepsilon_1.
+    \]
+    Thus when $y^*=0$ the expert accuracy is $1-\varepsilon_1$ (good); when
+    $y^*=1$ the expert accuracy is $\varepsilon_1$ (systematically wrong).
+  \item \textbf{State $s_2$}, identical to World A: $y=y^*\equiv0$, expert
+    accuracy $1-\varepsilon_2$.
+\end{itemize}
+
+\subsubsection{Observational Equivalence Verification}
+\label{sec:thm3_verification}
+
+The observable joint distribution factorises as
+\[
+\mathcal{P}(x,y,f_1,\dots,f_M)
+= \mathcal{P}(x)\cdot\mathcal{P}(y\mid x)\cdot\prod_{m=1}^M\mathcal{P}(f_m\mid x),
+\]
+using conditional independence of experts given $x$ (Assumptions A1--A2).
+
+\paragraph{Marginal $\mathcal{P}(x)$.}
+In both worlds $\mathbb{P}(X\in s_1)=\rho$,
+$\mathbb{P}(X\in s_2)=1-\rho$.  Identical.
+
+\paragraph{Conditional label distribution $\mathcal{P}(y\mid x)$.}
+In World A (state $s_1$):
+\[
+\begin{aligned}
+\mathcal{P}_{\text{noise}}(y=0\mid s_1)
+&= (1-\eta)\cdot1 + \eta\cdot0 = 1-\eta,\\
+\mathcal{P}_{\text{noise}}(y=1\mid s_1)
+&= (1-\eta)\cdot0 + \eta\cdot1 = \eta.
+\end{aligned}
+\]
+In World B (state $s_1$), $y=y^*$ directly:
+\[
+\mathcal{P}_{\text{hard}}(y=0\mid s_1)=1-\eta,\qquad
+\mathcal{P}_{\text{hard}}(y=1\mid s_1)=\eta.
+\]
+For state $s_2$, $\mathcal{P}(y=0\mid s_2)=1$,
+$\mathcal{P}(y=1\mid s_2)=0$ in both worlds.  Hence
+$\mathcal{P}(y\mid x)$ is identical across worlds.
+
+\paragraph{Conditional expert distribution $\mathcal{P}(f_m\mid x)$.}
+In World A (state $s_1$), experts predict the true label $y^*\equiv0$ with
+accuracy $1-\varepsilon_1$:
+\[
+\mathcal{P}_{\text{noise}}(f_m=0\mid s_1)=1-\varepsilon_1,\qquad
+\mathcal{P}_{\text{noise}}(f_m=1\mid s_1)=\varepsilon_1.
+\]
+In World B (state $s_1$):
+\[
+\begin{aligned}
+\mathcal{P}_{\text{hard}}(f_m=0\mid s_1)
+&= \mathbb{P}(y^*=0\mid s_1)\cdot\mathbb{P}(f_m=0\mid s_1,y^*=0)\\
+&\quad + \mathbb{P}(y^*=1\mid s_1)\cdot\mathbb{P}(f_m=0\mid s_1,y^*=1)\\
+&= (1-\eta)(1-\varepsilon_1) + \eta(1-\varepsilon_1) = 1-\varepsilon_1,\\[4pt]
+\mathcal{P}_{\text{hard}}(f_m=1\mid s_1)
+&= (1-\eta)\varepsilon_1 + \eta\varepsilon_1 = \varepsilon_1.
+\end{aligned}
+\]
+For state $s_2$, both worlds give $\mathcal{P}(f_m=0\mid s_2)=1-\varepsilon_2$,
+$\mathcal{P}(f_m=1\mid s_2)=\varepsilon_2$.
+
+\paragraph{Joint identity.}
+Combining the three components,
+\[
+\mathcal{P}_{\text{noise}}(x,y,\{f_m\})
+= \mathcal{P}_{\text{hard}}(x,y,\{f_m\}),
+\qquad \forall\,(x,y,\{f_m\}),
+\]
+which proves part~(iii) of Theorem~3. \hfill$\square$
+
+\subsubsection{Algorithm Impossibility}
+\label{sec:thm3_impossibility}
+
+Let $\mathcal{A}$ be any algorithm that uses $n$ i.i.d.\ observations to
+output per-sample noise flags $\{z_i\}_{i=1}^n$, where $z_i=1$ means ``label
+is noisy.''  Since the observable distribution is identical in both worlds,
+the algorithm's output distribution is also identical:
+\[
+\mathcal{L}_{\mathcal{P}_{\text{noise}}}(\mathcal{A}(D_n))
+= \mathcal{L}_{\mathcal{P}_{\text{hard}}}(\mathcal{A}(D_n)).
+\]
+
+However, the \emph{correct} noise flags differ between worlds.  In World~A,
+the truly noisy samples are those in state $s_1$ with $y=1$ (a proportion
+$\rho\eta$ of the data).  In World~B, \emph{no} samples are noisy; the same
+subset consists of correct but difficult samples.  The algorithm therefore
+cannot simultaneously achieve zero error in both worlds.
+
+Let $a$ be the expected fraction of the ambiguous subset
+$\{x\in s_1,\;y=1\}$ that $\mathcal{A}$ flags as noisy.  Then:
+\[
+\mathrm{Error}_{\mathcal{P}_{\text{noise}}}(\mathcal{A}) = \rho\eta(1-a),\qquad
+\mathrm{Error}_{\mathcal{P}_{\text{hard}}}(\mathcal{A}) = \rho\eta a.
+\]
+Hence
+\[
+\max\bigl(\mathrm{Error}_{\mathcal{P}_{\text{noise}}},\,
+         \mathrm{Error}_{\mathcal{P}_{\text{hard}}}\bigr)
+\ge \frac{\mathrm{Error}_{\text{noise}}+\mathrm{Error}_{\text{hard}}}{2}
+= \frac{\rho\eta}{2}.
+\]
+This proves part~(iv). \hfill$\square$
+
+\subsection{Extension to $K>2$ (Random Expert Construction)}
+\label{sec:thm3_Kgeneral}
+
+For $K>2$, the binary construction does not generalise directly because the
+expert marginals in the two worlds no longer match automatically.  We instead
+use a different construction where experts in the hardness world are
+\emph{fully random} (conditionally independent of the true label).
+
+\paragraph{World A (Noise).}
+State $s_1$: $y^*\equiv0$.  Noise flips the label uniformly over the
+remaining $K-1$ classes with probability $\eta$:
+\[
+\mathbb{P}(y=c\mid\text{noise},x\in s_1)=\frac{1}{K-1},\quad c\neq0.
+\]
+Expert $f_m$ predicts $0$ with probability $1-\varepsilon_1$, and each other
+class with probability $\varepsilon_1/(K-1)$.  Thus
+\[
+\mathcal{P}_{\text{noise}}(y=0\mid s_1)=1-\eta,\quad
+\mathcal{P}_{\text{noise}}(y=c\mid s_1)=\frac{\eta}{K-1}\;(c\neq0),
+\]
+\[
+\mathcal{P}_{\text{noise}}(f_m=0\mid s_1)=1-\varepsilon_1,\quad
+\mathcal{P}_{\text{noise}}(f_m=c\mid s_1)=\frac{\varepsilon_1}{K-1}\;(c\neq0).
+\]
+By Assumption~A4, noise and expert predictions are independent given the
+state, so $y\perp f_m\mid s_1$ in World~A.
+
+\paragraph{World B (Hardness).}
+State $s_1$: all labels are correct ($y=y^*$).  The true label distribution
+matches the World~A observed distribution:
+\[
+\mathbb{P}(y^*=0\mid s_1)=1-\eta,\quad
+\mathbb{P}(y^*=c\mid s_1)=\frac{\eta}{K-1}\;(c\neq0).
+\]
+\textbf{Critical construction:} experts are fully random, independent of the
+true label:
+\[
+\mathbb{P}(f_m=0\mid s_1)=1-\varepsilon_1,\quad
+\mathbb{P}(f_m=c\mid s_1)=\frac{\varepsilon_1}{K-1}\;(c\neq0),
+\]
+with $f_m\perp y^*\mid s_1$ and $f_m\perp y\mid s_1$ (since $y=y^*$).
+
+\paragraph{Equivalence.}
+The marginal distributions of $y$, $f_m$, and the joint
+$(y,\{f_m\})$ are identical in both worlds because both $y$ and $\{f_m\}$
+are independent products of the same marginal distributions.  Hence for any
+$K\ge2$:
+\[
+\mathcal{P}_{\text{noise}}(x,y,\{f_m\})
+= \mathcal{P}_{\text{hard}}(x,y,\{f_m\}).
+\]
+The construction is extreme---experts in World~B are equivalent to random
+guessers---but it suffices as an existence proof: there exists at least one
+``hardness'' interpretation observationally indistinguishable from the
+``noise'' interpretation. \hfill$\square$
+
+\subsection{Corollaries: Which Assumptions Break Unidentifiability}
+\label{sec:thm3_corollaries}
+
+Theorem~3 shows that without additional assumptions, noise and difficulty are
+indistinguishable.  Each corollary below identifies a \emph{sufficient
+condition} that, if known to hold, breaks the equivalence.
+
+\subsubsection{Anchor Labels (Corollary 1)}
+\label{sec:corollary1}
+
+\begin{corollary}[Anchor Labels Break Unidentifiability]
+  If for a known subset $\mathcal{X}_{\text{anchor}}\subset\mathcal{X}$ the
+  researcher has access to the true labels $y^*$ (e.g.\ via human review),
+  then noise and difficulty are distinguishable on
+  $\mathcal{X}_{\text{anchor}}$.  If $\mathcal{X}_{\text{anchor}}$ covers all
+  states, the problem is globally identifiable.
+\end{corollary}
+
+\begin{proof}[Sketch]
+  On anchor points, compare the observed label $y$ with the true label $y^*$.
+  If $y\neq y^*$, the sample is necessarily noisy.  If $y=y^*$ but
+  $f_m(x)\neq y$, the sample is necessarily difficult (the expert errs on a
+  correctly labelled sample).  Extrapolating expert error rates from anchor
+  points to non-anchor points breaks global unidentifiability.
+\end{proof}
+
+This corresponds to the SCX cold-start protocol, where a small number of
+human-reviewed samples serve as anchors for initialising state-level noise
+rate estimates.
+
+\subsubsection{Disjoint Training Data (Corollary 2)}
+\label{sec:corollary2}
+
+\begin{corollary}[Known Disjoint Training Data Break Unidentifiability]
+  If $M$ experts are trained on $M$ disjoint data subsets (Assumption~A1)
+  and the researcher knows the training set composition, then noise and
+  difficulty are distinguishable.
+\end{corollary}
+
+\begin{proof}[Sketch]
+  Disjoint training implies expert errors are conditionally independent given
+  $x$.  On noisy samples, \emph{all} experts have elevated error rates
+  simultaneously (because they all predict the true label $y^*$, while the
+  observed label $y$ differs).  On difficult samples, expert errors are
+  independent.  The average error rate
+  $\bar{e}(x)=\frac1M\sum_m\mathbf{1}\{f_m(x)\neq y\}$ satisfies
+  \[
+  \mathbb{E}[\bar{e}(x)\mid\text{noise}]
+  = 1-\frac{1-\mathbb{E}[\bar{e}(x)\mid\text{clean}]}{K-1}
+  \]
+  (Theorem~1, Lemma~1).  This relation cannot hold simultaneously in a pure
+  hardness world, providing a statistical test.
+\end{proof}
+
+\subsubsection{Input-Independent Noise (Corollary 3)}
+\label{sec:corollary3}
+
+\begin{corollary}[Input-Independent Noise Rate Breaks Unidentifiability]
+  If the label noise rate $\eta(x)=\mathbb{P}(Y\neq Y^*\mid X=x)$ is
+  constant across $x$ (Assumption~A4), and the expert error rates differ
+  between states, then noise and difficulty are distinguishable.
+\end{corollary}
+
+\begin{proof}[Sketch]
+  When $\eta(x)\equiv\eta$ is constant, the correlation pattern between the
+  observed label~$y$ and expert errors~$\{f_m\}$ differs fundamentally
+  between the two worlds.  In the noise world, $\mathbb{E}[\bar{e}(x)]$ is
+  constant across states (marginalising over the label-flip event).  In the
+  hardness world, $\bar{e}(x)$ varies with the state-dependent true label
+  distribution.  Testing for input dependence of $\bar{e}(x)$ conditioned on
+  $y$ distinguishes the two.
+\end{proof}
+
+\subsubsection{State Homogeneity (Corollary 4)}
+\label{sec:corollary4}
+
+\begin{corollary}[State Homogeneity Breaks Unidentifiability]
+  If within each state $s$ the expected expert error rate on clean samples is
+  constant (Assumption~A5), and states differ in this rate, then noise and
+  difficulty are distinguishable.
+\end{corollary}
+
+\begin{proof}[Sketch]
+  In the hardness world construction (World~B), state $s_1$ contains two
+  subpopulations---samples with $y^*=0$ (expert accuracy $1-\varepsilon_1$)
+  and samples with $y^*=1$ (expert accuracy $\varepsilon_1$).  This violates
+  state homogeneity, which requires a single per-state error rate.
+  Therefore, if Assumption~A5 holds, World~B's construction is invalid, and
+  the unidentifiability is broken.
+\end{proof}
+
+\subsubsection{Balanced Error Distribution (Corollary 5)}
+\label{sec:corollary5}
+
+\begin{corollary}[Balanced Error Distribution Breaks Unidentifiability]
+  If expert errors are uniformly distributed across all error classes
+  (Assumption~A6 with $C_{\text{bal}}=1$), then noise and difficulty are
+  distinguishable.
+\end{corollary}
+
+\begin{proof}[Sketch]
+  In World~B, experts are biased toward class~0: when $y^*=1$, they predict
+  class~0 with probability $1-\varepsilon_1$.  This creates a highly
+  imbalanced error pattern (errors are almost exclusively in the
+  $1\to0$ direction), violating the balanced error assumption.  If
+  Assumption~A6 is known to hold, World~B is excluded.
+\end{proof}
+
+\subsection{Minimal Sufficient Assumption Set}
+\label{sec:thm3_minimal}
+
+Theorem~3's construction relies on specific conditions.  To exclude the
+construction---and thereby break unidentifiability---at least one of the
+following combinations of assumptions is necessary and sufficient:
+
+\[
+\begin{aligned}
+\mathcal{A}_{\min}^{(1)} &= \{A1,\;A4,\;A5\},\\
+\mathcal{A}_{\min}^{(2)} &= \{A1,\;A4,\;A6\},\\
+\mathcal{A}_{\min}^{(3)} &= \{A5,\;A6\}\quad\text{with }|\mathcal{S}|\ge2.
+\end{aligned}
+\]
+
+The SCX framework operates under $\mathcal{A}_{\min}^{(1)}$ (the standard
+set A1--A6 provides additional technical benefits for finite-sample bounds).
+Each assumption plays a distinct role:
+\begin{itemize}
+  \item \textbf{A1} (disjoint training): ensures expert independence, enabling
+    Corollary~2's statistical test.
+  \item \textbf{A4} (uniform noise): removes the possibility of
+    input-dependent noise mimicking difficulty (Corollary~3).
+  \item \textbf{A5} (state homogeneity): prevents a single state from
+    containing both easy and difficult subpopulations (Corollary~4).
+  \item \textbf{A6} (balanced errors): prevents expert bias from creating
+    pseudo-difficulty patterns (Corollary~5).
+\end{itemize}
+
+If \emph{all} of these assumptions are violated, Theorem~3 applies fully:
+no algorithm can distinguish label noise from sample difficulty.
+
+\subsection{Connections to Prior Art}
+\label{sec:thm3_prior}
+
+\subsubsection{Measurement Error Models}
+
+In classical measurement error models
+\cite{fuller1987measurement,carroll2006measurement}, the observed variable
+$Y$ is modelled as $Y=Y^*+U$ where $U$ is measurement error.  Without
+validation data or instrumental variables, the distributions of $Y^*$ and
+$U$ are not separately identifiable from the marginal distribution of $Y$.
+Theorem~3 extends this classical result from continuous measurement error to
+the classification setting with multi-expert predictions.  The key novelty is
+that even with the additional information $\{f_m(X)\}$---which one might
+expect to resolve the ambiguity---the unidentifiability persists.
+
+\subsubsection{Label Noise Transition Matrix Unidentifiability}
+
+The label noise literature \cite{menon2015learning,patrini2017making}
+established that the noise transition matrix $T_{ij}=\mathbb{P}(\tilde Y=j\mid
+Y^*=i)$ is not identifiable from $(\tilde Y,X)$ alone without anchor points or
+diagonal-dominance assumptions.  Theorem~3 generalises this to the multi-expert
+setting, showing that even with $M$ expert predictions, the ambiguity between
+noise and intrinsic difficulty remains.
+
+\subsubsection{Dawid-Skene Unidentifiability}
+
+The Dawid-Skene model \cite{dawid1979maximum} treats the true label as a latent
+variable and each annotator's confusion matrix as a parameter.  Standard
+identifiability issues include label-switching symmetries.  Theorem~3 addresses
+a different and more fundamental ambiguity: even after resolving
+label-switching, one cannot distinguish whether an annotator's error is due to
+noise in the label or difficulty of the sample.  The two unidentifiability
+problems are orthogonal: both must be resolved for reliable label quality
+assessment.
+
+\subsubsection{Causal Structure Unidentifiability}
+
+From a causal perspective, Theorem~3 can be understood as a Markov equivalence
+class problem \cite{pearl2009causality}.  Two causal directed acyclic graphs
+generate identical observational distributions:
+\begin{itemize}
+  \item \textbf{Noise graph:} $S\to Y^*\to Y\leftarrow\text{Noise}$,
+    $X\to\{f_m\}$, where Noise is an independent exogenous variable.
+  \item \textbf{Difficulty graph:} $S\to Y^*(=Y)$, $X\to\{f_m\}$, where state
+    $S$ affects both the true label distribution and the expert error rates.
+\end{itemize}
+These two graphs are observationally indistinguishable, forming a
+Markov equivalence class of size~2.
+
+\subsection*{References for Section~S3}
+
+\begingroup
+\small
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\endgroup
+
+\endinput

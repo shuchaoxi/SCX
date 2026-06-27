@@ -1,0 +1,154 @@
+% ============================================================
+% Methods — SCX: State-Conditioned Multi-Expert Consistency
+% for Training Data Cleaning
+%
+% Nature Machine Intelligence — Methods section
+% ~2000 words covering algorithm, theory, and experimental
+% configurations across all 4 domains
+% ============================================================
+
+\section{Methods}
+
+\subsection{SCX Algorithm}
+
+The SCX (State-Conditioned Multi-Expert Consistency) pipeline proceeds through five stages. Given a training dataset $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^N$ with suspected label noise and a choice of domain-appropriate features $\phi \colon \mathcal{X} \to \mathbb{R}^{d_\phi}$:
+
+\textbf{Stage~1: Two-layer state discovery.} The first layer computes domain-knowledge features $\phi(x_i)$ for each sample. For MLIP applications, these are ACE descriptors~\cite{drautz2019ace} capturing the local chemical environment of each atom (182-dimensional for the AlN dataset). For image data, these are the penultimate-layer activations of a pretrained CNN backbone (512-dimensional for ResNet-18). For tabular data such as DrugBank, these are the raw feature vectors (molecular fingerprints and protein sequence descriptors) augmented with pairwise interaction terms.
+
+The second layer is an error-driven encoder. We train $M_{\mathrm{probe}}$ probe models on random data subsets (typically $M_{\mathrm{probe}} = 6$, trained for 5 epochs each). For each sample, we compute the probe error vector---the fraction of probe models that mispredict each class. We then learn a linear projection $W \in \mathbb{R}^{d_\phi \times d}$ (with $d = \min(d_\phi, 16)$) that maximizes the mutual information between the projected features $W^\top \phi(x_i)$ and the probe error pattern. The projection is optimized via a surrogate objective that penalizes within-cluster variance of the probe error rates, implemented as:
+
+\begin{equation}
+\min_{W, \{\mu_k\}} \sum_{k=1}^K \sum_{i: s_i = k} \bigl\| W^\top \phi(x_i) - \mu_k \bigr\|_2^2 + \lambda \cdot \mathrm{Var}(\{e_i\}_{i: s_i = k}),
+\label{eq:encoder}
+\end{equation}
+
+where $s_i$ is the cluster assignment, $e_i$ is the probe error rate for sample $i$, and $\lambda$ is a regularization coefficient ($\lambda = 1.0$ by default). The first term ensures the states are compact in the projected space; the second term ensures within-state homogeneity of expert error rates. After optimization, we assign each sample to its nearest cluster center via k-means with $K$ clusters determined by the elbow method on the within-cluster sum of squares. The complete procedure is summarized in Algorithm~1.
+
+\begin{algorithm}[t]
+\caption{SCX: State-Conditioned Multi-Expert Consistency for Noise Detection}
+\label{alg:scx}
+\begin{algorithmic}[1]
+\Require Dataset $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^N$, number of experts $M$, number of states $K$, domain features $\phi$
+
+\State \textbf{Stage 1: Two-layer state discovery}
+\State $\Phi \gets \{\phi(x_i)\}_{i=1}^N$ \Comment{First-layer domain features}
+\State $\{f_m^{\text{probe}}\}_{m=1}^{M_{\text{probe}}} \gets$ Train probe models on disjoint subsets of $\mathcal{D}$
+\State $E_i \gets \frac{1}{M_{\text{probe}}}\sum_{m=1}^{M_{\text{probe}}} \mathbf{1}\{f_m^{\text{probe}}(x_i) \neq y_i\}$ \Comment{Probe error rates}
+\State $W \gets$ Learn projection minimizing Eq.~\eqref{eq:encoder} $(\Phi, \{E_i\})$
+\State $\{s_i\}_{i=1}^N \gets$ K-means$(W^\top \Phi, K)$ \Comment{State assignments}
+
+\State \textbf{Stage 2: Expert training}
+\State Partition $\mathcal{D}$ into $M$ disjoint subsets $\{\mathcal{D}_m\}_{m=1}^M$ (stratified by state)
+\For{$m = 1$ to $M$}
+\State $f_m \gets$ Train expert on $\mathcal{D}_m$ with random initialization
+\EndFor
+
+\State \textbf{Stage 3: Consistency scoring}
+\For{$i = 1$ to $N$}
+\State $C_i \gets \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{f_m(x_i) \neq y_i\}$ \Comment{Consistency score}
+\EndFor
+
+\State \textbf{Stage 4: State-dependent thresholding}
+\For{each state $s$}
+\State $\bar{e}_s \gets$ mean of $\{C_i : s_i = s\}$
+\State $\sigma_s \gets$ std of $\{C_i : s_i = s\}$
+\State $\tau_s \gets \bar{e}_s + \kappa \sigma_s$ \Comment{Threshold via Theorem~1 bound}
+\EndFor
+
+\State \textbf{Stage 5: Noise detection}
+\State $\hat{z}_i \gets \mathbf{1}\{C_i > \tau_{s_i}\}$ \Comment{Flag as noisy}
+\State \Return $\{\hat{z}_i\}_{i=1}^N$, cleaned dataset $\{(x_i, y_i) : \hat{z}_i = 0\}$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Stage~2: Expert training.} We train $M$ expert models on disjoint, randomly partitioned subsets of the training data. Each expert uses the same model architecture but has independent random initialization and training trajectory. The partition is stratified by state assignment (Stage~1) to ensure each expert sees a representative cross-section of states. For the AlN MLIP dataset ($N = 534$), $M = 12$ experts each train on approximately $N/M = 45$ frames. For CIFAR-10 ($N = 1,000$ in our subsample), $M = 20$ experts train on 50 images each. The small per-expert training set size is acceptable because the experts are not required to be highly accurate individually---they serve as probes of data consistency. The companion Paper~II~[arXiv:XXXX] discusses the tradeoff between expert quantity and quality.
+
+\textbf{Stage~3: Consistency scoring.} For each sample $x_i$ with given label $y_i$, we compute the consistency score $C(x_i) = \frac{1}{M} \sum_{m=1}^M \mathbf{1}\{f_m(x_i) \neq y_i\}$---the fraction of experts that fail to predict the given label. This score is the key observable that separates noise from difficulty: under the theoretical assumptions, clean samples have $C(x)$ concentrated near the state-level error rate $\mu_s$, while noisy samples have $C(x)$ concentrated near $1 - \mu_s/(K_{\mathcal{Y}} - 1)$.
+
+\textbf{Stage~4: State-dependent thresholding.} For each state $s$, we set the detection threshold $\tau(s) = \bar{e}_s + \kappa\sigma_s$, where $\bar{e}_s$ and $\sigma_s$ are the empirical mean and standard deviation of $C(x)$ for samples in state $s$, and $\kappa$ is a multiplicative factor. The optimal $\kappa$ depends on the noise rate $\eta$ and the separation gap $\Delta_s$ through Theorem~1 (Equation~\eqref{eq:thm1} in the main text). In practice, using $\kappa = 2$ provides a conservative threshold that works well across domains. For adaptive thresholding (Theorem~4'), we replace $\tau(s)$ with the $\eta$-aware threshold $\theta^\dagger$ computed as:
+
+\begin{equation}
+\theta^\dagger = \theta^* + \frac{1}{M}\frac{\log((1-\eta)/\eta)}{D^*},
+\label{eq:adaptive_threshold}
+\end{equation}
+
+where $\theta^*$ is the Chernoff point and $D^* = \log[p_1(1-p_0)/(p_0(1-p_1))]$. We estimate $\eta$ from the data by fitting a two-component beta mixture to the distribution of $\{C(x_i)\}$.
+
+\textbf{Stage~5: Output.} The algorithm returns per-sample noise flags and the cleaned dataset obtained by removing flagged samples. The final production model is trained on this cleaned dataset using the same architecture and training pipeline that would have been applied to the original data, with no additional overhead at inference time.
+
+\subsection{Bootstrap Stability Diagnostic}
+
+Before committing to the full SCX pipeline, we recommend a lightweight diagnostic based on bootstrap stability (Proposition~6 in Paper~I~[arXiv:XXXX]). The procedure is:
+
+\begin{enumerate}
+    \item Compute features $\phi(x_i)$ for all samples.
+    \item Run k-means with $K$ clusters on the full data to obtain reference clustering $C_{\text{ref}}$.
+    \item For $b = 1, \ldots, B$ (we use $B = 100$):
+    \begin{enumerate}
+        \item Draw a bootstrap resample of $\{\phi(x_i)\}$ with replacement.
+        \item Run k-means with $K$ clusters on the resample.
+        \item Compute the adjusted Rand index (ARI)~\cite{hubert1985comparing} between this clustering and $C_{\text{ref}}$.
+    \end{enumerate}
+    \item Report the mean ARI $S(\Phi, K)$.
+\end{enumerate}
+
+When $S(\Phi, K) > 0.7$, the features are sufficiently informative for SCX to reliably detect noise. When $S(\Phi, K) < 0.5$, the features are too weak for SCX to meaningfully outperform a simple loss-based filter. This diagnostic can be run in minutes on standard hardware and prevents wasted computation on datasets where SCX cannot help.
+
+\subsection{Experimental Configurations}
+
+\textbf{AlN MLIP.} The AlN v3 dataset comprises 534 atomic configurations with DFT-calculated energies and forces. We used ACE descriptors (182-dimensional, polynomial degree 4, cutoff radius 5.0~\AA) as first-layer features. Expert models were three-layer NequIP architectures~\cite{batzner2022e3nn} with 64 latent channels, trained on disjoint subsets of approximately 45 frames each. Training used the Adam optimizer with learning rate $10^{-3}$, batch size 16, and early stopping with a patience of 50 epochs. Force prediction RMSE was evaluated on a held-out test set of 54 frames (one per 10 configurations). Ground truth noise labels were established by the independent consensus of three domain experts who reviewed each frame's energy-volume curve, force distribution histogram, and structural relaxation trajectory.
+
+\textbf{CIFAR-10.} Due to GPU constraints, we subsampled 1,000 training images from the most challenging noise region (those with loss exceeding the 80th percentile under a simple CNN) and introduced controlled symmetric label noise at rates of 10\%, 20\%, and 30\%. Expert models were SimpleCNN architectures (three convolutional layers with 32, 64, and 128 filters, each followed by 2$\times$2 max pooling and ReLU activation, with a final fully-connected layer of 256 units). Experts were trained for only 3 epochs with batch size 16 and learning rate $10^{-3}$---intentionally under-trained to work within our compute budget. We emphasize this is a lower bound on achievable performance; fully trained models would yield higher absolute F1 scores. Architecture comparison was SimpleCNN vs.\ ResNet-18~\cite{he2016deep}, both trained on the same noisy data for 20 epochs to measure the architecture-only improvement.
+
+\textbf{DermaMNIST.} We used the DermaMNIST subset of MedMNIST v2~\cite{yang2023medmnist}, consisting of 28$\times$28 grayscale dermatoscopic images across 7 classes. We selected 1,000 training images and introduced controlled symmetric noise at 10\%. Feature extraction used SimpleCNN penultimate-layer activations (256-dimensional). Expert training followed the same protocol as CIFAR-10. The architecture comparison was SimpleCNN vs.\ ResNet-18 on the original noisy data.
+
+\textbf{DrugBank.} We used version 5.0 of the DrugBank database~\cite{wishart2018drugbank}, extracting 6,784 drug--target protein interaction pairs with binary labels (active/inactive). Features were Morgan molecular fingerprints (2,048-bit, radius 2) concatenated with pseudo amino acid composition features (50-dimensional) for the protein sequence. We applied PCA to reduce the combined feature space to 256 dimensions. Expert models were gradient-boosted trees (XGBoost~\cite{chen2016xgboost} with 100 estimators, max depth 6, learning rate 0.1), each trained on disjoint subsets of approximately 540 pairs. Architecture comparison was random forest (200 trees, max depth 8) vs.\ XGBoost on the same noisy data.
+
+\subsection{Evaluation Metrics}
+
+Noise detection performance is measured by F1 score on the per-sample noise classification task (is this sample's label correct?):
+
+\begin{equation}
+\mathrm{F1} = \frac{2 \cdot \mathrm{Precision} \cdot \mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}, \quad
+\mathrm{Precision} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FP}}, \quad
+\mathrm{Recall} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FN}},
+\label{eq:f1}
+\end{equation}
+
+where TP are correctly identified noisy samples, FP are clean samples incorrectly flagged, and FN are noisy samples missed. For the downstream task performance (AlN force prediction, CIFAR-10 and DermaMNIST classification, DrugBank interaction prediction), we report the relative improvement:
+
+\begin{equation}
+\mathrm{Relative~Improvement} = \frac{\mathrm{Error_{baseline}} - \mathrm{Error_{cleaned}}}{\mathrm{Error_{baseline}}},
+\label{eq:relative_improvement}
+\end{equation}
+
+where Error is measured as 1 - F1 for classification tasks and as normalized RMSE for force regression. The data quality vs. architecture improvement ratio is the ratio of the relative improvement from cleaning to the relative improvement from the architecture change.
+
+\subsection{Why This Problem Is Fundamentally Hard}
+
+A critical methodological note: distinguishing label noise from sample difficulty is provably unidentifiable from observational data alone without additional assumptions. We prove this formally in the companion Paper~I~[arXiv:XXXX] (Theorem~3). The practical implication is that any data cleaning method---including SCX---makes implicit assumptions that must be stated for its claims to be meaningful. Our six assumptions (disjoint expert training, conditional independence of expert errors, bounded loss, uniform independent noise, state-homogeneous error rates, and balanced error distribution) form a minimal sufficient set for identifiability. Violating any one of these can in principle restore the ambiguity for certain data distributions, though in practice SCX degrades gracefully (the bounds become looser rather than invalid).
+
+\begin{thebibliography}{10}
+
+\bibitem{drautz2019ace}
+R.~Drautz, ``Atomic cluster expansion for accurate and transferable interatomic potentials,'' \textit{Physical Review B}, vol.~99, p.~014104, 2019.
+
+\bibitem{hubert1985comparing}
+L.~Hubert and P.~Arabie, ``Comparing partitions,'' \textit{Journal of Classification}, vol.~2, no.~1, pp.~193--218, 1985.
+
+\bibitem{batzner2022e3nn}
+S.~Batzner \textit{et al.}, ``E(3)-equivariant graph neural networks for data-efficient and accurate interatomic potentials,'' \textit{Nature Communications}, vol.~13, p.~2453, 2022.
+
+\bibitem{he2016deep}
+K.~He, X.~Zhang, S.~Ren, and J.~Sun, ``Deep residual learning for image recognition,'' in \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}, pp.~770--778, 2016.
+
+\bibitem{yang2023medmnist}
+J.~Yang \textit{et al.}, ``MedMNIST v2: a large-scale lightweight benchmark for 2D and 3D biomedical image classification,'' \textit{Scientific Data}, vol.~10, p.~41, 2023.
+
+\bibitem{wishart2018drugbank}
+D.~S.~Wishart \textit{et al.}, ``DrugBank 5.0: a major update to the DrugBank database for 2018,'' \textit{Nucleic Acids Research}, vol.~46, no.~D1, pp.~D1074--D1082, 2018.
+
+\bibitem{chen2016xgboost}
+T.~Chen and C.~Guestrin, ``XGBoost: a scalable tree boosting system,'' in \textit{Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}, pp.~785--794, 2016.
+
+\end{thebibliography}

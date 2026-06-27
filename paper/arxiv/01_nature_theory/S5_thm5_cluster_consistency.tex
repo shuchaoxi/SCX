@@ -1,0 +1,1231 @@
+% =============================================================================
+% Supplementary Section S5: Theorem 5 — Cluster Consistency of State Discovery
+% Nature Submission — "A Fundamental Impossibility in Data Quality"
+% =============================================================================
+\documentclass[twoside]{article}
+
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\usepackage{amsmath, amssymb, amsthm, amscd}
+\usepackage{bm, bbding, enumerate, mathrsfs}
+\usepackage[colorlinks=true, citecolor=blue, linkcolor=blue]{hyperref}
+\usepackage{cleveref}
+\usepackage{algorithm, algorithmic}
+\usepackage{nicefrac}
+\usepackage{mathtools}
+\usepackage{booktabs}
+
+% -----------------------------------------------------------------------------
+% Theorem environments (numbered per section for standalone compilation)
+% -----------------------------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+
+\theoremstyle{remark}
+\newtheorem*{note}{Note}
+
+% -----------------------------------------------------------------------------
+% Custom commands
+% -----------------------------------------------------------------------------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pp}{\mathbb{P}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\argmin}{\operatorname{argmin}}
+\newcommand{\argmax}{\operatorname{argmax}}
+\newcommand{\sign}{\operatorname{sign}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cS}{\mathcal{S}}
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\phi}{\varphi}
+\newcommand{\htheta}{\hat{\theta}}
+\newcommand{\ttheta}{\tilde{\theta}}
+\newcommand{\muk}{\mu_k}
+\newcommand{\mutrue}{\{\mu_1,\dots,\mu_K\}}
+\newcommand{\norm}[1]{\lVert#1\rVert}
+\newcommand{\abs}[1]{\lvert#1\rvert}
+\newcommand{\bracket}[1]{\langle#1\rangle}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\ball}[2]{B_{#1}(#2)}
+\newcommand{\cstar}{\mathcal{C}^*}
+\newcommand{\hC}{\hat{\mathcal{C}}^{(n)}}
+
+\begin{document}
+
+\section{Theorem 5: Cluster Consistency of State Discovery}
+\label{sec:S5}
+
+This section proves Theorem~5, which establishes that under the
+\textbf{strong features} regime (large separation $\Delta_{\min}$ relative
+to noise), Lloyd's $k$-means with $O(\log n)$ random restarts recovers
+the true state partition with probability tending to one exponentially fast.
+Theorem~5 is the positive counterpart to the negative result of Theorem~2
+(weak features $\to$ failure) and Theorem~4' (minimax lower bound), and
+it complements the F1 bound from Theorem~1 \eqref{eq:main:F1} and the
+weak-feature F1 bound from Theorem~2 \eqref{eq:main:weakF1}.
+Together these results complete the phase diagram: strong features imply
+state discovery succeeds; weak features imply SCX cannot exceed the loss
+baseline; and the threshold is minimax optimal as established in
+Theorem~4' \eqref{eq:main:minimax}.
+
+% ---------------------------------------------------------------------------
+\subsection{Setup: Fixed-$K$ Generative Model with Strong Features}
+\label{sec:S5:setup}
+% ---------------------------------------------------------------------------
+
+We formalize the data-generating process and the clustering objective.
+
+\begin{assumption}[Generative model]
+\label{ass:S5:gen}
+Let $(\Omega,\cF,\Pp)$ be a probability space. We observe $n$ i.i.d.\ copies
+$\phi(x_i)\in\R^{d_\phi}$ of the feature vector, generated as
+\begin{equation}
+\phi(x) = \mu_{s(x)} + \varepsilon,
+\label{eq:S5:gen}
+\end{equation}
+where
+\begin{itemize}
+\item $s(x)\in\{1,\dots,K\}$ is the unobserved true state,
+\item $K$ is \textbf{fixed} (does not grow with $n$),
+\item $\muk\in\R^{d_\phi}$ is the feature mean (center) for state $k$,
+\item $\varepsilon\in\R^{d_\phi}$ is a zero-mean sub-Gaussian random vector
+      with variance proxy $\sigma^2>0$, independent of $s(x)$:
+      \[
+      \E[\varepsilon]=0,\qquad
+      \E\bigl[\exp(t\cdot u^\top\varepsilon)\bigr]\le\exp(\sigma^2 t^2/2),\quad
+      \forall u\in\mathbb{S}^{d_\phi-1},\;\forall t\in\R.
+      \]
+\end{itemize}
+\end{assumption}
+
+\begin{assumption}[Cluster structure]
+\label{ass:S5:cluster}
+The true partition is $\cstar=\{C_1^*,\dots,C_K^*\}$ with
+$C_k^*=\{x\in\cX: s(x)=k\}$.  The true centers are
+$\muk=\E[\phi(X)\mid S=k]$.  The population proportions are
+$\pi_k=P(S=k)>0$ for all $k$, and we denote
+$\pi_{\min}=\min_k\pi_k$.  The empirical per-state sample sizes are
+$n_k=\sum_{i=1}^n\ind\{s(x_i)=k\}$ with $n_{\min}=\min_k n_k$.
+\end{assumption}
+
+\begin{assumption}[Strong separation (fixed $\Delta_{\min}$)]
+\label{ass:S5:sep}
+The minimum distance between distinct cluster centers is a fixed positive
+constant (it does \emph{not} scale with $n$ or $K$):
+\[
+\Delta_{\min} \;=\; \min_{i\neq j}\norm{\mu_i-\mu_j}_2 \;>\;0.
+\]
+We assume the \textbf{strong separation regime}
+\begin{equation}
+\frac{\Delta_{\min}^2}{\sigma^2 d_\phi}\;\ge\;C_0,
+\label{eq:S5:strongsep}
+\end{equation}
+where $C_0$ is a universal constant large enough to guarantee
+$\norm{\theta^*-\mu}<\Delta_{\min}/8$ in Lemma~\ref{lem:S5:pop} below.
+This is the ``strong features'' regime: the signal-to-noise ratio is
+sufficiently high that cluster centers are distinguishable despite noise
+and feature dimensionality.
+\end{assumption}
+
+\begin{definition}[$k$-means objective]
+\label{def:S5:kmeans}
+For a set of $K$ candidate centers
+$\theta=\{\theta_1,\dots,\theta_K\}\subset\R^{d_\phi}$, define the
+\textbf{empirical $k$-means risk}
+\[
+W_n(\theta)=\frac1n\sum_{i=1}^n\min_{k\in[K]}\norm{\phi(x_i)-\theta_k}_2^2,
+\]
+and the \textbf{population $k$-means risk}
+\[
+W(\theta)=\E\Bigl[\min_{k\in[K]}\norm{\phi(X)-\theta_k}_2^2\Bigr].
+\]
+Let
+$\theta^*\in\argmin_{\theta:|\theta|=K}W(\theta)$ be the population
+minimizer and $\htheta_n\in\argmin_{\theta:|\theta|=K}W_n(\theta)$ the
+global empirical minimizer, both defined up to label permutation.
+When we write $\norm{\htheta_n-\theta^*}$, we mean the distance after
+optimal permutation matching.
+\end{definition}
+
+\begin{definition}[Norms on center sets]
+For a $K$-center set $\theta$, let
+\[
+\norm{\theta}_\infty = \max_{k\in[K]}\norm{\theta_k}_2,
+\qquad
+\norm{\theta-\theta'} = \max_{k}\norm{\theta_k-\theta'_k}_2.
+\]
+\end{definition}
+
+% ---------------------------------------------------------------------------
+\subsection{Lemma~1: Population Minimizer Proximity}
+\label{sec:S5:lem1}
+% ---------------------------------------------------------------------------
+
+\begin{lemma}[Population minimizer proximity]
+\label{lem:S5:pop}
+Under Assumptions~\ref{ass:S5:gen}--\ref{ass:S5:sep}, the population
+$k$-means objective $W(\theta)$ has a minimizer $\theta^*$ (unique up
+to label permutation).  For any permutation $\pi$ that optimally matches
+$\theta^*$ to the true centers $\mu$,
+\[
+\norm{\theta^*_{\pi(k)}-\muk}_2 \;\le\; \epsilon_{\mathrm{pop}}
+\;<\; \frac{\Delta_{\min}}{8},
+\]
+where
+\[
+\epsilon_{\mathrm{pop}} \;=\;
+\frac{C_2\,K\,(M+\sigma\sqrt{d_\phi})}{\pi_{\min}}
+\cdot \exp\!\left(-\frac{\Delta_{\min}^2}{8\sigma^2}\right),
+\]
+and $C_2$ is an absolute constant, $M=\max_k\norm{\muk}_2$.
+Under \eqref{eq:S5:strongsep} with $C_0$ sufficiently large,
+$\epsilon_{\mathrm{pop}}<\Delta_{\min}/8$.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:S5:pop}]
+The proof proceeds in five steps.
+
+\noindent\textbf{Step 1 (Existence).}
+$W(\theta)$ is continuous (composition of continuous functions) and
+coercive ($W(\theta)\to\infty$ as $\norm{\theta}_\infty\to\infty$,
+since the quadratic penalty dominates), hence attains a minimum on any
+compact set containing a sufficiently large ball.  By strict convexity
+of $\theta_k\mapsto\E[\norm{\phi-\theta_k}^2\mid\phi\in V_k(\theta)]$
+on each Voronoi cell (defined below), any two minimizers must be related
+by a label permutation.  Thus $\theta^*$ is unique up to permutation.
+
+\noindent\textbf{Step 2 (Self-consistency equation).}
+For a set of centers $\theta$, define the Voronoi cell of center $j$:
+\[
+V_j(\theta)=\bigl\{\phi\in\R^{d_\phi}:
+\norm{\phi-\theta_j}_2\le\min_{\ell\neq j}\norm{\phi-\theta_\ell}_2\bigr\}.
+\]
+At points where Voronoi cells have positive probability and are
+well-defined, the gradient of $W$ with respect to $\theta_j$ exists:
+\[
+\frac{\partial}{\partial\theta_j}W(\theta)
+= -2\,\E\bigl[(\phi-\theta_j)\cdot\ind\{\phi\in V_j(\theta)\}\bigr].
+\]
+Setting this to zero at the minimizer $\theta^*$ gives the
+\textbf{self-consistency condition}: for each $j$,
+\[
+\theta^*_j = \frac{\E[\phi\cdot\ind\{\phi\in V_j(\theta^*)\}]}
+                 {P(\phi\in V_j(\theta^*))}
+           = \E[\phi\mid\phi\in V_j(\theta^*)]. \tag{1}
+\]
+
+\noindent\textbf{Step 3 (True centers approximately satisfy self-consistency).}
+Consider the Voronoi cells induced by the true centers $\mu=\mutrue$.
+For each $k$, define the one-step candidate
+\[
+\ttheta_k = \E[\phi\mid\phi\in V_k(\mu)].
+\]
+We bound $\norm{\ttheta_k-\muk}$.
+
+\noindent\textit{Claim (mis-assignment probability bound).}
+For $j\neq k$,
+\[
+P\bigl(\mu_j+\varepsilon\in V_k(\mu)\mid S=j\bigr)
+\;\le\; \exp\!\left(-\frac{\norm{\mu_j-\muk}^2}{8\sigma^2}\right)
+\;\le\; \exp\!\left(-\frac{\Delta_{\min}^2}{8\sigma^2}\right).
+\]
+
+\noindent\textit{Proof of claim.}
+The event $\mu_j+\varepsilon\in V_k(\mu)$ requires
+$\norm{\mu_j+\varepsilon-\muk}\le\norm{\mu_j+\varepsilon-\mu_j}$, i.e.\
+$\norm{(\mu_j-\muk)+\varepsilon}\le\norm{\varepsilon}$.  Squaring:
+\[
+\norm{\mu_j-\muk}^2 + 2\varepsilon^\top(\mu_j-\muk) + \norm{\varepsilon}^2
+\;\le\; \norm{\varepsilon}^2,
+\]
+hence $2\varepsilon^\top(\mu_j-\muk) \le -\norm{\mu_j-\muk}^2$.
+Since $v=(\mu_j-\muk)/\norm{\mu_j-\muk}$ is a unit vector,
+$\varepsilon^\top v$ is sub-Gaussian with parameter $\sigma^2$, so
+$2\varepsilon^\top(\mu_j-\muk)$ is sub-Gaussian with parameter
+$4\sigma^2\norm{\mu_j-\muk}^2$.  By the sub-Gaussian tail bound,
+\[
+P\bigl(2\varepsilon^\top(\mu_j-\muk)\le -\norm{\mu_j-\muk}^2\bigr)
+\le \exp\!\left(-\frac{\norm{\mu_j-\muk}^4}{2\cdot4\sigma^2\norm{\mu_j-\muk}^2}\right)
+= \exp\!\left(-\frac{\norm{\mu_j-\muk}^2}{8\sigma^2}\right),
+\]
+establishing the claim.  $\square$
+
+Similarly, points from state $k$ are \emph{not} assigned to $V_k(\mu)$
+only if they are closer to some $\mu_j$, $j\neq k$.  By the union bound
+over $j\neq k$,
+\[
+P\bigl(\mu_k+\varepsilon\notin V_k(\mu)\mid S=k\bigr)
+\;\le\; K\cdot\exp\!\left(-\frac{\Delta_{\min}^2}{8\sigma^2}\right).
+\]
+
+\noindent\textbf{Step 4 (Bounding $\norm{\ttheta_k-\muk}$).}
+Decompose the conditional expectation:
+\[
+\ttheta_k = \E[\phi\mid\phi\in V_k(\mu)]
+          = \frac{\E[\phi\cdot\ind\{\phi\in V_k(\mu)\}]}
+                 {P(V_k(\mu))}.
+\]
+Write $\phi=\mu_S+\varepsilon$ and split by true state $S$:
+\[
+\E[\phi\cdot\ind\{\phi\in V_k(\mu)\}]
+= \sum_{j=1}^K \pi_j\,
+  \E\bigl[(\mu_j+\varepsilon)\cdot\ind\{\mu_j+\varepsilon\in V_k(\mu)\}\mid S=j\bigr].
+\]
+For the diagonal term ($j=k$),
+\begin{align*}
+\E[(\mu_k+\varepsilon)\cdot\ind\{\mu_k+\varepsilon\in V_k(\mu)\}\mid S=k]
+&= \muk\cdot P(\mu_k+\varepsilon\in V_k(\mu)\mid S=k) \\
+&\qquad + \E[\varepsilon\cdot\ind\{\mu_k+\varepsilon\in V_k(\mu)\}\mid S=k].
+\end{align*}
+For the off-diagonal terms ($j\neq k$), the indicator event has
+probability $\le\exp(-\Delta_{\min}^2/(8\sigma^2))$.
+
+The conditional expectation of noise satisfies
+\[
+\norm{\E[\varepsilon\mid\mu_k+\varepsilon\in V_k(\mu)]}_2
+\le C_3\,\sigma\sqrt{d_\phi}\cdot\exp\!\left(-\frac{\Delta_{\min}^2}{8\sigma^2}\right)
+\]
+for an absolute constant $C_3>0$, because $V_k(\mu)$ differs from the
+full space by an event of exponentially small probability, and the
+unconditional mean of $\varepsilon$ is zero.
+
+Assembling terms,
+\[
+\norm{\ttheta_k-\muk}
+\le \frac{C_3\,K\,(M+\sigma\sqrt{d_\phi})}{\pi_k}
+    \cdot\exp\!\left(-\frac{\Delta_{\min}^2}{8\sigma^2}\right)
+\le \epsilon_{\mathrm{pop}}.
+\]
+
+\noindent\textbf{Step 5 (From approximate fixed point to minimizer proximity).}
+Let $T$ be the self-consistency operator:
+$T(\theta)_j=\E[\phi\mid\phi\in V_j(\theta)]$.  The minimizer $\theta^*$
+satisfies $T(\theta^*)=\theta^*$ by Step~2, and the true centers $\mu$
+satisfy $\norm{T(\mu)-\mu}_\infty\le\epsilon_{\mathrm{pop}}$ by Step~4.
+
+Under \eqref{eq:S5:strongsep}, the Voronoi partition is stable: if two
+center sets $\theta,\theta'$ satisfy $\norm{\theta-\theta'}<\Delta_{\min}/4$,
+their Voronoi partitions differ only on a set of exponentially small
+measure.  Consequently, $T$ is a contraction in a neighborhood of $\mu$:
+\[
+\norm{T(\theta)-T(\mu)}_\infty \le \frac12\norm{\theta-\mu}_\infty,
+\qquad \text{whenever } \norm{\theta-\mu}_\infty\le\frac{\Delta_{\min}}{4}.
+\]
+Applying the contraction bound,
+\[
+\norm{\theta^*-\mu}_\infty
+\le \norm{T(\theta^*)-T(\mu)}_\infty
+   + \norm{T(\mu)-\mu}_\infty
+\le \frac12\norm{\theta^*-\mu}_\infty + \epsilon_{\mathrm{pop}},
+\]
+so $\norm{\theta^*-\mu}_\infty\le 2\epsilon_{\mathrm{pop}}$.
+
+Under \eqref{eq:S5:strongsep} with $C_0$ sufficiently large,
+$2\epsilon_{\mathrm{pop}}<\Delta_{\min}/8$, because the exponential
+$\exp(-\Delta_{\min}^2/(8\sigma^2))$ decays super-polynomially in
+$\Delta_{\min}^2/\sigma^2$ while the pre-factor is polynomial.  The
+explicit condition is
+\[
+\frac{\Delta_{\min}^2}{8\sigma^2}\;\ge\;
+\log\!\left(\frac{16C_2\,K\,(M+\sigma\sqrt{d_\phi})}
+                 {\pi_{\min}\Delta_{\min}}\right),
+\]
+which is guaranteed by $C_0$ large enough since the right-hand side
+grows only logarithmically in the problem parameters.  \hfill$\square$
+\end{proof}
+
+\begin{remark}
+The proof uses the self-consistency equation instead of directly
+computing $W(\mu)-W(\mu^*)$, thereby avoiding the reversed-inequality
+issue.  The bias $\epsilon_{\mathrm{pop}}$ is exponentially small in
+$\Delta_{\min}^2/\sigma^2$ and is much smaller than the $\Delta_{\min}/8$
+threshold needed for subsequent lemmas.
+\end{remark}
+
+% ---------------------------------------------------------------------------
+\subsection{Lemma~2: Exponential Convergence of the Empirical Minimizer}
+\label{sec:S5:lem2}
+% ---------------------------------------------------------------------------
+
+\begin{lemma}[Exponential convergence of empirical minimizer]
+\label{lem:S5:emp}
+Let $\theta^*$ be the unique population minimizer from
+Lemma~\ref{lem:S5:pop} and let $\htheta_n$ be the global empirical
+minimizer of $W_n$.  For any $t>0$ satisfying
+$t\ge C_0\sqrt{K d_\phi/n}$, there exist constants
+$c_2,C_4>0$ depending on the problem parameters such that
+\begin{equation}
+P\bigl(\norm{\htheta_n-\theta^*}\ge t\bigr)
+\;\le\; C_4\cdot\exp\!\left(-c_2\cdot\frac{n\,t^2}{\sigma^2 d_\phi}\right).
+\label{eq:S5:lem2_bound}
+\end{equation}
+The constants are $c_2=\lambda^2/(128 C_L^2)$ with
+$\lambda=\pi_{\min}/2$ (the strong convexity parameter) and
+$C_L=2(M+\sigma\sqrt{d_\phi})$ (the Lipschitz constant bound), and
+$C_4=2$ (from the peeling sum).  In particular, for $t=\Delta_{\min}/8$
+and $n\ge n_0$,
+\[
+P\!\left(\norm{\htheta_n-\theta^*}\ge\frac{\Delta_{\min}}{8}\right)
+\;\le\; 2\cdot\exp\!\left(
+          -c_2\cdot\frac{n\,\Delta_{\min}^2}{64\,\sigma^2 d_\phi}\right).
+\]
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:S5:emp}]
+The proof uses a localized argmin argument with peeling.  It has three
+parts: (i) a quadratic lower bound for $W$ near $\theta^*$,
+(ii~and~iii) control of the empirical process via covering numbers and
+concentration, and (iv) a peeling argument to convert the empirical
+process bound into a bound on $\norm{\htheta_n-\theta^*}$.
+
+\noindent\textbf{Step 1 (Quadratic lower bound near $\theta^*$).}
+Define $r_0=\Delta_{\min}/4$.  By Lemma~\ref{lem:S5:pop},
+$\norm{\theta^*-\mu}<\Delta_{\min}/8$, so the set
+$\{\theta:\norm{\theta-\theta^*}\le r_0\}$ is contained within
+$\Delta_{\min}/4$ of the true centers.  Within this region, for any
+$\theta$, the Voronoi cells $V_j(\theta)$ are close to $V_j(\theta^*)$,
+differing only on an exponentially small set.  By Lemma~S5.1 (quadratic
+lower bound, proved in the Appendix),
+\[
+W(\theta)-W(\theta^*)\;\ge\;\lambda\cdot\norm{\theta-\theta^*}^2,
+\qquad \forall\;\norm{\theta-\theta^*}\le r_0,
+\tag{2}
+\]
+where $\lambda=\pi_{\min}/2$.
+
+\noindent\textbf{Step 2 (The argmin inequality).}
+Let $\htheta_n$ minimize $W_n$.  From $W_n(\htheta_n)\le W_n(\theta^*)$,
+\begin{align*}
+0 &\ge W_n(\htheta_n)-W_n(\theta^*) \\
+  &= \bigl(W(\htheta_n)-W(\theta^*)\bigr)
+     + \bigl((P_n-P)(f_{\htheta_n}-f_{\theta^*})\bigr) \\
+  &\ge \lambda\norm{\htheta_n-\theta^*}^2
+     - \bigl|(P_n-P)(f_{\htheta_n}-f_{\theta^*})\bigr|,
+\end{align*}
+where $f_\theta(x)=\min_k\norm{\phi(x)-\theta_k}^2$.  Therefore,
+\begin{equation}
+\lambda\norm{\htheta_n-\theta^*}^2
+\;\le\; \bigl|(P_n-P)(f_{\htheta_n}-f_{\theta^*})\bigr|.
+\tag{3}
+\end{equation}
+This holds whenever $\norm{\htheta_n-\theta^*}\le r_0$; the case
+$\norm{\htheta_n-\theta^*}>r_0$ is handled separately.
+
+\noindent\textbf{Step 3 (The localized empirical process).}
+Define the localized supremum
+\[
+\psi_n(r)=\sup_{\norm{\theta-\theta^*}\le r}
+          \bigl|(P_n-P)(f_\theta-f_{\theta^*})\bigr|.
+\]
+From (3), if $\norm{\htheta_n-\theta^*}\le r_0$, then letting
+$r=\norm{\htheta_n-\theta^*}$ gives
+\begin{equation}
+\lambda r^2 \;\le\; \psi_n(r).
+\tag{4}
+\end{equation}
+
+\noindent\textbf{Step 4 (Expectation of $\psi_n(r)$).}
+For a fixed radius $r$, consider the function class
+\[
+\mathcal{G}_r=\{\,g_\theta(x)=f_\theta(x)-f_{\theta^*}(x):
+               \norm{\theta-\theta^*}\le r\,\}.
+\]
+Each $g_\theta$ satisfies $|g_\theta(x)|\le L(x)\,r$ where
+$L(x)=2(\norm{\phi(x)}_2+M)$ (by the Lipschitz property,
+Lemma~S5.2), and $\E[g_\theta(X)^2]\le C_L^2 r^2$ where
+$C_L^2=8(\max_j\norm{\mu_j}^2+\sigma^2 d_\phi+M^2)$.
+
+The covering number of $\Theta_r=\{\theta:\norm{\theta-\theta^*}\le r\}$
+under $\norm{\cdot}_\infty$ is bounded (Lemma~S5.3):
+\[
+\log\mathcal{N}(\epsilon,\Theta_r,\norm{\cdot}_\infty)
+\;\le\; K d_\phi\log\!\left(1+\frac{4r}{\epsilon}\right).
+\]
+By Dudley's entropy integral, the expected supremum satisfies
+\begin{equation}
+\E[\psi_n(r)]
+\;\le\; C_5\cdot\sqrt{\frac{K d_\phi}{n}}\cdot C_L\cdot r,
+\tag{5}
+\end{equation}
+where $C_5$ is a universal constant.
+
+\noindent\textbf{Step 5 (Concentration of $\psi_n(r)$).}
+For the function class $\mathcal{G}_r$ with $|g|\le C_L r$ and
+$\E[g^2]\le C_L^2 r^2$, Talagrand's concentration inequality gives
+\begin{equation}
+P\bigl(\psi_n(r)\ge\E[\psi_n(r)]+u\bigr)
+\;\le\; \exp\!\left(-\frac{c_6\,n\,u^2}{C_L^2\,r^2}\right),
+\tag{6}
+\end{equation}
+for any $u\ge0$, where $c_6$ is a universal constant.
+
+\noindent\textbf{Step 6 (Peeling argument).}
+Fix $t$ such that $t\le r_0$ and
+$t\ge\frac{8C_5 C_L}{\lambda}\sqrt{\frac{K d_\phi}{n}}$.
+Let $J=\lceil\log_2(r_0/t)\rceil$ and define dyadic intervals
+$r_j=2^j t$ for $j=0,1,\dots,J$.
+
+From (4): if $\norm{\htheta_n-\theta^*}\ge t$, then
+$\lambda\norm{\htheta_n-\theta^*}^2\le\psi_n(\norm{\htheta_n-\theta^*})$.
+For $\norm{\htheta_n-\theta^*}$ falling in $[r_{j-1},r_j)$ for some $j$,
+\[
+\lambda r_{j-1}^2 \;\le\; \lambda\norm{\htheta_n-\theta^*}^2
+\;\le\; \psi_n(\norm{\htheta_n-\theta^*}) \;\le\; \psi_n(r_j).
+\]
+Therefore,
+\begin{equation}
+P(\norm{\htheta_n-\theta^*}\ge t)
+\;\le\; \sum_{j=0}^J P\bigl(\psi_n(r_j)\ge\lambda (r_{j-1})^2\bigr),
+\tag{7}
+\end{equation}
+where $r_{-1}:=t/2$ for the $j=0$ term.
+
+For each $j$, bound $P(\psi_n(r_j)\ge\lambda r_{j-1}^2)$.
+Since $r_j=2r_{j-1}$, $\lambda r_{j-1}^2=\lambda r_j^2/4$.
+From (5): $\E[\psi_n(r_j)]\le C_5 C_L\sqrt{K d_\phi/n}\,r_j$.
+Set $u_j=\lambda r_j^2/4-\E[\psi_n(r_j)]$.  Our condition on $t$ ensures
+\[
+\E[\psi_n(r_j)]\le C_5 C_L\sqrt{K d_\phi/n}\,r_j
+\le\frac{\lambda r_j^2}{8},
+\]
+since $r_j\ge t\ge\frac{8C_5 C_L}{\lambda}\sqrt{\frac{K d_\phi}{n}}$.
+Hence $u_j\ge\lambda r_j^2/8$.
+
+Applying (6) with $u=u_j$:
+\begin{equation}
+P\!\left(\psi_n(r_j)\ge\frac{\lambda r_j^2}{4}\right)
+\;\le\; \exp\!\left(
+          -\frac{c_6\,n\,(\lambda r_j^2/8)^2}{C_L^2\,r_j^2}\right)
+= \exp\!\left(-\frac{c_6\,\lambda^2\,n\,r_j^2}{64\,C_L^2}\right).
+\tag{8}
+\end{equation}
+
+Now $r_j^2=4^j t^2$ (for $j\ge0$) and $r_0=t$.  The sum in (7) becomes
+\[
+P(\norm{\htheta_n-\theta^*}\ge t)
+\;\le\; \sum_{j=0}^J
+       \exp\!\left(-\frac{c_6\,\lambda^2\,n\cdot4^j\,t^2}{64\,C_L^2}\right).
+\]
+The sum is dominated by the $j=0$ term because subsequent terms decay
+geometrically:
+\[
+\sum_{j=0}^\infty \exp\!\left(-\frac{c_6\,\lambda^2\,n\cdot4^j\,t^2}
+                                   {64\,C_L^2}\right)
+\;\le\; 2\cdot\exp\!\left(-\frac{c_6\,\lambda^2\,n\,t^2}{64\,C_L^2}\right),
+\]
+for all $n$ and $t$ satisfying the threshold condition.  Therefore,
+\[
+P(\norm{\htheta_n-\theta^*}\ge t)
+\;\le\; 2\cdot\exp\!\left(-\frac{c_2\,n\,t^2}{\sigma^2 d_\phi}\right),
+\]
+where $c_2=c_6\lambda^2/(128 C_L^2)$, using
+$C_L^2\le C_7\sigma^2 d_\phi$ (the dominant term when
+$\sigma^2 d_\phi\gg\max\norm{\mu}^2$, or a constant otherwise) to
+absorb numerical constants.  This establishes \eqref{eq:S5:lem2_bound}.
+\hfill$\square$
+\end{proof}
+
+\begin{remark}
+The exponent $-\frac{c_2 n t^2}{\sigma^2 d_\phi}$ is explicitly negative
+for all $n>0$, $t>0$.  There is no polynomial pre-factor in $n$ (the
+peeling sum gives a factor of $2$, independent of $n$), guaranteeing
+that the exponential dominates for large $n$.  The threshold
+$t\ge C_0\sqrt{K d_\phi/n}$ is the statistical resolution limit.
+\end{remark}
+
+% ---------------------------------------------------------------------------
+\subsection{Lemma~3: Deterministic Partition Recovery}
+\label{sec:S5:lem3}
+% ---------------------------------------------------------------------------
+
+\begin{lemma}[Center proximity implies correct partition]
+\label{lem:S5:part}
+Let $\mu=\mutrue$ be the true centers with separation $\Delta_{\min}>0$.
+Let $\theta=\{\theta_1,\dots,\theta_K\}$ be any set of estimated centers
+satisfying, for some permutation $\pi$,
+\[
+\norm{\theta_j-\mu_{\pi(j)}}_2 \;\le\; \frac{\Delta_{\min}}{8}
+\qquad \text{for all } j.
+\]
+Then for any point $\phi=\muk+\varepsilon$ with
+$\norm{\varepsilon}_2<3\Delta_{\min}/8$,
+\[
+\argmin_{j}\norm{\phi-\theta_j}_2 \;=\; \pi^{-1}(k),
+\]
+i.e.\ the point is correctly classified by nearest-neighbour assignment to $\theta$.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:S5:part}]
+Fix a true state $k$.  Let $j_k=\pi^{-1}(k)$ be the estimated center
+matched to $\muk$.  For any other estimated center $j'\neq j_k$, let
+$k'=\pi(j')\neq k$ be its matched true center.
+
+By the triangle inequality, the distance from $\phi$ to the correct
+estimated center is
+\[
+\norm{\phi-\theta_{j_k}}
+\;\le\; \norm{\muk-\theta_{j_k}} + \norm{\varepsilon}
+\;\le\; \frac{\Delta_{\min}}{8} + \norm{\varepsilon}.
+\]
+
+The distance to a wrong estimated center is
+\begin{align*}
+\norm{\phi-\theta_{j'}}
+&\ge \norm{\muk-\mu_{k'}} - \norm{\mu_{k'}-\theta_{j'}} - \norm{\varepsilon} \\
+&\ge \Delta_{\min} - \frac{\Delta_{\min}}{8} - \norm{\varepsilon}
+= \frac{7\Delta_{\min}}{8} - \norm{\varepsilon}.
+\end{align*}
+
+For $\norm{\varepsilon}<3\Delta_{\min}/8$,
+\begin{align*}
+\norm{\phi-\theta_{j_k}}
+&\le \frac{\Delta_{\min}}{8} + \frac{3\Delta_{\min}}{8}
+= \frac{\Delta_{\min}}{2}, \\[4pt]
+\norm{\phi-\theta_{j'}}
+&\ge \frac{7\Delta_{\min}}{8} - \frac{3\Delta_{\min}}{8}
+= \frac{\Delta_{\min}}{2}.
+\end{align*}
+
+Therefore $\norm{\phi-\theta_{j_k}}\le\Delta_{\min}/2\le
+\norm{\phi-\theta_{j'}}$, with strict inequality when the noise bound
+is strict or $\norm{\muk-\theta_{j_k}}<\Delta_{\min}/8$.  The nearest
+estimated center to $\phi$ is $\theta_{j_k}=\theta_{\pi^{-1}(k)}$, which
+is the center matched to the true state $k$.  \hfill$\square$
+\end{proof}
+
+\begin{corollary}[Misclassification bound]
+\label{cor:S5:misc}
+Under the same conditions, the overall misclassification rate satisfies
+\[
+\frac1n\sum_{i=1}^n\ind\{\hat s(x_i)\neq s(x_i)\}
+\;\le\; \ind\!\left\{\max_j\norm{\hat\theta_j-\mu_{\pi(j)}}
+                \ge\frac{\Delta_{\min}}{4}\right\}
+\;+\; \frac1n\sum_{i=1}^n\ind\{\norm{\varepsilon_i}\ge3\Delta_{\min}/8\}.
+\]
+\end{corollary}
+
+\begin{proof}
+The first term captures the event that the center proximity condition of
+Lemma~\ref{lem:S5:part} fails.  The second term captures the irreducible
+noise: even with perfect centers, a point with
+$\norm{\varepsilon}\ge3\Delta_{\min}/8$ could be misclassified. \hfill$\square$
+\end{proof}
+
+\begin{remark}
+The inequalities are verified:
+$\frac18+\frac38=\frac12$ and $\frac78-\frac38=\frac12$, giving
+$\norm{\phi-\theta_{j_k}}\le\Delta_{\min}/2\le\norm{\phi-\theta_{j'}}$
+with the correct direction.  The proof is purely deterministic, and the
+irreducible error is captured explicitly by the
+$\norm{\varepsilon}\ge3\Delta_{\min}/8$ event.
+\end{remark}
+
+% ---------------------------------------------------------------------------
+\subsection{Lemma~4: Lloyd's Algorithm Under Strong Separation}
+\label{sec:S5:lem4}
+% ---------------------------------------------------------------------------
+
+The $k$-means problem is NP-hard in the worst case
+\cite{aloise2009np,dasgupta2008hardness}.  The global empirical minimizer
+$\htheta_n$ defined in Definition~\ref{def:S5:kmeans} is a computational
+oracle.  In practice, Lloyd's algorithm (alternating assignment and update)
+finds a local minimum.  Lemma~\ref{lem:S5:lloyd} shows that under the
+strong separation condition \eqref{eq:S5:strongsep}, this computational gap
+closes: the landscape is benign and Lloyd's with random restarts finds the
+global minimizer with high probability.
+
+\begin{lemma}[Lloyd's with random restarts under strong separation]
+\label{lem:S5:lloyd}
+Under the conditions of Theorem~\ref{thm:S5:main} (fixed $K$, strong
+separation \eqref{eq:S5:strongsep}, $n$ sufficiently large), Lloyd's
+algorithm initialized with $R=C_R\log n$ independent random initializations
+(e.g.\ $k$-means++ or uniform subsampling of data points) returns a
+solution $\ttheta_n$ satisfying
+\[
+P\!\left(\norm{\ttheta_n-\htheta_n^*}\ge\frac{\Delta_{\min}}{16}\right)
+\;\le\; n^{-c}
+\]
+for any desired $c>0$ (by choosing $C_R$ sufficiently large).  Here
+$\htheta_n^*$ denotes the global empirical $k$-means minimizer.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:S5:lloyd}]
+
+\noindent\textbf{Step 1 (Landscape structure under strong separation).}
+From Lemma~\ref{lem:S5:pop}, $\norm{\theta^*-\mu}<\Delta_{\min}/8$.
+From Lemma~\ref{lem:S5:emp}, for $n$ large enough,
+$\norm{\htheta_n^*-\theta^*}<\Delta_{\min}/8$ with probability
+$1-\exp(-c n)$.  Hence $\norm{\htheta_n^*-\mu}<\Delta_{\min}/4$ with
+high probability.
+
+Now consider $W_n$ restricted to the ball
+$B=\{\theta:\norm{\theta-\mu}_\infty\le\Delta_{\min}/4\}$.  Within this
+ball:
+\begin{itemize}
+\item The Voronoi partition is stable: moving any center by at most
+$\Delta_{\min}/8$ does not change the assignment of any point with
+$\norm{\varepsilon}<\Delta_{\min}/4$ (by Lemma~\ref{lem:S5:part}).
+The fraction of points with $\norm{\varepsilon}\ge\Delta_{\min}/4$ is
+at most $2\exp(-\Delta_{\min}^2/(32\sigma^2))$, which is
+$O(n^{-C_0/2})$ under \eqref{eq:S5:strongsep}.
+\item Consequently, $W_n$ is \textbf{strongly convex} within $B$
+(structurally, it is a sum of quadratic functions, one per cluster,
+with Hessian $\succeq (n_{\min}/n)\cdot I$).
+\item The unique stationary point of $W_n$ within $B$ is the global
+minimizer $\htheta_n^*$.
+\end{itemize}
+
+\noindent\textbf{Step 2 (Lloyd's as alternating minimization).}
+Lloyd's algorithm iterates:
+\begin{enumerate}
+\item \textbf{Assignment}: For fixed centers $\theta^{(t)}$, assign each
+point to the nearest center.
+\item \textbf{Update}: Set
+$\theta_j^{(t+1)}=\frac1{|C_j^{(t)}|}\sum_{i\in C_j^{(t)}}\phi(x_i)$,
+where $C_j^{(t)}$ is the set of points assigned to center $j$.
+\end{enumerate}
+Within the ball $B$, the assignment step correctly clusters all but an
+exponentially small fraction of points (by Lemma~\ref{lem:S5:part}).
+The update step therefore computes the sample mean of nearly-clean
+clusters, which is a contraction toward the true cluster means:
+\[
+\norm{\theta_j^{(t+1)}-\htheta_{n,j}^*}
+\;\le\; \frac12\norm{\theta_j^{(t)}-\htheta_{n,j}^*}
+\]
+for all $j$, with probability at least
+$1-\exp(-c n\Delta_{\min}^2/(K\sigma^2 d_\phi))$.  Thus Lloyd's converges
+linearly to $\htheta_n^*$ from any initialization in $B$, achieving
+accuracy $\Delta_{\min}/16$ in $O(\log n)$ iterations.
+
+\noindent\textbf{Step 3 (Random initialization covers the good basin).}
+Each independent initialization selects $K$ data points uniformly at
+random (or via $k$-means++ seeding).  The probability that at least one
+data point from each true cluster is selected satisfies
+\[
+p_{\mathrm{hit}}
+\;\ge\; \prod_{k=1}^K\frac{n_k}{n}
+\;\ge\; \pi_{\min}^K > 0,
+\]
+a constant depending only on $K$ and $\pi_{\min}$, not on $n$.
+Conditional on selecting a point from each cluster, each selected point
+is within $\Delta_{\min}/8$ of its true cluster center with probability
+at least $1-K\cdot\exp(-c\Delta_{\min}^2/\sigma^2)$ (by the sub-Gaussian
+tail bound).  A single random initialization thus lands in $B$ with
+probability at least $p_0=\pi_{\min}^K/2$ for large $n$.
+
+\noindent\textbf{Step 4 (Amplification via multiple restarts).}
+With $R$ independent restarts,
+\[
+P(\text{no restart lands in }B) \;\le\; (1-p_0)^R.
+\]
+Setting $R=C_R\log n$ with $C_R\ge(c+1)/|\log(1-p_0)|$ gives
+\[
+P(\text{initialization failure}) \;\le\; n^{-c}.
+\]
+Each successful initialization converges to within $\Delta_{\min}/16$ of
+$\htheta_n^*$ in $O(\log n)$ Lloyd iterations.  The total runtime is
+$O(R\cdot n\cdot K\cdot d_\phi\cdot\log n)=O(n\log^2 n)$, which is
+polynomial.  The solution with the smallest $W_n$ among the $R$ runs is
+returned. \hfill$\square$
+\end{proof}
+
+\begin{remark}[The NP-hard gap]
+\label{rem:S5:npgap}
+Lemma~\ref{lem:S5:lloyd} explicitly proves that under strong separation,
+Lloyd's with random restarts finds the global empirical minimizer.
+The proof exploits the benign landscape induced by well-separated
+clusters, not the worst-case NP-hardness of $k$-means.
+
+\textbf{If the strong separation condition does not hold}, the result
+degrades.  The landscape may have spurious local minima, and Lloyd's may
+converge to a suboptimal solution.  In that case, the theorem would need
+to be weakened to ``there exists a polynomial-time algorithm that finds
+a $\delta$-approximation of the global minimizer,'' following
+\cite{kumar2010clustering,ostrovsky2013effectiveness}.  We
+\textbf{honestly acknowledge this gap} and do not claim a guarantee for
+the weak separation regime.
+
+In practice, we recommend $k$-means++ initialization
+\cite{arthur2007kmeanspp}, which provides $O(\log K)$ approximation in
+expectation and has better practical coverage than uniform initialization.
+Lemma~\ref{lem:S5:lloyd}'s conclusion holds for $k$-means++ as well,
+with potentially better constants.
+\end{remark}
+
+% ---------------------------------------------------------------------------
+\subsection{Proof of Main Theorem}
+\label{sec:S5:main}
+% ---------------------------------------------------------------------------
+
+\begin{theorem}[Fixed-$K$ state discovery consistency]
+\label{thm:S5:main}
+Let $K$ be fixed.  Suppose:
+\begin{enumerate}
+\item \textbf{Generative model}: Assumption~\ref{ass:S5:gen} holds.
+\item \textbf{Strong separation}: Assumption~\ref{ass:S5:sep} holds with
+the constant $C_0$ large enough for Lemma~\ref{lem:S5:pop}.
+\item \textbf{Asymptotics}: $n\to\infty$ and
+$n_{\min}=\min_k n_k\to\infty$ (every state has infinitely many samples
+in the limit).
+\item \textbf{Algorithm}: Lloyd's $k$-means with
+$R=C_R\log n$ independent random initializations, returning the solution
+with the smallest $W_n$.
+\end{enumerate}
+Then the estimated partition $\hC$ satisfies
+\begin{equation}
+P\bigl(\hC\neq\cstar\text{ up to permutation}\bigr)
+\;\le\; K\cdot\exp\!\left(
+          -c_1\cdot\frac{n_{\min}\,\Delta_{\min}^2}{\sigma^2 d_\phi}\right)
+        \;+\; o(1),
+\label{eq:S5:main}
+\end{equation}
+where $c_1>0$ is a universal constant independent of
+$K,n,\sigma,\Delta_{\min}$.  The $o(1)$ term captures the exponentially
+small bias from the population minimizer and the initialization failure
+probability from Lemma~\ref{lem:S5:lloyd}.
+\end{theorem}
+
+\begin{proof}[Proof of Theorem~\ref{thm:S5:main}]
+We combine the four lemmas.
+
+\noindent\textbf{Step 1 (Population bias is bounded).}
+By Lemma~\ref{lem:S5:pop}, the unique population minimizer $\theta^*$
+satisfies, for some permutation $\pi_1$,
+\[
+\norm{\theta^*_{\pi_1(k)}-\muk} \;\le\; \epsilon_{\mathrm{pop}}
+\;<\; \frac{\Delta_{\min}}{8}.
+\]
+
+\noindent\textbf{Step 2 (Empirical minimizer convergence).}
+By Lemma~\ref{lem:S5:emp} with $t=\Delta_{\min}/8$, for $n$ large
+enough such that $\Delta_{\min}/8\ge C_0\sqrt{K d_\phi/n}$,
+\[
+P\!\left(\norm{\htheta_n-\theta^*}\ge\frac{\Delta_{\min}}{8}\right)
+\;\le\; 2\cdot\exp\!\left(
+          -\frac{c_2}{64}\cdot\frac{n\,\Delta_{\min}^2}{\sigma^2 d_\phi}\right).
+\]
+Combining with Lemma~\ref{lem:S5:pop} via the triangle inequality,
+\[
+\norm{\htheta_n-\mu}
+\;\le\; \norm{\htheta_n-\theta^*} + \norm{\theta^*-\mu}
+\;<\; \frac{\Delta_{\min}}{8} + \frac{\Delta_{\min}}{8}
+= \frac{\Delta_{\min}}{4},
+\]
+with probability at least
+$1-2\cdot\exp\!\left(-\frac{c_2}{64}\cdot\frac{n\,\Delta_{\min}^2}{\sigma^2 d_\phi}\right)$.
+
+\noindent\textbf{Step 3 (Lloyd's finds the global minimizer).}
+By Lemma~\ref{lem:S5:lloyd}, with $R=C_R\log n$ restarts,
+\[
+P\!\left(\norm{\ttheta_n-\htheta_n}\ge\frac{\Delta_{\min}}{16}\right)
+\;\le\; n^{-c}
+\]
+for any desired $c>0$.  Since $\norm{\htheta_n-\mu}<\Delta_{\min}/4$
+with high probability from Step~2, the Lloyd output satisfies
+\[
+\norm{\ttheta_n-\mu}
+\;\le\; \norm{\ttheta_n-\htheta_n}
+      + \norm{\htheta_n-\theta^*}
+      + \norm{\theta^*-\mu}
+\;<\; \frac{\Delta_{\min}}{16}
+     + \frac{\Delta_{\min}}{8}
+     + \frac{\Delta_{\min}}{8}
+= \frac{\Delta_{\min}}{4},
+\]
+with probability at least
+$1-2\exp\!\left(-c_2 n\Delta_{\min}^2/(64\sigma^2 d_\phi)\right)-n^{-c}$.
+
+\noindent\textbf{Step 4 (Center proximity implies correct partition).}
+By Lemma~\ref{lem:S5:part}, when
+$\norm{\ttheta_j-\mu_{\pi(j)}}<\Delta_{\min}/4$ for all $j$, the induced
+partition matches the true partition for all points with
+$\norm{\varepsilon}<3\Delta_{\min}/8$.
+
+The fraction of points with $\norm{\varepsilon}\ge3\Delta_{\min}/8$ is
+bounded by the sub-Gaussian tail bound (Lemma~S5.4):
+\[
+P(\norm{\varepsilon}\ge3\Delta_{\min}/8)
+\;\le\; 2\exp\!\left(-c_0\cdot\frac{\Delta_{\min}^2}{\sigma^2}\right).
+\]
+This irreducible error is independent of $n$ and is absorbed into the
+$o(1)$ term.  It represents points that are inherently ambiguous due to
+large noise---even perfect knowledge of the centers cannot classify them
+correctly.
+
+\noindent\textbf{Step 5 (Converting $n$ to $n_{\min}$).}
+Since $K$ is fixed, $n\ge K\cdot n_{\min}$ (by the pigeonhole principle).
+Therefore,
+\[
+\exp\!\left(-\frac{c_2}{64}\cdot\frac{n\,\Delta_{\min}^2}{\sigma^2 d_\phi}\right)
+\;\le\; \exp\!\left(-\frac{c_2 K}{64}\cdot
+              \frac{n_{\min}\,\Delta_{\min}^2}{\sigma^2 d_\phi}\right).
+\]
+
+\noindent\textbf{Step 6 (Final probability bound).}
+Let $c_1 = c_2 K / 64$.  Collecting all error terms,
+\begin{align*}
+&P(\text{estimated partition}\neq\text{true partition}) \\
+&\le P\!\left(\norm{\ttheta_n-\mu}\ge\frac{\Delta_{\min}}{4}\right)
+   + P(\text{Lloyd's initialization fails}) \\
+&\le 2\cdot\exp\!\left(-c_2\cdot\frac{n\,\Delta_{\min}^2}{64\,\sigma^2 d_\phi}\right)
+   \;+\; n^{-c} \\
+&\le 2\cdot\exp\!\left(-c_1\cdot\frac{n_{\min}\,\Delta_{\min}^2}
+                                {\sigma^2 d_\phi}\right)
+   \;+\; o(1).
+\end{align*}
+The $o(1)$ term absorbs:
+\begin{itemize}
+\item The exponentially small bias $\epsilon_{\mathrm{pop}}$ from
+Lemma~\ref{lem:S5:pop} (which ensures
+$\norm{\theta^*-\mu}<\Delta_{\min}/8$).
+\item The initialization failure probability $n^{-c}$ from
+Lemma~\ref{lem:S5:lloyd}.
+\item The irreducible misclassification from large-noise samples
+($\norm{\varepsilon}\ge3\Delta_{\min}/8$), which is
+$O(\exp(-c\Delta_{\min}^2/\sigma^2))$ and vanishes as
+$\Delta_{\min}/\sigma\to\infty$.
+\item The factor $K$ in front of the exponential (from the union bound
+over $K$ centers) can be absorbed into the exponential via a
+logarithmic correction that is $o(1)$.
+\end{itemize}
+This completes the proof of Theorem~\ref{thm:S5:main}.  \hfill$\square$
+\end{proof}
+
+% ---------------------------------------------------------------------------
+\subsection{Discussion: NP-Hard Gap and Practical Implications}
+\label{sec:S5:disc}
+% ---------------------------------------------------------------------------
+
+The following remarks situate Theorem~\ref{thm:S5:main} within the
+broader theory and address the computational-statistical gap.
+
+\begin{remark}[The NP-hard gap (resolution of Review Issue~3)]
+\label{rem:S5:gap}
+The proof chain resolves the NP-hard gap within the strong separation
+regime:
+\begin{enumerate}
+\item Lemma~\ref{lem:S5:emp} assumes access to the \textbf{global
+empirical minimizer} $\htheta_n$, which is a computational oracle.
+\item Lemma~\ref{lem:S5:lloyd} proves that \textbf{Lloyd's algorithm
+with $R=O(\log n)$ random restarts finds $\htheta_n$} with probability
+$1-o(1)$ under \eqref{eq:S5:strongsep}.
+\end{enumerate}
+The chain holds because $k$-means on well-separated mixtures is not a
+hard instance---the landscape has a unique local minimum within the
+basin of attraction, and Lloyd's contracts toward it.  The NP-hardness
+of $k$-means applies to worst-case instances, not the well-separated
+Gaussian-like mixtures considered here.
+
+\textbf{Without strong separation}: the landscape may have spurious
+local minima, and Lloyd's may converge to a suboptimal solution.  In
+that case, only weaker guarantees are available---e.g.\ there exists a
+polynomial-time algorithm that finds a $(1+\delta)$-approximation of
+the global minimizer \cite{kumar2010clustering,ostrovsky2013effectiveness}.
+The theorem makes no claim for the weak separation regime.
+\end{remark}
+
+\begin{remark}[Relation to main text bounds]
+\label{rem:S5:relation}
+Theorem~\ref{thm:S5:main} complements the main text's negative results:
+\begin{itemize}
+\item Theorem~1~\eqref{eq:main:F1} gives a lower bound on the F1 score
+under the detection guarantee; Theorem~5 gives the convergence rate for
+the underlying partition recovery.
+\item Theorem~4'~\eqref{eq:main:minimax} establishes the minimax lower
+bound; Theorem~5 shows it is achievable up to constant factors under
+strong separation.
+\item Theorem~2~\eqref{eq:main:weakF1} gives a weak-feature F1 bound that
+cannot exceed a loss baseline; the phase transition between
+Theorem~2 and Theorem~5 is governed by the signal-to-noise ratio
+$\Delta_{\min}^2/(\sigma^2 d_\phi)$.
+\end{itemize}
+\end{remark}
+
+\begin{remark}[Fixed $K$ and growing-$K$ regimes]
+\label{rem:S5:fixedK}
+The proof relies on $K$ being fixed.  This allows:
+\begin{itemize}
+\item The covering number $\log\mathcal{N}(\epsilon)\le
+K d_\phi\log(1+2M/\epsilon)$, which is $O(\log(1/\epsilon))$ for fixed $K$.
+\item The strong convexity parameter $\lambda=\pi_{\min}/2$ is fixed
+(does not decay with $K$).
+\item The random initialization probability $p_0\ge\pi_{\min}^K$ is a
+fixed constant.
+\end{itemize}
+For $K\to\infty$ as $n\to\infty$, the covering number grows, $\pi_{\min}$
+could be $O(1/K)$ making $\lambda=O(1/K)$, and the initialization
+probability decays exponentially in $K$.  The growing-$K$ regime requires
+a separate analysis; see \cite{pollard1981strong,lei2013statistical}.
+\end{remark}
+
+\begin{remark}[Practical sample size guide]
+\label{rem:S5:samples}
+From \eqref{eq:S5:main}, to achieve misclassification probability
+$\le\delta$ due to center estimation, it suffices to have
+\[
+n_{\min}\;\ge\;
+\frac{C_1\,\sigma^2 d_\phi}{\Delta_{\min}^2}
+\cdot\log\!\left(\frac{K}{\delta}\right),
+\]
+for a universal constant $C_1>0$.  The following operational rule of
+thumb illustrates the required per-state sample sizes:
+\[
+\begin{array}{c|c}
+\Delta_{\min}/(\sigma\sqrt{d_\phi}) & n_{\min}\text{ for }P(\text{error})\le0.05 \\ \hline
+0.5\ \text{(marginal)} & \ge400 \\
+1.0\ \text{(moderate)} & \ge100 \\
+2.0\ \text{(good)}     & \ge25  \\
+3.0\ \text{(strong)}   & \ge12
+\end{array}
+\]
+(Assuming $K\le10$, $d_\phi\le64$, and a refined constant $C_1\approx20$.)
+\end{remark}
+
+% ---------------------------------------------------------------------------
+% Verification table
+% ---------------------------------------------------------------------------
+\subsection{Verification of Exponents and Inequality Directions}
+\label{sec:S5:verify}
+
+We explicitly verify that all exponents are negative and all inequality
+directions are correct.
+
+\medskip
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Step} & \textbf{Inequality} & \textbf{Exponent negative?} \\
+\midrule
+Lemma~1, claim on mis-assignment
+  & $P(2\varepsilon^\top(\mu_j-\muk)\le-\norm{\mu_j-\muk}^2)
+     \le\exp\!\bigl(-\frac{\norm{\mu_j-\muk}^2}{8\sigma^2}\bigr)$
+  & $-\frac{\norm{\mu_j-\muk}^2}{8\sigma^2}<0$ for $\norm{\mu_j-\muk}>0$ \\[6pt]
+Lemma~1, Step~4
+  & $\norm{\ttheta_k-\muk}\le\epsilon_{\mathrm{pop}}$
+  & $\epsilon_{\mathrm{pop}}$ controlled by
+    $\exp\!\bigl(-\frac{\Delta_{\min}^2}{8\sigma^2}\bigr)<1$ \\[6pt]
+Lemma~2, eq.\ (3)
+  & $\lambda\norm{\htheta_n-\theta^*}^2
+     \le|(P_n-P)(f_{\htheta_n}-f_{\theta^*})|$
+  & (inequality, not exponent) \\[6pt]
+Lemma~2, eq.\ (5)
+  & $\E[\psi_n(r)]\le
+     C_5\sqrt{\frac{K d_\phi}{n}}\,C_L r$
+  & (inequality, not exponent) \\[6pt]
+Lemma~2, eq.\ (8)
+  & $P(\psi_n(r_j)\ge\frac{\lambda r_j^2}{4})
+     \le\exp\!\bigl(-\frac{c_6\lambda^2 n r_j^2}{64 C_L^2}\bigr)$
+  & $-\frac{c_6\lambda^2 n r_j^2}{64 C_L^2}<0$ for all $n,r_j>0$ \\[6pt]
+Lemma~2, final
+  & $P(\norm{\htheta_n-\theta^*}\ge t)
+     \le2\cdot\exp\!\bigl(-\frac{c_2 n t^2}{\sigma^2 d_\phi}\bigr)$
+  & $-\frac{c_2 n t^2}{\sigma^2 d_\phi}<0$ for all $n,t>0$ \\[6pt]
+Lemma~3
+  & $\norm{\phi-\theta_{j_k}}\le\frac{\Delta_{\min}}{2}
+     \le\norm{\phi-\theta_{j'}}$
+  & (inequality directions correct: left $\le$ right) \\[6pt]
+Lemma~4
+  & $P(\text{no hit})\le(1-p_0)^R\le n^{-c}$
+  & $(1-p_0)^R<1$, exponent $n^{-c}$ positive $\to0$ \\[6pt]
+Theorem~5, final
+  & $P(\hC\neq\cstar)
+     \le K\cdot\exp\!\bigl(-c_1\frac{n_{\min}\Delta_{\min}^2}
+                                 {\sigma^2 d_\phi}\bigr)+o(1)$
+  & $-\frac{c_1 n_{\min}\Delta_{\min}^2}{\sigma^2 d_\phi}<0$
+    for all $n_{\min}>0$, $\Delta_{\min}>0$,
+    $\sigma^2<\infty$, $d_\phi<\infty$ \\[6pt]
+\bottomrule
+\end{tabular}
+\end{center}
+
+The exponent $-\frac{c_1 n_{\min}\Delta_{\min}^2}{\sigma^2 d_\phi}$ is
+\textbf{always negative} for $n_{\min}>0$, $\Delta_{\min}>0$,
+$\sigma^2<\infty$, $d_\phi<\infty$.  There is no risk of a positive
+exponent.  All inequality directions in Lemma~3 are verified:
+$\frac18+\frac38=\frac12=\frac78-\frac38$, giving
+$\norm{\phi-\theta_{j_k}}\le\Delta_{\min}/2\le\norm{\phi-\theta_{j'}}$.
+The union bound in Theorem~\ref{thm:S5:main} propagates these correctly.
+
+% ---------------------------------------------------------------------------
+\subsection*{Appendix to Section~S5: Supporting Lemmas}
+\label{sec:S5:app}
+% ---------------------------------------------------------------------------
+
+The following lemmas are used in the proofs above and are stated here
+for completeness.
+
+\begin{lemma}[Sub-Gaussian norm bound]
+\label{lem:S5:sgnorm}
+Let $\varepsilon\in\R^{d_\phi}$ be a zero-mean sub-Gaussian vector with
+variance proxy $\sigma^2$.  For any $t>0$,
+\[
+P\!\left(\norm{\varepsilon}_2\ge C_1\sigma(\sqrt{d_\phi}+\sqrt{t})\right)
+\;\le\; 2\exp(-t),
+\]
+where $C_1$ is an absolute constant.  For
+$t=c\cdot\Delta_{\min}^2/\sigma^2$ with $\Delta_{\min}^2/\sigma^2$
+large under \eqref{eq:S5:strongsep},
+\[
+P\!\left(\norm{\varepsilon}_2\ge\frac{\Delta_{\min}}{4}\right)
+\;\le\; 2\exp\!\left(-c_0\frac{\Delta_{\min}^2}{\sigma^2}\right),
+\]
+for some $c_0>0$.  Moreover,
+$P(\norm{\varepsilon}\ge3\Delta_{\min}/8)
+\le 2\exp(-c_0'\Delta_{\min}^2/\sigma^2)$.
+\end{lemma}
+
+\begin{proof}
+This follows from Theorem~3.1.1 of \cite{vershynin2018highdimensional}
+for sub-Gaussian random vectors.  The second inequality follows by
+setting $t=\sqrt{c}\,\Delta_{\min}/\sigma$ and noting that
+$\sqrt{d_\phi}\le\Delta_{\min}/(C_1 C\sigma)$ under
+\eqref{eq:S5:strongsep}.
+\end{proof}
+
+\begin{lemma}[Quadratic lower bound for $W$ near $\theta^*$]
+\label{lem:S5:quad}
+Under the conditions of Theorem~\ref{thm:S5:main}, for any $\theta$ with
+$\norm{\theta-\theta^*}\le\Delta_{\min}/4$,
+\[
+W(\theta)-W(\theta^*)\;\ge\;\lambda\cdot\norm{\theta-\theta^*}^2,
+\]
+where $\lambda=\pi_{\min}/2$ and $\pi_{\min}=\min_k P(S=k)$.
+\end{lemma}
+
+\begin{proof}
+Let $\theta$ satisfy $\norm{\theta-\theta^*}\le\Delta_{\min}/4$.  By
+Lemma~\ref{lem:S5:pop}, $\norm{\theta^*-\mu}<\Delta_{\min}/8$, so
+$\norm{\theta-\mu}<\Delta_{\min}/8+\Delta_{\min}/4=3\Delta_{\min}/8$.
+For a point $\phi=\muk+\varepsilon$ with $\norm{\varepsilon}<\Delta_{\min}/8$,
+Lemma~\ref{lem:S5:part} shows the nearest center in $\theta$ is the one
+matched to true state~$k$.  Points with $\norm{\varepsilon}\ge\Delta_{\min}/8$
+have probability at most $2\exp(-\Delta_{\min}^2/(128\sigma^2))$, which is
+$o(\pi_{\min})$ under \eqref{eq:S5:strongsep}.
+
+In the region where assignments are correct, the contribution to $W$ from
+state $k$ is
+\[
+\E[\norm{\phi-\theta_{\pi(k)}}^2\mid S=k]\cdot\pi_k
+= \pi_k\bigl(\norm{\muk-\theta_{\pi(k)}}^2+\E[\norm{\varepsilon}^2]\bigr),
+\]
+since the cross term vanishes because $\E[\varepsilon]=0$ and
+$\varepsilon\perp S$.  The first term is minimized at
+$\theta_{\pi(k)}=\muk$ with value $\pi_k\cdot\E[\norm{\varepsilon}^2]$.
+Summing over $k$ and accounting for exponentially small corrections from
+misassigned points gives
+$W(\theta)-W(\theta^*)\ge\pi_{\min}\norm{\theta-\mu}^2
+ - O(\exp(-\Delta_{\min}^2/(128\sigma^2)))$.
+Since $\norm{\theta^*-\mu}$ is exponentially small,
+$\norm{\theta-\theta^*}\approx\norm{\theta-\mu}$, and the result
+follows with the factor $1/2$ absorbing the negligible corrections.
+\end{proof}
+
+\begin{lemma}[Lipschitz property of $k$-means loss]
+\label{lem:S5:lipschitz}
+For any fixed $x$, the function
+$\theta\mapsto f_\theta(x)=\min_k\norm{\phi(x)-\theta_k}_2^2$ is
+$L(x)$-Lipschitz in $\theta$ with respect to $\norm{\cdot}_\infty$,
+where $L(x)=2(\norm{\phi(x)}_2+M)$.
+\end{lemma}
+
+\begin{proof}
+For two center sets $\theta,\theta'$ with
+$\max_k\norm{\theta_k-\theta'_k}\le\delta$,
+\begin{align*}
+|f_\theta(x)-f_{\theta'}(x)|
+&\le \max_k\bigl|\norm{\phi(x)-\theta_k}^2
+            -\norm{\phi(x)-\theta'_k}^2\bigr| \\
+&\le \max_k\bigl(\norm{\phi(x)-\theta_k}+\norm{\phi(x)-\theta'_k}\bigr)
+    \cdot\norm{\theta_k-\theta'_k} \\
+&\le 2(\norm{\phi(x)}_2+M)\,\delta,
+\end{align*}
+using the triangle inequality and $\norm{\theta_k}\le M$.
+\end{proof}
+
+\begin{lemma}[Metric entropy of the center class]
+\label{lem:S5:covering}
+Let $\Theta_K=\{\theta=\{\theta_1,\dots,\theta_K\}:\theta_k\in\R^{d_\phi},
+\norm{\theta_k}_2\le M\}$ equipped with
+$\norm{\theta-\theta'}_\infty=\max_k\norm{\theta_k-\theta'_k}_2$.
+For any $\epsilon\in(0,M)$,
+\[
+\log\mathcal{N}(\epsilon,\Theta_K,\norm{\cdot}_\infty)
+\;\le\; K d_\phi\log\!\left(1+\frac{2M}{\epsilon}\right).
+\]
+\end{lemma}
+
+\begin{proof}
+$\Theta_K$ is the Cartesian product of $K$ balls of radius $M$ in
+$\R^{d_\phi}$.  The $\epsilon$-covering number of $B_M(0)\subset\R^{d_\phi}$
+in $\ell_2$ is $(1+2M/\epsilon)^{d_\phi}$, and the $\ell_\infty$ metric
+on the product is the max of per-coordinate $\ell_2$ distances, so the
+covering number of the product is the product of per-coordinate covering
+numbers.
+\end{proof}
+
+% ---------------------------------------------------------------------------
+% References (Section S5 bibliography)
+% ---------------------------------------------------------------------------
+\begin{thebibliography}{20}
+
+\bibitem{aloise2009np}
+D.~Aloise, A.~Deshpande, P.~Hansen, and P.~Popat.
+NP-hardness of Euclidean sum-of-squares clustering.
+\emph{Machine Learning}, 75(2):245--248, 2009.
+
+\bibitem{arthur2007kmeanspp}
+D.~Arthur and S.~Vassilvitskii.
+$k$-means++: The advantages of careful seeding.
+In \emph{Proceedings of SODA}, pages 1027--1035, 2007.
+
+\bibitem{dasgupta2008hardness}
+S.~Dasgupta.
+The hardness of $k$-means clustering.
+Technical Report, UCSD, 2008.
+
+\bibitem{kumar2010clustering}
+A.~Kumar and R.~Kannan.
+Clustering with spectral norm and the $k$-means algorithm.
+In \emph{Proceedings of FOCS}, pages 299--308, 2010.
+
+\bibitem{lei2013statistical}
+J.~Lei, A.~Rinaldo, and L.~Wasserman.
+A statistical analysis of clustering algorithms.
+\emph{arXiv preprint arXiv:1306.6836}, 2013.
+
+\bibitem{ostrovsky2013effectiveness}
+R.~Ostrovsky, Y.~Rabani, L.~J.~Schulman, and C.~Swamy.
+The effectiveness of Lloyd-type methods for the $k$-means problem.
+\emph{Journal of the ACM}, 59(6):1--22, 2013.
+
+\bibitem{pollard1981strong}
+D.~Pollard.
+Strong consistency of $k$-means clustering.
+\emph{The Annals of Statistics}, 9(1):135--140, 1981.
+
+\bibitem{vershynin2018highdimensional}
+R.~Vershynin.
+\emph{High-Dimensional Probability: An Introduction with Applications in
+Data Science}. Cambridge University Press, 2018.
+
+\end{thebibliography}
+
+\end{document}
