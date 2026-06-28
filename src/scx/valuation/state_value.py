@@ -670,6 +670,376 @@ class StateValue:
             "recommendation": recommendation,
         }
 
+    # ------------------------------------------------------------------
+    # Theorem 4' — Exact Constant Minimax Optimality
+    # ------------------------------------------------------------------
+
+    def chernoff_information(self, p0: float, p1: float) -> float:
+        r"""Chernoff information :math:`\kappa = C(\mathrm{Bern}(p_0), \mathrm{Bern}(p_1))`.
+
+        The Chernoff information is the exponential decay rate of the optimal
+        error in distinguishing :math:`\mathrm{Bern}(p_0)` from
+        :math:`\mathrm{Bern}(p_1)`.
+
+        .. math::
+
+            \kappa = \mathrm{KL}(\theta^* \,\|\, p_0) = \mathrm{KL}(\theta^* \,\|\, p_1)
+
+        where :math:`\theta^*` is the Chernoff point (unique solution of
+        :math:`\mathrm{KL}(\theta\|p_0) = \mathrm{KL}(\theta\|p_1)`).
+
+        Closed form:
+
+        .. math::
+
+            \theta^* = \frac{\log\frac{1-p_0}{1-p_1}}
+                            {\log\frac{p_1(1-p_0)}{p_0(1-p_1)}}
+
+        Parameters
+        ----------
+        p0 : float
+            Clean error rate :math:`p_0 = \mu_s \in (0, 1)`.
+        p1 : float
+            Noise error rate :math:`p_1 \in (p_0, 1)`.
+
+        Returns
+        -------
+        float
+            Chernoff information :math:`\kappa > 0`. Returns 0.0 if
+            :math:`p_0 \geq p_1` or edge cases prevent computation.
+        """
+        eps = self.eps
+        if p0 <= 0.0 or p0 >= 1.0 or p1 <= 0.0 or p1 >= 1.0 or p0 >= p1:
+            return 0.0
+        log_num = np.log((1.0 - p0) / (1.0 - p1 + eps))
+        log_den = np.log(p1 * (1.0 - p0) / (p0 * (1.0 - p1) + eps))
+        if abs(log_den) < eps:
+            return 0.0
+        theta_star = log_num / log_den
+        if theta_star <= p0 or theta_star >= p1:
+            return 0.0
+        return _safe_kl(theta_star, p0)
+
+    def exact_constant_minimax(
+        self,
+        p0: float,
+        p1: float,
+        eta: float,
+    ) -> dict:
+        r"""Compute all geometric constants from Theorem 4'.
+
+        Returns the Chernoff point :math:`\theta^*`, saddlepoints
+        :math:`\lambda_0^*, \lambda_1^*`, total log-odds :math:`D^*`,
+        exponent fraction :math:`s`, Chernoff information :math:`\kappa`,
+        and the minimax optimal constant :math:`C_{\min}`.
+
+        .. math::
+
+            C_{\min} = \frac{\eta}{2}
+                       \left(\frac{1-\eta}{\eta}\right)^{s}
+                       \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}
+                              {\sqrt{\theta^*(1-\theta^*)}}
+
+        Parameters
+        ----------
+        p0 : float
+            Clean error rate :math:`p_0 = \mu_s \in (0, 1)`.
+        p1 : float
+            Noise error rate :math:`p_1 \in (p_0, 1)`.
+        eta : float
+            Global noise rate :math:`\eta \in (0, 1)`.
+
+        Returns
+        -------
+        dict
+            Keys:
+            ``valid`` : bool
+                Whether the computation succeeded.
+            ``theta_star`` : float
+                Chernoff point :math:`\theta^*`.
+            ``lambda_0`` : float
+                Saddlepoint :math:`\lambda_0^* > 0`.
+            ``lambda_1`` : float
+                Saddlepoint :math:`\lambda_1^* < 0`.
+            ``D_star`` : float
+                Total log-odds :math:`D^* = \lambda_0^* + |\lambda_1^*|`.
+            ``s`` : float
+                Exponent fraction :math:`s = |\lambda_1^*| / D^*`.
+            ``kappa`` : float
+                Chernoff information :math:`\kappa`.
+            ``C_min`` : float
+                Minimax optimal constant :math:`C_{\min}`.
+            ``C_min_over_eta`` : float
+                Ratio :math:`C_{\min} / \eta` (the limiting constant in
+                Theorem 4' part (a)).
+            ``reason`` : str, optional
+                Failure reason when ``valid`` is False.
+        """
+        eps = self.eps
+        if p0 <= 0.0 or p0 >= 1.0 or p1 <= 0.0 or p1 >= 1.0:
+            return {"valid": False, "reason": "p0 or p1 out of (0, 1)"}
+        if p0 >= p1:
+            return {"valid": False, "reason": f"p0={p0} >= p1={p1}, no gap"}
+        if eta <= 0.0 or eta >= 1.0:
+            return {"valid": False, "reason": f"eta={eta} out of (0, 1)"}
+
+        # Chernoff point theta*
+        log_num = np.log((1.0 - p0) / (1.0 - p1 + eps))
+        log_den = np.log(p1 * (1.0 - p0) / (p0 * (1.0 - p1) + eps))
+        if abs(log_den) < eps:
+            return {"valid": False, "reason": "log_den too small (degenerate p0, p1)"}
+        theta_star = float(np.clip(log_num / log_den, eps, 1.0 - eps))
+
+        if theta_star <= p0 or theta_star >= p1:
+            return {"valid": False, "reason": "theta* outside (p0, p1)"}
+
+        # Saddlepoints
+        lam0 = float(np.log(
+            theta_star * (1.0 - p0) / (p0 * (1.0 - theta_star) + eps)
+        ))
+        lam1 = float(np.log(
+            theta_star * (1.0 - p1) / (p1 * (1.0 - theta_star) + eps)
+        ))
+
+        # Total log-odds D* = log(p1(1-p0)/(p0(1-p1)))
+        D_star = float(log_den)
+
+        # Exponent fraction s = |lam1| / D*
+        s = abs(lam1) / D_star if abs(D_star) > eps else 0.0
+
+        # Chernoff information
+        kappa = _safe_kl(theta_star, p0)
+
+        # Minimax constant
+        # C_min = (eta/2) * ((1-eta)/eta)^s * (1/lam0 + 1/|lam1|) / sqrt(theta*(1-theta*))
+        prefactor = (eta / 2.0) * ((1.0 - eta) / (eta + eps)) ** s
+        sum_inv = (1.0 / lam0) + (1.0 / abs(lam1))
+        denom = np.sqrt(theta_star * (1.0 - theta_star) + eps)
+        C_min = prefactor * sum_inv / denom
+
+        return {
+            "valid": True,
+            "theta_star": theta_star,
+            "lambda_0": lam0,
+            "lambda_1": lam1,
+            "D_star": D_star,
+            "s": s,
+            "kappa": kappa,
+            "C_min": float(C_min),
+            "C_min_over_eta": float(C_min / eta),
+        }
+
+    def adaptive_threshold_theorem4(
+        self,
+        mu_s: np.ndarray,
+        eta: float,
+        M: int,
+        C_bal: float = 1.0,
+        K: int = 2,
+    ) -> np.ndarray:
+        r"""Compute :math:`\theta^\dagger` per state using Theorem 4' formula.
+
+        .. math::
+
+            \theta^\dagger = \theta^* + \frac{1}{M}
+                             \frac{\log((1-\eta)/\eta)}{D^*}
+
+        where :math:`p_0 = \mu_s` and
+        :math:`p_1 = 1 - C_{\text{bal}} \cdot \mu_s/(K-1)`.
+
+        Parameters
+        ----------
+        mu_s : np.ndarray, shape (S,)
+            State-level clean error rates :math:`\mu_s`.
+        eta : float
+            Global noise rate in (0, 1).
+        M : int
+            Number of experts.
+        C_bal : float, optional
+            Error balance constant (default 1.0).
+        K : int, optional
+            Number of classes (default 2).
+
+        Returns
+        -------
+        np.ndarray, shape (S,)
+            Per-state adaptive thresholds :math:`\theta^\dagger_s`.
+            Returns ``NaN`` for states where no valid threshold exists.
+        """
+        eps = self.eps
+        mu_s = np.asarray(mu_s, dtype=float)
+        eta = float(eta)
+        M = int(M)
+
+        if M <= 0 or eta <= 0.0 or eta >= 1.0:
+            return np.full_like(mu_s, np.nan)
+
+        # p1 = 1 - C_bal * mu_s / (K - 1)
+        p1 = 1.0 - C_bal * mu_s / float(K - 1)
+
+        # Validity check: p0 < p1 for all states
+        valid = (mu_s > eps) & (mu_s < 1.0 - eps) & (p1 > mu_s) & (p1 < 1.0 - eps)
+        if not np.any(valid):
+            return np.full_like(mu_s, np.nan)
+
+        # D* = log(p1*(1-p0)/(p0*(1-p1)))
+        D_star = np.where(
+            valid,
+            np.log(p1 * (1.0 - mu_s) / (mu_s * (1.0 - p1) + eps)),
+            1.0,  # placeholder for invalid
+        )
+
+        # theta* = log((1-p0)/(1-p1)) / D*
+        theta_star = np.where(
+            valid,
+            np.log((1.0 - mu_s) / (1.0 - p1 + eps)) / D_star,
+            np.nan,
+        )
+
+        # theta_dagger = theta* + (1/M) * log((1-eta)/eta) / D*
+        log_ratio = np.log((1.0 - eta) / eta)
+        shift = np.where(valid, log_ratio / (float(M) * D_star), np.nan)
+        theta_dagger = theta_star + shift
+
+        # Clip to valid range and mask
+        theta_dagger = np.clip(theta_dagger, 0.0, 1.0)
+        theta_dagger[~valid] = np.nan
+        return theta_dagger
+
+    def noise_detection_f1_bound_bahadur_rao(
+        self,
+        M: int,
+        mu_s: np.ndarray,
+        rho_s: np.ndarray,
+        eta: float,
+        C_bal: float = 1.0,
+        K: int = 2,
+    ) -> dict:
+        r"""F1 bound using Bahadur-Rao exact asymptotics (Theorem 4').
+
+        Uses the exact asymptotic expansion:
+
+        .. math::
+
+            1 - \mathrm{F1} \sim
+                \frac{C_{\min}}{\eta} \cdot
+                \frac{e^{-M\kappa}}{\sqrt{2\pi M}}
+
+        Aggregated across states.  For multi-state problems, the dominant
+        contribution comes from states with the smallest Chernoff
+        information :math:`\kappa_s`.
+
+        Parameters
+        ----------
+        M : int
+            Number of experts.
+        mu_s : np.ndarray, shape (S,)
+            State-level clean error rates :math:`\mu_s`.
+        rho_s : np.ndarray, shape (S,)
+            State probabilities (should sum to 1).
+        eta : float
+            Global noise rate in (0, 1).
+        C_bal : float, optional
+            Error balance constant (default 1.0).
+        K : int, optional
+            Number of classes (default 2).
+
+        Returns
+        -------
+        dict
+            Keys:
+            ``f1_lower_bound`` : float
+                Lower bound on F1 in (0, 1).
+            ``f1_asymptotic`` : float
+                Asymptotic F1 estimate.
+            ``valid`` : bool
+                Whether the computation succeeded.
+            ``per_state`` : list[dict]
+                Per-state details (kappa, theta_star, C_min, etc.).
+            ``kappa_min`` : float
+                Minimum Chernoff information across states.
+            ``global_C_min_over_eta`` : float
+                Aggregated minimax constant.
+        """
+        eps = self.eps
+        M = int(M)
+        mu_s = np.asarray(mu_s, dtype=float)
+        rho_s = np.asarray(rho_s, dtype=float)
+
+        # Normalise rho_s
+        rho_sum = rho_s.sum()
+        if rho_sum > eps:
+            rho_s = rho_s / rho_sum
+
+        if M <= 0 or eta <= 0.0 or eta >= 1.0:
+            return {
+                "f1_lower_bound": 0.0,
+                "f1_asymptotic": 0.0,
+                "valid": False,
+            }
+
+        per_state = []
+        for mu_val, rho_val in zip(mu_s, rho_s):
+            if rho_val <= 0.0:
+                continue
+
+            p0 = float(mu_val)
+            p1 = 1.0 - C_bal * mu_val / float(K - 1)
+
+            if p0 >= p1 or p0 <= 0.0 or p0 >= 1.0 or p1 <= 0.0 or p1 >= 1.0:
+                continue
+
+            thm4 = self.exact_constant_minimax(p0, p1, eta)
+            if not thm4["valid"]:
+                continue
+
+            # Asymptotic error: 1-F1 ≈ (C_min/eta) * exp(-M*kappa) / sqrt(2*pi*M)
+            sqrt_term = np.sqrt(2.0 * np.pi * M) if M > 0 else 1.0
+            asym_error = (thm4["C_min_over_eta"]) * np.exp(-M * thm4["kappa"]) / sqrt_term
+
+            per_state.append({
+                "mu_s": float(mu_val),
+                "rho_s": float(rho_val),
+                "p0": p0,
+                "p1": p1,
+                "kappa": thm4["kappa"],
+                "theta_star": thm4["theta_star"],
+                "C_min": thm4["C_min"],
+                "C_min_over_eta": thm4["C_min_over_eta"],
+                "asymptotic_1_minus_f1": float(asym_error),
+            })
+
+        if not per_state:
+            return {
+                "f1_lower_bound": 0.0,
+                "f1_asymptotic": 0.0,
+                "valid": False,
+            }
+
+        # Multi-state aggregation:
+        # The state with the smallest kappa dominates in the M->infinity limit.
+        kappa_min = min(ps["kappa"] for ps in per_state)
+        states_at_min = [
+            ps for ps in per_state
+            if abs(ps["kappa"] - kappa_min) < 1e-12
+        ]
+
+        global_cmin_eta = sum(
+            ps["rho_s"] * ps["C_min_over_eta"] for ps in states_at_min
+        )
+
+        # Finite-M estimate: weighted sum across all states
+        asym_total = sum(ps["rho_s"] * ps["asymptotic_1_minus_f1"] for ps in per_state)
+
+        return {
+            "f1_lower_bound": float(np.clip(1.0 - asym_total, 0.0, 1.0)),
+            "f1_asymptotic": float(np.clip(1.0 - asym_total, 0.0, 1.0)),
+            "valid": True,
+            "per_state": per_state,
+            "kappa_min": float(kappa_min),
+            "global_C_min_over_eta": float(global_cmin_eta),
+        }
+
     @staticmethod
     def _estimate_mutual_info(
         X: np.ndarray,

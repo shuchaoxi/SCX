@@ -15,7 +15,8 @@ from .noise_score import NoiseScore
 from .redundancy import RedundancyScore
 from .classifier import DataClassifier
 from .state_value import StateValue, hoeffding_bound, chernoff_bound
-from .adaptive import AdaptiveThreshold
+from .adaptive import AdaptiveThreshold, TheoreticalAdaptiveThreshold
+from .a2_diagnostic import A2Diagnostic
 from .influence import StateConditionedInfluence
 
 __all__ = [
@@ -25,6 +26,8 @@ __all__ = [
     "DataClassifier",
     "StateValue",
     "AdaptiveThreshold",
+    "TheoreticalAdaptiveThreshold",
+    "A2Diagnostic",
     "StateConditionedInfluence",
     "hoeffding_bound",
     "chernoff_bound",

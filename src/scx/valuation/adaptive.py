@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from scx.valuation.classifier import DataClassifier
+from scx.valuation.state_value import StateValue
 
 
 class AdaptiveThreshold:
@@ -408,3 +409,247 @@ class AdaptiveThreshold:
         max_gap_idx = int(np.argmax(gaps))
         # Place the threshold at the midpoint of the largest gap
         return float(np.mean(sorted_vals[max_gap_idx: max_gap_idx + 2]))
+
+
+# ======================================================================
+# TheoreticalAdaptiveThreshold — Theorem 4' adaptive threshold
+# ======================================================================
+
+
+class TheoreticalAdaptiveThreshold:
+    r"""Theorem 4' adaptive threshold :math:`\theta^\dagger` for noise detection.
+
+    Instead of grid-search, this class uses the closed-form asymptotic
+    optimal threshold from Theorem 4':
+
+    .. math::
+
+        \theta^\dagger = \theta^* + \frac{1}{M}
+                         \frac{\log((1-\eta)/\eta)}{D^*}
+
+    where:
+    * :math:`p_0 = \mu_s` is the state-level clean error rate
+    * :math:`p_1 = 1 - C_{\text{bal}} \cdot \mu_s / (K-1)` is the noise error rate
+    * :math:`\theta^*` is the Chernoff point
+    * :math:`D^* = \log\frac{p_1(1-p_0)}{p_0(1-p_1)}` is the total log-odds
+
+    Parameters
+    ----------
+    eps : float, optional
+        Small constant to avoid division by zero (default 1e-8).
+    """
+
+    def __init__(self, eps: float = 1e-8) -> None:
+        if eps <= 0:
+            raise ValueError(f"eps must be positive, got {eps}")
+        self.eps = eps
+        self._state_value = StateValue(eps=eps)
+
+    # ------------------------------------------------------------------
+    # Core methods
+    # ------------------------------------------------------------------
+
+    def compute_threshold(
+        self,
+        mu_s: np.ndarray,
+        eta: float,
+        M: int,
+        C_bal: float = 1.0,
+        K: int = 2,
+    ) -> np.ndarray:
+        r"""Compute per-state optimal thresholds :math:`\theta^\dagger_s`.
+
+        Parameters
+        ----------
+        mu_s : np.ndarray, shape (S,)
+            State-level clean error rates :math:`\mu_s`.
+        eta : float
+            Global noise rate in (0, 1).
+        M : int
+            Number of experts.
+        C_bal : float, optional
+            Error balance constant (default 1.0).
+        K : int, optional
+            Number of classes (default 2).
+
+        Returns
+        -------
+        np.ndarray, shape (S,)
+            Per-state adaptive thresholds :math:`\theta^\dagger_s`.
+            ``NaN`` for states with no valid gap.
+        """
+        return self._state_value.adaptive_threshold_theorem4(
+            mu_s=mu_s, eta=eta, M=M, C_bal=C_bal, K=K,
+        )
+
+    def compute_chernoff_point(
+        self,
+        p0: float,
+        p1: float,
+    ) -> float:
+        r"""Compute the Chernoff point :math:`\theta^*` between two Bernoullis.
+
+        Parameters
+        ----------
+        p0 : float
+            Clean error rate :math:`p_0 = \mu_s \in (0, 1)`.
+        p1 : float
+            Noise error rate :math:`p_1 \in (p_0, 1)`.
+
+        Returns
+        -------
+        float
+            Chernoff point :math:`\theta^* \in (p_0, p_1)`. Returns NaN
+            if no valid point exists.
+        """
+        eps = self.eps
+        if p0 <= 0.0 or p0 >= 1.0 or p1 <= 0.0 or p1 >= 1.0 or p0 >= p1:
+            return float("nan")
+        log_num = np.log((1.0 - p0) / (1.0 - p1 + eps))
+        log_den = np.log(p1 * (1.0 - p0) / (p0 * (1.0 - p1) + eps))
+        if abs(log_den) < eps:
+            return float("nan")
+        theta_star = float(np.clip(log_num / log_den, eps, 1.0 - eps))
+        if theta_star <= p0 or theta_star >= p1:
+            return float("nan")
+        return theta_star
+
+    def compute_cmin(
+        self,
+        p0: float,
+        p1: float,
+        eta: float,
+    ) -> dict:
+        r"""Compute the minimax optimal constant :math:`C_{\min}`.
+
+        .. math::
+
+            C_{\min} = \frac{\eta}{2}
+                       \left(\frac{1-\eta}{\eta}\right)^{s}
+                       \cdot \frac{1/\lambda_0^* + 1/|\lambda_1^*|}
+                              {\sqrt{\theta^*(1-\theta^*)}}
+
+        Parameters
+        ----------
+        p0 : float
+            Clean error rate :math:`p_0 = \mu_s`.
+        p1 : float
+            Noise error rate :math:`p_1`.
+        eta : float
+            Global noise rate.
+
+        Returns
+        -------
+        dict
+            All constants from ``StateValue.exact_constant_minimax()``.
+        """
+        return self._state_value.exact_constant_minimax(p0, p1, eta)
+
+    def theoretical_f1_bound(
+        self,
+        M: int,
+        mu_s: np.ndarray,
+        eta: float,
+        rho_s: np.ndarray,
+        C_bal: float = 1.0,
+        K: int = 2,
+    ) -> dict:
+        r"""F1 bound using Theorem 4' exact constant.
+
+        Provides the asymptotic estimate:
+
+        .. math::
+
+            1 - \mathrm{F1} \sim
+                \sum_{s} \rho_s \frac{C_{\min}^{(s)}}{\eta}
+                \frac{e^{-M\kappa_s}}{\sqrt{2\pi M}}
+
+        Parameters
+        ----------
+        M : int
+            Number of experts.
+        mu_s : np.ndarray, shape (S,)
+            State-level clean error rates.
+        eta : float
+            Global noise rate.
+        rho_s : np.ndarray, shape (S,)
+            State probabilities.
+        C_bal : float, optional
+            Error balance constant (default 1.0).
+        K : int, optional
+            Number of classes (default 2).
+
+        Returns
+        -------
+        dict
+            Results from ``StateValue.noise_detection_f1_bound_bahadur_rao()``.
+        """
+        return self._state_value.noise_detection_f1_bound_bahadur_rao(
+            M=M, mu_s=mu_s, rho_s=rho_s, eta=eta, C_bal=C_bal, K=K,
+        )
+
+    # ------------------------------------------------------------------
+    # Convenience: threshold shift itself
+    # ------------------------------------------------------------------
+
+    def threshold_shift(
+        self,
+        mu_s: float,
+        eta: float,
+        M: int,
+        C_bal: float = 1.0,
+        K: int = 2,
+    ) -> dict:
+        r"""Decompose the adaptive threshold into its components.
+
+        Returns :math:`\theta^*`, :math:`D^*`, and the :math:`O(1/M)` shift
+        term for a single state.
+
+        Parameters
+        ----------
+        mu_s : float
+            State-level clean error rate.
+        eta : float
+            Global noise rate.
+        M : int
+            Number of experts.
+        C_bal : float, optional
+            Error balance constant.
+        K : int, optional
+            Number of classes.
+
+        Returns
+        -------
+        dict
+            ``theta_star``, ``D_star``, ``log_ratio``, ``shift``,
+            ``theta_dagger``.
+        """
+        eps = self.eps
+        p0 = float(mu_s)
+        p1 = 1.0 - C_bal * mu_s / float(K - 1)
+
+        if p0 >= p1 or p0 <= 0.0 or p0 >= 1.0 or p1 <= 0.0 or p1 >= 1.0:
+            return {"valid": False}
+
+        log_num = np.log((1.0 - p0) / (1.0 - p1 + eps))
+        log_den = np.log(p1 * (1.0 - p0) / (p0 * (1.0 - p1) + eps))
+        if abs(log_den) < eps:
+            return {"valid": False}
+
+        theta_star = float(np.clip(log_num / log_den, eps, 1.0 - eps))
+        D_star = float(log_den)
+        log_ratio = float(np.log((1.0 - eta) / eta))
+        shift = log_ratio / (float(M) * D_star)
+        theta_dagger = float(np.clip(theta_star + shift, 0.0, 1.0))
+
+        return {
+            "valid": True,
+            "mu_s": mu_s,
+            "p0": p0,
+            "p1": p1,
+            "theta_star": theta_star,
+            "D_star": D_star,
+            "log_ratio": log_ratio,
+            "shift": shift,
+            "theta_dagger": theta_dagger,
+        }
