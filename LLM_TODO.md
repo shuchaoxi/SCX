@@ -1,45 +1,60 @@
 # 明日推进 TODO — 2026-06-29
 
-## 🔴 HIV 药监数据库下载与运行
+## 🔴 全药物数据库下载 + Yajie 一次性全筛
 
-### 下载
-- [ ] ChEMBL: HIV子集（SQL dump 或 Python API chembl_webresource_client）
-- [ ] DrugBank: 申请学术账号 → XML下载
-- [ ] PubChem BioAssay: HIV相关 AID（PUG REST API）
-- [ ] Stanford HIVDB: 突变-耐药表直接下载
-- [ ] BindingDB: 蛋白-配体亲和力
+### 数据库清单（全量，不仅限于 HIV）
 
-### 预处理
-- [ ] 提取 SMILES → 标准化 → ECFP4/MACCS 指纹
-- [ ] 统一格式: drug_id, target, assay_type, value, units
+| # | 数据库 | 内容 | 大小 | 优先级 |
+|:--:|------|------|:--:|:--:|
+| 1 | **ChEMBL** | 全量生物活性数据（所有靶点、所有化合物） | ~50GB | 🔴 |
+| 2 | **DrugBank** | 全部已批准+实验性药物，带靶点 | ~1GB | 🔴 |
+| 3 | **PubChem BioAssay** | 全部检测数据 | ~50GB | 🔴 |
+| 4 | **BindingDB** | 全量蛋白-配体结合亲和力 | ~2GB | 🔴 |
+| 5 | **PDBbind** | 蛋白-配体复合物+结合亲和力（最精确） | ~5GB | 🟡 |
+| 6 | **TTD** (Therapeutic Target Database) | 已知治疗靶点+对应药物 | ~500MB | 🔴 |
+| 7 | **DrugCentral** | FDA批准药物的靶点+适应症 | ~1GB | 🟡 |
+| 8 | **Open Targets** | 靶点-疾病关联（GWAS+文献） | ~10GB | 🟡 |
+| 9 | **PharmGKB** | 药物基因组学（基因×药物×反应） | ~2GB | 🟡 |
+| 10 | **Stanford HIVDB** | HIV耐药突变（保留） | <100MB | 🔴 |
+| 11 | **SIDER** | 药物副作用数据库 | ~1GB | 🟡 |
+| 12 | **STITCH** | 化合物-蛋白相互作用网络 | ~20GB | 🟢 |
 
-### 运行
-- [ ] 4 专家设置: 结合亲和力 | 毒性 | 药性 | 耐药突变
-- [ ] 跑 `drug-module/scripts/hiv_drug_audit.py`
-- [ ] 输出: 高共识候选 + 观察名单 + 数据质量报告
+### 硬盘需求
+```
+🔴 优先级 (必须): ~105GB
+🟡 强推荐:         ~20GB  
+🟢 可选:           ~20GB
+缓冲+解压:        ~50GB
+─────────────────────────
+总计:             ~200GB
+```
 
-### 扩展
-- [ ] 加入原发性免疫缺陷 / 自身免疫病数据（可选）
-- [ ] Yajie 自动区分 HIV vs 自身免疫的靶点重叠
+### 预处理管道
+- [ ] 所有 SMILES → 标准化 → ECFP4/MACCS 指纹
+- [ ] 统一 schema: drug_id, target_id, assay_type, value, units, source_db
+- [ ] 去重（同一 drug-target 对在多个数据库中重复出现 = 专家共识）
+
+### Yajie 运行
+- [ ] N 个专家（每数据库一个 + 物理化学性质 + 结构相似性）
+- [ ] 一次性筛选：所有药物 × 所有靶点
+- [ ] 输出：
+  - 高共识 drug-target 对（多数据库交叉验证）
+  - 数据库质量报告（哪个数据库矛盾最多）
+  - 新兴靶点（高新颖性低共识 → Spring 待复活）
+
+### 验证
+- [ ] 已知 HIV 药物是否被 Yajie 高分筛出
+- [ ] Yajie 是否发现已知的跨界靶点（HIV/自身免疫/炎症共靶点）
+- [ ] 假阳性分析（高分但文献无支持的 → 新发现候选）
 
 ---
 
 ## 🟡 arXiv 投稿
-- [ ] Paper 1 (Yajie) — 编译已就绪，含 S1-S8
-- [ ] Paper 2 (Spring) — 13 页，已就绪
+- [ ] Paper 1 (Yajie) — PDF已编译（含S1-S8）
+- [ ] Paper 2 (Spring) — PDF已编译（13页）
 
 ---
 
-## ✅ 已完成（本轮）
-- [x] Spring 代码实现 (spring.py 1551行)
-- [x] Yajie fit() 鲁棒实现 + 18 测试
-- [x] Spring 验证脚本 + 噪声对比实验
-- [x] Paper 9 LLM 审计脚本骨架
-- [x] 协议论文 18 层博弈论
-- [x] 综述双引擎架构重写
-- [x] 分类学理论 + 内在可解释性
-- [x] Anthropic 批判 + 自我怀疑 + 达摩克利斯之剑
-- [x] 商业架构 (BUSINESS_ARCHITECTURE.md)
-- [x] 战略笔记 (DEVELOPMENT_LOG.md)
-- [x] 445 测试全部通过
-- [x] 邮箱全部从论文中删除
+## ✅ 已完成
+- [x] Spring 代码 (1551行) + Yajie fit() + HIV 审计原型
+- [x] 9篇论文框架 + 18层博弈论 + 445测试全过
