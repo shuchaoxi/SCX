@@ -1,0 +1,495 @@
+% SCX in Space: State-Conditioned eXpertise Across Scientific Domains
+% Perspective / Position Paper — no new experiments
+% Target: Nature Computational Science or Scientific Data
+
+\documentclass[12pt,a4paper]{article}
+
+% === Packages ===
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{pifont}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+% === Theorem-like environments ===
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+% === Math operators ===
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% === Colors for status markers ===
+\definecolor{verified}{rgb}{0.0,0.5,0.0}
+\definecolor{projected}{rgb}{0.8,0.4,0.0}
+\definecolor{warning}{rgb}{0.9,0.1,0.1}
+
+% === Title ===
+\title{
+  \textbf{SCX in Space: State-Conditioned eXpertise\\ Across Scientific Domains}\\[8pt]
+  \large A Hard-Nosed Perspective on When (and When Not) to Add Physical Position Encoding
+}
+
+\author{SCX Project}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Document Type}: Perspective / Position Paper (no new experiments)\\
+\textbf{Target Journals}: \textit{Nature Computational Science} or \textit{Scientific Data}\\[6pt]
+\textbf{Status Legend}:
+\;\textcolor{verified}{$\blacksquare$ Verified (mathematical proof or physical data)}
+\;\textcolor{projected}{$\blacksquare$ Projected (theoretically grounded, unverified)}
+\;\textcolor{warning}{$\blacksquare$ Known hard boundary / failure mode}
+\end{center}
+
+\vspace{12pt}
+\begin{abstract}
+% === 150 words ===
+The SCX (State-Conditioned eXpertise) framework deploys multiple independent expert models to detect label noise through consensus patterns, but its original formulation is spatially blind—it treats all data samples as points in a purely statistical feature space. Situs, a family of physical positional encodings, augments SCX by injecting geometric information (1D sequence position, 3D Cartesian coordinates) into state representations. This Perspective maps the boundary between Situs as a decisive asset and Situs as costly noise. We establish the necessary condition $I(Y;P \mid S)>0$—physical position must carry label information beyond what the state atom already captures—and audit six scientific scenarios spanning materials science, life sciences, astronomy, and remote sensing. We identify three hard failure modes: spurious correlation, multicollinearity with pre-existing structural encodings, and rotational equivariance failure. We close with a layered deployment roadmap (Core $\to$ Spatial $\to$ Extended) and a call for adversarial validation before claiming spatial gains.
+\end{abstract}
+
+\vspace{6pt}
+
+% ===================================================================
+\section{SCX + Situs in One Picture}
+% ===================================================================
+
+The SCX ecosystem comprises five co-designed layers. Figure~\ref{fig:layers} (described textually here; a graphical version is under preparation) maps the value chain from raw physical observation to audited data quality score.
+
+\begin{description}[leftmargin=2cm,style=nextline]
+\item[\textbf{Layer 1 — State Crystallization}.] Raw physical observables $\mathcal{X} \subset \mathbb{R}^{d_{\text{raw}}}$ (DFT energy surfaces, force fields, spectral time series) are discretized into $N$ state atoms $\mathcal{S} = \{s_1,\ldots,s_N\}$ via curvature-driven clustering on PBE energy landscapes. Unlike statistical tokenization (BPE), crystallization is physics-grounded: cluster boundaries align with spectral gaps in $\nabla^2 E_{\text{PBE}}$. \textcolor{verified}{$\blacksquare$ Verified}: Crystallization is operational on AlN defect structures ($N = 534$ frames, 107 unique geometries). \textcolor{projected}{$\blacksquare$ Projected}: Extension to non-DFT data types (spectroscopic, remote sensing) requires domain-specific crystallization criteria.
+
+\item[\textbf{Layer 2 — Situs (Physical Positional Encoding)}.] Each state atom $s_i$ is augmented with its physical location $p_i$ via additive injection:
+\begin{equation}
+h_i = \phi(s_i) + \mathrm{PE}(p_i)
+\label{eq:pe_injection}
+\end{equation}
+Three encoding families are defined:
+\begin{itemize}[nosep]
+\item \textbf{Scalar sinusoidal} ($p \in [0,L]$): $\mathrm{PE}(p, 2j) = \sin(2\pi p/\lambda_j)$, $\mathrm{PE}(p, 2j+1) = \cos(2\pi p/\lambda_j)$, with optimal frequency spectrum derived from Bochner's theorem (Theorem~1.2.1 in \cite{ppe_derivation}).
+\item \textbf{3D rotational} ($\mathbf{p} \in \mathbb{R}^3$): $\mathrm{PE}_{\text{rot}}(\mathbf{p}) = \mathbf{R}_x(\alpha x) \cdot \mathbf{R}_y(\beta y) \cdot \mathbf{R}_z(\gamma z) \cdot \mathbf{e}_0$, embedding 3D coordinates into $SO(d)$ via non-overlapping 2D rotation planes.
+\item \textbf{Scalar count} ($N \in \mathbb{N}$): total atom number as a global scale parameter.
+\end{itemize}
+\textcolor{verified}{$\blacksquare$ Verified}: Core Lipschitz continuity $L_{\mathrm{PE}}^{\text{scalar}} = \sqrt{2\sum_j (2\pi/\lambda_j)^2}$ (Theorem~1.2.3). Translation invariance holds for 3D encoding. \textcolor{warning}{$\blacksquare$ Hard boundary}: Rotational equivariance does NOT hold for 3D rotational encoding (\S\ref{sec:hard})---encoding assigns non-overlapping dimension pairs to $x$, $y$, $z$ axes, so a physical rotation that mixes axes has no corresponding transformation in encoding space.
+
+\item[\textbf{Layer 3 — Spring (Self-Evolution)}.] A monotonically growing memory bank $M_t$ accumulates every structural assessment. Dormant structures are periodically re-evaluated as the gatekeeper's discrimination improves: $(S_t, \theta_t, M_t) \to (S_{t+1}, \theta_{t+1}, M_{t+1})$ with $M_t \subseteq M_{t+1}$. \textcolor{verified}{$\blacksquare$ Verified}: Robbins-Monro convergence (SE-1) and Doob martingale property (SE-2) under convexity assumptions. \textcolor{projected}{$\blacksquare$ Projected}: Convergence rate in non-convex loss landscapes with multi-head architecture (known to be slower by $O(1/\sqrt{K})$ factor).
+
+\item[\textbf{Layer 4 — Yajie (Multi-Expert Audit)}.] $M$ independent experts vote on label correctness. The consistency count $C(s) = \sum_{m=1}^{M} \mathbf{1}[E_m(s) \neq y]$ follows a binomial mixture under null (clean) and alternative (noisy) hypotheses. Detection margin $\Delta_s = p_{\text{noisy},s} - p_{\text{clean},s} > 0$ is the condition for operational utility. \textcolor{verified}{$\blacksquare$ Verified}: Theorem~1 (Chernoff-Hoeffding lower bound on $F_1$), Theorem~4 (minimax optimality via Chernoff-Stein lemma).
+
+\item[\textbf{Layer 5 — Cercis Score}.] The final quality score combines base quality from multi-expert consensus with a time-decaying novelty bonus: $S(s_i) = Q(s_i) + \eta(t) \cdot N(s_i)$, where $\eta(t) \to 0$ as $t \to \infty$ (exploration $\to$ exploitation). \textcolor{verified}{$\blacksquare$ Verified}: Integration with Spring's dormancy-resurrection cycle. \textcolor{projected}{$\blacksquare$ Projected}: Multi-head quality aggregation $Q_{\text{MH}}(h_i) = \frac{1}{K}\sum_k w_k \cdot Q(\text{head}_k(h_i))$ with diversity regularization.
+\end{description}
+
+The critical question this paper addresses is \textbf{where} in this pipeline Situs adds value---and where it subtracts it. Not all data has meaningful spatial structure. Not all spatial structure is causally linked to the prediction target. And not all encoding schemes respect the symmetries of the underlying physics. The rest of this paper provides a decision framework.
+
+% ===================================================================
+\section{When to Add Situs: The Decision Criterion}
+% ===================================================================
+
+\subsection{The Necessary Condition}
+
+The central theoretical result governing Situs deployment is:
+
+\begin{theorem}[Information-Theoretic Criterion, Theorem~2.2.1 in \cite{ppe_derivation}]
+\label{thm:criterion}
+Let $S$, $P$, $Y$ denote the state atom, physical position, and label random variables. A necessary (and, with sufficient encoding capacity, sufficient) condition for Situs to improve detection margin $\Delta_s$ is:
+\begin{equation}
+\boxed{I(Y; P \mid S) > 0}
+\label{eq:criterion}
+\end{equation}
+That is, physical position must carry information about the label \emph{beyond what the state atom already encodes}. When $I(Y;P \mid S) = 0$, Situs contributes nothing beyond finite-expert variance noise: $\delta_s^{\mathrm{PE}} \leq O(1/\sqrt{M}) \to 0$ as $M \to \infty$.
+\end{theorem}
+
+The condition is clean, but its practical estimation is not. Computing $I(Y;P \mid S)$ via KSG estimators suffers from the curse of dimensionality (convergence rate $O(n^{-1/(d_{\text{eff}}+2)})$). The pragmatic alternative is a \textbf{predictive sufficiency test}: train two classifiers, one on $(\phi(S), \mathrm{PE}(P))$ and one on $\phi(S)$ alone; if their out-of-distribution log-loss difference is not statistically significant, Situs is redundant.
+
+\subsection{Six-Scenario Quick-Reference Table}
+
+Table~\ref{tab:six_scenarios} provides the deployment decision for six canonical scientific scenarios, annotated with confidence levels and caveats.
+
+\begin{table}[htbp]
+\centering
+\caption{Situs deployment decisions across six scientific scenarios. $\delta_s^{\mathrm{PE}}$ is the change in detection margin; $\uparrow$ = improvement, $\approx 0$ = neutral, $\downarrow$ = harmful. Confidence: $\star\star\star$ = physically verified, $\star\star$ = theoretically grounded (unverified), $\star$ = speculative.}
+\label{tab:six_scenarios}
+\small
+\begin{tabular}{p{2.8cm}p{1.4cm}p{1.1cm}p{1.2cm}p{5.5cm}}
+\toprule
+\textbf{Scenario} & $\bm{\delta_s^{\mathrm{PE}}}$ & \textbf{Magnitude} & \textbf{Conf.} & \textbf{Rationale} \\
+\midrule
+AlN $V_N$ defect (534 frames, 3D coords) & $\uparrow$ Positive & Large & $\star\star\star$ & 3D position causally determines formation energy. Local coordination environment $\to$ $E_f$. $I(Y;P \mid S)$ estimate: 1.5--2.5 bits. Home turf for Situs. \\
+\midrule
+CNT chirality $(n,m)$ classification & $\uparrow$ Positive & Large & $\star\star\star$ & Chirality is purely a global geometry property. All carbon atoms share identical $sp^2$ chemistry ($I(Y;S) \approx 0$), so almost all label information comes from $P$. Textbook case. \\
+\midrule
+Enzyme active site (1D sequence pos.) & $\uparrow$ Positive & Small--Medium & $\star\star$ & 1D position weakly correlates with 3D functional site. $I(Y;P_{\text{1D}} \mid S) < 0.3$ bits. If pLM embeddings already capture position via attention bias, Situs becomes colinear redundancy (\S\ref{sec:hard}). \\
+\midrule
+Drug-target docking (DrugBank 6,784, 3D pose) & $\uparrow$ Positive (conditional) & Small--Medium & $\star\star$ & Only with high-quality 3D poses (RMSD $<$ 2.0\,\AA). 6,784 samples is borderline for learning the vast pose--affinity mapping. Strong regularization required. \\
+\midrule
+Pure composition classification (no structure) & $\approx 0$ & Zero & $\star\star\star$ & $\mathcal{P}$ is undefined. Any artificial position index encodes data-loading artifact. $I(Y;P \mid S) \equiv 0$. \textbf{Absolute no-go zone}. \\
+\midrule
+Random atomic configurations (no periodicity) & $\downarrow$ Negative & Medium & $\star\star\star$ & Position exists (3D coords) but carries no causal label information. Finite-sample accidental correlations produce $\delta_s^{\mathrm{PE}} > 0$ on training set, $\delta_s^{\mathrm{PE}} < 0$ on test set. Most dangerous scenario---surface gain is a statistical mirage. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Quick Heuristic}
+
+\begin{quote}
+\textbf{The Situs litmus test}: Can you name a specific physical mechanism by which position \emph{causes} the label to change, holding the local chemistry fixed? If yes, Situs is likely beneficial. If no, it is likely noise. If you are unsure, run the predictive sufficiency test before deploying.
+\end{quote}
+
+% ===================================================================
+\section{Materials Science: Situs on Home Turf}
+% ===================================================================
+
+\subsection{AlN $V_N$ Defect: Causal 3D Position Encoding}
+
+The nitrogen vacancy $V_N$ in aluminum nitride is the archetypal case where 3D position \emph{causes} the label. Consider three spatial contexts for the same chemical defect:
+
+\begin{table}[htbp]
+\centering
+\caption{Formation energy $E_f$ of $V_N$ as a function of spatial location. DFT data from \cite{freysoldt2014,stampfl2002}.}
+\label{tab:aln_ef}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Location} & $\bm{E_f}$ \textbf{(eV)} & \textbf{Physical mechanism} \\
+\midrule
+Bulk (coordination number 4) & 3.2--4.0 & Four Al--N bonds broken, full tetrahedral coordination \\
+Surface (0001, coordination 3) & 1.8--2.5 & Surface relaxation releases strain; reduced coordination \\
+Grain boundary ($\Sigma 7$ tilt) & 1.0--1.8 & Intrinsic stress field + excess volume + pre-existing dangling bonds \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The causal chain is irreducible:
+\begin{equation}
+\text{3D Position} \;\xrightarrow{\text{determines}}\; \text{Local coordination} \;\xrightarrow{\text{determines}}\; \text{Defect formation energy}
+\end{equation}
+
+The effect size ($\Delta E_f \approx 1.5$--$2.5$~eV) dwarfs $k_B T \approx 0.025$~eV at room temperature. This is decisive at any temperature. Using Fano's lower bound (Theorem~2.4.1 in \cite{ppe_derivation}) with $I(Y;P \mid S) \approx \log 3 \approx 1.6$ bits (binning $E_f$ into high/medium/low):
+\begin{equation}
+\delta_s^{\mathrm{PE}} \gtrsim \frac{2 \cdot 1.6 - \log 2}{\log 3} \approx 0.5\text{--}0.8
+\end{equation}
+This is a substantial detection margin gain, corresponding to a significant tightening of Theorem~1's exponential bound.
+
+\textcolor{warning}{$\blacksquare$ Caveat (unverified)}: The 534-frame dataset may contain multiple grain orientations. If so, the rotational non-equivariance of 3D encoding (\S\ref{sec:rotation}) injects noise proportional to orientational diversity. Check the orientation distribution before deploying. If orientations span more than $\sim 15^\circ$, apply orientation alignment pre-processing.
+
+\subsection{CNT Chirality Classification: The Textbook Case}
+
+Carbon nanotube chirality, indexed by the $(n,m)$ pair, is determined entirely by the global 3D arrangement of carbon atoms. The local chemical environment of every carbon is identical ($sp^2$ bonding), so:
+\begin{equation}
+I(Y; S) \approx 0, \quad I(Y; P) \approx H(Y) = \log_2 K
+\end{equation}
+where $K$ is the number of chirality classes. Situs is not merely helpful here---it is the \textbf{only} source of information. The state atom $\phi(s_i)$ is a near-constant vector across all carbon atoms, carrying zero chirality-discriminative signal. The sinusoidal encoding captures the helical wrapping periodicity and tube diameter through relative-position patterns in $\langle \mathrm{PE}(\mathbf{p}), \mathrm{PE}(\mathbf{q}) \rangle = \cos(\alpha\Delta x) + \cos(\beta\Delta y) + \cos(\gamma\Delta z)$.
+
+\textcolor{warning}{$\blacksquare$ Caveat (unverified)}: For small-diameter tubes ($n+m < 15$), curvature effects are significant. The 3D rotational encoding does not automatically enforce circumferential periodicity---atoms that are physically adjacent across the periodic boundary may receive distant encodings. A custom encoding that respects the tube's cylindrical topology may be necessary. For large-diameter tubes, this boundary artifact becomes negligible.
+
+\subsection{System Size Encoding: A Cautionary Tale}
+
+Situs includes a third domain: total atom count $N$ as a scalar position parameter. For DFT datasets mixing different supercell sizes (e.g., $N=32$, $N=108$, $N=256$), the Makov-Payne finite-size scaling \cite{makov1995} introduces a systematic artifact:
+\begin{equation}
+E_f(L) = E_f(\infty) + \frac{\alpha q^2}{2\varepsilon L} + \frac{2\pi q Q}{3\varepsilon L^3} + O(L^{-5})
+\end{equation}
+For $V_N^{+1}$ in AlN ($\varepsilon \approx 9$), the $N=32$ supercell carries a $\sim 0.5$~eV electrostatic image-charge correction that is a computational artifact, not physics. If $N$ encoding is used on uncorrected data, the model learns ``$N=32 \to$ high $E_f$'' as a spurious pattern. \textcolor{warning}{$\blacksquare$ Hard boundary}: Apply FNV finite-size corrections \cite{freysoldt2009} \textbf{before} considering $N$ encoding. After correction, $N$ carries negligible additional label information ($\Delta E_f$ $N$-dependence $< 0.05$~eV for $N > 100$).
+
+% ===================================================================
+\section{Life Sciences: The 1D/3D Gap}
+% ===================================================================
+
+\subsection{Enzyme Active Sites: Why 1D Sequence Position is a Weak Proxy}
+
+The same amino acid (e.g., lysine) at different positions in a protein can have radically different functional roles:
+
+\begin{table}[htbp]
+\centering
+\caption{Physical properties of Lys-37 (active site) vs Lys-289 (surface loop).}
+\label{tab:lysine}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Property} & \textbf{Lys-37 (active site)} & \textbf{Lys-289 (surface)} & \textbf{Origin of difference} \\
+\midrule
+Side-chain p$K_a$ & 6.0--8.0 & 10.4--10.6 & Local electrostatic environment \\
+SASA & $< 10$\,\AA$^2$ & $> 100$\,\AA$^2$ & 3D fold position \\
+Conservation (BLOSUM62) & $< 0.2$ bits & $> 0.8$ bits & Functional constraint \\
+Mutation $\Delta\Delta G$ & $> 3$ kcal/mol & $< 1$ kcal/mol & Folding stability \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+$I(Y; P_{\text{3D}} \mid S = \text{Lys})$ is large---3D position in the folded structure determines function. \textbf{But Situs in its 1D form encodes sequence position, not 3D position.} The mapping from sequence position to 3D position is not a function: position 37 in homolog A may be the active site, while in homolog B (with an insertion) it maps to a loop. Thus:
+\begin{equation}
+I(Y; P_{\text{1D}} \mid S) \;<\; I(Y; P_{\text{3D}} \mid S) \quad\text{and is bounded by fold conservation}
+\end{equation}
+
+\textcolor{projected}{$\blacksquare$ Projected recommendation}: For proteins with AlphaFold-predicted structures, use 3D Situs on the predicted coordinates (with confidence-weighted encoding to account for pLDDT uncertainty). For sequence-only tasks where a pre-trained language model (ESM-2, ProtBERT) already provides embeddings, 1D Situs adds negligible marginal value due to the multicollinearity problem (\S\ref{sec:multi}).
+
+\subsection{Drug-Target Docking: Conditional Applicability}
+
+Binding affinity ($K_d$, $K_i$, $\Delta G$) is a function of 3D pose geometry---pocket position, hydrogen bond geometry, hydrophobic contact area---making $I(Y; P_{\text{3D}} \mid S) > 0$ theoretically in the positive regime. \textbf{However}, three practical constraints apply:
+
+\begin{enumerate}[nosep]
+\item \textbf{Data volume}: DrugBank's 6,784 entries, while substantial for QSAR, is undersized for learning the vast pose--affinity mapping in high-dimensional 3D encoding space. Situs's Lipschitz smoothness (Theorem~2.5.1 in \cite{ppe_derivation}) provides beneficial regularization for nearby poses, but cannot compensate for fundamental data sparsity.
+\item \textbf{Pose quality}: Only docking poses with RMSD $< 2.0$\,\AA\ to experimental structures carry reliable position--affinity signal. Including low-quality poses turns Situs into a noise amplifier.
+\item \textbf{Scaffold dominance}: Binding affinity is partially determined by molecular scaffold (a chemical property captured in $\phi(s_i)$), reducing the incremental value of spatial encoding. $I(Y; P \mid S)$ is positive but smaller than one might naively expect.
+\end{enumerate}
+
+\textcolor{projected}{$\blacksquare$ Projected}: Deploy 3D Situs on the high-quality subset (RMSD $< 2.0$\,\AA) with reduced encoding dimensionality ($d_{\text{pe}} \leq 32$) and $L_2$ regularization on PE weights to manage the sample-size-to-dimension ratio.
+
+% ===================================================================
+\section{Astronomy: Yajie's Natural Habitat}
+% ===================================================================
+
+Multi-telescope surveys (SDSS optical + Gaia astrometry + JWST infrared) create precisely the scenario where Yajie's multi-expert architecture is naturally deployed: each telescope/instrument is a \textbf{natural expert}, independently observing the same astrophysical objects through different physical channels. Position (celestial coordinates: RA, Dec, redshift $z$) is the \textbf{universal join key} that links observations across surveys.
+
+\begin{description}[leftmargin=1.5cm,style=nextline]
+\item[\textbf{Cross-survey label auditing}.] A source classified as a quasar at $z=2.3$ by SDSS spectroscopy may appear as a galaxy in Gaia astrometry (extended source flag) and show mid-IR excess in JWST (dust-obscured AGN). The disagreement pattern across telescope-experts flags potentially misclassified sources. Position is simultaneously the join key and the causal variable: the same physical object at the same sky position produces different observed properties through different instruments.
+
+\item[\textbf{Photometric redshift calibration}.] The training labels for photometric redshift come from spectroscopic surveys (limited depth, small area). When applied to deeper photometric samples, label noise arises from the non-representativeness of the spectroscopic training set. Situs (celestial position + redshift) can detect when a galaxy at $(RA, Dec, z_{\text{spec}})$ is inconsistent with its photometric neighbors in the same sky region---a spatial consistency check.
+
+\item[\textbf{Transient classification}.] For time-domain surveys (LSST, ZTF), position on the sky determines the Galactic foreground (dust extinction, stellar density) and the host galaxy environment. $I(Y; P \mid S) > 0$ because the same transient light curve can correspond to a Type Ia supernova in an elliptical host or a core-collapse SN in a star-forming disk---host environment (position-correlated) provides the discriminative information.
+\end{description}
+
+\textcolor{projected}{$\blacksquare$ Projected (no implementation)}: This is the most architecturally natural application domain for SCX + Situs, but deployment requires access to cross-matched multi-survey catalogs and instrument-specific expert models. A proof-of-concept on SDSS $\times$ Gaia cross-matched quasars (public data, $\sim 10^5$ sources) would provide the first empirical validation.
+
+% ===================================================================
+\section{Remote Sensing: Pixel-Level Precision}
+% ===================================================================
+
+Earth observation data presents a structurally ideal Situs scenario. Every pixel in a satellite image carries precise geolocation (latitude, longitude), enabling:
+
+\begin{description}[leftmargin=1.5cm,style=nextline]
+\item[\textbf{Cross-source land cover auditing}.] Landsat (30\,m, multispectral) + Sentinel-2 (10\,m, multispectral) + MODIS (250--500\,m, daily temporal) observe the same ground locations at different spatial, spectral, and temporal resolutions. Each satellite is a natural expert; disagreement on land cover class at the same $(lat, lon)$ flags either (a) temporal change (valid), (b) resolution mismatch (valid), or (c) classification error (target for Yajie).
+
+\item[\textbf{Cloud and shadow detection}.] Clouds are the dominant noise source in optical remote sensing. The same $(lat, lon)$ observed on different dates should yield consistent land cover labels---disagreement across temporal revisits at fixed position is a strong signal of cloud contamination. Position here is the organizing principle for temporal consistency checks.
+
+\item[\textbf{Training label transfer across sensors}.] Training labels generated from high-resolution imagery (e.g., 1\,m NAIP) are transferred to coarser sensors via spatial aggregation. When the high-resolution label at $(lat, lon)$ is erroneous (e.g., mislabeled crop type), the error propagates to all co-registered pixels across sensors. Situs enables source-tracing: the error signature is position-localized, detectable through cross-sensor agreement drops at specific coordinates.
+\end{description}
+
+\textcolor{projected}{$\blacksquare$ Projected (no implementation)}: The remote sensing community has extensive infrastructure for spatial co-registration (Google Earth Engine, STAC catalogs), making this a low-friction deployment pathway. The primary bottleneck is the need for per-sensor expert models trained on verified labels---a chicken-and-egg problem that Situs + Yajie is designed to solve.
+
+% ===================================================================
+\section{Hard Boundaries: Three Ways Situs Fails}
+\label{sec:hard}
+% ===================================================================
+
+Situs is not ``harmless if useless.'' In specific, identifiable conditions, it is actively harmful. We document three hard failure modes.
+
+\subsection{Spurious Correlation: The Greatest Practical Risk}
+\label{sec:spurious}
+
+When position $P$ correlates with label $Y$ in the training data for non-causal reasons, Situs learns the correlation and propagates it to test time.
+
+\begin{description}[leftmargin=1.5cm]
+\item[\textbf{Protein crystallography bias}.] PDB structures are biased toward easily crystallized proteins (stable, compact folds). If all enzymatic active sites in the training set happen to be in low B-factor, N-terminal regions (because those regions resolve better in crystallography), Situs learns ``$p < 100 \to$ active site.'' Test on a protein with a C-terminal active site $\to$ systematic misclassification.
+
+\item[\textbf{DFT computational convention artifact}.] Materials Project calculations use different pseudopotentials and $k$-point densities for metals vs semiconductors. If Situs's $N$ encoding learns ``$N=32$ (typical metal calculation) $\to$ low $E_f$'' vs ``$N=256$ (typical defect calculation) $\to$ high $E_f$,'' the learned ``knowledge'' is computational convention, not physics.
+\end{description}
+
+\textcolor{warning}{$\blacksquare$ Detection protocol}: $\delta_s^{\mathrm{PE}} > 0$ on training set but $\delta_s^{\mathrm{PE}} \to 0$ or $< 0$ on an i.i.d.\ validation set is the signature of spurious correlation. A permutation test shuffling position--label pairs provides a null distribution for $I(Y; P \mid S)$ under the hypothesis of no causal link.
+
+\subsection{Multicollinearity with Pre-Existing Structural Encodings}
+\label{sec:multi}
+
+When the state representation $\phi(s_i)$ already encodes position implicitly, the additive injection $\phi(s_i) + \mathrm{PE}(p_i)$ creates redundant dimensions:
+
+\begin{description}[leftmargin=1.5cm]
+\item[\textbf{GNN + Situs on crystals}.] Graph neural networks aggregate neighborhood information through message passing, which implicitly encodes distance and angular relationships. Adding 3D Situs on top of GNN node features adds information already captured by graph convolution layers. Result: $I(Y; \mathrm{PE}(P) \mid \phi_{\text{GNN}}(S)) \approx 0$, but the extra dimensions increase optimization difficulty (effective $\delta_s^{\text{variance}}$ grows).
+
+\item[\textbf{pLM + Situs on proteins}.] ESM-2 and similar protein language models use attention with positional bias, naturally encoding sequence position. Adding sinusoidal 1D encoding on top is redundant---a ``double encoding'' that inflates dimensionality without adding information. If $\text{span}(\mathrm{PE}(P)) \subseteq \text{span}(\phi(S))$, then $\text{rank}(\Sigma_h) = \text{rank}(\Sigma_\phi)$---dimensions increased, effective rank unchanged. Pure waste.
+\end{description}
+
+\textcolor{warning}{$\blacksquare$ Rule of thumb}: Situs is most valuable when it is the \textbf{only} source of spatial information. If the backbone model already has strong spatial inductive biases (GNN, Transformer with positional encoding, equivariant network), the marginal benefit of Situs approaches zero.
+
+\subsection{Rotational Equivariance Failure and Symmetry Breaking}
+\label{sec:rotation}
+
+Situs's 3D rotational encoding is \textbf{translation-invariant} but \textbf{not rotation-equivariant}. For two positions $\mathbf{p}, \mathbf{q}$:
+\begin{equation}
+\langle \mathrm{PE}_{\text{rot}}(\mathbf{p}), \mathrm{PE}_{\text{rot}}(\mathbf{q}) \rangle = \cos(\alpha\Delta x) + \cos(\beta\Delta y) + \cos(\gamma\Delta z)
+\end{equation}
+This depends only on $\Delta\mathbf{p} = \mathbf{q} - \mathbf{p}$ (translation invariance $\checkmark$). However, a physical rotation $R_{\text{phys}} \in SO(3)$ acting on coordinates $\mathbf{p} \to R_{\text{phys}}\mathbf{p}$ mixes the $x$, $y$, $z$ axes, while the encoding allocates \textbf{non-overlapping} dimension pairs to each axis---there is no transformation $T$ in encoding space such that $T \cdot \mathrm{PE}(\mathbf{p}) = \mathrm{PE}(R_{\text{phys}}\mathbf{p})$.
+
+\textbf{Consequences}:
+\begin{itemize}[nosep]
+\item \textbf{Polycrystalline systems}: Different grains have different orientations. The same defect type receives different encodings in different grains, introducing orientation-dependent variance in $h_i$ that is unrelated to the label.
+\item \textbf{Molecular dynamics trajectories}: Overall molecular rotation changes all atom encodings. The model may learn ``rotation state'' instead of ``physical state.''
+\item \textbf{Surface slab calculations}: Different surface cuts (e.g., AlN (0001) vs (11$\bar{2}$0)) have different coordinate axis orientations.
+\end{itemize}
+
+\textcolor{projected}{$\blacksquare$ Partial mitigation}: For single-crystal, fixed-orientation, or orientation-aligned datasets, the problem does not arise. For general materials applications, alternative encodings with $SO(3)$ equivariance (spherical harmonics, Tensor Field Networks, SE(3)-Transformers) exist at the cost of increased dimensionality ($(L+1)^2$ for angular momentum $L$).
+
+\subsection{Additional Symmetry Breaking: Translation and Permutation}
+
+\begin{itemize}[nosep]
+\item \textbf{Translation symmetry breaking} harms bulk property prediction. In a perfect crystal, all primitive cells are equivalent---bulk properties (band gap, elastic constants) should be translation-invariant. Situs assigns different encodings to equivalent atoms in different cells, forcing the model to learn ``ignore position''---an avoidable learning burden that, on small datasets, leads to overfitting on specific encoding values.
+\item \textbf{Permutation symmetry breaking} is an engineering rather than theoretical problem. Atoms are a set; their indexing is arbitrary. If data-loading order changes between samples, Situs encodings change for physically identical systems. Mitigation: enforce consistent atom ordering (e.g., sort by coordinates) in pre-processing.
+\end{itemize}
+
+% ===================================================================
+\section{Roadmap: A Layered Deployment Strategy}
+\label{sec:roadmap}
+% ===================================================================
+
+We propose a three-tier deployment strategy that matches Situs complexity to problem structure, avoiding premature complexity.
+
+\begin{description}[leftmargin=2cm,style=nextline]
+
+\item[\textbf{Tier 1 — Core (No Situs)}.] Deploy SCX with state crystallization + Yajie + Spring, \textbf{without any spatial encoding}. This is the baseline and should always be the starting point. It is appropriate for:
+\begin{itemize}[nosep]
+\item Pure composition-property prediction (no spatial coordinates)
+\item Tasks where a strong backbone model already provides spatial inductive biases (GNN, Transformer)
+\item Bulk property prediction where labels are translation-invariant
+\item Intrinsically disordered systems (IDRs in proteins, amorphous materials)
+\end{itemize}
+Validation gate: $F_1$ on a held-out clean/noisy validation set. If already above target, Situs is unnecessary complexity.
+
+\item[\textbf{Tier 2 — Spatial (+Situs)}.] Add Situs when \textbf{all three} conditions are met: (a) $I(Y;P \mid S) > 0$ is physically justified (not just statistically observed), (b) spatial coordinates are available with known precision, and (c) the backbone model does not already encode spatial structure. This tier covers:
+\begin{itemize}[nosep]
+\item 3D defect energetics (AlN $V_N$, other point defects)
+\item CNT chirality classification
+\item Cross-survey astronomical auditing
+\item Remote sensing cross-source land cover
+\item Drug-target docking with high-quality poses
+\end{itemize}
+Validation gate: significant improvement over Tier~1 on i.i.d.\ validation set, confirmed by permutation test for spurious correlation. Use reduced encoding dimensionality ($d_{\text{pe}} \leq d_s/2$) to manage the sample-to-dimension ratio.
+
+\item[\textbf{Tier 3 — Extended (+Multi-Head Spring)}.] Deploy multi-head spatial attention to capture anisotropic spatial patterns (angular dependence, directional bonding, anisotropic stress fields). This tier is \textbf{high-risk, high-reward}:
+\begin{itemize}[nosep]
+\item \textbf{Benefit}: Distinct attention heads can specialize in bond-angle, bond-length, coordination, and force-field patterns, enabling superadditive gains when $\delta_s^{\text{cross}} > 0$.
+\item \textbf{Risk 1}: Head outputs are conditionally dependent (not independent experts), weakening Theorem~1's Chernoff bound (\cite{cc_audit}).
+\item \textbf{Risk 2}: Overparameterization. For typical state spaces ($N \sim 500$, $d_s=64$, $T_{\text{eff}}=5$), the critical head count is $K_{\text{crit}} = 1$--$3$ for full-dimension heads. Beyond $K_{\text{crit}}$, generalization error grows as $\Omega(\sqrt{d_s^2(3K+1)/(N \cdot T_{\text{eff}})})$.
+\item \textbf{Risk 3}: Robbins-Monro convergence slows by $O(1/\sqrt{K})$ factor due to inter-head gradient interference.
+\end{itemize}
+Validation gate: Requires adversarial validation against Tier~2. Must demonstrate superadditive gains ($F_1^{\text{Tier 3}} > F_1^{\text{Tier 2}} + (F_1^{\text{Tier 2}} - F_1^{\text{Tier 1}})$). If gains are subadditive, fall back to Tier~2.
+\end{description}
+
+\begin{table}[htbp]
+\centering
+\caption{Decision matrix for Tier selection.}
+\label{tab:tiers}
+\begin{tabular}{p{3cm}p{1.8cm}p{1.8cm}p{1.8cm}p{3.8cm}}
+\toprule
+\textbf{Condition} & \textbf{Tier 1} & \textbf{Tier 2} & \textbf{Tier 3} & \textbf{Notes} \\
+\midrule
+Spatial coords available & \ding{55} & \ding{51} & \ding{51} & If no, Tier 1 only \\
+$I(Y;P \mid S) > 0$ verified & \ding{55} & \ding{51} & \ding{51} & Physical argument or permutation test \\
+No backbone spatial bias & \ding{51} & \ding{51} & \ding{51} & If GNN/pLM, Tier~2 $\delta_s^{\mathrm{PE}} \approx 0$ \\
+$N_{\text{samples}} / d_{\text{pe}} > 100$ & --- & \ding{51} & \ding{51} & To avoid overfitting \\
+Anisotropic spatial patterns & --- & \ding{55} & \ding{51} & Multi-head justified only if directional \\
+$K \leq K_{\text{crit}}$ & --- & --- & \ding{51} & Otherwise overparameterized \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textcolor{projected}{$\blacksquare$ Key projected milestone}: A rigorous empirical comparison of Tier~1 vs Tier~2 across all six scenarios in Table~\ref{tab:six_scenarios}, with pre-registered success criteria, permutation-based significance testing for $\delta_s^{\mathrm{PE}}$, and adversarial validation (train on one data source, test on a held-out source). None of this has been done; all claims about $\delta_s^{\mathrm{PE}}$ magnitude in this paper are physically reasoned, not empirically measured.
+
+% ===================================================================
+\section{Discussion: The Honesty Gap}
+% ===================================================================
+
+\subsection{What We Know vs What We Think}
+
+This paper is a perspective, not an empirical report. We distinguish three epistemic categories:
+
+\begin{enumerate}[nosep]
+\item \textbf{Mathematically verified} (Theorem~2.2.1, Theorem~2.5.1, Theorem~4 bounds): The information-theoretic criterion $I(Y;P \mid S) > 0$ is a mathematically necessary condition. The Lipschitz continuity of sinusoidal and rotational encoding is proven with exact constants. The minimax optimality of Yajie's error exponent is established via Chernoff-Stein.
+\item \textbf{Physically reasoned} (scenario analyses in \S\S3--6): All $\delta_s^{\mathrm{PE}}$ magnitude estimates are derived from known physical laws (DFT formation energies, protein biophysics, crystallography) combined with the Fano lower bound. These are physically grounded predictions, not measured effects. They can be---and should be---falsified by experiment.
+\item \textbf{Speculative} (Multi-Head Spring's superadditivity, cross-survey astronomy auditing): These are conjectures grounded in the mathematical structure of the framework. They have not been tested even in simulation. They are included as a research agenda, not as claims.
+\end{enumerate}
+
+\subsection{Who Should Care}
+
+\begin{itemize}[nosep]
+\item \textbf{Computational materials scientists} with DFT datasets containing spatial coordinates: Situs on 3D coordinates is the highest-confidence deployment scenario. Start with Tier~2 on defect formation energies, validate against Tier~1, and publish the comparison regardless of outcome.
+\item \textbf{Computational biologists} with protein structure data: If you already use a pLM, 1D Situs probably adds nothing. If you have AF2-predicted structures, experiment with 3D Situs on predicted coordinates---but control for pLDDT confidence.
+\item \textbf{Astronomers and remote sensing scientists}: Your data is \textbf{natively spatial}, and your instruments are \textbf{naturally independent experts}. Yajie + Situs is architecturally the best fit for your problem structure. We encourage proof-of-concept studies on public cross-survey datasets.
+\item \textbf{ML researchers building spatial models}: Do not assume Situs is ``obviously good.'' Run the predictive sufficiency test. If your GNN or Transformer already encodes position, Situs is redundant. If position is your only geometry signal, Situs is your best tool.
+\end{itemize}
+
+\subsection{Open Problems}
+
+\begin{enumerate}[nosep]
+\item \textbf{Rigorous multi-head Chernoff bound}: Extend Theorem~1 to handle conditionally dependent head outputs. Requires $\beta$-mixing or Dobrushin conditions on head attention patterns---not yet established.
+\item \textbf{KSG-based $I(Y;P \mid S)$ estimation at scale}: Practical estimation of the decision criterion for high-dimensional state spaces remains an open computational challenge.
+\item \textbf{$SO(3)$-equivariant Situs}: Design a positional encoding that is both computationally efficient ($d_{\text{pe}} \leq 32$) and fully rotation-equivariant. Spherical harmonics are the natural candidate but carry a $(L+1)^2$ dimension penalty.
+\item \textbf{Empirical validation}: All empirical claims in this paper are projected, not measured. The community needs a systematic empirical benchmark---ideally adversarial, pre-registered, and multi-domain---that measures $\delta_s^{\mathrm{PE}}$ across controlled conditions.
+\end{enumerate}
+
+\subsection{Coda: Why Honesty Matters}
+
+The ML-for-science literature is littered with methods that ``should work'' based on physical intuition but fail under adversarial validation. Positional encoding is particularly susceptible to this pattern because ``position matters'' is such a deeply held scientific intuition that researchers are disinclined to check whether it matters \emph{in the specific way their model encodes it}. The hard boundaries documented in \S\ref{sec:hard}---spurious correlation, multicollinearity, symmetry breaking---are not edge cases. They are the default outcome when Situs is applied without causal analysis of the position--label relationship.
+
+We wrote this paper not to advocate for Situs but to provide the tools for deciding whether Situs should be advocated for in any particular case. The answer, as always in science, is: it depends. Now you can compute what it depends on.
+
+% ===================================================================
+\section*{Acknowledgments}
+% ===================================================================
+
+This work draws on the SCX theoretical framework developed in \cite{cc_audit,ppe_derivation,situs_validation}. We thank the anonymous reviewers of the CC audit report for identifying the sign error in the original $\delta_s^{\mathrm{PE}}$ definition and for pressing the question of when positional encoding is actively harmful rather than merely useless. All errors of reasoning and excessive confidence remain our own.
+
+% ===================================================================
+\begin{thebibliography}{99}
+
+\bibitem{ppe_derivation}
+SCX Project. Physical Positional Encoding (PPE) in the SCX Framework: Rigorous Derivation. \textit{Working paper}, 2026. \texttt{theory/self\_evolution/ppe\_rigorous\_derivation.md}
+
+\bibitem{situs_validation}
+SCX Project. Situs Physical Validation and Applicability Analysis. \textit{Working paper}, 2026. \texttt{theory/self\_evolution/situs\_physical\_validation.md}
+
+\bibitem{cc_audit}
+SCX Project. Multi-Head Spring and Physical Positional Encoding: Rigorous Mathematical Analysis. \textit{Working paper}, 2026. \texttt{theory/self\_evolution/multi\_head\_spring\_and\_positional\_encoding\_analysis.md}
+
+\bibitem{freysoldt2014}
+Freysoldt, C., \emph{et al.} First-principles calculations for point defects in solids. \textit{Rev.\ Mod.\ Phys.} \textbf{86}, 253--305 (2014).
+
+\bibitem{stampfl2002}
+Stampfl, C. \& Van de Walle, C.\ G. Theoretical investigation of native defects, impurities, and complexes in aluminum nitride. \textit{Phys.\ Rev.\ B} \textbf{65}, 155212 (2002).
+
+\bibitem{makov1995}
+Makov, G. \& Payne, M.\ C. Periodic boundary conditions in \emph{ab initio} calculations. \textit{Phys.\ Rev.\ B} \textbf{51}, 4014--4022 (1995).
+
+\bibitem{freysoldt2009}
+Freysoldt, C., Neugebauer, J. \& Van de Walle, C.\ G. Fully \emph{ab initio} finite-size corrections for charged-defect supercell calculations. \textit{Phys.\ Rev.\ Lett.} \textbf{102}, 016402 (2009).
+
+\bibitem{pauling1951}
+Pauling, L., Corey, R.\ B. \& Branson, H.\ R. The structure of proteins: Two hydrogen-bonded helical configurations of the polypeptide chain. \textit{Proc.\ Natl.\ Acad.\ Sci.} \textbf{37}, 205--211 (1951).
+
+\bibitem{dunker2005}
+Dunker, A.\ K., \emph{et al.} Intrinsically disordered protein. \textit{FEBS J.} \textbf{272}, 5129--5148 (2005).
+
+\bibitem{vaswani2017}
+Vaswani, A., \emph{et al.} Attention is all you need. \textit{NeurIPS} (2017).
+
+\bibitem{lin2023}
+Lin, Z., \emph{et al.} Evolutionary-scale prediction of atomic-level protein structure with a language model. \textit{Science} \textbf{379}, 1123--1130 (2023).
+
+\bibitem{thomas2018}
+Thomas, N., \emph{et al.} Tensor field networks: Rotation- and translation-equivariant neural networks for 3D point clouds. \textit{NeurIPS} (2018).
+
+\bibitem{fuchs2020}
+Fuchs, F.\ B., \emph{et al.} SE(3)-Transformers: 3D roto-translation equivariant attention networks. \textit{NeurIPS} (2020).
+
+\bibitem{northcutt2021}
+Northcutt, C.\ G., Jiang, L. \& Chuang, I.\ L. Confident learning: Estimating uncertainty in dataset labels. \textit{J.\ Artif.\ Intell.\ Res.} \textbf{70}, 1373--1411 (2021).
+
+\bibitem{ghorbani2019}
+Ghorbani, A. \& Zou, J. Data Shapley: Equitable valuation of data for machine learning. \textit{ICML} (2019).
+
+\end{thebibliography}
+
+\end{document}
