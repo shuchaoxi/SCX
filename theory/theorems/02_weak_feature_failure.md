@@ -148,6 +148,12 @@ $$P(\hat{S} \neq S) \geq \frac{H(S) - \delta - \log 2}{\log K}$$
 
 其中 $K = |\mathcal{S}|$ 为真实状态数。
 
+**> FIXED (2026-06-28, DEFECT-10):** 所有互信息、熵、对数项均以 **nats（自然对数，底 $e$）** 为单位。$\log 2 \approx 0.6931$ nats 是 Fano 不等式的修正项（等价于 1 bit）。$\log K$ 亦为自然对数。当 $K=2$ 且状态均匀时，$H(S) = \log 2$，此时分子 $H(S) - \delta - \log 2 = -\delta \leq 0$，界为**空泛的（vacuous）**。这是 Fano 不等式的已知局限性：仅在条件熵 $H(S \mid \phi(X))$ 足够小时提供有意义的下界。对于非均匀状态分布（如 $K=10$ 均匀，$H(S) = \ln 10 \approx 2.303$ nats），界在 $\delta < 2.303 - 0.693 = 1.610$ nats 时为正。
+
+**> FIXED (2026-06-28, DEFECT-11):** 引理 1 适用于从**单个**观测 $\phi(X)$ 估计状态 $S$。但在实际中，SCX 通过对 **所有 $n$ 个样本** $\{\phi(x_i)\}_{i=1}^n$ 聚类来同时估计所有状态。多样本聚类的有效互信息为 $I(\phi(X_1),\ldots,\phi(X_n); S_1,\ldots,S_n)$，由于聚类引入的依赖性，该值可能**远大于** $n \cdot \delta$。因此，Theorem 2 中使用 $\delta = I(\phi(X); S)$（单样本互信息）的界是**保守的（conservative）**——它高估了 SCX 的退化程度。正确的多样本界为：
+$$P(\hat{S} \neq S) \geq \frac{H(S) - \frac{1}{n}I(\Phi^n; S^n) - \frac{\log 2}{n}}{\log K}$$
+由于 Theorem 2 是 SCX 改进的**上界**（说明 SCX 无法超越基线超过 $C_F\sqrt{\delta/2}$），使用单样本界是保守且因此有效的。**这一保守性意味着：当聚类可利用多样本信息时，SCX 在实践中可能优于 Theorem 2 的预测。**
+
 **证明**：由 Fano 不等式：
 
 $$\begin{aligned}

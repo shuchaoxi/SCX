@@ -512,6 +512,16 @@ $$P_1 = \frac{1}{K-1} \cdot (K-1) \cdot \text{Bernoulli}(1 - \mu_s/(K-1))^{\otim
 Thus $P_1$ is a product distribution, and the Hellinger approach applies directly.
 $\square$
 
+**> FIXED (2026-06-28, DEFECT-16):** Lemma 4's claim "K=2 is the hardest case" is proven **only under $C_{\text{bal}} = 1$** (perfectly balanced error distribution across wrong classes). When $C_{\text{bal}} = 1$, all $K-1$ mixture components have identical Bernoulli parameters, the mixture collapses to a single product distribution, and K=2 gives the worst-case (largest) per-expert Hellinger affinity $\rho_2 = 2\sqrt{\mu_s(1-\mu_s)}$.
+
+**For $C_{\text{bal}} > 1$**, the mixture components are non-identical. The worst-case component (closest to the clean distribution) has error probability $p_1 = 1 - C_{\text{bal}} \cdot \mu_s/(K-1)$, which is **smaller** than the $C_{\text{bal}}=1$ case. Smaller $p_1$ means larger separation from $p_0 = \mu_s$, making the testing problem **easier**, not harder. Therefore:
+
+- **The minimax rate $\kappa_{\min} = \min_s \kappa_s$ (exponent in $M$) is dominated by the $C_{\text{bal}} = 1$ case**, since larger $C_{\text{bal}}$ produces larger separation gaps.
+- **The exact minimax constant $C_{\min}$ for $C_{\text{bal}} > 1$** involves the worst-case mixture component via the convexity bound of Section 9.2, and may differ from the $C_{\text{bal}}=1$ constant by a factor depending on $\lambda_1^*(C_{\text{bal}})$.
+- **The general $C_{\text{bal}} > 1$ case for the exact constant remains partially open**, though numerical evidence (cases 1-5 in the verification table) suggests the constant matching between SCX achievability and the minimax lower bound holds for practical values $C_{\text{bal}} \in [1, 3]$.
+
+**Practical implication:** The K=2 + $C_{\text{bal}} = 1$ case provides the **most stringent test** of the theory. Any noise detection guarantee that holds for this hardest case automatically holds for easier cases ($C_{\text{bal}} > 1$, $K > 2$ with balanced errors). The SCX minimax optimality claim in Theorem 4' should explicitly note the $C_{\text{bal}} = 1$ restriction for the exact constant, while the rate optimality ($\kappa$) is unaffected.
+
 ### 8.3 Comparing the Separation
 
 For $K > 2$ with $C_{\text{bal}} = 1$, the clean and noise Bernoulli parameters are:

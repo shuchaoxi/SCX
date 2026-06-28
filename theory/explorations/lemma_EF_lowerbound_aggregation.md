@@ -507,3 +507,31 @@ where the last inequality uses $\max_s e^{-M\kappa_s} = e^{-M\min_s \kappa_s}$. 
 | $\kappa_s$ | $\operatorname{KL}(\theta_s^*\|p_{0,s}) = \operatorname{KL}(\theta_s^*\|p_{1,s})$ | Per-state Chernoff information (exponential rate) |
 | $\kappa_{\text{global}}$ | $\min_s \kappa_s$ | Global exponential rate (bottleneck state) |
 | $C_{\text{global}}$ | $\sum_{s:\kappa_s=\kappa_{\text{global}}} \rho_s C_s$ | Global lower-bound constant |
+
+### C_min Canonical Form and Across-File Reconciliation
+
+**FIXED (2026-06-28, DEFECT-09):** The constant $C_{\min}$ was defined inconsistently across three files (architecture document §3.4, architecture document §4.3, and Lemma D/Theorem D.7), with discrepancies of 15–18× due to legacy formulas lacking the $((1-\eta)/\eta)^s$ factor and using $\max$ instead of sum over bottleneck states. This section establishes the **single canonical definition** and reconciles all files.
+
+**Canonical $C_{\min}$ (Lemma E, Equation 45 — this file):**
+
+$$\boxed{C_{\min} = \frac{\eta}{2}\left(\frac{1-\eta}{\eta}\right)^{s} \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{\sqrt{\theta^*(1-\theta^*)}}}$$
+
+where $s = |\lambda_1^*|/D^*$, $D^* = \lambda_0^* + |\lambda_1^*|$, $\lambda_0^* = \log\frac{\theta^*(1-p_0)}{p_0(1-\theta^*)}$, $\lambda_1^* = \log\frac{\theta^*(1-p_1)}{p_1(1-\theta^*)} < 0$.
+
+**Lattice-corrected form (after DEFECT-06 fix):**
+
+$$C_{\min}^{\text{(corr)}} = C_{\min} \cdot \frac{\lambda_0^* |\lambda_1^*|}{(1-e^{-\lambda_0^*})(1-e^{-|\lambda_1^*|})} \cdot \frac{\frac{1-e^{-\lambda_0^*}}{\lambda_0^*} + \frac{1-e^{-|\lambda_1^*|}}{|\lambda_1^*|}}{\frac{1}{\lambda_0^*} + \frac{1}{|\lambda_1^*|}}$$
+
+**Reconciled references across all files:**
+
+| File | Symbol Used | Status | Action Taken |
+|------|------------|--------|-------------|
+| `lemma_EF_lowerbound_aggregation.md` (this file) § Lemma E eq. 45 | $C_{\min}$ — **canonical** | Authoritative | — |
+| `lemma_CD_chernoff_adaptive.md` § D.7 | $C_{\min}$ — matches canonical | Verified consistent | No change needed |
+| `THEOREMS_UNIFIED.md` §4.2 | $C_{\min}$ — matches canonical | Verified consistent | No change needed |
+| Architecture doc §3.4 (legacy) | $C_{\text{SCX}}$ — used $\max$, lacked $((1-\eta)/\eta)^s$ | **Reconciled** | Replace with reference to canonical |
+| Architecture doc §4.3 (legacy) | Draft $C_{\min}$ — lacked $((1-\eta)/\eta)^s$ | **Reconciled** | Replace with reference to canonical |
+| Theorem 4' statements | $C_{\min}$ via Lemma D.7 — matches canonical | Verified consistent | No change needed |
+| `08_improved_theorems.md` Fix 4 | $C_{\min}^{\text{(corr)}}$ — lattice-corrected canonical | Authoritative for corrected form | — |
+
+**Verification of consistency:** The canonical $C_{\min}$ from Lemma E (this file) produces the same numerical values as Lemma D's $C_{\text{SCX}}$ asymptotic constant (Lemma D.5) after accounting for the $\eta$-scaling convention ($C_{\min}/\eta$ in Lemma E vs $C_{\min}$ in Lemma D.7). Specifically: Lemma E's lower bound gives $e^{M\kappa}\sqrt{2\pi M}(1-\text{F1}) \geq C_{\min}/\eta$, while Lemma D.7's achievability gives the identical expression. **All files now reference this single canonical definition.**

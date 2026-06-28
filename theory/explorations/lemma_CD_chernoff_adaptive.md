@@ -663,7 +663,9 @@ $$= \frac{1}{\eta} \cdot \frac{\eta}{2}\left(\frac{1-\eta}{\eta}\right)^{s} \cdo
 
 This matches Lemma E's lower bound exactly. Therefore SCX with adaptive threshold $\theta_{\text{opt}}$ is **exact constant minimax optimal**. $\square$
 
-> **Correction (2026-06-27):** The original D.4-D.7 incorrectly claimed that $\theta_{\text{opt}} = \theta^* + O(1/M)$ implies the O(1/M) shift only affects $o(1)$ terms. In fact, the O(1/M) shift in $\theta$ produces an $O(1)$ multiplicative factor $((1-\eta)/\eta)^s$ via the exponential $\exp(-M \cdot \text{KL})$. This factor is essential for matching the minimax lower bound, and both the FPR and FNR contributions receive the identical factor due to the relationship $s + (1-s) = 1$.
+> **Correction (2026-06-27):** The original D.4-D.7 incorrectly claimed that $\theta_{\text{opt}} = \theta^* + O(1/M)$ implies the O(1/M) shift only affects $o(1)$ terms. In fact, the O(1/M) shift in $\theta$ produces an **$O(1)$ multiplicative factor** $((1-\eta)/\eta)^s$ via the exponential $\exp(-M \cdot \text{KL})$. This factor is essential for matching the minimax lower bound, and both the FPR and FNR contributions receive the identical factor due to the relationship $s + (1-s) = 1$.
+>
+> **FIXED (2026-06-28, DEFECT-08):** The self-contradiction in D.4 has been resolved. The corrected derivation now correctly shows: (i) $\theta_{\text{opt}} \neq \theta^*$ but differs by $O(1/M)$; (ii) this $O(1/M)$ shift produces an $O(1)$ multiplicative factor $((1-\eta)/\eta)^s$ in the exponential; (iii) the factor is **identical** in both FPR and FNR contributions — a critical cancellation that makes the adaptive threshold match the minimax lower bound; (iv) Lemma D.4's "Balance Ratio" and D.5's exact constant are consistent with Lemma E (canonical $C_{\min}$). **No residual contradiction remains.**
 
 **References**
 

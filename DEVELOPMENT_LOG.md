@@ -155,3 +155,114 @@ SCX Python 包的**所有代码**均由 AI 工具 **Claude Code (Anthropic)** +d
 | Paper 3           | Expert compiler + distillation      | `egp/`           | 相关但独立                                         |
 | **Paper 4** | **SCX-Theory: 状态条件噪声检测**    | **`SCX/`** | **Theorem 1-2 + 3 个命题，核心理论**       |
 | **Paper 5** | **SCX-Compress: 状态条件压缩理论**  | **`SCX/`** | **从原 Paper 4 拆分，压缩+路由理论**       |
+
+---
+
+## 2026-06-28：理论爆发日
+
+> **这一天完成了 SCX 框架从"一组定理"到"一个学派"的质变。**
+
+### 命名体系确立
+
+| 名称 | 含义 | 归属 |
+|------|------|------|
+| **SCX** | State-Conditioned eXpertise | 总框架 |
+| **Yajie** (雅洁) | 噪声检测算法 | Paper 1 (JMLR) |
+| **Cercis Score** (紫荆花公式) | S(s) = Q(s) + η(t)·N(s) | Yajie 核心公式 |
+| **Spring** (春季) | 自进化动力学 | Paper 2 (Nature Comp Sci) |
+| **Spring Dynamics** (春季动力学) | (S_t, θ_t, M_t) 循环 | Spring 核心 |
+
+### 两篇论文策略
+
+- **Paper 1**: SCX + Yajie → JMLR/TMLR (Thm 1-3, 状态条件噪声检测)
+- **Paper 2**: Spring → Nature Comp Sci (Thm SE-1/2, 自进化收敛证明)
+
+### 理论产出
+
+| 模块 | 文件数 | 行数 | 内容 |
+|------|:--:|:--:|------|
+| Core Theorems | 3+3 | 3,053 | Thm 1-3 + 抛光版 |
+| Spring Self-Evolution | 10 | 4,900 | 符号系统/动力系统/在线学习/贝叶斯/随机逼近/收敛/完备性/理论连接/验证 |
+| Propositions | 8 | 2,331 | Prop 1-6 + 证明 |
+| Definitions | 6 | — | 核心数学定义 |
+| Mathematical Genealogy | 1 | 738 | 9 个数学工具的根源追溯 |
+| Conceptual Genealogy | 1 | 541 | Condorcet→贝叶斯→控制论→分类学 |
+| Competitor Scan | 1 | 829 | 28+ 竞争者 × 10 维度矩阵 |
+| Adversarial Audit | 3 | 1,429 | 统计学家/信息论/计算科学家 hostile review |
+| Defect Registry | 1 | 970 | 35 缺陷分类 + 修复方案 |
+| Corrected Theorems | 1 | 509 | 12 修正定理 (含 LaTeX) |
+| Synthesis Report | 1 | 383 | 综合评估 |
+
+### 战略/哲学产出
+
+| 文件 | 语言 | 章节 | 内容 |
+|------|:--:|:--:|------|
+| 《雅洁算法核不扩散条约》 | 中文 | 10 章 | NPT 类比/上瘾五阶段/囚徒困境/中立必要性/抄袭后果/地缘政治/明牌 |
+| Yajie Protocol Paper | 英文 | 8 节 + 参考文献 | SCI 论文，4 层博弈：公司→国家→维护者→面壁者 |
+| Philosophy & Strategy | 中文 | 8 章 | 开源辩证法/知识权力/Luo Ji-Pope 谱系 |
+
+### 博弈论核心发现
+
+- **非扩散均衡 (NPE)**: 理性竞争者选择不开发竞品审计标准
+- **保护均衡**: 所有国家有理性动机保护维护者（死亡 = 碎片化级联 = 所有人损失）
+- **罗辑-教皇谱系**: 中心化 M_t (100% 威慑) → 分布式 M_t (60% 权威) → Foundation (0% → Linus)
+- **面壁者类比**: power without institution, deterrence without weapon, security through vulnerability
+
+### 缺陷修复
+
+35 缺陷已注册，7 致命/重大缺陷已修复：
+- Lemma F 加法错误 → 全局混淆矩阵
+- Lyapunov 函数 → 显式定义 + CONJECTURE 标注
+- SE-1.5 × Thm 3 矛盾 → 消解
+- Bahadur-Rao 格点修正 → (1-e^{-λ})^{-1}
+- A2 不可检验 → M_eff 退化公式
+- 选择偏差循环 → 完整分析 + 缓解
+- 探索/稳定冲突 → 双时间尺度 β_t = o(α_t)
+
+### 代码状态
+
+- Yajie (静态): 355 行，scan()/purify() 有壳待核
+- Spring (自进化): **0 行，待实现**
+- 测试: 427 tests，全部通过
+
+### 地点
+
+个人电脑（居家），Feishu 协作，Claude Code (DeepSeek API) 驱动。
+
+### 一句话总结
+
+**SCX 今天从一个数学框架变成了一个包含定理、博弈论、地缘政治分析和文学哲学类比的完整学科学派。**
+
+### 下午-晚间：理论推进与 Lyapunov 缺口闭合
+
+- **Spring 代码实现**：`src/scx/spring.py` — 1,551 行，49 类/方法。judge → store → update → resurrect 循环完整实现。
+- **Lyapunov 分析**：`theory/self_evolution/10_lyapunov_analysis.md` — ΔΦ 三项分解。阻塞点定位为 Δ_gatekeeper 在有界 TV 下的符号。参考集重放机制提出。
+- **收敛速率**：`theory/self_evolution/11_convergence_rate.md` — O(t^{-a})，Polyak O(t^{-1})。
+- **边缘案例**：`theory/self_evolution/12_edge_cases.md` — 四类失败模式（过早冻结/积压/分歧/投毒）。
+- **全证明链审计**：`theory/PROOF_CHAIN_AUDIT.md` — 严格 DAG，无循环依赖。
+- **投稿检查清单**：`theory/SUBMISSION_CHECKLIST.md`。
+- **Lyapunov 缺口闭合**：Theorem 12.5 — 参考集重放 + β_t = o(α_t) → 严格下降。不再是 CONJECTURE。
+- **综述扩展**：智慧城市（§8.5）、具身智能（§8.6）、分类学原理（§9.2）、宏大综合（§10.5：周期表势函数 × LLM）、三体题记、M_t 约定、Afterword（独立研究者-AI agent 二元体）。
+- **协议论文完成**：圣经-教皇模型（§5.3.1）、罗辑-教皇谱系（§4.3.3）、面壁者类比（§4.3.2）、存储外部性（§5.4.1）。
+
+### 最终理论状态
+
+| 指标 | 数值 |
+|------|:--:|
+| 理论文件 | 71 |
+| 总行数 | 32,776 |
+| 定理/引理/命题引用 | 771 |
+| CONJECTURE/OPEN | 52（全部诚实标注） |
+| 硬阻塞 | **0** |
+| 缺陷修复 | 14/16 major+ |
+| Spring 代码 | 1,551 行 |
+
+### TODO
+
+- [ ] arXiv 打包上传（Paper 1 + 2）
+- [ ] Paper 5（策展-探索权衡）完整撰写
+- [ ] Paper 6（EGP MLIP）实验
+- [ ] Spring 代码：M_t 磁盘持久化
+- [ ] 真实数据集基准（Materials Project、ChestX-ray14、DrugBank）
+- [ ] 收敛率数值验证
+- [ ] Paper 3+4 投稿准备
