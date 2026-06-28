@@ -213,7 +213,19 @@ This can be formalized as a contextual bandit problem: at each sample $x$ with s
 
 Beyond aggregation and orchestration, the SCX framework offers a subtler benefit: intrinsic interpretability through its noise detection algorithm, Yajie (\emph{雅洁}). Yajie computes the Cercis Score $S(s) = Q(s) + \eta(t) \cdot N(s)$, which decomposes a sample's value into a quality component $Q(s)$ and a novelty component $N(s)$, linked by an exploration rate $\eta(t)$ that anneals over time. This decomposition provides an interpretable account of \textit{why} a sample is flagged: a low $Q(s)$ indicates a fundamental quality deficit (factual errors, incoherence), while a high $N(s)$ with moderate $Q(s)$ signals an underexplored region where more data collection is needed. This distinction maps directly onto two failure modes in LLM generation. A model may hallucinate because it ``does not know'' (a quality gap, corresponding to low $Q$) or because it ``has not seen enough'' (an exploration gap, corresponding to high $N$). These demand fundamentally different remedies---better data filtering versus broader data collection---yet current hallucination detection methods typically conflate them. By adapting Yajie's decomposition to the LLM setting, researchers could build hallucination reduction systems that not only detect problematic outputs but also diagnose their root cause.
 
-\section{Four Research Directions}
+\\section{A Minimal Viable Experiment}
+
+Before committing to the full research program outlined below, we propose a minimal viable experiment that can establish feasibility with modest computational resources. The experiment is designed to be run on commodity hardware—a single consumer GPU—and requires no access to proprietary models or datasets.
+
+\\textbf{Setup.} Select three small open-source language models of comparable scale—for instance, Llama-3-8B, Mistral-7B, and Qwen-7B. Prepare a test set of 100 questions drawn from MMLU or a comparable benchmark, spanning diverse domains. Each model answers each question independently. The three models serve as the ``experts'' in the Yajie framework.
+
+\\textbf{Yajie Auditing.} For each question, compute the multi-expert consensus score across the three model outputs. A high consensus score indicates that the models produce substantially similar answers—a signal, under Theorem 1, that the answer is likely correct with exponentially decaying false-positive probability. A low consensus score—where models disagree on the answer—flags potential hallucination or model-specific failure. No ground-truth labels are required. The audit operates purely on the structure of inter-model agreement.
+
+\\textbf{Expected Result.} We predict that questions with high Yajie consensus scores will exhibit substantially higher empirical accuracy than questions with low consensus scores, even without access to ground-truth labels during the audit. A single summary table—consensus score vs. actual accuracy, stratified by domain—would constitute a proof of concept: Yajie can audit LLM outputs without knowing the correct answers.
+
+\\textbf{Significance.} If this experiment succeeds at the 7B-parameter scale, it establishes that Yajie's multi-expert consensus mechanism transfers from scientific ML to language model evaluation. It would demonstrate that hallucination detection—a problem widely considered to require human evaluation or ground-truth labels—admits a principled, mathematics-based solution using only the outputs of existing open models. The experiment requires no new training, no new data, and no new infrastructure. It requires only the application of a published methodology to outputs that are already being generated.
+
+\\section{Four Research Directions}
 
 We now articulate four concrete research directions that operationalize the SCX framework for LLM data curation. Each represents a distinct subproblem with clearly defined success criteria.
 
