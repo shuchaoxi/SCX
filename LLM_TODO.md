@@ -1,18 +1,49 @@
-# LLM TODO — 明日推进
+# 明日推进 TODO
 
-## Paper 9 最小验证实验
-- [ ] 下载 Llama-3-8B / Mistral-7B / Qwen-7B（选两个小的 + 一个自己有的）
-- [ ] 准备 100 个 MMLU 问题（或自己编跨领域题目）
-- [ ] 写脚本：3 模型各自回答 → Yajie 算共识 → 输出表格
-- [ ] 跑实验（AMD 显卡，7B 模型可跑）
-- [ ] 如果高共识 = 高准确率 → 数据塞进 Paper 9
-- [ ] 如果失败 → 诚实记录，写进 Paper 9 的 Limitation
+## 🔴 代码 — 理论落地（今日最大缺口）
 
-## Paper 9 正文完善
-- [ ] 验证实验数据更新 LaTeX
-- [ ] 检查 §4.5（Yajie 分解 → 幻觉诊断）与实验对齐
+### Yajie 核心实现
+- [ ] 实现 `yajie.py` 的 `fit()` 方法（目前抛 NotImplementedError）
+- [ ] 实现 state discovery → cluster → 多专家评分 完整管道
+- [ ] 实现 Cercis Score: S(s) = Q(s) + η(t)·N(s)
+- [ ] 输出：clean / noisy / ambiguous 三分类
 
-## 今日补的（已完成，不用动）
-- [x] 最小验证实验设计（§Minimal Viable Experiment）
-- [x] Yajie 分解 → 幻觉诊断连接（§4.5）
-- [x] Paper 7/4 参考文献
+### Spring 验证
+- [ ] 用合成数据跑 Spring 迭代 20 轮（spring.py 已有壳）
+- [ ] 验证：M_t 单调增长 + η(t) 衰减 + S_t 收敛
+- [ ] 画 Lyapunov 下降曲线
+- [ ] 记录收敛速率 → 与理论 O(t^{-a}) 对比
+
+### MLIP 实验
+- [ ] 等超算 AlN 数据到 → 运行 scx_method 管道
+- [ ] Yajie 评分 Materials Project 数据（等 GPU）
+- [ ] 验证 Theorem 1 的 FPR bound
+
+---
+
+## 🟡 Paper 9 最小验证实验
+- [ ] 下载 Llama-3-8B / Mistral-7B / Qwen-7B
+- [ ] 准备 100 个 MMLU 问题
+- [ ] 写脚本：3 模型各自回答 → Yajie 共识 → 表格
+- [ ] 跑实验
+- [ ] 数据塞进 Paper 9 LaTeX
+
+---
+
+## 🟢 Paper 9 正文完善
+- [ ] 验证实验数据更新
+- [ ] §4.5 与实验结果对齐
+
+---
+
+## ✅ 今日已完成
+- [x] Yajie 定理 (Thm 1-3) + 抛光
+- [x] Spring 定理 (SE-1/2) + Lyapunov 闭合
+- [x] Spring LaTeX 论文 (13pp, 可编译)
+- [x] 协议论文 (博弈论 17 层)
+- [x] 综述 (双引擎架构, 8 领域)
+- [x] Paper 5 LaTeX (策展-探索, 5.5K词)
+- [x] Paper 7 分类学理论 + 内在可解释性
+- [x] Paper 9 最小验证实验设计
+- [x] Anthropic 批评 + 达摩克利斯 + 耿同学 + 自我怀疑
+- [x] spring.py (1551 行) + yajie.py (355 行) + HIV 审计
