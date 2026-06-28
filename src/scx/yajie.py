@@ -35,6 +35,7 @@ from scx.valuation.state_value import StateValue, hoeffding_bound, chernoff_boun
 from scx.valuation.noise_score import NoiseScore
 from scx.valuation.redundancy import RedundancyScore
 from scx.valuation.classifier import DataClassifier
+from scx.state.discovery import StateDiscovery
 
 
 class Yajie:
@@ -191,6 +192,222 @@ class Yajie:
                 )
 
         return self.report_
+
+    def fit(
+        self,
+        X: np.ndarray,
+        y: Optional[np.ndarray] = None,
+        experts: Optional[list] = None,
+        phi: Optional[callable] = None,
+        n_states: int = 5,
+        exploration_rate: float = 0.1,
+    ) -> "Yajie":
+        """Fit the full Yajie pipeline: state discovery → cluster → multi-expert scoring.
+
+        This is the state-level pipeline that discovers latent data states via
+        clustering in feature space, then scores each state using the **Cercis Score**:
+
+        .. math::
+
+            S(s) = Q(s) + \\eta \\cdot N(s)
+
+        where:
+        - :math:`Q(s)` = quality score (1 - mean expert residual in state s)
+        - :math:`N(s)` = noise score (density + consistency weighted residual)
+        - :math:`\\eta` = exploration rate (``grace`` in Yajie parlance)
+
+        States are then classified into three categories:
+
+        * **clean** — high quality, low noise (keep as-is)
+        * **noisy** — low quality, high noise (likely mislabeled)
+        * **ambiguous** — moderate quality/noise (needs more investigation)
+
+        Parameters
+        ----------
+        X : np.ndarray, shape (N, d) or (N, ...)
+            Training samples. If ``phi`` is None, X is used directly as features.
+        y : np.ndarray, shape (N,), optional
+            Labels for supervised expert evaluation.
+        experts : list of callable, optional
+            M trained models. Each should accept ``X`` and return predictions.
+            If None, a heuristic noise estimation is used.
+        phi : callable, optional
+            Feature extraction function ``phi: X → R^{d_phi}``.
+            If None, ``X`` is flattened and used directly.
+        n_states : int, default=5
+            Number of states K for state discovery clustering.
+        exploration_rate : float, default=0.1
+            Weight η for the noise term in the Cercis Score.
+            Higher = more tolerance for noisy states.
+
+        Returns
+        -------
+        self : Yajie
+            The fitted instance with ``self.report_`` containing per-sample
+            diagnostics and ``self.state_report_`` containing per-state
+            classification.
+        """
+        N = len(X)
+
+        # ---- Step 1: Feature extraction ---------------------------------
+        if phi is not None:
+            phi_X = np.asarray(phi(X), dtype=float)
+        else:
+            phi_X = np.asarray(X, dtype=float)
+        if phi_X.ndim == 1:
+            phi_X = phi_X.reshape(-1, 1)
+        if phi_X.ndim > 2:
+            phi_X = phi_X.reshape(N, -1)
+
+        d_phi = phi_X.shape[1]
+
+        # ---- Step 2: State discovery ------------------------------------
+        K = min(n_states, N)
+        if K < 2:
+            K = 2
+        sd = StateDiscovery(
+            method="kmeans",
+            n_states=K,
+            random_state=42,
+        )
+        state_labels = sd.fit_predict(phi_X)
+        centroids = sd.get_centroids()
+
+        # ---- Step 3: Multi-expert error computation ---------------------
+        if experts is not None and len(experts) > 0:
+            M = len(experts)
+            expert_errors = self._compute_expert_errors(X, experts)  # (N, M)
+        else:
+            # Heuristic: use reconstruction error as proxy
+            M = 0
+            expert_errors = None
+
+        # ---- Step 4: Per-state scoring ----------------------------------
+        state_records = []
+        sample_verdicts = np.full(N, "uncertain", dtype=object)
+
+        for s in range(K):
+            mask = state_labels == s
+            n_s = mask.sum()
+            if n_s == 0:
+                continue
+
+            rho_s = n_s / N  # state proportion
+
+            # Quality score Q(s): 1 - mean residual
+            if expert_errors is not None and M > 0:
+                state_errors = expert_errors[mask]  # (n_s, M)
+                mean_residual = float(state_errors.mean())
+                # Consistency: inverse std of expert errors (higher = more consistent)
+                expert_std = float(state_errors.std(axis=1).mean())
+                consistency = float(1.0 / (1.0 + expert_std))
+            else:
+                # Heuristic: distance to centroid as residual proxy
+                dists = np.linalg.norm(phi_X[mask] - centroids[s], axis=1)
+                mean_residual = float(dists.mean() / (dists.max() + 1e-8)) if dists.max() > 0 else 0.0
+                consistency = float(1.0 / (1.0 + dists.std()))
+
+            Q_s = float(1.0 - mean_residual)
+
+            # Noise score N(s)
+            noise_scores = self._noise_scorer.compute(
+                residuals=np.full(n_s, mean_residual),
+                state_proportion=rho_s,
+                consistency=consistency,
+            )
+            N_s = float(noise_scores.mean())
+
+            # Redundancy D(s)
+            X_s = phi_X[mask]
+            redundancy_scorer = RedundancyScore()
+            D_s = redundancy_scorer.redundancy(
+                state_proportion=rho_s,
+                mean_residual=mean_residual,
+                similarity=redundancy_scorer.state_similarity(X_s),
+                boundary=redundancy_scorer.boundary_score(X_s, centroids, s),
+            )
+
+            # ---- Cercis Score: S(s) = Q(s) + η · N(s) ------------------
+            eta = exploration_rate if exploration_rate is not None else self.grace
+            S_s = float(Q_s + eta * N_s)
+
+            state_records.append({
+                "state_id": s,
+                "n_samples": n_s,
+                "proportion": float(rho_s),
+                "mean_residual": float(mean_residual),
+                "quality_score": float(Q_s),
+                "noise_score": float(N_s),
+                "cercis_score": float(S_s),
+                "consistency": float(consistency),
+                "redundancy": float(D_s),
+                # verdict assigned after all states scored (adaptive)
+            })
+
+        # ---- Adaptive classification: clean / noisy / ambiguous ---------
+        # Use percentile-based thresholds within the batch, per Theorem 1's
+        # state-conditioned separation gap principle.
+        # With K >= 3 states, uses median split; with K < 3, compares absolute scores.
+        if len(state_records) >= 3:
+            Q_vals = np.array([r["quality_score"] for r in state_records])
+            N_vals = np.array([r["noise_score"] for r in state_records])
+            q_median = float(np.median(Q_vals))
+            n_median = float(np.median(N_vals))
+
+            for r in state_records:
+                Q_s = r["quality_score"]
+                N_s = r["noise_score"]
+                if Q_s >= q_median and N_s <= n_median:
+                    r["verdict"] = "clean"
+                elif Q_s <= q_median and N_s >= n_median:
+                    r["verdict"] = "noisy"
+                else:
+                    r["verdict"] = "ambiguous"
+        elif len(state_records) == 2:
+            # Two states: one cleaner, one noisier
+            sorted_by_q = sorted(state_records, key=lambda r: r["quality_score"], reverse=True)
+            sorted_by_q[0]["verdict"] = "clean"
+            sorted_by_q[1]["verdict"] = "noisy"
+        elif len(state_records) == 1:
+            state_records[0]["verdict"] = "ambiguous"
+
+        # Propagate verdicts to samples
+        for s, r in enumerate(state_records):
+            mask = state_labels == r["state_id"]
+            sample_verdicts[mask] = r["verdict"]
+
+        # ---- Step 5: Build sample-level report --------------------------
+        sample_records = []
+        for i in range(N):
+            s = int(state_labels[i])
+            sr = state_records[s] if s < len(state_records) else {}
+            sample_records.append({
+                "sample_id": i,
+                "state_id": s,
+                "verdict": str(sample_verdicts[i]),
+                "state_quality": float(sr.get("quality_score", 0.5)),
+                "state_noise": float(sr.get("noise_score", 0.5)),
+                "state_cercis": float(sr.get("cercis_score", 0.5)),
+            })
+
+        self.report_ = pd.DataFrame(sample_records)
+        self.state_report_ = pd.DataFrame(state_records)
+        self._is_scanned = True  # Mark as scanned so purify() can be called
+        self._state_labels_ = state_labels
+        self._phi_X_ = phi_X
+
+        # Theorem 2: weak feature diagnostic
+        if d_phi > 0 and K >= 2:
+            diag = self._state_value.feature_strength_diagnostic(phi_X, state_labels)
+            if diag.get("recommendation") in ("weak",):
+                warnings.warn(
+                    f"δ = {diag.get('delta', '?'):.4f} — "
+                    f"Features may be too weak for reliable state discovery. "
+                    f"See Theorem 2. Yajie will do her best, but be cautious.",
+                    UserWarning,
+                )
+
+        return self
 
     def purify(
         self,
