@@ -167,9 +167,48 @@ LLM 没有状态本体层——它的 token 是统计构造的，没有物理锚
 
 
 
----
+### 2026-06-29：Spring 理论审计 — 发现已有完整数学体系
 
-## 核心思想的产生时间线
+**教训：** CC 今天写了 `spring_convergence_analysis.md` 作为 Spring 收敛分析摘要。但事后检查 `theory/self_evolution/` 目录发现，Spring 的严格数学早在 **2026-06-28** 就已完成为 9+ 个文件、数千行的理论体系。CC 不应该被派去"重做"，应该直接引用已有文件。
+
+**流程教训：** 每次动手前先 `find` 目录，读 README，确认什么已经存在。不假设、不跳步。
+
+**Spring 已有文件清单（2026-06-28 完成）：**
+
+| # | 文件 | 内容 | 核心结果 | 状态 |
+|---|------|------|----------|------|
+| 01 | `01_symbol_system.md` | 符号系统与问题设定 | 结构空间、状态空间、新假设 SE-A1 至 SE-A6 | 完整 |
+| 02 | `02_dynamical_system.md` | 离散动力系统形式化 | Lyapunov 函数、不动点存在性（定理 4-5）、单调下降（定理 6）、四种收敛路径 | 完整 |
+| 03 | `03_online_learning_regret.md` | 在线学习 Regret 分析 | Regret ≤ 2GR√T (OGD)、延迟反馈 Regret 界 | 完整 |
+| 04 | `04_bayesian_update.md` | 贝叶斯更新解释 | S_t 为后验均值、贝叶斯鞅、Doob 收敛 S_t → S_∞ a.s. | 完整 |
+| 05 | `05_stochastic_approximation.md` | 随机逼近分析 | Robbins-Monro 形式、ODE 方法、双时间尺度 | 完整 |
+| 🔴 | `06_fixed_point_convergence.md` | **中心定理：不动点与收敛** | **Theorem SE-1**：有限结构+Lipschitz+退火→ (S_t,θ_t)→(S*,θ*) a.s.；**Regime 4 退化**：Δ_s(t)→0 条件 | 完整 |
+| 07 | `07_completeness.md` | 完备性分析 | **Theorem SE-2**：物理约束下存在有限 T* 达到 ε-近似不动点 | 完整 |
+| 08 | `08_theory_connections.md` | 与已知理论的连接 | AlphaZero self-play、贝叶斯优化、主动学习、Solomonoff 归纳对比 | 完整 |
+| 🔴 | `09_verification_report.md` | **验证报告** | 676 行，10 个证明缺口、5 个开放问题、诚实评估 | 完整 |
+| 🔴 | `10_lyapunov_analysis.md` | Lyapunov 分析 | 缺陷 D-07（A2 退化）标注；Lyapunov 下降条件 | 完整 |
+| 11 | `11_convergence_rate.md` | 收敛率分析 | 强凸 O(t^{-a})、Polyak 平均 O(1/t)、维度/噪声退化 | 完整 |
+| 🔴 | `12_edge_cases.md` | 边沿案例与失败模式 | **488 行**，四种失败模式形式化：过早收敛、积压问题、校准崩溃、对抗污染 | 完整 |
+| — | `MATHEMATICAL_GENEALOGY.md` | 数学谱系 | Robbins-Monro、Doob、Borkar、Kushner-Yin 等理论根源 | 完整 |
+| — | `CERCIS_NAMING.md` | 紫荆花公式命名 | S = Q + ηN 的命名来源与设计哲学 | 完整 |
+| — | `SPRING_NAMING.md` | Spring 命名 | 春季自进化的命名来源与隐喻 | 完整 |
+
+**核心定理 SE-1（自进化收敛）：** 在有限结构空间 (C1) + Lipschitz (C2-C3) + Robbins-Monro 学习率 (C4) + 条件 i.i.d. 采样 (C5) + 充分退火 (C6) + Gatekeeper 更新有界 (C7) 的条件下，(S_t, θ_t) 几乎必然收敛到联合不动点 (S*, θ*)。
+
+**核心定理 SE-2（完备性界）：** 物理约束下（有限数据/精度/计算），存在有限时间 T* 使得 t ≥ T* 后系统处于 ε-近似不动点。
+
+**四种收敛路径：** (I) 经典收敛（单调改进）、(II) 极限环（退火不充分）、(III) 永动发现（无限探索）、(IV) 发散崩溃（Δ_s 退化 → 0）。
+
+**与 Theorem 1-4 的关系：**
+- Theorem 3（不可识别性）→ 提供自进化必要性论证
+- Theorem 1（噪声检测）→ 为 S_t 初始化提供保证
+- Theorem 2（弱特征界）→ 限制改进速度
+- Theorem SE-1 → 闭环渐近收敛到自洽点（**中心结果**）
+
+**今日 CC 写的 `spring_convergence_analysis.md`（558 行）** 的三个问题（非凸收敛率、记忆库遗憾、Δ_s 单调性）在已有体系中大部分已被覆盖，但以不同形式呈现。Hostile review 发现的 Theorem 3.1 反例造假问题——已有文件中 `06_fixed_point_convergence.md` 的 Regime 4 分析和 `12_edge_cases.md` 的 Failure Mode 4 提供了更严谨的退化条件分析。
+
+**Spring 理论状态：** ~40% 严格、~20% 形式化猜想、~40% 合理假设。可以作为独立论文（Paper C：Spring Convergence Theory），但需要先解决 09_verification_report.md 中标注的 10 个证明缺口。
+
 
 ### 源头：EGP Paper 1 — ACE/PACE Gauge Fixing
 
