@@ -1,4 +1,4 @@
-# Paper: A Complete Theory of Noise Detection via State-Conditioned Multi-Expert Consistency
+# Paper: A Complete Theory of Noise Detection via State-Conditioned eXpertise
 
 > **目标期刊**: Annals of Statistics (冲刺) → IEEE Trans. Information Theory (主投) → JMLR (保底)
 > **论文类型**: 纯理论（定理+证明），正文 30-40 页 + 补充材料 60-80 页

@@ -26,7 +26,7 @@
 **Abstract structure**:
 1. **Opening** (2 sentences): The dominant paradigm in scientific ML focuses on model architecture innovation. We show that systematic data cleaning yields 12-19x the improvement of architectural advances.
 2. **Problem** (2 sentences): Training data in scientific ML contains systematic label noise that is indistinguishable from intrinsic sample difficulty without additional structure. Existing methods conflate these two cases.
-3. **Method** (2 sentences): SCX (State-Conditioned Multi-Expert Consistency) combines two-layer state discovery (domain knowledge + error-driven encoding) with multi-expert consistency testing. Three theorems provide guarantees: exponential noise detection accuracy, weak-feature failure bounds, and the fundamental unidentifiability of noise vs. hardness.
+3. **Method** (2 sentences): SCX (State-Conditioned eXpertise) combines two-layer state discovery (domain knowledge + error-driven encoding) with multi-expert consistency testing. Three theorems provide guarantees: exponential noise detection accuracy, weak-feature failure bounds, and the fundamental unidentifiability of noise vs. hardness.
 4. **Key result** (2 sentences): In AlN machine-learned interatomic potentials, removing 14% worst training frames identified by SCX improves force predictions by 29-48%, versus a 2.5% improvement from a sophisticated shared+correction architectural innovation. This pattern replicates across vision (CIFAR-10/100), medical imaging (MedMNIST), and tabular (UCI) domains.
 5. **Closing** (1 sentence): Our results establish data quality as a systematically undervalued lever in scientific machine learning and provide both theoretical foundations and practical tools for automated data cleaning.
 
