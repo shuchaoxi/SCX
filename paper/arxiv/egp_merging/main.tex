@@ -23,7 +23,9 @@
 \newcommand{\AAng}{\mbox{\AA}}
 \newcommand{\g}{\mathbf{g}}
 \newcommand{\cZ}{\mathbf{c}_{Z}}
-\newcommand{\c0}{\mathbf{c}_{0}}
+\newcommand{\cA}{\mathbf{c}_{A}}
+\newcommand{\cB}{\mathbf{c}_{B}}
+\newcommand{\cb}{\mathbf{c}_{0}}
 
 % ============================================================
 \begin{document}
@@ -36,7 +38,7 @@ Machine-Learned Interatomic Potentials}
 \date{\today}
 
 \begin{abstract}
-Machine-learned interatomic potentials (MLIPs) trained on different chemical domains cannot be safely merged into a single multi-element potential without resolving fundamental consistency issues. We identify four distinct sources of inconsistency---energy reference ambiguity, species-shift misalignment, coefficient-level gauge freedom, and residual meaning incompatibility---and present a comprehensive framework for merging independently trained atomic cluster expansion (ACE) expert potentials into a unified, physically consistent model. The framework consists of: (i) post-hoc gauge fixing that eliminates the exact gauge freedom $\c0 \to \c0 + \g$, $\cZ \to \cZ - \g$ via orthogonal projection, achieving machine-precision constraint satisfaction ($< 10^{-15}$) with zero change to physical predictions; (ii) energy reference alignment that resolves the per-expert energy-zero offset, a quantity that is unconstrained by force training but becomes critical upon merging; (iii) species-shift alignment that resolves ambiguities in the decomposition of atomic energy among chemical species; and (iv) residual expert construction that enables incremental addition of new domain expertise without catastrophic forgetting. We validate the framework on wurtzite AlN and GaN. The naive merging of independently trained experts---without the proposed consistency constraints---produces physically erroneous predictions, including $C_{33}$ deviations exceeding $50\%$ and formation energy sign errors. Our gauge-fixed, alignment-constrained merge eliminates all such artifacts while preserving each expert's home-domain accuracy to within $5\%$ (force RMSE increase $< 0.003$ eV/\AAng). The gauge-fixing component alone is validated with multi-seed statistics ($5$ seeds), a systematic $\lambda$-sweep over soft penalty strengths ($\lambda = 10^{-3}$ to $10^1$), and six physics validation batches (EOS, elastic constants, phonon displacements, thermal snapshots, strain-displacement cross, and MLMD). The fair baseline comparison ($1{,}378$ parameters each) confirms that the value of the merged model lies in its interpretable expert decomposition rather than expanded expressivity. This work establishes the prerequisite methodology for building modular, composable MLIP libraries where independently developed expert potentials can be safely assembled without costly retraining.
+Machine-learned interatomic potentials (MLIPs) trained on different chemical domains cannot be safely merged into a single multi-element potential without resolving fundamental consistency issues. We identify four distinct sources of inconsistency---energy reference ambiguity, species-shift misalignment, coefficient-level gauge freedom, and residual meaning incompatibility---and present a comprehensive framework for merging independently trained atomic cluster expansion (ACE) expert potentials into a unified, physically consistent model. The framework consists of: (i) post-hoc gauge fixing that eliminates the exact gauge freedom $\cb \to \cb + \g$, $\cZ \to \cZ - \g$ via orthogonal projection, achieving machine-precision constraint satisfaction ($< 10^{-15}$) with zero change to physical predictions; (ii) energy reference alignment that resolves the per-expert energy-zero offset, a quantity that is unconstrained by force training but becomes critical upon merging; (iii) species-shift alignment that resolves ambiguities in the decomposition of atomic energy among chemical species; and (iv) residual expert construction that enables incremental addition of new domain expertise without catastrophic forgetting. We validate the framework on wurtzite AlN and GaN. The naive merging of independently trained experts---without the proposed consistency constraints---produces physically erroneous predictions, including $C_{33}$ deviations exceeding $50\%$ and formation energy sign errors. Our gauge-fixed, alignment-constrained merge eliminates all such artifacts while preserving each expert's home-domain accuracy to within $5\%$ (force RMSE increase $< 0.003$ eV/\AAng). The gauge-fixing component alone is validated with multi-seed statistics ($5$ seeds), a systematic $\lambda$-sweep over soft penalty strengths ($\lambda = 10^{-3}$ to $10^1$), and six physics validation batches (EOS, elastic constants, phonon displacements, thermal snapshots, strain-displacement cross, and MLMD). The fair baseline comparison ($1{,}378$ parameters each) confirms that the value of the merged model lies in its interpretable expert decomposition rather than expanded expressivity. This work establishes the prerequisite methodology for building modular, composable MLIP libraries where independently developed expert potentials can be safely assembled without costly retraining.
 \end{abstract}
 
 \maketitle
@@ -55,7 +57,7 @@ An alternative and more flexible paradigm is to merge independently trained pote
 \begin{enumerate}[label=\textbf{(I\arabic*)}]
     \item \textbf{Energy reference ambiguity.} MLIPs are trained on forces and relative energies, which together determine the potential energy surface up to an additive constant. Each expert potential is therefore defined relative to an arbitrary energy zero that differs between independent trainings. Upon merging, these offsets produce spurious energy differences between configurations from different domains.
     \item \textbf{Species-shift misalignment.} The per-species constant energy shifts $b_Z$ absorb a significant fraction of the energy reference ambiguity. When two experts assign different shifts to the same chemical species (e.g., N in AlN vs.~N in GaN), the merged model exhibits systematic formation energy errors.
-    \item \textbf{Coefficient-level gauge freedom.} When expert potentials are parameterized in a shared-correction form---decomposing the total coefficient vector into a shared component $\c0$ and element-specific corrections $\cZ$---an exact gauge transformation $\c0 \to \c0 + \g$, $\cZ \to \cZ - \g$ leaves all physical predictions invariant. Different experts exploit this freedom differently, making their coefficient vectors incompatible for direct averaging or addition.
+    \item \textbf{Coefficient-level gauge freedom.} When expert potentials are parameterized in a shared-correction form---decomposing the total coefficient vector into a shared component $\cb$ and element-specific corrections $\cZ$---an exact gauge transformation $\cb \to \cb + \g$, $\cZ \to \cZ - \g$ leaves all physical predictions invariant. Different experts exploit this freedom differently, making their coefficient vectors incompatible for direct averaging or addition.
     \item \textbf{Residual meaning incompatibility.} Expert potentials trained on different domains learn domain-specific corrections whose magnitudes and directions are meaningful only relative to their own domain's data distribution. Naively combining residuals without accounting for domain structure can lead to cancellation or amplification of corrections.
 \end{enumerate}
 
@@ -67,7 +69,7 @@ We make the following contributions:
 
 \begin{enumerate}[label=\textbf{(C\arabic*)}]
     \item \textbf{Identify four distinct consistency barriers to expert merging in ACE potentials.} We formalize each inconsistency type, show how they interact, and explain why they cannot be resolved by standard training procedures alone.
-    \item \textbf{Post-hoc gauge fixing via orthogonal projection.} We prove that the gauge freedom $\c0 \to \c0 + \g$, $\cZ \to \cZ - \g$ is a reparameterization of the standard multi-element ACE and propose post-hoc projection onto $\sum_Z \pi_Z \cZ = 0$, which enforces the gauge condition exactly (residual $< 5\times10^{-16}$) with zero prediction change. We systematically demonstrate that soft-penalty training fundamentally fails because the gauge constraint is nearly orthogonal to the physical loss landscape.
+    \item \textbf{Post-hoc gauge fixing via orthogonal projection.} We prove that the gauge freedom $\cb \to \cb + \g$, $\cZ \to \cZ - \g$ is a reparameterization of the standard multi-element ACE and propose post-hoc projection onto $\sum_Z \pi_Z \cZ = 0$, which enforces the gauge condition exactly (residual $< 5\times10^{-16}$) with zero prediction change. We systematically demonstrate that soft-penalty training fundamentally fails because the gauge constraint is nearly orthogonal to the physical loss landscape.
     \item \textbf{Energy reference and species-shift alignment protocol.} We develop a method to resolve the scalar offset ambiguities that are invisible to force-based training but critical for merging.
     \item \textbf{Consistency-constrained merging with no-forgetting guarantee.} We formulate expert merging as a constrained optimization problem and show that the merged model retains each expert's home-domain accuracy.
     \item \textbf{Experimental validation on wurtzite AlN and GaN.} We demonstrate that naive merging of independently trained experts produces catastrophic physical errors ($C_{33}$ deviation $>50\%$, formation energy sign reversal), while our consistency-constrained framework eliminates these artifacts and preserves domain accuracy. The gauge-fixing component is validated on wurtzite AlN with multi-seed statistics ($5$ seeds), a $\lambda$ sweep over soft penalty strengths, and six physics validation batches.
@@ -83,24 +85,24 @@ We make the following contributions:
 We define an \emph{expert potential} as an ACE potential trained on a specific domain $\mathcal{D}_m$ (e.g., a particular compound or composition range), parameterized in the shared-correction form. For a system of $M$ expert domains, each expert $m$ predicts the total energy of an atomic configuration $\mathbf{R} = \{\mathbf{r}_i\}$ as:
 
 \begin{equation}
-E^{(m)}(\mathbf{R}) = \sum_i \Big[ \c0^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + \cZ_i^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + b_{Z_i}^{(m)} \Big],
+E^{(m)}(\mathbf{R}) = \sum_i \Big[ \cb^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + \mathbf{c}_{Z_i}^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + b_{Z_i}^{(m)} \Big],
 \label{eq:expert_ace}
 \end{equation}
 
-where $\c0^{(m)}$ is the shared coefficient vector, $\cZ^{(m)}$ is the element-specific correction for species $Z$, $b_Z^{(m)}$ is a per-species constant energy shift, $\mathbf{B}(\mathbf{q}_i)$ is the ACE basis vector for the local environment $\mathbf{q}_i$ of atom $i$, and $Z_i$ is the chemical species of atom $i$.
+where $\cb^{(m)}$ is the shared coefficient vector, $\cZ^{(m)}$ is the element-specific correction for species $Z$, $b_Z^{(m)}$ is a per-species constant energy shift, $\mathbf{B}(\mathbf{q}_i)$ is the ACE basis vector for the local environment $\mathbf{q}_i$ of atom $i$, and $Z_i$ is the chemical species of atom $i$.
 
 For a binary system of type $AB$ (e.g., AlN), the explicit form is:
 
 \begin{equation}
-E^{(m)} = \sum_i \c0^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + \sum_{i \in A} \big[ \cA^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + b_A^{(m)} \big] + \sum_{i \in B} \big[ \cB^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + b_B^{(m)} \big].
+E^{(m)} = \sum_i \cb^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + \sum_{i \in A} \big[ \cA^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + b_A^{(m)} \big] + \sum_{i \in B} \big[ \cB^{(m)} \cdot \mathbf{B}(\mathbf{q}_i) + b_B^{(m)} \big].
 \label{eq:expert_binary}
 \end{equation}
 
 The effective per-species coefficients for deployment are:
 \begin{equation}
-\cZ^{\mathrm{eff},(m)} = \c0^{(m)} + \cZ^{(m)},
+\cZ^{\mathrm{eff},(m)} = \cb^{(m)} + \cZ^{(m)},
 \quad
-E^{(m)} = \sum_i \big[ \cZ_i^{\mathrm{eff},(m)} \big] \cdot \mathbf{B}(\mathbf{q}_i) + b_{Z_i}^{(m)},
+E^{(m)} = \sum_i \big[ \mathbf{c}_{Z_i}^{\mathrm{eff},(m)} \big] \cdot \mathbf{B}(\mathbf{q}_i) + b_{Z_i}^{(m)},
 \label{eq:expert_effective}
 \end{equation}
 showing that each expert is deployable as a standard ACE/PACE potential.
@@ -118,7 +120,7 @@ The goal is to construct a \emph{merged potential} $E^{\mathrm{merged}}$ from th
 
 \subsection{Formal Objective with No-Forgetting Constraint}
 
-Formally, let $\mathcal{D}_m$ be the test set of domain $m$ and $\mathcal{L}_m(\theta)$ be the prediction error of a model with parameters $\theta$ on $\mathcal{D}_m$. Given expert parameters $\theta^{(m)} = (\c0^{(m)}, \{\cZ^{(m)}\}, \{b_Z^{(m)}\})$ with home-domain losses $\mathcal{L}_m(\theta^{(m)})$, the merged parameters $\theta^{\mathrm{merged}}$ should satisfy:
+Formally, let $\mathcal{D}_m$ be the test set of domain $m$ and $\mathcal{L}_m(\theta)$ be the prediction error of a model with parameters $\theta$ on $\mathcal{D}_m$. Given expert parameters $\theta^{(m)} = (\cb^{(m)}, \{\cZ^{(m)}\}, \{b_Z^{(m)}\})$ with home-domain losses $\mathcal{L}_m(\theta^{(m)})$, the merged parameters $\theta^{\mathrm{merged}}$ should satisfy:
 
 \begin{equation}
 \mathcal{L}_m(\theta^{\mathrm{merged}}) \le (1 + \epsilon) \mathcal{L}_m(\theta^{(m)}) \quad \forall m,
@@ -148,7 +150,7 @@ These constraints reveal why naive merging fails: independently trained experts 
 The shared-correction parameterization (Eq.~\eqref{eq:expert_ace}) exhibits an exact gauge freedom. For any vector $\g$ with the same dimension as the coefficient space, the transformation
 
 \begin{equation}
-\c0 \to \c0 + \g,
+\cb \to \cb + \g,
 \qquad
 \cZ \to \cZ - \g \quad (\text{for all } Z),
 \label{eq:gauge_transform}
@@ -157,17 +159,17 @@ The shared-correction parameterization (Eq.~\eqref{eq:expert_ace}) exhibits an e
 leaves the total energy prediction invariant, because
 
 \begin{equation}
-(\c0 + \g) + (\cZ - \g) = \c0 + \cZ.
+(\cb + \g) + (\cZ - \g) = \cb + \cZ.
 \label{eq:gauge_invariance}
 \end{equation}
 
-This gauge freedom is the coefficient-level manifestation of the well-known atomic energy decomposition ambiguity~\cite{Yoo2019AtomicEnergyMapping}: DFT provides the total energy of a system but does not uniquely determine how it is partitioned into atomic or basis-function contributions. In the shared-correction parameterization, only the sum $\c0 + \cZ$ is physically determined by training data; the split between shared and correction channels is not.
+This gauge freedom is the coefficient-level manifestation of the well-known atomic energy decomposition ambiguity~\cite{Yoo2019AtomicEnergyMapping}: DFT provides the total energy of a system but does not uniquely determine how it is partitioned into atomic or basis-function contributions. In the shared-correction parameterization, only the sum $\cb + \cZ$ is physically determined by training data; the split between shared and correction channels is not.
 
 Without gauge fixing, several pathologies arise that are particularly problematic for expert merging:
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{Cross-expert coefficient incompatibility}. Two independently trained experts will have explored different regions of the gauge-equivalent coefficient space. Directly averaging or adding their coefficients produces a model whose effective coefficients $\cZ^{\mathrm{eff}} = \c0 + \cZ$ are contaminated by the gauge mismatch.
+    \item \textbf{Cross-expert coefficient incompatibility}. Two independently trained experts will have explored different regions of the gauge-equivalent coefficient space. Directly averaging or adding their coefficients produces a model whose effective coefficients $\cZ^{\mathrm{eff}} = \cb + \cZ$ are contaminated by the gauge mismatch.
     \item \textbf{Uninterpretability}. The magnitudes of $\cZ^{(m)}$ have no intrinsic meaning across experts---a gauge transformation on expert $m$ can arbitrarily shift weight between its shared and correction channels.
-    \item \textbf{Regularization conflict}. $\ell_2$ regularization applied separately to $\c0$ and $\cZ$ is gauge-dependent, potentially biasing experts toward different non-physical coefficient configurations.
+    \item \textbf{Regularization conflict}. $\ell_2$ regularization applied separately to $\cb$ and $\cZ$ is gauge-dependent, potentially biasing experts toward different non-physical coefficient configurations.
 \end{enumerate}
 
 In our unconstrained AlN expert training, the gauge violation---defined as the norm of the stoichiometrically weighted sum of correction coefficients, $\lVert \sum_Z \pi_Z \cZ \rVert$---is $8.77$ (in units of the coefficient norm). This confirms that the gauge freedom is numerically active: the optimization freely explores the degenerate subspace.
@@ -237,15 +239,15 @@ We propose an alternative approach: train each expert without any gauge constrai
 \begin{equation}
 \g = \sum_Z \pi_Z \cZ, \qquad
 \cZ' = \cZ - \g, \qquad
-\c0' = \c0 + \g.
+\cb' = \cb + \g.
 \label{eq:posthoc_projection}
 \end{equation}
 
-This is an orthogonal linear map onto the gauge-fixing subspace $\{(\c0, \{\cZ\}) \mid \sum_Z \pi_Z \cZ = 0\}$. The proof of prediction invariance is trivial:
+This is an orthogonal linear map onto the gauge-fixing subspace $\{(\cb, \{\cZ\}) \mid \sum_Z \pi_Z \cZ = 0\}$. The proof of prediction invariance is trivial:
 
 \begin{equation}
-E' = \sum_i \big[ (\c0 + \g) + (\cZ_i - \g) \big] \cdot \mathbf{B}_i + b_{Z_i}
-    = \sum_i \big[ \c0 + \cZ_i \big] \cdot \mathbf{B}_i + b_{Z_i}
+E' = \sum_i \big[ (\cb + \g) + (\mathbf{c}_{Z_i} - \g) \big] \cdot \mathbf{B}_i + b_{Z_i}
+    = \sum_i \big[ \cb + \mathbf{c}_{Z_i} \big] \cdot \mathbf{B}_i + b_{Z_i}
     = E.
 \label{eq:projection_invariance}
 \end{equation}
@@ -258,12 +260,12 @@ The post-hoc projection achieves exact gauge cancellation (residual $\lVert\g'\r
 
 The gauge convention $\sum_Z \pi_Z \cZ = 0$ carries a specific physical interpretation:
 \begin{itemize}
-    \item $\c0$ represents the stoichiometry-weighted average atomic ACE response.
+    \item $\cb$ represents the stoichiometry-weighted average atomic ACE response.
     \item $\cZ$ represents the pure deviation from this average for element $Z$.
     \item The corrections sum to zero by construction, ensuring that no net ``extra'' contribution is artificially introduced.
 \end{itemize}
 
-For expert merging, this gauge convention ensures that all experts share the same reference frame: $\c0^{(m)}$ represents ``average atomic response in domain $m$'' while $\cZ^{(m)}$ represents ``element-specific deviation in domain $m$,'' both measured from a common origin. After gauge fixing, the coefficient vectors of different experts are directly comparable and combinable.
+For expert merging, this gauge convention ensures that all experts share the same reference frame: $\cb^{(m)}$ represents ``average atomic response in domain $m$'' while $\cZ^{(m)}$ represents ``element-specific deviation in domain $m$,'' both measured from a common origin. After gauge fixing, the coefficient vectors of different experts are directly comparable and combinable.
 
 % ============================================================
 \section{Energy Reference and Species-Shift Alignment}
@@ -360,10 +362,10 @@ Our consistency-constrained expert merging framework proceeds in eight steps:
 
 \subsection{Residual Construction}
 
-After gauge fixing and alignment, each expert $m$ is represented by coefficients $(\c0^{(m)}, \{\cZ^{(m)}\}, \{b_Z^{(m)}\})$ in a common reference frame. The merged base coefficient is:
+After gauge fixing and alignment, each expert $m$ is represented by coefficients $(\cb^{(m)}, \{\cZ^{(m)}\}, \{b_Z^{(m)}\})$ in a common reference frame. The merged base coefficient is:
 
 \begin{equation}
-\c0^{\mathrm{merged}} = \frac{1}{M} \sum_{m=1}^{M} \c0^{(m)},
+\cb^{\mathrm{merged}} = \frac{1}{M} \sum_{m=1}^{M} \cb^{(m)},
 \label{eq:base_average}
 \end{equation}
 
@@ -377,7 +379,7 @@ and the merged correction for species $Z$ is:
 where $\mathcal{M}_Z$ is the set of experts containing species $Z$. The merged effective coefficient for species $Z$ is then:
 
 \begin{equation}
-\cZ^{\mathrm{eff,merged}} = \c0^{\mathrm{merged}} + \cZ^{\mathrm{merged}}.
+\cZ^{\mathrm{eff,merged}} = \cb^{\mathrm{merged}} + \cZ^{\mathrm{merged}}.
 \label{eq:merged_effective}
 \end{equation}
 
@@ -397,7 +399,7 @@ The no-forgetting constraint (Eq.~\eqref{eq:no_forget}) is enforced in two ways.
 The merged model inherits the functional form of a standard multi-element ACE potential:
 
 \begin{equation}
-E^{\mathrm{merged}}(\mathbf{R}) = \sum_i \big[ \cZ_i^{\mathrm{eff,merged}} \big] \cdot \mathbf{B}(\mathbf{q}_i) + b_{Z_i}^{\mathrm{merged}},
+E^{\mathrm{merged}}(\mathbf{R}) = \sum_i \big[ \mathbf{c}_{Z_i}^{\mathrm{eff,merged}} \big] \cdot \mathbf{B}(\mathbf{q}_i) + b_{Z_i}^{\mathrm{merged}},
 \label{eq:merged_deploy}
 \end{equation}
 
@@ -495,7 +497,7 @@ Stress RMSE (GPa) & $0.0147 \pm 0.0033$ & $< 0.0154$ ($+5\%$) \\
 
 After merging with the GaN expert through the consistency-constrained protocol, the AlN-domain metrics are expected to remain within $5\%$ of the original expert's values. This is because:
 \begin{itemize}
-    \item The gauge fixing ensures that $\c0$ and $\cZ$ coefficients have consistent meanings across experts.
+    \item The gauge fixing ensures that $\cb$ and $\cZ$ coefficients have consistent meanings across experts.
     \item The energy reference alignment removes the offset that would otherwise contaminate the AlN predictions.
     \item The coefficient averaging (Eqs.~\eqref{eq:base_average}--\eqref{eq:correction_average}) preserves the convex-hull property, ensuring that the AlN correction is not diluted by the GaN-specific training.
 \end{itemize}
@@ -682,7 +684,7 @@ The key findings are:
 
 \begin{enumerate}[label=\textbf{(F\arabic*)}]
     \item \textbf{Failure of naive merging.} Independently trained ACE experts cannot be merged by simple coefficient averaging. The gauge mismatch, energy offset, and shift conflict produce physically erroneous predictions, including $C_{33}$ deviations $> 50\%$ and formation energy sign errors. The consistency-constrained merge eliminates all such artifacts.
-    \item \textbf{Exact gauge fixing via orthogonal projection.} The gauge transformation $\c0 \to \c0 + \g$, $\cZ \to \cZ - \g$ leaves all physical predictions invariant. Our post-hoc projection onto $\sum_Z \pi_Z \cZ = 0$ enforces the gauge condition to machine precision ($< 10^{-15}$) with zero prediction change. Soft gauge-penalty training fundamentally fails because the gauge constraint is nearly orthogonal to the physical loss landscape, as confirmed by a systematic $\lambda$ sweep ($\lambda = 10^{-3}$ to $10^1$).
+    \item \textbf{Exact gauge fixing via orthogonal projection.} The gauge transformation $\cb \to \cb + \g$, $\cZ \to \cZ - \g$ leaves all physical predictions invariant. Our post-hoc projection onto $\sum_Z \pi_Z \cZ = 0$ enforces the gauge condition to machine precision ($< 10^{-15}$) with zero prediction change. Soft gauge-penalty training fundamentally fails because the gauge constraint is nearly orthogonal to the physical loss landscape, as confirmed by a systematic $\lambda$ sweep ($\lambda = 10^{-3}$ to $10^1$).
     \item \textbf{No-forgetting merge.} The consistency-constrained merge preserves each expert's home-domain accuracy within $5\%$, satisfying the no-forgetting constraint. This is guaranteed by the convex-hull property of the coefficient averaging and the species-shift reconciliation protocol.
     \item \textbf{Physical fidelity of the framework components.} The gauge-fixed AlN expert is validated on wurtzite AlN with multi-seed statistics ($5$ seeds), yielding $C_{33}$ $+7.4\%$ (vs.\ $+25.9\%$ for Single ACE), $C_{44}$ $-3.9\%$ (vs.\ $-12.4\%$), $22.8\%$ lower stress RMSE, and $26.9\%$ improved phonon force accuracy. The fair baseline comparison ($1{,}378$ parameters each) confirms that the value lies in the interpretable decomposition and merging capability, not expanded expressivity.
     \item \textbf{Energy reference and species-shift alignment protocol.} We formalize the offset and shift ambiguities that are unconstrained by force training and provide an alignment protocol that resolves them without modifying the physically meaningful ACE coefficients.

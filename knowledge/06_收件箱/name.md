@@ -39,3 +39,32 @@
    What Neural Networks Actually Do
    → Nature Machine Intelligence
 ```
+
+
+scx_theory/       Nature           数学基础也就是雅洁理论，
+本质是对一批样品进行分类，而且是多次分类，也就是说对同一组样品进行多次线性变换，来判断噪声，冗余，高价值信息。可以理解为雅洁理论是分类操作，
+
+
+scx_curation/     Nat Comp Sci     策展权衡
+状态条件化的专长与策展-探索权衡，是对雅洁理论的应用，说明雅洁理论的功能和上下限，是对理论的验证。重点是一次雅洁理论，运行一次。
+
+
+
+
+scx_method/       Nat Mach Intell  方法验证
+Data Quality and Model Architecture: A
+State-Conditioned View
+
+不能理解，他做了什么，那喝雅洁公式没有区别。意义是什么？
+
+
+egp_merging/      npj              EGP 专家合并（目前还不成熟）
+这个可以说是共享势能+专家势的势函数应用，2首先是对齐势函数的势能面，
+
+
+
+scx_llm/          arXiv→ACL       LLM 战略
+scx_review/       Nat Rev          综述+数学深度
+spring_config/    —               Spring 配置
+yajie_protocol/   —               Yajie 协议
+taxonomic_nn/     —               神经网络分类学

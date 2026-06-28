@@ -82,6 +82,16 @@ If one could partition the input space finely enough—if the taxonomy were deep
 
 Yajie proves this is not speculation. Theorem 1 establishes that multi-expert consensus detects noise with confidence that grows exponentially in the number of independent experts — without requiring ground-truth labels. Theorem 3 establishes the boundary condition: noise and difficulty are indistinguishable without the assumptions that make consensus meaningful. Theorem Spring-1 (in the companion Spring paper) proves that the consensus mechanism converges.
 
+### 5.1 Intrinsic Interpretability
+
+A corollary of this framework is that Yajie-based classification is interpretable by construction—not through post-hoc explanation methods, but because the algorithm's operation IS the explanation.
+
+In traditional supervised learning, a human annotator assigns a label to a sample, and a neural network is trained to reproduce that label. The network's internal decision process is opaque because the human's decision process was opaque—the annotator cannot articulate why they labeled this image "cat" and that one "dog" in terms the network can inherit. Post-hoc methods (SHAP, LIME, attention maps) attempt to reconstruct what the network was thinking, but they address a symptom, not the cause. The cause is that the original classification was made by an unobservable human cognitive process.
+
+Yajie inverts this. The input is not a human label but a mathematical similarity measure—the degree to which multiple independent experts agree on a sample's quality within a given state. The output is a state assignment and a quality classification (valuable, redundant, noisy, expert-dependent). Every step is traceable: which expert scored which sample, which state the sample was assigned to, which threshold determined its class, and which iteration of the gatekeeper produced the final judgment. The mapping from input to output is not a black box. It is a recorded sequence of consensus operations, each with a known mathematical bound on its error probability.
+
+This is interpretability not as a retrofit but as an architectural property. The neural network IS explainable—because the algorithm that classifies it is itself a transparent classification procedure. The taxonomy has names. The names have provenance. The provenance has error bounds.
+
 The label was never the ground truth. The consensus was always the ground truth. We simply lacked the computational capacity to compute it. Now we have it.
 
 ---
