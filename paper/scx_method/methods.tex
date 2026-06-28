@@ -13,9 +13,11 @@
 
 The SCX (State-Conditioned eXpertise) pipeline proceeds through five stages. Given a training dataset $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^N$ with suspected label noise and a choice of domain-appropriate features $\phi \colon \mathcal{X} \to \mathbb{R}^{d_\phi}$:
 
-\textbf{Stage~1: Two-layer state discovery.} The first layer computes domain-knowledge features $\phi(x_i)$ for each sample. For MLIP applications, these are ACE descriptors~\cite{drautz2019ace} capturing the local chemical environment of each atom (182-dimensional for the AlN dataset). For image data, these are the penultimate-layer activations of a pretrained CNN backbone (512-dimensional for ResNet-18). For tabular data such as DrugBank, these are the raw feature vectors (molecular fingerprints and protein sequence descriptors) augmented with pairwise interaction terms.
+\textbf{Stage~1: State Crystallization (two-layer state discovery).} State Crystallization is the process of discovering natural state boundaries in continuous physical observables and producing discrete state atoms---the ontological foundation on which subsequent Spring self-evolution and Yajie auditing operate. Unlike statistical discretization schemes such as Byte Pair Encoding (BPE) in language models, where tokens are formed by frequency-driven merging with no physical anchor, State Crystallization is \textit{physically driven}: the state boundaries are determined by the intrinsic structure of the observables (bond angles, bond lengths, local coordination environments) rather than by human-imposed labels or statistical convenience.
 
-The second layer is an error-driven encoder. We train $M_{\mathrm{probe}}$ probe models on random data subsets (typically $M_{\mathrm{probe}} = 6$, trained for 5 epochs each). For each sample, we compute the probe error vector---the fraction of probe models that mispredict each class. We then learn a linear projection $W \in \mathbb{R}^{d_\phi \times d}$ (with $d = \min(d_\phi, 16)$) that maximizes the mutual information between the projected features $W^\top \phi(x_i)$ and the probe error pattern. The projection is optimized via a surrogate objective that penalizes within-cluster variance of the probe error rates, implemented as:
+The first layer computes domain-knowledge features $\phi(x_i)$ for each sample. For MLIP applications, these are ACE descriptors~\cite{drautz2019ace} capturing the local chemical environment of each atom (182-dimensional for the AlN dataset). For image data, these are the penultimate-layer activations of a pretrained CNN backbone (512-dimensional for ResNet-18). For tabular data such as DrugBank, these are the raw feature vectors (molecular fingerprints and protein sequence descriptors) augmented with pairwise interaction terms.
+
+The second layer is an error-driven encoder that refines the state boundaries discovered in the first layer. We train $M_{\mathrm{probe}}$ probe models on random data subsets (typically $M_{\mathrm{probe}} = 6$, trained for 5 epochs each). For each sample, we compute the probe error vector---the fraction of probe models that mispredict each class. We then learn a linear projection $W \in \mathbb{R}^{d_\phi \times d}$ (with $d = \min(d_\phi, 16)$) that maximizes the mutual information between the projected features $W^\top \phi(x_i)$ and the probe error pattern. The projection is optimized via a surrogate objective that penalizes within-cluster variance of the probe error rates, implemented as:
 
 \begin{equation}
 \min_{W, \{\mu_k\}} \sum_{k=1}^K \sum_{i: s_i = k} \bigl\| W^\top \phi(x_i) - \mu_k \bigr\|_2^2 + \lambda \cdot \mathrm{Var}(\{e_i\}_{i: s_i = k}),
@@ -30,7 +32,7 @@ where $s_i$ is the cluster assignment, $e_i$ is the probe error rate for sample 
 \begin{algorithmic}[1]
 \Require Dataset $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^N$, number of experts $M$, number of states $K$, domain features $\phi$
 
-\State \textbf{Stage 1: Two-layer state discovery}
+\State \textbf{Stage 1: State Crystallization}
 \State $\Phi \gets \{\phi(x_i)\}_{i=1}^N$ \Comment{First-layer domain features}
 \State $\{f_m^{\text{probe}}\}_{m=1}^{M_{\text{probe}}} \gets$ Train probe models on disjoint subsets of $\mathcal{D}$
 \State $E_i \gets \frac{1}{M_{\text{probe}}}\sum_{m=1}^{M_{\text{probe}}} \mathbf{1}\{f_m^{\text{probe}}(x_i) \neq y_i\}$ \Comment{Probe error rates}
