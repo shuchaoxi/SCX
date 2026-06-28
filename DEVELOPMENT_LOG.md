@@ -151,6 +151,20 @@ LLM 没有状态本体层——它的 token 是统计构造的，没有物理锚
 **核心设计哲学：**
 > 原始 Yajie + Spring 面向无空间信息的低配场景。Situs 是为蛋白质、材料等具有天然空间结构的数据准备的升级。不强制加——没有空间的场景加 Situs 是浪费参数；有空间的场景不加 Situs 是浪费信息。
 
+### 2026-06-29：Situs 论文规划 — 理论 + 应用双线
+
+**Paper A（理论）：Situs: Physics-Anchored Positional Encoding for State-Conditioned eXpertise**
+- 目标：arXiv → JMLR / NeurIPS 理论 track
+- 素材：CC 三份报告共 2125 行（审计 596 + 严密推导 1110 + 物理验证 419）
+- 核心内容：正弦/3D 旋转编码形式化、Theorem 1-3 修正、δ_s^PE 上下界、Theorem 3'
+- 状态：CC 草拟中 → `paper/situs_theory/main.tex`
+
+**Paper B（应用）：SCX in Space: State-Conditioned eXpertise Across Scientific Domains**
+- 类型：Perspectives / Position Paper（无需新实验）
+- 目标：Nature Computational Science / Scientific Data
+- 核心内容：6 场景展望（材料缺陷、CNT 手性、酶活性位点、Drug-target 对接、天文多巡天审计、遥感跨源验证）+ 三层路线图
+- 状态：CC 草拟中 → `paper/situs_applications/main.tex`
+
 
 
 ---
