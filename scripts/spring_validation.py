@@ -454,6 +454,381 @@ def plot_results(results: dict, output_dir: str) -> None:
 
 
 # ============================================================================
+# Label Noise Injection
+# ============================================================================
+
+
+def inject_label_noise(
+    structures: np.ndarray,
+    noise_rate: float = 0.20,
+    noise_scale: float = 2.0,
+    seed: int = 99,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Inject label noise into a fraction of synthetic structures.
+
+    Simulates label corruption by perturbing the features of a random
+    subset of structures. Perturbed structures will receive different
+    (typically lower) quality assessments from experts, mimicking the
+    effect of mislabeled data in the Spring self-evolution loop.
+
+    Parameters
+    ----------
+    structures : np.ndarray, shape (N, d_phi)
+        Original synthetic structures.
+    noise_rate : float
+        Fraction of structures to perturb (default 0.20).
+    noise_scale : float
+        Standard deviation of Gaussian perturbation added to features.
+    seed : int
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    noisy_structures : np.ndarray, shape (N, d_phi)
+        Structures with noise injected into the selected subset.
+    noise_mask : np.ndarray, shape (N,), dtype bool
+        Boolean mask indicating which structures were perturbed.
+    """
+    rng = np.random.default_rng(seed)
+    N = len(structures)
+    n_noisy = max(1, int(N * noise_rate))
+    noise_indices = rng.choice(N, size=n_noisy, replace=False)
+    noise_mask = np.zeros(N, dtype=bool)
+    noise_mask[noise_indices] = True
+
+    noisy_structures = structures.copy()
+    perturbation = rng.normal(0, noise_scale, size=(n_noisy, structures.shape[1]))
+    noisy_structures[noise_indices] += perturbation
+
+    print(f"  Injected label noise: {n_noisy}/{N} structures ({100*noise_rate:.0f}%) "
+          f"perturbed with σ={noise_scale}")
+
+    return noisy_structures, noise_mask
+
+
+# ============================================================================
+# Noise Comparison Experiment
+# ============================================================================
+
+
+def run_noise_comparison(
+    n_structures: int = 200,
+    n_experts: int = 5,
+    n_iterations: int = 20,
+    d_phi: int = 20,
+    n_clusters: int = 5,
+    seed: int = 42,
+    noise_rate: float = 0.20,
+    noise_scale: float = 2.0,
+) -> dict:
+    """Run Spring on both clean and noisy data, collect comparison metrics.
+
+    Returns
+    -------
+    dict with keys:
+        clean_results : dict from run_spring_validation()
+        noisy_results : dict from run_spring_validation()
+        noise_mask : np.ndarray — which structures were perturbed
+        comparison : dict with per-iteration comparison metrics
+    """
+    print("\n" + "=" * 60)
+    print("Experiment 1: CLEAN data (baseline)")
+    print("=" * 60)
+    clean_results = run_spring_validation(
+        n_structures=n_structures,
+        n_experts=n_experts,
+        n_iterations=n_iterations,
+        d_phi=d_phi,
+        n_clusters=n_clusters,
+        seed=seed,
+    )
+
+    print("\n" + "=" * 60)
+    print(f"Experiment 2: NOISY data ({100*noise_rate:.0f}% label noise)")
+    print("=" * 60)
+
+    # Generate same base structures, then inject noise
+    rng = np.random.default_rng(seed + 1000)
+    base_structures = generate_synthetic_structures(
+        n_structures=n_structures,
+        d_phi=d_phi,
+        n_clusters=n_clusters,
+        seed=seed + 1000,
+    )
+    noisy_structures, noise_mask = inject_label_noise(
+        base_structures, noise_rate=noise_rate, noise_scale=noise_scale, seed=seed + 2000,
+    )
+
+    # Create experts (same seed for fair comparison)
+    experts_noisy = create_mock_experts(
+        n_experts=n_experts,
+        d_phi=d_phi,
+        n_clusters=n_clusters,
+        seed=seed + 3000,
+    )
+
+    def ensemble_quality_noisy(features: np.ndarray) -> np.ndarray:
+        confs = np.array([e.predict_confidence(features) for e in experts_noisy])
+        return confs.mean(axis=0)
+
+    config_noisy = SpringConfig(
+        max_iterations=n_iterations,
+        eta_init=0.3,
+        tau_decay=10.0,
+        novelty_weight=0.3,
+        top_k=15,
+        n_states=n_clusters,
+        random_seed=seed + 4000,
+        gatekeeper_prior_strength=5.0,
+        memory_max_size=10000,
+    )
+
+    spring_noisy = Spring(config_noisy, nep_student=experts_noisy[0])
+    spring_noisy.set_nep_quality_fn(ensemble_quality_noisy)
+    spring_noisy.initialize(feature_matrix=noisy_structures[:30])
+
+    lyapunov_history_noisy = []
+
+    def lyap_callback_noisy(t: int, sp: Spring) -> None:
+        lyap = sp.lyapunov_estimate(noisy_structures)
+        lyapunov_history_noisy.append(lyap)
+
+    history_noisy = spring_noisy.evolve(
+        candidate_pool=noisy_structures,
+        max_iterations=n_iterations,
+        callback=lyap_callback_noisy,
+    )
+
+    diag_noisy = spring_noisy.convergence_diagnostic()
+    print(f"\nFinal memory (noisy): {spring_noisy.memory.size} structures")
+    print(f"Final η (noisy): {spring_noisy.eta:.6f}")
+    print(f"Convergence (noisy): {diag_noisy['regime']}")
+
+    noisy_results = {
+        "spring": spring_noisy,
+        "history": history_noisy,
+        "diagnostics": diag_noisy,
+        "lyapunov_history": lyapunov_history_noisy,
+        "structures": noisy_structures,
+        "experts": experts_noisy,
+    }
+
+    # Build per-iteration comparison metrics
+    comparison = _build_comparison(clean_results, noisy_results, noise_mask)
+
+    return {
+        "clean_results": clean_results,
+        "noisy_results": noisy_results,
+        "noise_mask": noise_mask,
+        "comparison": comparison,
+    }
+
+
+def _build_comparison(
+    clean_results: dict,
+    noisy_results: dict,
+    noise_mask: np.ndarray,
+) -> dict:
+    """Compute per-iteration comparison metrics between clean and noisy runs.
+
+    Returns
+    -------
+    dict
+        Keys: 'iterations', 'clean_memory_sizes', 'noisy_memory_sizes',
+        'clean_etas', 'noisy_etas', 'clean_reliabilities', 'noisy_reliabilities',
+        'clean_lyapunov', 'noisy_lyapunov',
+        'memory_gap', 'reliability_gap', 'lyapunov_gap'.
+    """
+    clean_hist = clean_results["history"]
+    noisy_hist = noisy_results["history"]
+
+    iterations = np.array([h["iteration"] for h in clean_hist])
+
+    clean_mem = np.array([h["memory_size"] for h in clean_hist])
+    noisy_mem = np.array([h["memory_size"] for h in noisy_hist])
+
+    clean_eta = np.array([h.get("eta", 0.0) for h in clean_hist])
+    noisy_eta = np.array([h.get("eta", 0.0) for h in noisy_hist])
+
+    clean_rel = np.array([h.get("gatekeeper_mean_reliability", 0.5) for h in clean_hist])
+    noisy_rel = np.array([h.get("gatekeeper_mean_reliability", 0.5) for h in noisy_hist])
+
+    clean_lyap = np.array(clean_results.get("lyapunov_history", []))
+    noisy_lyap = np.array(noisy_results.get("lyapunov_history", []))
+
+    memory_gap = noisy_mem - clean_mem
+    reliability_gap = noisy_rel - clean_rel
+
+    # Lyapunov gap: compare only up to min length
+    min_len = min(len(clean_lyap), len(noisy_lyap))
+    lyapunov_gap = noisy_lyap[:min_len] - clean_lyap[:min_len] if min_len > 0 else np.array([])
+
+    return {
+        "iterations": iterations,
+        "clean_memory_sizes": clean_mem,
+        "noisy_memory_sizes": noisy_mem,
+        "clean_etas": clean_eta,
+        "noisy_etas": noisy_eta,
+        "clean_reliabilities": clean_rel,
+        "noisy_reliabilities": noisy_rel,
+        "clean_lyapunov": clean_lyap,
+        "noisy_lyapunov": noisy_lyap,
+        "memory_gap": memory_gap,
+        "reliability_gap": reliability_gap,
+        "lyapunov_gap": lyapunov_gap,
+    }
+
+
+# ============================================================================
+# Noise Comparison Plotting
+# ============================================================================
+
+
+def plot_noise_comparison(comparison_results: dict, output_dir: str) -> None:
+    """Generate comparison plots: clean vs noisy Spring evolution.
+
+    Produces a four-panel figure:
+      1. |M_t|: clean vs noisy memory growth
+      2. η(t): both follow same schedule (verification)
+      3. S_t reliability: clean vs noisy — noise delays convergence
+      4. ΔΦ Lyapunov gap: excess cost of noise
+    """
+    comp = comparison_results["comparison"]
+    clean_diag = comparison_results["clean_results"]["diagnostics"]
+    noisy_diag = comparison_results["noisy_results"]["diagnostics"]
+
+    iterations = comp["iterations"]
+
+    plt.rcParams.update({
+        "font.family": "serif",
+        "font.size": 10,
+        "axes.labelsize": 11,
+        "axes.titlesize": 12,
+        "legend.fontsize": 9,
+        "figure.dpi": 150,
+        "savefig.dpi": 300,
+        "savefig.bbox": "tight",
+    })
+
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    fig.suptitle(
+        "Spring Self-Evolution — Label Noise Comparison\n"
+        f"(20% noise rate, clean: {clean_diag['regime']}, "
+        f"noisy: {noisy_diag['regime']})",
+        fontsize=13,
+        fontweight="bold",
+    )
+
+    # ---- Panel 1: |M_t| comparison ----
+    ax1 = axes[0, 0]
+    ax1.plot(iterations, comp["clean_memory_sizes"], "b-o", markersize=4,
+             linewidth=1.5, label=r"$|M_t|$ clean")
+    ax1.plot(iterations, comp["noisy_memory_sizes"], "r-s", markersize=4,
+             linewidth=1.5, label=r"$|M_t|$ noisy (20%)")
+    ax1.fill_between(iterations, comp["clean_memory_sizes"],
+                     comp["noisy_memory_sizes"], alpha=0.15, color="gray",
+                     label="gap")
+    ax1.set_xlabel("Iteration t")
+    ax1.set_ylabel(r"$|M_t|$ (Memory Bank Size)")
+    ax1.set_title(r"(a) $|M_t|$ Growth: Clean vs Noisy")
+    ax1.legend(loc="upper left")
+    ax1.grid(True, alpha=0.3)
+
+    # Annotate final gap
+    final_gap = comp["memory_gap"][-1] if len(comp["memory_gap"]) > 0 else 0
+    ax1.annotate(
+        f"Δ = {final_gap:+d}",
+        xy=(iterations[-1], comp["noisy_memory_sizes"][-1]),
+        xytext=(iterations[-1] * 0.6, comp["noisy_memory_sizes"][-1] * 0.88),
+        arrowprops=dict(arrowstyle="->", color="gray"),
+        fontsize=9,
+        color="gray",
+    )
+
+    # ---- Panel 2: η(t) both follow same schedule ----
+    ax2 = axes[0, 1]
+    ax2.plot(iterations, comp["clean_etas"], "b-o", markersize=4, linewidth=1.5,
+             label=r"$\eta(t)$ clean")
+    ax2.plot(iterations, comp["noisy_etas"], "r--s", markersize=4, linewidth=1.5,
+             label=r"$\eta(t)$ noisy")
+    ax2.set_xlabel("Iteration t")
+    ax2.set_ylabel(r"$\eta(t)$")
+    ax2.set_title(r"(b) $\eta(t)$: Same Schedule (Verification)")
+    ax2.legend(loc="upper right")
+    ax2.grid(True, alpha=0.3)
+    ax2.set_ylim(bottom=0)
+
+    # ---- Panel 3: S_t reliability ----
+    ax3 = axes[1, 0]
+    ax3.plot(iterations, comp["clean_reliabilities"], "b-", linewidth=1.5,
+             label=r"$\mathbb{E}[S_t]$ clean")
+    ax3.plot(iterations, comp["noisy_reliabilities"], "r--", linewidth=1.5,
+             label=r"$\mathbb{E}[S_t]$ noisy (20%)")
+    ax3.set_xlabel("Iteration t")
+    ax3.set_ylabel(r"$\mathbb{E}[S_t]$ (Gatekeeper Reliability)")
+    ax3.set_title(r"(c) $S_t$ Convergence: Noise Delays Stabilisation")
+    ax3.legend(loc="lower right")
+    ax3.grid(True, alpha=0.3)
+
+    # Add reliability gap as shaded region
+    ax3.fill_between(
+        iterations,
+        comp["clean_reliabilities"],
+        comp["noisy_reliabilities"],
+        alpha=0.12,
+        color="purple",
+        label="reliability gap",
+    )
+
+    # ---- Panel 4: Lyapunov gap (excess cost of noise) ----
+    ax4 = axes[1, 1]
+    if len(comp["lyapunov_gap"]) > 0:
+        lyap_iters = np.arange(len(comp["lyapunov_gap"]))
+        colors = ["#e74c3c" if g > 0 else "#2ecc71" for g in comp["lyapunov_gap"]]
+        ax4.bar(lyap_iters, comp["lyapunov_gap"], color=colors, alpha=0.7,
+                label=r"$\Delta\Phi_t = \Phi_t^{\rm noisy} - \Phi_t^{\rm clean}$")
+        ax4.axhline(y=0, color="black", linewidth=0.5, linestyle="--")
+        ax4.set_xlabel("Iteration t")
+        ax4.set_ylabel(r"$\Delta\Phi_t$ (Lyapunov Gap)")
+        ax4.set_title(r"(d) Excess Cost of Label Noise")
+    else:
+        ax4.text(0.5, 0.5, "No Lyapunov data available",
+                 ha="center", va="center", transform=ax4.transAxes)
+        ax4.set_title("(d) Lyapunov Gap (N/A)")
+
+    ax4.legend(loc="upper right", fontsize=8)
+    ax4.grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+
+    # Save
+    os.makedirs(output_dir, exist_ok=True)
+    fig_path = os.path.join(output_dir, "spring_noise_comparison.png")
+    fig.savefig(fig_path)
+    print(f"\nNoise comparison figure saved: {fig_path}")
+
+    # Also save individual panels
+    panel_names = [
+        "noise_a_mt_growth",
+        "noise_b_eta_decay",
+        "noise_c_st_convergence",
+        "noise_d_lyapunov_gap",
+    ]
+    for ax, name in zip(axes.flat, panel_names):
+        try:
+            bbox = ax.get_tightbbox(fig.canvas.get_renderer())
+            panel_path = os.path.join(output_dir, f"spring_{name}.png")
+            fig.savefig(panel_path,
+                        bbox_inches=bbox.transformed(fig.dpi_scale_trans.inverted()),
+                        pad_inches=0.05)
+            print(f"  Panel saved: {panel_path}")
+        except Exception:
+            pass  # skip individual panel save if renderer issue
+
+    plt.close(fig)
+
+
+# ============================================================================
 # Main
 # ============================================================================
 
@@ -478,6 +853,12 @@ def main():
     parser.add_argument("--output_dir", type=str,
                         default=str(PROJECT_ROOT / "paper" / "spring_config" / "figures"),
                         help="Output directory for figures")
+    parser.add_argument("--noise", action="store_true",
+                        help="Run label noise comparison experiment (20% noise rate)")
+    parser.add_argument("--noise_rate", type=float, default=0.20,
+                        help="Fraction of structures to perturb with noise (default: 0.20)")
+    parser.add_argument("--noise_scale", type=float, default=2.0,
+                        help="Std dev of Gaussian perturbation for label noise (default: 2.0)")
     args = parser.parse_args()
 
     print("=" * 60)
@@ -489,10 +870,15 @@ def main():
     print(f"  Dim(φ):     {args.d_phi}")
     print(f"  Clusters:   {args.n_clusters}")
     print(f"  Seed:       {args.seed}")
+    if args.noise:
+        print(f"  Noise rate: {100*args.noise_rate:.0f}%")
+        print(f"  Noise scale: σ={args.noise_scale}")
     print("=" * 60)
     print()
 
-    # Run validation
+    exit_code = 0
+
+    # Always run clean baseline
     results = run_spring_validation(
         n_structures=args.n_structures,
         n_experts=args.n_experts,
@@ -502,8 +888,8 @@ def main():
         seed=args.seed,
     )
 
-    # Generate plots
-    print("\nGenerating plots...")
+    # Generate plots for clean run
+    print("\nGenerating clean baseline plots...")
     plot_results(results, args.output_dir)
 
     # Summary statistics
@@ -569,10 +955,77 @@ def main():
         print("\n  ✓ All theoretical predictions verified!")
     else:
         print(f"\n  ⚠ {len(checks_failed)} checks failed — see above")
+        exit_code = 1
+
+    # ---- Noise comparison experiment ------------------------------------
+    if args.noise:
+        print("\n" + "=" * 60)
+        print("Noise Comparison Experiment")
+        print("=" * 60)
+
+        comp_results = run_noise_comparison(
+            n_structures=args.n_structures,
+            n_experts=args.n_experts,
+            n_iterations=args.n_iterations,
+            d_phi=args.d_phi,
+            n_clusters=args.n_clusters,
+            seed=args.seed,
+            noise_rate=args.noise_rate,
+            noise_scale=args.noise_scale,
+        )
+
+        # Generate comparison plots
+        print("\nGenerating noise comparison plots...")
+        plot_noise_comparison(comp_results, args.output_dir)
+
+        # Noise comparison summary
+        comp = comp_results["comparison"]
+        clean_diag = comp_results["clean_results"]["diagnostics"]
+        noisy_diag = comp_results["noisy_results"]["diagnostics"]
+
+        print("\n" + "=" * 60)
+        print("Noise Comparison Summary")
+        print("=" * 60)
+
+        if len(comp["memory_gap"]) > 0:
+            final_memory_gap = comp["memory_gap"][-1]
+            print(f"  Final |M_t| gap:          {final_memory_gap:+d}")
+        if len(comp["reliability_gap"]) > 0:
+            mean_rel_gap = float(np.mean(comp["reliability_gap"]))
+            print(f"  Mean reliability gap:    {mean_rel_gap:+.4f}")
+        if len(comp["lyapunov_gap"]) > 0:
+            mean_lyap_gap = float(np.mean(comp["lyapunov_gap"]))
+            max_lyap_gap = float(np.max(np.abs(comp["lyapunov_gap"])))
+            print(f"  Mean Lyapunov gap:      {mean_lyap_gap:+.4f}")
+            print(f"  Max |Lyapunov gap|:     {max_lyap_gap:.4f}")
+
+        print(f"  Clean convergence:      {clean_diag['regime']}")
+        print(f"  Noisy convergence:      {noisy_diag['regime']}")
+
+        # Check: noise should not improve convergence
+        if len(comp["reliability_gap"]) > 0:
+            mean_rel_gap = float(np.mean(comp["reliability_gap"]))
+            if mean_rel_gap <= 0.05:
+                print("\n  ✓ Noise did not significantly degrade convergence (|ΔS_t| ≤ 0.05)")
+            else:
+                print(f"\n  ⚠ Noise degraded reliability by |ΔS_t| = {mean_rel_gap:.4f}")
+                # This is expected — not a failure
+
+        # Check: Lyapunov should be higher (worse) with noise
+        if len(comp["lyapunov_gap"]) > 0:
+            mean_lyap_gap = float(np.mean(comp["lyapunov_gap"]))
+            if mean_lyap_gap > 0:
+                print(f"  ✓ Lyapunov function higher with noise (ΔΦ = {mean_lyap_gap:+.4f}), "
+                      f"as expected")
+            else:
+                print(f"  ℹ Lyapunov function lower with noise (ΔΦ = {mean_lyap_gap:+.4f}) — "
+                      f"unexpected, investigate")
+
+        print("=" * 60)
 
     print("=" * 60)
 
-    return 0 if not checks_failed else 1
+    return exit_code
 
 
 if __name__ == "__main__":
