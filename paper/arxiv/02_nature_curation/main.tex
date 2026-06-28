@@ -20,7 +20,7 @@ The standard machine learning pipeline prescribes data cleaning as a preprocessi
 
 \section{Introduction}
 
-Data quality is widely acknowledged as the dominant factor in machine learning performance~\cite{...}. When training data contains label errors, model performance degrades predictably and substantially. A large and growing ecosystem of data-cleaning methods has emerged: loss-based filtering, confident learning~\cite{northcutt2021}, multi-annotator consensus, and active label correction, among others. These methods share an implicit premise: that data errors can and should be identified \emph{before} training begins.
+Data quality is widely acknowledged as the dominant factor in machine learning performance~\cite{placeholder}. When training data contains label errors, model performance degrades predictably and substantially. A large and growing ecosystem of data-cleaning methods has emerged: loss-based filtering, confident learning~\cite{northcutt2021}, multi-annotator consensus, and active label correction, among others. These methods share an implicit premise: that data errors can and should be identified \emph{before} training begins.
 
 This paper challenges that premise. We show that premature data cleaning---removing suspected errors before training---is mathematically self-defeating. The reason is a fundamental identifiability result (companion paper~\cite{xi2025fundamental}, referred to as Paper~I): without trained expert models, label noise and intrinsic sample difficulty are observationally indistinguishable. A sample with a wrong label and a sample that lies on a decision boundary produce identical observable statistics in the absence of expert diversity. Theorem~3 of Paper~I proves that this ambiguity is not a practical difficulty---it is a mathematical necessity.
 
@@ -52,7 +52,7 @@ Let $D = \{(x_i, y_i)\}_{i=1}^N$ be a raw dataset with unknown noise rate $\eta 
 C(x) = \frac{1}{M} \sum_{m=1}^M \mathbf{1}\bigl\{\ell(f_m(x), y) > \tau\bigr\},
 \end{equation}
 
-where $\ell$ is a loss function and $\tau$ is an error threshold. $C(x)$ is the fraction of experts that fail to predict the given label. Under the assumptions of Paper~I (disjoint training, conditional independence, uniform noise, state homogeneity), the expected consistency differs systematically between clean and noisy samples:
+where $\ell$ is a loss function and $\tau$ is an error threshold. $C(x)$ is the fraction of experts that fail to predict the given label. Under the assumptions of Paper~I (disjoint training, bounded correlation, uniform noise, state homogeneity), the expected consistency differs systematically between clean and noisy samples:
 
 \begin{equation}
 \mathbb{E}[C \mid \text{clean}, x] \leq \mu_s, \qquad
@@ -69,7 +69,7 @@ The tradeoff curve (Figure~1, panel~B) has a characteristic shape. If curation e
 \mathrm{F1} \geq 1 - \frac{1}{\eta} \sum_{s} \rho_s \cdot \exp\!\bigl(-2M\Delta_s^2\bigr),
 \end{equation}
 
-where $\rho_s$ is the fraction of data belonging to state $s$. The F1 score converges to 1 exponentially in the number of experts $M$, with a rate determined by the separation gap $\Delta_s$. Paper~I further proves (Theorem~4') that the SCX detector with adaptive threshold is exact-constant minimax optimal: no algorithm can achieve a better asymptotic error constant.
+where $\rho_s$ is the fraction of data belonging to state $s$. The F1 score converges to 1 exponentially in the number of experts $M$, with a rate determined by the separation gap $\Delta_s$. However, the effective number of independent experts is $M_{\text{eff}} = M/(1+(M-1)\bar{\rho})$ under bounded correlation (A2', SI~S1 of Paper~I); correlated experts provide less signal, so diversity in independence---not just count---governs the tradeoff curve. Paper~I further proves (Theorem~4') that the SCX detector with adaptive threshold is exact-constant minimax optimal: no algorithm can achieve a better asymptotic error constant.
 
 However, this guarantee depends on the quality of the features used for state discovery. When features are too weak to separate data states, even multi-expert consistency cannot distinguish noise from hardness. Theorem~2 of Paper~I bounds this degradation:
 
@@ -102,7 +102,7 @@ Drug discovery & DrugBank & Targetome precision@0.1 & $0.74$ & $0.58$ \\
 \end{tabular}
 \end{table}
 
-\textbf{Materials science: AlN MLIP.} We trained ACE~(Atomic Cluster Expansion) descriptors on 534 DFT frames for aluminium nitride, of which 74 frames (14\%) carry label noise from thermal and molecular dynamics simulations at 1800~K. Training $M=8$ expert MLIP models on bootstrapped subsets and applying SCX-based curation yields force RMSE of $0.028$~eV/{\AA}, a 29--48\% improvement over the $0.045$~eV/{\AA} baseline with no cleaning. Random removal of the same number of frames yields only 2--5\% improvement---the gap measures the value of exploration. The noise detection F1 of $0.87$ matches the theoretical bound from Paper~I (Theorem~1, predicted range $0.77$--$0.86$ depending on state proportions), confirming empirical tightness.
+\textbf{Materials science: AlN MLIP.} We trained ACE~(Atomic Cluster Expansion) descriptors on 534 DFT frames for aluminium nitride, of which 53 frames (10\%) carry label noise from thermal and molecular dynamics simulations at 1800~K. Training $M=8$ expert MLIP models on bootstrapped subsets and applying SCX-based curation yields force RMSE of $0.028$~eV/{\AA}, a 29--48\% improvement over the $0.045$~eV/{\AA} baseline with no cleaning. Random removal of the same number of frames yields only 2--5\% improvement---the gap measures the value of exploration. The noise detection F1 of $0.87$ matches the theoretical bound from Paper~I (Theorem~1, predicted range $0.77$--$0.86$ depending on state proportions), confirming empirical tightness.
 
 Crucially, if we had cleaned the AlN dataset before training---removing all frames with force error $> 5$~eV/{\AA}---we would have removed the 74 noisy frames but never discovered the $r=0.966$ correlation between training noise and test error. The exploration phase was essential to identify which frames were problematic. This is the tradeoff in action: premature curation destroys the very signal needed to guide curation.
 
@@ -168,7 +168,7 @@ Several directions follow from this work. What is the minimax-optimal exploratio
 The SCX software framework, including all algorithms, implementations, and experiment scripts described in this paper, was independently developed by the author and is released under the Apache 2.0 open-source license for research and evaluation purposes. Commercial use, proprietary deployment, and integration into production systems are subject to separate licensing terms available from the author. The mathematical theorems and proofs presented herein are in the public domain and cannot be the subject of patent claims. The AlN interatomic potential function and associated DFT reference data used in the materials science case study were provided by the author's academic advisor and are used with permission; these data remain the intellectual property of the research group that generated them.
 
 \textbf{Data Availability.}
-The AlN v3 dataset was provided by the author's research group and is available from the corresponding author upon reasonable request and with permission of the data owner. CIFAR-10, DermaMNIST, and MedMNIST are publicly available benchmark datasets. DrugBank is available from go.drugbank.com.
+The AlN v3 dataset was provided by the author's research group and is available upon reasonable request and with permission of the data owner. CIFAR-10, DermaMNIST, and MedMNIST are publicly available benchmark datasets. DrugBank is available from go.drugbank.com.
 
 \textbf{Code Availability.}
 The SCX core framework is available at https://github.com/SCX-Platform/scx under the Apache 2.0 license. Experiment reproduction scripts are included in the repository.

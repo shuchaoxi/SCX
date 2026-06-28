@@ -75,7 +75,7 @@ Data quality has emerged as the single most impactful factor in machine learning
 
 The fundamental challenge is that label noise and sample difficulty are mathematically indistinguishable from observational data alone. Theorem~3 of the SCX framework proves that for any finite classification problem, there exist two data-generating processes---one where errors arise from corrupted labels, another where errors arise from intrinsically difficult samples---that produce identical observable joint distributions over inputs, labels, and multi-expert predictions. This is not a practical limitation; it is a theorem.
 
-The SCX framework resolves this unidentifiability through a minimal set of structural assumptions (A1--A6): disjoint expert training, conditional independence of expert errors, bounded loss, uniform label noise, state-homogeneous error rates, and balanced error distributions. Under these assumptions, SCX achieves provable noise detection with exponential convergence to the minimax optimal rate, including the exact asymptotic constant.
+The SCX framework resolves this unidentifiability through a minimal set of structural assumptions (A1--A6): disjoint expert training, bounded correlation of expert errors, bounded loss, uniform label noise, state-homogeneous error rates, and balanced error distributions. Under these assumptions, SCX achieves provable noise detection with exponential convergence to the minimax optimal rate, including the exact asymptotic constant.
 
 \paragraph{Scope of this review.}
 We survey the application of the SCX framework across six domains:
@@ -122,14 +122,14 @@ This theorem establishes that distinguishing noise from difficulty is \emph{prov
 
 \begin{description}[nosep,leftmargin=*,style=nextline]
   \item[A1 (Disjoint training)] Expert models are trained on disjoint data subsets $D_m \cap D_{m'} = \varnothing$.
-  \item[A2 (Conditional independence)] Expert errors are conditionally independent given the input for clean samples.
+  \item[A2' (Bounded correlation)] Expert errors have bounded conditional correlation given the state for clean samples, with $\max_{m\neq m'}\operatorname{Corr}(e_m,e_{m'}\mid s) \leq \bar{\rho} < 1$.
   \item[A3 (Bounded loss)] The loss function $\ell(a,b) \in [0, B]$ is bounded.
   \item[A4 (Uniform noise)] Label noise is independent of the input and uniform over incorrect classes.
   \item[A5 (State homogeneity)] Within each state, the expected expert consensus on clean samples is bounded by $\mu_s$.
   \item[A6 (Balanced errors)] Expert errors distribute approximately uniformly across classes, controlled by constant $C_{\text{bal}}$.
 \end{description}
 
-These assumptions are not merely technical conveniences---each corresponds to a specific path out of the unidentifiability trap. Removing any single assumption restores the ambiguity for some data distribution.
+These assumptions are not merely technical conveniences---each corresponds to a specific path out of the unidentifiability trap. Removing any single assumption restores the ambiguity for some data distribution. Among these, A2' (bounded correlation) is the strongest and least verifiable; Paper~I (SI~S1) provides a testable procedure for estimating $\bar{\rho}$ and quantifies the resulting degradation of the effective expert count to $M/(1+(M-1)\bar{\rho})$.
 
 % ----------------------------------------------------------------------
 \subsection{The Detection Guarantee}
@@ -197,7 +197,7 @@ The SCX protocol for data quality assessment consists of four steps:
 
 \begin{enumerate}[nosep,leftmargin=*,itemsep=2pt]
   \item \textbf{State discovery}: Extract features $\phi(x)$ for each sample; run k-means with $K_{\mathcal{S}}$ clusters to partition the data space; validate stability via bootstrap ARI (Prop~6).
-  \item \textbf{Multi-expert training}: Train $M \geq 8$ experts on disjoint data subsets (or bootstrap samples for small datasets); use diverse random seeds and architectures to ensure conditional independence (A2).
+  \item \textbf{Multi-expert training}: Train $M \geq 8$ experts on disjoint data subsets (or bootstrap samples for small datasets); use diverse random seeds and architectures to encourage low error correlation (A2').
   \item \textbf{Consensus scoring}: For each sample, compute the consensus score $C(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{\ell(f_m(x), y) > \tau\}$; within each state, estimate $\mu_s$ and apply the adaptive threshold $\theta^\dagger$ (Thm~4').
   \item \textbf{Bound verification}: Compute the theoretical F1 lower bound (Eq.~\ref{eq:thm1}); compare against empirical performance on a held-out clean set; verify that the bound is not vacuous.
 \end{enumerate}
@@ -235,7 +235,7 @@ The SCX-Drug module has been applied to identify top-priority drug targets acros
 The four-layer pipeline naturally embodies the curation-exploration tradeoff (Section~\ref{sec:tradeoff}): Layer~1 (knowledge base) is highly curated with low coverage ($\sim$5\%); Layer~3 (deep ML) is highly exploratory, predicting on all remaining pairs; Layer~4 (docking) curates only top-N candidates. This architecture validates the principle that exploration must precede curation \cite{paperII}.
 
 \paragraph{Limitations.}
-The deep learning DTI predictor (Layer~3) currently uses placeholder scoring pending model training \cite{dti_module}. The similarity inference step assumes Tanimoto similarity is informative for target prediction, which may fail for polypharmacological molecules. State discovery on molecular fingerprints remains heuristic---the optimal latent representation for drug-target state discovery is an open problem.
+The deep learning DTI predictor (Layer~3) currently uses inference based on molecular similarity; formal DTI model training is ongoing. The similarity inference step assumes Tanimoto similarity is informative for target prediction, which may fail for polypharmacological molecules. State discovery on molecular fingerprints remains heuristic---the optimal latent representation for drug-target state discovery is an open problem.
 
 % ----------------------------------------------------------------------
 \subsection{Medical Imaging}
@@ -670,7 +670,7 @@ Pollard, D. Strong consistency of k-means clustering. \emph{Annals of Statistics
 The SCX software framework, including all algorithms, implementations, and experiment scripts described in this paper, was independently developed by the author and is released under the Apache 2.0 open-source license for research and evaluation purposes. Commercial use, proprietary deployment, and integration into production systems are subject to separate licensing terms available from the author. The mathematical theorems and proofs presented herein are in the public domain and cannot be the subject of patent claims. The AlN interatomic potential function and associated DFT reference data used in the materials science case study were provided by the author's academic advisor and are used with permission; these data remain the intellectual property of the research group that generated them.
 
 \textbf{Data Availability.}
-The AlN v3 dataset was provided by the author's research group and is available from the corresponding author upon reasonable request and with permission of the data owner. CIFAR-10, DermaMNIST, and MedMNIST are publicly available benchmark datasets. DrugBank is available from go.drugbank.com.
+The AlN v3 dataset was provided by the author's research group and is available upon reasonable request and with permission of the data owner. CIFAR-10, DermaMNIST, and MedMNIST are publicly available benchmark datasets. DrugBank is available from go.drugbank.com.
 
 \textbf{Code Availability.}
 The SCX core framework is available at https://github.com/SCX-Platform/scx under the Apache 2.0 license. Experiment reproduction scripts are included in the repository.
