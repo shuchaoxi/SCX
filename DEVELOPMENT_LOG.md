@@ -1,6 +1,6 @@
 # SCX 开发日志
 
-> 最后更新：2026-06-26
+> 最后更新：2026-06-28
 
 ---
 
@@ -288,11 +288,91 @@ SCX Python 包的**所有代码**均由 AI 工具 **Claude Code (Anthropic)** +d
 | Spring Dynamics | (S_t,θ_t,M_t) 循环 | Spring 核心 |
 | IDAA | International Data Audit Authority | 继承计划 |
 
-### 六篇论文
+### 九篇论文
 
 1. Yajie 核心理论 → JMLR/TMLR ✅
 2. Spring 自进化 → Nature Comp Sci ✅ (LaTeX 就绪)
 3. 雅洁协议 → Research Policy ✅
-4. 应用综述 → Nature Reviews ✅
-5. 策展-探索权衡 → 概念就绪 📋
-6. EGP MLIP → 待实验 ⬜
+4. 应用综述 (two-engine architecture) → Nature Reviews ✅ (2026-06-28 重写)
+5. 策展-探索权衡 → NeurIPS ✅ (LaTeX 就绪, 2026-06-28)
+6. EGP MLIP (Element-Guided, Gauge-Normalized) → PRB ✅ (2026-06-28 润色)
+7. SCX 分类学理论 → 待定 📋
+8. SCX 竞争者扫描 → 内部 📋
+9. SCX for LLM → ACL/NeurIPS Position Track ✅ (2026-06-28 润色)
+
+---
+
+## 2026-06-28：论文线大规模推进
+
+### 地点
+
+个人电脑（居家），Claude Code (DeepSeek API) 驱动，3 个 Agent 并行。
+
+### Paper 4 综述重写（two-engine architecture）
+
+- 将原应用综述重构为 **双引擎架构**（Two-Engine Architecture）：
+  - **Engine I (Yajie)**：静态噪声检测引擎，Theorem 1-3 基础，Cercis Score S(s) = Q(s) + η(t)·N(s)
+  - **Engine II (Spring)**：自进化动力学引擎，Spring Dynamics (S_t, θ_t, M_t) 循环
+- 8 个应用领域重新组织，每个领域标注适用的引擎
+- 分类学原理（§9.2）重新连接双引擎结构
+- 宏大综合（§10.5）保留：周期表势函数 × LLM
+
+### Paper 5 策展-探索权衡 LaTeX 撰写
+
+- 从 `PAPER_CONCEPT.md` 转换为完整 NeurIPS 格式 LaTeX 手稿
+- 输出：`paper/scx_curation/main/main.tex`（~5,555 词正文，~60KB）
+- 完整 7 节结构：Introduction → Tradeoff Formal Definition → Evidence (4 domains) → Boundary Conditions → Practical Methodology → Discussion → Methods
+- 6 个图环境（含详细 caption）：Tradeoff 曲线、Two-Worlds 示意图、4-领域对比、相图、η(t) 调度指南、Extensions 概念图
+- 21 条参考文献
+- 关键句："Premature curation operates in the dark — Theorem 3 proves this is mathematically unavoidable."
+
+### Paper 6 EGP MLIP 润色
+
+- 标题更新：加入 "Element-Guided, Gauge-Normalized"
+- 验证所有 `\ref{fig:...}` 引用完整性（4 个标签，1 个引用，全部正确）
+- 新增 `\subsection{Broader Limitations}`（单系统验证/后处理 gauge-fixing/参数匹配无优势/三元体系未测试）
+- eXpertise 拼写检查：文件中无此词出现，无需修改
+- 新增 changelog
+
+### Paper 9 SCX for LLM 润色
+
+- 新增 §4.5：Yajie 内在可解释性与 LLM 幻觉减少的联系（~195 词）
+  - 核心洞察：Cercis Score 分解 S(s) = Q(s) + η(t)·N(s) 区分"模型不知道"（质量缺口）vs "模型没见够"（探索缺口）——两种不同的幻觉失败模式
+- 新增 Paper 7（分类学理论，`scx2026taxonomy`）引用：在 §5.1 状态发现部分
+- 新增 Paper 4（综述，`scx2026review`）引用：在 §2 背景部分
+- eXpertise 拼写验证通过（无小写 x 实例）
+- 新增 changelog
+
+### 当前论文矩阵
+
+| # | 论文 | 状态 | 目标期刊 |
+|---|------|------|----------|
+| 1 | Yajie 核心理论 | 定理完成 | JMLR/TMLR |
+| 2 | Spring 自进化 | LaTeX 就绪 | Nature Comp Sci |
+| 3 | 雅洁协议 | 完成 | Research Policy |
+| 4 | 应用综述 (two-engine) | 重写完成 | Nature Reviews |
+| 5 | 策展-探索权衡 | LaTeX 就绪 | NeurIPS |
+| 6 | EGP MLIP (gauge-normalized) | LaTeX 就绪 | PRB |
+| 7 | SCX 分类学理论 | 规划中 | — |
+| 8 | 竞争者扫描 | 内部文档 | — |
+| 9 | SCX for LLM | LaTeX 就绪 | ACL/NeurIPS Position |
+
+### Git 提交建议
+
+```
+commit: paper-line-sweep-2026-06-28
+message: |
+  Paper line sweep (2026-06-28)
+  
+  - Paper 4: Review rewritten with two-engine architecture (Yajie + Spring)
+  - Paper 5: Curation-Exploration Tradeoff LaTeX draft (~5.5k words, NeurIPS)
+  - Paper 6: EGP MLIP polished (title + Element-Guided/Gauge-Normalized, limitations)
+  - Paper 9: SCX for LLM polished (Yajie-hallucination connection, Paper 7&4 refs)
+  - DEVELOPMENT_LOG updated to reflect 9 papers total
+  
+  Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### 一句话总结
+
+**三篇论文润色完成 + 一篇全新 LaTeX 手稿撰写 + 综述双引擎架构重写，论文线从 6 篇扩展至 9 篇，4 篇 LaTeX 就绪可投。**

@@ -102,7 +102,7 @@ The SCX framework also includes a characterization of its failure mode (\textbf{
 
 This feature-strength diagnostic provides a practical decision rule for when state-conditioned methods can help.
 
-The key innovation for our purposes is not the noise detection result per se, but the \textit{state-conditioned} structure of the analysis: the SCX guarantee holds \textit{per state}, with different states potentially having different detection thresholds, different expert reliabilities, and different optimal strategies. This state-conditioned view is what makes the framework extensible to LLM data curation, where the ``states'' correspond to latent categories of data (domains, difficulty levels, formats) and the ``judges'' correspond to different evaluation models or signals.
+The key innovation for our purposes is not the noise detection result per se, but the \textit{state-conditioned} structure of the analysis: the SCX guarantee holds \textit{per state}, with different states potentially having different detection thresholds, different expert reliabilities, and different optimal strategies. This state-conditioned view is what makes the framework extensible to LLM data curation, where the ``states'' correspond to latent categories of data (domains, difficulty levels, formats) and the ``judges'' correspond to different evaluation models or signals. A comprehensive survey of SCX applications across diverse scientific domains---including materials science, medical imaging, and computer vision---is provided by~\cite{scx2026review}.
 
 \section{Why MLIP Success Does Not Automatically Transfer}
 
@@ -209,6 +209,10 @@ A practical contribution of the SCX framework is cost-aware orchestration. Query
 
 This can be formalized as a contextual bandit problem: at each sample $x$ with state $s(x)$, the orchestrator selects a judge $j$ to maximize expected information gain per unit cost. The SCX state structure provides the context that enables the bandit to learn different policies for different states, avoiding the cold-start problem that plagues uniform judge selection.
 
+\subsection{Intrinsic Interpretability for Hallucination Reduction}
+
+Beyond aggregation and orchestration, the SCX framework offers a subtler benefit: intrinsic interpretability through its noise detection algorithm, Yajie (\emph{雅洁}). Yajie computes the Cercis Score $S(s) = Q(s) + \eta(t) \cdot N(s)$, which decomposes a sample's value into a quality component $Q(s)$ and a novelty component $N(s)$, linked by an exploration rate $\eta(t)$ that anneals over time. This decomposition provides an interpretable account of \textit{why} a sample is flagged: a low $Q(s)$ indicates a fundamental quality deficit (factual errors, incoherence), while a high $N(s)$ with moderate $Q(s)$ signals an underexplored region where more data collection is needed. This distinction maps directly onto two failure modes in LLM generation. A model may hallucinate because it ``does not know'' (a quality gap, corresponding to low $Q$) or because it ``has not seen enough'' (an exploration gap, corresponding to high $N$). These demand fundamentally different remedies---better data filtering versus broader data collection---yet current hallucination detection methods typically conflate them. By adapting Yajie's decomposition to the LLM setting, researchers could build hallucination reduction systems that not only detect problematic outputs but also diagnose their root cause.
+
 \section{Four Research Directions}
 
 We now articulate four concrete research directions that operationalize the SCX framework for LLM data curation. Each represents a distinct subproblem with clearly defined success criteria.
@@ -225,6 +229,8 @@ The foundational challenge is defining what ``states'' mean for text data. In SC
     \item \textbf{Data source}: Provenance-based categories (web crawl, books, academic papers, social media).
     \item \textbf{Emergent}: States discovered via unsupervised clustering of model representations (hidden states, attention patterns).
 \end{itemize}
+
+A systematic taxonomy of these state types and their associated data quality dimensions is developed in the companion taxonomic theory paper~\cite{scx2026taxonomy}, which provides theoretical grounding for the state discovery problem.
 
 \textbf{Key challenge -- The representation-value gap}: As noted in \S\ref{sec:gap1}, embedding-based state clustering may group samples by surface similarity rather than training-value similarity. This creates a risk that the discovered states are ``states'' in name only---they partition the embedding space but do not correspond to distinct reliability patterns.
 
@@ -440,6 +446,12 @@ In either case, the paper's contribution is in defining a structured research pr
 \bibitem{scx2026}
 SCX. A fundamental impossibility in data quality: Distinguishing label noise from sample difficulty is provably unsolvable without explicit assumptions. \textit{arXiv preprint} (2026).
 
+\bibitem{scx2026taxonomy}
+SCX. A taxonomic theory of state types and data quality dimensions for state-conditioned expertise. \textit{arXiv preprint} (2026).
+
+\bibitem{scx2026review}
+SCX. State-conditioned expertise: A comprehensive review of applications across eight scientific domains. \textit{arXiv preprint} (2026).
+
 \bibitem{gunasekar2023textbooks}
 Gunasekar, S. \textit{et al.} Textbooks are all you need. \textit{arXiv preprint arXiv:2306.11644} (2023).
 
@@ -558,5 +570,8 @@ The SCX core framework is available at [repository] . Experiment reproduction sc
 
 \textbf{Competing Interests.}
 The author declares the following competing interests: the SCX software framework may be commercialized through a future entity. The author has no competing interests with respect to the AlN data, which belong to the academic research group of the author's advisor.
+
+% === CHANGELOG ===
+% 2026-06-28: Added Yajie-interpretability-to-hallucination connection; added Paper 7 (taxonomy) and Paper 4 (review) citations; verified eXpertise spelling (Agent C)
 
 \end{document}
