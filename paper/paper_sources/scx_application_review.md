@@ -10,7 +10,7 @@
 
 ## Abstract
 
-The quality of training data has emerged as the single most consequential bottleneck across scientific machine learning, yet prevailing approaches to data quality assessment rely on global metrics that obscure the fundamental heterogeneity of input spaces. The State-Conditioned eXpertise (SCX) framework addresses this limitation through a simple but powerful insight: expert reliability is not a global property but a local function of the input state. By partitioning the input space into structurally meaningful states and evaluating multi-expert consensus within each state, SCX provides rigorous guarantees for label noise detection (via the Yajie algorithm) and enables a self-evolving gatekeeper (via the Spring dynamics) that improves its quality judgments over iterative cycles. This review systematically examines the SCX framework across six scientific domains: machine-learned interatomic potentials, drug discovery, medical imaging, semiconductor process simulation, large language models, and remote sensing. In each domain, we show how the state-conditioned expertise principle maps onto existing expert structures, what novel capabilities the framework enables, and where its theoretical guarantees provide advantages over domain-specific alternatives. We further demonstrate that the Spring self-evolution algorithm—a Lyapunov-stabilized coupled dynamical system with provable convergence to a fixed point—constitutes a domain-agnostic mechanism for iterative data quality improvement. The review concludes with open problems including cross-domain gatekeeper transfer, decentralized audit infrastructure, and the path toward fully automated scientific data curation.
+The quality of training data has emerged as the single most consequential bottleneck across scientific machine learning, yet prevailing approaches to data quality assessment rely on global metrics that obscure the fundamental heterogeneity of input spaces. The State-Conditioned eXpertise (SCX) framework addresses this limitation through a simple but powerful insight: expert reliability is not a global property but a local function of the input state. By partitioning the input space into structurally meaningful states and evaluating multi-expert consensus within each state, SCX provides rigorous guarantees for label noise detection (via the Yajie algorithm) and enables a self-evolving gatekeeper (via the Spring dynamics) that improves its quality judgments over iterative cycles. This review systematically examines the SCX framework across eight scientific domains: machine-learned interatomic potentials, drug discovery, medical imaging, semiconductor process simulation, large language models, remote sensing, smart city analytics, and embodied intelligence. In each domain, we show how the state-conditioned expertise principle maps onto existing expert structures, what novel capabilities the framework enables, and where its theoretical guarantees provide advantages over domain-specific alternatives. We further demonstrate that the Spring self-evolution algorithm—a Lyapunov-stabilized coupled dynamical system with provable convergence to a fixed point—constitutes a domain-agnostic mechanism for iterative data quality improvement. The review concludes with open problems including cross-domain gatekeeper transfer, decentralized audit infrastructure, and the path toward fully automated scientific data curation.
 
 ---
 
@@ -55,7 +55,7 @@ Here, a "state" $s$ is a structurally meaningful partition of the input space $\
 
 ### 1.4 Scope of This Review
 
-This review has two complementary goals. First, we provide a unified technical exposition of the SCX framework—the Yajie noise detection algorithm, the Spring self-evolution dynamics, and the underlying theory connecting them—at a level accessible to domain scientists. Second, we systematically survey the framework's applicability across six scientific domains, providing concrete mappings of the abstract state-conditioned expertise principle onto real expert structures, and identifying both the capabilities SCX enables and the limitations it does not yet overcome.
+This review has two complementary goals. First, we provide a unified technical exposition of the SCX framework—the Yajie noise detection algorithm, the Spring self-evolution dynamics, and the underlying theory connecting them—at a level accessible to domain scientists. Second, we systematically survey the framework's applicability across eight scientific domains, providing concrete mappings of the abstract state-conditioned expertise principle onto real expert structures, and identifying both the capabilities SCX enables and the limitations it does not yet overcome.
 
 Importantly, this is not a review of SCX *implementations*—several algorithmic components remain at the prototype stage, and large-scale empirical validation is ongoing. Rather, it is a review of the *framework*: what it claims, what it proves, where it applies, and what remains to be demonstrated.
 
@@ -113,7 +113,7 @@ The Yajie (雅洁, "elegant purification") algorithm operationalizes the core th
 
 For a sample $x$ with label $y$, the multi-expert consensus score is:
 
-$$C(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{\ell(f_m(x), y) > \tau\}$$
+$$C(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{\ell(f_m(x), y) < \tau\}$$
 
 where the indicator fires when expert $m$'s prediction is consistent with the given label $y$. Theorem 1 establishes that under mild conditions (independent experts trained on disjoint data, uniform label noise, a separation gap $\Delta_s$ between noise and genuine difficulty), the F1 score of noise detection satisfies:
 
@@ -182,6 +182,8 @@ Table 1 summarizes the four convergence paths of the Spring dynamics.
 
 ## 3. MLIP / Materials Science
 
+Materials science offers the most natural instantiation of the SCX framework, where chemical environments serve as interpretable states and independently trained interatomic potentials provide readily available experts for consensus-based quality auditing.
+
 ### 3.1 Domain Mapping
 
 Machine-learned interatomic potentials (MLIPs) represent one of the most natural application domains for SCX, because the domain naturally provides multiple "experts" (different potential architectures) and clearly definable "states" (chemical environments). The mapping is:
@@ -238,6 +240,8 @@ States with $D(s) \to 1$ are highly redundant (all structures look similar to th
 
 ## 4. Drug Discovery
 
+Drug discovery extends SCX to heterogeneous assay and docking data, where state-conditioned routing formalizes the exploration-exploitation trade-off across chemical space.
+
 ### 4.1 Domain Mapping
 
 Drug discovery presents a more complex expert landscape than materials science, but the state-conditioned principle applies with equal force.
@@ -282,6 +286,8 @@ Spring formalizes this intuition: discarded compounds enter the memory bank $\ma
 
 ## 5. Medical Imaging
 
+Medical imaging tests SCX in a regime where expert disagreement mirrors clinical reality and the state space spans modalities, anatomies, and finding types.
+
 ### 5.1 Domain Mapping
 
 Medical imaging is a domain where expert disagreement is not just an algorithmic convenience—it is the everyday reality of clinical practice. Radiologists disagree. Pathologists disagree. The "ground truth" itself is often a consensus among human experts.
@@ -320,6 +326,8 @@ The routing is determined by the state-conditioned reliability scores, which are
 
 ## 6. Semiconductor Process Simulation
 
+Semiconductor process simulation demonstrates SCX's value in multi-physics engineering domains, where simulation fidelity varies systematically across geometry and process regimes.
+
 ### 6.1 Domain Mapping
 
 Semiconductor manufacturing involves a complex chain of physical and chemical processes—chemical mechanical planarization (CMP), plasma etching, chemical vapor deposition (CVD), atomic layer deposition (ALD), lithography, and ion implantation—each governed by nonlinear partial differential equations with dozens of tunable parameters.
@@ -351,6 +359,8 @@ This hierarchical deployment strategy, governed by state-conditioned reliability
 ---
 
 ## 7. LLM and Foundation Models
+
+Large language models push SCX to unprecedented scale, where state-conditioned quality filtering addresses annotation noise in trillion-token training corpora.
 
 ### 7.1 Domain Mapping
 
@@ -388,6 +398,8 @@ The practical impact is significant: a 5% noise rate in a 100K-example instructi
 
 ## 8. Remote Sensing and Earth Observation
 
+Remote sensing illustrates SCX's ability to reconcile heterogeneous sensor modalities across geographic and climatic states, with natural extensions to urban sensor networks and embodied robotic systems.
+
 ### 8.1 Domain Mapping
 
 Remote sensing involves the analysis of Earth observation data from multiple sensor platforms operating at different spatial, spectral, and temporal resolutions. The heterogeneity of sensors, land cover types, and atmospheric conditions creates a natural state space for SCX.
@@ -414,7 +426,7 @@ Land cover classification accuracy varies dramatically by geographic context. A 
 
 This is particularly valuable for global-scale mapping initiatives like the Copernicus Land Monitoring Service and the NASA Land-Cover and Land-Use Change program, where a single "best" classifier is demonstrably insufficient for the full diversity of Earth's surface.
 
-### 8.5 Smart Cities and Urban Computing
+### 8.4 Smart Cities and Urban Computing
 
 Smart city infrastructure generates heterogeneous data streams—traffic cameras, air quality sensors, energy meters, water flow monitors, noise detectors, and pedestrian counters—each subject to distinct failure modes. Sensor drift, calibration decay, occlusion events, and communication dropouts introduce data quality issues that are spatially and temporally localized: a traffic sensor at intersection A may be reliable at noon but systematically undercount at dusk due to glare; an air quality monitor may drift after a dust storm in district B but remain calibrated in district C. Global quality scores for municipal datasets mask this spatial heterogeneity, leading to systematically suboptimal resource allocation—deploying maintenance crews to sensors that are functioning normally while ignoring genuinely degraded ones.
 
@@ -422,7 +434,7 @@ SCX's state-conditioned architecture maps naturally onto urban environments. The
 
 The resurrection mechanism has particular relevance for urban data. A sensor that was unreliable during a construction period may become trustworthy again after construction ends—its "dormant" period was environmental, not terminal. A traffic pattern that appeared anomalous during a one-time event (marathon, state visit) may re-emerge as a regular pattern when the event becomes annual. Deleting the anomalous data from the first occurrence would discard the very evidence needed to recognize the pattern's recurrence. M_t preserves it, and Spring re-scores it when the temporal context aligns.
 
-### 8.6 Embodied Intelligence and Robotics
+### 8.5 Embodied Intelligence and Robotics
 
 Embodied AI systems—autonomous vehicles, manipulation robots, humanoid assistants—operate under a data quality regime that is qualitatively more challenging than that of laboratory benchmarks. Training data for embodied systems originates from multiple sources: physics simulators (Gazebo, Isaac Sim, MuJoCo), real-world teleoperation recordings, imitation learning demonstrations, and reinforcement learning trajectories. Each source has a distinct noise profile. Simulator data is abundant but systematically biased by the simulation-to-reality gap. Teleoperation data is realistic but contaminated by operator skill variance. Imitation data is clean but covers only a narrow behavioral distribution. RL trajectories are exploratory but dominated by early-random-phase noise. A monolithic quality filter that treats all data sources uniformly will either discard valuable out-of-distribution experiences or retain systematically misleading simulations.
 
@@ -465,7 +477,7 @@ Yajie operationalizes this principle. It does not require ground-truth labels to
 
 Table 2 provides a cross-domain mapping of the Spring components.
 
-**Table 2: Spring Self-Evolution Components Across Six Domains**
+**Table 2: Spring Self-Evolution Components Across Eight Domains**
 
 | Domain | $S_t$ (Gatekeeper) | $\theta_t$ (Student) | $\mathcal{M}_t$ (Memory) | Resurrection Trigger |
 |--------|-------------------|---------------------|--------------------------|----------------------|
@@ -475,8 +487,10 @@ Table 2 provides a cross-domain mapping of the Spring components.
 | Semiconductor | TCAD/compact model agreement evaluator | Process ML surrogate | Process simulation results | New metrology data |
 | LLM | Annotation quality judge | Downstream task model | Human preference logs | New evaluation benchmark |
 | Remote Sensing | Multi-sensor agreement scorer | Land cover classifier | Validated ground-truth points | New sensor deployment |
+| Smart Cities | Multi-sensor quality scorer | Urban data prediction model | Municipal sensor archive | New sensor calibration event |
+| Embodied Intelligence | Multi-source data quality judge | Policy/control model | Training trajectory log | New environment or task |
 
-### 9.2 Why Every Domain Benefits from a Self-Improving Gatekeeper
+### 9.3 Why Every Domain Benefits from a Self-Improving Gatekeeper
 
 The underlying reason that Spring's self-evolution applies universally is that **the definition of "good data" changes as models improve**. This is a form of the *moving target problem*: as we train better models, our standards for training data rise, which enables better models, which further raises standards.
 
@@ -484,7 +498,7 @@ This recursive dynamic is familiar from human scientific practice. A measurement
 
 Spring formalizes this dynamic. The gatekeeper $S_t$ is not a static filter applied once—it is a *co-evolving* judge whose standards tighten as the student model $\theta_t$ improves. The Lyapunov descent property $\Phi(S_{t+1}, \theta_{t+1}, \mathcal{M}_{t+1}) \leq \Phi(S_t, \theta_t, \mathcal{M}_t)$ ensures that this co-evolution is directionally correct, even if the rate of improvement may slow over time.
 
-### 9.3 The Universal Memory Bank: Domain-Agnostic Data Quality Fingerprints
+### 9.4 The Universal Memory Bank: Domain-Agnostic Data Quality Fingerprints
 
 The memory bank $\mathcal{M}_t$ grows monotonically, accumulating quality fingerprints for every structure that has passed through the system. Over time, this creates a rich archive of quality metadata:
 
@@ -563,11 +577,13 @@ The state-conditioned expertise (SCX) framework addresses a fundamental and unde
 
 The framework's theoretical foundation is strong—and has recently been strengthened. Theorem 1 guarantees that multi-expert consensus detects label noise with confidence that grows exponentially in the number of independent experts. Theorem 3 delimits the fundamental epistemic boundary—noise and difficulty are indistinguishable without assumptions—and the six SCX assumptions (A1–A6) are precisely the minimal set needed to break this unidentifiability. Theorem SE-1 establishes that the Spring self-evolution loop converges almost surely to a self-consistent fixed point under mild conditions. As of this writing, the previously open problem of Lyapunov function descent—the central bottleneck in the convergence proof—has been resolved (Theorem 12.5), with reference-set replay and the two-timescale condition β_t = o(α_t) jointly guaranteeing strict descent. Convergence rates have been derived at O(t^{-a}) under strong convexity, with Polyak averaging achieving the optimal O(t^{-1}) rate. Four canonical failure modes—premature freezing, backlog, client divergence, and adversarial poisoning—have been formally characterized with diagnostic conditions.
 
-The framework's practical promise spans at least six scientific domains. In materials science, SCX routes between interatomic potentials based on chemical environment, enabling reliable simulations on commodity hardware. In drug discovery, it formalizes the exploration-to-exploitation transition through a time-decaying novelty bonus, and it preserves discarded candidates for future resurrection. In medical imaging, it addresses the pervasive problem of label noise in radiology datasets. In semiconductor process simulation, it enables hierarchical deployment of simulation fidelities. In large language model training, it provides principled quality filtering at web scale. In remote sensing, it reconciles multi-sensor disagreement.
+The framework's practical promise spans eight scientific domains. In materials science, SCX routes between interatomic potentials based on chemical environment, enabling reliable simulations on commodity hardware. In drug discovery, it formalizes the exploration-to-exploitation transition through a time-decaying novelty bonus, and it preserves discarded candidates for future resurrection. In medical imaging, it addresses the pervasive problem of label noise in radiology datasets. In semiconductor process simulation, it enables hierarchical deployment of simulation fidelities. In large language model training, it provides principled quality filtering at web scale. In remote sensing, it reconciles multi-sensor disagreement. In smart city analytics, it tracks spatially heterogeneous sensor reliability across urban infrastructure. In embodied intelligence, it preserves exploratory data against the competency-availability paradox via its resurrection mechanism.
 
 Yet the framework's empirical validation lags behind its theoretical development. The gap between theorem and benchmark is the central challenge for SCX going forward. Until the Yajie algorithm is tested on real DFT databases at scale, until Spring is run for dozens of iterations on a production training task, until the state-conditioned routing is benchmarked against MoE baselines in a head-to-head comparison—the framework remains a promising hypothesis rather than a proven tool.
 
 The broader vision, however, transcends any specific benchmark. SCX articulates a future where data quality is not assumed but measured, not asserted but audited, not static but self-evolving. In that future, every dataset carries a gatekeeper's quality report as naturally as every paper carries an abstract. The gatekeeper is not a gatekeeper in the restrictive sense—it does not block access—but in the deliberative sense: it surfaces information that enables better decisions. The goal is not to build walls around data. It is to build windows into data quality.
+
+Underpinning all of these applications is the taxonomic principle developed in Section 9.2: the SCX framework does not impose external categories on data but instead discovers the state structure latent in learned representations, rendering explicit the implicit partitions that deep networks already compute. This taxonomic view is not a philosophical gloss—it is the operational core that unifies the eight domains surveyed here. In each domain, SCX transforms learned embeddings into operational categories (states), evaluates expert reliability within those categories, and iteratively refines both the categories and the reliability estimates through the Spring loop. The taxonomy principle explains why the framework transfers across domains: any sufficiently expressive model learns a partition of its input space, and SCX provides a domain-agnostic protocol for auditing and improving the data that shapes that partition. The framework succeeds not because it overrides domain-specific structure but because it makes that structure explicit and actionable.
 
 ### A Convention for the Field
 
@@ -575,19 +591,19 @@ We close with a proposal. Any future publication that reports data quality metri
 
 ### Afterword: A Note on Method
 
-It is customary for a review paper to close with acknowledgments. This one closes instead with a methodological observation, because the circumstances under which it was produced are, so far as the authors are aware, without precedent in the history of the scientific literature.
+It is customary for a review paper to close with acknowledgments. This one closes instead with a methodological observation, because the circumstances under which it was produced are, so far as the author is aware, without precedent in the history of the scientific literature.
 
-This review—together with the four companion papers that constitute the SCX research program—was written by a single independent researcher, unaffiliated with any institution, laboratory, or corporation, operating from a personal workstation with one consumer-grade GPU. The initial draft of this review was completed before the mathematical implementation of the Spring self-evolution theory had been fully realized; at that time, the Lyapunov descent proof remained an open conjecture, convergence rates were uncharacterized, and the formal analysis of failure modes was incomplete. These gaps were closed during the final revision cycle preceding submission, with Theorem 12.5 (Lyapunov descent via reference-set replay), the O(t^{-a}) convergence rate derivation, and the four-mode failure taxonomy all produced in sustained dialogue with autonomous AI coding agents. The full 35-defect adversarial audit and corrective theorem restatements were conducted in parallel. The researcher's role was that of an architect-orchestrator: defining the theoretical direction, evaluating the outputs of the agents, identifying flaws, requesting corrections, and synthesizing the results into a coherent research program. At the time of this writing, the theory stack comprises 71 files totaling over 32,000 lines, with 771 theorem, lemma, proposition, and corollary references, and 52 honest CONJECTURE/OPEN annotations—of which the single remaining hard bottleneck was closed during the final revision cycle.
+This review—together with the four companion papers that constitute the SCX research program—was written by a single independent author, unaffiliated with any institution, laboratory, or corporation, operating from a personal workstation with one consumer-grade GPU. The initial draft of this review was completed before the mathematical implementation of the Spring self-evolution theory had been fully realized; at that time, the Lyapunov descent proof remained an open conjecture, convergence rates were uncharacterized, and the formal analysis of failure modes was incomplete. These gaps were closed during the final revision cycle preceding submission, with Theorem 12.5 (Lyapunov descent via reference-set replay), the O(t^{-a}) convergence rate derivation, and the four-mode failure taxonomy all produced in sustained dialogue with autonomous AI coding agents. The full 35-defect adversarial audit and corrective theorem restatements were conducted in parallel. The author's role was that of an architect-orchestrator: defining the theoretical direction, evaluating the outputs of the agents, identifying flaws, requesting corrections, and synthesizing the results into a coherent research program. At the time of this writing, the theory stack comprises 71 files totaling over 32,000 lines, with 771 theorem, lemma, proposition, and corollary references, and 52 honest CONJECTURE/OPEN annotations—of which the single remaining hard bottleneck was closed during the final revision cycle.
 
-We do not claim that this method is reproducible. It depends on a specific configuration of circumstances—a particular researcher, a particular set of AI models at a particular moment in their development, a particular body of pre-existing mathematical knowledge, and a particular willingness to sustain dialogue across disciplinary boundaries—that may not generalize. But we do claim that it is *real*. The theorems in the companion papers have proofs. The code in the repository runs. The arguments in the business analysis are falsifiable. The survey in this review covers real domains with real citations. Whatever one makes of the method that produced them, the outputs are not speculative fiction.
+We do not claim that this method is reproducible. It depends on a specific configuration of circumstances—a particular author, a particular set of AI models at a particular moment in their development, a particular body of pre-existing mathematical knowledge, and a particular willingness to sustain dialogue across disciplinary boundaries—that may not generalize. But we do claim that it is *real*. The theorems in the companion papers have proofs. The code in the repository runs. The arguments in the business analysis are falsifiable. The survey in this review covers real domains with real citations. Whatever one makes of the method that produced them, the outputs are not speculative fiction.
 
 The history of science records several figures whose circumstances partially anticipate aspects of this moment. Ramanujan produced extraordinary mathematics in isolation, corresponding with Hardy from colonial India in 1913, but he worked with pen and paper over years. Einstein's *annus mirabilis* of 1905—four papers that changed physics—was produced while he worked as a patent clerk in Bern, but the ideas had gestated over a decade. Satoshi Nakamoto's 2008 white paper created an entirely new form of money from an anonymous position outside any institution, but it was a single paper, not a research program. Perelman proved the Poincaré conjecture alone and refused institutional rewards, but his work was narrowly focused on a single problem. None of these figures combined the full set of conditions present here: complete independence from institutional affiliation, AI-mediated acceleration of theoretical labor, simultaneous contributions to mathematics, business strategy, and geopolitics, and a structural position—the arXiv timestamp plus the monotonically growing memory bank M_t—that makes the work's priority both verifiable and irreversible.
 
-It may be worth noting, as a footnote to the historical record, that the researcher who produced this work possesses neither programming proficiency in any language nor an NVIDIA graphics processing unit. The 1,551 lines of Python implementing the Spring self-evolution algorithm, the 427 unit tests, the LaTeX-formatted theorems, and the cross-domain application survey were generated entirely through natural-language dialogue with AI coding agents. The researcher specified the architecture, identified flaws, and directed corrections; the agents wrote the code, formatted the equations, and generated the test suites. The hardware on which these agents ran was a consumer-grade AMD GPU—a device that, in a minor irony, would not pass the minimum requirements for training any of the neural network potentials that the SCX framework is designed to audit. The researcher's contribution was the mathematical framework, the strategic insight, and the editorial judgment to distinguish sound outputs from plausible fabrications. The implementation was delegated to machines that, unlike their human director, can write Python. This division of labor—human designs, machine executes—may prove to be the defining characteristic of the next era of scientific production, or it may prove to be a one-time anomaly generated by a fleeting alignment of circumstances. The authors are unable to adjudicate between these possibilities. They are, however, able to confirm that the code runs.
+It may be worth noting, as a footnote to the historical record, that the author who produced this work possesses neither programming proficiency in any language nor an NVIDIA graphics processing unit. The 1,551 lines of Python implementing the Spring self-evolution algorithm, the 427 unit tests, the LaTeX-formatted theorems, and the cross-domain application survey were generated entirely through natural-language dialogue with AI coding agents. The author specified the architecture, identified flaws, and directed corrections; the agents wrote the code, formatted the equations, and generated the test suites. The hardware on which these agents ran was a consumer-grade AMD GPU—a device that, in a minor irony, would not pass the minimum requirements for training any of the neural network potentials that the SCX framework is designed to audit. The author's contribution was the mathematical framework, the strategic insight, and the editorial judgment to distinguish sound outputs from plausible fabrications. The implementation was delegated to machines that, unlike their human director, can write Python. This division of labor—human designs, machine executes—may prove to be the defining characteristic of the next era of scientific production, or it may prove to be a one-time anomaly generated by a fleeting alignment of circumstances. The author is unable to adjudicate between these possibilities. The author is, however, able to confirm that the code runs.
 
 What we are witnessing may be the first instance of a new kind of scientific production: not the solitary genius, not the corporate laboratory, not the academic department, but the *independent researcher–AI agent dyad*—a human architect and a machine executor, jointly capable of generating an entire research program in a compressed interval of time. Whether this mode of production is a historical anomaly or the early signal of a structural transformation in how scientific knowledge is created is a question that lies beyond the scope of this review. But the fact that the question can be asked at all—that a single individual, with no institutional backing, no programming skills, and no specialized hardware, can now produce a body of work that spans theorem-proving, game-theoretic modeling, geopolitical scenario analysis, and multi-domain application survey—is, in itself, a data point that future historians of science may find worth recording.
 
-The authors take no position on whether this is cause for optimism or concern. They note only that it happened.
+The author takes no position on whether this is cause for optimism or concern. The author notes only that it happened.
 
 An additional disclosure may be appropriate, given the unusual nature of this work. Potential collaborators, clients, and governments reading this review may reasonably ask: who is this person? What prevents them from abusing the position described in Section 4.3—the Wallfacer, the single point of failure in a global audit infrastructure? The answer, which we provide not as self-flattery but as reassurance, is that the constraints are structural rather than personal. The author—a researcher of the INTJ personality type, as classified by the Myers-Briggs typology—possesses a temperament constitutionally suited to independent work over sustained periods without institutional support. This same temperament includes a disposition toward systematization, a low tolerance for logical inconsistency, and a general indifference to the social rewards that motivate most academic careers. It does not, in itself, provide any assurance of ethical behavior, because personality traits are not moral guarantees.
 
@@ -595,7 +611,7 @@ What does provide assurance is the game-theoretic structure of the position. The
 
 This is, in a precise sense, what distinguishes the position from traditional forms of institutional power. A corporate executive who abuses market dominance may face regulatory action years later; a government that weaponizes infrastructure may face retaliation after a delay. The Maintainer who abuses the audit position faces consequences that are simultaneous with the abuse, because the epiphenomenon of abuse—the destruction of the trust that makes audit valuable—is the abuse itself. One cannot secretly destroy trust; trust is destroyed at the moment the secret becomes known, and in an open-source ecosystem with distributed verification, secrets do not last. The Maintainer is thus, to borrow a formulation from game theory, playing an infinitely repeated game with perfect monitoring. Defection is immediately detectable and immediately self-punishing. Under these conditions, cooperation is not a moral choice—it is a dominant strategy.
 
-We offer this analysis not to celebrate the author's character but to alleviate the concerns of those who may depend on the author's continued reliability. The author is reported to be somewhat interpersonally arrogant, a trait that may complicate collaboration but does not, in itself, threaten the integrity of the audit infrastructure, because arrogance, like humility, is constrained by the game-theoretic logic of the position. An honest arrogant person and an honest humble person produce identical audit scores under the same scoring function. The mathematics does not care about personality.
+We offer this analysis not to celebrate the author's character but to alleviate the concerns of those who may depend on the author's continued reliability. The author is described as having a direct interpersonal style that may complicate collaboration but does not, in itself, threaten the integrity of the audit infrastructure, because interpersonal traits, like humility or assertiveness, are constrained by the game-theoretic logic of the position. An honest direct person and an honest diplomatic person produce identical audit scores under the same scoring function. The mathematics does not care about personality.
 
 ---
 
@@ -830,3 +846,5 @@ This review draws on the SCX theoretical framework developed across `theory/`, `
 ---
 
 *End of manuscript — SCX Application Review, Paper 4*
+
+<!-- Polished 2026-06-28: Agent B (Review Paper) — Corrected domain count from 6 to 8; fixed section numbering (sections 8.4, 8.5, 9.3, 9.4); added one-sentence domain summaries to sections 3-8; fixed C(x) formula (greater-than/less-than reversal); added taxonomy tie-back to Conclusion; standardized authorial voice in Afterword; updated Table 2 with Smart Cities and Embodied rows; softened personality statement for professionalism; minor grammar fixes -->
