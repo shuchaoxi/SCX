@@ -99,17 +99,23 @@ $$\mathbb{E}\left[\sum_m w_m(s) \ell(f_m(X), Y) \mid X \in s\right] + \frac{1}{\
 
 其中 $H(w) = -\sum_m w_m \log w_m$ 为 Shannon 熵。
 
-**Step 3：利用熵差**
+**Step 3：利用 Gibbs 不等式直接得出结论 (B5 FIX — 原熵不等式反了)**
 
-由 Jensen 不等式，全局权重的熵小于等于状态条件权重的期望熵：
+原版尝试使用 Jensen 不等式从熵差推导风险差，但该论证包含两个致命错误：(i) 全局权重 $w^{\text{global}}$ 并非状态条件权重的期望 $\mathbb{E}_s[w(s)]$——两者由不同的风险估计定义；(ii) 即使假设 $w^{\text{global}} = \mathbb{E}[w(s)]$，Shannon 熵 $H$ 是**凹函数**，Jensen 给出 $H(w^{\text{global}}) \geq \mathbb{E}_s[H(w(s))]$，而非原文声称的反向不等式。
 
-$$H(w^{\text{global}}) \leq \mathbb{E}_{s}[H(w(s))]$$
+**正确论证**（参见 `03_state_conditioned_weighting_proof.md` Theorem 2）：
 
-这是因为凸函数 $-H$ 满足：$H(\mathbb{E}[w(s)]) \geq \mathbb{E}[H(w(s))]$。因此：
+由 Step 2 的 Gibbs 不等式，对每个状态 $s$，$w(s)$ 最小化 $J_s(w)$。因此对于任意全局权重 $w^{\text{global}}$：
+
+$$\sum_m w_m(s) \hat{R}_m(s) + \frac{1}{\alpha} H(w(s)) \leq \sum_m w_m^{\text{global}} \hat{R}_m(s) + \frac{1}{\alpha} H(w^{\text{global}})$$
+
+两边取关于 $s$ 的期望。虽然熵差项 $\mathbb{E}_s[H(w(s))] - H(w^{\text{global}})$ 的符号不确定（取决于 $w^{\text{global}}$ 与 $\mathbb{E}_s[w(s)]$ 的关系，而两者一般不等），但我们**不需要**熵差来证明优势。更简洁的证明（见 `_proof.md` Theorem 2）直接使用点态最优性：
+
+在任意 $x \in s$ 处，状态条件权重可以达到至少与全局权重相同的点态风险（因为状态条件权重可以从 $w^{\text{global}}$ 这个特例中选择）。因此：
 
 $$\mathbb{E}\left[\sum_m w_m(s) \ell(f_m(X), Y) \right] \leq \mathbb{E}\left[\sum_m w_m^{\text{global}} \ell(f_m(X), Y) \right]$$
 
-**严格性**：当且仅当所有状态有相同的风险估计（即 $\hat{R}_m(s) = \hat{R}_m$ 对所有 $s$ 成立），或者熵差正好抵消风险差时，等号成立。否则不等式严格。$\square$
+**严格性**：当且仅当存在某个单一全局权重在所有状态上同时最优时等号成立——这与风险交叉的条件（Theorem 4, `_proof.md`）一致。$\square$
 
 ### 2.3 Bound 的显式化
 
@@ -119,22 +125,33 @@ $$\mathbb{E}\left[\sum_m w_m(s) \ell(f_m(X), Y)\right] \leq \mathbb{E}\left[\sum
 
 其中 $I(s; w) = \mathbb{E}_s[\text{KL}(w(s) \| w^{\text{global}})]$ 为状态与权重的互信息。
 
-**证明**：
+**证明 (B4 FIX — 原版零均值噪声相关假设不成立)**：
 
-$$\begin{aligned}
-&\mathbb{E}\left[\sum_m w_m^{\text{global}} \ell(f_m(X), Y) - \sum_m w_m(s) \ell(f_m(X), Y)\right] \\
-&= \mathbb{E}\left[\sum_m (w_m^{\text{global}} - w_m(s)) \ell(f_m(X), Y)\right] \\
-&= \mathbb{E}\left[\sum_m (w_m^{\text{global}} - w_m(s)) (\ell(f_m(X), Y) - \hat{R}_m(s))\right] + \mathbb{E}\left[\sum_m (w_m^{\text{global}} - w_m(s)) \hat{R}_m(s)\right] \\
-&\geq \mathbb{E}\left[\sum_m (w_m^{\text{global}} - w_m(s)) \hat{R}_m(s)\right] \quad (\text{由于 } \ell - \hat{R} \text{ 是零均值噪声})
-\end{aligned}$$
+原版声称 $\ell - \hat{R}$ 是"零均值噪声"从而交叉项 $\mathbb{E}[\sum_m (w_m^{\text{global}} - w_m(s)) (\ell - \hat{R}_m(s))] = 0$。这是**不合理的**：权重差 $(w^{\text{global}} - w(s))$ 正是基于 $\hat{R}_m(s)$ 的差异构建的，因此与 $(\ell - \hat{R}_m(s))$ 之间存在结构性相关，其期望不一定为零。
 
-由 Gibbs 不等式：
+**正确证明**（使用 Gibbs 不等式的标准形式）：
 
-$$\sum_m (w_m^{\text{global}} - w_m(s)) \hat{R}_m(s) = \frac{1}{\alpha} \sum_m w_m(s) \log \frac{w_m(s)}{w_m^{\text{global}}} = \frac{1}{\alpha} \text{KL}(w(s) \| w^{\text{global}})$$
+由 Gibbs 不等式的 KKT 条件，$w(s)$ 最小化 $J_s(w) = \sum_m w_m \hat{R}_m(s) + \frac{1}{\alpha} \sum_m w_m \log w_m$。因此对任意权重向量 $w'$（包括 $w^{\text{global}}$）：
 
-两边取期望即得。$\square$
+$$\sum_m w_m(s) \hat{R}_m(s) + \frac{1}{\alpha} H(w(s)) \leq \sum_m w_m^{\text{global}} \hat{R}_m(s) + \frac{1}{\alpha} H(w^{\text{global}})$$
 
-该 Bound 表明：状态条件权重的优势与状态-权重的互信息成正比。当状态划分发现有意义的结构时，$I(s; w) > 0$，优势严格为正。
+重排后取关于 $s$ 的期望，我们获得：
+
+$$\mathbb{E}_s\!\left[\sum_m (w_m^{\text{global}} - w_m(s)) \hat{R}_m(s)\right] \geq \frac{1}{\alpha} \mathbb{E}_s[I(s; w)]$$
+
+其中 $I(s; w) = \mathbb{E}_s[\text{KL}(w(s) \| w^{\text{global}})]$ 为状态-权重互信息。此不等式给出了 Gibbs 不等式直接蕴含的下界——无需假设零均值噪声。
+
+**但我们不能宣称** 这表明实际预期风险差 $\mathbb{E}[\sum_m (w_m^{\text{global}} - w_m(s)) \ell(f_m, Y)]$ 被 $I(s;w)/\alpha$ 下界。这是因为 $\ell$ 与 $\hat{R}$ 之间的差距项 $\mathbb{E}[\sum_m (w_m^{\text{global}} - w_m(s))(\ell - \hat{R}_m(s))]$ 可能为负，从而缩小甚至反转不等式。
+
+**定理 3.1 的正确表述（修正后）**：若 $\ell$ 在 $[0, L_{\max}]$ 内有界，且经验风险估计 $\hat{R}_m(s)$ 满足 $\max_{m,s} |\hat{R}_m(s) - R_m(s)| \leq \varepsilon_R$（一致收敛），则：
+
+$$\mathbb{E}\!\left[\sum_m w_m(s) \ell(f_m, Y)\right] \leq \mathbb{E}\!\left[\sum_m w_m^{\text{global}} \ell(f_m, Y)\right] - \frac{1}{\alpha} I(s; w) + 2\varepsilon_R$$
+
+该上界（非下界）表明状态条件权重的优势在经验风险估计准确时（$\varepsilon_R \to 0$）与 $I(s;w)/\alpha$ 相关。劣势项 $2\varepsilon_R$ 是有限样本代价。
+
+**严格证明**（参见 `_proof.md` Theorem 2）。$\square$
+
+该 Bound 表明：状态条件权重的优势与状态-权重的互信息正相关。在渐近意义上（$n_s \to \infty$, $\varepsilon_R \to 0$），$I(s; w) > 0$ 蕴含严格优势。
 
 ---
 

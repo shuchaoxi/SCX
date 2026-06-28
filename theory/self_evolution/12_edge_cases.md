@@ -2,6 +2,7 @@
 
 > **Version**: 2026-06-28 | **Status**: Formal analysis | **Prerequisite**: Documents 01, 02, 06, 10, 11
 > **Purpose**: Characterize failure modes of the SCX self-evolution system, deriving conditions under which convergence fails, degrades, or produces pathological behavior. Four canonical failure modes are analyzed in depth, with formal conditions, rates of degradation, and mitigation strategies.
+> **Notation note**: $\mathcal{S}$ denotes the state space (as in core Theorems 1–3). $S_t$ denotes the gatekeeper scoring function at time $t$ (as in Spring self-evolution documents). $\Psi$ denotes the Lyapunov function (renamed from $\Phi$ to avoid collision with feature space $\Phi$ in Theorem 2). $\beta_t$ denotes the gatekeeper update rate; $\eta$ is reserved for the global noise rate.
 
 ---
 
@@ -25,7 +26,9 @@ The gatekeeper converges to a suboptimal fixed point $S^*_{\text{sub}}$ before t
 
 ### 1.2 Formal Mechanism
 
-**The learning rate decays too fast.** When $\eta(t)$ (here $\beta_t$, the gatekeeper update rate) decays faster than the student can learn, gatekeeper plasticity is lost before the student provides corrective signal.
+**The learning rate decays too fast.** When $\beta_t$ (the gatekeeper update rate) decays faster than the student can learn, gatekeeper plasticity is lost before the student provides corrective signal.
+
+> **Notation note (2026-06-28, B4):** The symbol $\eta$ is reserved throughout the SCX theory for the global noise rate $\eta = P(Z=1)$. The gatekeeper update rate is denoted $\beta_t$. This document previously used $\eta(t)$ locally for the gatekeeper update rate, which has been corrected to $\beta_t$ for consistency.
 
 **Definition 1.1 (Freezing Time).** The **freezing time** $t_{\text{freeze}}$ is the earliest time such that for all $t \geq t_{\text{freeze}}$:
 
@@ -69,7 +72,7 @@ With $\beta_0 = 0.01$, $\varepsilon_{\text{mach}} = 10^{-4}$ (aggressive early s
 
 **Theorem 12.3 (Suboptimality Gap Under Premature Freezing — PROVEN).** If the gatekeeper freezes at $S_{t_{\text{freeze}}}$ and the student continues to converge toward $\theta^*(S_{t_{\text{freeze}}})$, the asymptotic Lyapunov gap is:
 
-$$\Phi(S_{t_{\text{freeze}}}, \theta^*(S_{t_{\text{freeze}}})) - \Phi(S^*, \theta^*) \geq \lambda \cdot \bigl(\mathbb{E}_{V_0}[\ell(f_{\theta^*(S_{t_{\text{freeze}}})}, y)] - \mathbb{E}_{V_0}[\ell(f_{\theta^*}, y)]\bigr) \geq 0.$$
+$$\Psi(S_{t_{\text{freeze}}}, \theta^*(S_{t_{\text{freeze}}})) - \Psi(S^*, \theta^*) \geq \lambda \cdot \bigl(\mathbb{E}_{V_0}[\ell(f_{\theta^*(S_{t_{\text{freeze}}})}, y)] - \mathbb{E}_{V_0}[\ell(f_{\theta^*}, y)]\bigr) \geq 0.$$
 
 The gap is non-negative and equals zero only if $S_{t_{\text{freeze}}} = S^*$.
 
@@ -77,13 +80,13 @@ The gap is non-negative and equals zero only if $S_{t_{\text{freeze}}} = S^*$.
 
 ### 1.5 Rate of Degradation
 
-**Corollary 12.1 (Degradation Rate Under Freezing).** At time $t \geq t_{\text{freeze}}$, the convergence of $\Phi_t$ stalls:
+**Corollary 12.1 (Degradation Rate Under Freezing).** At time $t \geq t_{\text{freeze}}$, the convergence of $\Psi_t$ stalls:
 
-$$\Phi_t - \Phi^* = \Theta(1) \quad \text{(does not decay further)}.$$
+$$\Psi_t - \Psi^* = \Theta(1) \quad \text{(does not decay further)}.$$
 
 The improvement after freezing is:
 
-$$\Delta\Phi_{\text{post-freeze}} = \Phi_{t_{\text{freeze}}} - \lim_{t \to \infty} \Phi_t = O(\alpha_{t_{\text{freeze}}}),$$
+$$\Delta\Psi_{\text{post-freeze}} = \Psi_{t_{\text{freeze}}} - \lim_{t \to \infty} \Psi_t = O(\alpha_{t_{\text{freeze}}}),$$
 
 which comes only from the student continuing to train on the frozen distribution.
 
@@ -399,7 +402,7 @@ When backlog means samples are scored by stale gatekeeper $S_{t-\tau}$:
 
 **Test 1 (Gradient Norm Monitor).** Track $\|\Delta S_t\|_{M_0}$ over a sliding window of $W$ steps. If $\max_{i \in [t-W, t]} \|\Delta S_i\| < \varepsilon_{\text{diag}}$ for $W$ consecutive windows, flag as frozen.
 
-**Test 2 (Student Improvement Correlation).** Track the correlation between $\|\Delta S_t\|$ and $\Delta \Phi_{\text{student}, t}$. If the gatekeeper is frozen but the student is still improving, the correlation drops to zero.
+**Test 2 (Student Improvement Correlation).** Track the correlation between $\|\Delta S_t\|$ and $\Delta \Psi_{\text{student}, t}$. If the gatekeeper is frozen but the student is still improving, the correlation drops to zero.
 
 ### 6.2 Backlog Detection
 
@@ -419,7 +422,7 @@ When backlog means samples are scored by stale gatekeeper $S_{t-\tau}$:
 
 **Test 8 (Expert Agreement Anomaly).** Track the per-expert agreement matrix. Adversarial samples may cause unusual patterns (e.g., all experts agree on the wrong answer, or expert disagreement is bimodal rather than uniform).
 
-**Test 9 (Student Loss on Held-Out Clean Set).** Monitor $\Phi_{\text{student}}$ on $V_0$. Poisoning should cause this to **increase** even as the training loss on $M_t$ decreases (a classic sign of label poisoning).
+**Test 9 (Student Loss on Held-Out Clean Set).** Monitor $\Psi_{\text{student}}$ on $V_0$. Poisoning should cause this to **increase** even as the training loss on $M_t$ decreases (a classic sign of label poisoning).
 
 ---
 
@@ -475,3 +478,11 @@ Severity  High     |       |  2   |  4   |
 8. Blanchard, P., et al. (2017). Machine learning with adversaries: Byzantine tolerant gradient descent. *NIPS 2017*.
 9. Kushner, H. J., & Yin, G. G. (2003). *Stochastic Approximation and Recursive Algorithms and Applications* (2nd ed.). Springer.
 10. Polyak, B. T., & Juditsky, A. B. (1992). Acceleration of stochastic approximation by averaging. *SIAM Journal on Control and Optimization*, 30(4), 838-855.
+
+---
+
+## Changelog
+
+| Date | Defect | Change | Severity |
+|------|--------|--------|----------|
+| 2026-06-28 | B4 | **Renamed gatekeeper update rate from η to β**: The symbol $\eta$ is reserved throughout SCX theory for the global noise rate $\eta = P(Z=1)$. All local uses of $\eta(t)$ as gatekeeper update rate replaced with $\beta_t$. Notation note added at document header and Theorem 12.1. Fixes FAIL-2 from cross-reference audit. | FATAL |

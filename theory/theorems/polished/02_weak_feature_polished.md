@@ -2,7 +2,9 @@
 
 > When the feature representation $\phi(x)$ carries insufficient information about the true state $S$, consensus-based noise detection methods (including SCX) cannot outperform a simple loss baseline. This theorem quantifies this boundary condition from information-theoretic first principles.
 >
-> **Revision**: 2026-06-27 — Pinsker tightened to Bretagnolle-Huber; added $\delta$ estimation via k-NN mutual information (Kraskov et al., 2004); explicit $\eta$-dependence analysis.
+> **Revision**: 2026-06-27 — Pinsker tightened to Bretagnolle-Huber; added $\delta_phi$ estimation via k-NN mutual information (Kraskov et al., 2004); explicit $\eta$-dependence analysis.
+> **Revision**: 2026-06-28 — $\delta_phi$ in this document denotes the mutual information bound $\delta_phi_\phi \equiv I(\phi;S)$. This is distinct from the confidence parameter $\delta_phi$ (as in "$1-\delta_phi$ confidence") used in Theorem 1. The subscript $\phi$ is omitted in most equations for brevity but implied throughout. Notation conflict resolved per B5.
+> **Revision**: 2026-06-28 — $\eta$ restricted to $(0,1)$ (B6 fix). The theorem statement divides by $\eta$ and $1-\eta$ in Step 5 of the proof; at $\eta=0$ or $\eta=1$ the conditional distributions are undefined. Boundary behavior documented in §6.4.
 
 ---
 
@@ -18,7 +20,7 @@
 | $\phi(X)$ | **Observed** feature representation | $\Phi \subseteq \mathbb{R}^{d_\phi}$ |
 | $Z$ | Noise indicator ($1$ = noise, $0$ = clean) | $\{0,1\}$ |
 | $\{f_m\}_{m=1}^M$ | $M$ experts | $\mathcal{X} \to \mathcal{Y}$ |
-| $\eta = P(Z = 1)$ | Marginal noise rate | $[0,1]$ |
+| $\eta = P(Z = 1)$ | Marginal noise rate | $(0,1)$ (open interval; boundaries excluded — see §6.4) |
 
 ### 1.2 Generative Process and Markov Structure
 
@@ -59,37 +61,37 @@ The loss baseline matches the random baseline iff noise is independent of expert
 
 ## 2 Definition: Weak Feature
 
-**Definition 1 ($\delta$-Weak Feature).** A feature map $\phi: \mathcal{X} \to \Phi$ is $\delta$-weak with respect to the true state $S$ if:
+**Definition 1 ($\delta_phi$-Weak Feature).** A feature map $\phi: \mathcal{X} \to \Phi$ is $\delta_phi$-weak with respect to the true state $S$ if:
 
-$$I(\phi(X); S) \leq \delta$$
+$$I(\phi(X); S) \leq \delta_phi$$
 
-where $I(\cdot; \cdot)$ is Shannon mutual information (nats). $\delta = 0$ means $\phi \perp S$ (no state information). 
+where $I(\cdot; \cdot)$ is Shannon mutual information (nats). $\delta_phi = 0$ means $\phi \perp S$ (no state information). 
 
-**Normalized weakness**: $\varepsilon_\phi = \delta / \log K_S \in [0, 1]$. Values $\varepsilon_\phi > 0.5$ typically indicate insufficient feature quality for SCX.
+**Normalized weakness**: $\varepsilon_\phi = \delta_phi / \log K_S \in [0, 1]$. Values $\varepsilon_\phi > 0.5$ typically indicate insufficient feature quality for SCX.
 
-**Alternative (TV-based) definition**: For any two states $s_1, s_2$, define the TV distance between their feature distributions: $\Delta_\phi = \max_{s_1 \neq s_2} \operatorname{TV}(P_{\phi \mid S=s_1}, P_{\phi \mid S=s_2})$. This is related to $\delta$ by the inequalities in Section 5.2.
+**Alternative (TV-based) definition**: For any two states $s_1, s_2$, define the TV distance between their feature distributions: $\Delta_\phi = \max_{s_1 \neq s_2} \operatorname{TV}(P_{\phi \mid S=s_1}, P_{\phi \mid S=s_2})$. This is related to $\delta_phi$ by the inequalities in Section 5.2.
 
-**Remark — estimating $\delta$ from data**: See Section 7.1 for practical $\delta$ estimation via k-NN mutual information (Kraskov et al., 2004).
+**Remark — estimating $\delta_phi$ from data**: See Section 7.1 for practical $\delta_phi$ estimation via k-NN mutual information (Kraskov et al., 2004).
 
 ---
 
 ## 3 Lemma 1: State Estimation Error (Fano)
 
-**Lemma 1 (Fano Lower Bound).** Let $\hat{S}$ be any estimator of $S$ based on $\phi(X)$. If $\phi$ is $\delta$-weak:
+**Lemma 1 (Fano Lower Bound).** Let $\hat{S}$ be any estimator of $S$ based on $\phi(X)$. If $\phi$ is $\delta_phi$-weak:
 
-$$P(\hat{S} \neq S) \geq \frac{H(S) - \delta - \log 2}{\log K_S}$$
+$$P(\hat{S} \neq S) \geq \frac{H(S) - \delta_phi - \log 2}{\log K_S}$$
 
 *Proof*: Direct application of Fano's inequality. $\square$
 
 **Corollary 1.1 (Uniform states).** When $H(S) \approx \log K_S$:
 
-$$P(\hat{S} \neq S) \geq 1 - \frac{\delta + \log 2}{\log K_S}$$
+$$P(\hat{S} \neq S) \geq 1 - \frac{\delta_phi + \log 2}{\log K_S}$$
 
-As $\delta \to 0$ with fixed $K_S$, this approaches $1 - \log 2 / \log K_S > 0$.
+As $\delta_phi \to 0$ with fixed $K_S$, this approaches $1 - \log 2 / \log K_S > 0$.
 
 **Corollary 1.2 (Achievability).** The Bayes-optimal classifier achieves:
 
-$$P(\hat{S} \neq S) \leq \frac{\delta + \log 2}{\log K_S}$$
+$$P(\hat{S} \neq S) \leq \frac{\delta_phi + \log 2}{\log K_S}$$
 
 This is an existence result; no guarantee for specific algorithms (e.g., k-means).
 
@@ -97,13 +99,13 @@ This is an existence result; no guarantee for specific algorithms (e.g., k-means
 
 ## 4 Lemma 2: SCX Estimation Degradation
 
-**Lemma 2 (SCX Reliability Degradation).** If $\phi$ is $\delta$-weak:
+**Lemma 2 (SCX Reliability Degradation).** If $\phi$ is $\delta_phi$-weak:
 
 $$\mathbb{E}\left[|C(\hat{S}) - C(S)|\right] \leq 2 \cdot P(\hat{S} \neq S) + O\!\left(\frac{1}{\sqrt{n_{\min}}}\right)$$
 
 *Proof*: Decompose into correct/incorrect estimation cases. $\square$
 
-**Corollary 2.1 (Consistency collapse).** As $\delta \to 0$:
+**Corollary 2.1 (Consistency collapse).** As $\delta_phi \to 0$:
 
 $$C(\hat{S}) \xrightarrow{p} \bar{C} \equiv \sum_{s} \rho(s) C(s)$$
 
@@ -121,49 +123,49 @@ SCX degrades to the loss baseline detector.
 
 ### 5.1 Statement
 
-**Theorem 2 (Weak Feature Failure).** Let $\phi$ be a $\delta$-weak feature map. Let $h_{\text{SCX}}$ be the SCX noise detector. Then:
+**Theorem 2 (Weak Feature Failure).** Let $\phi$ be a $\delta_phi$-weak feature map. Let $K_S = |\mathcal{S}|$ be the number of true states, with $K_S \geq 2$ (the degenerate single-state case $K_S = 1$ yields vacuous bounds — $\log 1 = 0$ in Fano's inequality, and the state estimation problem is trivial). Let $h_{\text{SCX}}$ be the SCX noise detector. Then:
 
 **(a) AUC bound**:
 
-$$AUC(h_{\text{SCX}}) \leq AUC_{\text{base}} + \rho(\delta) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)$$
+$$AUC(h_{\text{SCX}}) \leq AUC_{\text{base}} + \rho(\delta_phi) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)$$
 
 **(b) PR-AUC bound**:
 
-$$PRAUC(h_{\text{SCX}}) \leq PRAUC_{\text{base}} + \rho(\delta) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)$$
+$$PRAUC(h_{\text{SCX}}) \leq PRAUC_{\text{base}} + \rho(\delta_phi) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)$$
 
 **(c) F1 bound**: There exists a universal constant $C_F$ (typically $C_F \leq 2$ for $\text{Precision}, \text{Recall} \geq 0.1$) such that:
 
-$$F1(h_{\text{SCX}}) \leq F1_{\text{base}} + C_F \cdot \rho(\delta)$$
+$$F1(h_{\text{SCX}}) \leq F1_{\text{base}} + C_F \cdot \rho(\delta_phi)$$
 
-where $\rho(\delta)$ is the total-variation bound derived from the Bretagnolle-Huber inequality:
+where $\rho(\delta_phi)$ is the total-variation bound derived from the Bretagnolle-Huber inequality:
 
-$$\rho(\delta) = \sqrt{1 - e^{-\delta}}$$
+$$\rho(\delta_phi) = \sqrt{1 - e^{-\delta_phi}}$$
 
 ### 5.2 Bretagnolle-Huber vs. Pinsker: Tightening Analysis
 
-The original proof used Pinsker's inequality: $\operatorname{TV}(P, \tilde{P}) \leq \sqrt{\delta/2}$. We replace it with the Bretagnolle-Huber inequality (Tsybakov, 2009, Lemma 2.6):
+The original proof used Pinsker's inequality: $\operatorname{TV}(P, \tilde{P}) \leq \sqrt{\delta_phi/2}$. We replace it with the Bretagnolle-Huber inequality (Tsybakov, 2009, Lemma 2.6):
 
-$$\operatorname{TV}(P, \tilde{P}) \leq \sqrt{1 - e^{-\delta}}$$
+$$\operatorname{TV}(P, \tilde{P}) \leq \sqrt{1 - e^{-\delta_phi}}$$
 
-**Why this is tighter**: For small $\delta$, expand both:
+**Why this is tighter**: For small $\delta_phi$, expand both:
 
-$$\text{Pinsker: } \sqrt{\frac{\delta}{2}} \approx 0.707\sqrt{\delta}, \qquad \text{BH: } \sqrt{1 - e^{-\delta}} \approx \sqrt{\delta}$$
+$$\text{Pinsker: } \sqrt{\frac{\delta_phi}{2}} \approx 0.707\sqrt{\delta_phi}, \qquad \text{BH: } \sqrt{1 - e^{-\delta_phi}} \approx \sqrt{\delta_phi}$$
 
-The BH bound is larger by a factor of $\sqrt{2}$ in the small-$\delta$ regime. However, this is because we are comparing the **same quantity** (TV) bounded by two different inequalities, and BH gives a **tighter** bound because it uses a sharper form of the relationship between KL and TV.
+The BH bound is larger by a factor of $\sqrt{2}$ in the small-$\delta_phi$ regime. However, this is because we are comparing the **same quantity** (TV) bounded by two different inequalities, and BH gives a **tighter** bound because it uses a sharper form of the relationship between KL and TV.
 
 Wait -- let us clarify. The Bretagnolle-Huber inequality is actually:
 
 $$\operatorname{TV}(P, Q) \leq \sqrt{1 - \exp(-2\operatorname{KL}(P\|Q))}$$
 
-when stated in its canonical form involving **both** the TV and the squared Hellinger distance. Using the form $\operatorname{TV} \leq \sqrt{1 - e^{-\delta}}$ corresponds to an intermediate bound that is particularly useful in our setting because:
+when stated in its canonical form involving **both** the TV and the squared Hellinger distance. Using the form $\operatorname{TV} \leq \sqrt{1 - e^{-\delta_phi}}$ corresponds to an intermediate bound that is particularly useful in our setting because:
 
-1. **It remains $\leq 1$ for all $\delta$**, unlike Pinsker which exceeds 1 for $\delta > 2$.
-2. **For $\delta \ll 1$**, $\sqrt{1 - e^{-\delta}} \approx \sqrt{\delta}$ which yields the correct small-sample scaling.
-3. **For any $\delta$**, the BH form integrates naturally with the F1 Lipschitz argument because it directly bounds $\operatorname{TV}$ without the $\sqrt{1/2}$ attenuation that Pinsker introduces.
+1. **It remains $\leq 1$ for all $\delta_phi$**, unlike Pinsker which exceeds 1 for $\delta_phi > 2$.
+2. **For $\delta_phi \ll 1$**, $\sqrt{1 - e^{-\delta_phi}} \approx \sqrt{\delta_phi}$ which yields the correct small-sample scaling.
+3. **For any $\delta_phi$**, the BH form integrates naturally with the F1 Lipschitz argument because it directly bounds $\operatorname{TV}$ without the $\sqrt{1/2}$ attenuation that Pinsker introduces.
 
 The practical effect on the bound constants is shown below:
 
-| $\delta$ (nats) | $\sqrt{\delta/2}$ | $\sqrt{1-e^{-\delta}}$ | AUC bound ratio |
+| $\delta_phi$ (nats) | $\sqrt{\delta_phi/2}$ | $\sqrt{1-e^{-\delta_phi}}$ | AUC bound ratio |
 |:---:|:---:|:---:|:---:|
 | $10^{-4}$ | 0.0071 | 0.0100 | 1.41$\times$ |
 | $10^{-3}$ | 0.0224 | 0.0316 | 1.41$\times$ |
@@ -174,11 +176,11 @@ The practical effect on the bound constants is shown below:
 | 2.00 | 1.0000 | 0.9297 | 0.93$\times$ |
 | 5.00 | 1.5811 | 0.9933 | 0.63$\times$ |
 
-The BH bound is numerically larger for $\delta < 2$ nats, but this is because BH is **asymptotically sharp** for small $\delta$ -- it converges to $\sqrt{\delta}$ which is the exact rate given by the local relationship between KL divergence and Hellinger distance. Pinsker's $\sqrt{\delta/2}$ is a relaxation that loses a constant factor. For $\delta > 2$ nats, Pinsker exceeds 1 (becoming vacuous) while BH remains in $[0,1]$.
+The BH bound is numerically larger for $\delta_phi < 2$ nats, but this is because BH is **asymptotically sharp** for small $\delta_phi$ -- it converges to $\sqrt{\delta_phi}$ which is the exact rate given by the local relationship between KL divergence and Hellinger distance. Pinsker's $\sqrt{\delta_phi/2}$ is a relaxation that loses a constant factor. For $\delta_phi > 2$ nats, Pinsker exceeds 1 (becoming vacuous) while BH remains in $[0,1]$.
 
-**Practical implication**: For the typical range $\delta \in [10^{-4}, 1]$, the BH bound is $1.1$ to $1.4\times$ larger than Pinsker. The user of Theorem 2 should use the tighter (smaller) of the two bounds at their operating $\delta$:
+**Practical implication**: For the typical range $\delta_phi \in [10^{-4}, 1]$, the BH bound is $1.1$ to $1.4\times$ larger than Pinsker. The user of Theorem 2 should use the tighter (smaller) of the two bounds at their operating $\delta_phi$:
 
-$$\rho^*(\delta) = \min\left(\sqrt{\frac{\delta}{2}},\; \sqrt{1 - e^{-\delta}}\right)$$
+$$\rho^*(\delta_phi) = \min\left(\sqrt{\frac{\delta_phi}{2}},\; \sqrt{1 - e^{-\delta_phi}}\right)$$
 
 ### 5.3 Proof Structure
 
@@ -186,18 +188,18 @@ The proof is unchanged from the original; only the TV bound is replaced. We reca
 
 **Step 1**: Construct auxiliary distribution $\tilde{P}(\phi, S) = P(\phi)P(S)$ where $\phi \perp S$.
 
-**Step 2**: $\operatorname{KL}(P \| \tilde{P}) = I(\phi; S) = \delta$, hence $\operatorname{TV}(P, \tilde{P}) \leq \rho(\delta)$.
+**Step 2**: $\operatorname{KL}(P \| \tilde{P}) = I(\phi; S) = \delta_phi$, hence $\operatorname{TV}(P, \tilde{P}) \leq \rho(\delta_phi)$.
 
-**Step 3**: By the data processing inequality, $\operatorname{TV}(P_{\text{pred}}, \tilde{P}_{\text{pred}}) \leq \rho(\delta)$ where $P_{\text{pred}}$ is the joint distribution of $(\hat{z}_{\text{SCX}}(X), Z)$.
+**Step 3**: By the data processing inequality, $\operatorname{TV}(P_{\text{pred}}, \tilde{P}_{\text{pred}}) \leq \rho(\delta_phi)$ where $P_{\text{pred}}$ is the joint distribution of $(\hat{z}_{\text{SCX}}(X), Z)$.
 
 **Step 4**: Under $\tilde{P}$ (where $\phi \perp S$), SCX degrades to the loss baseline (Corollary 2.2): $AUC_{\tilde{P}} = AUC_{\text{base}}$, etc.
 
 **Step 5**: TV bounds transfer to performance metrics:
 
 - For AUC/PR-AUC (involving two independent samples from $Z=1$ and $Z=0$):
-  $$|AUC_P - AUC_{\tilde{P}}| \leq \rho(\delta) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)$$
+  $$|AUC_P - AUC_{\tilde{P}}| \leq \rho(\delta_phi) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)$$
 - For F1 (joint distribution function, Lipschitz constant $C_F$):
-  $$|F1_P - F1_{\tilde{P}}| \leq C_F \cdot \rho(\delta)$$
+  $$|F1_P - F1_{\tilde{P}}| \leq C_F \cdot \rho(\delta_phi)$$
 
 **Step 6**: Combine. $\square$
 
@@ -211,7 +213,7 @@ The $\eta$ dependence in the AUC/PR-AUC bounds is a critical structural feature 
 
 The amplification factor $1/\eta + 1/(1-\eta)$ arises from converting **marginal** TV bounds to **conditional** TV bounds:
 
-$$\operatorname{TV}(P(\cdot \mid Z=1), \tilde{P}(\cdot \mid Z=1)) \leq \frac{\operatorname{TV}(P, \tilde{P})}{\mathbb{P}(Z=1)} = \frac{\rho(\delta)}{\eta}$$
+$$\operatorname{TV}(P(\cdot \mid Z=1), \tilde{P}(\cdot \mid Z=1)) \leq \frac{\operatorname{TV}(P, \tilde{P})}{\mathbb{P}(Z=1)} = \frac{\rho(\delta_phi)}{\eta}$$
 
 This is not an artifact of the proof technique -- it reflects a genuine statistical phenomenon: when noise is rare ($\eta \ll 1$), the conditional distribution of features given $Z=1$ is estimated from very few samples, making it harder to distinguish from the $Z=0$ distribution.
 
@@ -239,13 +241,29 @@ As $\eta \to 0$, the bound diverges: $1/\eta + 1/(1-\eta) \to \infty$. This is n
 
 **Comparison with Theorem 1**: Theorem 1's F1 bound also involves $1/\eta$, but for a different reason (the conversion from per-class error bounds to F1). In Theorem 1, $1/\eta$ multiplies the exponential term and is mitigated by the exponential factor. In Theorem 2, the $1/\eta$ factor is additive and not mitigated by any sample size effect.
 
+### 6.4 Boundary Behavior: $\eta = 0$ and $\eta = 1$
+
+The theorem statement **excludes** the boundary cases $\eta = 0$ and $\eta = 1$. This is not a limitation but a reflection of degeneracy:
+
+**$\eta = 0$ (no noise).** If there is no label noise, the noise detection problem is trivial — there are no noise samples to detect. $P(Z=1) = 0$ means the conditional distribution $P(\cdot \mid Z=1)$ is undefined (conditioning on a measure-zero event). The AUC/PR-AUC bounds, which involve $1/\eta$, diverge, correctly signaling that noise detection metrics are not meaningful when noise is absent. In this case, one should simply use all data for training without noise filtering.
+
+**$\eta = 1$ (all noise).** If all labels are noisy, $P(Z=0) = 0$ and the conditional distribution $P(\cdot \mid Z=0)$ is undefined. The $1/(1-\eta)$ term diverges. Again, this is correct: if all data are noise, there are no clean samples to serve as a reference, and the noise detection problem is ill-posed. In this case, one should use robust estimation or outlier detection rather than supervised noise filtering.
+
+**Practical note.** In any real application, $0 < \eta < 1$ strictly (there is always some noise and always some clean data). The restriction to the open interval $(0,1)$ is therefore non-restrictive in practice. The theorem's divergence at the boundaries is not a bug — it correctly reflects that the problem becomes degenerate when one class is absent.
+
+**Formal adjustment to the proof.** In Step 5 of the proof (§5.3), the conversion from marginal TV to conditional TV uses:
+
+$$\operatorname{TV}(P(\cdot \mid Z=1), \tilde{P}(\cdot \mid Z=1)) \leq \frac{\operatorname{TV}(P, \tilde{P})}{\eta}$$
+
+This step is valid only when $\eta > 0$. Similarly, the $Z=0$ conditional bound requires $1-\eta > 0$. The theorem therefore requires $\eta \in (0,1)$. At the boundaries, the theorem is vacuous (the bounds are infinite), which is the correct mathematical behavior for a degenerate problem.
+
 ---
 
-## 7 Estimation of $\delta$ from Data
+## 7 Estimation of $\delta_phi$ from Data
 
 ### 7.1 k-NN Mutual Information Estimation (Kraskov et al., 2004)
 
-Even without the BBP spectral proxy, the mutual information $\delta = I(\phi; S)$ can be estimated directly from data using the Kraskov-Stoegbauer-Grassberger (KSG) estimator:
+Even without the BBP spectral proxy, the mutual information $\delta_phi = I(\phi; S)$ can be estimated directly from data using the Kraskov-Stoegbauer-Grassberger (KSG) estimator:
 
 $$\hat{I}_{\text{KSG}}(\phi; S) = \psi(K) + \psi(N) - \frac{1}{N} \sum_{i=1}^N \left[\psi(n_{\phi(i)}+1) + \psi(n_{s(i)}+1)\right]$$
 
@@ -258,14 +276,14 @@ where:
 
 **Practical implementation**:
 - Requires: feature vectors $\{\phi(x_i)\}$ and (proxy) state labels $\{s_i\}$
-- Even noisy/estimated state labels yield a lower bound on $\delta$ (by the data processing inequality)
+- Even noisy/estimated state labels yield a lower bound on $\delta_phi$ (by the data processing inequality)
 - Python: available via `sklearn.feature_selection.mutual_info_classif` (discrete $S$) or `sklearn.feature_selection.mutual_info_regression` (continuous $S$)
 
 **Caveat**: When state labels are themselves estimated (e.g., via clustering), $\hat{I}_{\text{KSG}}(\phi; \hat{S})$ is a **lower bound** on $I(\phi; S)$:
 
 $$I(\phi; \hat{S}) \leq I(\phi; S)$$
 
-by the data processing inequality ($S \to \phi \to \hat{S}$ is Markov). Hence $\hat{I}_{\text{KSG}}(\phi; \hat{S}) \leq \delta$, and using it in Theorem 2 yields a conservative bound (the true $\delta$ may be larger, making the bound looser).
+by the data processing inequality ($S \to \phi \to \hat{S}$ is Markov). Hence $\hat{I}_{\text{KSG}}(\phi; \hat{S}) \leq \delta_phi$, and using it in Theorem 2 yields a conservative bound (the true $\delta_phi$ may be larger, making the bound looser).
 
 ### 7.2 Quick Diagnostic via Normalized Weakness
 
@@ -273,14 +291,14 @@ For practitioners who need a quick check without full mutual information estimat
 
 1. Cluster $\phi$ to get estimated states $\hat{S}$
 2. Compute consistency scores $C(\hat{s})$ for each estimated state
-3. If $\operatorname{Var}(\{C(\hat{s})\}) < 0.01$, the feature is likely $\delta$-weak with $\varepsilon_\phi > 0.5$
+3. If $\operatorname{Var}(\{C(\hat{s})\}) < 0.01$, the feature is likely $\delta_phi$-weak with $\varepsilon_\phi > 0.5$
 4. For a quantitative estimate, compute $\hat{I}_{\text{KSG}}$ or use the ARI between $\hat{S}$ and any available metadata
 
 ---
 
 ## 8 Corollaries
 
-### 8.1 Corollary 1: Complete Failure ($\delta = 0$)
+### 8.1 Corollary 1: Complete Failure ($\delta_phi = 0$)
 
 If $\phi(X) \perp S$, then:
 
@@ -297,37 +315,37 @@ $$AUC_{\text{base}} = 0.5, \quad PRAUC_{\text{base}} = \eta, \quad F1_{\text{bas
 Then:
 
 $$\begin{aligned}
-AUC(h_{\text{SCX}}) &\leq 0.5 + \rho(\delta) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right) \\
-F1(h_{\text{SCX}}) &\leq \frac{2\eta}{1+\eta} + C_F \cdot \rho(\delta)
+AUC(h_{\text{SCX}}) &\leq 0.5 + \rho(\delta_phi) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right) \\
+F1(h_{\text{SCX}}) &\leq \frac{2\eta}{1+\eta} + C_F \cdot \rho(\delta_phi)
 \end{aligned}$$
 
-When $\delta = 0$, SCX is bounded by the random baseline.
+When $\delta_phi = 0$, SCX is bounded by the random baseline.
 
 ### 8.3 Corollary 3: Minimum Information for Improvement
 
 To exceed the baseline by $\Delta$ in F1, the required minimum mutual information is:
 
-$$\delta_{\min} \geq -\log\!\left(1 - \left(\frac{\Delta}{C_F}\right)^2\right) \approx \left(\frac{\Delta}{C_F}\right)^2 \quad \text{for small } \Delta$$
+$$\delta_phi_{\min} \geq -\log\!\left(1 - \left(\frac{\Delta}{C_F}\right)^2\right) \approx \left(\frac{\Delta}{C_F}\right)^2 \quad \text{for small } \Delta$$
 
 For AUC, with $\eta$ dependence:
 
-$$\delta_{\min} \geq -\log\!\left(1 - \left(\Delta_{AUC} \cdot \frac{\eta(1-\eta)}{\min(\eta, 1-\eta)}\right)^2\right)$$
+$$\delta_phi_{\min} \geq -\log\!\left(1 - \left(\Delta_{AUC} \cdot \frac{\eta(1-\eta)}{\min(\eta, 1-\eta)}\right)^2\right)$$
 
 **Example**: For $\Delta_{F1} = 0.05$ with $C_F = 2$:
 
-$$\delta_{\min} \geq -\log(1 - 0.05^2/4) \approx 0.000625 \text{ nats}$$
+$$\delta_phi_{\min} \geq -\log(1 - 0.05^2/4) \approx 0.000625 \text{ nats}$$
 
 This is a very small amount of mutual information -- confirming that SCX can extract value from even weak features, as long as they are not completely uninformative.
 
 ### 8.4 Corollary 4: State Count Interaction
 
-The normalized weakness $\varepsilon_\phi = \delta / \log K_S$ determines SCX effectiveness:
+The normalized weakness $\varepsilon_\phi = \delta_phi / \log K_S$ determines SCX effectiveness:
 
 - $\varepsilon_\phi \approx 1$: SCX degrades to baseline
 - $\varepsilon_\phi \approx 0.5$: partial effectiveness
 - $\varepsilon_\phi \approx 0$: strong feature, full SCX capability
 
-Larger $K_S$ demands larger $\delta$ to maintain the same $\varepsilon_\phi$.
+Larger $K_S$ demands larger $\delta_phi$ to maintain the same $\varepsilon_\phi$.
 
 ---
 
@@ -347,7 +365,7 @@ Larger $K_S$ demands larger $\delta$ to maintain the same $\varepsilon_\phi$.
 When $\varepsilon_\phi > 0.5$:
 
 1. **Enhance features**: Use stronger descriptors (ACE/SOAP/MACE) or error-driven feature learning
-2. **Reduce $K_S$**: Fewer states reduce the demand on $\delta$
+2. **Reduce $K_S$**: Fewer states reduce the demand on $\delta_phi$
 3. **Abandon state conditioning**: Use global loss threshold directly
 4. **Reformulate**: Use cross-validation consistency or temporal anomaly detection
 
@@ -358,9 +376,9 @@ When $\varepsilon_\phi > 0.5$:
 | | Theorem 1 | Theorem 2 | Theorem 3 |
 |---|-----------|-----------|-----------|
 | **Answer** | When SCX **can** work | When SCX **cannot** work | Why assumptions are **necessary** |
-| **Key quantity** | $\Delta_s$, $\mu_s$, $M$ | $\delta = I(\phi; S)$ | A1-A6 validity |
+| **Key quantity** | $\Delta_s$, $\mu_s$, $M$ | $\delta_phi = I(\phi; S)$ | A1-A6 validity |
 | **Condition** | Good state partition | $\varepsilon_\phi > 0.5$ | Without A1-A6, unidentifiable |
-| **Guarantee** | Exponential F1 $\to 1$ | Bounded by baseline $+ O(\sqrt{\delta})$ | No guarantee possible |
+| **Guarantee** | Exponential F1 $\to 1$ | Bounded by baseline $+ O(\sqrt{\delta_phi})$ | No guarantee possible |
 
 The three theorems together give:
 
@@ -381,6 +399,6 @@ $$\text{SCX Advantage} \approx I(\phi; S) - O(1/\sqrt{n}) - \text{(assumption vi
 
 **Revision notes (2026-06-27)**:
 1. **Bretagnolle-Huber**: Replaced Pinsker with BH bound; added comparison table and guidance on selecting the tighter bound.
-2. **$\delta$ estimation**: Added Section 7 with k-NN mutual information estimation (Kraskov et al., 2004).
+2. **$\delta_phi$ estimation**: Added Section 7 with k-NN mutual information estimation (Kraskov et al., 2004).
 3. **$\eta$ dependence**: Added Section 6 analyzing how rare noise amplifies the bound; included practical diagnostics.
 4. **Presentation**: Unified notation; added explicit cross-theorem dependency mapping.

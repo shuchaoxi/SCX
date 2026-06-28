@@ -48,7 +48,9 @@ $$D_m \sim \mathcal{D}^{n_m}, \quad D_m \cap D_{m'} = \varnothing, \quad D_m \pe
 
 **(A2) 清洁数据上的条件独立**: 对任意清洁样本 $(x, y)$（$y = y^*$），给定 $x$ 的条件下，错误指示变量 $\{e_m(x, y)\}_{m=1}^M$ 是条件独立的。
 
-*合理性说明*: $e_m(x, y) = \mathbf{1}\{\ell(f_m(x), y) > \tau\}$ 仅依赖于 $f_m(x)$，而 $f_m$ 是 $D_m$ 的函数。由 (A1) 知 $D_m$ 互相独立，因此给定 $x$，$\{f_m(x)\}_m$ 和 $\{e_m\}_m$ 均条件独立。
+*合理性说明与局限*: A2 是一种**结构性假设**，由专家实验设计（不相交训练集 A1、独立初始化）所论证，但**A1 并不蕴含 A2**。即使训练集完全不相交，在相似数据分布上训练的专家可能在分布外样本上产生**相关错误**（源于共享归纳偏置，非共享训练数据）。因此 A2 在 SCX 流水线的数据中**不可经验检验**——对连续输入空间 $\mathcal{X}$，每个 $x$ 在有限数据集中最多出现一次，联合分布 $P(e_1, \dots, e_M \mid x)$ 不可观测。
+>
+> **当 A2 被违反时**（实际中常见）：用 $M_{\text{eff}} = M/(1 + (M-1)\bar{\rho})$ 替换所有集中不等式中的 $M$，其中 $\bar{\rho}$ 为专家错误指标的平均成对相关性。对典型深度集成，$\bar{\rho} \approx 0.1$–$0.3$。建议在留置验证集上估计 $\bar{\rho}$，并用 $M_{\text{eff}}$ 得到保守保证。详细分析参见 `01_symbol_system.md` §12.5。
 
 **(A3) 有界损失**: $\ell(a, b) \in [0, B], \; \forall a, b \in \mathcal{Y}$，其中 $B < \infty$。
 
@@ -124,7 +126,7 @@ $$\begin{aligned}
 
 ### 1.4 主定理 (Main Result)
 
-**Theorem 1 (SCX 噪声检测保证).** 设假设 (A1)-(A6) 成立。令 $\rho_s = \mathbb{P}(X \in s)$ 为状态概率。对任意阈值 $\theta$ 满足 $\mu_s < \theta < 1 - C_{\text{bal}} \cdot \frac{\mu_s}{K-1}$ 的状态 $s$，定义状态级分离间隙：
+**Theorem 1 (SCX 噪声检测保证).** 设假设 (A1)-(A6) 成立，且 $M \geq 1$（至少一个专家），$K \geq 2$（至少两个标签类别，以保证 $K-1 > 0$）。令 $\rho_s = \mathbb{P}(X \in s)$ 为状态概率。对任意阈值 $\theta$ 满足 $\mu_s < \theta < 1 - C_{\text{bal}} \cdot \frac{\mu_s}{K-1}$ 的状态 $s$，定义状态级分离间隙：
 
 $$\Delta_s = \min\left(\theta - \mu_s,\; 1 - C_{\text{bal}} \cdot \frac{\mu_s}{K-1} - \theta\right) > 0$$
 
@@ -508,6 +510,8 @@ $$\exp(-2M\Delta^2) \geq \exp(-M \cdot \text{KL}(\mu + \Delta \,\|\, \mu))$$
 
 等号仅当 $\Delta \to 0$ 时渐近成立。在实际参数范围（$\Delta \approx 0.1\text{-}0.4$）内，Chernoff 界可紧 $2\text{-}5$ 倍。
 
+> **DEFECT-06 同步 (2026-06-28) — Bahadur-Rao 格点修正**: 当专家错误为 Bernoulli 分布（格点跨度 $h=1$）时，正确的 Bahadur-Rao 展开在 Chernoff 界中引入因子 $(1-e^{-\lambda^*})^{-1}$ 替代 $1/\lambda^*$。修正后的极小极大常数 $C_{\min}^{\text{(corr)}}$ 与原始 $C_{\min}$ 相差约 $5$–$12\%$，极小极大最优性结论不变（可达界与下界接受相同的格点修正因子）。详细推导见 `06_fixed_point_convergence.md` §12（Remark on Bahadur-Rao Lattice Correction）。
+
 ## 附录 B：非 0-1 损失的推广
 
 Theorem 1 对一般有界损失 $\ell \in [0, B]$ 也成立，只需将 Lemma 1 中的 $e_m$ 解释为 $\mathbf{1}\{\ell(f_m(x), y) > \tau\}$。核心推导不变，因为 Lemma 1 仅依赖条件期望的线性性质和噪声标签的均匀性假设 (A4)，不依赖 0-1 损失的具体形式。
@@ -517,3 +521,12 @@ Theorem 1 对一般有界损失 $\ell \in [0, B]$ 也成立，只需将 Lemma 1 
 $$ \mathbb{E}[C \mid \text{noise}, x] \geq 1 - \mathbb{E}[C \mid \text{clean}, x] $$
 
 即 $K \to \infty$ 的极限情况。此时分离间隙对任意 $\mu_s < 1/2$ 为正。这是因为在连续标签空间中，专家恰好预测到噪声标签的概率为零，使噪声检测更容易。Theorem 1 的其余部分不变。
+
+---
+## Changelog
+
+| Date | Issue | Change | Severity |
+|------|-------|--------|----------|
+| 2026-06-28 | B1 | **Fixed A2 self-contradiction.** Updated A2 rationale to acknowledge A1 does NOT guarantee A2. Added $M_{\text{eff}}$ degradation formula and cross-reference to `01_symbol_system.md` §12.5. | BLOCKING |
+| 2026-06-28 | B6 | **Added $M \geq 1$, $K \geq 2$ to Theorem 1 preamble.** Explicitly excludes degenerate edge cases where consensus score is undefined or $K-1=0$. | BLOCKING |
+| 2026-06-28 | B10 | **Synced DEFECT-06 (Bahadur-Rao lattice correction)** to Theorem 1 appendix. Added cross-reference to `06_fixed_point_convergence.md` §12. | BLOCKING |

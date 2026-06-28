@@ -62,6 +62,8 @@ We inherit the following from THEOREMS_UNIFIED.md. Any symbol not redefined belo
 | $\phi: \mathcal{X} \to \mathbb{R}^{d_\phi}$ | Feature representation | Thm 2, 5 |
 | $\theta$ (detection) | Detection threshold (static setting) | Thm 1, 4' |
 
+> **Notation warning (B3 fix — cross-reference):** $\mathcal{S}$ (calligraphic) denotes the **state space** (a finite index set). $S_t$ (italic with time subscript $t$) denotes the **gatekeeper scoring function** $S_t: \mathcal{X} \times \mathcal{Y} \to [0,1]$ at time $t$, defined in §6. These are entirely distinct objects. In the core SCX theory (Theorems 1-3), $S$ refers to the state random variable; in self-evolution docs, $S_t$ refers to the evolving gatekeeper. **Context disambiguates**: $\mathcal{S}$ = state space; $S_t$ = gatekeeper at time $t$.
+
 ---
 
 ## 3. New Objects for Self-Evolution
@@ -469,7 +471,7 @@ This gives the key insight: the initial gatekeeper is the **inverse** of the con
 
 ### 12.5 Assumption A2: Untestability and Violation Degradation (DEFECT-07 Fix)
 
-**Original claim.** Assumption A2 states that expert errors $e_m(x, y)$ are conditionally independent given the input $x$ when the sample is clean. The original text claimed this is "testable" [可检验] and that Assumption A1 (disjoint training sets) **guarantees** A2.
+**Original claim.** Assumption A2 jointly requires **both** requirements: (i) experts are trained on disjoint data (ensuring training-set independence via A1), **and** (ii) expert errors $e_m(x, y)$ are conditionally independent given the input $x$ when the sample is clean. The original text claimed that A2 is "testable" [可检验] and that Assumption A1 (disjoint training sets) alone **guarantees** A2 — it does not; both requirements must be independently satisfied and neither alone suffices.
 
 **Corrected understanding.** A2 is a **structural assumption** about the expert training process, not an empirically testable condition:
 
@@ -518,7 +520,7 @@ The core assumptions A1-A6 operate at the level of individual expert models and 
 - **B1-B6** guarantee the **evolutionary** improvement is well-behaved
 - Neither set implies the other; a system can satisfy A1-A6 without B1-B6 and vice versa
 
-**Note on A2 degradation (DEFECT-07 fix).** When Assumption A2 (conditional independence of expert errors) is violated — as is common in practice due to shared inductive biases — the effective number of independent experts degrades from $M$ to $M_{\text{eff}} = M/(1+(M-1)\bar{\rho})$. All concentration bounds in both the static theory (Theorem 1) and the self-evolution framework (Proposition SE-1.4) should use $M_{\text{eff}}$ in place of $M$. See Section 12.5 for the full analysis. A2 is not empirically testable from the SCX pipeline's data; it is a structural assumption justified by the experimental design (A1).
+**Note on A2 degradation (DEFECT-07 fix).** Assumption A2 jointly requires: **(i) disjoint training data** (A1), and **(ii) conditionally independent expert errors** given $x$ for clean samples. When requirement (ii) is violated — as is common in practice due to shared inductive biases — the effective number of independent experts degrades from $M$ to $M_{\text{eff}} = M/(1+(M-1)\bar{\rho})$. All concentration bounds in both the static theory (Theorem 1) and the self-evolution framework (Proposition SE-1.4) should use $M_{\text{eff}}$ in place of $M$. See Section 12.5 for the full analysis. Neither requirement (i) nor (ii) alone is sufficient; both must hold for the original concentration bounds to apply at full strength. A2 is not empirically testable from the SCX pipeline's data; it is a structural assumption justified by the experimental design.
 
 ---
 
@@ -563,3 +565,5 @@ The core assumptions A1-A6 operate at the level of individual expert models and 
 |------|--------|--------|----------|
 | 2026-06-28 | DEFECT-07 | **Added A2 untestability and degradation analysis** (Section 12.5). Acknowledged that Assumption A2 (conditional independence of expert errors given $x$) is not empirically testable from SCX pipeline data — for continuous $\mathcal{X}$, each $x$ appears at most once. A1 (disjoint training) does not guarantee A2 when experts share inductive biases. Added quantitative degradation: effective sample size $M_{\text{eff}} = M/(1+(M-1)\bar{\rho})$ where $\bar{\rho}$ is average pairwise error correlation. For $M=10$, $\bar{\rho}=0.3$, $M_{\text{eff}} \approx 2.7$ (severe). Recommendation: estimate $\bar{\rho}$ on held-out validation set and use $M_{\text{eff}}$ in Theorem 1. | MAJOR |
 | 2026-06-28 | — | **Updated Assumption Catalog** (Section 13.1) with cross-reference to A2 degradation analysis. | — |
+| 2026-06-28 | B1 | **A2 statement now consistently states BOTH requirements** (§12.5, §13.1): (i) experts trained on disjoint data, AND (ii) conditionally independent errors. Previously some references mentioned only one requirement. | MAJOR |
+| 2026-06-28 | B3 | **Added explicit notation note** (§2): $\mathcal{S}$ (calligraphic) = state space (finite index set) vs. $S_t$ (italic with subscript) = gatekeeper scoring function at time $t$. These are entirely distinct objects; context disambiguates. | MINOR |

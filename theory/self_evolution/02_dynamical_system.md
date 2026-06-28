@@ -264,9 +264,9 @@ i.e., the NEP performs no worse on samples the gatekeeper admits than on samples
 
 ### 7.1 Concrete Lyapunov Function Candidate
 
-**Definition 23 (Concrete Lyapunov Function Candidate).** Define $\Phi: \mathcal{F} \times \Theta \to \mathbb{R}_{\geq 0}$:
+**Definition 23 (Concrete Lyapunov Function Candidate).** Define $\Psi: \mathcal{F} \times \Theta \to \mathbb{R}_{\geq 0}$:
 
-$$\boxed{\;\Phi(S_t, \theta_t) = \frac{1}{|M_0|} \sum_{x \in M_0} \bigl(S_t(x, y(x)) - \hat{C}(x)\bigr)^2 \;+\; \lambda \cdot \frac{1}{|V_0|} \sum_{(x,y) \in V_0} \ell(f_{\theta_t}(x), y)\;},$$
+$$\boxed{\;\Psi(S_t, \theta_t) = \frac{1}{|M_0|} \sum_{x \in M_0} \bigl(S_t(x, y(x)) - \hat{C}(x)\bigr)^2 \;+\; \lambda \cdot \frac{1}{|V_0|} \sum_{(x,y) \in V_0} \ell(f_{\theta_t}(x), y)\;},$$
 
 where:
 - $M_0 \subset \mathcal{X} \times \mathcal{Y}$ is a **fixed reference set** (e.g., initial samples before self-evolution begins, or an external validation set). $M_0$ does **not** grow with $t$.
@@ -274,36 +274,38 @@ where:
 - $\hat{C}(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{\ell(f_m(x), y) > \tau\}$ is the consensus score computed from the $M$ expert models (fixed),
 - $\lambda > 0$ is a balancing hyperparameter.
 
+> **Notation note (B3 fix):** The Lyapunov function is denoted $\Psi$ (Psi), NOT $\Phi$ (Phi). The symbol $\Phi$ is reserved for the **Update Operator** $\Phi: \mathcal{Z} \to \mathcal{Z}$ defined in Document 01, Section 9. This resolves the $\Phi$-$\Psi$ notation collision identified in the cross-file consistency audit.
+
 **Why a fixed reference set?** The original Lyapunov candidate evaluated both gatekeeper and student losses on the acceptance-biased distribution $P_{S_t}$. This created a **selection bias confound** (DEFECT-04/13): the gatekeeper can decrease its apparent loss by becoming more selective and admitting only "easy" samples, without improving its true discriminative ability. By evaluating on a fixed reference set $M_0$ that does not change with $t$, we ensure that a decrease in $\Phi$ reflects genuine improvement.
 
 ### 7.2 Component Decomposition
 
 The Lyapunov function decomposes into two interpretable terms:
 
-**Gatekeeper term ($\Phi_{\text{gate}}$).** Measures the squared discrepancy between the gatekeeper's score $S_t(x, y(x))$ and the fixed expert consensus $\hat{C}(x)$ on the reference set. This term decreases when the gatekeeper's judgments align better with expert consensus:
-$$\Phi_{\text{gate}}(S_t) = \frac{1}{|M_0|} \sum_{x \in M_0} (S_t(x, y(x)) - \hat{C}(x))^2.$$
+**Gatekeeper term ($\Psi_{\text{gate}}$).** Measures the squared discrepancy between the gatekeeper's score $S_t(x, y(x))$ and the fixed expert consensus $\hat{C}(x)$ on the reference set. This term decreases when the gatekeeper's judgments align better with expert consensus:
+$$\Psi_{\text{gate}}(S_t) = \frac{1}{|M_0|} \sum_{x \in M_0} (S_t(x, y(x)) - \hat{C}(x))^2.$$
 
-**Student term ($\Phi_{\text{student}}$).** Measures the NEP student's prediction error on the verified-clean subset $V_0$. This term decreases when the student learns better representations:
-$$\Phi_{\text{student}}(\theta_t) = \frac{1}{|V_0|} \sum_{(x,y) \in V_0} \ell(f_{\theta_t}(x), y).$$
+**Student term ($\Psi_{\text{student}}$).** Measures the NEP student's prediction error on the verified-clean subset $V_0$. This term decreases when the student learns better representations:
+$$\Psi_{\text{student}}(\theta_t) = \frac{1}{|V_0|} \sum_{(x,y) \in V_0} \ell(f_{\theta_t}(x), y).$$
 
 ### 7.3 Properties
 
-**Proposition 10 (Properties of $\Phi$).**
-1. **Non-negativity**: $\Phi(S, \theta) \geq 0$ for all $(S, \theta)$, with equality iff $S_t(x, y(x)) = \hat{C}(x)$ for all $x \in M_0$ and $f_{\theta_t}(x) = y$ for all $(x,y) \in V_0$.
-2. **Boundedness**: Under Assumption A3 (bounded loss $\ell \leq B$), $\Phi(S, \theta) \leq 1 + \lambda B < \infty$ since $S_t \in [0,1]$ and $\hat{C} \in [0,1]$.
-3. **Continuity**: $\Phi$ is continuous in $(S, \theta)$ under the product metric $d_{\mathcal{Z}}$ if $\ell$ is continuous and $M_0$ is finite.
+**Proposition 10 (Properties of $\Psi$).**
+1. **Non-negativity**: $\Psi(S, \theta) \geq 0$ for all $(S, \theta)$, with equality iff $S_t(x, y(x)) = \hat{C}(x)$ for all $x \in M_0$ and $f_{\theta_t}(x) = y$ for all $(x,y) \in V_0$.
+2. **Boundedness**: Under Assumption A3 (bounded loss $\ell \leq B$), $\Psi(S, \theta) \leq 1 + \lambda B < \infty$ since $S_t \in [0,1]$ and $\hat{C} \in [0,1]$.
+3. **Continuity**: $\Psi$ is continuous in $(S, \theta)$ under the product metric $d_{\mathcal{Z}}$ if $\ell$ is continuous and $M_0$ is finite.
 
 *Proof.* (1) Sums of squares and non-negative losses. (2) $|S_t - \hat{C}| \leq 1$, so the squared term $\leq 1$; $\ell \leq B$ by A3. (3) Composition of continuous functions; for finite $M_0$, the empirical average is continuous in each argument. $\square$
 
 ### 7.4 Descent Analysis — Honest Assessment
 
-**Definition 24 (Lyapunov Descent Property).** $\Phi$ is a Lyapunov function for the dynamical system $(\mathcal{Z}, \Phi)$ if:
+**Definition 24 (Lyapunov Descent Property).** $\Psi$ is a Lyapunov function for the dynamical system $(\mathcal{Z}, \Phi)$ (where $\Phi$ is the Update Operator) if:
 
-$$\mathbb{E}[\Phi(S_{t+1}, \theta_{t+1}) \mid \mathcal{F}_t] \leq \Phi(S_t, \theta_t) - \eta_t, \quad \eta_t \geq 0,$$
+$$\mathbb{E}[\Psi(S_{t+1}, \theta_{t+1}) \mid \mathcal{F}_t] \leq \Psi(S_t, \theta_t) - \eta_t, \quad \eta_t \geq 0,$$
 
 with $\eta_t > 0$ except at fixed points.
 
-**Theorem 6 (Lyapunov Descent — CONDITIONAL, CONJECTURED).** Under the following jointly sufficient conditions, the candidate $\Phi$ satisfies the descent property:
+**Theorem 6 (Lyapunov Descent — CONDITIONAL, CONJECTURED).** Under the following jointly sufficient conditions, the candidate $\Psi$ satisfies the descent property:
 
 1. **Two-timescale separation (C6')**: $\beta_t = o(\alpha_t)$ — gatekeeper updates are asymptotically slower than student updates.
 2. **Student gradient descent (C2, C4)**: Standard SGD with Robbins-Monro rates on $\alpha_t$.
@@ -313,21 +315,21 @@ with $\eta_t > 0$ except at fixed points.
 
 *Proof sketch (gaps acknowledged).* Decompose the one-step change:
 
-$$\Phi(S_{t+1}, \theta_{t+1}) - \Phi(S_t, \theta_t) = \underbrace{[\Phi_{\text{gate}}(S_{t+1}) - \Phi_{\text{gate}}(S_t)]}_{\text{(A)}} + \lambda \underbrace{[\Phi_{\text{student}}(\theta_{t+1}) - \Phi_{\text{student}}(\theta_t)]}_{\text{(B)}}.$$
+$$\Psi(S_{t+1}, \theta_{t+1}) - \Psi(S_t, \theta_t) = \underbrace{[\Psi_{\text{gate}}(S_{t+1}) - \Psi_{\text{gate}}(S_t)]}_{\text{(A)}} + \lambda \underbrace{[\Psi_{\text{student}}(\theta_{t+1}) - \Psi_{\text{student}}(\theta_t)]}_{\text{(B)}}.$$
 
-**Term (A) — Gatekeeper update on reference set.** The gatekeeper update $S_{t+1} = \Pi_{[0,1]}[S_t + \beta_t(\text{SCXUpdate} - S_t)]$ moves $S_t$ toward $\hat{C}$. However, this movement is **not guaranteed** to reduce $\Phi_{\text{gate}}$ on $M_0$ because SCXUpdate uses data from $M_{t+1}$ (acceptance-biased), not from $M_0$. **Gap: The alignment between SCXUpdate's direction on $M_{t+1}$ and the gradient of $\Phi_{\text{gate}}$ on $M_0$ is not established.** Under exploration (C8), $M_{t+1}$ eventually contains representatives from all regions, so for large $t$, the empirical distributions $P_{M_{t+1}}$ and $P_{M_0}$ become close. But the rate of this convergence depends on the exploration fraction $\varepsilon$ and the data distribution's support.
+**Term (A) — Gatekeeper update on reference set.** The gatekeeper update $S_{t+1} = \Pi_{[0,1]}[S_t + \beta_t(\text{SCXUpdate} - S_t)]$ moves $S_t$ toward $\hat{C}$. However, this movement is **not guaranteed** to reduce $\Psi_{\text{gate}}$ on $M_0$ because SCXUpdate uses data from $M_{t+1}$ (acceptance-biased), not from $M_0$. **Gap: The alignment between SCXUpdate's direction on $M_{t+1}$ and the gradient of $\Psi_{\text{gate}}$ on $M_0$ is not established.** Under exploration (C8), $M_{t+1}$ eventually contains representatives from all regions, so for large $t$, the empirical distributions $P_{M_{t+1}}$ and $P_{M_0}$ become close. But the rate of this convergence depends on the exploration fraction $\varepsilon$ and the data distribution's support.
 
 **Term (B) — Student update on reference set.** The student is trained by SGD on $M_t$ (acceptance-biased), not on $V_0$. A standard SGD step reduces the loss on the training distribution $P_{S_t}$, but may **increase** the loss on the reference distribution $P_{V_0}$. **Gap: The relationship between $\mathbb{E}_{P_{S_t}}[\ell]$ and $\mathbb{E}_{P_{V_0}}[\ell]$ is not controlled.** Under two-timescale separation (C6'), the student takes many steps between gatekeeper updates, converging approximately to a local minimum of the current $P_{S_t}$. The quality of this minimum on $P_{V_0}$ depends on the KL divergence between the distributions:
 $$\mathbb{E}_{P_{V_0}}[\ell(f_\theta)] \leq \mathbb{E}_{P_{S_t}}[\ell(f_\theta)] + D_{KL}(P_{V_0} \| P_{S_t})/C,$$
 which is bounded only if the gatekeeper does not systematically exclude regions of $V_0$.
 
-**Overall assessment.** The descent inequality $\mathbb{E}[\Phi_{t+1} \mid \mathcal{F}_t] \leq \Phi_t - \eta_t$ has **not been rigorously proven**. The decomposition above identifies two critical gaps: (i) alignment of gatekeeper update direction on biased vs. reference data, and (ii) generalization of student improvement from training distribution to reference distribution. The additional conditions (C6', C8, C9) are designed to close these gaps, but their formal sufficiency has not been established. **The descent property is therefore a conjecture, not a theorem.**
+**Overall assessment.** The descent inequality $\mathbb{E}[\Psi_{t+1} \mid \mathcal{F}_t] \leq \Psi_t - \eta_t$ has **not been rigorously proven**. The decomposition above identifies two critical gaps: (i) alignment of gatekeeper update direction on biased vs. reference data, and (ii) generalization of student improvement from training distribution to reference distribution. The additional conditions (C6', C8, C9) are designed to close these gaps, but their formal sufficiency has not been established. **The descent property is therefore a conjecture, not a theorem.**
 
 ### 7.5 Downgraded Convergence Claim
 
-**Conjecture SE-1 (formerly "Theorem SE-1").** With the explicit Lyapunov candidate $\Phi$ defined above and under conditions (C1')-(C9) (see Document 06 for the full condition set), the SCX self-evolution sequence satisfies:
+**Conjecture SE-1 (formerly "Theorem SE-1").** With the explicit Lyapunov candidate $\Psi$ defined above and under conditions (C1')-(C9) (see Document 06 for the full condition set), the SCX self-evolution sequence satisfies:
 
-$$\Phi(S_t, \theta_t) \xrightarrow{a.s.} \Phi_\infty \geq 0,$$
+$$\Psi(S_t, \theta_t) \xrightarrow{a.s.} \Psi_\infty \geq 0,$$
 $$\sum_{t=1}^\infty \bigl( \alpha_t \|\nabla_\theta L_t(\theta_t)\|^2 + \beta_t \|\Delta S_t\|^2 \bigr) < \infty \quad \text{a.s.},$$
 
 and any limit point $(S_\infty, \theta_\infty)$ satisfies the fixed-point equations. The convergence is in the **Cesàro mean** sense rather than monotonic: the Lyapunov function may increase at individual steps but its long-run average decreases.
@@ -510,7 +512,7 @@ The self-evolution dynamics bridge these three fixed points: initialization → 
 | Theorem 4 (general existence) | **Proven** | Brouwer/Schauder fixed point theorem |
 | Theorem 5 (unique existence, convex) | **Proven** | Contraction mapping / convex analysis |
 | Proposition 9 (necessary condition) | **Proven** | By contradiction |
-| Proposition 10 (Lyapunov properties) | **Proven** | Non-negativity, boundedness, continuity of the explicit $\Phi$ are verified for finite $M_0$ |
+| Proposition 10 (Lyapunov properties) | **Proven** | Non-negativity, boundedness, continuity of the explicit $\Psi$ are verified for finite $M_0$ |
 | Theorem 6 (Lyapunov decrease) | **CONJECTURED (was "Proven")** | See DEFECT-03/04. The original proof assumed memory bank growth always improves losses and gradient steps always descend — this ignores the selection bias cycle and distribution shift. The corrected analysis identifies two gaps: (i) alignment of gatekeeper update direction on biased vs. reference data, and (ii) generalization of student improvement across distributions. Descent is conjectured under additional conditions (C6', C8, C9). |
 | Corollary 1 (expected monotonicity) | **CONJECTURED** (depends on Theorem 6) | Conditional on the descent property being proven |
 | Proposition 11 (strict decrease) | **CONJECTURED** (depends on Theorem 6) | Conditional on Theorem 6 and stationarity conditions |
@@ -548,7 +550,7 @@ The dynamical systems concepts used here are standard. Key references for the ma
 
 | Date | Defect | Change | Severity |
 |------|--------|--------|----------|
-| 2026-06-28 | DEFECT-03 | **Explicit Lyapunov function defined.** Replaced the vague composite loss $V(z_t) = \mathbb{E}[L_{\text{gate}}] + \lambda \mathbb{E}[L_{\text{nep}}]$ with a concrete candidate $\Phi(S_t, \theta_t) = \frac{1}{|M_0|}\sum_{x \in M_0}(S_t - \hat{C})^2 + \frac{\lambda}{|V_0|}\sum_{V_0}\ell(f_{\theta_t}, y)$ evaluated on a fixed reference set $M_0$. The function is non-negative, bounded, and well-defined for finite $M_0$. | FATAL |
+| 2026-06-28 | DEFECT-03 | **Explicit Lyapunov function defined.** Replaced the vague composite loss $V(z_t) = \mathbb{E}[L_{\text{gate}}] + \lambda \mathbb{E}[L_{\text{nep}}]$ with a concrete candidate $\Psi(S_t, \theta_t) = \frac{1}{|M_0|}\sum_{x \in M_0}(S_t - \hat{C})^2 + \frac{\lambda}{|V_0|}\sum_{V_0}\ell(f_{\theta_t}, y)$ evaluated on a fixed reference set $M_0$. The function is non-negative, bounded, and well-defined for finite $M_0$. | FATAL |
 | 2026-06-28 | DEFECT-04 | **Honest CONJECTURE status for descent property.** The Lyapunov descent proof (Theorem 6) is acknowledged as **not proven**. Two critical gaps identified: (i) alignment of gatekeeper update direction on biased vs. reference data, and (ii) generalization of student improvement across distributions. Theorem 6 is now labeled CONDITIONAL, CONJECTURED. Corollary 1 and Proposition 11 downgraded to CONJECTURED (depend on Theorem 6). | FATAL |
 | 2026-06-28 | DEFECT-03/13 | **Selection bias confound acknowledged.** Section 7.4 explains why the original Lyapunov candidate (evaluated on acceptance-biased distribution) could decrease without genuine improvement. The reference-set fix (evaluating on $M_0$, $V_0$) eliminates this confound. Additional conditions (C6': two-timescale, C8: exploration, C9: annealing threshold) proposed as mitigation. | FATAL/MAJOR |
 | 2026-06-28 | DEFECT-13/14 | **Cross-reference to selection bias analysis and two-timescale scheduling** in Document 06 (06_fixed_point_convergence.md Sections 5.1 and 3.3). | MAJOR |

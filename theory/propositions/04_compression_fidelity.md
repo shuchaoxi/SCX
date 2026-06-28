@@ -67,20 +67,20 @@ $$
 
 ## 2 核心假设 (Assumptions)
 
-**(A1) 有界损失**: 对任意 $f \in \mathcal{F}$ 和 $(x, y) \sim \mathcal{D}$，
+**(CA1) 有界损失** (Compression Assumption 1): 对任意 $f \in \mathcal{F}$ 和 $(x, y) \sim \mathcal{D}$，
 
 $$
 0 \leq \ell(f(x), y) \leq B < \infty.
 $$
 
-**(A2) 复合类复杂度**: 损失复合类 $\mathcal{L}_{\mathcal{F}} = \{\ell_f: \ell_f(x,y) = \ell(f(x), y) \mid f \in \mathcal{F}\}$ 是 VC 型类，其伪维数 (pseudo-dimension) 为 $d = \text{Pdim}(\mathcal{L}_{\mathcal{F}}) < \infty$。等价地，对任意经验分布 $P_N$，其 $L_2(P_N)$ 覆盖数满足：
+**(CA2) 复合类复杂度** (Compression Assumption 2): 损失复合类 $\mathcal{L}_{\mathcal{F}} = \{\ell_f: \ell_f(x,y) = \ell(f(x), y) \mid f \in \mathcal{F}\}$ 是 VC 型类，其伪维数 (pseudo-dimension) 为 $d = \text{Pdim}(\mathcal{L}_{\mathcal{F}}) < \infty$。等价地，对任意经验分布 $P_N$，其 $L_2(P_N)$ 覆盖数满足：
 
 $$
 \mathcal{N}(\varepsilon, \mathcal{L}_{\mathcal{F}}, L_2(P_N)) \leq \left(\frac{C_K}{\varepsilon}\right)^{2d}, \quad \forall \varepsilon > 0.
 \tag{4}
 $$
 
-**(A3) 冗余-敏感性关联**: 对任意样本 $i \in S_s$，其灵敏度 (sensitivity) $\sigma_i$ 被冗余分数控制：
+**(CA3) 冗余-敏感性关联** (Compression Assumption 3): 对任意样本 $i \in S_s$，其灵敏度 (sensitivity) $\sigma_i$ 被冗余分数控制：
 
 $$
 \sigma_i \;:=\; \sup_{f \in \mathcal{F}} \frac{|\ell(f(x_i), y_i)|}{\sum_{j \in S_s} |\ell(f(x_j), y_j)|} \;\leq\; \frac{1 - D_i}{\sum_{j \in S_s} (1 - D_j)} \cdot C_{\text{cal}},
@@ -89,7 +89,7 @@ $$
 
 其中 $C_{\text{cal}}$ 为校准常数。该假设的直观含义是：高冗余样本（$D_i \approx 1$）在任意假设 $f$ 下的边际贡献很小，因此可以被安全地降采样。下文的推导取 $C_{\text{cal}} = 1$（通过重新缩放吸收到常数中）。
 
-**(A4) 边界保留**: 所有边界样本（$b_i = 1$，即 $D_i = 0$ 的样本）被确定性保留。
+**(CA4) 边界保留** (Compression Assumption 4): 所有边界样本（$b_i = 1$，即 $D_i = 0$ 的样本）被确定性保留。
 
 ---
 
@@ -97,7 +97,7 @@ $$
 
 ### 3.1 定理陈述
 
-**Theorem 1 (Compression Fidelity).** 设状态 $s$ 满足假设 (A1)–(A4)。令 $C_s$ 为 SCX-Compress 以式 (3) 的规模 $n_s'$ 和式 (2) 的冗余分数选择的加权子集，且权重 $\{w_i\}_{i \in C_s}$ 按代码实现归一化满足 $\sum_{i \in C_s} w_i = N_s$。则对任意 $\delta \in (0, 1)$，以概率至少 $1 - \delta$ 成立：
+**Theorem 1 (Compression Fidelity).** 设状态 $s$ 满足假设 (CA1)–(CA4)。令 $C_s$ 为 SCX-Compress 以式 (3) 的规模 $n_s'$ 和式 (2) 的冗余分数选择的加权子集，且权重 $\{w_i\}_{i \in C_s}$ 按代码实现归一化满足 $\sum_{i \in C_s} w_i = N_s$。则对任意 $\delta \in (0, 1)$，以概率至少 $1 - \delta$ 成立：
 
 $$
 \sup_{f \in \mathcal{F}} \bigl| R_S(f) - R_C(f) \bigr|
@@ -137,7 +137,7 @@ $$
 R_S(f) - R_C(f) = \frac{1}{N_s} \sum_{i \in S_s} a_i \cdot \ell_f(x_i, y_i),
 $$
 
-其中 $\sum_i a_i = 0$（由权重归一化保证）。由假设 (A3)，$\{a_i\}$ 满足：
+其中 $\sum_i a_i = 0$（由权重归一化保证）。由假设 (CA3)，$\{a_i\}$ 满足：
 
 $$
 |a_i| \leq \max\!\left\{
@@ -179,7 +179,7 @@ $$
 \;+\; \mathbb{E}\bigl[|R_S - R_C|\bigr],
 $$
 
-其中 $\mathfrak{R}_{m}(\mathcal{L}_{\mathcal{F}})$ 是 $m$ 个样本上的 Rademacher 复杂度。由假设 (A2) 的覆盖数条件，$\mathfrak{R}_{m}(\mathcal{L}_{\mathcal{F}}) \leq B \sqrt{d/m}$。
+其中 $\mathfrak{R}_{m}(\mathcal{L}_{\mathcal{F}})$ 是 $m$ 个样本上的 Rademacher 复杂度。由假设 (CA2) 的覆盖数条件，$\mathfrak{R}_{m}(\mathcal{L}_{\mathcal{F}}) \leq B \sqrt{d/m}$。
 
 **Step 4 — 代入 $N_{\text{eff}}$ 与 $n_s'$ 的关系**  
 
@@ -279,7 +279,7 @@ $$
 
 ### 5.2 SCX-Compress 的灵敏度实现
 
-由假设 (A3)，SCX-Compress 实际上使用了 $D_i$ 作为灵敏度的代理变量。将 $p_i \propto 1 - D_i$ 代入 Feldman-Langberg 框架，可得总灵敏度 $T$ 的界：
+由假设 (CA3)，SCX-Compress 实际上使用了 $D_i$ 作为灵敏度的代理变量。将 $p_i \propto 1 - D_i$ 代入 Feldman-Langberg 框架，可得总灵敏度 $T$ 的界：
 
 $$
 T = \sum_i \sigma_i \;\leq\; \sum_i \frac{1 - D_i}{\sum_j (1 - D_j)} = 1.
@@ -433,3 +433,11 @@ $$
 | 与 Theorem 1 的关系 | 无 | 核心依赖 |
 
 **结论**：With Theorem 1, the compression fidelity theorem is now fully self-contained — all quantities can be estimated from observable data without ground truth labels.
+
+---
+
+## Changelog
+
+| Date | Defect | Change | Severity |
+|------|--------|--------|----------|
+| 2026-06-28 | B3 | **Renamed A1–A4 to CA1–CA4**: Compression-specific assumptions renamed from A1–A4 to CA1–CA4 (Compression Assumptions) throughout the file to resolve notation collision with globally defined A1–A4 (disjoint training, conditional independence, bounded loss, uniform noise). Fixes FAIL-1 from cross-reference audit. | FATAL |

@@ -256,6 +256,29 @@ i.e., $R_{\text{Global}} \geq R_{\text{SC}}$, exactly the result of Theorem 2.
 
 The concavity perspective reveals that state conditioning exploits the **averaging-is-beneficial** property of concave functions: the average of per-state minima is no worse than the minimum of the average distribution.
 
+### 8.1 Entropy Interpretation of the Gap
+
+The state-conditioning advantage admits an information-theoretic interpretation via entropy. Let $w_{\text{global}} \in \Delta^{M-1}$ denote the globally optimal weight vector, and let $w^*(s) \in \Delta^{M-1}$ denote the optimal weight vector for state $s$. Define the entropy of a weight distribution as $H(w) = -\sum_{m=1}^M w_m \log w_m$.
+
+By concavity of entropy, for any mixture of distributions:
+$$H\!\left(\sum_s P(s) \cdot w^*(s)\right) \geq \sum_s P(s) \cdot H(w^*(s)) = \mathbb{E}_s[H(w^*(s))].$$
+
+Under the typical condition that $w_{\text{global}}$ approximates the state-average of per-state optima (i.e., $w_{\text{global}} \approx \mathbb{E}_s[w^*(s)]$, which holds exactly when the global risk minimizer lies in the convex hull of per-state minimizers), we obtain:
+
+$$\boxed{\;H(w_{\text{global}}) \geq \mathbb{E}_s[H(w^*(s))]\;}.$$
+
+The inequality is oriented $\geq$, not $\leq$: the global weight vector has entropy **at least** the expected per-state entropy. This reflects that state-conditioned weights are typically more concentrated (lower entropy per state) because each state's optimal weights favor the experts that perform best in that state, while the global weights must compromise across states, producing a more dispersed (higher entropy) distribution. The gap $H(w_{\text{global}}) - \mathbb{E}_s[H(w^*(s))] \geq 0$ quantifies how much "sharper" the per-state weighting is relative to the global compromise — it is an information-theoretic measure of the benefit of state conditioning.
+
+### 8.2 Correlation Condition for Weighting Improvement
+
+In analyzing whether a weight update $w \to w'$ reduces the ensemble risk, one encounters the cross-term $\mathbb{E}[(\ell - \hat{R})(w - w')]$, where $\ell$ is the per-sample loss, $\hat{R}$ is the estimated risk, and $w, w'$ are weight vectors. The sign of this expectation determines whether the weight change is aligned with error reduction.
+
+The original claim $\mathbb{E}[(\ell - \hat{R})(w - w')] \geq 0$ does **not** hold in general. It is equivalent to the condition that weight adjustments are positively correlated with error residuals — increasing weight on experts whose current loss exceeds their estimated risk, and decreasing weight otherwise. However, without further structure, the sign of this covariance is unconstrained:
+
+$$\mathbb{E}[(\ell - \hat{R})(w - w')] = \operatorname{Cov}(\ell - \hat{R},\; w - w') + \mathbb{E}[\ell - \hat{R}] \cdot \mathbb{E}[w - w'].$$
+
+**Revised statement (working conjecture).** This inequality holds under the additional assumption $\operatorname{Cov}(\ell - \hat{R},\; w - w') = 0$. Without this, the sign is not guaranteed. We adopt this as a **working conjecture**: for well-specified SCX state partitions and experts with conditionally independent errors (Assumption A2), the error residual $\ell - \hat{R}$ is approximately uncorrelated with the weight adjustment direction $w - w'$, making the non-negativity condition plausible. A rigorous proof of this uncorrelatedness remains open and likely requires stronger conditions on the state partition and expert error structure.
+
 ---
 
 ## 9 Implications for SCX
@@ -279,3 +302,12 @@ The concavity perspective reveals that state conditioning exploits the **averagi
 3. Boyd, S. & Vandenberghe, L. (2004). *Convex Optimization*. Cambridge University Press. [Chapter 3: concavity of pointwise minimum]
 4. Rao, C. R. (1945). Information and accuracy attainable in the estimation of statistical parameters. *Bulletin of the Calcutta Mathematical Society*, 37, 81-91. [Rao-Blackwell theorem]
 5. Tsybakov, A. B. (2004). Optimal aggregation of classifiers in statistical learning. *Annals of Statistics*, 32(1), 135-166.
+
+---
+
+## Changelog
+
+| Date | Defect | Change | Severity |
+|------|--------|--------|----------|
+| 2026-06-28 | B4 | **Added entropy inequality** (§8.1): $H(w_{\text{global}}) \geq \mathbb{E}_s[H(w^*(s))]$ (correct orientation: global entropy is **at least** expected per-state entropy). The original claim $H(w_{\text{global}}) \leq \mathbb{E}_s[H(w^*(s))]$ was reversed — by concavity of entropy, the inequality runs $\geq$, not $\leq$. | MAJOR |
+| 2026-06-28 | B5 | **Corrected correlation claim** (§8.2): Replaced the unqualified $\mathbb{E}[(\ell - \hat{R})(w - w')] \geq 0$ with a working conjecture that requires $\operatorname{Cov}(\ell - \hat{R}, w - w') = 0$. Without this additional assumption, the sign is not guaranteed. | MAJOR |
