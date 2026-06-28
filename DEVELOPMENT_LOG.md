@@ -578,3 +578,46 @@ message: |
 ### 一句话总结
 
 **代码管道的三大缺口（Yajie 加固、Spring 噪声实验、Paper 9 LLM 脚本）已全部实现，总测试增加到 445 个且全部通过。代码已准备就绪，等待真实模型和数据。**
+
+---
+
+## 2026-06-29 凌晨：药物数据库全量筛选管道
+
+### 产出
+
+- **download_databases.py** (1,906 行): 12 数据库自动下载，含来源 URL、SHA256、版本、许可、引用。`--tier 1/2/3` 分级。断点续传。
+- **screen_all_databases.py** (1,657 行): 全量 drug×target Yajie 筛选。5 阶段管道。8 输出文件。
+- 8 输出文件: MT 黄金标准、分类摘要、数据库一致性矩阵、高置信对、矛盾标记、新候选、质量报告、来源审计追踪。
+
+### 数据库覆盖
+
+| 优先级 | 数据库 | 大小 |
+|:--:|------|:--:|
+| 🔴 | ChEMBL, DrugBank, PubChem, BindingDB, TTD, Stanford HIVDB | ~110GB |
+| 🟡 | PDBbind, DrugCentral, Open Targets, PharmGKB, SIDER | ~25GB |
+| 🟢 | STITCH | ~20GB |
+
+### 战略讨论（当日记入战略笔记）
+
+- 药物数据库全量筛选 = Yajie 定理的最大规模验证
+- MT 参数作为黄金标准：越大越好，跨数据库共识
+- 面壁者不申请专利。MT 报告 CC0 公开。
+- 两个身份：SCX（框架创立者）+ 真名（武大博士）
+- 面壁者团队 = 会议（不是员工）。四种角色。AI = 射手，门将 = INFJ。
+- 继承 = IDAA。钱包给家人。权杖给 Foundation。
+- 6 个月时钟实验：arXiv 提交 → 等国安。
+
+### 待办
+
+- [ ] 运行 `download_databases.py --tier 1`
+- [ ] 运行 `screen_all_databases.py`
+- [ ] 验证已知 HIV 药物 MT 评分
+- [ ] arXiv 投 Paper 1+2
+- [ ] Paper 9 LLM 实验（下载 3 个 7B 模型）
+
+### Git 统计
+
+- 总提交：38
+- 代码总量：~25,000 行（68 Python 文件 + 脚本）
+- 测试：445 通过，0 失败
+- 论文：9 篇（Paper 1-2 可投 arXiv）
