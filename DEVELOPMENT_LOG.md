@@ -266,3 +266,33 @@ SCX Python 包的**所有代码**均由 AI 工具 **Claude Code (Anthropic)** +d
 - [ ] 真实数据集基准（Materials Project、ChestX-ray14、DrugBank）
 - [ ] 收敛率数值验证
 - [ ] Paper 3+4 投稿准备
+### 晚间收菜：最终状态
+
+- **Spring LaTeX 论文**：`paper/arxiv/02_nature_curation/spring_paper.tex` — 768 行，0 编译错误。含完整定理、证明、数值验证、35 条参考文献（包括 He et al. 2016 ResNet）。
+- **Spring 数学谱系**：`theory/self_evolution/MATHEMATICAL_GENEALOGY.md` — 479 行。7 领域 × 13 历史节点 × 4 对比表 × 6 独特贡献。
+- **协议论文完成**：`paper/paper_sources/yajie_protocol_paper.md` — ~700 行。10 层博弈分析：保护均衡 → 面壁者 → 审计之剑 → 管辖边界 → 药品安全 → 黑暗森林 → 继承计划(IDAA) → 双向用途 → 人人持枪 → 相互确保透明。
+- **综述完成**：`paper/paper_sources/scx_application_review.md` — ~800 行。8 领域 + 分类学原理 + 宏大综合(周期表×LLM) + Afterword + 维护者性格声明。
+- **HIV 药监管线**：`drug-module/scripts/hiv_drug_audit.py` — 2,148 行。17 种真实 HIV 药物，4 专家审计，6 输出文件。
+- **Spring 代码**：`src/scx/spring.py` — 1,551 行。judge → store → update → resurrect 完整实现。
+- **理论栈**：71 文件，32,000+ 行，771 定理引用，0 硬阻塞。
+- **Git**：4 次提交。`1910308`。
+
+### 命名体系
+
+| 名称 | 含义 | 归属 |
+|------|------|------|
+| SCX | State-Conditioned eXpertise | 总框架 |
+| Yajie (雅洁) | 噪声检测算法 | Paper 1 |
+| Cercis Score (紫荆花公式) | S(s)=Q(s)+η(t)·N(s) | Yajie 核心 |
+| Spring (春季) | 自进化动力学 | Paper 2 |
+| Spring Dynamics | (S_t,θ_t,M_t) 循环 | Spring 核心 |
+| IDAA | International Data Audit Authority | 继承计划 |
+
+### 六篇论文
+
+1. Yajie 核心理论 → JMLR/TMLR ✅
+2. Spring 自进化 → Nature Comp Sci ✅ (LaTeX 就绪)
+3. 雅洁协议 → Research Policy ✅
+4. 应用综述 → Nature Reviews ✅
+5. 策展-探索权衡 → 概念就绪 📋
+6. EGP MLIP → 待实验 ⬜
