@@ -383,10 +383,14 @@ def compute_yajie_consensus(
     # Consensus score: Yajie state quality weighted by model agreement
     report["question_id"] = np.arange(N)
     report["majority_correct"] = majority_correct
-    report["is_correct"] = per_model_correct.mean(axis=1)  # fraction of models correct
     report["model_agreement_count"] = model_agreement
     report["full_consensus"] = (model_agreement == M).astype(int)
     report["topic_id"] = question_topics
+
+    # Per-model correctness columns
+    for m in range(M):
+        report[f"model_{m}_correct"] = per_model_correct[:, m].astype(int)
+
     report["consensus_score"] = (
         0.5 * report["state_quality"] + 0.5 * report["model_agreement_count"] / M
     )
@@ -421,17 +425,16 @@ def evaluate_consensus(
         oracle_accuracy, consensus_vs_accuracy_correlation.
     """
     N = len(consensus_report)
+    M = len(model_names)
 
-    # Per-model accuracy
+    # Per-model accuracy from stored per-model correctness columns
     per_model_acc = {}
-    is_correct_cols = [c for c in consensus_report.columns if c.startswith("model_")]
-    # Actually compute from report
-    per_model_acc = {
-        name: float(consensus_report["is_correct"].mean())
-        for name in model_names
-    }
-    # Override: if we have individual model correctness, use those
-    # For mock, we use is_correct as mean model correctness
+    for m in range(M):
+        col = f"model_{m}_correct"
+        if col in consensus_report.columns:
+            per_model_acc[model_names[m]] = float(consensus_report[col].mean())
+        else:
+            per_model_acc[model_names[m]] = 0.0
 
     # Majority vote accuracy
     majority_acc = float(consensus_report["majority_correct"].mean())
