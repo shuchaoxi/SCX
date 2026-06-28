@@ -118,7 +118,38 @@ LLM 没有状态本体层——它的 token 是统计构造的，没有物理锚
 **行动方案：**
 1. ✅ PPE 直接推进：严密数学推导 + 物理场景分析 + 代码实现
 2. 🔶 Multi-Head Spring 暂缓：标准降维版本（参数恒定）+ K ≤ 2 严格限制
-3. 🔶 开放问题：头的依赖结构的严格 Chernoff bound（β-mixing 条件是否适用于物理注意力？）
++3. 🔶 开放问题：头的依赖结构的严格 Chernoff bound（β-mixing 条件是否适用于物理注意力？）
+
+### 2026-06-29：PPE 正式命名 Situs + SCX 架构分层
+
+**命名决策：** PPE (Physical Positional Encoding) 正式定名为 **Situs**（拉丁语"位置/场所"）。
+
+**命名理由：**
+- 精确：situs = position, location, site。不夸张，不缩小。
+- 领域无关：蛋白质残基的 situs、晶界空位的 situs、药物分子的 situs——同一个词通用。
+- 与现有风格一致：Spring（春）、Yajie（雅洁）、Cercis（紫荆花）——都是独特、需定义一次的专有名词。
+- 与 State Crystallization 形成对仗：Crystallization = "状态是什么"（本体论），Situs = "状态在哪"（拓扑论）。
+
+**SCX 完整架构（五层）：**
+
+| 层 | 算法 | 做什么 | LLM 对应 |
+|---|------|--------|----------|
+| **状态本体层** | **State Crystallization** | 连续物理量 → 离散状态原子 | BPE（但物理驱动） |
+| **状态拓扑层** | **Situs** | 状态原子在物理空间中的位置编码 | Positional Encoding |
+| **状态进化层** | **Spring** | 状态自进化 | Transformer |
+| **审计输出层** | **Yajie** | 验证+审计+证据链 | — |
+| **评价函数** | **Cercis Score** | S = Q + ηN | — |
+
+**架构分层策略（用户决策）：**
+
+| 层级 | 组件 | 适用场景 | 计算资源 |
+|------|------|---------|---------|
+| **Core（核心）** | State Crystallization + Spring + Yajie | 无空间结构的数据（纯化学组成分类、文本、表格） | 低 |
+| **Spatial（空间）** | Core + **Situs** | 有空间/序列结构的数据（蛋白质、材料缺陷、药物对接） | 中 |
+| **Extended（扩展）** | Spatial + Multi-Head Spring | 大规模空间数据（N > 10^4，K_crit 充足） | 高 |
+
+**核心设计哲学：**
+> 原始 Yajie + Spring 面向无空间信息的低配场景。Situs 是为蛋白质、材料等具有天然空间结构的数据准备的升级。不强制加——没有空间的场景加 Situs 是浪费参数；有空间的场景不加 Situs 是浪费信息。
 
 
 
