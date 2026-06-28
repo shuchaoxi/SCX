@@ -376,3 +376,76 @@ message: |
 ### 一句话总结
 
 **三篇论文润色完成 + 一篇全新 LaTeX 手稿撰写 + 综述双引擎架构重写，论文线从 6 篇扩展至 9 篇，4 篇 LaTeX 就绪可投。**
+
+---
+
+## 2026-06-29：代码实现推进 — Yajie.fit() + Spring 验证
+
+### 地点
+
+个人电脑（居家），Claude Code (DeepSeek API) 驱动。
+
+### Yajie.fit() 实现
+
+- **文件**：`src/scx/yajie.py` — 新增 `fit()` 方法（~217 行）
+- **管道**：5 步完整实现
+  1. Feature extraction（phi 函数或原始数据展平）
+  2. State discovery（KMeans 聚类，可配置 K）
+  3. Multi-expert error computation（M 个专家的逐样本误差矩阵）
+  4. Per-state Cercis Score：S(s) = Q(s) + η·N(s)
+     - Q(s) = 1 - mean_residual（质量分）
+     - N(s) = noise_score（密度 + 一致性加权残差）
+  5. Adaptive classification：clean / noisy / ambiguous（基于中位数分割的自适应阈值）
+- **集成**：使用 `scx.state.discovery.StateDiscovery`、`scx.valuation.noise_score.NoiseScore`、`scx.valuation.redundancy.RedundancyScore`、Theorem 2 弱特征诊断
+- **测试**：5 个场景验证通过（5 状态/3 专家、PCA phi、无专家启发式、purify 后处理、bless 报告）
+- **关键设计决策**：
+  - 分类使用自适应阈值（批内中位数分割）而非绝对阈值 → 对不同数据分布具有鲁棒性
+  - 无专家时使用距离到质心的启发式 → 始终可运行
+  - fit() 后可直接调用 purify() 和 bless()
+
+### Spring 验证脚本
+
+- **文件**：`scripts/spring_validation.py`（~400 行）
+- **实验配置**：200 合成结构 (R^20)、5 mock 专家（状态条件可靠性配置）、20 次自进化迭代
+- **4 面板诊断图**：
+  1. |M_t| 单调增长：45 → 330 (+285)
+  2. η(t) 指数衰减：0.3000 → 0.044871
+  3. S_t 门控收敛：Δ 从 4.09 → 0.12
+  4. 每轮接纳柱状图 + 复活事件散点覆盖
+- **理论验证**：3/3 检查通过
+  - ✓ M_t monotonic growth
+  - ✓ η(t) exponential decay
+  - ✓ S_t convergence (gatekeeper Δ decreasing)
+- **输出**：5 张 PNG（复合图 + 4 个单独面板），保存至 `paper/spring_config/figures/`
+- **CLI**：支持自定义参数（`--n_structures`, `--n_experts`, `--n_iterations` 等）
+
+### 代码状态
+
+| 模块 | 文件 | 变化 | 状态 |
+|------|------|------|------|
+| Yajie | `src/scx/yajie.py` | +217 行（fit 方法） | ✅ 完成 + 测试通过 |
+| Spring 验证 | `scripts/spring_validation.py` | +579 行（新文件） | ✅ 完成 + 所有检查通过 |
+| Spring 图表 | `paper/spring_config/figures/` | 5 个 PNG | ✅ 已生成 |
+
+### Git 提交
+
+```
+121c023 feat(yajie): implement fit() with state discovery → cluster → multi-expert scoring
+637e858 feat(spring): add validation script with 4-panel diagnostic plot
+```
+
+### LLM_TODO 推进
+
+| 任务 | 状态 |
+|------|------|
+| Yajie.fit() 实现（state discovery → cluster → 多专家评分） | ✅ |
+| Cercis Score: S(s) = Q(s) + η(t)·N(s) | ✅ |
+| 输出：clean / noisy / ambiguous 三分类 | ✅ |
+| Spring 验证（200 结构, 20 轮） | ✅ |
+| M_t 单调增长 + η(t) 衰减 + S_t 收敛 | ✅ |
+| MLIP 实验（等超算 AlN 数据） | ⏳ |
+| Paper 9 最小验证实验（Llama/Mistral/Qwen） | 📋 |
+
+### 一句话总结
+
+**Yajie.fit() 完整管道实现（5 步：特征提取→状态发现→专家评分→紫荆花公式→自适应三分类）+ Spring 自进化数值验证（3/3 理论预测通过），代码缺口大幅缩小。**
