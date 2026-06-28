@@ -205,6 +205,36 @@ The SCX protocol for data quality assessment consists of four steps:
 The protocol has four tiers of increasing sophistication: Tier~0 (loss baseline, one model), Tier~1 (SCX with Hoeffding bound), Tier~2 (SCX with Chernoff/KL bound), Tier~3 (SCX with adaptive threshold), and Tier~4 (SCX plus bootstrap stability diagnostic). Most applications require Tier~2 or~3 with $M=8$--$20$ experts \cite{engineering_guide}.
 
 % ======================================================================
+\section{Mathematical Context: Deep Structure}
+% ======================================================================
+
+Beyond its practical utility, the SCX framework possesses a rich mathematical structure that connects it to several deep areas of pure and applied mathematics. We briefly survey these connections; a comprehensive treatment is available in the companion mathematical analysis \cite{deep_math}.
+
+\subsection{Home Field: Statistical Decision Theory}
+
+SCX belongs to the Wald paradigm of \textbf{statistical decision theory}, specifically the Le Cam asymptotic theory~\cite{lecam1986}. The core problem---testing $H_0$ (clean label) versus $H_1$ (noisy label) from $M$ conditionally independent Bernoulli observations, with a latent state variable modulating the success probabilities---is a structured composite hypothesis testing problem. The F1 risk function makes it non-standard: unlike 0-1 loss, F1 is a ratio of successes that couples Type I and Type II errors non-additively. The six theorems collectively characterize the minimax-optimal decision boundary for this problem, including its exact asymptotic constant (Theorem~4'), its dependence on side information (Theorem~2), and its fundamental limits (Theorem~3).
+
+\subsection{The Consensus Score as a Maximal Invariant}
+
+The consistency score $C(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{f_m(x) \neq y\}$ has a natural group-theoretic interpretation. The symmetric group $S_M$ acts on the expert ensemble by permuting the experts: $\sigma \cdot (f_1, \dots, f_M) = (f_{\sigma(1)}, \dots, f_{\sigma(M)})$. Under this action, $C(x)$ is the \textbf{maximal invariant}: any $S_M$-invariant function of the expert errors must be a function of $C(x)$ alone. This explains why thresholding $C(x)$ is sufficient for optimal detection---the Neyman-Pearson lemma, combined with $S_M$-invariance, reduces the $M$-dimensional decision problem to a one-dimensional sufficient statistic. $C(x)$ is also a degree-1 \textbf{U-statistic}~\cite{hoe73}, and its large-deviations behavior (Theorems~1,~4') follows from classical Hoeffding and Chernoff theory for U-statistics.
+
+\subsection{Theorem 3 as a Fiber Bundle}
+
+Theorem~3 (the Noise-Difficulty Unidentifiability Theorem) admits a clean geometric interpretation. Let $\mathcal{P}$ be the space of data-generating processes satisfying the SCX assumptions, and $\mathcal{Q}$ the space of observable joint distributions over $(X, Y, \{f_m\})$. The map $\pi: \mathcal{P} \to \mathcal{Q}$ that forgets the internal noise/difficulty structure is surjective but not injective: the fiber $\pi^{-1}(Q)$ over any observable distribution $Q$ contains at least two distinct processes (the noise-world and the hardness-world). The fiber has the structure of a \textbf{convex set} parametrized by the noise rate $\eta$ and the expert error rates $\varepsilon_1, \varepsilon_2$, with extreme points corresponding to pure-noise and pure-hardness interpretations. Theorem~3 constructs the minimal fiber (two points for $K_{\mathcal{Y}}=2$) and the extended fiber (a $(K_{\mathcal{Y}}-1)$-dimensional simplex for $K_{\mathcal{Y}}>2$, via the random-expert construction). This is a \textbf{fiber bundle} over a statistical manifold---the geometry of data-generating processes that are observationally equivalent.
+
+\subsection{Information Geometry of the Detection Boundary}
+
+On the statistical manifold of Bernoulli distributions $\{\text{Bern}(p) : p \in (0,1)\}$ equipped with the Fisher information metric $g(p) = 1/(p(1-p))$, the \textbf{Chernoff information} $\kappa = C(\text{Bern}(p_0), \text{Bern}(p_1))$---which governs the optimal error exponent in Theorem~4'---satisfies $\kappa \leq d^2(p_0, p_1)/2$, where $d(p_0, p_1) = 2|\arcsin\sqrt{p_1} - \arcsin\sqrt{p_0}|$ is the geodesic distance (the Bhattacharyya angle). The adaptive threshold $\theta^\dagger = \theta^* + O(1/M)$ corresponds to a point on the geodesic connecting $p_0$ and $p_1$, chosen to balance the F1-weighted error contributions. The detection gap $\Delta_s$ in Theorem~1 is a first-order (Hoeffding) approximation to this geodesic separation.
+
+\subsection{Connections to Statistical Physics}
+
+The expert ensemble under the consensus score admits an \textbf{Ising model} analogy. Map each expert to a spin $\sigma_m = 2e_m - 1 \in \{-1, 1\}$. Then $C = (\sum_m \sigma_m + M)/(2M)$ is the magnetization. Under $H_0$ (clean), the spins align weakly with $-$ (negative magnetization); under $H_1$ (noise), they align strongly with $+$ (positive magnetization). The SCX detection threshold corresponds to a magnetization threshold, and the large-deviations rate $\kappa$ corresponds to the free energy barrier between the two phases. This analogy becomes technically useful if Assumption~A2 is relaxed to allow expert correlations: the system becomes a Curie-Weiss or full Ising model with pairwise interactions, where the optimal test may involve the full spin configuration rather than just the magnetization.
+
+\subsection{Relationship to Known Theorems}
+
+Each component of SCX instantiates a classical mathematical result: Theorem~1 is Hoeffding's inequality plus a union bound for U-statistics; Theorem~2 is the data-processing inequality plus Pinsker's bound; Theorem~3 is mixture model non-identifiability~\cite{teicher1963}; Theorem~4' is the Bahadur-Rao refinement of Cram\'{e}r's theorem~\cite{bahadur1960} combined with the Neyman-Pearson lemma; Theorem~5 is Pollard's k-means consistency~\cite{pollard1981} under strong separation; Proposition~6 is clustering stability as a surrogate for mutual information. However, the \textbf{unified synthesis} of these results under a single assumption catalog (A1--A6), connected by a common decision-theoretic framework with exact asymptotic constants, is novel. No existing theory simultaneously characterizes the sufficient conditions (Theorem~1), the fundamental limits (Theorem~3), the rate-optimal detection (Theorem~4'), the information-constrained degradation (Theorem~2), and the algorithmic convergence (Theorem~5) for a single data quality problem.
+
+% ======================================================================
 \section{Domain 1: Life Sciences}
 % ======================================================================
 
