@@ -25,6 +25,8 @@ or just a hard example that needs more love.
 
 from __future__ import annotations
 
+import logging
+import time
 import warnings
 from typing import Optional
 
@@ -36,6 +38,8 @@ from scx.valuation.noise_score import NoiseScore
 from scx.valuation.redundancy import RedundancyScore
 from scx.valuation.classifier import DataClassifier
 from scx.state.discovery import StateDiscovery
+
+logger = logging.getLogger(__name__)
 
 
 class Yajie:
@@ -59,6 +63,9 @@ class Yajie:
     report_ : pd.DataFrame
         After ``scan()``, contains per-sample diagnostics:
         noise_risk, redundancy, value, verdict.
+    state_report_ : pd.DataFrame
+        After ``fit()``, contains per-state diagnostics:
+        quality_score, noise_score, cercis_score, verdict.
     """
 
     def __init__(
@@ -82,7 +89,10 @@ class Yajie:
 
         # Internal state
         self.report_: Optional[pd.DataFrame] = None
+        self.state_report_: Optional[pd.DataFrame] = None
         self._is_scanned = False
+        self._state_labels_: Optional[np.ndarray] = None
+        self._phi_X_: Optional[np.ndarray] = None
 
     # ------------------------------------------------------------------
     # Public API
@@ -185,7 +195,7 @@ class Yajie:
             )
             if diag.get("recommendation") in ("weak", "features_too_weak"):
                 warnings.warn(
-                    f"δ = {diag.get('delta', '?')}:.4f — "
+                    f"δ = {diag.get('delta', '?'):.4f} — "
                     f"Features may be too weak for reliable noise detection. "
                     f"See Theorem 2. Yajie will do her best, but be cautious.",
                     UserWarning,
@@ -201,6 +211,7 @@ class Yajie:
         phi: Optional[callable] = None,
         n_states: int = 5,
         exploration_rate: float = 0.1,
+        verbose: bool = True,
     ) -> "Yajie":
         """Fit the full Yajie pipeline: state discovery → cluster → multi-expert scoring.
 
@@ -239,6 +250,8 @@ class Yajie:
         exploration_rate : float, default=0.1
             Weight η for the noise term in the Cercis Score.
             Higher = more tolerance for noisy states.
+        verbose : bool, default=True
+            If True, emits progress output via ``logging`` during fitting.
 
         Returns
         -------
@@ -247,9 +260,18 @@ class Yajie:
             diagnostics and ``self.state_report_`` containing per-state
             classification.
         """
+        t_start = time.perf_counter()
         N = len(X)
 
+        if N == 0:
+            raise ValueError("Cannot fit Yajie on empty data (N=0).")
+
+        log = logger.info if verbose else logger.debug
+
         # ---- Step 1: Feature extraction ---------------------------------
+        log("━" * 60)
+        log("[Yajie.fit] Step 1/5: Feature extraction...")
+
         if phi is not None:
             phi_X = np.asarray(phi(X), dtype=float)
         else:
@@ -260,11 +282,14 @@ class Yajie:
             phi_X = phi_X.reshape(N, -1)
 
         d_phi = phi_X.shape[1]
+        log(f"  N={N}, d_phi={d_phi}, phi={'user-provided' if phi else 'raw'}")
 
         # ---- Step 2: State discovery ------------------------------------
+        log("[Yajie.fit] Step 2/5: State discovery (kmeans)...")
+
+        # Ensure K is valid: at least 1, at most N, at most requested n_states
         K = min(n_states, N)
-        if K < 2:
-            K = 2
+        K = max(1, K)
         sd = StateDiscovery(
             method="kmeans",
             n_states=K,
@@ -273,23 +298,46 @@ class Yajie:
         state_labels = sd.fit_predict(phi_X)
         centroids = sd.get_centroids()
 
+        # Report state sizes
+        state_sizes = [(state_labels == s).sum() for s in range(K)]
+        log(f"  K={K} states, sizes: {state_sizes}")
+        if any(s == 0 for s in state_sizes):
+            log(f"  ⚠ {sum(1 for s in state_sizes if s == 0)} empty state(s) detected")
+        if any(s == 1 for s in state_sizes):
+            log(f"  ⚠ {sum(1 for s in state_sizes if s == 1)} single-sample state(s) — "
+                f"consistency estimates may be degenerate")
+
         # ---- Step 3: Multi-expert error computation ---------------------
         if experts is not None and len(experts) > 0:
             M = len(experts)
+            log(f"[Yajie.fit] Step 3/5: Computing expert errors (M={M})...")
             expert_errors = self._compute_expert_errors(X, experts)  # (N, M)
+            # Guard against NaN/Inf in expert outputs
+            if np.any(np.isnan(expert_errors)) or np.any(np.isinf(expert_errors)):
+                warnings.warn(
+                    "Expert errors contain NaN/Inf values — replacing with 0.5. "
+                    "Check your expert models for numerical instability.",
+                    UserWarning,
+                )
+                expert_errors = np.nan_to_num(expert_errors, nan=0.5, posinf=1.0, neginf=0.0)
+            log(f"  Error range: [{expert_errors.min():.4f}, {expert_errors.max():.4f}]")
         else:
-            # Heuristic: use reconstruction error as proxy
             M = 0
             expert_errors = None
+            log("[Yajie.fit] Step 3/5: No experts provided — using heuristic residuals")
 
         # ---- Step 4: Per-state scoring ----------------------------------
+        log("[Yajie.fit] Step 4/5: Per-state Cercis Score S(s) = Q(s) + η·N(s)...")
+
         state_records = []
         sample_verdicts = np.full(N, "uncertain", dtype=object)
+        eta = exploration_rate if exploration_rate is not None else self.grace
 
         for s in range(K):
             mask = state_labels == s
             n_s = mask.sum()
             if n_s == 0:
+                log(f"  State {s}: empty — skipped")
                 continue
 
             rho_s = n_s / N  # state proportion
@@ -297,15 +345,26 @@ class Yajie:
             # Quality score Q(s): 1 - mean residual
             if expert_errors is not None and M > 0:
                 state_errors = expert_errors[mask]  # (n_s, M)
-                mean_residual = float(state_errors.mean())
-                # Consistency: inverse std of expert errors (higher = more consistent)
-                expert_std = float(state_errors.std(axis=1).mean())
+                mean_residual = float(np.nanmean(state_errors))
+
+                if n_s > 1:
+                    # Per-sample std across experts, then average
+                    per_sample_std = np.nanstd(state_errors, axis=1)
+                    expert_std = float(np.nanmean(per_sample_std))
+                else:
+                    # Single sample: std across experts directly
+                    expert_std = float(np.nanstd(state_errors))
+
                 consistency = float(1.0 / (1.0 + expert_std))
             else:
                 # Heuristic: distance to centroid as residual proxy
-                dists = np.linalg.norm(phi_X[mask] - centroids[s], axis=1)
-                mean_residual = float(dists.mean() / (dists.max() + 1e-8)) if dists.max() > 0 else 0.0
-                consistency = float(1.0 / (1.0 + dists.std()))
+                if centroids is not None and s < len(centroids):
+                    dists = np.linalg.norm(phi_X[mask] - centroids[s], axis=1)
+                else:
+                    dists = np.zeros(n_s, dtype=float)
+                dist_max = float(dists.max()) if n_s > 0 else 1.0
+                mean_residual = float(dists.mean() / (dist_max + 1e-8)) if dist_max > 0 else 0.0
+                consistency = float(1.0 / (1.0 + float(np.nanstd(dists))))
 
             Q_s = float(1.0 - mean_residual)
 
@@ -315,20 +374,25 @@ class Yajie:
                 state_proportion=rho_s,
                 consistency=consistency,
             )
-            N_s = float(noise_scores.mean())
+            N_s = float(np.nanmean(noise_scores))
 
             # Redundancy D(s)
             X_s = phi_X[mask]
             redundancy_scorer = RedundancyScore()
+            if centroids is not None and s < len(centroids) and n_s > 1:
+                sim = redundancy_scorer.state_similarity(X_s)
+                bound = redundancy_scorer.boundary_score(X_s, centroids, s)
+            else:
+                sim = 0.0
+                bound = 1.0  # well-separated by default for single-sample / missing centroid
             D_s = redundancy_scorer.redundancy(
                 state_proportion=rho_s,
                 mean_residual=mean_residual,
-                similarity=redundancy_scorer.state_similarity(X_s),
-                boundary=redundancy_scorer.boundary_score(X_s, centroids, s),
+                similarity=sim,
+                boundary=bound,
             )
 
             # ---- Cercis Score: S(s) = Q(s) + η · N(s) ------------------
-            eta = exploration_rate if exploration_rate is not None else self.grace
             S_s = float(Q_s + eta * N_s)
 
             state_records.append({
@@ -344,7 +408,34 @@ class Yajie:
                 # verdict assigned after all states scored (adaptive)
             })
 
+            # Per-state progress when verbose
+            if verbose:
+                preview = f"Q={Q_s:.3f}, N={N_s:.3f}, S={S_s:.3f}"
+                log(f"  State {s}: n={n_s}, ρ={rho_s:.3f}, {preview}")
+
+        if len(state_records) == 0:
+            warnings.warn(
+                "No valid states found — all clusters are empty. "
+                "Try reducing n_states or check your feature extraction.",
+                UserWarning,
+            )
+            # Create a single fallback state
+            state_records.append({
+                "state_id": 0,
+                "n_samples": N,
+                "proportion": 1.0,
+                "mean_residual": 0.5,
+                "quality_score": 0.5,
+                "noise_score": 0.5,
+                "cercis_score": 0.5,
+                "consistency": 0.5,
+                "redundancy": 0.5,
+                "verdict": "ambiguous",
+            })
+            sample_verdicts[:] = "ambiguous"
+
         # ---- Adaptive classification: clean / noisy / ambiguous ---------
+        log("[Yajie.fit] Step 5/5: Adaptive classification (median-split)...")
         # Use percentile-based thresholds within the batch, per Theorem 1's
         # state-conditioned separation gap principle.
         # With K >= 3 states, uses median split; with K < 3, compares absolute scores.
@@ -372,9 +463,17 @@ class Yajie:
             state_records[0]["verdict"] = "ambiguous"
 
         # Propagate verdicts to samples
-        for s, r in enumerate(state_records):
+        for r in state_records:
             mask = state_labels == r["state_id"]
             sample_verdicts[mask] = r["verdict"]
+
+        # ---- Summary -----------------------------------------
+        n_clean = int(np.sum(sample_verdicts == "clean"))
+        n_noisy = int(np.sum(sample_verdicts == "noisy"))
+        n_ambiguous = int(np.sum(sample_verdicts == "ambiguous"))
+        log(f"  Classification: clean={n_clean} ({100*n_clean/N:.1f}%), "
+            f"noisy={n_noisy} ({100*n_noisy/N:.1f}%), "
+            f"ambiguous={n_ambiguous} ({100*n_ambiguous/N:.1f}%)")
 
         # ---- Step 5: Build sample-level report --------------------------
         sample_records = []
@@ -398,14 +497,24 @@ class Yajie:
 
         # Theorem 2: weak feature diagnostic
         if d_phi > 0 and K >= 2:
-            diag = self._state_value.feature_strength_diagnostic(phi_X, state_labels)
-            if diag.get("recommendation") in ("weak",):
-                warnings.warn(
-                    f"δ = {diag.get('delta', '?'):.4f} — "
-                    f"Features may be too weak for reliable state discovery. "
-                    f"See Theorem 2. Yajie will do her best, but be cautious.",
-                    UserWarning,
-                )
+            try:
+                diag = self._state_value.feature_strength_diagnostic(phi_X, state_labels)
+                if diag.get("recommendation") in ("weak",):
+                    warnings.warn(
+                        f"δ = {diag.get('delta', '?'):.4f} — "
+                        f"Features may be too weak for reliable state discovery. "
+                        f"See Theorem 2. Yajie will do her best, but be cautious.",
+                        UserWarning,
+                    )
+            except Exception:
+                # feature_strength_diagnostic may fail on degenerate features;
+                # this is non-critical — skip gracefully
+                pass
+
+        t_elapsed = time.perf_counter() - t_start
+        log(f"[Yajie.fit] Done in {t_elapsed:.2f}s — "
+            f"{len(state_records)} states, {n_clean}/{n_noisy}/{n_ambiguous} clean/noisy/ambiguous")
+        log("━" * 60)
 
         return self
 
