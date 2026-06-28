@@ -130,9 +130,7 @@ $$k(\Delta) = \exp\left(-\frac{\Delta}{\xi}\right)$$
 
 设目标核 $k(\Delta) = \exp(-|\Delta|/\xi)$（Laplace 核）。则规范化编码核 $\frac{2}{d}K_{\text{PE}}(\Delta) = \frac{2}{d}\sum_{j=0}^{d/2-1} \cos(2\pi\Delta/\lambda_j)$ 在 $L^2([0, L])$ 中最优逼近 $k(\Delta)$（最小化均方误差 $\int_0^L |\frac{2}{d}K_{\text{PE}}(\Delta) - k(\Delta)|^2 d\Delta$）当且仅当 $\{\lambda_j\}$ 满足以下频谱分布：
 
-$$\boxed{\frac{1}{\lambda_j} = \frac{1}{2\pi L} \cdot Q^{-1}\left(\frac{2j+1}{d}\right), \quad j = 0, 1, \ldots, \frac{d}{2}-1}$$
-
-其中 $Q(t) = \int_0^t \frac{2\xi}{1 + (2\pi\xi u)^2} du = \frac{1}{\pi}\arctan(2\pi\xi t)$ 是归一化的累积谱分布函数，$Q^{-1}$ 是其反函数。
+$$\boxed{\lambda_j = 2\pi\xi \cdot \cot\left(\frac{\pi(2j+1)}{2d}\right), \quad j = 0, 1, \ldots, \frac{d}{2}-1}$$
 
 *证明*：
 
@@ -170,11 +168,9 @@ $$\lambda_{\max} = 2\pi\xi \cdot \cot\left(\frac{\pi}{2d}\right) \approx 4d\xi \
 
 这表明编码能捕获的最长空间相关性约为 $4d\xi$。**必须满足 $\lambda_{\max} \geq L$** 才能覆盖整个序列。这给出最小维度要求：
 
-$$\boxed{d_{\min} = 2 \cdot \left\lceil \frac{1}{\pi} \arctan\left(\frac{2\pi\xi}{L}\right) \cdot \text{不，} \quad d_{\min} \approx \frac{L}{4\xi} \right\rceil}$$
+覆盖整个序列区间需满足 $\lambda_{\max} \geq 2L$（Nyquist条件），给出最小维度要求：
 
-实际上应该用条件 $\lambda_{\max} \geq 2L$（Nyquist，覆盖整个区间至少需要一个半周期），得到：
-
-$$d \geq \frac{\pi}{2 \cdot \arctan(2\pi\xi/L)} \approx \frac{L}{4\xi} + O(1)$$
+$$\boxed{d_{\min} \approx \frac{L}{2\xi}}$$
 
 **推论 1.2.2（与 Transformer 编码的比较）**：标准 Transformer 使用 $\omega_j \propto 10000^{-2j/d}$（几何级数），对应**对数均匀**频率分布。而物理最优（Laplace 核）使用 $\omega_j \propto \tan(\pi(2j+1)/2d)$（正切分布），更密集地采样**中频区域**。差异来自：NLP 中的位置关系是长程而非指数衰减的，而物理系统的相关函数通常是短程指数衰减。
 
@@ -190,25 +186,25 @@ $$\sup_{\Delta \in [0, L]} \left|\frac{2}{d}K_{\text{PE}}(\Delta) - k(\Delta)\ri
 
 **定理 1.2.3（正弦 PPE 的 Lipschitz 常数）**：标量正弦编码 $\text{PE}_{\text{scalar}}: [0, L] \to \mathbb{R}^d$ 是 Lipschitz 连续的，精确常数为：
 
-$$\boxed{L_{\text{PE}}^{\text{scalar}} = \frac{2\pi}{\sqrt{d}} \cdot \sqrt{2 \sum_{j=0}^{d/2-1} \left(\frac{2}{\lambda_j}\right)^2} = \frac{4\pi}{\sqrt{d}} \cdot \sqrt{\sum_{j=0}^{d/2-1} \frac{1}{\lambda_j^2}}}$$
+$$\boxed{L_{\text{PE}}^{\text{scalar}} = \frac{2\sqrt{2}\,\pi}{\sqrt{d}} \cdot \sqrt{\sum_{j=0}^{d/2-1} \frac{1}{\lambda_j^2}}}$$
 
 *证明*：对每个维度对 $(2j, 2j+1)$，归一化编码 $\text{PE}_j(p) = \sqrt{2/d}\,(\sin(2\pi p/\lambda_j), \cos(2\pi p/\lambda_j))$：
 
 $$\|\text{PE}_j(p) - \text{PE}_j(q)\|^2 = \frac{2}{d}\left[\left(\sin\left(\frac{2\pi p}{\lambda_j}\right) - \sin\left(\frac{2\pi q}{\lambda_j}\right)\right)^2 + \left(\cos\left(\frac{2\pi p}{\lambda_j}\right) - \cos\left(\frac{2\pi q}{\lambda_j}\right)\right)^2\right]$$
 
-由中值定理：$|\sin(a) - \sin(b)| \leq |a-b|$，$|\cos(a) - \cos(b)| \leq |a-b|$。因此：
+由三角恒等式 $(\sin a - \sin b)^2 + (\cos a - \cos b)^2 = 2 - 2\cos(a-b) = 4\sin^2((a-b)/2)$，再利用 $|\sin\theta| \leq |\theta|$：
 
-$$\|\text{PE}_j(p) - \text{PE}_j(q)\|^2 \leq \frac{2}{d} \cdot 2 \cdot \left(\frac{2\pi|p-q|}{\lambda_j}\right)^2 = \frac{16\pi^2|p-q|^2}{d \cdot \lambda_j^2}$$
+$$\|\text{PE}_j(p) - \text{PE}_j(q)\|^2 = \frac{2}{d} \cdot 4\sin^2\!\left(\frac{\pi(p-q)}{\lambda_j}\right) \leq \frac{2}{d} \cdot \left(\frac{2\pi|p-q|}{\lambda_j}\right)^2 = \frac{8\pi^2|p-q|^2}{d \cdot \lambda_j^2}$$
 
 对所有 $j$ 求和：
 
-$$\|\text{PE}_{\text{scalar}}(p) - \text{PE}_{\text{scalar}}(q)\|^2 \leq \frac{16\pi^2|p-q|^2}{d} \sum_{j=0}^{d/2-1} \frac{1}{\lambda_j^2}$$
+$$\|\text{PE}_{\text{scalar}}(p) - \text{PE}_{\text{scalar}}(q)\|^2 \leq \frac{8\pi^2|p-q|^2}{d} \sum_{j=0}^{d/2-1} \frac{1}{\lambda_j^2}$$
 
-开方即得所述 Lipschitz 常数。该上界是紧的。$\square$
+开方即得所述 Lipschitz 常数。该上界是紧的（$p, q$ 无限接近时 $\sin\theta \approx \theta$，等号渐近成立）。$\square$
 
 **推论 1.2.3（Lipschitz 常数的渐近行为）**：对分位数最优谱 $\lambda_j = 2\pi\xi \cdot \cot(\pi(2j+1)/2d)$ 和归一化编码：
 
-$$L_{\text{PE}}^{\text{scalar}} \sim \frac{1}{\xi} \cdot \sqrt{\frac{d}{3}} \quad (d \to \infty)$$
+$$L_{\text{PE}}^{\text{scalar}} \sim \frac{1}{\xi} \cdot \sqrt{\frac{d}{6}} \quad (d \to \infty)$$
 
 归一化后 Lipschitz 常数的增长从 $O(d)$ 降为 $O(\sqrt{d})$——归一化因子 $\sqrt{2/d}$ 抵消了一个 $\sqrt{d}$ 因子，使得编码对位置变化的敏感度随维度**亚线性**增长。
 
@@ -320,7 +316,7 @@ $$\|\text{PE}(\mathbf{p}) - \text{PE}(\mathbf{q})\| \leq L_{\text{PE}} \cdot d_{
 
 | 编码类型 | $\mathcal{P}$ | $L_{\text{PE}}$ |
 |----------|---------------|-----------------|
-| 正弦（标量） | $[0, L]$ | $\frac{4\pi}{\sqrt{d}}\sqrt{\sum_j 1/\lambda_j^2}$ |
+| 正弦（标量） | $[0, L]$ | $\frac{2\sqrt{2}\,\pi}{\sqrt{d}}\sqrt{\sum_j 1/\lambda_j^2}$ |
 | 旋转（3D） | $\mathbb{R}^3$ | $\max(\alpha, \beta, \gamma)$ |
 
 物理意义：$L_{\text{PE}}$ 控制编码对位置变化的**敏感度**。大的 $L_{\text{PE}}$ 使邻近位置的编码更加不同（高分辨率），但可能破坏局部光滑性。最优 $L_{\text{PE}}$ 应在物理相关尺度 $\xi$ 附近匹配编码的分辨率。
@@ -973,7 +969,7 @@ $$\mathcal{L}_{\text{aux}}(\theta) = \mathbb{E}_{(x,p,y)}\left[(\text{PE}_\theta
 - 构造 $\mathcal{L}_{\text{aux}}$ 的具体形式
 - 证明在 $W_A$ 和 $W_B$ 中的最优值确实不同
 
-原定理 4.2 的陈述（关于 $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{sup}} + \lambda \mathcal{L}_{\text{aux}}$ 的不同最优值导致可区分性）在逻辑上是正确的**条件陈述**，但该条件是否能在 Theorem 3 的构造中被满足，目前没有构造性证明。
+定理 4.1 的陈述（关于 $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{sup}} + \lambda \mathcal{L}_{\text{aux}}$ 的不同最优值导致可区分性）在逻辑上是正确的**条件陈述**，但该条件是否能在 Theorem 3 的构造中被满足，目前没有构造性证明。
 
 ---
 
