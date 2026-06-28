@@ -7,12 +7,14 @@
 - [x] 实现 state discovery → cluster → 多专家评分 完整管道
 - [x] 实现 Cercis Score: S(s) = Q(s) + η(t)·N(s)
 - [x] 输出：clean / noisy / ambiguous 三分类
+- [x] 加固：日志输出 + 边缘案例修复 + 18 个测试
 
 ### Spring 验证
 - [x] 用合成数据跑 Spring 迭代 20 轮（spring.py 已有壳）
 - [x] 验证：M_t 单调增长 + η(t) 衰减 + S_t 收敛
 - [x] 画 Lyapunov 下降曲线
 - [x] 记录收敛速率 → 与理论 O(t^{-a}) 对比
+- [x] 标签噪声对比实验：20% 噪声率 + 4 面板对比图
 
 ### MLIP 实验
 - [ ] 等超算 AlN 数据到 → 运行 scx_method 管道
@@ -21,11 +23,18 @@
 
 ---
 
+## ✅ 2026-06-29 下午完成
+- [x] Yajie.fit() 加固：日志/进度输出 + 边缘案例修复 + 18 新测试
+- [x] Spring 噪声对比实验：20% 标签噪声 + 清洁/噪声 4 面板对比图
+- [x] Paper 9 LLM 实验脚本：3 mock LLM × 200 题 → Yajie 共识表 + CSV 导出
+
+---
+
 ## 🟡 Paper 9 最小验证实验
 - [ ] 下载 Llama-3-8B / Mistral-7B / Qwen-7B
-- [ ] 准备 100 个 MMLU 问题
-- [ ] 写脚本：3 模型各自回答 → Yajie 共识 → 表格
-- [ ] 跑实验
+- [ ] 准备 100 个 MMLU 问题（真实数据）
+- [x] 写脚本：3 模型各自回答 → Yajie 共识 → 表格
+- [ ] 跑实验（真实模型）
 - [ ] 数据塞进 Paper 9 LaTeX
 
 ---
