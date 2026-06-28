@@ -209,6 +209,35 @@ LLM 没有状态本体层——它的 token 是统计构造的，没有物理锚
 
 **Spring 理论状态：** ~40% 严格、~20% 形式化猜想、~40% 合理假设。可以作为独立论文（Paper C：Spring Convergence Theory），但需要先解决 09_verification_report.md 中标注的 10 个证明缺口。
 
+### 2026-06-30：发现 Spring 论文已完成 — 验证报告的 GAP 已填
+
+**Paper C 早已存在：** `paper/arxiv/spring_config/main.tex` — 779 行，目标 Nature Computational Science，2026-06-28 完成，已编译 PDF。
+
+**09_verification_report.md 标注的 10 个 GAP 中，GAP-1 和 GAP-2（两个 Critical）已被此文补上：**
+
+| GAP | 状态 | 论文对应 |
+|-----|------|---------|
+| GAP-1: Lyapunov 函数 Φ 未显式定义 | ✅ 已解决 | §4 Step 1 (line 304-306)：Ψ(S_t, θ_t) 定义在固定参考集 M₀ 上 |
+| GAP-2: Lyapunov 下降未证明 | ✅ 已解决 | §6 Theorem 4 (line 406-432)：参考集重放 + 重要性采样→严格下降 |
+| GAP-3: 分布偏移 | ✅ 已处理 | §6 (C) 项：TV bound O(β_t) = o(α_t) |
+| GAP-4: 极限环 | ✅ 已刻画 | §4 四种收敛路径表 |
+| GAP-6: T* 界太松 | ⚠️ 仍松 | 但明确标注了 |
+| GAP-9: S_t-θ_t 耦合 | ✅ 已处理 | §6 Lemma D.1: Δ_cross = 0 |
+
+**论文结构：**
+- §1: Introduction — curation-exploration tradeoff
+- §2: Spring Algorithm — gatekeeper + student + memory bank
+- §3: Regularity Conditions — C1-C11
+- §4: Theorem Spring-1 — 几乎必然收敛到联合不动点 (S^*, θ^*)
+- §5: Theorem Spring-2 — 物理约束下有限时间 T^* 终止
+- §6: Lyapunov Descent Proof — 核心创新：参考集重放 (C10) 解决选择偏差循环
+- §7: Convergence Rate — O(t^{-a})，Polyak 平均 O(t^{-1})
+- §8: Failure Modes — 四种失败模式
+- §9: Experiments — Ψ 单调解下降 10^4 迭代
+- Data/Code Availability + References
+
+**关键创新：** 先证明**没有 C10/C11 则 Lyapunov 下降不可能**（Theorem 3），再证明**有 C10/C11 则下降严格成立**（Theorem 4）。两步合一构成完整的收敛保证——这是在 09_verification_report.md 写完后补的。
+
 
 ### 源头：EGP Paper 1 — ACE/PACE Gauge Fixing
 
@@ -820,6 +849,7 @@ message: |
 - [ ] Paper 9 LLM 实验（下载 3 个 7B 模型）
 - [ ] **State Crystallization vs BPE 形式化对比论文/章节**：证明 BPE 是 State Crystallization 在物理量耦合≈频率耦合这一特殊条件下的退化特例；给出定量条件（当 I(物理; 频率) < δ 时，BPE 的状态边界与 State Crystallization 的状态边界偏离超过 ε）；在蛋白质和材料数据上做实证对比（同一数据集，State Crystallization 状态空间 vs BPE 状态空间 → Spring 进化质量差异 → Yajie 审计精度差异）
 - [ ] **SCX-LLM 组件映射完整分析**：逐个评估 LLM 的每个组件（Positional Encoding, Multi-Head Attention, FFN, Layer Norm, Residual Connections, Embedding Table）在 SCX 框架里的对应、物理意义、以及是否值得引入
+- [ ] **SCX + 推测解码（Speculative Decoding）交叉验证**：DeepSeek DSpark 用 draft model → verifier 加速推理。SCX 替代单一 verifier：M 个小专家（7B × 3）投票替代一个 70B 模型。Theorem 1 Chernoff bound 保证假阳性 ≤ exp(-2MΔ_s²)。Theorem 3 适用：draft token 被 2/3 专家接受、1/3 拒绝——是 draft 错误还是 token 本质上难预测？M_score 阈值替代固定 acceptance threshold。可写入 Paper B 进一步方向。
 
 ### Git 统计
 
