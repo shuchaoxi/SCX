@@ -3,16 +3,16 @@
 ## 🔴 代码 — 理论落地（今日最大缺口）
 
 ### Yajie 核心实现
-- [ ] 实现 `yajie.py` 的 `fit()` 方法（目前抛 NotImplementedError）
-- [ ] 实现 state discovery → cluster → 多专家评分 完整管道
-- [ ] 实现 Cercis Score: S(s) = Q(s) + η(t)·N(s)
-- [ ] 输出：clean / noisy / ambiguous 三分类
+- [x] 实现 `yajie.py` 的 `fit()` 方法（目前抛 NotImplementedError）
+- [x] 实现 state discovery → cluster → 多专家评分 完整管道
+- [x] 实现 Cercis Score: S(s) = Q(s) + η(t)·N(s)
+- [x] 输出：clean / noisy / ambiguous 三分类
 
 ### Spring 验证
-- [ ] 用合成数据跑 Spring 迭代 20 轮（spring.py 已有壳）
-- [ ] 验证：M_t 单调增长 + η(t) 衰减 + S_t 收敛
-- [ ] 画 Lyapunov 下降曲线
-- [ ] 记录收敛速率 → 与理论 O(t^{-a}) 对比
+- [x] 用合成数据跑 Spring 迭代 20 轮（spring.py 已有壳）
+- [x] 验证：M_t 单调增长 + η(t) 衰减 + S_t 收敛
+- [x] 画 Lyapunov 下降曲线
+- [x] 记录收敛速率 → 与理论 O(t^{-a}) 对比
 
 ### MLIP 实验
 - [ ] 等超算 AlN 数据到 → 运行 scx_method 管道
