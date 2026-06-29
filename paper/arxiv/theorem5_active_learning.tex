@@ -68,9 +68,9 @@ a constrained variational optimization over the sampling distribution
 $p(x)$.  The principal result is a closed-form expression for the optimal
 sampling rate
 \[
-\rho^* = \frac{\eta}{1+\eta}\,
-\frac{\sum_{k} w_k\,\V[\Gamma_k]}
-{\sum_{k} w_k\,\overline{\Gamma}_k},
+\rho^* = \frac{\eta\sum_{k} w_k\,\overline{\Gamma}_k}
+         {\eta\sum_{k} w_k\,\overline{\Gamma}_k
+          + \sum_{k} w_k\,\V[\Gamma_k]},
 \]
 where $\Gamma_k$ is the per-class expected $F_1$ gain, $\V[\Gamma_k]$ its
 variance, and $w_k$ are class weights.  The theorem provides a principled,
@@ -364,9 +364,10 @@ The optimal sampling rate that maximizes risk-adjusted expected $F_1$ gain
 is
 \begin{equation}\label{eq:rho-star}
     \boxed{\;
-    \rho^* = \frac{\eta}{1+\eta}\,
-    \frac{\displaystyle\sum_{k=1}^{K} w_k\,\V[\Gamma_k]}
-    {\displaystyle\sum_{k=1}^{K} w_k\,\overline{\Gamma}_k}
+    \rho^* =
+    \frac{\eta\displaystyle\sum_{k=1}^{K} w_k\,\overline{\Gamma}_k}
+         {\eta\displaystyle\sum_{k=1}^{K} w_k\,\overline{\Gamma}_k
+          + \displaystyle\sum_{k=1}^{K} w_k\,\V[\Gamma_k]}
     \;},
 \end{equation}
 where $\overline{\Gamma}_k=\E[\overline{\Gamma}_k(x)]$ is the mean per-class
@@ -407,34 +408,27 @@ Setting $\Phi'(\rho)=0$ and solving for $\rho$:
                    + \eta^{-1}\sum_k w_k\V[\Gamma_k]}
     = \frac{\eta\sum_k w_k\overline{\Gamma}_k}
            {\eta\sum_k w_k\overline{\Gamma}_k
-            + \sum_k w_k\V[\Gamma_k]} \notag\\[4pt]
-    &= \frac{\eta}{1+\eta}\,
-       \frac{\sum_k w_k\V[\Gamma_k]}
-            {\sum_k w_k\overline{\Gamma}_k},
+            + \sum_k w_k\V[\Gamma_k]}.
+    \label{eq:rho-derivation}
 \end{align}
-where the last equality uses the identity
-$\frac{a}{a+b}=1-\frac{b}{a+b}$ and the structural relationship
-$\sum_k w_k\overline{\Gamma}_k = \frac{1+\eta}{\eta}\sum_k w_k\V[\Gamma_k]$
-that holds at the optimum of the variational objective — this follows from
-equating the marginal benefit and marginal cost of the $\eta$-scaled
-novelty penalty.  Equivalently, it is the first-order condition of the
-Cercis Lagrangian.
-
 The second derivative
 $\Phi''(\rho)=-\sum_k w_k\overline{\Gamma}_k-\eta^{-1}\sum_k w_k\V[\Gamma_k]<0$
 guarantees that $\rho^*$ is the unique global maximizer.
 
 \medskip\noindent
 \textbf{Intuition.}
-The factor $\eta/(1+\eta)\in(0,1)$ acts as a \emph{saturation} weight:
+The optimal rate has the form $\rho^* = \eta G/(\eta G + V)$, where
+$G=\sum_k w_k\overline{\Gamma}_k$ and $V=\sum_k w_k\V[\Gamma_k]$:
 \begin{itemize}
-    \item $\eta\to0$ (pure quality): $\rho^*\to0$ — sample only the
-          single most uncertain instance;
-    \item $\eta\to\infty$ (pure novelty): $\rho^*\to\Sigma w_k\V[\Gamma_k]/
-          \Sigma w_k\overline{\Gamma}_k$ — sample proportionally to the
-          noise-to-signal ratio;
-    \item $\eta=1$ (balanced): $\rho^*=\tfrac12\,\Sigma w_k\V[\Gamma_k]/
-          \Sigma w_k\overline{\Gamma}_k$.
+    \item $\eta\to0$ (pure quality): $\rho^*\to0$ — the algorithm
+          selects only the single instance with highest Cercis Score;
+    \item $\eta\to\infty$ (pure novelty): $\rho^*\to1$ — full-batch
+          diversity sampling of the entire pool;
+    \item $\eta=1$ (balanced): $\rho^* = G/(G+V)$ — sampling rate
+          is the ratio of expected gain to expected gain plus variance;
+    \item For any fixed $\eta>0$, $\rho^*$ increases with $G$ (higher
+          expected gain warrants more samples) and decreases with $V$
+          (higher variance warrants fewer samples).
 \end{itemize}
 \end{proof}
 
@@ -456,9 +450,10 @@ Let $\widehat{\Gamma}_k = \frac{1}{m}\sum_{i=1}^m \overline{\Gamma}_k(x_i)$
 and $\widehat{V}_k = \frac{1}{m-1}\sum_{i=1}^m
 (\overline{\Gamma}_k(x_i)-\widehat{\Gamma}_k)^2$.  The plug-in estimator is
 \begin{equation}\label{eq:plugin}
-    \hat{\rho}^*_m = \frac{\eta}{1+\eta}\,
-    \frac{\sum_{k} w_k \widehat{V}_k}
-         {\sum_{k} w_k \widehat{\Gamma}_k}.
+    \hat{\rho}^*_m =
+    \frac{\eta\sum_{k} w_k \widehat{\Gamma}_k}
+         {\eta\sum_{k} w_k \widehat{\Gamma}_k
+          + \sum_{k} w_k \widehat{V}_k}.
 \end{equation}
 \end{definition}
 
@@ -478,7 +473,7 @@ and $\widehat{V}_k\xrightarrow{p}\V[\Gamma_k]$.  By the Continuous Mapping
 Theorem, the ratio converges in probability to $\rho^*$ since the denominator
 is strictly positive.  Asymptotic normality follows from the Delta Method
 applied to $f(\boldsymbol{\mu},\boldsymbol{v}) =
-\frac{\eta}{1+\eta}\frac{\sum w_k v_k}{\sum w_k \mu_k}$.
+\frac{\eta\sum_k w_k \mu_k}{\eta\sum_k w_k \mu_k + \sum_k w_k v_k}$.
 The gradient $\nabla f$ evaluated at the true moments gives
 $\sigma^2_\rho = \nabla f^\top \Sigma \,\nabla f$, where $\Sigma$ is the
 $2K\times2K$ covariance matrix of the joint moment estimators.
@@ -600,7 +595,8 @@ makes the closed form possible.
 We have derived, from the Cercis Score $S=Q+\eta N$, both the optimal
 sampling distribution $p^*(x)$ and a closed-form expression for the
 optimal sampling rate $\rho^*$ in active learning.  The rate formula
-$\rho^*=\frac{\eta}{1+\eta}\sum w_k\V[\Gamma_k]/\sum w_k\overline{\Gamma}_k$
+$\rho^*=\eta G/(\eta G+V)$ with $G=\sum_k w_k\overline{\Gamma}_k$ and
+$V=\sum_k w_k\V[\Gamma_k]$
 provides a principled answer to the long-standing question of how many
 samples to label.  The theoretical results are supported by consistency
 guarantees and empirical validation.
