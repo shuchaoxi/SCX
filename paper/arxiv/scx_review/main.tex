@@ -88,6 +88,8 @@ We survey the application of the SCX framework across six domains:
 \end{enumerate}
 Within each domain, we present the problem formulation, the SCX adaptation with theoretical guarantees, validated empirical results, and honest limitations. We identify cross-cutting patterns and provide practical guidance for practitioners.
 
+The two-layer state discovery architecture that underpins the SCX framework---a first layer of domain-knowledge features (e.g., ACE descriptors, CNN activations, molecular fingerprints) followed by a second layer of error-driven encoding that learns a linear projection maximizing within-state homogeneity of expert error rates---originates from the SCX theoretical framework established in Paper~I~\cite{paperI} and is rigorously analyzed in its Supplementary Information (SI~S7).
+
 \paragraph{Relationship to companion papers.}
 This review synthesizes results from the SCX paper series: Paper~I establishes the mathematical foundations (Theorems~1--6) \cite{paperI}; Paper~II develops the curation-exploration tradeoff as a practical principle \cite{paperII}; Paper~III provides cross-domain experimental validation \cite{paperIII}; and Paper~IV demonstrates the framework's application to MLIP expert merging \cite{paperIV}. The present review is designed to be self-contained while providing comprehensive cross-references to the theoretical and experimental literature.
 
@@ -110,9 +112,9 @@ The starting point of the SCX theory is a negative result that establishes funda
 \label{thm:unidentifiability}
 For any $K \geq 2$ classification problem, any $M \geq 1$ experts, and any finite state space $\mathcal{S}$, there exist two data-generating processes $\mathcal{P}_{\text{noise}}$ and $\mathcal{P}_{\text{hard}}$ such that:
 \begin{itemize}
-  \item Under $\mathcal{P}_{\text{noise}}$, label errors are caused by uniform label noise at rate $\eta$;
-  \item Under $\mathcal{P}_{\text{hard}}$, all observed labels equal the true labels, but some samples are intrinsically difficult;
-  \item The two processes produce \emph{identical} observable joint distributions over $(x, y, \{f_m(x)\})$;
+  \item Under $\mathcal{P}_{\text{noise}}$, label errors are caused by label noise at rate $\eta_{\text{err}}$;
+  \item Under $\mathcal{P}_{\text{hard}}$, all observed labels equal the true labels, but some samples are intrinsically difficult (ambiguity rate $\eta_{\text{amb}}$);
+  \item Under the symmetry condition $\eta_{\text{err}} = \eta_{\text{amb}} = \eta$, the two processes produce \emph{identical} observable joint distributions over $(x, y, \{f_m(x)\})$;
   \item Any algorithm has expected error $\geq \eta\rho/2$ on the ambiguous subset, where $\rho$ is its proportion.
 \end{itemize}
 \end{theorem}
@@ -652,6 +654,17 @@ The SCX framework provides the first mathematically complete theory of data qual
 Three cross-cutting principles emerge. First, data quality is not a preprocessing step---it requires runtime expertise. Premature cleaning, operating in the dark of Theorem~3's unidentifiability, is provably suboptimal. Second, the curation-exploration tradeoff is a new scientific principle in data-centric ML, with a phase transition governed by feature strength. Third, the SCX framework's self-diagnosis capability---its ability to signal when it cannot help---is as important as its optimality guarantees.
 
 The range of domains surveyed underscores a practical observation: the theoretical principles governing data quality---the unidentifiability of noise and difficulty, the exponential convergence of consensus, the optimality of adaptive thresholding---are domain-independent. An AlN crystal and a chest X-ray obey the same statistical regularities when it comes to distinguishing noise from difficulty. This universality suggests that a common mathematical framework can serve multiple scientific communities, with domain-specific adaptation limited to feature engineering and experimental protocol.
+
+\paragraph{SCX Brand Ecosystem.}
+The SCX framework comprises five named, co-designed components that together form a complete data quality pipeline:
+\begin{enumerate}[nosep,leftmargin=*,itemsep=1pt]
+  \item \textbf{SCX} (State-Conditioned eXpertise): the overarching mathematical framework and the umbrella brand. Defines the six assumptions (A1--A6), the four core theorems (Theorems~1--4'), and the two-layer state discovery protocol. All other components operate within this framework.
+  \item \textbf{Yajie} (雅洁, ``elegant purification''): the multi-expert audit engine. Trains $M$ experts on disjoint data subsets, computes per-sample consistency scores $C(x)$, and applies state-dependent adaptive thresholds $\theta^\dagger$ to detect label noise with provable exponential convergence and exact constant minimax optimality. Yajie is the computational core.
+  \item \textbf{Spring} (自演化门控, ``self-evolving gating''): the gatekeeper with a monotonically growing memory bank $M_t$. Co-evolves the evaluation standard $S_t$ with the student model $f_{\theta_t}$ under a two-timescale stochastic approximation schedule. Guarantees Robbins-Monro convergence (Theorem~Spring-1) and finite-time $\varepsilon$-approximate fixed-point termination (Theorem~Spring-2). The ``winter does not kill---it waits for spring'' resurrection mechanism re-evaluates and recovers previously discarded samples.
+  \item \textbf{Situs} (物理位置编码, ``physical positional encoding''): augments state representations with geometry-anchored coordinates via additive injection $h_i = \phi(s_i) + \mathrm{PE}(p_i)$. Deployed only when the information-theoretic necessary condition $I(Y; P \mid S) > 0$ is satisfied. Supports three encoding families: scalar sinusoidal (1D sequence), 3D rotational (Cartesian coordinates), and 4D spatiotemporal. Distinguished from statistical position encodings (RoPE, sinusoidal Transformer PE) by its physics-grounded frequency spectrum derived from Bochner's theorem.
+  \item \textbf{Cercis Score} ($S = Q + \eta N$): the unified quality metric. Combines base quality $Q$ from multi-expert consensus (Yajie output) with a time-decaying novelty bonus $\eta N$, where $\eta(t)$ is the exploration rate decaying as $\eta(t) = t^{-a}$ and $N(s)$ is the novelty of state $s$ measured by inverse visitation frequency. At convergence ($\eta \to 0$), the Cercis Score converges to the pure quality component $Q(s)$; during exploration ($\eta \gg 0$), it incentivizes coverage of under-explored states. Named after the \textit{Cercis} genus (redbud trees), whose spring flowering symbolizes the balance between established quality and emerging novelty.
+\end{enumerate}
+These five brands form an integrated value chain: SCX provides the axioms and guarantees; Situs encodes physical geometry; Yajie executes the audit; Spring evolves the evaluation standard; and the Cercis Score synthesizes all signals into a single, interpretable quality metric. Each component can be cited, validated, and deployed independently; together they constitute the first mathematically complete specification of a data quality assessment infrastructure.
 
 \begin{center}
 \rule{0.5\textwidth}{0.5pt}
