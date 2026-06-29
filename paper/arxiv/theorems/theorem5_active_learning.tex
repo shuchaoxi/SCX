@@ -46,6 +46,14 @@
 \newcommand{\KL}{D_{\mathrm{KL}}}
 \newcommand{\Fone}{F_1}
 
+% ---------- Rigor labels ----------
+\newcommand{\rigorous}{\textbf{[严格推导]}}
+\newcommand{\conditionallyrigorous}{\textbf{[条件严格]}}
+\newcommand{\openquest}{\textbf{[开放问题]}}
+
+% ---------- Proof critique box ----------
+\newenvironment{critique}{\paragraph{严格性暴击}\quad}{\par}
+
 \title{\bfseries Optimal Sampling via the Cercis Score:\\
 Closed-Form Sampling Rate for Maximizing\\
 Expected $F_1$ Gain in Active Learning}
@@ -237,31 +245,82 @@ entropy term $-\KL(p\|\pi)$ is concave; the linear expectation is
 affine), so the maximizer is unique and characterized by first-order
 optimality conditions.
 
-\begin{lemma}[Gibbs Form of the Optimal Distribution]
+\begin{lemma}[Gibbs形式的最优采样分布]
 \label{lem:gibbs}
-The solution to~\eqref{eq:variational} is
+在 A3（有界损失）下，变分问题~\eqref{eq:variational} 的解为：
 \begin{equation}\label{eq:gibbs-sol}
     p^*(x) = \frac{\pi(x)\,\exp\!\big(\overline{\Gamma}(x)/\lambda\big)}
                   {Z(\lambda)},
 \end{equation}
-where $Z(\lambda)=\sum_{x\in\cD_U}\pi(x)\,
-\exp\big(\overline{\Gamma}(x)/\lambda\big)$.
+其中 $Z(\lambda)=\sum_{x\in\cD_U}\pi(x)\,
+\exp\big(\overline{\Gamma}(x)/\lambda\big)$。
 \end{lemma}
 
 \begin{proof}
-The Lagrangian with multiplier $\mu$ for the simplex constraint
-$\sum_x p(x)=1$ is
+\textbf{严格性等级:} \rigorous \quad（在 A3 下，无需额外公理）
+
+\textbf{所需公理:} A3（有界损失 $\ell\in[0,B]$，保证 $\overline{\Gamma}(x)$ 有界）
+
+考虑定义在概率单纯形 $\Delta(\cD_U)$ 上的泛函
+\[
+F(p) = \E_{x\sim p}[\overline{\Gamma}(x)] - \lambda\,\KL(p\|\pi),\quad p\in\Delta(\cD_U),\;\lambda>0.
+\]
+
+\textbf{步骤1: 严格凹性验证.}
+将 $F(p)$ 分解为线性项 $L(p)=\E_p[\overline{\Gamma}]$ 和正则项 $R(p)=-\lambda\KL(p\|\pi)$。
+KL散度 $\KL(p\|\pi)=\sum_x p(x)\log(p(x)/\pi(x))$ 关于 $p$ 是\textbf{严格凸}的（由Jensen不等式，对任意 $p_1\neq p_2\in\Delta(\cD_U)$ 和 $t\in(0,1)$ 有严格不等式），因此 $-\KL(p\|\pi)$ 严格凹。线性项 $L(p)$ 既是凸的也是凹的。严格凹函数之和仍严格凹，故 $F(p)$ 在 $\Delta(\cD_U)$ 上严格凹。
+
+等价的Hessian验证：将 $p$ 视为 $\mathbb{R}^{|\cD_U|}$ 中向量，在概率单纯形内部有：
+\[
+\frac{\partial F}{\partial p(x)} = \overline{\Gamma}(x)
+- \lambda\Big(\log\frac{p(x)}{\pi(x)}+1\Big),\qquad
+\frac{\partial^2 F}{\partial p(x)\partial p(x')} = -\frac{\lambda}{p(x)}\delta_{xx'}.
+\]
+Hessian为对角矩阵，对角元 $-\lambda/p(x)<0$（因 $\lambda>0,\;p(x)>0$），故负定，$F$ 严格凹。
+
+\textbf{步骤2: 拉格朗日乘子法.}
+引入等式约束 $\sum_x p(x)=1$ 的Lagrange乘子 $\mu$：
 \[
 \mathcal{L}(p,\mu) = \sum_x p(x)\overline{\Gamma}(x)
 - \lambda\sum_x p(x)\log\frac{p(x)}{\pi(x)}
 - \mu\Big(\sum_x p(x)-1\Big).
 \]
-Setting $\partial\mathcal{L}/\partial p(x)=0$ yields
+
+KKT条件（Slater条件成立，因约束仿射且概率单纯形内部非空）：
+\begin{align*}
+\frac{\partial\mathcal{L}}{\partial p(x)}
+&= \overline{\Gamma}(x)
+- \lambda\Big(\log\frac{p(x)}{\pi(x)}+1\Big) - \mu = 0,\quad \forall x,\\
+\frac{\partial\mathcal{L}}{\partial\mu}
+&= \sum_x p(x) - 1 = 0.
+\end{align*}
+
+由第一个方程：
 \[
-\overline{\Gamma}(x) - \lambda\big(\log\frac{p(x)}{\pi(x)}+1\big) - \mu = 0,
+\overline{\Gamma}(x) - \lambda - \mu = \lambda\log\frac{p(x)}{\pi(x)},
+\quad\Rightarrow\quad
+\log\frac{p(x)}{\pi(x)} = \frac{\overline{\Gamma}(x)}{\lambda} - 1 - \frac{\mu}{\lambda},
 \]
-hence $p(x)\propto\pi(x)\exp(\overline{\Gamma}(x)/\lambda)$.
-Normalization gives~\eqref{eq:gibbs-sol}.
+\[
+p(x) = \pi(x)\exp\!\Big(\frac{\overline{\Gamma}(x)}{\lambda}\Big)
+\cdot\exp\!\Big(-1-\frac{\mu}{\lambda}\Big).
+\]
+
+令 $A = \exp(-1-\mu/\lambda)$，得 $p(x) = A\,\pi(x)\exp(\overline{\Gamma}(x)/\lambda)$。
+由归一化条件 $\sum_x p(x)=1$：
+\[
+A\sum_x \pi(x)\exp(\overline{\Gamma}(x)/\lambda) = 1,\quad
+A = \frac{1}{Z(\lambda)},\quad
+Z(\lambda)=\sum_x \pi(x)\exp\!\Big(\frac{\overline{\Gamma}(x)}{\lambda}\Big).
+\]
+
+故：
+\[
+p^*(x) = \frac{\pi(x)\exp(\overline{\Gamma}(x)/\lambda)}{Z(\lambda)}.
+\]
+
+\textbf{步骤3: 唯一性.}
+由 $F(p)$ 的严格凹性，KKT条件是全局极大值的充分必要条件，$p^*$ 是唯一全局极大值点。
 \end{proof}
 
 \subsection{Connecting the Cercis Score to $F_1$ Gain}

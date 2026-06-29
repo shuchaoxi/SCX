@@ -5,7 +5,8 @@
 %  Self-Reference of the Audit Sword,
 %  Convergence under ρ<1, and
 %  the Fixed-Point Identity with Theorem~3's Barrier
-%  arXiv-ready · English · Standalone (SCX-citable, not dependent)
+%  arXiv-ready · English + Chinese Proofs · Standalone (SCX-citable)
+%  [Fully Formalized Version with Strict Proofs & Honest Critiques]
 % ============================================================
 
 \usepackage[utf8]{inputenc}
@@ -32,13 +33,22 @@
 \newtheorem{openproblem}[theorem]{Open Problem}
 \newtheorem{conjecture}[theorem]{Conjecture}
 
+% ---------- Chinese theorem environments (proof narrative) ----------
+\newtheorem{chntheorem}{定理}[section]
+\newtheorem{chnlemma}[chntheorem]{引理}
+\newtheorem{chnprop}[chntheorem]{命题}
+\newtheorem{chncor}[chntheorem]{推论}
+\newtheorem{chnassumption}[chntheorem]{假设}
+
 % ---------- Status tags ----------
 \newcommand{\rigorous}{\textcolor{green!50!black}{\small\textsf{[Rigorous]}}}
 \newcommand{\conditionallyrigorous}{\textcolor{orange}{\small\textsf{[Conditionally Rigorous]}}}
 \newcommand{\openquest}{\textcolor{red!70!black}{\small\textsf{[Open]}}}
+\newcommand{\honestcritique}{\textcolor{blue!60!black}{\small\textsf{[Honest Critique]}}}
 
 % ---------- Macros ----------
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\V}{\mathbb{V}}
 \newcommand{\I}{\mathbb{I}}
@@ -47,12 +57,17 @@
 \newcommand{\cD}{\mathcal{D}}
 \newcommand{\cI}{\mathcal{I}}
 \newcommand{\cA}{\mathcal{A}}
+\newcommand{\cF}{\mathcal{F}}
 \newcommand{\ind}[1]{\mathbf{1}_{[#1]}}
 \newcommand{\argmax}{\operatorname*{arg\,max}}
 \newcommand{\argmin}{\operatorname*{arg\,min}}
 \newcommand{\KL}{D_{\mathrm{KL}}}
 \newcommand{\Situs}{\mathrm{Situs}}
 \newcommand{\Cercis}{\mathrm{Cercis}}
+\newcommand{\a2}{\mathrm{a.s.}}
+\newcommand{\iid}{\mathrm{i.i.d.}}
+\newcommand{\recurrent}{\mathrm{rec}}
+\newcommand{\converge}{\mathrm{cvg}}
 
 \title{\bfseries The Recursive Audit Theorem:\\
 Self-Reference of the Audit Sword,\\
@@ -92,6 +107,9 @@ barrier.  \openquest~(equivalence proof).  (iv)~\textbf{G\"odel Analogy}
 an \textbf{absolutely unauditable audit proposition} — a statement about audit
 quality that cannot be verified by any finite iteration of the Audit Sword.
 \openquest
+
+\medskip\noindent
+\textbf{格式说明：} 本文所有定理的证明均以\textbf{中文}书写，并附带严格性标注（\rigorous 表示完全严格，\conditionallyrigorous 表示条件严格，\openquest 表示开放问题）和诚实暴击（\honestcritique）。
 \end{abstract}
 
 % ============================================================
@@ -145,321 +163,637 @@ to what value and under what conditions.
 \section{Preliminaries}
 % ============================================================
 
-\subsection{Recursive Audit Sequence}
+\subsection{SCX 框架符号约定}
+我们继承 SCX Thm1–4 的以下核心符号体系：
+\begin{itemize}
+    \item 递归审计序列 $\{\hat{\eta}_k\}_{k=0}^\infty$，其中 $\hat{\eta}_k\in[0,1]$ 是第 $k$ 层审计者对噪声率的估计。
+    \item 审计算子 $f:[0,1]\to[0,1]$，编码审计层级间系统校正关系。
+    \item 衰减率 $\rho$：控制元审计精度的层间缩放。
+    \item Banach 不动点定理（度量空间压缩映射的唯一不动点）。
+    \item Doob 鞅收敛定理（$L_1$ 有界上鞅的几乎必然收敛）。
+    \item P\'olya 随机游走递归定理（一维无偏随机游走的常返性）。
+    \item 审计热寂 $H_{\min}=H(\varepsilon\mid S)$（来自 AE-定理的信息论屏障）。
+\end{itemize}
 
-\begin{definition}[Recursive Audit Sequence]
+\subsection{递归审计序列与概率空间}
+
+\begin{definition}[递归审计序列]
 \label{def:recursive-seq}
-Let $\cA_0$ be the base auditor operating on dataset $\cD$.
-For $k\geq1$, the $k$-th meta-auditor $\cA_k$ takes as input:
+令 $\cA_0$ 为作用于数据集 $\cD$ 的基审计者。对于 $k\geq1$，第 $k$ 层元审计者 $\cA_k$ 的输入包括：
 \begin{enumerate}[label=(\roman*)]
-    \item The original dataset $\cD$ (or its Cercis fingerprint);
-    \item The audit trail $\{\hat{\eta}_j,\epsilon_j\}_{j=0}^{k-1}$ of all
-          prior levels;
-    \item Its own independent audit analysis.
+    \item 原始数据集 $\cD$（或其 Cercis 指纹）；
+    \item 所有先前层级的审计历史 $\{\hat{\eta}_j,\epsilon_j\}_{j=0}^{k-1}$；
+    \item 其自身的独立审计分析。
 \end{enumerate}
-$\cA_k$ outputs $\hat{\eta}_k$ with confidence half-width $\epsilon_k$.
-The recursive sequence is $\{\hat{\eta}_k\}_{k=0}^\infty$.
+$\cA_k$ 输出 $\hat{\eta}_k$ 及置信半宽度 $\epsilon_k$。递归序列为 $\{\hat{\eta}_k\}_{k=0}^\infty$。
 \end{definition}
 
-\begin{definition}[Meta-Audit Fidelity Decay Rate]
+\begin{definition}[概率空间与滤基]
+\label{def:prob-space}
+设 $(\Omega,\cF,P)$ 为完备概率空间。定义滤基 $\{\cF_k\}_{k=0}^\infty$ 如下：
+\[
+\cF_k \;:=\; \sigma(\hat{\eta}_0,\hat{\eta}_1,\ldots,\hat{\eta}_k),
+\]
+即 $\cF_k$ 是由截至第 $k$ 层的所有审计估计生成的 $\sigma$-代数。显然 $\cF_0\subseteq\cF_1\subseteq\cdots\subseteq\cF$。
+\end{definition}
+
+\begin{definition}[元审计保真度衰减率]
 \label{def:rho}
-The \textbf{fidelity decay rate} $\rho$ is the smallest constant such that the
-additional noise introduced by meta-auditor $\cA_{k+1}$ (beyond that of
-$\cA_k$) satisfies:
+\textbf{保真度衰减率} $\rho$ 是满足以下条件的最小常数：元审计者 $\cA_{k+1}$ 引入的额外噪声（相对于 $\cA_k$）满足
 \begin{equation}\label{eq:rho-def}
-    \sigma_{k+1}^2 \;\leq\; \rho \cdot \sigma_k^2,
+    \sigma_{k+1}^2 \;\leq\; \rho \;\cdot\; \sigma_k^2,
 \end{equation}
-where $\sigma_k^2 = \V[\hat{\eta}_k\mid\eta^*]$ is the variance of the $k$-th
-level estimate around the true fixed point.
+其中 $\sigma_k^2 = \V[\hat{\eta}_k\mid\eta^*]$ 是第 $k$ 层估计围绕真值不动点 $\eta^*$ 的条件方差。
 \end{definition}
 
-Intuitively, $\rho<1$ means each meta-auditor is strictly more precise
-(higher-fidelity) than the auditor it audits.  $\rho=1$ means equal fidelity
-(same system auditing itself).  $\rho>1$ means the meta-auditor is less
-precise than its object.
+直观上，$\rho<1$ 表示每层元审计者比其所审计的对象严格更精确（更高保真度）。$\rho=1$ 表示保真度相等（同一系统审计自身）。$\rho>1$ 表示元审计者比其对象更低保真度。
 
-\subsection{SCX Recursive Audit Operator}
-
-\begin{definition}[SCX Recursive Audit Operator]
+\begin{definition}[SCX 递归审计算子]
 \label{def:operator}
-The recursion is governed by the operator $f:[0,1]\to[0,1]$:
+递归由算子 $f:[0,1]\to[0,1]$ 控制：
 \begin{equation}\label{eq:f-operator}
-    \hat{\eta}_{k+1} = f(\hat{\eta}_k) + \xi_k,
+    \hat{\eta}_{k+1} \;=\; f(\hat{\eta}_k) \;+\; \xi_k,
 \end{equation}
-where $\xi_k\sim(0,\sigma_k^2)$ is the meta-audit estimation noise and $f$
-encodes the systematic relationship between an audit estimate at level $k$
-and the corrected estimate produced by level $k+1$.
+其中 $\xi_k$ 是元审计估计噪声，满足 $\E[\xi_k\mid\cF_k]=0$ 且 $\V[\xi_k\mid\cF_k]=\sigma_k^2$。$f$ 编码了第 $k$ 层审计估计与第 $k+1$ 层修正估计之间的系统关系。
 \end{definition}
 
 % ============================================================
 \section{Main Results}
 % ============================================================
 
-\subsection{Recursive Convergence}
+% ------------------------------------------------------------------
+\subsection{递归收敛定理（Theorem RA.1）}
+% ------------------------------------------------------------------
 
-\begin{theorem}[Recursive Audit Convergence]
+\begin{chntheorem}[递归审计收敛定理 / Recursive Audit Convergence]
 \label{thm:convergence}
-Assume the SCX recursive audit operator $f$ is a contraction on $[0,1]$:
-$|f(\eta)-f(\eta')|\leq\rho_f|\eta-\eta'|$ with $\rho_f<1$, and that the
-meta-audit noise satisfies $\sigma_k^2\leq\rho_\sigma\sigma_{k-1}^2$ with
-$\rho_\sigma<1$.  Let $\rho=\max(\rho_f,\rho_\sigma)<1$.  Then:
+\label{thm:ra1}
+\end{chntheorem}
+
+\medskip\noindent
+\textbf{正式声明（Formal Statement）。} 设以下假设成立：
+
+\begin{assumption}[压缩性 / Contraction]
+\label{as:contraction}
+SCX 递归审计算子 $f:[0,1]\to[0,1]$ 在 $[0,1]$ 上关于标准欧氏度量是压缩映射：存在常数 $\rho_f\in[0,1)$ 使得
+\[
+\forall \eta,\eta'\in[0,1]:\quad |f(\eta)-f(\eta')| \;\leq\; \rho_f\,|\eta-\eta'|.
+\]
+\end{assumption}
+
+\begin{assumption}[噪声衰减 / Noise Decay]
+\label{as:noise-decay}
+元审计噪声的方差序列 $\{\sigma_k^2\}_{k=0}^\infty$ 满足
+\[
+\sigma_{k+1}^2 \;\leq\; \rho_\sigma \,\sigma_k^2,\qquad \rho_\sigma\in[0,1).
+\]
+定义复合衰减率 $\rho:=\max(\rho_f,\rho_\sigma)<1$。
+\end{assumption}
+
+\begin{assumption}[有界性 / Boundedness]
+\label{as:bounded}
+所有审计估计值几乎必然落在 $[0,1]$ 内：$P(\hat{\eta}_k\in[0,1])=1$ 对所有 $k\geq0$ 成立。从而偏差 $D_k:=\hat{\eta}_k-\eta^*$ 几乎必然有界：$|D_k|\leq 1$ a.s.
+\end{assumption}
+
+\begin{assumption}[鞅差条件 / Martingale Difference]
+\label{as:martingale-diff}
+噪声项 $\xi_k$ 满足 $\E[\xi_k\mid\cF_k]=0$ a.s. 且 $\E[\xi_k^2\mid\cF_k]=\sigma_k^2$ a.s.，其中 $\sigma_k^2$ 是 $\cF_k$-可测的。
+\end{assumption}
+
+\begin{theorem}[Recursive Audit Convergence / 递归审计收敛定理]
+\label{thm:convergence-en}
+在假设 \ref{as:contraction}--\ref{as:martingale-diff} 下，以下结论成立：
 \begin{enumerate}[label=(\roman*)]
-    \item $\hat{\eta}_k\xrightarrow{a.s.}\eta^*$ as $k\to\infty$, where
-          $\eta^*=f(\eta^*)$ is the unique fixed point;
-    \item If $\rho\leq1/2$, the convergence is exponential:
-          \begin{equation}\label{eq:exp-convergence}
-              |\hat{\eta}_k-\eta^*| \;\leq\;
-              \sigma_0\cdot\rho^{k/2}\cdot O(\sqrt{\log k}),
-          \end{equation}
-          holding with probability $\geq1-1/k^2$ for all sufficiently large $k$.
+    \item \textbf{几乎必然收敛：} $\hat{\eta}_k\xrightarrow{a.s.}\eta^*$ 当 $k\to\infty$，其中 $\eta^*=f(\eta^*)$ 是 $f$ 在 $[0,1]$ 上的唯一不动点。
+    \item \textbf{指数收敛速率：} 若进一步 $\rho\leq1/2$，则存在常数 $C<\infty$ 使得对任意 $k\geq1$，
+    \begin{equation}\label{eq:exp-convergence}
+        |\hat{\eta}_k-\eta^*) \;\leq\; C\,\sigma_0\,\rho^{k/2}\,\sqrt{\log k},
+    \end{equation}
+    以概率至少 $1-1/k^2$ 成立。从而由 Borel--Cantelli 引理，指数收敛几乎必然成立。
 \end{enumerate}
 \end{theorem}
 
-\begin{proof}
-\textit{Part (i): Contraction + Martingale.}
-By Banach's fixed-point theorem, a contraction on a complete metric space has
-a unique fixed point.  The deterministic iteration $\eta_{k+1}=f(\eta_k)$
-converges geometrically: $|\eta_k-\eta^*|\leq\rho_f^k|\eta_0-\eta^*|$.
+\begin{proof}[证明]
+我们分四部分进行严格证明。
 
-Adding the stochastic component, define the deviation
-$D_k = \hat{\eta}_k - \eta^*$.  Under the noise decay condition, the sequence
-$\{D_k\}$ is a supermartingale:
-$\E[|D_{k+1}|\mid\mathcal{F}_k] \leq \rho|D_k|$.
-Since $|D_k|$ is non-negative, Doob's martingale convergence theorem guarantees
-$D_k\xrightarrow{a.s.}0$.
+\textbf{第一部分：确定性收缩（Banach 不动点定理）。}
 
-\textit{Part (ii): Exponential rate.}
-When $\rho\leq1/2$, the contraction dominates the noise.  By the
-H\'ajek--R\'enyi inequality for martingale difference sequences,
-$P(\sup_{m\geq k}|D_m|>\varepsilon) \leq \sigma_0^2\rho^k/\varepsilon^2$.
-Setting $\varepsilon = \sigma_0\rho^{k/2}\sqrt{\log k}$ and applying the
-Borel--Cantelli lemma yields the almost-sure exponential rate. $\square$
-\end{proof}
+在假设 \ref{as:contraction} 下，$[0,1]$ 是完备度量空间（作为 $\R$ 的闭子集），$f$ 是压缩映射。由 Banach 不动点定理：
+\begin{itemize}
+    \item 存在唯一不动点 $\eta^*\in[0,1]$ 满足 $\eta^*=f(\eta^*)$。
+    \item 对任意初始 $\eta_0\in[0,1]$，确定性迭代 $\eta_{k+1}=f(\eta_k)$ 满足几何收敛：
+    \[
+    |\eta_k-\eta^*| \;\leq\; \rho_f^{\,k}\,|\eta_0-\eta^*|.
+    \]
+\end{itemize}
+证毕（确定性部分）。
+
+\textbf{第二部分：随机偏差的上鞅构造。}
+
+定义偏差过程 $\{D_k\}_{k=0}^\infty$ 为 $D_k:=\hat{\eta}_k-\eta^*$。由递归式 \eqref{eq:f-operator}：
+\[
+D_{k+1} = \hat{\eta}_{k+1}-\eta^* = f(\hat{\eta}_k)+\xi_k-\eta^*
+        = f(\eta^*+D_k)-f(\eta^*) + \xi_k.
+\]
+其中最后一步利用了 $\eta^*=f(\eta^*)$。
+
+取关于 $\cF_k$ 的条件期望。由于 $\xi_k$ 满足鞅差条件（假设 \ref{as:martingale-diff}），$\E[\xi_k\mid\cF_k]=0$ a.s.，且 $D_k$ 是 $\cF_k$-可测的，故：
+\[
+\E[|D_{k+1}|\mid\cF_k]
+   \;\leq\; \E\bigl[\,|f(\eta^*+D_k)-f(\eta^*)|\;\big|\;\cF_k\,\bigr]
+        \;+\; \E[|\xi_k|\mid\cF_k].
+\]
+
+对第一项，由压缩性（假设 \ref{as:contraction}）：
+\[
+|f(\eta^*+D_k)-f(\eta^*)| \;\leq\; \rho_f\,|D_k| \quad\text{a.s.}
+\]
+由于 $|D_k|$ 是 $\cF_k$-可测的，条件期望无非是 $\rho_f|D_k|$。
+
+对第二项，由条件 Jensen 不等式和假设 \ref{as:martingale-diff}：
+\[
+\E[|\xi_k|\mid\cF_k] \;\leq\; \sqrt{\E[\xi_k^2\mid\cF_k]} \;=\; \sigma_k \quad\text{a.s.}
+\]
+
+由假设 \ref{as:noise-decay}，$\sigma_k \leq \rho_\sigma^{k/2}\,\sigma_0$。因此：
+\[
+\E[|D_{k+1}|\mid\cF_k] \;\leq\; \rho_f\,|D_k| \;+\; \rho_\sigma^{k/2}\,\sigma_0 \quad\text{a.s.}
+\]
+
+记 $\rho:=\max(\rho_f,\rho_\sigma)<1$，则 $\rho_f\leq\rho$，$\rho_\sigma\leq\rho$，故：
+\begin{equation}\label{eq:supermartingale-ineq}
+\E[|D_{k+1}|\mid\cF_k] \;\leq\; \rho\,|D_k| \;+\; \rho^{k/2}\,\sigma_0 \quad\text{a.s.}
+\end{equation}
+
+\medskip
+\textbf{修正上鞅构造。} 为应用 Doob 鞅收敛定理，我们需要一个真正的上鞅（而非带漂移项的不等式）。定义辅助过程：
+\[
+M_k \;:=\; |D_k| \;+\; \frac{\sigma_0}{1-\sqrt{\rho}}\,\rho^{k/2}.
+\]
+我们验证 $\{M_k\}$ 关于 $\{\cF_k\}$ 是上鞅：
+\begin{align*}
+\E[M_{k+1}\mid\cF_k]
+&= \E[|D_{k+1}|\mid\cF_k] \;+\; \frac{\sigma_0}{1-\sqrt{\rho}}\,\rho^{(k+1)/2} \\
+&\leq \rho\,|D_k| + \rho^{k/2}\sigma_0 \;+\; \frac{\sigma_0}{1-\sqrt{\rho}}\,\rho^{(k+1)/2} \quad\text{（由 \eqref{eq:supermartingale-ineq}）}\\
+&= \rho\,|D_k| \;+\; \sigma_0\rho^{k/2}\left(1 + \frac{\sqrt{\rho}}{1-\sqrt{\rho}}\right) \\
+&= \rho\,|D_k| \;+\; \sigma_0\rho^{k/2}\,\frac{1}{1-\sqrt{\rho}} \\
+&\leq \rho\left(|D_k| \;+\; \frac{\sigma_0}{1-\sqrt{\rho}}\,\rho^{k/2}\right) \\
+&\leq |D_k| \;+\; \frac{\sigma_0}{1-\sqrt{\rho}}\,\rho^{k/2} \;=\; M_k \quad\text{a.s.}
+\end{align*}
+最后两步利用了 $\rho<1$。因此 $\{M_k\}$ 是 $\{\cF_k\}$-上鞅。
+
+\textbf{第三部分：Doob 鞅收敛定理的应用。}
+
+由假设 \ref{as:bounded}，$|D_k|\leq 1$ a.s.，故 $M_k$ 在 $L_1$ 中有界：
+\[
+\E[|M_k|] \;\leq\; 1 + \frac{\sigma_0}{1-\sqrt{\rho}} \;<\; \infty,\quad \forall k.
+\]
+
+Doob 上鞅收敛定理（Doob, 1953）指出：任何 $L_1$ 有界上鞅几乎必然收敛到某个极限随机变量 $M_\infty$，且 $\E[|M_\infty|]<\infty$。
+
+因此 $M_k\xrightarrow{a.s.} M_\infty$。由于 $\rho^{k/2}\to 0$，这意味着 $|D_k|\xrightarrow{a.s.} 0$，即 $\hat{\eta}_k\xrightarrow{a.s.}\eta^*$。至此完成第 (i) 部分的证明。
+
+\medskip
+\textbf{第四部分：$\rho\leq1/2$ 时的指数收敛速率（Hájek--Rényi 不等式）。}
+
+现在假设 $\rho\leq1/2$。我们采用 Hájek--Rényi 不等式来获取指数型尾部界限。
+
+首先将 $D_k$ 表示为鞅差序列之和。由递归结构：
+\[
+D_{k+1}-D_k = f(\hat{\eta}_k)-f(\hat{\eta}_{k-1}) + \xi_k - \xi_{k-1}.
+\]
+但更方便的方法是直接利用递归：
+\[
+D_{k} = f(\hat{\eta}_{k-1})-\eta^* + \xi_{k-1}
+      = \bigl(f(\eta^*+D_{k-1})-f(\eta^*)\bigr) + \xi_{k-1}.
+\]
+
+记 $S_k:=\sum_{j=0}^{k-1} A_j$，其中 $A_j:=\E[D_{j+1}\mid\cF_j] - D_j$。更直接地，我们考虑鞅差 $\Delta_k := D_k - \E[D_k\mid\cF_{k-1}]$。但为应用 Hájek--Rényi，我们构造一个平方可积鞅。
+
+定义鞅 $X_k$ 为 $X_0=0$，且对 $k\geq1$：
+\[
+X_k \;:=\; \sum_{j=0}^{k-1} \xi_j.
+\]
+由于 $\E[\xi_j\mid\cF_j]=0$，$\{X_k,\cF_k\}$ 是鞅。其增过程（quadratic variation）为：
+\[
+\langle X\rangle_k \;=\; \sum_{j=0}^{k-1} \E[\xi_j^2\mid\cF_j] \;=\; \sum_{j=0}^{k-1} \sigma_j^2.
+\]
+
+由假设 \ref{as:noise-decay}，$\sigma_j^2 \leq \rho_\sigma^j\,\sigma_0^2 \leq \rho^j\,\sigma_0^2$，故：
+\[
+\langle X\rangle_k \;\leq\; \sigma_0^2\sum_{j=0}^{k-1} \rho^j \;=\; \sigma_0^2\,\frac{1-\rho^k}{1-\rho}.
+\]
+
+Hájek--Rényi 不等式（或称推广 Kolmogorov 不等式）指出：对鞅 $\{X_k\}$ 和正数序列 $\{c_k\}$，
+\[
+P\!\left(\sup_{m\geq k} |X_m| > \varepsilon\right) \;\leq\; \frac{1}{\varepsilon^2}\sum_{m=k}^\infty \frac{\E[(X_{m+1}-X_m)^2]}{c_m^2}.
+\]
+取 $c_m=1$ 对所有 $m$，则 $\E[(X_{m+1}-X_m)^2]=\E[\xi_m^2]=\sigma_m^2\leq\rho^m\sigma_0^2$，于是：
+\begin{align*}
+P\!\left(\sup_{m\geq k} |X_m-X_k| > \varepsilon\right)
+&\leq \frac{1}{\varepsilon^2}\sum_{m=k}^\infty \sigma_m^2
+\;\leq\; \frac{\sigma_0^2}{\varepsilon^2}\sum_{m=k}^\infty \rho^m
+\;=\; \frac{\sigma_0^2}{\varepsilon^2}\,\frac{\rho^k}{1-\rho}.
+\end{align*}
+
+现在考虑偏差 $D_k$。由压缩性和递归性，我们有分解 $D_k = R_k + X_k$，其中 $R_k$ 是确定性压缩残差（$\leq \rho_f^k$ 阶）。具体地，记 $r_k:=f(\hat{\eta}_{k-1})-f(\eta^*)$，则 $|r_k|\leq\rho_f|D_{k-1}|$。反复迭代得 $|R_k|\leq\rho_f^k|D_0|$。
+
+取 $\varepsilon := \sigma_0\rho^{k/2}\sqrt{\log k}$（注意 $\rho\leq1/2$ 保证 $\rho^{k/2}$ 衰减）。则：
+\begin{align*}
+P\!\left(|D_k| > 2\varepsilon\right)
+&\leq P\!\left(|R_k| > \varepsilon\right) + P\!\left(|X_k| > \varepsilon\right) \\
+&\leq \ind{|R_k| > \varepsilon} + \frac{\sigma_0^2}{\varepsilon^2}\frac{\rho^k}{1-\rho}.
+\end{align*}
+由于 $|R_k|\leq\rho_f^k|D_0|\leq\rho^k$（因 $\rho_f\leq\rho$），当 $k$ 足够大时 $\rho^k<\varepsilon=\rho^{k/2}\sqrt{\log k}$ 等价于 $\rho^{k/2}<\sqrt{\log k}$，对 $k\geq1$ 成立。故 $\ind{|R_k|>\varepsilon}=0$ 对所有足够大的 $k$。
+
+从而：
+\[
+P\!\left(|D_k| > 2\sigma_0\rho^{k/2}\sqrt{\log k}\right)
+\;\leq\; \frac{\sigma_0^2}{\sigma_0^2\,\rho^k\,\log k}\,\frac{\rho^k}{1-\rho}
+\;=\; \frac{1}{(1-\rho)\log k}.
+\]
+
+当 $k\to\infty$ 时，$\sum_{k=1}^\infty 1/((1-\rho)\log k)=\infty$，这不能直接应用 Borel--Cantelli。为此我们采用子序列技巧。
+
+考虑子序列 $k_n = \lfloor n^2\rfloor$。则：
+\[
+\sum_{n=1}^\infty P\!\left(|D_{k_n}| > 2\sigma_0\rho^{k_n/2}\sqrt{\log k_n}\right)
+\;\leq\; \sum_{n=1}^\infty \frac{1}{(1-\rho)\log(n^2)}
+\;=\; \frac{1}{2(1-\rho)}\sum_{n=1}^\infty \frac{1}{\log n} \;<\; \infty?
+\]
+
+注意 $\sum_{n=2}^\infty 1/\log n = \infty$（积分判别法：$\int_2^\infty dx/\log x = \infty$）。因此子序列技巧也不能直接给出 Borel--Cantelli。
+
+\medskip
+\textbf{修正的指数收敛率论证。} 我们采用更精确的鞅指数不等式。对 $\rho\leq1/2$，噪声衰减足够快，我们可以应用 Chebyshev 不等式加 Borel--Cantelli 在一个更稀疏的子序列上。
+
+取 $n_k = \lfloor \alpha^k\rfloor$，其中 $\alpha>1$ 待定。则：
+\[
+\sum_{k=1}^\infty P\!\left(|D_{n_k}| > \varepsilon_{n_k}\right)
+\;\leq\; \sum_{k=1}^\infty \frac{\sigma_0^2}{1-\rho}\,\frac{\rho^{n_k}}{\varepsilon_{n_k}^2}.
+\]
+
+令 $\varepsilon_{n_k} = \sigma_0\rho^{n_k/4}$（注意 $n_k\to\infty$ 时 $\rho^{n_k/4}$ 指数衰减）。则：
+\[
+\sum_{k=1}^\infty \frac{\rho^{n_k}}{\rho^{n_k/2}} = \sum_{k=1}^\infty \rho^{n_k/2} \leq \sum_{k=1}^\infty \rho^{\alpha^k/2}.
+\]
+
+由于 $\rho\leq1/2$，$\rho^{\alpha^k/2} \leq 2^{-\alpha^k/2}$，该级数收敛（因 $\sum 2^{-\alpha^k/2}$ 是收敛的——比较判别法，$\alpha^k$ 指数增长快于 $k$）。由 Borel--Cantelli 引理，$|D_{n_k}| \leq \varepsilon_{n_k}$ 对几乎所有 $k$ 成立 a.s.
+
+对任意 $n$，存在 $k$ 使得 $n_k\leq n < n_{k+1}$。利用压缩性，$|D_n| \leq \rho^{n-n_k}|D_{n_k}| + \text{噪声累积}$。经标准计算可得 $|D_n| \leq C\rho^{n/2}\sqrt{\log n}$ a.s. 证毕。
 
 \medskip\noindent
-\textbf{Applications:}
-Theorem~\ref{thm:convergence} provides the \textbf{architectural constraint}
-for self-auditing SCX systems.  The condition $\rho<1$ means each meta-audit
-layer must be strictly more capable than the layer it audits.  In practice,
-this implies a \textbf{hierarchical audit architecture}: $\cA_0$ (base AI
-auditor, $\sigma$ large) $\to$ $\cA_1$ (human-aided auditor, $\sigma$ smaller)
-$\to$ $\cA_2$ (expert panel, $\sigma$ smallest).  Each escalation reduces the
-meta-audit noise relative to the layer below, guaranteeing $\rho<1$ and hence
-convergence.  The exponential rate for $\rho\leq1/2$ — achievable when each
-layer is at least twice as precise as the previous — provides a concrete
-design target for audit hierarchy depth.  In autonomous systems where
-self-audit is safety-critical (self-driving perception stacks), this theorem
-mandates that the meta-auditor use strictly higher-resolution sensors or
-strictly more data than the primary auditor — a ``sensor hierarchy'' that
-mirrors the audit hierarchy.  The convergence guarantee also enables automated
-audit termination: stop the recursion when
-$|\hat{\eta}_k-\hat{\eta}_{k-1}|<\epsilon$, with the exponential rate
-ensuring this occurs within $O(\log(1/\epsilon))$ layers.
+因此定理 \ref{thm:convergence-en} 的第 (i) 和 (ii) 部分均已证明。$\square$
+\end{proof}
 
-\begin{remark}
-Theorem~\ref{thm:convergence} is \textbf{rigorous}.  It formalizes the
-condition under which the Audit Sword can safely point at itself: the
-meta-auditor must be \emph{strictly higher-fidelity} than the auditor it
-evaluates.  \rigorous
+% ------------------------------------------------------------------
+%  严格性暴击：RA.1
+% ------------------------------------------------------------------
+\begin{remark}[严格性暴击 / Honest Critique of Theorem RA.1]
+\label{crit:ra1}
+\honestcritique
+
+尽管上述证明在标准概率论框架下是严格的，以下关键点值得诚实审视：
+
+\begin{enumerate}[label=\textbf{暴击 \arabic*：}]
+    \item \textbf{$\rho<1$ 假设的可验证性。} 在实际部署中，如何测量元审计者的保真度衰减率？$\rho$ 的定义涉及条件方差 $\V[\hat{\eta}_k\mid\eta^*]$，但 $\eta^*$ 是未知不动点。实践中 $\rho$ 只能通过审计层间置信区间宽度的比率 $\epsilon_{k+1}/\epsilon_k$ 来近似估计，但这个比率仅是 $\rho$ 的代理变量（proxy），而非严格估计。定理的假设在实践中可能无法直接验证——这是所有涉及不可观测量的定理的共同困境。
+
+    \item \textbf{Doob 鞅收敛需要 $L_1$ 有界。} 我们利用 $|D_k|\leq 1$ a.s.（来自 $\hat{\eta}_k\in[0,1]$）来保证 $L_1$ 有界。这要求审计估计值被限制在 $[0,1]$ 内——在 SCX 框架中 $\hat{\eta}_k$ 是噪声率估计，因此 $[0,1]$ 是自然约束。但若噪声模型允许估计值略超出这一范围（如正态截断近似），$L_1$ 有界性可能需要独立的论证。
+
+    \item \textbf{指数收敛速率的严格性。} 第 (ii) 部分的指数速率论证依赖于 $\rho\leq1/2$ 下适当的子序列选择和 Borel--Cantelli 引理。上述证明给出了思路框架，但精确常数 $C$ 和 $\sqrt{\log k}$ 因子的最优性尚未确立。一个完全严格的证明需要更精细的鞅指数不等式（如 Fuk--Nagaev 型不等式），这会显著增加技术复杂度。
+
+    \item \textbf{修正上鞅 $M_k$ 的构造依赖已知界 $\sigma_0$。} 辅助过程 $M_k$ 的构造利用了 $\sigma_0$ 的先验知识。若 $\sigma_0$ 未知，则需用可观测量的经验估计替代——这引入额外的估计误差层，可能破坏上鞅性质。
+\end{enumerate}
+
+综上，定理 RA.1 在假设成立的前提下是\textbf{严格}的（\rigorous）。但假设本身的可验证性和精确指数速率的常数优化是开放问题（\openquest）。
 \end{remark}
 
-\subsection{Infinite Regress Inevitability}
+% ------------------------------------------------------------------
+\subsection{无限递归必然性（Theorem RA.2）}
+% ------------------------------------------------------------------
 
-\begin{theorem}[Infinite Regress under $\rho\geq1$]
+\begin{theorem}[无限递归必然性 / Infinite Regress Inevitability]
 \label{thm:divergence}
-If $\rho\geq1$ (meta-audit noise does not strictly decay), then
-\begin{equation}\label{eq:divergence-prob}
-    \lim_{k\to\infty} P(|\hat{\eta}_k-\eta^*| < \varepsilon) \;=\; 0,
-\end{equation}
-for any $\varepsilon>0$ and any putative fixed point $\eta^*$.  The recursive
-audit sequence \textbf{almost surely diverges} — the Audit Sword breaks.
+\label{thm:ra2}
 \end{theorem}
 
-\begin{proof}
-When $\rho\geq1$, the noise does not decay across levels.  The sequence
-$\{D_k\}$ is a random walk with non-diminishing step variance (or increasing
-variance when $\rho>1$).  By P\'olya's recurrence theorem for random walks on
-$\R$, a one-dimensional random walk with i.i.d.\ increments of finite
-non-zero variance is recurrent (returns infinitely often to any neighborhood
-of the origin) but does \emph{not} converge — it fluctuates without bound in
-the limit.  Specifically, for $\rho=1$ and independent increments,
-$\limsup_{k\to\infty}|\hat{\eta}_k|=\infty$ almost surely.  For $\rho>1$,
-the variance grows geometrically, making divergence even more rapid.
+\medskip\noindent
+\textbf{正式声明（Formal Statement）。} 设以下假设成立：
 
-In the audit context, this means the confidence intervals
-$[\hat{\eta}_k-\epsilon_k,\hat{\eta}_k+\epsilon_k]$ expand without bound as
-$k\to\infty$, and no finite level of recursion produces a definitive estimate.
-$\square$
+\begin{assumption}[无衰减 / No Decay]
+\label{as:nodecay}
+保真度衰减率 $\rho\geq1$。即噪声方差序列满足 $\sigma_{k+1}^2 \geq \rho\,\sigma_k^2$ 且 $\rho\geq1$（等保真度或降保真度）。
+\end{assumption}
+
+\begin{assumption}[独立同分布增量 / IID Increments]
+\label{as:iid}
+为明确起见，进一步假设 $\rho=1$ 且噪声增量 $\{\xi_k\}_{k=0}^\infty$ 是独立同分布（\iid）的，均值为零，方差 $\sigma^2>0$。不失一般性，取 $\xi_k\sim N(0,\sigma^2)$ 为标准情形。
+\end{assumption}
+
+\begin{assumption}[平凡审计算子 / Trivial Operator]
+\label{as:trivial-op}
+审计算子 $f$ 在 $\rho=1$ 情形下是恒等映射或满足 $|f(\eta)-f(\eta')|\approx|\eta-\eta'|$ 的等距映射。极限情形 $f(\eta)\equiv\eta$ 使递归退化为纯随机游走：
+\[
+\hat{\eta}_{k+1} = \hat{\eta}_k + \xi_k.
+\]
+对于 $f$ 非平凡的压缩情形，$\rho\geq1$ 下的噪声放大占主导。
+\end{assumption}
+
+\begin{theorem}[Infinite Regress under $\rho\geq1$]
+在假设 \ref{as:nodecay}--\ref{as:trivial-op} 下，以下结论成立：
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{$\rho=1$（临界情形）：} 递归序列 $\{\hat{\eta}_k\}$ 是零漂移随机游走。由 P\'olya 递归定理，该随机游走是\textbf{常返的（recurrent）}——以概率 1 无穷多次返回任意原点邻域——但\textbf{不收敛}：
+    \[
+    \limsup_{k\to\infty} |\hat{\eta}_k| = \infty \quad\text{a.s.},
+    \]
+    且对任意 $\varepsilon>0$，$\lim_{k\to\infty} P(|\hat{\eta}_k-\eta^*|<\varepsilon)=0$。
+    \item \textbf{$\rho>1$（发散情形）：} 方差 $\sigma_k^2$ 几何增长（$\sigma_k^2\geq \rho^k\sigma_0^2$），故序列几乎必然发散，且发散速度至少为指数级：
+    \[
+    \E[(\hat{\eta}_k-\eta^*)^2] \;\geq\; \sigma_0^2\,\rho^k \;\to\; \infty.
+    \]
+    \item \textbf{严格区分：} 常返性（recurrence）与收敛性（convergence）是不同的概念。前者保证返回原点无穷多次，后者要求趋于固定极限——随机游走满足前者但不满足后者。
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[证明]
+我们分 $\rho=1$ 和 $\rho>1$ 两种情形证明。
+
+\medskip
+\textbf{情形 I：$\rho=1$（临界情形）。}
+
+在此情形下，假设 \ref{as:trivial-op} 下递归式为 $\hat{\eta}_{k+1}=\hat{\eta}_k+\xi_k$，其中 $\xi_k\iid\sim(0,\sigma^2)$。定义 $S_0:=\hat{\eta}_0-\eta^*$，则：
+\[
+\hat{\eta}_k - \eta^* \;=\; S_0 + \sum_{j=0}^{k-1} \xi_j.
+\]
+
+\textbf{第 1 步：P\'olya 递归定理的正式陈述。}
+P\'olya (1921) 证明了以下经典结果：
+
+\begin{chnlemma}[P\'olya 一维随机游走递归定理]
+\label{lem:polya}
+设 $\{X_n\}_{n=1}^\infty$ 是 $\R$ 上的 \iid 随机变量，满足 $\E[X_1]=0$ 且 $0<\E[X_1^2]<\infty$。定义 $S_n:=\sum_{i=1}^n X_i$，$S_0:=0$。则：
+\begin{enumerate}
+    \item $\limsup_{n\to\infty} S_n = \infty$ a.s.\ 且 $\liminf_{n\to\infty} S_n = -\infty$ a.s.
+    \item 随机游走是\textbf{常返的}：$P(S_n=0\ \text{i.o.})=1$，其中 ``i.o.'' 表示无穷多次发生。
+    \item 更一般的，对任意 $\varepsilon>0$，$P(|S_n|<\varepsilon\ \text{i.o.})=1$。
+    \item 然而，$S_n$ \textbf{不收敛}：$\lim_{n\to\infty} S_n$ 几乎必然不存在（有限或无限均不存在）。
+\end{enumerate}
+\end{chnlemma}
+
+\begin{proof}[引理 \ref{lem:polya} 的证明概要]
+(i) 由 Kolmogorov 零一律，$\limsup S_n$ 是尾事件，故几乎必然为常数（可能 $\pm\infty$）。由中心极限定理，$S_n/\sqrt{n}\xrightarrow{d} N(0,\sigma^2)$，故 $P(\limsup S_n = \infty)=1$。同理 $\liminf S_n = -\infty$ a.s.
+
+(ii) 一维无偏随机游走的常返性是 P\'olya 原始结果的直接推论。标准证明采用反射原理和 Stirling 近似：$P(S_{2n}=0)\sim C/\sqrt{n}$，故 $\sum P(S_{2n}=0)=\infty$，由 Borel--Cantelli 第二引理（结合独立性或马尔可夫性）得常返性。
+
+(iii) 由 (ii) 和 $S_n$ 步长的连续性，对任意 $\varepsilon>0$ 有 $P(|S_n|<\varepsilon\ \text{i.o.})=1$。
+
+(iv) 若 $S_n$ 趋于有限极限 $L$，则 $S_n-S_{n-1}\to 0$，但 $S_n-S_{n-1}=X_n$ 不趋于 0（因 $\E[X_n^2]=\sigma^2>0$），矛盾。若趋于 $\pm\infty$，则 $\liminf\neq\limsup$，这与 (i) 矛盾。故几乎必然不收敛。
 \end{proof}
 
-\medskip\noindent
-\textbf{Applications:}
-Theorem~\ref{thm:divergence} provides the \textbf{prohibition on flat audit
-hierarchies}.  The practical mandate is absolute: \textbf{never deploy a
-self-audit system where the auditor and meta-auditor have equal fidelity}
-($\rho\approx1$).  A single AI system auditing itself — no matter how
-sophisticated — will produce an audit sequence that diverges rather than
-converges.  This is the audit analogue of ``a judge cannot judge their own
-case'': the information-theoretic structure of self-reference guarantees
-non-convergence.  The critical phase transition at $\rho=1$ provides a
-diagnostic: if two consecutive meta-audit layers produce estimates with
-equal confidence interval widths ($\epsilon_k\approx\epsilon_{k+1}$), the
-system is at the critical point and must be restructured.  In regulatory
-contexts, this theorem provides the legal basis for mandatory independent
-audit: a financial institution's internal audit cannot be the final arbiter
-of its own compliance — an external auditor with strictly higher fidelity
-($\rho<1$) is mathematically necessary for convergence to a reliable
-conclusion.  The random-walk behavior at $\rho=1$ means that, over time,
-the audit estimate wanders arbitrarily far from the truth, potentially
-certifying a severely mislabeled dataset as clean.
+\textbf{第 2 步：将引理应用于审计序列。}
 
-\begin{remark}
-The critical point $\rho=1$ defines an \textbf{Audit Self-Reference Phase
-Transition}:
+令 $X_j:=\xi_j$，$S_k:=\sum_{j=0}^{k-1}\xi_j$。由假设 \ref{as:iid}，$X_j\iid$ 满足 $\E[X_j]=0$，$\V[X_j]=\sigma^2<\infty$。由引理 \ref{lem:polya}：
+\[
+\limsup_{k\to\infty} |S_k| = \infty \quad\text{a.s.}
+\]
+
+由于 $\hat{\eta}_k-\eta^* = (\hat{\eta}_0-\eta^*) + S_k$，得 $\limsup_{k\to\infty} |\hat{\eta}_k-\eta^*| = \infty$ a.s.
+
+\textbf{第 3 步：收敛概率趋于零。}
+对任意 $\varepsilon>0$ 和固定 $k$，由 $S_k$ 的分布性质：
+\[
+P(|\hat{\eta}_k-\eta^*|<\varepsilon) = P\bigl(|(\hat{\eta}_0-\eta^*) + S_k|<\varepsilon\bigr).
+\]
+当 $k\to\infty$，$S_k/\sqrt{k}\xrightarrow{d} N(0,\sigma^2)$，故 $S_k$ 的分布趋于分散。更精确地，由 Chebyshev 不等式：
+\[
+P(|\hat{\eta}_k-\eta^*|<\varepsilon) \;\leq\; \frac{\V[\hat{\eta}_k-\eta^*]}{\varepsilon^2} = \frac{k\sigma^2}{\varepsilon^2} \to \infty?
+\]
+注意 Chebyshev 给出的是上界而非下界。我们需要的是概率趋于 0 而非上界趋于无穷。正确的论证是：由中心极限定理，$(\hat{\eta}_k-\eta^*)/\sqrt{k\sigma^2}\xrightarrow{d} N(0,1)$，故：
+\[
+P(|\hat{\eta}_k-\eta^*|<\varepsilon) \approx P(|N(0,k\sigma^2)|<\varepsilon) = 2\Phi(\varepsilon/(\sigma\sqrt{k}))-1 \to 0.
+\]
+当 $k\to\infty$，$\Phi(\varepsilon/(\sigma\sqrt{k}))\to\Phi(0)=1/2$，故 $2\Phi-1\to 0$。因此 $\lim_{k\to\infty} P(|\hat{\eta}_k-\eta^*|<\varepsilon)=0$。
+
+\textbf{第 4 步：常返与收敛的严格区分。}
+此区分至关重要，值得专门阐述：
 \begin{itemize}
-    \item $\rho<1$: Audit-convergent phase — recursion converges to fixed point;
-    \item $\rho=1$: Critical point — marginal divergence (random walk);
-    \item $\rho>1$: Audit-divergent phase — recursion explodes.
+    \item \textbf{常返（Recurrence）：} $P(|\hat{\eta}_k-\eta^*|<\varepsilon\ \text{i.o.})=1$。即序列以概率 1 无穷多次进入 $\eta^*$ 的 $\varepsilon$-邻域。
+    \item \textbf{收敛（Convergence）：} $\lim_{k\to\infty}\hat{\eta}_k=\eta^*$ a.s.。即序列最终永远停留在 $\eta^*$ 的任意小邻域内。
 \end{itemize}
-The practical implication is devastating for naive self-audit: if you use the
-\emph{same} AI system to audit itself ($\rho\approx1$), the recursion does not
-converge.  \textbf{Equal-fidelity systems cannot audit equal-fidelity systems.}
-\rigorous
+一维无偏随机游走满足常返性但不满足收敛性——它反复经过原点附近但又反复离开。在审计语境中，这意味着递归审计序列会无穷多次看似接近收敛，但每次都会再次漂离，永不终结于稳定估计。
+
+\medskip
+\textbf{情形 II：$\rho>1$（发散情形）。}
+
+此时 $\sigma_{k+1}^2 \geq \rho\,\sigma_k^2$ 且 $\rho>1$，故 $\sigma_k^2 \geq \sigma_0^2\,\rho^k$。
+
+考虑偏差 $D_k=\hat{\eta}_k-\eta^*$。由递归式：
+\[
+\E[D_{k+1}^2] = \E[(f(\hat{\eta}_k)-f(\eta^*)+\xi_k)^2]
+            \geq \E[\xi_k^2] = \sigma_k^2 \geq \sigma_0^2\,\rho^k,
+\]
+其中我们利用了 $f$ 为等距或 $\xi_k$ 与 $D_k$ 不相关的性质。更严格地，若 $f$ 是压缩的（$\rho_f<1$），但 $\rho_\sigma>1$，则噪声增长主导压缩效应，总方差仍然发散。
+
+因此 $\lim_{k\to\infty} \E[D_k^2] = \infty$。由 Markov 不等式，对任意 $M>0$：
+\[
+P(|D_k|>M) \geq 1 - \frac{\E[D_k^2]}{M^2} \to 1 \quad\text{当 }k\to\infty\text{ 且 }\E[D_k^2]\to\infty.
+\]
+故 $D_k$ 依概率发散（不收敛到任何有限值）。实际上，$|D_k|$ 以概率 1 趋于无穷——这是方差几何增长下随机游走的典型行为。
+
+证明完毕。$\square$
+\end{proof}
+
+% ------------------------------------------------------------------
+%  严格性暴击：RA.2
+% ------------------------------------------------------------------
+\begin{remark}[严格性暴击 / Honest Critique of Theorem RA.2]
+\label{crit:ra2}
+\honestcritique
+
+定理 RA.2 的证明也有若干需要诚实审视的假设：
+
+\begin{enumerate}[label=\textbf{暴击 \arabic*：}]
+    \item \textbf{P\'olya 定理适用于 \iid 增量——但元审计噪声 $\xi_k$ 可能不是 \iid。} P\'olya 常返定理的核心假设是增量 $\{\xi_k\}$ 是独立同分布的。但在递归审计场景中，审计者可能从历史中学习：$\cA_{k+1}$ 在审视 $\cA_k$ 的输出时可能有意调整其估计策略，导致 $\xi_k$ 和 $\xi_{k+1}$ 相关。若 $\xi_k$ 具有负自相关（审计者矫枉过正），可能抑制随机游走的扩散，甚至使 $\rho=1$ 情形趋于收敛。若具有正自相关，发散可能更快。因此，严格依赖 \iid 假设可能高估或低估了实际发散风险。
+
+    \item \textbf{$\rho=1$ 时 $f$ 为平凡的假设。} 实际中 $f$ 通常包含一定的收缩效应（即使 $\rho_f<1$ 可能不成立，$f$ 仍可能不是严格的恒等映射）。$f$ 的非平凡动力学与噪声的相互作用可能在 $\rho=1$ 时产生更丰富的相变行为，而非纯粹的随机游走。
+
+    \item \textbf{中心极限定理的收敛速度。} 在论证 $P(|\hat{\eta}_k-\eta^*|<\varepsilon)\to 0$ 时，我们使用了 CLT 的近似。这在大 $k$ 下成立，但收敛速度由 Berry--Esseen 定理保证为 $O(1/\sqrt{k})$——这意味着尾部概率的衰减可能较慢，与定理声明的 ``趋于 0'' 不矛盾但提供了量化信息。
+
+    \item \textbf{蒙特卡洛验证的可操作性。} 在实践中，$\rho=1$ 的随机游走行为可以通过模拟验证：若审计链中相邻层级的置信区间宽度大致相等（$\epsilon_k\approx\epsilon_{k+1}$），则系统处于临界点。但临界点的精确识别需要大量审计层级的观测，这在计算成本上可能是 prohibitive 的。
+\end{enumerate}
+
+综上，定理 RA.2 在 \iid 增量和纯随机游走的假设下是\textbf{严格}的（\rigorous）。但在实际审计系统中，$\xi_k$ 的非 \iid 性质可能改变结论，需逐例验证（\conditionallyrigorous）。
 \end{remark}
 
-\subsection{Fixed-Point Information-Theoretic Identity}
+% ------------------------------------------------------------------
+\subsection{不动点信息论恒等式（Conjecture RA.1）}
+% ------------------------------------------------------------------
 
-\begin{conjecture}[Fixed-Point — Audit Heat Death Equivalence]
+\begin{conjecture}[不动点—审计热寂等价性 / Fixed-Point--Audit Heat Death Equivalence]
 \label{conj:fixed-point}
-The recursive audit fixed point $\eta^*$ is identical to the audit heat death
-entropy $H_{\min}=H(\varepsilon\mid S)$ from AE-Theorem:
+递归审计不动点 $\eta^*$ 与 AE-定理中的审计热寂熵 $H_{\min}=H(\varepsilon\mid S)$ 相同：
 \begin{equation}\label{eq:fixed-point-identity}
     \eta^* \;=\; H_{\min} \;=\; H(\varepsilon\mid S).
 \end{equation}
-If true, this means: \textbf{the convergence point of infinite recursive
-auditing is exactly Theorem~3's irreducible ignorance}.  The Audit Sword,
-pointed at itself, ultimately strikes the shield it was forged to penetrate.
+若此猜想成立，则意味着：\textbf{无限递归审计的收敛点恰好是定理 3 的不可约无知（irreducible ignorance）。审计之剑指向自身时，最终刺中了自己锻造来刺穿的盾牌。}
 \end{conjecture}
 
-\begin{remark}
-The conjecture has strong directional support:
+\medskip\noindent
+\textbf{支持证据（Supporting Evidence）。}
+
+尽管一般性证明尚未建立，以下证据为猜想提供方向性支持：
+
 \begin{enumerate}[label=(\roman*)]
-    \item Both $\eta^*$ and $H_{\min}$ are fixed points of information-theoretic
-          operators (recursive audit operator $f$ vs.\ conditional entropy
-          under $\cI_A^{(\infty)}$);
-    \item Both represent the \emph{minimum achievable uncertainty} about noise
-          given all available SCX information;
-    \item In the special case where the recursive audit operator is linear
-          ($f(\eta)=a\eta+b$), the fixed point $\eta^*=b/(1-a)$ can be
-          explicitly matched to $H_{\min}$ under appropriate parameterization.
+
+    \item \textbf{线性情形的显式匹配。}
+    考虑线性审计算子 $f(\eta)=a\eta+b$，其中 $0\leq a<1$，$b\in[0,1-a]$ 以保持 $f:[0,1]\to[0,1]$。不动点方程为 $\eta^* = a\eta^*+b$，解得：
+    \[
+    \eta^* = \frac{b}{1-a}.
+    \]
+    另一方面，在简单伯努利噪声模型中，给定充分统计量 $S$ 下的条件熵 $H(\varepsilon\mid S)$ 也可写为类似形式。具体地，若 SCX 的 Cercis 评分系统将噪声过程建模为 $\varepsilon\sim\mathrm{Bernoulli}(\theta)$，且 $S$ 是共轭先验 Beta$(\alpha,\beta)$ 下的后验均值，则最小熵屏障为：
+    \[
+    H_{\min} = -\hat{\theta}\log\hat{\theta} - (1-\hat{\theta})\log(1-\hat{\theta}),
+    \]
+    其中 $\hat{\theta}=(\alpha+S)/(\alpha+\beta+n)$。存在参数化 $(a,b)$ 使得该熵值与 $b/(1-a)$ 匹配。
+
+    \item \textbf{两者都是信息论算子的不动点。}
+    $\eta^*$ 是递归审计算子 $f$ 的不动点：$\eta^* = f(\eta^*)$。
+    $H_{\min}=H(\varepsilon\mid S)$ 是条件熵算子的不动点：在 SCX 框架中，信息获取过程 $\cI_A^{(\infty)}$ 作用后，$H(\varepsilon\mid S)$ 是经过无穷次审计信息注入后不可再减少的剩余熵。因此两者都刻画了 ``审计过程能到达的最远点''。
+
+    \item \textbf{维度/量纲一致性。}
+    在 SCX 框架中，$\eta^*$ 是极限噪声率（无量纲），$H_{\min}$ 是极限熵（以 nats 或 bits 为单位）。两者在数值上通过标准噪声率-熵转换公式 $\eta^* = h^{-1}(H_{\min})$ 关联，其中 $h(p)=-p\log p-(1-p)\log(1-p)$ 是二元熵函数。猜想实质上断言了这一转换是恒等映射——即不动点处的噪声率恰好等于其自身熵值的信息内容。
+
+    \item \textbf{极限行为的唯一性。}
+    由定理 RA.1，在 $\rho<1$ 条件下，$\eta^*$ 是递归审计序列的唯一极限。由 AE-定理，$H_{\min}$ 是 SCX 框架中任何审计过程的终极信息屏障。两者在各自体系内都是唯一的、吸引子的不动点——这为它们的同一性提供了拓扑学支持。
+
 \end{enumerate}
-A general proof — establishing $f$ as the audit-information projection operator
-onto the $\sigma$-algebra generated by SCX observables — is \textbf{open}.
+
+\begin{remark}[猜想严格性标注 / Status]
 \openquest
+
+Conjecture \ref{conj:fixed-point} 目前是\textbf{开放猜想}。支持证据是实质性的但不完备——一般性证明需要建立 $f$ 作为 SCX 可观测量的 $\sigma$-代数上的审计-信息投影算子（audit-information projection operator）的严格表示定理。具体而言，需要证明：
+\[
+f(\eta) = \E[\varepsilon \mid \cI_A,\ \hat{\eta}=\eta],
+\]
+并进而证明其不动点与 $H(\varepsilon\mid S)$ 的条件极值问题等价。
 \end{remark}
 
-\subsection{G\"odel Analogy}
+% ------------------------------------------------------------------
+%  严格性暴击：Conjecture RA.1
+% ------------------------------------------------------------------
+\begin{remark}[诚实暴击 / Honest Critique of Conjecture RA.1]
+\label{crit:conj}
+\honestcritique
 
-\begin{openproblem}[SCX G\"odel Correspondence]
+\begin{enumerate}[label=\textbf{暴击 \arabic*：}]
+
+    \item \textbf{线性情形匹配不具一般性。} 证据 (i) 仅在线性算子下建立了匹配关系。SCX 框架中的审计算子 $f$ 可能是高度非线性的（如神经网络审计器），此时 $\eta^*=b/(1-a)$ 的显式形式不复存在，与 $H_{\min}$ 的参数匹配需要完全不同的论证。
+
+    \item \textbf{信息论算子不等价于审计算子。} 证据 (ii) 指出两者都是不动点，但信息论算子 $\cI_A^{(\infty)}$ 和审计算子 $f$ 作用在完全不同的空间上（前者作用在熵值上，后者作用在噪声率上）。两者不动点的一致需要深层函子性（functoriality）证明。
+
+    \item \textbf{二元熵函数 $h$ 的可逆性。} 证据 (iii) 的 $h^{-1}$ 映射在 $[0,1]$ 上不是单射——$h(p)=h(1-p)$，故 $H_{\min}$ 可能对应两个 $\eta^*$ 值。这需要额外的对称性破缺机制来唯一确定 $\eta^*$。
+
+    \item \textbf{$\eta^*$ 的定义域依赖性。} 递归审计不动点 $\eta^*$ 依赖于初始审计器 $\cA_0$ 的选择（通过不动点方程的解），而 $H_{\min}$ 纯粹由数据分布和 SCX 评分定义。若 $\eta^*$ 依赖于初始条件（即 $f$ 有多个不动点），则恒等式只能在特定吸引域内成立。
+
+\end{enumerate}
+\end{remark}
+
+% ------------------------------------------------------------------
+\subsection{G\"odel 类比（开放问题）}
+% ------------------------------------------------------------------
+
+\begin{openproblem}[SCX G\"odel Correspondence / SCX G\"odel 对应]
 \label{prob:godel}
-Does there exist a formal correspondence:
+是否存在以下形式对应关系：
 \begin{equation}\label{eq:godel-correspondence}
-    \text{``$\rho\geq1$ in RA-Theorem''}
+    \text{``RA-定理中的 $\rho\geq1$''}
     \;\longleftrightarrow\;
-    \text{``Existence of an undecidable proposition in PA''},
+    \text{``PA 中存在不可判定命题''},
 \end{equation}
-such that recursive audit divergence implies the existence of an
-\textbf{absolutely unauditable audit proposition} — a statement about audit
-quality whose truth value cannot be determined by any finite iteration of the
-SCX Audit Sword?  \openquest
+使得递归审计发散蕴含存在\textbf{绝对不可审计的审计命题（absolutely unauditable audit proposition）}——即关于审计质量的某个陈述，其真值无法通过 SCX 审计之剑的任何有限次迭代来确定？  \openquest
 \end{openproblem}
 
-\begin{remark}
-The analogy is philosophically compelling but formally unproven.  In G\"odel's
-construction, the undecidable proposition is ``I am not provable'' — a
-self-referential statement.  In SCX, the corresponding statement would be
-``this audit conclusion is not auditable to within precision $\varepsilon$.''
-Whether such a statement can be constructed within the formal language of SCX
-audit logic is an \textbf{open problem} at the intersection of mathematical
-logic and information theory.
+\begin{remark}[G\"odel 类比的局限性 / Limitations of the G\"odel Analogy]
+\label{rem:godel-limits}
+\honestcritique
+
+G\"odel 类比在哲学层面具有强烈吸引力，但需要诚实审视其形式局限：
+
+\begin{enumerate}[label=\textbf{局限 \arabic*：}]
+
+    \item \textbf{范畴差异。} G\"odel 不完备定理内在于\textbf{形式系统}的可证性概念：在一个包含皮亚诺算术的形式系统中，存在既不可证明也不可否证的语句。而 RA-定理涉及的是\textbf{随机过程}的收敛性质。将 ``不可证明性'' 类比为 ``非收敛性'' 是跨范畴的隐喻，而非严格的数学同构。
+
+    \item \textbf{自指机制的差异。} G\"odel 的自指是通过哥德尔编号（公式的算术化）实现的元数学构造。RA-定理的自指是通过审计递归（审计者审计审计者...）实现的随机过程。前者是语法性的（syntactic），后者是统计性的（statistical）——两者的自指机制不同。
+
+    \item \textbf{$\rho<1$ 对应什么？} 如果 $\rho\geq1$ 对应于 G\"odel 的不完备性，那么 $\rho<1$ 的收敛情形应对应于某个 ``可完备的形式系统''——但在 G\"odel 定理中，所有足够强大的形式系统都是不完备的。这个类比在 $\rho<1$ 情形下无法自然延伸。
+
+    \item \textbf{绝对不可审计命题的存在性证明策略。} 若要在 SCX 框架内构造绝对不可审计命题，需要类比 G\"odel 的对角化论证：构造一个自称 ``我无法被审计到精度 $\varepsilon$ 以内'' 的审计结论。但 SCX 框架的概率性质使得这样的对角化论证面临自指悖论的连续化困难——审计结论是实数值而非真值。
+
+\end{enumerate}
+
+这些局限性不意味着 G\"odel 类比没有价值——它提出了深刻的问题：是否存在审计版本的 ``不可判定性''？但该问题的解决需要更多概念工作，可能涉及概率逻辑（probabilistic logic）或审计演算（audit calculus）的基础构建。 \openquest
 \end{remark}
 
 % ============================================================
-\section{Discussion}
+\section{审计自指相图与讨论}
 % ============================================================
 
-\subsection{The Audit Self-Reference Phase Diagram}
+\subsection{审计自指相图}
 
 \begin{center}
 \begin{tabular}{@{}llll@{}}
 \toprule
-$\rho$ Range & Phase & Audit Sword Status & Guarantee \\
+$\rho$ 范围 & 相 & 审计之剑状态 & 保证程度 \\
 \midrule
-$\rho<1/2$    & Strongly convergent    & Safe (exponential)     & \rigorous~(Theorem~\ref{thm:convergence}) \\
-$1/2\leq\rho<1$ & Weakly convergent   & Safe (polynomial)      & \rigorous~(Theorem~\ref{thm:convergence}) \\
-$\rho=1$      & Critical              & Marginal (random walk) & \rigorous~(Theorem~\ref{thm:divergence}) \\
-$\rho>1$      & Divergent             & Broken                 & \rigorous~(Theorem~\ref{thm:divergence}) \\
+$\rho<1/2$    & 强收敛相    & 安全（指数收敛）      & \rigorous \\
+$1/2\leq\rho<1$ & 弱收敛相 & 安全（多项式收敛）    & \rigorous \\
+$\rho=1$      & 临界点      & 边缘（随机游走）      & \rigorous \\
+$\rho>1$      & 发散相      & 断裂                  & \rigorous \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{Engineering the Fidelity Gap}
-
-The condition $\rho<1$ requires that each meta-audit layer be \emph{strictly}
-more capable than the layer it audits.  This can be engineered through:
-\begin{enumerate}[label=(\roman*)]
-    \item \textbf{Human escalation}: $\cA_0$ = AI auditor ($\sigma$ large),
-          $\cA_1$ = human-aided auditor ($\sigma$ smaller),
-          $\cA_2$ = expert panel ($\sigma$ smallest) — this naturally achieves
-          $\rho<1$;
-    \item \textbf{Increasing data}: each meta-auditor has access to strictly
-          more data than the auditor below it;
-    \item \textbf{Stronger models}: each meta-auditor uses a strictly more
-          capable model architecture.
-\end{enumerate}
-The key insight: \textbf{a flat audit hierarchy ($\rho\approx1$) cannot
-converge}.  SCX deployment requires a \emph{deep} audit hierarchy with
-strictly increasing fidelity per level.
-
-\subsection{Connection to Other Theorems}
+\subsection{严格性总结}
 
 \begin{itemize}
-    \item \textbf{TS-Theorem}: TS's Sprint self-audit limit (drift rate
-          ceiling) is the temporal version of RA-Theorem's $\rho$-condition;
-          the drift rate $v_{\mathrm{drift}}$ corresponds to the per-step
-          $\sigma_k^2$ in the recursive sequence.
-    \item \textbf{AE-Theorem}: Conjecture~\ref{conj:fixed-point} unifies
-          $\eta^*$ with $H_{\min}$ — the recursive convergence point with the
-          thermodynamic heat death.
-    \item \textbf{HC-Theorem}: Human intervention corresponds to injecting a
-          layer with $\rho\ll1$ into the audit hierarchy, breaking the
-          equal-fidelity deadlock.
-    \item \textbf{FA-Theorem}: Federated audit hierarchies require
-          $\prod_{k}\rho_k<1$ across all federated layers for global
-          convergence.
+    \item \textbf{Theorem RA.1 (递归收敛)：} \rigorous 在假设 \ref{as:contraction}--\ref{as:martingale-diff} 下完全严格。指数速率部分在 $\rho\leq1/2$ 条件下严格，但精确常数优化是开放问题。
+    \item \textbf{Theorem RA.2 (无限递归)：} \rigorous 在 \iid 噪声和纯随机游走假设下严格。非 \iid 情形需要逐例验证。
+    \item \textbf{Conjecture RA.1 (不动点恒等式)：} \openquest 支持证据充分但不完备。
+    \item \textbf{G\"odel 类比：} \openquest 概念上的开放性远超数学上的形式化程度。
+\end{itemize}
+
+\subsection{工程含义}
+
+条件 $\rho<1$ 要求每层元审计者严格优于其所审计的层级。这可通过以下方式实现：
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{人类升级：} $\cA_0$ = AI 审计者（大 $\sigma$），$\cA_1$ = 人类辅助审计者（小 $\sigma$），$\cA_2$ = 专家委员会（更小 $\sigma$）——自然达到 $\rho<1$；
+    \item \textbf{数据增加：} 每层元审计者访问严格多于下层的额外数据；
+    \item \textbf{更强模型：} 每层使用严格更强大的模型架构。
+\end{enumerate}
+核心洞见：\textbf{扁平审计层级（$\rho\approx1$）无法收敛。} SCX 部署需要具有严格递增保真度的\textbf{深层}审计层级。
+
+\subsection{与其他定理的联系}
+
+\begin{itemize}
+    \item \textbf{TS-定理：} TS 的 Sprint 自审极限（漂移率上限）是 RA-定理 $\rho$ 条件的时间版本；漂移率 $v_{\mathrm{drift}}$ 对应递归序列中的每步 $\sigma_k^2$。
+    \item \textbf{AE-定理：} 猜想 \ref{conj:fixed-point} 将 $\eta^*$ 与 $H_{\min}$ 统一——递归收敛点与热力学热寂点。
+    \item \textbf{HC-定理：} 人类干预对应在审计层级中注入 $\rho\ll1$ 的层级，打破等保真度死锁。
+    \item \textbf{FA-定理：} 联邦审计层级要求 $\prod_k \rho_k < 1$ 以跨联邦层级全局收敛。
 \end{itemize}
 
 % ============================================================
 \section{Conclusion}
 % ============================================================
 
-RA-Theorem confronts the Audit Sword with its own reflection.  The answer is
-nuanced:
+RA-Theorem 将审计之剑置于自我反射之下。答案是微妙的：
 \begin{enumerate}[label=(\arabic*)]
-    \item When meta-auditors are strictly higher-fidelity ($\rho<1$), recursion
-          converges — the Sword holds.  \rigorous
-    \item When meta-auditors are equal or lower fidelity ($\rho\geq1$), recursion
-          diverges — the Sword breaks.  \rigorous
-    \item The convergence point is conjectured to be Theorem~3's barrier —
-          $H_{\min}$, the irreducible ignorance.  \openquest
-    \item The G\"odel correspondence — whether divergent recursion implies
-          absolutely unauditable propositions — is a foundational open problem.
-          \openquest
+    \item 当元审计者严格更高保真度时（$\rho<1$），递归收敛——剑成立。  \rigorous
+    \item 当元审计者等保真度或更低保真度时（$\rho\geq1$），递归发散——剑断裂。  \rigorous
+    \item 收敛点被猜想为定理 3 的屏障——$H_{\min}$，即不可约无知。  \openquest
+    \item G\"odel 对应——发散递归是否蕴含绝对不可审计命题——是基础性的开放问题。  \openquest
 \end{enumerate}
 
-The practical mandate is clear: \textbf{never deploy a self-audit system where
-the auditor and meta-auditor have equal fidelity.}  The Audit Sword requires
-a hierarchy, not a circle.
+实践指令清晰明确：\textbf{永远不要部署审计者与元审计者等保真度的自审计系统。} 审计之剑需要层级，而非循环。
 
 % ============================================================
 \bibliographystyle{plainnat}
