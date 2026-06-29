@@ -701,6 +701,128 @@ V(\mathcal{D}_{\text{clean}}) > V(\mathcal{D})
 
 存储悖论的经济含义值得深入探讨。Theorem~\ref{thm:storage-paradox} 提供了理论上的可能性：在SCX审计普及的均衡中，组织可能拥有一个数学上可辩护的理由来删除数据——不是出于成本控制，而是因为保留噪声数据可能主动降低其数据资产的价值。这一论证修正了5.6节中描述的存储外部性逻辑：CEC的增长确实创造了对存储的持续需求，但CEC的审计输出同时作为副产品，为每一个被审计的数据集在审计后安全地大幅度缩减提供了理论上的可能性。CEC本身是精简的——它仅存储异常登记、校准参数和质量指纹，而非原始数据的完整副本。审计基础设施的净存储效应是一个经验问题，取决于CEC存储需求与被审计数据集在审计后可实现的存储缩减之间的比较。我们的理论分析表明，对于信噪比低于临界阈值的数据集（这在当前的大数据实践中并非例外而是常态），净效应可能在特定条件下为负：审计减少的存储需求大于审计本身产生的存储需求。然而，这一结论的实际适用性取决于审计模块的部署规模、CEC的压缩效率以及组织实际执行数据删除的策略选择——这些变量的实际值可能与理论假设存在显著偏离。
 
+\subsubsection{存储悖论的第二层：Jevons反效应}
+
+Theorem~\ref{thm:storage-paradox} 确立了审计→去噪→存储下降的逻辑链条。然而，这一链条预设了数据生成的外生性——即数据以恒定速率产生，审计仅作用于事后清理。本节放松这一假设，引入数据生成速率的内生响应，揭示存储悖论的第二层：与Jevons悖论（Jevons, 1865）在结构上同构的反效应——效率提升诱导需求扩张，而非收缩。
+
+\medskip
+\noindent\textbf{1. 审计成熟度的双重效应。}
+
+SCX审计能力的提升——由CEC规模 $|\mathcal{E}_t|$ 和审计精度 $\theta(t)$ 的增长所刻画——产生两个方向相反的力：
+
+\begin{definition}[审计的双重效应]
+设 $\mathcal{S}(t)$ 为时间 $t$ 的总存储需求，$\mathcal{G}(t)$ 为数据生成速率。审计成熟度 $\alpha(t) = \theta(t) / \theta_{\max} \in [0, 1]$ 通过两条路径影响 $\mathcal{S}(t)$：
+
+\textbf{第一重：去噪效应（存储压缩力）。} 审计精度提升直接降低单位数据集的噪声比例，使得 $\mathcal{D}_{\text{clean}}$ 的识别更精确。由Theorem~\ref{thm:storage-paradox}，这允许安全删除噪声数据。令压缩因子 $\kappa(\alpha) \in [0, 1]$ 表示审计后可保留的数据比例：
+\begin{equation}
+\kappa(\alpha) = \rho(\mathcal{D}) + (1 - \rho(\mathcal{D})) \cdot (1 - \alpha)^{\eta}
+\end{equation}
+其中 $\eta > 0$ 是去噪效率参数。$\kappa(\alpha) \to \rho(\mathcal{D})$ 当 $\alpha \to 1$：审计完美时，仅保留干净信号。
+
+\textbf{第二重：生成效应（存储膨胀力）。} 审计精度的提升同时改善了下游AI模型的性能。由方程(\ref{eq:quality})–(\ref{eq:model})，更高的 $Q_i^t$ 意味着更好的 $M_i^{t+1}$。更强大的模型降低了数据生成的技术门槛，提升了自动化数据采集的回报率，从而加速了数据生成速率：
+\begin{equation}
+\mathcal{G}(t) = \mathcal{G}_0 \cdot \left(1 + \beta \cdot \alpha(t)^{\gamma}\right)
+\end{equation}
+其中 $\beta > 0$ 是数据生成的审计弹性，$\gamma > 0$ 是规模参数。这是Jevons效应的数据版本：审计效率（识别和剔除噪声的能力）的提高，降低了高质量数据生产的单位成本，从而诱导了更多的数据生产。
+\end{definition}
+
+\medskip
+\noindent\textbf{2. 净效应与相变点。}
+
+两条路径的净效应不是单向的。总存储需求的时间演化由以下微分方程描述：
+\begin{equation}
+\frac{d\mathcal{S}}{dt} = \underbrace{\frac{d}{dt}\left[\kappa(\alpha(t)) \cdot \int_0^t \mathcal{G}(\tau) d\tau\right]}_{\text{历史数据去噪}} + \underbrace{\kappa(\alpha(t)) \cdot \mathcal{G}(t)}_{\text{新数据净存储}}
+\end{equation}
+
+展开第一项并应用Leibniz积分法则：
+\begin{equation}
+\frac{d\mathcal{S}}{dt} = \underbrace{\kappa'(\alpha) \cdot \dot{\alpha}(t) \cdot \int_0^t \mathcal{G}(\tau) d\tau}_{\text{历史压缩效应 }(<0)} + \underbrace{\kappa(\alpha(t)) \cdot \mathcal{G}(t)}_{\text{新数据净流入 }(>0)}
+\end{equation}
+
+第一项为负（$\kappa'(\alpha) < 0$，审计成熟度提升使得更多历史数据可被安全压缩），第二项为正。净符号取决于两项的相对大小。
+
+\begin{definition}[存储悖论的相变点]
+定义存储变化的临界条件。令：
+\begin{equation}
+\Phi_{\text{quality}}(\alpha) = \frac{\partial (\text{数据质量})}{\partial \alpha} = \frac{\partial}{\partial \alpha}\left[\rho(\mathcal{D}) \cdot \int_0^t \mathcal{G}(\tau) d\tau\right]
+\end{equation}
+\begin{equation}
+\Phi_{\text{quantity}}(\alpha) = \frac{\partial (\text{数据数量})}{\partial \alpha} = \frac{\partial}{\partial \alpha}\left[\int_0^t \mathcal{G}(\tau) d\tau\right]
+\end{equation}
+
+则存储悖论的\textbf{相变点} $\alpha^*$ 定义为满足以下条件的审计成熟度：
+\begin{equation}
+\Phi_{\text{quality}}(\alpha^*) = \Phi_{\text{quantity}}(\alpha^*)
+\end{equation}
+
+当 $\Phi_{\text{quality}}(\alpha) > \Phi_{\text{quantity}}(\alpha)$ 时——即审计能力的边际改善对数据质量的提升超过了它对数据生成速率的刺激——存储需求下降：$d\mathcal{S}/dt < 0$。此为\textit{去噪主导相}（denoising-dominated regime）。
+
+当 $\Phi_{\text{quality}}(\alpha) < \Phi_{\text{quantity}}(\alpha)$ 时——即审计能力的边际改善对数据生成速率的刺激超过了它对数据质量的提升——存储需求上升：$d\mathcal{S}/dt > 0$。此为\textit{生成主导相}（generation-dominated regime）。
+
+相变点的存在性由以下观察保证：在审计早期（$\alpha \approx 0$），审计能力不足以显著去噪（$\kappa'(\alpha)$ 接近于零，因为审计尚不可靠，组织不敢基于审计结果删除数据），而生成效应已开始起作用（任何模型改进都会刺激更多数据生产），因此 $\Phi_{\text{quantity}} > \Phi_{\text{quality}}$，存储上升。在审计晚期（$\alpha \to 1$），去噪精度趋近于完备（$\kappa(\alpha) \to \rho(\mathcal{D})$），而生成效应的边际回报递减（数据已经足够多，增量数据的边际价值下降），因此 $\Phi_{\text{quality}} > \Phi_{\text{quantity}}$，存储下降。由中值定理，存在唯一的 $\alpha^* \in (0, 1)$ 使得两力平衡。
+\end{definition}
+
+\medskip
+\noindent\textbf{3. 博弈论层面：抢占性数据积累与审计成熟度预期。}
+
+上述分析假设数据生成速率 $\mathcal{G}(t)$ 是审计成熟度 $\alpha(t)$ 的确定性函数。但在战略互动情境中，$\mathcal{G}(t)$ 本身是各方对\textit{未来}审计成熟度预期的函数。这引入了一个动态博弈维度，其均衡行为与审计成熟度的演化阶段密切相关。
+
+考虑 $N$ 个战略数据持有者（企业、研究机构或国家）。每个持有者 $i$ 在时间 $t$ 选择数据生成速率 $g_i(t)$，产生的总数据量为 $\mathcal{G}(t) = \sum_i g_i(t)$。持有者 $i$ 的瞬时收益函数为：
+\begin{equation}
+u_i(g_i, \mathbf{g}_{-i}; \alpha) = \underbrace{V\left(g_i \cdot \underbrace{\left[1 - (1-\alpha)^{\eta}\right]}_{\text{审计后可用质量}}\right)}_{\text{数据价值}} - \underbrace{C(g_i)}_{\text{生成成本}} + \underbrace{\lambda \cdot \mathbb{I}\left[g_i > \bar{g}_{-i}\right]}_{\text{先发优势溢价}}
+\end{equation}
+其中 $V(\cdot)$ 是数据价值函数（递增且凹），$C(\cdot)$ 是数据生成成本（递增且凸），$\lambda > 0$ 是\textit{先发优势溢价}——当持有者 $i$ 的数据生成速率超过所有其他持有者的平均速率时，$i$ 获得额外的战略收益（抢占数据生态位、锁定下游应用场景、建立事实上的数据标准）。$\bar{g}_{-i}$ 是除 $i$ 外其他持有者的平均数据生成速率。
+
+\begin{proposition}[抢占性数据积累竞赛]
+\label{prop:preemptive}
+在审计成熟度的早期阶段（$\alpha \ll \alpha^*$），存在一个对称的抢占性数据积累均衡，其中每个持有者的最优数据生成速率 $g^*(\alpha)$ 为：
+\begin{equation}
+g^*(\alpha) = (C')^{-1}\left(V'(\cdot) \cdot [1 - (1-\alpha)^{\eta}] + \frac{\lambda}{N}\right)
+\end{equation}
+并且 $dg^*/d\alpha > 0$：随着审计成熟度的提升，每个持有者\textit{加速}数据生成，因为：(a) 审计后的数据质量提升使得数据更有价值（$V'(\cdot)$ 项），(b) 先发优势溢价 $\lambda/N$ 激励各方在审计完全成熟之前抢占数据生态位。
+
+该博弈的纳什均衡具有\textit{超调}特征：总数据生成速率 $\mathcal{G}(t)$ 在审计成熟度到达 $\alpha^*$ 之前就超过了长期稳态水平。这是经典的"抢跑"（front-running）行为：各方预期未来审计成熟度将使得数据更有价值，因此在当前就竞相积累数据——即便这些数据在当前审计水平下包含大量噪声。超调幅度随先发优势溢价 $\lambda$ 递增，随持有者数量 $N$ 递减（竞争稀释了每个持有者的边际收益）。
+\end{proposition}
+
+\begin{proof}
+持有者 $i$ 的最优反应由一阶条件 $\partial u_i / \partial g_i = 0$ 给出。在对称均衡中，$g_i = g^*$ 对所有 $i$ 成立，且 $\mathbb{I}[g_i > \bar{g}_{-i}] = 0$（没有持有者可以严格超过其他所有持有者的平均速率）。一阶条件退化为 $V'(g^* \cdot [1 - (1-\alpha)^{\eta}]) \cdot [1 - (1-\alpha)^{\eta}] - C'(g^*) = 0$。求解 $g^*$ 并应用隐函数定理即得所示表达式及比较静态性质。先发优势溢价 $\lambda/N$ 进入一阶条件是因为每个持有者将 $\lambda$ 的内部解视为对略微超越平均速率的边际激励，这在对称均衡中产生了一个共同提升的均衡速率。
+\end{proof}
+
+Proposition~\ref{prop:preemptive} 揭示了存储悖论第二层的核心张力：在博弈论层面，审计成熟度的\textit{预期}本身就足以驱动短期的存储飙升——即使当前的审计能力尚不足以实现有意义的去噪。各方不是在等待审计成熟后再决定什么值得存储；它们在审计尚不成熟时就加速数据生成，以抢占先发优势。行为不是"先审计，再决定存什么"，而是"先存一切，等审计成熟后再清理"。这是典型的期权价值逻辑：在不确定性高（审计不成熟）的阶段，保留所有数据的期权价值超过了去噪的直接收益。
+
+然而，这一动态在审计到达成熟阶段后发生逆转：
+
+\begin{proposition}[成熟审计下的选择性存储均衡]
+\label{prop:mature}
+当审计成熟度超过相变点（$\alpha > \alpha^*$），且各方对此具有共同知识，则存在一个\textit{选择性存储均衡}，其中每个持有者的最优策略为：
+\begin{equation}
+g_i^{**}(\alpha) = (C')^{-1}\left(V'(\cdot) \cdot \rho(\mathcal{D})\right) \quad \text{且} \quad \text{retain}_i = \kappa(\alpha) \cdot \mathcal{D}_i
+\end{equation}
+
+即数据生成速率回归到仅由干净信号价值决定的稳态水平，且存储策略转为仅保留审计认证的干净子集。在该均衡中，总存储需求 $\mathcal{S}(t)$ 严格递减，收敛于黄金标准总规模 $\sum_i |\mathcal{D}_{\text{clean}, i}^*|$。
+\end{proposition}
+
+\begin{proof}
+当 $\alpha > \alpha^*$ 且为共同知识，(a) 先发优势溢价 $\lambda$ 归零：审计如此精确，以至于任何噪声数据的囤积都是可被竞争对手识别的，失去了战略伪装价值；(b) 去噪效应 $\kappa(\alpha)$ 趋近于完备，使得存储噪声数据的成本（由Theorem~\ref{thm:storage-paradox}，噪声降低数据资产价值）超过了"保留一切"的期权价值；(c) 数据生成回归基本面：只有能够通过审计认证的高质量数据才值得生成。一阶条件在此极限下即得所示稳态表达式。
+\end{proof}
+
+\medskip
+\noindent\textbf{4. 综合：存储悖论的时间剖面。}
+
+综合Theorem~\ref{thm:storage-paradox}与Proposition~\ref{prop:preemptive}–\ref{prop:mature}，存储悖论展现出一个三阶段的动态剖面：
+
+\begin{enumerate}[label=\textbf{阶段 \arabic*}:, leftmargin=*]
+\item \textbf{审计前时代（$\alpha \approx 0$）}：审计能力尚未建立。数据被不加区分地存储，总存储需求随数据生成速率线性增长。存储是简单的累积函数：$\mathcal{S}(t) \approx \int_0^t \mathcal{G}(\tau) d\tau$。
+
+\item \textbf{抢占性膨胀阶段（$0 < \alpha < \alpha^*$）}：审计开始显示效力，但精确度尚不足以支撑大规模去噪决策。各方预期审计将进一步成熟，进入抢占性数据积累竞赛（Proposition~\ref{prop:preemptive}）。总存储需求\textit{加速}上升——甚至超过审计前时代的增长率——因为生成效应（审计→更好的模型→更多数据）和战略效应（抢跑动机）同时推高 $\mathcal{G}(t)$，而去噪效应尚不能有效压缩历史数据。这是存储悖论最危险的阶段：审计的存在反而增加了存储需求。
+
+\item \textbf{去噪主导阶段（$\alpha > \alpha^*$）}：审计越过相变点。去噪效应占据主导：历史数据被系统性地压缩（仅保留黄金标准），新数据生成回归基本面（仅生成预计能通过审计的高质量数据），先发优势溢价归零（噪声囤积失去战略价值）。总存储需求从峰值下降，收敛于全局黄金标准总规模。存储函数从累积型转变为选择型：$\mathcal{S}(t) \to \sum_i |\mathcal{D}_{\text{clean}, i}^*|$。
+\end{enumerate}
+
+\begin{remark}[存储悖论的非单调性与政策含义]
+存储悖论的第二层揭示了一个反直觉的非单调性：审计基础设施的引入可能在\textit{中期}增加而非减少总存储需求。这一结论对政策制定具有直接影响。如果政策制定者仅观察到短期效应（阶段2的存储飙升），可能错误地推断SCX审计"失败"了——它没有实现承诺的存储优化。但这一存储飙升恰恰是审计成功的标志：它反映了各方正在为即将到来的高精度审计时代做数据储备。政策干预应区分阶段：在阶段2，不应以存储量为考核指标惩罚数据持有者；在阶段3，应以黄金标准采纳率为核心指标，激励组织执行审计后的数据压缩。此外，$\alpha^*$ 的确切位置取决于 $\Phi_{\text{quality}}$ 和 $\Phi_{\text{quantity}}$ 的函数形式——这本身是一个需要实证校准的经验参数，其估计值可能因行业、数据类型和审计模块配置而异。
+\end{remark}
+
 \begin{remark}[Spring收敛后的黄金标准保留原则]
 \label{rem:golden-standard}
 Yajie协议的自演化引擎Spring在收敛状态下具有一个尚未被充分认识的性质：当多专家共识在连续多个审计轮次上不再产生新的异常发现时——即 $\Delta\mathcal{E}_t \approx \emptyset$——审计过程已经穷尽了给定数据集的质量信息。此时，保留全量原始数据不再产生任何边际审计价值。唯一需要保留的是Spring收敛时输出的黄金标准（Golden Standard）——经多专家共识验证的干净数据子集 $\mathcal{D}_{\text{clean}}^*$，连同其加密哈希和审计元数据。黄金标准是数据价值的浓缩形式：它在数学上等价于原始数据集对下游任务的全部有用信息，同时剥离了所有已识别的噪声。存储黄金标准替代存储原始数据，不是一种成本优化策略，而是Spring收敛状态的逻辑推论。
