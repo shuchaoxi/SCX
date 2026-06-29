@@ -1,34 +1,26 @@
-# SCX Valuation Module
-#
-# Data value assessment: learnability, noise score, redundancy, state-value,
-# and the four-way data classifier.
-#
-# V(s) = r̄(s) · ρ(s) · L(s) · [1 - D(s)] · max_m SCX_m(s)  (deprecated)
-#
-# Theorem-based methods (v0.6):
-#   Theorem 1 — hoeffding_bound, chernoff_bound, StateValue.noise_consistency_score,
-#               StateValue.optimal_noise_threshold, StateValue.noise_detection_f1_bound
-#   Theorem 2 — StateValue.feature_strength_diagnostic
+# -*- coding: utf-8 -*-
+"""
+SCX Valuation Subpackage
+========================
+Quality and noise scoring components for the SCX framework.
 
-from .learnability import LearnabilityScore
-from .noise_score import NoiseScore
-from .redundancy import RedundancyScore
-from .classifier import DataClassifier
-from .state_value import StateValue, hoeffding_bound, chernoff_bound
-from .adaptive import AdaptiveThreshold, TheoreticalAdaptiveThreshold
-from .a2_diagnostic import A2Diagnostic
-from .influence import StateConditionedInfluence
+Submodules
+----------
+base         : Abstract base quality score Q(s) from multi-expert consensus.
+noise_score  : Noise / novelty component N(s) for Cercis scoring.
+"""
+
+from src.scx.valuation.base import BaseQualityScore, ConsensusQualityScore
+from src.scx.valuation.noise_score import (
+    NoiseScore,
+    NoveltyNoiseScore,
+    UncertaintyNoiseScore,
+)
 
 __all__ = [
-    "LearnabilityScore",
+    "BaseQualityScore",
+    "ConsensusQualityScore",
     "NoiseScore",
-    "RedundancyScore",
-    "DataClassifier",
-    "StateValue",
-    "AdaptiveThreshold",
-    "TheoreticalAdaptiveThreshold",
-    "A2Diagnostic",
-    "StateConditionedInfluence",
-    "hoeffding_bound",
-    "chernoff_bound",
+    "NoveltyNoiseScore",
+    "UncertaintyNoiseScore",
 ]
