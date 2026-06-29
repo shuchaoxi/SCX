@@ -850,6 +850,11 @@ message: |
 - [ ] **State Crystallization vs BPE 形式化对比论文/章节**：证明 BPE 是 State Crystallization 在物理量耦合≈频率耦合这一特殊条件下的退化特例；给出定量条件（当 I(物理; 频率) < δ 时，BPE 的状态边界与 State Crystallization 的状态边界偏离超过 ε）；在蛋白质和材料数据上做实证对比（同一数据集，State Crystallization 状态空间 vs BPE 状态空间 → Spring 进化质量差异 → Yajie 审计精度差异）
 - [ ] **SCX-LLM 组件映射完整分析**：逐个评估 LLM 的每个组件（Positional Encoding, Multi-Head Attention, FFN, Layer Norm, Residual Connections, Embedding Table）在 SCX 框架里的对应、物理意义、以及是否值得引入
 - [ ] **SCX + 推测解码（Speculative Decoding）交叉验证**：DeepSeek DSpark 用 draft model → verifier 加速推理。SCX 替代单一 verifier：M 个小专家（7B × 3）投票替代一个 70B 模型。Theorem 1 Chernoff bound 保证假阳性 ≤ exp(-2MΔ_s²)。Theorem 3 适用：draft token 被 2/3 专家接受、1/3 拒绝——是 draft 错误还是 token 本质上难预测？M_score 阈值替代固定 acceptance threshold。可写入 Paper B 进一步方向。
+- [ ] **药学/药物发现**：12+ 数据库全量筛选。Yajie 审计 drug-target interaction 标注。MT 黄金标准（跨库共识 M_score）。CC0 开源。商业模式：API 订阅（教皇模式 $50-200K/年）。关键风险：FDA/EMA 监管捕获——永远不进临床认证，只做上游审计工具。
+- [ ] **基因组学**：变异检测审计。Illumina/PacBio/Nanopore × GATK/DeepVariant/FreeBayes = 天然多专家矩阵。碱基对精度 Situs。稀有变异 vs 测序错误 = Theorem 3 精确场景。关键风险：CLIA/CAP/IVDR 医疗器械分类——不进临床诊断，只做研究工具。
+- [ ] **自动驾驶**：Camera/LiDAR/Radar 多传感器融合审计。离线标注质量验证。仿真 vs 真实差距量化。关键风险：ISO 26262 功能安全认证——不碰在线推理，只做离线审计。
+- [ ] **气候科学**：CMIP6 多模型集合审计。4D (lat,lon,z,t) Situs。模型间一致性 → 识别不可缩减的模型结构误差。关键优势：开放模型，无监管。
+- [ ] **金融**：交易数据审计、欺诈检测、信用评分标注质量。多数据源交叉验证。关键风险：SEC/CSRC 监管——合规锁死风险极高，需极其谨慎。
 
 ### Git 统计
 
