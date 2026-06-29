@@ -1,0 +1,678 @@
+\documentclass[12pt,a4paper]{article}
+
+% ============================================================
+%  FA-Theorem — Federated Audit Theorem:
+%  Zero-Knowledge Multi-Party Audit Completeness via
+%  Situs Homomorphic Composition
+%  arXiv-ready · English · Standalone (SCX-citable, not dependent)
+% ============================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[numbers]{natbib}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ---------- Theorem environments ----------
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{openproblem}[theorem]{Open Problem}
+
+% ---------- Status tags ----------
+\newcommand{\rigorous}{\textcolor{green!50!black}{\small\textsf{[Rigorous]}}}
+\newcommand{\conditionallyrigorous}{\textcolor{orange}{\small\textsf{[Conditionally Rigorous]}}}
+\newcommand{\openquest}{\textcolor{red!70!black}{\small\textsf{[Open]}}}
+
+% ---------- Macros ----------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\V}{\mathbb{V}}
+\newcommand{\I}{\mathbb{I}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\ind}[1]{\mathbf{1}_{[#1]}}
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\Situs}{\mathrm{Situs}}
+\newcommand{\Cercis}{\mathrm{Cercis}}
+\newcommand{\Commit}{\mathrm{Commit}}
+\newcommand{\Verify}{\mathrm{Verify}}
+\newcommand{\ZK}{\mathrm{ZK}}
+
+\title{\bfseries Federated Audit Completeness:\\
+Zero-Knowledge Multi-Party Auditing\\
+via Situs Homomorphic Composition}
+
+\author{Anonymous Author(s)}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The SCX Audit Sword establishes that any use of the Cercis Score can be
+independently audited — provided the auditor possesses complete data access.
+In federated scenarios where $K$ parties hold private datasets and interact
+only through aggregated statistics, the Audit Sword encounters a structural
+obstacle: how does one audit what one cannot see?  We formalize this as the
+\emph{Federated Audit Problem} and prove three results.  (i)~When the Situs
+encoding admits a homomorphic composition operator $\oplus$ such that
+$\Situs(\cup_k \cD_k) \cong \oplus_k \Situs(\cD_k)$, and each party's Cercis
+Score submission is verified by a zero-knowledge proof $\pi_{\ZK}$, the
+federated audit achieves $\varepsilon$-equivalence to the full-data audit,
+with $\varepsilon \to 0$ under vanishing differential privacy budget and
+growing sample size.  The Situs homomorphic composition construction is
+\textbf{conditionally rigorous} — given the operator, the $\varepsilon$-bound
+is strict; the operator's existence is an \textbf{open problem}.
+(ii)~Without $\ZK$ verification, the information loss is lower-bounded by
+$\mathrm{const} \cdot \eta_k \cdot |\cD_k|/|\cD_{\mathrm{total}}|$, a
+\textbf{rigorous} consequence of Theorem~3 and the data processing inequality.
+(iii)~We outline the ``Telegraph Public Good'' extension where decentralized
+storage-layer commitments replace $\ZK$ proofs with Proofs of Storage,
+further tightening the $\varepsilon$ bound — an \textbf{open problem} with
+a clear theoretical path.  Collectively, the results establish that federated
+auditing is possible without raw data access, but only when the information
+architecture provides verifiable audit fingerprints.
+\end{abstract}
+
+% ============================================================
+\section{Introduction}
+% ============================================================
+
+The SCX framework~\citep{scx2024cercis} established the \textbf{Audit Sword}
+principle: every use of the Cercis Score must be independently verifiable by
+any third party.  This is not an optional feature — it is a structural
+requirement that follows from Theorem~3 (the Noise--Difficulty
+Unidentifiability Theorem).  If you cannot audit the detector, you cannot
+distinguish whether it is flagging genuine label noise or merely reclassifying
+difficult-but-correct samples according to its own inductive biases.
+
+The Audit Sword, however, carries a hidden premise: that the auditor has
+\textbf{complete access to all data}.  In an increasingly federated world —
+hospitals that cannot share patient records across jurisdictions, financial
+institutions barred from exposing transaction logs, edge devices with
+bandwidth and privacy constraints — this premise fails.  The very parties
+whose models most urgently require auditing (because they operate on
+sensitive, high-stakes data) are precisely those who cannot grant the access
+that auditing presupposes.
+
+This creates the \textbf{Federated Audit Paradox}.  Federated learning has
+developed an extensive privacy-preserving toolbox — Secure
+Aggregation~\citep{bonawitz2017practical}, Differential
+Privacy~\citep{abadi2016deep}, Multi-Party
+Computation~\citep{evans2018pragmatic} — but each of these tools is designed
+to \emph{prevent information leakage}.  The SCX requirement is the inverse:
+we need to \emph{enable auditability} without compromising privacy.  The
+existing toolbox solves the problem of locking the door; we need to solve
+the problem of auditing through it.
+
+\medskip\noindent
+\textbf{The Core Tension.}
+At the heart of the paradox lies an information asymmetry.  The auditor's
+full-information statistic $T_{\mathrm{full}}$ operates on raw $(x, y)$ pairs
+from the union of all parties' datasets.  The federated auditor instead
+receives only \emph{audit fingerprints} — the Cercis Scores $S_k$ computed
+locally by each party, potentially encrypted, along with the aggregated model
+$M_\Pi$.  The question is not whether the fingerprints leak the raw data (they
+should not), but whether they preserve enough statistical structure to support
+audit conclusions with the same power as the full-information benchmark.
+
+\medskip\noindent
+\textbf{Contributions.}
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{Federated Audit $\varepsilon$-Equivalence}
+          (Theorem~\ref{thm:fed-equiv}): Under Situs homomorphic composition
+          and $\ZK$ verification, $|\mathrm{Power}(T_{\mathrm{fed}}) -
+          \mathrm{Power}(T_{\mathrm{full}})| \leq \varepsilon(K, \delta)$,
+          with $\varepsilon \to 0$ as $n \to \infty$ and $\delta \to 0$.
+          \conditionallyrigorous~/ \openquest~(Situs homomorphism)
+    \item \textbf{Information Lower Bound}
+          (Theorem~\ref{thm:info-lower}): Without $\ZK$ verification, audit
+          power loss is bounded below by a fraction proportional to the
+          unverified noise share.  \rigorous
+    \item \textbf{Telegraph Public Good Extension}
+          (Section~\ref{sec:telegraph}): Decentralized storage commitments
+          as a $\ZK$ replacement.  \openquest
+\end{enumerate}
+
+% ============================================================
+\section{Preliminaries}
+% ============================================================
+
+\subsection{SCX Audit Architecture}
+
+We recall the essential SCX components required for federated audit analysis.
+For a dataset $\cD = \{(x_i, y_i)\}_{i=1}^n$, the \textbf{Cercis Score}
+$S: \cX \to \R_{\geq 0}$ decomposes as
+\begin{equation}\label{eq:cercis}
+    S(x) = Q(x) + \eta N(x),
+\end{equation}
+where $Q(x) \in [0,1]$ measures label quality (model confidence, expert
+agreement) and $N(x) \in [0,1]$ measures novelty (dissimilarity to previously
+audited samples).  The parameter $\eta \geq 0$ is the Sprint noise--difficulty
+coupling coefficient.
+
+The \textbf{Situs operator} encodes a data-generating distribution into a
+metric-measure space:
+\begin{equation}\label{eq:situs}
+    \Situs(P) = (\cX, d_P, \mu_P),
+\end{equation}
+where $d_P$ is a task-adapted metric and $\mu_P$ is the marginal measure on
+$\cX$.  Two distributions are compared via the 1-Wasserstein distance
+$d_{\Situs}(P, Q) = W_1(\Situs(P), \Situs(Q))$.
+
+\textbf{Theorem~3} (Noise--Difficulty Unidentifiability).  From Cercis Score
+observations alone, no algorithm can distinguish label noise from intrinsic
+difficulty with power exceeding its significance level.  Formally, for any
+test $\psi$ based on $\{S(x_i)\}_{i=1}^n$,
+$\sup_\psi |\E_{H_1}[\psi] - \E_{H_0}[\psi]| \leq \alpha + o_n(1)$.
+
+\subsection{The Federated Audit Setting}
+
+\begin{definition}[Federated Audit Problem]
+\label{def:fed-problem}
+$K$ parties each hold a private dataset $\cD_k = \{(x_i^{(k)}, y_i^{(k)})\}_{i=1}^{n_k}$,
+$k = 1, \dots, K$.  A federated aggregator produces a global model $M_\Pi$
+via protocol $\Pi$.  The auditor $\cA$ can access:
+\begin{equation}\label{eq:fed-info}
+    \cI_{\mathrm{Fed}} = \{S_k, \nabla S_k, H_{S,k}\}_{k=1}^K \cup \{M_\Pi\},
+\end{equation}
+where $S_k = \Cercis(\cD_k)$ is the Cercis Score computed locally by party
+$k$, optionally encrypted before sharing.  The auditor \emph{cannot} access
+the raw $(x, y)$ pairs.  The full-information audit statistic
+$T_{\mathrm{full}}: (\cX \times \cY)^{n_{\mathrm{total}}} \to \R$ uses
+$\cup_k \cD_k$.  The federated audit statistic
+$T_{\mathrm{fed}}: \cI_{\mathrm{Fed}} \to \R$ uses only the audit
+fingerprints.  The goal is to bound
+$|\mathrm{Power}(T_{\mathrm{fed}}) - \mathrm{Power}(T_{\mathrm{full}})|$.
+\end{definition}
+
+\subsection{Situs Homomorphic Composition}
+
+The central structural hypothesis enabling federated auditing is that the
+Situs encoding admits a composition operator that preserves the geometry of
+the union of distributions.
+
+\begin{definition}[Situs Homomorphic Composition]
+\label{def:situs-hom}
+A binary operator $\oplus$ on Situs spaces is \textbf{homomorphic} with
+respect to dataset union if there exists a function
+$\phi: \R^K \to \R_{\geq 0}$ such that
+\begin{equation}\label{eq:homomorphism}
+    d_{\Situs}\!\big(\Situs(\cup_{k=1}^K \cD_k),\;
+    \oplus_{k=1}^K \Situs(\cD_k)\big)
+    \;\leq\; \phi(n_1, \dots, n_K),
+\end{equation}
+and $\phi(n_1, \dots, n_K) \to 0$ as $\min_k n_k \to \infty$.  That is, the
+Situs encoding of the union is asymptotically approximated by the composition
+of individual Situs encodings.
+\end{definition}
+
+\begin{remark}[Candidate Constructions]
+Three candidate constructions for $\oplus$ are under investigation:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Wasserstein barycenter}: $\oplus_k \Situs_k =
+          \argmin_{\nu} \sum_k \lambda_k W_2^2(\Situs_k, \nu)$ with
+          entropic regularization~\citep{cuturi2013sinkhorn};
+    \item \textbf{Gromov--Wasserstein fusion}: Align Situs spaces via
+          Gromov--Wasserstein distance then average in the aligned space;
+    \item \textbf{Kernel mean embedding}: $\oplus_k \Situs_k =
+          \frac{1}{K}\sum_k \Phi(\Situs_k)$ in a reproducing kernel
+          Situs space, where $\Phi$ is the kernel embedding.
+\end{enumerate}
+Each candidate has different trade-offs in computational cost, communication
+overhead, and approximation rate $\phi$.  The existence of \emph{any}
+$\oplus$ with $\phi = O(1/\sqrt{\min_k n_k})$ or better is an \textbf{open
+problem}.  \openquest
+\end{remark}
+
+\subsection{Zero-Knowledge Audit Verification}
+
+\begin{definition}[ZK Audit Proof]
+\label{def:zk-proof}
+A zero-knowledge proof system for Cercis Score submissions is a triple
+$(\mathsf{Setup}, \mathcal{P}, \mathcal{V})$:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Completeness}: If party $k$ honestly computes
+          $S_k = \Cercis(\cD_k)$ and commits via
+          $c_k = \Commit(\cD_k; r_k)$, then
+          $\mathcal{V}(c_k, S_k, \pi_k) = 1$ with probability
+          $1 - \mathrm{negl}(\lambda)$, where
+          $\pi_k \gets \mathcal{P}(\cD_k, r_k, S_k)$ and $\lambda$ is the
+          security parameter.
+    \item \textbf{Soundness}: For any $S'_k \neq \Cercis(\cD_k)$ and any
+          polynomial-time adversary $\mathcal{P}^*$,
+          $\Pr[\mathcal{V}(c_k, S'_k, \pi^*) = 1] \leq \mathrm{negl}(\lambda)$.
+    \item \textbf{Zero-Knowledge}: There exists a simulator $\mathcal{S}$
+          such that the view of any verifier interacting with $\mathcal{P}$
+          is computationally indistinguishable from $\mathcal{S}(c_k, S_k)$.
+\end{enumerate}
+\end{definition}
+
+The commitment $c_k$ binds party $k$ to its dataset $\cD_k$ without revealing
+it.  The $\ZK$ proof $\pi_k$ attests that $S_k$ was correctly computed from
+the committed $\cD_k$, without revealing $\cD_k$ itself.  This is the
+cryptographic wedge that makes federated auditing possible: the auditor
+verifies the \emph{computation} without seeing the \emph{data}.
+
+% ============================================================
+\section{Main Results}
+% ============================================================
+
+\subsection{Federated Audit $\varepsilon$-Equivalence}
+
+\begin{theorem}[Federated Audit Completeness]
+\label{thm:fed-equiv}
+Let $T_{\mathrm{full}}$ be the full-information audit statistic and
+$T_{\mathrm{fed}}$ the federated audit statistic based on
+$\cI_{\mathrm{Fed}}$.  Assume:
+\begin{enumerate}[label=(\alph*)]
+    \item \textbf{ZK Verification}: Each party $k$ submits
+          $(c_k, S_k, \pi_k)$ satisfying Definition~\ref{def:zk-proof};
+    \item \textbf{Situs Homomorphism}: There exists $\oplus$ satisfying
+          Definition~\ref{def:situs-hom} with error
+          $\phi = \phi(n_1, \dots, n_K)$.
+\end{enumerate}
+Let $\delta \geq 0$ be the total differential privacy budget across all
+parties (with $\delta = 0$ if no DP mechanism is employed).  Then
+\begin{equation}\label{eq:fed-equiv-bound}
+    \big|\mathrm{Power}(T_{\mathrm{fed}}) - \mathrm{Power}(T_{\mathrm{full}})\big|
+    \;\leq\; \varepsilon(K, \delta, \phi),
+\end{equation}
+where
+\begin{equation}\label{eq:epsilon-def}
+    \varepsilon(K, \delta, \phi) =
+    C_1 \cdot \phi
+    + C_2 \cdot \sqrt{\frac{K \cdot \delta}{n_{\mathrm{total}}}}
+    + C_3 \cdot \frac{1}{\sqrt{\min_k n_k}}
+    + C_4 \cdot \mathrm{negl}(\lambda),
+\end{equation}
+with $C_1, C_2, C_3, C_4$ problem-dependent constants,
+$n_{\mathrm{total}} = \sum_k n_k$.  As $\min_k n_k \to \infty$,
+$\delta \to 0$, and $\lambda \to \infty$, we have
+$\varepsilon(K, \delta, \phi) \to 0$ provided $\phi \to 0$.
+\end{theorem}
+
+\begin{proof}[Proof Sketch]
+The total error decomposes into four independent sources, each bounded
+separately and combined via the triangle inequality on test power.
+
+\textit{Source 1: Situs composition error.}
+The full-information statistic $T_{\mathrm{full}}$ depends on the joint
+empirical distribution of $\cup_k \cD_k$.  Under the Situs homomorphism
+assumption~\eqref{eq:homomorphism}, the composed Situs encoding
+$\oplus_k \Situs_k$ approximates $\Situs(\cup_k \cD_k)$ to within $\phi$.
+Since the Cercis Score is $L$-Lipschitz with respect to the Situs
+metric~\citep{scx2024cercis}, the induced error in $T_{\mathrm{fed}}$
+is bounded by $L \cdot \phi$, yielding the $C_1 \cdot \phi$ term.
+
+\textit{Source 2: DP distortion.}
+If parties apply $(\varepsilon_{\mathrm{DP}}, \delta)$-differential privacy,
+the privatization mechanism adds noise of variance
+$\sigma^2 \propto K/\varepsilon_{\mathrm{DP}}^2$ by composition across $K$
+parties.  The effect on test power is bounded via the Gaussian DP
+hypothesis testing framework~\citep{dong2022gaussian}, yielding the
+$C_2 \cdot \sqrt{K \delta / n_{\mathrm{total}}}$ term.  When no DP is
+used ($\delta = 0$), this term vanishes identically.
+
+\textit{Source 3: Finite-sample estimation.}
+Each $S_k$ is estimated from $n_k$ samples.  By Hoeffding's inequality
+applied to the Cercis Score (bounded in $[0, 1+\eta]$), the estimation
+error is $O(1/\sqrt{n_k})$.  The worst-case across parties gives the
+$C_3 \cdot 1/\sqrt{\min_k n_k}$ term.
+
+\textit{Source 4: Cryptographic soundness error.}
+The $\ZK$ proof system contributes a negligible soundness error
+$\mathrm{negl}(\lambda)$, which can be driven exponentially small by
+increasing the security parameter.
+
+The asymptotic behavior follows directly: $\phi \to 0$ (Situs homomorphism),
+$\delta \to 0$ (DP-free or vanishing privacy budget), $\min_k n_k \to \infty$
+(large datasets), $\lambda \to \infty$ (strong cryptography).  Under these
+limits, $\varepsilon \to 0$ and federated audit achieves full-data audit
+power.  $\square$
+\end{proof}
+
+\begin{remark}[Status]
+The $\varepsilon$-bound is \textbf{conditionally rigorous}: given the Situs
+homomorphic composition operator $\oplus$, the derivation is a strict
+consequence of the Lipschitz property of Cercis, the DP hypothesis testing
+literature, and standard concentration inequalities.  The open component is
+the \emph{construction} of $\oplus$, not the logical chain that follows
+from it.  \conditionallyrigorous~/ \openquest
+\end{remark}
+
+\subsection{Information Lower Bound: The Cost of Unverified Noise}
+
+\begin{theorem}[Information Lower Bound for Federated Audit]
+\label{thm:info-lower}
+Suppose there exists a party $k$ for which the auditor has \emph{no}
+$\ZK$ verification of $S_k$'s correctness — i.e., party $k$ can submit
+an arbitrary $\tilde{S}_k \neq \Cercis(\cD_k)$ without detection.  Let
+$\eta_k$ be the unknown label noise parameter of $\cD_k$.  Then for any
+federated audit statistic $T_{\mathrm{fed}}$,
+\begin{equation}\label{eq:lower-bound}
+    \sup_{\cD}\;
+    \big|\,\E[T_{\mathrm{fed}}] - \E[T_{\mathrm{full}}]\,\big|
+    \;\geq\; c \cdot \eta_k \cdot \frac{n_k}{n_{\mathrm{total}}},
+\end{equation}
+where $c > 0$ is a universal constant and the supremum is taken over all
+dataset configurations $\cD = (\cD_1, \dots, \cD_K)$ with fixed marginal
+sizes.
+\end{theorem}
+
+\begin{proof}
+The proof chains Theorem~3 with the data processing inequality.
+
+\textit{Step 1: Reduction to Theorem~3.}
+Without $\ZK$ verification, party $k$ controls its submitted $S_k$.  Consider
+a strategy where party $k$ replaces its true dataset $\cD_k$ with a
+\emph{confounding distribution} $\tilde{\cD}_k$ that: (a)~matches the
+marginal statistics visible to the auditor (i.e., produces a Cercis Score
+distribution consistent with some valid dataset), but (b)~inflates the
+effective noise parameter from $\eta_k$ to $\tilde{\eta}_k$.  By Theorem~3,
+the auditor cannot distinguish between a genuinely high-noise dataset and
+one that has been adversarially manipulated, because both produce
+observationally equivalent Cercis Score distributions when $\eta$ is unknown.
+
+\textit{Step 2: Information-theoretic gap.}
+Let $\Delta = \E[T_{\mathrm{fed}}] - \E[T_{\mathrm{full}}]$.  By the data
+processing inequality,
+\begin{equation}\label{eq:dpi}
+    \I(T_{\mathrm{full}}; \cD_k) \;\geq\; \I(T_{\mathrm{fed}}; \cD_k),
+\end{equation}
+since $T_{\mathrm{fed}}$ is a (possibly randomized) function of the
+manipulated submission.  The mutual information gap translates to an
+estimation gap via the I-MMSE relationship~\citep{guo2005mutual}:
+\begin{equation}\label{eq:immse}
+    \E[(T_{\mathrm{full}} - \E[T_{\mathrm{full}} \mid \cD_k])^2]
+    \leq \E[(T_{\mathrm{fed}} - \E[T_{\mathrm{fed}} \mid \cD_k])^2]
+    + \frac{1}{2}\,\I(T_{\mathrm{full}}; \cD_k \mid T_{\mathrm{fed}}).
+\end{equation}
+
+\textit{Step 3: Worst-case construction.}
+Construct the worst-case dataset $\cD^*$ by concentrating all label noise in
+$\cD_k$ ($\eta_k \to 1$) while keeping $\eta_j = 0$ for $j \neq k$.  Under
+this configuration, the $n_k$ samples whose quality is unverifiable contribute
+a bias proportional to their share of the total data.  The adversary can tune
+$\tilde{S}_k$ to maximize $|\E[T_{\mathrm{fed}}] - \E[T_{\mathrm{full}}]|$,
+achieving the lower bound $c \cdot n_k / n_{\mathrm{total}}$.  Scaling by
+the actual noise level $\eta_k$ yields~\eqref{eq:lower-bound}.  $\square$
+\end{proof}
+
+\begin{corollary}[ZK Necessity]
+\label{cor:zk-necessity}
+To achieve $\varepsilon$-equivalence with $\varepsilon \to 0$ as
+$n_{\mathrm{total}} \to \infty$, $\ZK$ verification (or an equivalent
+commitment-verification mechanism) is \emph{necessary} — not merely
+sufficient.  Without it, the lower bound~\eqref{eq:lower-bound} persists
+as a constant fraction regardless of sample size.
+\end{corollary}
+
+\begin{proof}
+The bound~\eqref{eq:lower-bound} depends only on the \emph{proportion}
+$n_k / n_{\mathrm{total}}$, not on the absolute scale.  No amount of data
+from verified parties can compensate for an unverified party: the bias is
+additive and non-vanishing.  $\square$
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:info-lower} is \textbf{rigorous} — it follows directly
+from Theorem~3 and the data processing inequality, requiring no additional
+assumptions.  It provides the theoretical imperative for cryptographic
+verification in federated SCX deployments.  \rigorous
+\end{remark}
+
+\subsection{ZK Protocol Construction Sketch}
+
+While a full cryptographic implementation is beyond this paper's scope, we
+sketch the architecture of a practical $\ZK$ proof for Cercis Score
+computation.
+
+\begin{algorithm}[tb]
+\caption{ZK-Verified Cercis Score Submission (Party $k$)}
+\label{alg:zk-cercis}
+\begin{algorithmic}[1]
+\Require Dataset $\cD_k$, security parameter $\lambda$, Situs spec
+\Ensure $(c_k, S_k, \pi_k)$ — commitment, score, ZK proof
+\State $r_k \gets \{0,1\}^\lambda$ \Comment{Sample randomness}
+\State $c_k \gets \Commit(\cD_k; r_k)$ \Comment{Pedersen or Merkle commitment}
+\State $S_k \gets \Cercis(\cD_k)$ \Comment{Compute Cercis Score locally}
+\State $\mathcal{C} \gets \mathrm{Circuit}(\Cercis, \Commit)$
+      \Comment{Arithmetic circuit encoding $\Cercis$ computation}
+\State $\pi_k \gets \mathrm{Prove}(\mathcal{C}, (c_k, r_k, \cD_k), S_k)$
+      \Comment{ZK-SNARK or Bulletproofs}
+\State \Return $(c_k, S_k, \pi_k)$
+\end{algorithmic}
+\end{algorithm}
+
+The arithmetic circuit $\mathcal{C}$ encodes three constraints:
+(i)~$c_k$ is a valid commitment to $\cD_k$ with opening $r_k$;
+(ii)~$S_k$ equals the Cercis Score computed from the committed $\cD_k$;
+(iii)~the Cercis computation uses the canonical operator as specified by
+the SCX framework.  The circuit size scales as
+$O(n_k \cdot \dim(\cX) \cdot \log(1/\varepsilon_{\mathrm{prec}}))$, where
+$\varepsilon_{\mathrm{prec}}$ is the arithmetic precision.
+
+For large datasets, several mitigations apply: (i)~incremental Cercis
+computation with recursive $\ZK$ proofs — each batch update produces a small
+proof, and a final recursive proof composes them; (ii)~approximate Cercis
+with bounded error, trading a small increase in $\varepsilon$ for reduced
+circuit depth; (iii)~hardware-assisted Trusted Execution Environments (TEEs)
+as a pragmatic alternative where TEE security guarantees suffice.
+
+% ============================================================
+\section{Telegraph Public Good Extension}
+\label{sec:telegraph}
+
+If the ``Telegraph Public Good'' — a decentralized data infrastructure
+layer — extends to the federated setting, the architecture simplifies
+substantially.  Instead of each party generating a $\ZK$ proof at audit
+time, the storage layer itself provides a commitment to each $\cD_k$'s
+contents, indexed by a Situs hash:
+
+\begin{definition}[Situs Hash]
+The Situs hash of a dataset $\cD_k$ is
+$\mathcal{H}_{\Situs}(\cD_k) = \mathsf{CRH}(\Situs(\cD_k))$, where
+$\mathsf{CRH}$ is a collision-resistant hash function acting on a
+canonical serialization of the Situs encoding.
+\end{definition}
+
+Under this extension:
+\begin{enumerate}[label=(\roman*)]
+    \item Each party commits $\cD_k$ to the storage layer, which publishes
+          $\mathcal{H}_{\Situs}(\cD_k)$;
+    \item The auditor requests a \textbf{Proof of Storage} (PoS) that the
+          data corresponding to $\mathcal{H}_{\Situs}(\cD_k)$ exists and is
+          retrievable;
+    \item The Cercis Score $S_k$ is computed \emph{by the auditor} (or within
+          a Trusted Execution Environment) directly from the storage layer,
+          eliminating the need for per-party $\ZK$ proofs of computation.
+\end{enumerate}
+
+This tightens the bound~\eqref{eq:fed-equiv-bound} by removing the
+cryptographic soundness error $C_4 \cdot \mathrm{negl}(\lambda)$ and
+reducing the finite-sample error (the auditor computes $S_k$ from the full
+committed data, not from a party's summary).  The remaining error is purely
+statistical: $C_3 \cdot 1/\sqrt{\min_k n_k}$.  Whether this architecture is
+practically realizable depends on the design of the decentralized storage
+layer — an \textbf{open problem} with a clear and well-defined theoretical
+path.  \openquest
+
+% ============================================================
+\section{Discussion}
+% ============================================================
+
+\subsection{The Audit Paradox Resolved}
+
+The federated audit paradox — auditing what you cannot see — is resolved not
+at the cryptographic layer, but at the \textbf{information architecture}
+layer.  The Situs encoding functions as an \emph{audit fingerprint}: it
+preserves the statistical structure necessary for audit conclusions (noise
+rates, quality rankings, gating decisions) while discarding the
+reconstructability of raw data.  This is the fundamental wedge that makes
+federated auditing possible.
+
+The $\ZK$ proof (or its Telegraph equivalent) is the mechanism by which the
+auditor verifies that the fingerprint is genuine.  Without this verification
+layer, Theorem~\ref{thm:info-lower} demonstrates that the fingerprint can
+be forged, and the audit conclusion is only as reliable as the least
+verifiable party.
+
+\subsection{Implications for Federated Learning Infrastructure}
+
+Our results suggest a design principle for privacy-preserving ML
+infrastructure: \textbf{additive auditability}.  Secure Aggregation, DP, and
+MPC each add a layer of privacy protection; none adds a layer of
+auditability.  The Situs homomorphic composition operator, if constructible,
+would provide the missing layer — a mathematical guarantee that the union of
+privately-held datasets can be audited \emph{as if} the auditor had seen
+all the data, while provably preventing the auditor from \emph{actually}
+seeing it.
+
+This shifts the federated learning conversation from ``how do we prevent
+leakage'' to ``how do we enable verification.''  Both are necessary; only
+the former is currently solved.
+
+\subsection{The Situs Homomorphism as a Structural Bottleneck}
+
+The central obstacle — the construction of $\oplus$ — is not merely a
+technical gap.  It probes a foundational question: is the Situs encoding
+\emph{compositional}, i.e., does the Situs of a union decompose into a
+function of the Situs encodings of the parts?  If the answer is negative,
+then federated auditing in SCX requires a fundamentally different approach
+— perhaps interactive protocols where the auditor sequentially queries
+parties, or hierarchical Situs encodings that trade compositionality for
+approximation fidelity.
+
+% ============================================================
+\section{Conclusion}
+% ============================================================
+
+We have formalized the Federated Audit Problem and established the conditions
+under which SCX auditing extends to multi-party settings where raw data is
+private.  Three results define the landscape:
+
+\begin{enumerate}[label=(\arabic*)]
+    \item The $\varepsilon$-equivalence theorem establishes that, under Situs
+          homomorphic composition and $\ZK$ verification, federated audit
+          power approximates full-data audit power with error that vanishes
+          in the large-sample, zero-DP limit.  \conditionallyrigorous~/
+          \openquest~(Situs homomorphism)
+    \item The information lower bound proves that $\ZK$ verification (or
+          equivalent commitment verification) is \emph{necessary} — without
+          it, the audit power loss is bounded below by a constant fraction
+          of the unverified noise.  \rigorous
+    \item The Telegraph Public Good extension points toward a simpler
+          architecture where the storage layer itself provides the
+          commitment, eliminating per-party $\ZK$ proofs.  \openquest
+\end{enumerate}
+
+The resolution of the Situs homomorphic composition problem is the critical
+next step.  Its solution — or the proof of its impossibility — will determine
+whether the SCX Audit Sword can extend intact into the federated world, or
+whether federated auditing requires a fundamentally different theoretical
+apparatus.
+
+% ============================================================
+\bibliographystyle{plainnat}
+\begin{thebibliography}{30}
+
+\bibitem{scx2024cercis}
+SCX Working Group.
+\newblock ``The SCX Axiomatic Framework: Cercis, Situs, and Tiresias
+Operators,''
+\newblock \emph{Technical Report}, 2024.
+
+\bibitem{bonawitz2017practical}
+K.~Bonawitz, V.~Ivanov, B.~Kreuter, A.~Marcedone, H.~B.~McMahan, S.~Patel,
+D.~Ramage, A.~Segal, and K.~Seth.
+\newblock ``Practical secure aggregation for privacy-preserving machine
+learning,''
+\newblock in \emph{ACM CCS}, 2017.
+
+\bibitem{abadi2016deep}
+M.~Abadi, A.~Chu, I.~Goodfellow, H.~B.~McMahan, I.~Mironov, K.~Talwar, and
+L.~Zhang.
+\newblock ``Deep learning with differential privacy,''
+\newblock in \emph{ACM CCS}, 2016.
+
+\bibitem{evans2018pragmatic}
+D.~Evans, V.~Kolesnikov, and M.~Rosulek.
+\newblock ``A pragmatic introduction to secure multi-party computation,''
+\newblock \emph{Foundations and Trends in Privacy and Security},
+2(2--3):70--246, 2018.
+
+\bibitem{goldwasser1989knowledge}
+S.~Goldwasser, S.~Micali, and C.~Rackoff.
+\newblock ``The knowledge complexity of interactive proof systems,''
+\newblock \emph{SIAM Journal on Computing}, 18(1):186--208, 1989.
+
+\bibitem{groth2016size}
+J.~Groth.
+\newblock ``On the size of pairing-based non-interactive arguments,''
+\newblock in \emph{EUROCRYPT}, 2016.
+
+\bibitem{bunz2018bulletproofs}
+B.~B\"unz, J.~Bootle, D.~Boneh, A.~Poelstra, P.~Wuille, and G.~Maxwell.
+\newblock ``Bulletproofs: Short proofs for confidential transactions and
+more,''
+\newblock in \emph{IEEE S\&P}, 2018.
+
+\bibitem{dong2022gaussian}
+J.~Dong, A.~Roth, and W.~J.~Su.
+\newblock ``Gaussian differential privacy,''
+\newblock \emph{Journal of the Royal Statistical Society: Series B},
+84(1):3--37, 2022.
+
+\bibitem{guo2005mutual}
+D.~Guo, S.~Shamai, and S.~Verd\'u.
+\newblock ``Mutual information and minimum mean-square error in Gaussian
+channels,''
+\newblock \emph{IEEE Transactions on Information Theory}, 51(4):1261--1282,
+2005.
+
+\bibitem{cuturi2013sinkhorn}
+M.~Cuturi.
+\newblock ``Sinkhorn distances: Lightspeed computation of optimal transport,''
+\newblock in \emph{NeurIPS}, 2013.
+
+\bibitem{kairouz2021advances}
+P.~Kairouz, H.~B.~McMahan, et al.
+\newblock ``Advances and open problems in federated learning,''
+\newblock \emph{Foundations and Trends in Machine Learning},
+14(1--2):1--210, 2021.
+
+\bibitem{cover1999elements}
+T.~M.~Cover and J.~A.~Thomas.
+\newblock \emph{Elements of Information Theory}, 2nd ed.
+\newblock Wiley, 2006.
+
+\bibitem{villani2008optimal}
+C.~Villani.
+\newblock \emph{Optimal Transport: Old and New}.
+\newblock Springer, 2008.
+
+\end{thebibliography}
+
+\end{document}

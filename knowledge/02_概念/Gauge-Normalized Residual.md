@@ -38,7 +38,7 @@ Gauge-Normalized Residual 是 [[State-Conditioned eXpertise|SCX]] 的数学前�
 
 ## 来源
 
-- 概念形成：[[../01_时间线/2026-06-19_ACE专家代数|2026-06-19]]
+- 概念形成：[[2026-06-19_ACE专家代数|2026-06-19]]
 - 框架文档：[gauge_normalized_residual_ace_expert_algebra_framework.md](G:\仿真数据\egp_archive\EGP-milp\EGP-V2agent_discussions\gauge_normalized_residual_ace_expert_algebra_framework.md)
 
 ## 相关概念

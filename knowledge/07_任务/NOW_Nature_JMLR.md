@@ -119,4 +119,4 @@ Gauge Fixing            Data Quality > Architecture     Noise Detection Theory
 
 ---
 
-*关联：[[NOW_论文]] · [[../05_决策/论文规划|论文规划]]*
+*关联：[[NOW_论文]] · [[论文规划|论文规划]]*

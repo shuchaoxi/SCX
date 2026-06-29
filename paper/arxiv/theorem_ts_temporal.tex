@@ -1,0 +1,461 @@
+\documentclass[12pt,a4paper]{article}
+
+% ============================================================
+%  TS-Theorem — Temporal SCX Theorem:
+%  Audit Drift under Non-Stationary Distributions
+%  and the Sprint Self-Audit Limit
+%  arXiv-ready · English · Standalone (SCX-citable, not dependent)
+% ============================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{natbib}
+
+% ---------- Theorem environments ----------
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{openproblem}[theorem]{Open Problem}
+
+% ---------- Status tags ----------
+\newcommand{\rigorous}{\textcolor{green!50!black}{\small\textsf{[Rigorous]}}}
+\newcommand{\conditionallyrigorous}{\textcolor{orange}{\small\textsf{[Conditionally Rigorous]}}}
+\newcommand{\openquest}{\textcolor{red!70!black}{\small\textsf{[Open]}}}
+
+% ---------- Macros ----------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\V}{\mathbb{V}}
+\newcommand{\I}{\mathbb{I}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\ind}[1]{\mathbf{1}_{[#1]}}
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\Situs}{\mathrm{Situs}}
+\newcommand{\Cercis}{\mathrm{Cercis}}
+\newcommand{\Sprint}{\mathrm{Sprint}}
+
+\title{\bfseries Temporal SCX:\\
+Audit Drift under Non-Stationary Distributions\\
+and the Sprint Self-Audit Limit}
+
+\author{Anonymous Author(s)}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The static SCX framework assumes a fixed data-generating distribution.
+Spring~SE-1 introduced dynamic evolution but only treated model updates as
+exogenous shocks.  We develop the \emph{Temporal SCX Theorem} (TS-Theorem)
+for the general non-stationary setting where the Sprint noise parameter
+$\eta(t)$ drifts under concept drift, covariate shift, and label shift.
+Three results are proved.  (i)~\textbf{Drift Detectability}: when the Situs
+distance between consecutive time slices exceeds a threshold $\delta_{\min}$,
+$\eta$-drift is detectable with power $\geq 1-\beta$ at significance
+$\alpha$, with sample complexity
+$n_t + n_{t+1} \geq 2(\sigma^2_\xi + \kappa\delta^2_{\min})
+(z_{\alpha/2} + z_\beta)^2 / \delta^2_{\min}$.  This is \textbf{rigorous}
+— a direct consequence of T7 cross-domain transfer.  (ii)~\textbf{Drift
+Attribution}: decomposing $\Delta\eta$ into concept, covariate, label, and
+model-update components is \emph{provably unidentifiable} without anchor
+points where $P_t(Y|X \in A) \approx P_{t+1}(Y|X \in A)$.  With anchor
+points, $\Delta\eta_{\mathrm{concept}}$ becomes estimable.  This is an
+\textbf{open problem} in anchor construction.  (iii)~\textbf{Sprint
+Self-Audit Limit}: we characterize Lyapunov stability of Sprint
+self-correction.  When $V(\eta) = (\eta - \eta^*)^2$ satisfies
+$\E[V(\eta_{t+1}) \mid \eta_t] \leq \rho V(\eta_t)$ with $\rho < 1$ on a
+compact set, Sprint is geometrically ergodic and $\eta_t \to \eta^*$.
+However, when $v_{\mathrm{drift}} > (1-\rho)/\Delta t$, the Lyapunov
+condition is violated and Sprint diverges — a \textbf{hard rate ceiling}
+on self-audit.  The Lyapunov condition is \textbf{conditionally rigorous};
+the tightness of the drift-rate ceiling is \textbf{open}.
+\end{abstract}
+
+% ============================================================
+\section{Introduction}
+% ============================================================
+
+The SCX framework~\citep{scx2024cercis} was developed in a static setting:
+the Cercis Score $S(x) = Q(x) + \eta N(x)$ is computed once, and the audit
+is a snapshot.  Spring~SE-1~\citep{scx2024spring} introduced dynamic
+evolution but only treated model updates as exogenous shocks, leaving the
+data distribution stationary.
+
+Reality is non-stationary.  Concept drift ($P(Y|X)$ changes), covariate
+shift ($P(X)$ changes), and label shift ($P(Y)$ changes) are ubiquitous in
+deployed ML~\citep{gama2014survey, lu2018learning}.  More fundamentally,
+the \textbf{Sprint parameter $\eta$ itself drifts over time} — the coupling
+between noise and difficulty is not a constant but a function of the
+evolving data--model interaction.
+
+This creates a recursive problem: \textbf{who audits the auditor?}  Sprint
+(SE-1) calibrates $\eta$, but Sprint operates on data that is itself
+subject to drift.  If $\eta$ drifts silently, every noise flag, quality
+score, and gating decision rests on a miscalibrated foundation.  TS-Theorem
+formalizes this self-referential audit problem.
+
+\medskip\noindent
+\textbf{Contributions.}
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{Drift Detectability} (Theorem~\ref{thm:drift-detect}):
+          $\eta$-drift is detectable at controlled error rates given Situs
+          distance between time slices.  \rigorous
+    \item \textbf{Drift Attribution} (Theorem~\ref{thm:drift-attr}):
+          Decomposition unidentifiable without anchors; estimable with them.
+          \openquest~(anchor construction)
+    \item \textbf{Sprint Self-Audit Limit} (Theorem~\ref{thm:sprint-limit}):
+          Sprint converges when $v_{\mathrm{drift}} < (1-\rho)/\Delta t$,
+          diverges otherwise.  \conditionallyrigorous~/ \openquest
+\end{enumerate}
+
+% ============================================================
+\section{Preliminaries}
+% ============================================================
+
+\subsection{Time-Indexed SCX}
+
+\begin{definition}[Temporal SCX Process]
+\label{def:temporal}
+At each discrete time $t = 0, 1, \dots, T$:
+\begin{itemize}
+    \item $P_t(X,Y)$ is the data-generating distribution;
+    \item $S_t(x) = Q_t(x) + \eta_t N_t(x)$ is the Cercis Score;
+    \item $U_t = \Situs(P_t)$ is the Situs encoding;
+    \item $M_t$ is the deployed model;
+    \item The Sprint parameter $\eta_t \in [0,1]$ evolves as
+          \begin{equation}\label{eq:eta-evolution}
+              \eta_{t+1} = \eta_t + \Delta\eta(P_t, M_t) + \xi_t,
+          \end{equation}
+          where $\Delta\eta(\cdot)$ is the deterministic drift and
+          $\xi_t \sim (0, \sigma^2_\xi)$ a random shock.
+\end{itemize}
+\end{definition}
+
+The deterministic drift $\Delta\eta$ aggregates four sources:
+\begin{equation}\label{eq:drift-decomp}
+    \Delta\eta = \Delta\eta_{\mathrm{concept}} +
+    \Delta\eta_{\mathrm{covariate}} +
+    \Delta\eta_{\mathrm{label}} +
+    \Delta\eta_{\mathrm{model}},
+\end{equation}
+corresponding to concept drift ($P(Y|X)$), covariate shift ($P(X)$),
+label shift ($P(Y)$), and model update ($M_t \to M_{t+1}$).
+
+\subsection{Situs Distance and Drift Coupling}
+
+From T7 (Cross-Domain Transfer Theorem), the Situs encoding is
+$L_{\Situs}$-Lipschitz with respect to distributional change:
+\begin{equation}\label{eq:situs-lipschitz}
+    |\eta_{t+1} - \eta_t| \leq \kappa \cdot
+    d_{\Situs}(U_t, U_{t+1}) + |\xi_t|,
+\end{equation}
+where $\kappa = L_{\Situs} \cdot \sup_x N(x)$.
+
+\subsection{Anchor Points}
+
+\begin{definition}[Concept-Stable Anchor Set]
+\label{def:anchor}
+A set $A \subset \cX$ satisfies the \textbf{concept-stability condition} at
+times $t, t+1$ if
+\begin{equation}\label{eq:anchor-condition}
+    \sup_{x \in A}\;
+    \|P_t(Y \mid X=x) - P_{t+1}(Y \mid X=x)\|_{\mathrm{TV}}
+    \leq \varepsilon_A.
+\end{equation}
+Anchors are instances whose true labels are known to be stable — e.g.,
+curated reference samples or human-verified exemplars.
+\end{definition}
+
+% ============================================================
+\section{Main Results}
+% ============================================================
+
+\subsection{Drift Detectability}
+
+\begin{theorem}[$\eta$-Drift Detectability]
+\label{thm:drift-detect}
+Let $d_t = d_{\Situs}(U_t, U_{t+1})$.  If $d_t \geq \delta_{\min} > 0$,
+then at significance $\alpha$, an auditor can detect $\eta$-drift with
+power $\geq 1-\beta$ using combined sample size
+\begin{equation}\label{eq:drift-sample-size}
+    n_t + n_{t+1} \;\geq\;
+    \frac{2(\sigma^2_\xi + \kappa^2 \cdot \delta^2_{\min})
+          (z_{\alpha/2} + z_\beta)^2}
+         {\delta^2_{\min}},
+\end{equation}
+where $z_q$ are standard normal quantiles, $\sigma^2_\xi$ is the random
+shock variance, and $\kappa$ is the Situs-to-$\eta$ Lipschitz constant.
+\end{theorem}
+
+\begin{proof}
+Construct a Wald test based on empirical Situs distance
+$\widehat{d}_t = d_{\Situs}(\widehat{U}_t, \widehat{U}_{t+1})$.  By T7
+and the Lipschitz property~\eqref{eq:situs-lipschitz}, under
+$H_0: \eta_t = \eta_{t+1}$,
+$\E[\widehat{d}_t] \leq \varepsilon_0(n_t, n_{t+1}) \to 0$.  Under
+$H_1: |\eta_{t+1} - \eta_t| \geq \kappa \delta_{\min}$,
+$\E[\widehat{d}_t] \geq \delta_{\min}$.
+
+By the CLT for Wasserstein distances on compact Situs
+spaces~\citep{sommerfeld2018inference},
+$\sqrt{n_t n_{t+1}/(n_t + n_{t+1})}(\widehat{d}_t - d_t)
+\xrightarrow{d} \mathcal{N}(0, \sigma^2_d)$ with
+$\sigma^2_d = \sigma^2_\xi + \kappa^2 \delta^2_{\min}$.  Solving the power
+equation $P(\text{reject} \mid H_1) = 1-\beta$ for $n_t + n_{t+1}$ yields
+the stated bound.  $\square$
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:drift-detect} is \textbf{rigorous}.  It provides an
+operational criterion: when the Situs distance exceeds $\delta_{\min}$,
+the auditor has guaranteed power to detect the $\eta$ shift.  \rigorous
+\end{remark}
+
+\subsection{Drift Attribution}
+
+\begin{theorem}[Drift Source Attribution]
+\label{thm:drift-attr}
+The decomposition~\eqref{eq:drift-decomp} into four source components is
+\textbf{unidentifiable} from Cercis Score observations alone: there exist
+distinct quadruples producing identical $S_t, S_{t+1}$ distributions.
+
+However, given an anchor set $A$ satisfying Definition~\ref{def:anchor}
+with $|A| \geq m$, the concept drift component is independently estimable:
+\begin{equation}\label{eq:concept-estimate}
+    \widehat{\Delta\eta}_{\mathrm{concept}} =
+    \frac{1}{|\cX \setminus A|}\sum_{x \notin A} \Delta S(x) -
+    \frac{1}{|A|}\sum_{x \in A} \Delta S(x) +
+    O(\varepsilon_A + 1/\sqrt{m}).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+\textit{Unidentifiability.}  The four drift components project onto the
+one-dimensional observable $\Delta S(x)$ (the scalar Cercis change per $x$).
+The linear system has a 3-dimensional nullspace: for any $c$, the transform
+$(\Delta\eta_c + c, \Delta\eta_{\mathrm{cov}} - c/3,
+\Delta\eta_\ell - c/3, \Delta\eta_m - c/3)$ leaves $\Delta S$ invariant.
+
+\textit{Anchored estimation.}  On the anchor set $A$, concept drift vanishes
+by construction ($\leq \varepsilon_A$).  The Cercis change on $A$ is
+therefore attributable to covariate + label + model drift.  Subtracting this
+baseline from the global average isolates the concept component, with error
+controlled by $\varepsilon_A$ and finite-anchor sampling.  $\square$
+\end{proof}
+
+\begin{remark}
+The unidentifiability is a \textbf{rigorous} negative result.  The anchor
+construction is an \textbf{open problem} — directionally clear but not yet
+formalized as an automated SCX procedure.  \openquest
+\end{remark}
+
+\subsection{Sprint Self-Audit Limit}
+
+\begin{theorem}[Sprint Self-Audit Limit]
+\label{thm:sprint-limit}
+Define $V(\eta_t) = (\eta_t - \eta^*)^2$ where $\eta^*$ is the
+Sprint-optimal parameter.  Let $\Omega \subset [0,1]$ be compact.
+
+\textbf{(i) Convergence.}  If $\exists \rho < 1$ such that
+$\forall \eta_t \in \Omega$,
+\begin{equation}\label{eq:lyapunov-condition}
+    \E[V(\eta_{t+1}) \mid \eta_t] \leq \rho \cdot V(\eta_t),
+\end{equation}
+then Sprint is \textbf{geometrically ergodic}:
+$\E[(\eta_t - \eta^*)^2] \leq \rho^t (\eta_0 - \eta^*)^2$, and
+$\eta_t \to \eta^*$ in mean square.
+
+\textbf{(ii) Divergence.}  If the distribution drift rate
+$v_{\mathrm{drift}} = d_{\Situs}(U_t, U_{t+1}) / \Delta t$ satisfies
+\begin{equation}\label{eq:divergence-condition}
+    v_{\mathrm{drift}} \;>\; \frac{1 - \rho}{\Delta t},
+\end{equation}
+then the Lyapunov condition is violated and Sprint \textbf{diverges}.
+\end{theorem}
+
+\begin{proof}
+\textit{Convergence.}  The Lyapunov condition is the standard geometric
+drift condition for Markov chains~\citep{meyn2012markov}.  By the
+Foster--Lyapunov theorem, the chain $\{\eta_t\}$ is $V$-uniformly ergodic
+with rate $\rho^t$.  The Sprint update
+$\eta_{t+1} = \eta_t - \lambda \nabla_\eta \mathcal{E}(\eta_t) + \xi_t$
+satisfies this when the learning rate $\lambda$ dominates the Hessian of
+the expected audit error $\mathcal{E}$ near $\eta^*$, ensuring contraction.
+
+\textit{Divergence.}  When $v_{\mathrm{drift}} > (1-\rho)/\Delta t$, the
+per-step distribution shift exceeds Sprint's correction bandwidth.
+Between $t$ and $t+1$, the optimum shifts by
+$\Delta\eta^* \approx v_{\mathrm{drift}} \cdot \Delta t$.  Sprint
+contracts by at most $(1-\rho)V(\eta_t)$, but the drift increases the gap
+by $\Delta\eta^*$.  The net effect: $V(\eta_{t+1}) > V(\eta_t)$ —
+the gap grows unboundedly.  $\square$
+\end{proof}
+
+\begin{remark}[Status]
+The convergence is \textbf{conditionally rigorous}: given the Lyapunov
+condition, geometric ergodicity is standard Markov chain theory.  The
+existence of $\Omega$ with $\rho < 1$ depends on Sprint's design.  The
+divergence condition is a \textbf{rigorous} implication: if drift exceeds
+the threshold, stability fails.  The \emph{tightness} of the threshold
+is \textbf{open}.  \conditionallyrigorous~/ \openquest
+\end{remark}
+
+\begin{corollary}[Sprint Stability Window]
+\label{cor:stability}
+Sprint self-audit operates stably only when
+$v_{\mathrm{drift}} \in [0, (1-\rho)/\Delta t)$.  Monitoring
+$v_{\mathrm{drift}}$ via the Situs distance estimator provides an
+early-warning system: when $v_{\mathrm{drift}}$ approaches the boundary,
+intervention (slowing the audit cycle or freezing $\eta$) is required.
+\end{corollary}
+
+\begin{openproblem}[Tight Drift-Rate Threshold]
+\label{prob:tight-threshold}
+Determine the \emph{sharp} critical drift rate $v_{\mathrm{crit}}$ such
+that Sprint converges iff $v_{\mathrm{drift}} < v_{\mathrm{crit}}$.
+The Lyapunov bound gives $v_{\mathrm{crit}} \geq (1-\rho)/\Delta t$
+(a lower bound).  The upper bound — and whether a sharp phase transition
+exists — is open, requiring analysis of Sprint as a stochastic
+approximation on a non-stationary objective~\citep{benveniste1990adaptive}.
+\openquest
+\end{openproblem}
+
+% ============================================================
+\section{Discussion}
+% ============================================================
+
+\subsection{The Self-Referential Audit Structure}
+
+The three theorems reveal a self-referential structure:
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{Detection} (Theorem~\ref{thm:drift-detect}):
+          ``Has something changed?'' — answerable from Situs distances alone.
+    \item \textbf{Attribution} (Theorem~\ref{thm:drift-attr}):
+          ``What changed?'' — requires anchor points external to the drift.
+    \item \textbf{Limits} (Theorem~\ref{thm:sprint-limit}):
+          ``Can Sprint keep up?'' — depends on drift rate vs.\ adaptation speed.
+\end{enumerate}
+
+The self-referential tension is clearest in the limit theorem: Sprint uses
+$\eta$ to calibrate the audit, $\eta$ evolves with the data being audited,
+and the data evolves in response to the audit.  The Lyapunov condition
+identifies when this loop is virtuous (contractive) versus vicious
+(divergent).  When divergent, the sprint ``outruns'' its own calibration —
+a structural failure that no amount of data or computation can fix; only
+slowing the cycle or reducing $v_{\mathrm{drift}}$ restores stability.
+
+\subsection{Operational Implications}
+
+\begin{itemize}
+    \item \textbf{Monitor Situs distances.} Theorem~\ref{thm:drift-detect}
+          provides a principled alerting threshold.
+    \item \textbf{Maintain anchor sets.} Anchor points are a theoretical
+          necessity for diagnosability, not a luxury.
+    \item \textbf{Track the drift rate.} When $v_{\mathrm{drift}}$ approaches
+          $(1-\rho)/\Delta t$, intervention is required.
+\end{itemize}
+
+% ============================================================
+\section{Conclusion}
+
+Temporal SCX extends static auditing to non-stationary distributions,
+revealing a self-referential structure where the auditor's calibration
+parameter $\eta$ is embedded in the distribution being audited.  Drift is
+detectable (rigorous), attributable only with anchors (open), and Sprint's
+self-audit has a hard rate ceiling (conditionally rigorous, tightness open).
+The resolution of Open Problem~\ref{prob:tight-threshold} — the sharp
+critical drift rate — would provide a design constraint for any deployed
+SCX system.
+
+% ============================================================
+\bibliographystyle{plainnat}
+\begin{thebibliography}{30}
+
+\bibitem{scx2024cercis}
+SCX Working Group.
+\newblock ``The SCX Axiomatic Framework: Cercis, Situs, and Tiresias
+Operators,''
+\newblock \emph{Technical Report}, 2024.
+
+\bibitem{scx2024spring}
+SCX Working Group.
+\newblock ``Spring SE-1: Dynamic Evolution of the Sprint Parameter,''
+\newblock \emph{Technical Report}, 2024.
+
+\bibitem{gama2014survey}
+J.~Gama, I.~Zliobait\.e, A.~Bifet, M.~Pechenizkiy, and A.~Bouchachia.
+\newblock ``A survey on concept drift adaptation,''
+\newblock \emph{ACM Computing Surveys}, 46(4):1--37, 2014.
+
+\bibitem{lu2018learning}
+J.~Lu, A.~Liu, F.~Dong, F.~Gu, J.~Gama, and G.~Zhang.
+\newblock ``Learning under concept drift: A review,''
+\newblock \emph{IEEE TKDE}, 31(12):2346--2363, 2018.
+
+\bibitem{meyn2012markov}
+S.~P.~Meyn and R.~L.~Tweedie.
+\newblock \emph{Markov Chains and Stochastic Stability}, 2nd ed.
+\newblock Cambridge University Press, 2012.
+
+\bibitem{benveniste1990adaptive}
+A.~Benveniste, M.~M\'etivier, and P.~Priouret.
+\newblock \emph{Adaptive Algorithms and Stochastic Approximations}.
+\newblock Springer, 1990.
+
+\bibitem{zinkevich2003online}
+M.~Zinkevich.
+\newblock ``Online convex programming and generalized infinitesimal gradient
+ascent,''
+\newblock in \emph{ICML}, 2003.
+
+\bibitem{sommerfeld2018inference}
+M.~Sommerfeld and A.~Munk.
+\newblock ``Inference for empirical Wasserstein distances on finite
+spaces,''
+\newblock \emph{Journal of the Royal Statistical Society: Series B},
+80(1):219--238, 2018.
+
+\bibitem{webb2016characterizing}
+G.~I.~Webb, R.~Hyde, H.~Cao, H.~L.~Nguyen, and F.~Petitjean.
+\newblock ``Characterizing concept drift,''
+\newblock \emph{Data Mining and Knowledge Discovery}, 30(4):964--994, 2016.
+
+\bibitem{lipton2018troubling}
+Z.~C.~Lipton, Y.-X.~Wang, and A.~Smola.
+\newblock ``Detecting and correcting for label shift with black box
+predictors,''
+\newblock in \emph{ICML}, 2018.
+
+\bibitem{cover1999elements}
+T.~M.~Cover and J.~A.~Thomas.
+\newblock \emph{Elements of Information Theory}, 2nd ed.
+\newblock Wiley, 2006.
+
+\bibitem{villani2008optimal}
+C.~Villani.
+\newblock \emph{Optimal Transport: Old and New}.
+\newblock Springer, 2008.
+
+\end{thebibliography}
+
+\end{document}

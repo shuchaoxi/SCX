@@ -35,7 +35,7 @@ Element-Guided (材料特化) → State-Conditioned (通用 ML)
 
 ## 来源
 
-- EGP 概念提出：[[../01_时间线/2026-06-14_EGP概念萌芽|2026-06-14]]
+- EGP 概念提出：[[2026-06-14_EGP概念萌芽|2026-06-14]]
 - Agent 讨论：[EGP_AlN_GaN_AlGaN_Agent_Discussion.md](G:\仿真数据\egp_archive\EGP-milp\egp-V1\EGP_AlN_GaN_AlGaN_Agent_Discussion.md)
 
 ## 相关概念
