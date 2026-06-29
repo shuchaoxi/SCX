@@ -18,7 +18,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{enumitem}
-\usepackage{natbib}
+\usepackage[numbers]{natbib}
 
 % ---------- Theorem environments ----------
 \newtheorem{theorem}{Theorem}[section]
@@ -225,6 +225,24 @@ equation $P(\text{reject} \mid H_1) = 1-\beta$ for $n_t + n_{t+1}$ yields
 the stated bound.  $\square$
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:drift-detect} provides a \textbf{principled alerting
+threshold} for production SCX monitoring.  By tracking the empirical Situs
+distance $\widehat{d}_t$ between consecutive time slices, an operations team
+can set an alarm when $d_t$ exceeds $\delta_{\min}$, triggering an audit of
+Sprint parameter drift.  The sample-size formula~\eqref{eq:drift-sample-size}
+directly translates into monitoring SLAs: for a desired detection power of
+$0.95$ at significance $0.05$ with expected shift $\delta_{\min}$, the system
+must retain at least $n_t+n_{t+1}$ samples across the two time windows.
+In financial compliance systems where concept drift signals regulatory
+violations (e.g., money-laundering patterns evolving), this theorem provides
+a statistically-grounded early-warning system with guaranteed detection
+power.  In recommendation systems, where user preference drift is continuous,
+the theorem can be used to schedule audit cycles: trigger an audit when the
+predicted Situs distance exceeds $\delta_{\min}$, rather than on a fixed
+calendar schedule.
+
 \begin{remark}
 Theorem~\ref{thm:drift-detect} is \textbf{rigorous}.  It provides an
 operational criterion: when the Situs distance exceeds $\delta_{\min}$,
@@ -262,6 +280,23 @@ therefore attributable to covariate + label + model drift.  Subtracting this
 baseline from the global average isolates the concept component, with error
 controlled by $\varepsilon_A$ and finite-anchor sampling.  $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:drift-attr} informs \textbf{drift triage} in production ML
+systems.  When $\eta$-drift is detected (via Theorem~\ref{thm:drift-detect}),
+the next question is ``what changed?'' The unidentifiability result means that,
+without anchor points, the operations team cannot determine whether the root
+cause is concept drift (requiring model retraining), covariate shift (requiring
+input monitoring adjustments), label shift (requiring recalibration), or model
+update effects (requiring rollback).  The anchored estimator
+$\widehat{\Delta\eta}_{\mathrm{concept}}$ provides a practical path forward:
+maintain a curated anchor set — a small collection of samples with verified
+stable labels — and use their Cercis Score changes to isolate the concept
+drift component.  In autonomous driving perception systems, anchor points
+correspond to sensor readings under controlled conditions (e.g., clear
+weather, known road geometry) that serve as a stable reference for detecting
+environmental concept drift.
 
 \begin{remark}
 The unidentifiability is a \textbf{rigorous} negative result.  The anchor
@@ -310,6 +345,24 @@ contracts by at most $(1-\rho)V(\eta_t)$, but the drift increases the gap
 by $\Delta\eta^*$.  The net effect: $V(\eta_{t+1}) > V(\eta_t)$ —
 the gap grows unboundedly.  $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:sprint-limit} provides the \textbf{operational stability
+envelope} for Sprint self-calibration.  The Lyapunov condition
+$\rho<1$ translates to a concrete design requirement: the Sprint learning
+rate must dominate the Hessian of the expected audit error near $\eta^*$,
+ensuring that self-correction outpaces distribution drift.  The divergence
+condition $v_{\mathrm{drift}}>(1-\rho)/\Delta t$ is the ``red line'': when
+the Situs distance between consecutive time slices exceeds this threshold, the
+operations team must either (i)~reduce the audit cycle frequency (increase
+$\Delta t$), (ii)~freeze $\eta$ at its current value and switch to manual
+calibration, or (iii)~deploy a higher-fidelity meta-auditor (reduce $\rho$ via
+RA-Theorem's hierarchical audit architecture).  In high-frequency trading
+systems, where $v_{\mathrm{drift}}$ can spike during market regime changes,
+this theorem provides the mathematical basis for circuit-breakers that
+temporarily suspend automated Sprint updates during periods of extreme
+non-stationarity.
 
 \begin{remark}[Status]
 The convergence is \textbf{conditionally rigorous}: given the Lyapunov

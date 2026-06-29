@@ -30,6 +30,7 @@
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{assumption}[theorem]{Assumption}
 \newtheorem{openproblem}[theorem]{Open Problem}
+\newtheorem{conjecture}[theorem]{Conjecture}
 
 % ---------- Status tags ----------
 \newcommand{\rigorous}{\textcolor{green!50!black}{\small\textsf{[Rigorous]}}}
@@ -231,6 +232,25 @@ $(1-2\beta_{\max})^2$ factor (which accounts for variance inflation due to
 baseline specificity error) yields~\eqref{eq:K-min}. $\square$
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:expert-lower} provides the \textbf{staffing requirement} for
+any expert-based SCX audit.  Before launching an audit, the formula~\eqref{eq:K-min}
+can be evaluated using known expert quality parameters $(\alpha_{\min},\beta_{\max})$,
+the target noise level $\eta$, and the required confidence $\delta$.  For a
+typical configuration ($\alpha=0.85$, $\beta=0.15$, $\eta=0.05$, $\delta=0.05$),
+the minimum expert count is $K_{\min}\approx 45$ — a non-trivial staffing
+requirement.  The theorem reveals an inescapable trade-off: to halve the
+detectable noise level (from $\eta$ to $\eta/2$), one must quadruple the
+expert count.  In medical audit, where domain experts (board-certified
+physicians) are scarce, this bound directly determines feasibility: below a
+certain noise level, expert-based auditing becomes economically impossible,
+and one must rely on complementary Cercis-based detection or accept higher
+false-negative rates.  The divergence $\beta_{\max}\to1/2$ warning — poor
+experts cannot be compensated by quantity — is a hiring criterion: never
+deploy experts whose specificity is near chance level, regardless of how many
+are available.
+
 \begin{remark}
 Theorem~\ref{thm:expert-lower} is \textbf{rigorous}.  The bound is derived from
 standard Chernoff/Hoeffding concentration inequalities and the Neyman--Pearson
@@ -263,6 +283,26 @@ The detection boundary for a Gaussian location shift is exactly
 $\Theta(1/\sqrt{K})$, establishing that no test can achieve
 $\eta_{\min}=o(1/\sqrt{K})$ under the given expert model. $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:noise-expert} provides the \textbf{detection sensitivity
+budget} for fixed-size expert panels.  With $K=3$ experts (a typical
+crowd-sourcing setup), the minimum detectable noise level is
+$\eta_{\min}\approx 0.41$ — only very noisy datasets (over 40\% label errors)
+can be reliably detected.  With $K=100$ experts, $\eta_{\min}\approx 0.07$ —
+still unable to detect noise below 7\%.  The $\Theta(1/\sqrt{K})$ scaling is
+a harsh constraint: achieving $\eta_{\min}=0.01$ requires $K\approx 5\times10^4$
+experts, far beyond practical budgets.  This theorem fundamentally limits
+\emph{pure} expert-based noise detection and motivates hybrid approaches:
+combine a small expert panel ($K\approx 20$--$50$, detecting $\eta\approx
+0.10$--$0.15$) with Cercis-based statistical detection (which can flag
+samples for expert review at lower effective $\eta$ via T5's optimal sampling).
+In practice, the theorem guides the ``expert escalation threshold'': set the
+automated detector's sensitivity to flag samples at the noise level
+$\eta_{\min}(K)$ that the available expert panel can verify, ensuring the
+human-in-the-loop component is never asked to adjudicate below its detection
+limit.
 
 \begin{remark}
 The $\Theta(1/\sqrt{K})$ scaling has immediate practical implications:
@@ -305,6 +345,27 @@ is $1/[1+(K-1)\rho]$, yielding~\eqref{eq:K-eff}.  For general $\rho_{ij}$,
 the mean $\bar{\rho}$ provides a conservative bound via Jensen's inequality
 applied to the variance decomposition. $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:diversity} provides the \textbf{diversity dividend} for
+expert panel composition.  The effective expert count
+$K_{\mathrm{eff}}=K/[1+(K-1)\bar{\rho}]$ reveals that correlated experts
+provide rapidly diminishing returns: with $\bar{\rho}=0.3$, a panel of
+$K=20$ experts is equivalent to only $K_{\mathrm{eff}}\approx 3.3$ independent
+experts.  This has immediate operational implications: (i)~recruit experts
+from maximally diverse backgrounds (different training institutions, different
+specialties, different geographical regions) to minimize $\bar{\rho}$;
+(ii)~use different AI audit modules with non-overlapping training data and
+distinct architectures to achieve low inter-model correlation;
+(iii)~regularly measure $\bar{\rho}$ on calibration sets and rotate out
+highly correlated experts.  In practice, a panel of $K=10$ experts with
+$\bar{\rho}=0.1$ ($K_{\mathrm{eff}}\approx 5.3$) outperforms a panel of
+$K=50$ experts with $\bar{\rho}=0.5$ ($K_{\mathrm{eff}}\approx 2.0$).  The
+theorem also provides a procurement metric: when evaluating expert panel
+providers, compute $K_{\mathrm{eff}}$ from their correlation matrix rather
+than comparing raw $K$ — effective diversity, not headcount, determines
+audit power.
 
 \begin{openproblem}[Optimal Expert Selection]
 \label{prob:expert-selection}

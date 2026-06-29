@@ -332,6 +332,21 @@ well-known identity $\partial\KL(p^*\|\pi)/\partial\lambda =
 -\V_{p^*}[\overline{\Gamma}(x)]/\lambda^3<0$.
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:optimal-dist} provides the optimal sampling distribution for
+active learning under any continuously differentiable acquisition objective.
+Practitioners can use the Gibbs-form distribution $p^*(x)$ with their preferred
+prior $\pi$ and Cercis Score $S(x)$ to perform importance-weighted sampling of
+the unlabeled pool.  In cold-start active learning where no labeled data exists,
+setting $\pi$ to the uniform distribution and $\lambda$ large recovers random
+sampling as a safe default.  In fine-tuning scenarios with a pre-existing labeled
+set, $\pi$ can be set to the empirical density of already-labeled instances,
+ensuring the new batch complements rather than duplicates existing annotations.
+The $\lambda$-tunable interpolation between uniform and hard-max sampling enables
+practitioners to control the exploration--exploitation balance without modifying
+the underlying Cercis Score computation.
+
 \subsection{Closed-Form Optimal Sampling Rate}
 
 The sampling \emph{distribution} $p^*$ determines relative selection
@@ -432,6 +447,23 @@ $G=\sum_k w_k\overline{\Gamma}_k$ and $V=\sum_k w_k\V[\Gamma_k]$:
 \end{itemize}
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:optimal-rate} eliminates the need for manual budget
+specification in active learning.  The closed-form rate $\rho^*$ can be
+computed from a pilot labeled set of modest size ($m\approx 50$--$100$ samples)
+and used to automatically determine how many instances to query in each
+active learning round.  This is particularly valuable in production ML pipelines
+where annotation budgets vary across datasets and manual tuning is impractical.
+In medical imaging, where annotation costs are high and class imbalance is
+severe, the class-weighted version of $\rho^*$ automatically allocates more
+queries to rare classes with high variance.  In NLP, the rate can be
+recomputed per annotation round, adapting to the model's improving confidence
+as labeled data accumulates.  The formula also provides a diagnostic: if
+$\rho^*$ is close to 0, the model is already near-optimal and additional
+labeling yields diminishing returns; if $\rho^*$ is close to 1, the model
+is data-starved and aggressive labeling is warranted.
+
 \begin{corollary}[Budget-Free Operation]
 \label{cor:budget-free}
 The optimal batch size is $B^* = \lceil\rho^* N_U\rceil$.  When $\rho^*$ is
@@ -478,6 +510,22 @@ The gradient $\nabla f$ evaluated at the true moments gives
 $\sigma^2_\rho = \nabla f^\top \Sigma \,\nabla f$, where $\Sigma$ is the
 $2K\times2K$ covariance matrix of the joint moment estimators.
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:consistency} guarantees that the plug-in estimator
+$\hat{\rho}^*_m$ is reliable for practical deployment.  The
+$\sqrt{m}$-consistency ensures that the estimation error of the optimal
+sampling rate decays at the parametric rate, meaning a modest pilot sample
+suffices for accurate rate estimation.  This is essential for real-time active
+learning systems (e.g., robotics, online advertising) where the sampling rate
+must be recomputed frequently as new data arrives.  The asymptotic normality
+result further enables the construction of confidence intervals for $\rho^*$,
+allowing practitioners to report uncertainty-aware batch sizes (e.g.,
+``query 230~$\pm$~15 samples this round'').  In safety-critical applications
+such as medical diagnosis, the confidence interval provides a
+risk-management tool: one can select the upper confidence bound of $B^*$
+to ensure sufficient coverage, or the lower bound to minimize cost.
 
 % ============================================================
 \section{Algorithm}

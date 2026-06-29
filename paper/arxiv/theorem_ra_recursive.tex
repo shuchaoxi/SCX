@@ -30,6 +30,7 @@
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{assumption}[theorem]{Assumption}
 \newtheorem{openproblem}[theorem]{Open Problem}
+\newtheorem{conjecture}[theorem]{Conjecture}
 
 % ---------- Status tags ----------
 \newcommand{\rigorous}{\textcolor{green!50!black}{\small\textsf{[Rigorous]}}}
@@ -235,6 +236,26 @@ Setting $\varepsilon = \sigma_0\rho^{k/2}\sqrt{\log k}$ and applying the
 Borel--Cantelli lemma yields the almost-sure exponential rate. $\square$
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:convergence} provides the \textbf{architectural constraint}
+for self-auditing SCX systems.  The condition $\rho<1$ means each meta-audit
+layer must be strictly more capable than the layer it audits.  In practice,
+this implies a \textbf{hierarchical audit architecture}: $\cA_0$ (base AI
+auditor, $\sigma$ large) $\to$ $\cA_1$ (human-aided auditor, $\sigma$ smaller)
+$\to$ $\cA_2$ (expert panel, $\sigma$ smallest).  Each escalation reduces the
+meta-audit noise relative to the layer below, guaranteeing $\rho<1$ and hence
+convergence.  The exponential rate for $\rho\leq1/2$ — achievable when each
+layer is at least twice as precise as the previous — provides a concrete
+design target for audit hierarchy depth.  In autonomous systems where
+self-audit is safety-critical (self-driving perception stacks), this theorem
+mandates that the meta-auditor use strictly higher-resolution sensors or
+strictly more data than the primary auditor — a ``sensor hierarchy'' that
+mirrors the audit hierarchy.  The convergence guarantee also enables automated
+audit termination: stop the recursion when
+$|\hat{\eta}_k-\hat{\eta}_{k-1}|<\epsilon$, with the exponential rate
+ensuring this occurs within $O(\log(1/\epsilon))$ layers.
+
 \begin{remark}
 Theorem~\ref{thm:convergence} is \textbf{rigorous}.  It formalizes the
 condition under which the Audit Sword can safely point at itself: the
@@ -270,6 +291,27 @@ $[\hat{\eta}_k-\epsilon_k,\hat{\eta}_k+\epsilon_k]$ expand without bound as
 $k\to\infty$, and no finite level of recursion produces a definitive estimate.
 $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:divergence} provides the \textbf{prohibition on flat audit
+hierarchies}.  The practical mandate is absolute: \textbf{never deploy a
+self-audit system where the auditor and meta-auditor have equal fidelity}
+($\rho\approx1$).  A single AI system auditing itself — no matter how
+sophisticated — will produce an audit sequence that diverges rather than
+converges.  This is the audit analogue of ``a judge cannot judge their own
+case'': the information-theoretic structure of self-reference guarantees
+non-convergence.  The critical phase transition at $\rho=1$ provides a
+diagnostic: if two consecutive meta-audit layers produce estimates with
+equal confidence interval widths ($\epsilon_k\approx\epsilon_{k+1}$), the
+system is at the critical point and must be restructured.  In regulatory
+contexts, this theorem provides the legal basis for mandatory independent
+audit: a financial institution's internal audit cannot be the final arbiter
+of its own compliance — an external auditor with strictly higher fidelity
+($\rho<1$) is mathematically necessary for convergence to a reliable
+conclusion.  The random-walk behavior at $\rho=1$ means that, over time,
+the audit estimate wanders arbitrarily far from the truth, potentially
+certifying a severely mislabeled dataset as clean.
 
 \begin{remark}
 The critical point $\rho=1$ defines an \textbf{Audit Self-Reference Phase

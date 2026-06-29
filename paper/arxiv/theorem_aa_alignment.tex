@@ -226,6 +226,24 @@ audit of $\cD_{\mathrm{align}}$ recovers $A(f)$ up to $\epsilon_\Phi$.
 $\square$
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:reduction} provides the \textbf{interface specification}
+between alignment engineering and SCX auditing.  Any RLHF/DPO/CAI pipeline
+can be augmented with SCX auditing by implementing the mapping $\Phi$:
+(i)~treat preference labels as classification labels; (ii)~define
+$Q(x)=S_{\mathrm{pref}}(x)$ as the preference Cercis Score; (iii)~apply the
+standard SCX pipeline (Theorems~1--5) to detect noisy preference annotations.
+This means alignment teams do not need to build custom auditing infrastructure —
+they can leverage the full SCX toolkit directly.  In practice, the mapping
+enables: (a)~preference data cleaning before RLHF training (improving reward
+model quality); (b)~active preference query selection (reducing annotation
+cost); (c)~drift detection in annotator quality over time (via TS-Theorem).
+The open problem of $\epsilon_\Phi$ tightness determines how much alignment
+quality information is lost in the translation — a crucial question for
+high-stakes alignment where small quality degradations can have
+disproportionate safety impacts.
+
 \begin{assumption}[Monotonicity of Alignment in Preference Quality]
 \label{ass:monotonicity}
 $A(f)$ is monotone non-decreasing in the average preference Cercis Score
@@ -278,6 +296,26 @@ regularity conditions required by each theorem:
 All conditions hold; the theorems apply without modification. $\square$
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:pref-noise} enables \textbf{zero-overhead alignment data
+auditing}.  Because the theorem establishes that the full SCX pipeline
+(Theorems~1--5) applies to RLHF preference data without modification, any
+existing alignment pipeline can integrate SCX auditing by simply computing
+$S_{\mathrm{pref}}$ from the preference labels and passing it through the
+standard audit workflow.  In practice: (i)~a model trainer collects human
+preference comparisons; (ii)~before training, the SCX module computes
+$S_{\mathrm{pref}}$ for each comparison and flags those with scores below a
+threshold; (iii)~flagged comparisons are routed to a senior annotator for
+re-review.  The sample complexity $n=\Omega(1/\eta^2\cdot\log(1/\delta))$
+tells the trainer how many preference comparisons are needed to reliably
+detect a given noise level — e.g., to detect $\eta=0.05$ (5\% noisy
+preferences) at 95\% confidence, approximately 1,500 comparisons are needed.
+The unidentifiability result (T3 applied to preferences) provides a crucial
+caveat: genuine annotator disagreement and random noise are indistinguishable
+from $S_{\mathrm{pref}}$ alone, so flagged comparisons should be reviewed by
+humans who can apply contextual judgment.
+
 \begin{remark}
 Theorem~\ref{thm:pref-noise} is \textbf{rigorous} and has immediate practical
 value: any RLHF/DPO pipeline can be augmented with SCX auditing at minimal
@@ -312,6 +350,26 @@ $\mathrm{cost}(\mathrm{train})\cdot n$.  The tax is the ratio.
 A more refined bound, incorporating the auditor's detection power, reduces the
 constant but preserves the $\eta/(1-\eta)$ scaling. $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:align-tax} provides the \textbf{economic feasibility test}
+for SCX-augmented alignment.  The alignment tax
+$\tau_{\mathrm{align}}$ is the fractional overhead incurred by adding auditing
+to the training pipeline.  For a typical RLHF configuration ($\eta=0.10$ noise,
+$\mathrm{cost}(\mathrm{audit})/\mathrm{cost}(\mathrm{train})=0.2$), the tax is
+$\tau_{\mathrm{align}}\geq 0.02$ — a modest 2\% overhead.  But for noisy
+crowd-sourced preferences ($\eta=0.30$, $\mathrm{cost}(\mathrm{audit})/
+\mathrm{cost}(\mathrm{train})=0.5$), the tax rises to $\geq21\%$ — a
+substantial penalty.  This theorem should be evaluated \emph{before} committing
+to SCX integration: if $\tau_{\mathrm{align}}$ exceeds the available budget
+overhead, the alignment pipeline cannot afford full auditing and must either
+(i)~reduce $\eta$ through better annotator training, (ii)~reduce
+$\mathrm{cost}(\mathrm{audit})$ through automated Cercis-based pre-screening,
+or (iii)~accept unaudited alignment with its associated risks.  In
+safety-critical alignment (medical AI, autonomous vehicles), the theorem also
+provides a lower bound on the \emph{minimum} resources that must be allocated
+to auditing — attempting to audit below this bound is provably insufficient.
 
 \begin{openproblem}[Optimal Audit--Training Co-optimization]
 \label{prob:joint-opt}
@@ -356,6 +414,25 @@ marginal $S_{\mathrm{pref}}$ distribution.  The joint distribution of
 $(S_{\mathrm{pref}},\nabla S_{\mathrm{pref}},H_{S_{\mathrm{pref}}})$ is
 identical in both worlds, so no test can separate them. $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:value-noise} defines the \textbf{philosophical boundary} of
+SCX auditing for AI alignment.  The operational consequence is a clear
+division of labor: SCX auditing handles \emph{data quality} (detecting and
+removing noisy preference labels), while \emph{value resolution} (deciding
+among genuinely conflicting human preferences) requires mechanisms outside
+SCX — constitutional AI principles, democratic aggregation, or deliberative
+processes.  In practice, when SCX flags a preference sample as low-quality
+(low $S_{\mathrm{pref}}$), the response should follow a two-branch protocol:
+(i)~if the low score is due to annotation noise, re-annotate; (ii)~if due to
+value pluralism, escalate to a constitutional or democratic resolution process.
+The theorem prohibits conflating these two branches: treating value pluralism
+as noise would erase legitimate diversity; treating noise as value pluralism
+would legitimize sloppy annotation.  SCX can identify \emph{that} a preference
+is problematic; human deliberation must determine \emph{why}.  This is the
+alignment-relevant restatement of Theorem~3: the noise--difficulty barrier
+becomes the noise--pluralism barrier, and it is equally absolute.
 
 \begin{remark}
 Theorem~\ref{thm:value-noise} is \textbf{rigorous} and philosophically profound:

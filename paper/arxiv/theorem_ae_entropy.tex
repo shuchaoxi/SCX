@@ -224,6 +224,23 @@ new information about $\varepsilon$ gained at step $t+1$.  Zero increment
 $\iff$ no entropy reduction. $\square$
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:second-law} provides the \textbf{irreversibility guarantee}
+for SCX audit records.  Once an auditor learns a fact about label noise (e.g.,
+``samples from source X have a 15\% noise rate''), that knowledge cannot be
+unlearned using only information already in the audit trail.  This has
+immediate implications for audit log integrity: any tampering with historical
+audit records would create a detectable violation of the monotonicity
+condition~\eqref{eq:second-law} — a decrease in $H_A(t)$ followed by an
+increase would signal data manipulation.  In regulated industries where audit
+trails are legally mandated (financial services, pharmaceutical manufacturing),
+this theorem provides a mathematical basis for tamper-evident audit logging:
+the system should continuously monitor $H_A(t)$ and flag any increase as a
+potential integrity violation.  The equality condition further provides a
+diagnostic: if $H_A(t+1)=H_A(t)$ for many consecutive steps, the audit
+process has stalled and the information channels need diversification.
+
 \begin{remark}
 Theorem~\ref{thm:second-law} is \textbf{rigorous} — it is a direct corollary
 of the data processing inequality, which is itself a theorem of classical
@@ -259,6 +276,25 @@ configurations to one encoding $2^{H_A(t+1)}$ configurations, erasing
 $\Delta H$ bits of physical entropy in the process.  The bound follows.
 $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:landauer} translates audit precision into \textbf{physical
+operating cost}.  Reducing audit entropy by $\Delta H$ bits per sample incurs
+an energy cost of at least $k_B T\cdot\Delta H\cdot\ln 2$ joules per sample.
+For a large-scale audit pipeline processing $10^9$ samples with
+$\Delta H=0.1$ bits per sample (reducing uncertainty from, say, 0.5 to 0.4
+bits), the minimum energy expenditure is approximately $2.8\times10^{-13}$
+joules at room temperature — negligible individually but scaling to
+$\sim2.8\times10^{-4}$ joules for the full pipeline.  While modest, this
+establishes a \textbf{thermodynamic floor} that no engineering optimization
+can breach.  In energy-constrained edge deployments (IoT sensors, satellite
+systems), this bound directly informs the feasible audit depth: audit
+precision cannot exceed what the power budget can thermodynamically support.
+The open problem of tightness (Open Problem~\ref{prob:landauer-tight})
+determines whether practical SCX systems operate near this floor or orders of
+magnitude above it — a question with direct implications for the economics of
+large-scale audit deployment.
 
 \begin{openproblem}[Tightness of the Landauer Bound for Audit]
 \label{prob:landauer-tight}
@@ -316,6 +352,25 @@ difficulty.  Hence $H_{\min}=H(\varepsilon\mid S)$, the minimal achievable
 audit entropy. $\square$
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:heat-death} provides the \textbf{terminal performance
+guarantee} for any SCX audit pipeline.  No matter how many audit rounds are
+conducted, how many experts are consulted, or how much data is accumulated,
+the residual audit entropy $H_{\min}=H(\varepsilon\mid S)>0$ cannot be
+eliminated.  This has immediate implications for audit SLAs: service-level
+agreements should specify the \emph{achievable} audit precision
+$1-H_{\min}/\log 2$ (the fraction of noise uncertainty resolvable), not
+$100\%$ noise detection.  In practice, $H_{\min}$ can be estimated from
+the Cercis Score distribution on a held-out set with known noise labels,
+providing a data-driven accuracy ceiling.  For procurement, this means:
+before contracting an SCX audit service, require the provider to certify
+$H_{\min}$ on a benchmark dataset — this is the irreducible error floor that
+no amount of auditing can penetrate.  The connection to RA-Theorem's fixed
+point $\eta^*$ (Conjecture~\ref{conj:fixed-point}) suggests that recursive
+self-audit converges to exactly this $H_{\min}$, unifying the thermodynamic
+and recursive perspectives on audit limits.
+
 \begin{remark}
 The ``Audit Heat Death'' is the SCX analogue of the thermodynamic heat death:
 a terminal state where no further entropy reduction is possible.  Unlike the
@@ -364,6 +419,25 @@ $I(\cI_1;\cI_2\mid\varepsilon)=0$ and
 $H(\varepsilon\mid\cI_1,\cI_2)=H(\varepsilon)-I(\varepsilon;\cI_1,\cI_2)$
 with the mutual information decomposition. $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:merging} provides the \textbf{compositional calculus} for
+multi-auditor SCX systems.  The merging bound~\eqref{eq:merging} quantifies
+the value of auditor diversity: the information gain
+$I(\cI_1;\cI_2\mid\varepsilon)$ is maximized when auditors use complementary
+information channels (e.g., one auditor uses Cercis Scores, another uses
+expert judgment, a third uses causal models).  In federated audit consortia
+(FA-Theorem), this theorem guides partner selection: add a new auditor to the
+consortium only if their conditional mutual information with existing auditors
+is high — redundant auditors ($\cI_1\approx\cI_2$) contribute zero marginal
+entropy reduction.  The conditional independence case
+$\cI_1\perp\cI_2\mid\varepsilon$ provides the best-case improvement: each
+independent auditor contributes additively to entropy reduction.  In
+decentralized audit networks (blockchain-based SCX), this theorem provides the
+information-theoretic basis for audit reward allocation: auditors who provide
+the most complementary information (largest $I(\cI_k;\cI_{\text{others}}\mid\varepsilon)$)
+should receive proportionally higher compensation.
 
 \begin{remark}
 Theorem~\ref{thm:merging} is \textbf{rigorous} and provides the

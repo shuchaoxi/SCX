@@ -18,7 +18,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{enumitem}
-\usepackage{natbib}
+\usepackage[numbers]{natbib}
 
 % ---------- Theorem environments ----------
 \newtheorem{theorem}{Theorem}[section]
@@ -45,6 +45,7 @@
 \newcommand{\cD}{\mathcal{D}}
 \newcommand{\cH}{\mathcal{H}}
 \newcommand{\cA}{\mathcal{A}}
+\newcommand{\cI}{\mathcal{I}}
 \newcommand{\ind}[1]{\mathbf{1}_{[#1]}}
 \newcommand{\argmax}{\operatorname*{arg\,max}}
 \newcommand{\argmin}{\operatorname*{arg\,min}}
@@ -232,6 +233,23 @@ samples to the human: those where $S$ is least informative (low $S$), so
 the human's extra information has maximal marginal value.  $\square$
 \end{proof}
 
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:collab-gain} provides the \textbf{architectural blueprint}
+for human-in-the-loop SCX auditing.  The two-stage protocol (AI triage by
+lowest Cercis Score, then human review) can be deployed immediately in any
+SCX pipeline with access to domain experts.  In medical imaging audit, where
+radiologists are scarce, the AI triage ensures that human attention is
+directed to the $B_H$ most ambiguous cases — those where the Cercis Score is
+lowest and the AI is least confident.  The calibration
+condition~\eqref{eq:calibration} can be verified during auditor onboarding:
+present radiologists with calibration sets of known noise status and confirm
+that their uncertainty judgments are monotone in Cercis Score.  In content
+moderation, where the boundary between ``harmful'' and ``merely offensive''
+is inherently contested, the theorem suggests deploying the AI triage followed
+by a diverse human review panel, with the panel's disagreement itself serving
+as a signal of value pluralism (Theorem~\ref{thm:absolute-boundary}).
+
 \begin{remark}
 The result is \textbf{conditionally rigorous}: the logical chain is strict,
 but its premise — $\I(J_H; \varepsilon \mid S) > 0$ — awaits empirical
@@ -269,6 +287,24 @@ $S$ introduces dependence that reduces the effective sample size from
 $B_H$ to $\sqrt{B_H \cdot n}$.  The $o(\sqrt{B_H/n})$ term captures
 higher-order corrections.  $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:budget-decay} provides the \textbf{resource-allocation
+calculus} for human--AI audit systems.  The $\sqrt{B_H/n}$ scaling reveals
+a harsh diminishing-returns curve: reviewing 1\% of a million-sample dataset
+($B_H=10^4$, $n=10^6$) provides only $\sqrt{0.01}=0.1$ of the potential
+collaborative gain.  This has immediate budgetary implications: (i)~for large
+datasets ($n>10^6$), human review budgets below $1\%$ of the data yield
+negligible improvement over AI-only auditing; (ii)~to achieve half of the
+maximum collaborative gain, one must review roughly $n/4$ samples — an
+impractical requirement for most production systems.  The theorem thus
+establishes a \textbf{scale barrier}: beyond a certain dataset size,
+human-in-the-loop auditing cannot keep pace, and SCX systems must rely on
+automated audit heuristics or accept Theorem~3's unidentifiability for the
+unreviewed majority.  In e-commerce catalog management with $n>10^7$ product
+listings, this means human review is only viable for a statistically
+insignificant fraction of the catalog.
 
 \begin{remark}
 The $\sqrt{B_H/n}$ scaling reveals the practical meaning of Theorem~3:
@@ -317,6 +353,27 @@ its size.  The argument is universal: it does not depend on the auditor
 being human or AI; it depends only on the noise being perfect — leaving
 \emph{no information} to exploit.  $\square$
 \end{proof}
+
+\medskip\noindent
+\textbf{Applications:}
+Theorem~\ref{thm:absolute-boundary} defines the \textbf{unconditional limit}
+of all auditing — human, AI, or hybrid.  The practical implication is a design
+principle: \textbf{don't audit for what you cannot detect}.  If label noise is
+suspected to be perfect (e.g., adversarial annotators who randomize their
+labels, or automated labeling pipelines with truly random failures), then
+no amount of auditing — by any cognitive system — can identify which samples
+are noisy.  Resources should instead be directed toward: (i)~making noise
+imperfect by enriching the information set (e.g., recording annotator
+metadata, response times, revision histories — any observable correlated
+with noise); (ii)~designing systems that are robust to undetectable noise
+rather than systems that attempt to eliminate it.  In high-stakes
+applications such as criminal justice risk assessment, where label noise in
+recidivism data may be perfect (no observable trace), this theorem mandates
+that the system be designed with explicit robustness margins rather than
+relying on post-hoc audit to catch errors.  The corollary
+(Corollary~\ref{cor:necessary}) provides a \textbf{falsifiable test}: if
+$\I(\varepsilon;\cI_{\mathrm{auditor}}\mid X)=0$, then any audit claim of
+detecting noise is statistically unfounded.
 
 \begin{remark}
 This is Theorem~3's \textbf{logical closure}.  The original theorem bounded
