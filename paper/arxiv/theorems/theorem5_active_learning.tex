@@ -362,34 +362,117 @@ becomes
 
 \subsection{Optimal Sampling Distribution}
 
-\begin{theorem}[Optimal Sampling Distribution]
+\begin{theorem}[最优采样分布（Gibbs形式）]
 \label{thm:optimal-dist}
-Let $\pi$ be the prior over $\cD_U$, $\lambda>0$ the regularization
-parameter, and $S(x)=Q(x)+\eta N(x)$ the Cercis Score.  Under
-Assumption~\ref{ass:affinity}, the unique maximizer of~\eqref{eq:variational} is
+设 $\pi$ 为 $\cD_U$ 上的先验分布，$\lambda>0$ 为正则化参数，$S(x)=Q(x)+\eta N(x)$ 为 Cercis Score。在 A1--A6 及 Assumption~\ref{ass:affinity} 下，变分问题~\eqref{eq:variational} 的唯一最大化器为：
 \begin{equation}\label{eq:thm-dist}
     p^*(x) = \frac{1}{Z_\eta}\,
     \pi(x)\,\exp\!\Big(\frac{\alpha}{\lambda}S(x)\Big),
 \end{equation}
-with $Z_\eta=\sum_{x}\pi(x)\exp(\alpha S(x)/\lambda)$.  Moreover,
+其中 $Z_\eta=\sum_{x}\pi(x)\exp(\alpha S(x)/\lambda)$。此外：
 \begin{enumerate}[label=(\roman*)]
-    \item As $\lambda\to\infty$, $p^*\to\pi$ (uniform sampling);
-    \item As $\lambda\to0$, $p^*\to\delta_{x^*}$ where
-          $x^*=\argmax_x S(x)$ (hard-max sampling);
-    \item For any $\lambda\in(0,\infty)$, $\KL(p^*\|\pi)$ is monotone
-          decreasing in $\lambda$.
+    \item 当 $\lambda\to\infty$ 时，$p^*\to\pi$（退化为先验均匀采样）；
+    \item 当 $\lambda\to0$ 时，$p^*\to\delta_{x^*}$，
+          其中 $x^*=\argmax_x S(x)$（退化为硬最大值采样）；
+    \item 对任意 $\lambda\in(0,\infty)$，$\KL(p^*\|\pi)$ 关于 $\lambda$ 严格递减。
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-Existence and uniqueness follow from strict concavity of the objective
-(Lemma~\ref{lem:gibbs}).  The asymptotic limits follow from the properties of
-the exponential family: as $\lambda\to\infty$, the exponent tends to zero and
-$p^*\propto\pi$; as $\lambda\to0$, the distribution concentrates on the
-mode(s) of $S(x)$.  Monotonicity of $\KL(p^*\|\pi)$ follows from the
-well-known identity $\partial\KL(p^*\|\pi)/\partial\lambda =
--\V_{p^*}[\overline{\Gamma}(x)]/\lambda^3<0$.
-\end{proof}
+\textbf{严格性等级:} \rigorous \quad（在 A1--A6、Assumption~\ref{ass:affinity} 下）
+
+\textbf{所需公理:} A3（有界损失），Assumption~\ref{ass:affinity}（Cercis-Gain 仿射关系）
+
+\textbf{存在性与唯一性.}
+由 Lemma~\ref{lem:gibbs}，目标泛函
+\[
+F(p)=\E_p[\overline{\Gamma}] - \lambda\KL(p\|\pi)
+\]
+在 $\Delta(\cD_U)$ 上严格凹，KKT 条件给出唯一解：
+\[
+p^*(x) = \frac{\pi(x)\exp(\overline{\Gamma}(x)/\lambda)}{Z(\lambda)}.
+\]
+代入 Assumption~\ref{ass:affinity} 的仿射关系 $\overline{\Gamma}(x)=\alpha S(x)+\beta$：
+\[
+\exp(\overline{\Gamma}(x)/\lambda) = \exp(\beta/\lambda)\cdot\exp(\alpha S(x)/\lambda).
+\]
+常数因子 $\exp(\beta/\lambda)$ 在归一化时被吸收，故：
+\[
+p^*(x) = \frac{1}{Z_\eta}\,\pi(x)\,\exp\!\Big(\frac{\alpha}{\lambda}S(x)\Big),\quad
+Z_\eta = \sum_x \pi(x)\exp(\alpha S(x)/\lambda).
+\]
+
+\textbf{极限性质 (i): $\lambda\to\infty$.}
+当 $\lambda\to\infty$，对任意 $x$ 有 $\alpha S(x)/\lambda\to 0$，故 $\exp(\alpha S(x)/\lambda)\to 1$。于是：
+\[
+Z_\eta \to \sum_x \pi(x) = 1,\qquad p^*(x) \to \pi(x).
+\]
+
+\textbf{极限性质 (ii): $\lambda\to 0$.}
+设 $S^* = \max_x S(x)$，$\cD^* = \{x: S(x)=S^*\}$。
+对任意 $x\notin\cD^*$，存在 $\delta>0$ 使 $S(x)\le S^*-\delta$，则：
+\[
+\frac{\exp(\alpha S(x)/\lambda)}{\sum_{x'}\pi(x')\exp(\alpha S(x')/\lambda)}
+\le \frac{\exp(\alpha(S^*-\delta)/\lambda)}{\pi_{\min}\exp(\alpha S^*/\lambda)}
+= \frac{\exp(-\alpha\delta/\lambda)}{\pi_{\min}} \xrightarrow{\lambda\to0} 0,
+\]
+其中 $\pi_{\min}=\min_x\pi(x)>0$（假设 $\pi$ 在 $\cD_U$ 上严格正）。
+对 $x\in\cD^*$，$p^*(x)\to \pi(x)/\sum_{x'\in\cD^*}\pi(x')$。
+当 $|\cD^*|=1$ 时，$p^*\to\delta_{x^*}$。
+
+\textbf{性质 (iii): $\KL(p^*\|\pi)$ 的单调性.}
+记 $q_\lambda = p^*$，即 $q_\lambda(x) = \pi(x)\exp(\overline{\Gamma}(x)/\lambda)/Z(\lambda)$。
+则：
+\[
+\KL(q_\lambda\|\pi) = \sum_x q_\lambda(x)\log\frac{q_\lambda(x)}{\pi(x)}
+= \frac{\E_{q_\lambda}[\overline{\Gamma}]}{\lambda} - \log Z(\lambda).
+\]
+
+对 $\lambda$ 求导。首先计算：
+\[
+\frac{\partial Z}{\partial\lambda}
+= \sum_x \pi(x)\exp\!\Big(\frac{\overline{\Gamma}(x)}{\lambda}\Big)\cdot\Big(-\frac{\overline{\Gamma}(x)}{\lambda^2}\Big)
+= -\frac{Z}{\lambda^2}\E_{q_\lambda}[\overline{\Gamma}],
+\]
+故 $\displaystyle\frac{1}{Z}\frac{\partial Z}{\partial\lambda} = -\frac{\E_{q_\lambda}[\overline{\Gamma}]}{\lambda^2}$。
+
+其次，$q_\lambda$ 对 $\lambda$ 的微分：
+\[
+\frac{\partial q_\lambda(x)}{\partial\lambda}
+= q_\lambda(x)\,\frac{\E_{q_\lambda}[\overline{\Gamma}]-\overline{\Gamma}(x)}{\lambda^2}.
+\]
+
+因此：
+\[
+\frac{\partial}{\partial\lambda}\E_{q_\lambda}[\overline{\Gamma}]
+= \sum_x \overline{\Gamma}(x)\,\frac{\partial q_\lambda(x)}{\partial\lambda}
+= \frac{1}{\lambda^2}\Big(\E_{q_\lambda}[\overline{\Gamma}]^2 - \E_{q_\lambda}[\overline{\Gamma}^2]\Big)
+= -\frac{\V_{q_\lambda}[\overline{\Gamma}]}{\lambda^2}.
+\]
+
+综合：
+\begin{align*}
+\frac{\partial}{\partial\lambda}\KL(q_\lambda\|\pi)
+&= \frac{\partial}{\partial\lambda}\Big(\frac{\E[\overline{\Gamma}]}{\lambda}\Big)
+- \frac{\partial}{\partial\lambda}\log Z(\lambda) \\
+&= \frac{-\V/\lambda^2\cdot\lambda - \E[\overline{\Gamma}]}{\lambda^2}
++ \frac{\E[\overline{\Gamma}]}{\lambda^2}
+= -\frac{\V_{q_\lambda}[\overline{\Gamma}]}{\lambda^3}.
+\end{align*}
+
+由于 $\V_{q_\lambda}[\overline{\Gamma}]\ge 0$，且等号仅当 $\overline{\Gamma}$ 在 $q_\lambda$ 下为常数时成立（平凡情形），一般有 $\V>0$，故：
+\[
+\frac{\partial}{\partial\lambda}\KL(p^*\|\pi) < 0,
+\]
+即 $\KL(p^*\|\pi)$ 关于 $\lambda$ 严格递减。\hfill$\square$
+
+\begin{critique}
+\begin{enumerate}
+    \item Assumption~\ref{ass:affinity}（Cercis-Gain仿射关系）是本定理最关键的未验证假设。线性关系 $\overline{\Gamma}(x)=\alpha S(x)+\beta$ 虽受一阶Taylor展开启发，但其精确度和误差界 $\varepsilon_0$ 在实践中需逐数据集验证。
+    \item 极限 (ii) 要求 $\pi$ 在全局最大值点处有正概率质量，否则集中点集需修正为 $\cD^*$ 中 $\pi$ 支集的子集。若最大值不唯一，$p^*$ 集中在 $\cD^*$ 上的条件分布，而非单点 $\delta_{x^*}$。
+    \item 性质 (iii) 的导数恒负性要求 $\V_{q_\lambda}[\overline{\Gamma}]>0$；当 $\overline{\Gamma}(x)$ 在 $\cD_U$ 上为常数时，$\KL(p^*\|\pi)=0$ 恒成立，此时 $\lambda$ 不影响采样分布。
+\end{enumerate}
+\end{critique}
 
 \medskip\noindent
 \textbf{Applications:}
@@ -432,10 +515,9 @@ trade-off: each sampled instance incurs a novelty ``debt'' because it
 reduces the unexplored region, diminishing future gains.  This
 debt is priced at $\eta$ per unit of novelty consumed.
 
-\begin{theorem}[Optimal Sampling Rate — Closed Form]
+\begin{theorem}[最优采样率闭式解]
 \label{thm:optimal-rate}
-The optimal sampling rate that maximizes risk-adjusted expected $F_1$ gain
-is
+在 A1--A6 及 Assumption~\ref{ass:affinity} 下，最大化风险调节后期望 $F_1$ 增益的最优采样率为
 \begin{equation}\label{eq:rho-star}
     \boxed{\;
     \rho^* =
@@ -444,67 +526,122 @@ is
           + \displaystyle\sum_{k=1}^{K} w_k\,\V[\Gamma_k]}
     \;},
 \end{equation}
-where $\overline{\Gamma}_k=\E[\overline{\Gamma}_k(x)]$ is the mean per-class
-gain, $\V[\Gamma_k]=\E[(\overline{\Gamma}_k(x)-\overline{\Gamma}_k)^2]$ is
-the variance, and $w_k\geq0$ with $\sum_k w_k=1$ are class importance
-weights.
+其中 $\overline{\Gamma}_k=\E[\overline{\Gamma}_k(x)]$ 为类平均增益，
+$\V[\Gamma_k]=\E[(\overline{\Gamma}_k(x)-\overline{\Gamma}_k)^2]$ 为类内增益方差，
+$w_k\geq0$ 满足 $\sum_k w_k=1$ 为类重要性权重。
 \end{theorem}
 
 \begin{proof}
-Define the risk-adjusted gain functional
-\begin{equation}\label{eq:risk-adj}
-    \Phi(\rho) = \underbrace{\rho\sum_k w_k\overline{\Gamma}_k}_{\text{expected gain}}
-    \;-\; \underbrace{\frac{1}{2}\,\rho^2\sum_k w_k\overline{\Gamma}_k}_{\text{diminishing returns}}
-    \;-\; \underbrace{\frac{\eta^{-1}}{2}\,\rho^2\sum_k w_k\V[\Gamma_k]}_{\text{novelty-cost times variance}}.
-\end{equation}
-The three terms represent: (i) linear gain from sampling at rate $\rho$;
-(ii) diminishing returns because earlier samples capture the largest gains
-and later samples are incremental (quadratic penalty with curvature 1);
-(iii) risk penalty scaled by $\eta^{-1}$ — when $\eta$ is small
-(quality-dominated), variance hurts more because misallocated samples cannot
-be compensated by novelty; when $\eta$ is large (novelty-dominated), variance
-is tolerated.
+\textbf{严格性等级:} \conditionallyrigorous
+\quad（在 A1--A6、Assumption~\ref{ass:affinity} 及下述额外建模假设下）
 
-Differentiating $\Phi(\rho)$ with respect to $\rho$:
-\begin{align}
-    \Phi'(\rho) &= \sum_k w_k\overline{\Gamma}_k
-    - \rho\sum_k w_k\overline{\Gamma}_k
-    - \eta^{-1}\rho\sum_k w_k\V[\Gamma_k] \notag\\
-    &= \sum_k w_k\overline{\Gamma}_k
-    - \rho\Big(\sum_k w_k\overline{\Gamma}_k
-    + \eta^{-1}\sum_k w_k\V[\Gamma_k]\Big).
-    \label{eq:phi-prime}
-\end{align}
-Setting $\Phi'(\rho)=0$ and solving for $\rho$:
-\begin{align}
-    \rho^* &= \frac{\sum_k w_k\overline{\Gamma}_k}
-                  {\sum_k w_k\overline{\Gamma}_k
-                   + \eta^{-1}\sum_k w_k\V[\Gamma_k]}
-    = \frac{\eta\sum_k w_k\overline{\Gamma}_k}
-           {\eta\sum_k w_k\overline{\Gamma}_k
-            + \sum_k w_k\V[\Gamma_k]}.
-    \label{eq:rho-derivation}
-\end{align}
-The second derivative
-$\Phi''(\rho)=-\sum_k w_k\overline{\Gamma}_k-\eta^{-1}\sum_k w_k\V[\Gamma_k]<0$
-guarantees that $\rho^*$ is the unique global maximizer.
+\textbf{所需公理:} A3（有界损失），A4（均匀独立噪声），A5（状态同质性），
+Assumption~\ref{ass:affinity}
 
-\medskip\noindent
-\textbf{Intuition.}
-The optimal rate has the form $\rho^* = \eta G/(\eta G + V)$, where
-$G=\sum_k w_k\overline{\Gamma}_k$ and $V=\sum_k w_k\V[\Gamma_k]$:
+\textbf{总体框架.}
+给定采样率 $\rho\in[0,1]$，批大小 $B=\rho N_U$。
+从 Theorem~\ref{thm:optimal-dist} 的最优分布 $p^*$ 中不放回抽取 $B$ 个样本，
+总 $F_1$ 增益为：
+\[
+G_{\text{total}}(\rho) = \sum_{i=1}^B \overline{\Gamma}(x_i)
+= \sum_{i=1}^B \sum_{k=1}^K w_k\,\overline{\Gamma}_k(x_i).
+\]
+
+\textbf{步骤1: 期望总增益.}
+记 $G = \E_{p^*}[\overline{\Gamma}] = \sum_k w_k\overline{\Gamma}_k$。
+忽略放回效应，期望总增益为：
+\[
+\E[G_{\text{total}}(\rho)] = B\cdot G = \rho N_U G.
+\]
+
+\textbf{步骤2: 边际收益递减（二阶展开）.}
+不放回采样导致已被选中的高增益点不再出现在候选池中，边际增益随 $\rho$ 递减。
+将期望总增益视为 $\rho$ 的函数 $T(\rho)$，在 $\rho=0$ 处 Taylor 展开：
+\[
+T(\rho) = T(0) + T'(0)\rho + \tfrac12 T''(0)\rho^2 + o(\rho^2).
+\]
+显然 $T(0)=0$，$T'(0)=N_U G$。
+
+在均匀衰减模型下（排序后的第 $t$ 个样本的边际增益近似为 $G(1-t/N_U)$），有：
+\[
+T''(0) = -N_U\cdot G.
+\]
+因此 $T(\rho) = \rho N_U G - \tfrac12\rho^2 N_U G + o(\rho^2)$。
+
+\textbf{步骤3: 风险惩罚项.}
+采用风险厌恶决策者框架。设决策者具有常绝对风险厌恶（CARA）效用函数
+$u(g)=-\exp(-\gamma g)$，$\gamma>0$ 为风险厌恶系数。
+对总增益 $G_{\text{total}}(\rho)$，确定性等价的二阶近似为：
+\[
+\CE(\rho) = \E[G_{\text{total}}(\rho)] - \frac\gamma2\,\V[G_{\text{total}}(\rho)] + o(\gamma^2).
+\]
+
+在 $p^*$ 下不放回采样，忽略有限总体校正的高阶项，方差的主项为：
+\[
+\V[G_{\text{total}}(\rho)] = B\cdot\sum_k w_k\,\V[\Gamma_k] + O(\rho^2)
+= \rho N_U V + O(\rho^2),
+\]
+其中 $V = \sum_k w_k\,\V[\Gamma_k]$。
+
+将风险厌恶系数与 Cercis 参数 $\eta$ 关联：$\gamma = 1/\eta$。
+此赋值的依据：$\eta\to0$（纯开发）时 $\gamma\to\infty$（极端风险厌恶$\Rightarrow$不采样）；
+$\eta\to\infty$（纯探索）时 $\gamma\to0$（风险中性$\Rightarrow$全采样），与直观一致。
+
+\textbf{步骤4: 综合目标函数.}
+结合步骤2和3，忽略 $o(\rho^2)$ 项，净收益函数为：
+\[
+\Phi(\rho) = \rho N_U G - \tfrac12\rho^2 N_U G - \tfrac1{2\eta}\rho^2 N_U V.
+\]
+
+除以正常数 $N_U$（不影响最优化）：
+\[
+\tilde\Phi(\rho) = \rho G - \tfrac12\rho^2 G - \tfrac1{2\eta}\rho^2 V.
+\]
+
+\textbf{步骤5: 一阶条件.}
+\[
+\tilde\Phi'(\rho) = G - \rho G - \tfrac1\eta\rho V
+= G - \rho\big(G + V/\eta\big).
+\]
+令 $\tilde\Phi'(\rho)=0$：
+\[
+\rho^* = \frac{G}{G + V/\eta}
+= \frac{\eta G}{\eta G + V}.
+\]
+
+\textbf{步骤6: 二阶条件.}
+\[
+\tilde\Phi''(\rho) = -(G + V/\eta) < 0,
+\]
+故 $\rho^*$ 为唯一全局极大值点。
+
+\textbf{步骤7: 边界分析.}
 \begin{itemize}
-    \item $\eta\to0$ (pure quality): $\rho^*\to0$ — the algorithm
-          selects only the single instance with highest Cercis Score;
-    \item $\eta\to\infty$ (pure novelty): $\rho^*\to1$ — full-batch
-          diversity sampling of the entire pool;
-    \item $\eta=1$ (balanced): $\rho^* = G/(G+V)$ — sampling rate
-          is the ratio of expected gain to expected gain plus variance;
-    \item For any fixed $\eta>0$, $\rho^*$ increases with $G$ (higher
-          expected gain warrants more samples) and decreases with $V$
-          (higher variance warrants fewer samples).
+    \item $\eta\to0^+$：$\rho^*\to0$（纯开发，仅采最高分样本）；
+    \item $\eta\to\infty$：$\rho^*\to1$（纯探索，全池多样性采样）；
+    \item $\eta=1$：$\rho^* = G/(G+V)$（均衡模式）；
+    \item 固定 $\eta>0$：$\rho^*$ 随 $G$ 递增（高期望增益$\Rightarrow$多采），
+          随 $V$ 递减（高方差$\Rightarrow$少采）。
 \end{itemize}
-\end{proof}
+这些极限行为与主动学习的直观一致。\hfill$\square$
+
+\begin{critique}
+\begin{enumerate}
+    \item \textbf{核心建模选择：} 目标函数 $\Phi(\rho)$ 中的二次惩罚项
+    $-\tfrac12\rho^2 G$ 和 $-\tfrac1{2\eta}\rho^2 V$ 是\textbf{建模选择而非推导结果}。
+    边际收益递减采用均匀线性衰减模型（$T''(0)=-N_U G$），仅在 $p^*$ 的增益分布
+    近似均匀时成立。对实际的长尾分布，曲率系数可能显著偏离。
+    \item \textbf{风险厌恶标定：} $\gamma=1/\eta$ 是便利标定（convenient calibration），
+    缺乏理论必然性。采用不同的 $\eta$-$\gamma$ 关系将改变 $\rho^*$ 的闭式。
+    \item \textbf{CARA-均值-方差近似：} 确定性等价的二阶近似仅在增益分布接近正态
+    且 $\gamma$ 较小时准确。对偏斜或厚尾增益分布，高阶项不可忽略。
+    \item \textbf{有限总体校正：} 推导忽略了不放回采样的有限总体校正因子
+    $(N_U-B)/(N_U-1)$。当 $\rho$ 接近 1 时此项影响显著，使真实方差低于公式预测值。
+    \item \textbf{条件严格性：} 本定理标注为 \conditionallyrigorous，
+    因为 $\Phi(\rho)$ 的具体形式依赖于上述建模选择。若将二次惩罚替换为
+    其他凸风险函数（如 CVaR），$\rho^*$ 的闭式会改变。
+\end{enumerate}
+\end{critique}
 
 \medskip\noindent
 \textbf{Applications:}
@@ -548,27 +685,138 @@ and $\widehat{V}_k = \frac{1}{m-1}\sum_{i=1}^m
 \end{equation}
 \end{definition}
 
-\begin{theorem}[Consistency]
+\begin{theorem}[估计量的一致性]
 \label{thm:consistency}
-Assume $\E[\overline{\Gamma}_k(x)^4]<\infty$ for all $k$, and
-$\sum_k w_k\overline{\Gamma}_k>0$.  Then
-$\hat{\rho}^*_m \xrightarrow{p} \rho^*$ and
-$\sqrt{m}(\hat{\rho}^*_m - \rho^*) \xrightarrow{d}
-\mathcal{N}(0,\sigma^2_\rho)$,
-where the asymptotic variance $\sigma^2_\rho$ is given in the proof.
+设 $\E[\overline{\Gamma}_k(x)^4]<\infty$ 对任意 $k$ 成立，且 $\sum_k w_k\overline{\Gamma}_k>0$。
+在 A3（有界损失）下，plug-in 估计量 $\hat{\rho}^*_m$ 满足：
+\[
+\hat{\rho}^*_m \xrightarrow{p} \rho^*,\qquad
+\sqrt{m}(\hat{\rho}^*_m - \rho^*) \xrightarrow{d} \mathcal{N}(0,\sigma^2_\rho),
+\]
+其中渐近方差 $\sigma^2_\rho$ 的显式表达式由证明给出。
 \end{theorem}
 
 \begin{proof}
-By the Law of Large Numbers, $\widehat{\Gamma}_k\xrightarrow{p}\overline{\Gamma}_k$
-and $\widehat{V}_k\xrightarrow{p}\V[\Gamma_k]$.  By the Continuous Mapping
-Theorem, the ratio converges in probability to $\rho^*$ since the denominator
-is strictly positive.  Asymptotic normality follows from the Delta Method
-applied to $f(\boldsymbol{\mu},\boldsymbol{v}) =
-\frac{\eta\sum_k w_k \mu_k}{\eta\sum_k w_k \mu_k + \sum_k w_k v_k}$.
-The gradient $\nabla f$ evaluated at the true moments gives
-$\sigma^2_\rho = \nabla f^\top \Sigma \,\nabla f$, where $\Sigma$ is the
-$2K\times2K$ covariance matrix of the joint moment estimators.
-\end{proof}
+\textbf{严格性等级:} \rigorous \quad（在所述矩条件下）
+
+\textbf{所需公理:} A3（有界损失，保证矩条件 $\E[\overline{\Gamma}_k^4]<\infty$ 合理）
+
+\textbf{符号约定.}
+设 $\mu_k = \overline{\Gamma}_k$，$v_k = \V[\Gamma_k]$。
+定义 $G = \sum_k w_k \mu_k$，$V = \sum_k w_k v_k$，$D = \eta G + V > 0$。
+则 $\rho^* = \eta G / D$。
+
+估计量：
+\[
+\hat\mu_k = \frac1m\sum_{i=1}^m \overline{\Gamma}_k(x_i),\quad
+\hat v_k = \frac1{m-1}\sum_{i=1}^m (\overline{\Gamma}_k(x_i)-\hat\mu_k)^2.
+\]
+plug-in 估计量 $\hat\rho^*_m = \eta\hat G / (\eta\hat G + \hat V)$，
+其中 $\hat G = \sum_k w_k \hat\mu_k$，$\hat V = \sum_k w_k \hat v_k$。
+
+\textbf{步骤1: $\sqrt{m}$-联合渐近正态性.}
+将各阶矩估计量堆叠为 $2K$ 维向量：
+\[
+\hat{\bm\theta}_m = (\hat\mu_1,\dots,\hat\mu_K,\hat v_1,\dots,\hat v_K)^\top,\quad
+{\bm\theta} = (\mu_1,\dots,\mu_K,v_1,\dots,v_K)^\top.
+\]
+
+对任意 $k$，由 $\E[\overline{\Gamma}_k^4]<\infty$ 知 $\overline{\Gamma}_k(x)$ 的四阶矩有限，
+从而样本均值 $\hat\mu_k$ 和样本方差 $\hat v_k$ 的方差有限。对样本方差，注意到：
+\[
+\hat v_k = \frac1{m-1}\sum_{i=1}^m (\overline{\Gamma}_k(x_i)-\hat\mu_k)^2
+= \frac1{m-1}\sum_{i=1}^m \big((\overline{\Gamma}_k(x_i)-\mu_k) - (\hat\mu_k-\mu_k)\big)^2,
+\]
+其渐近等价于 $\frac1m\sum_{i=1}^m (\overline{\Gamma}_k(x_i)-\mu_k)^2$，偏差为 $O_p(m^{-1})$。
+
+由多元中心极限定理：
+\[
+\sqrt{m}(\hat{\bm\theta}_m - {\bm\theta}) \xrightarrow{d}
+\mathcal{N}(0, \bm\Sigma),
+\]
+其中 $\bm\Sigma$ 是 $2K\times 2K$ 渐近协方差矩阵，其分块结构为：
+\[
+\bm\Sigma =
+\begin{pmatrix}
+\bm\Sigma_{\mu\mu} & \bm\Sigma_{\mu v} \\
+\bm\Sigma_{v\mu} & \bm\Sigma_{vv}
+\end{pmatrix},
+\]
+其中对 $k,j\in\{1,\dots,K\}$：
+\begin{align*}
+[\bm\Sigma_{\mu\mu}]_{kj} &= \Cov(\overline{\Gamma}_k(x), \overline{\Gamma}_j(x)),\\
+[\bm\Sigma_{\mu v}]_{kj} &= \E[(\overline{\Gamma}_k(x)-\mu_k)(\overline{\Gamma}_j(x)-\mu_j)^2],\\
+[\bm\Sigma_{vv}]_{kj} &= \E[(\overline{\Gamma}_k(x)-\mu_k)^2(\overline{\Gamma}_j(x)-\mu_j)^2] - v_k v_j.
+\end{align*}
+（交叉协方差 $\bm\Sigma_{v\mu} = \bm\Sigma_{\mu v}^\top$。）
+
+\textbf{步骤2: 相合性.}
+由强大数律，$\hat\mu_k \xrightarrow{\text{a.s.}} \mu_k$、$\hat v_k \xrightarrow{\text{a.s.}} v_k$。
+由连续映射定理（Continuous Mapping Theorem），函数
+\[
+f(g,v) = \frac{\eta g}{\eta g + v}
+\]
+在 $(G,V)$ 处连续（因 $D = \eta G + V > 0$），故：
+\[
+\hat\rho^*_m = f(\hat G, \hat V) \xrightarrow{p} f(G, V) = \rho^*.
+\]
+
+\textbf{步骤3: Delta Method 给出渐近正态性.}
+应用 Delta Method 于函数 $f(g,v) = \eta g/(\eta g+v)$：
+\[
+\sqrt{m}(\hat\rho^*_m - \rho^*) \xrightarrow{d}
+\mathcal{N}\!\big(0,\; \nabla f(G,V)^\top \bm\Sigma_{\text{red}} \nabla f(G,V)\big),
+\]
+其中 $\bm\Sigma_{\text{red}}$ 是 $(\hat G,\hat V)$ 的 $2\times2$ 渐近协方差矩阵
+（通过权重向量 $\bm w = (w_1,\dots,w_K)$ 从 $\bm\Sigma$ 约化得到）。
+
+\textbf{步骤4: 显式梯度.}
+计算 $f(g,v) = \eta g/(\eta g+v)$ 的梯度：
+\begin{align*}
+\frac{\partial f}{\partial g} &= \frac{\eta(\eta g+v) - \eta g\cdot\eta}{(\eta g+v)^2}
+= \frac{\eta v}{(\eta g+v)^2},\\
+\frac{\partial f}{\partial v} &= -\frac{\eta g}{(\eta g+v)^2}.
+\end{align*}
+在真实值 $(G,V)$ 处：
+\[
+\frac{\partial f}{\partial g}\Big|_{(G,V)} = \frac{\eta V}{D^2},\qquad
+\frac{\partial f}{\partial v}\Big|_{(G,V)} = -\frac{\eta G}{D^2},
+\]
+其中 $D = \eta G + V$。
+
+\textbf{步骤5: 约化协方差矩阵.}
+$(\hat G, \hat V)$ 的渐近协方差矩阵 $\bm\Sigma_{\text{red}}$ 的元素为：
+\begin{align*}
+\sigma^2_G &= \sum_{k,j} w_k w_j \Cov(\overline{\Gamma}_k, \overline{\Gamma}_j),\\
+\sigma^2_V &= \sum_{k,j} w_k w_j\big(\E[(\overline{\Gamma}_k-\mu_k)^2(\overline{\Gamma}_j-\mu_j)^2] - v_k v_j\big),\\
+\sigma_{GV} &= \sum_{k,j} w_k w_j \E[(\overline{\Gamma}_k-\mu_k)(\overline{\Gamma}_j-\mu_j)^2].
+\end{align*}
+
+\textbf{步骤6: 渐近方差 $\sigma^2_\rho$ 的闭式.}
+综合：
+\begin{align*}
+\sigma^2_\rho
+&= \Big(\frac{\partial f}{\partial g}\Big)^2 \sigma^2_G
++ \Big(\frac{\partial f}{\partial v}\Big)^2 \sigma^2_V
++ 2\Big(\frac{\partial f}{\partial g}\Big)\Big(\frac{\partial f}{\partial v}\Big) \sigma_{GV} \\
+&= \frac{\eta^2 V^2}{D^4}\,\sigma^2_G
++ \frac{\eta^2 G^2}{D^4}\,\sigma^2_V
+- \frac{2\eta^2 G V}{D^4}\,\sigma_{GV} \\
+&= \frac{\eta^2}{D^4}\Big(V^2\sigma^2_G + G^2\sigma^2_V - 2GV\sigma_{GV}\Big).
+\end{align*}
+其中 $D = \eta G + V = \eta\sum_k w_k\overline{\Gamma}_k + \sum_k w_k\V[\Gamma_k]$。
+
+因此 $\sqrt{m}(\hat\rho^*_m - \rho^*) \xrightarrow{d} \mathcal{N}(0,\sigma^2_\rho)$。\hfill$\square$
+
+\begin{critique}
+\begin{enumerate}
+    \item \textbf{四阶矩条件：} $\E[\overline{\Gamma}_k^4]<\infty$ 是 Delta Method 中样本方差渐近正态性的充分条件。当增益分布呈现重尾时（如某些深度学习环境），此条件可能不成立，此时 bootstrap 等重采样方法更为稳健。
+    \item \textbf{有限样本偏差：} plug-in 估计量 $\hat\rho^*_m$ 是矩估计量的非线性比值，对有限 $m$ 存在 $O(m^{-1})$ 偏差（由 Jensen 不等式，$E[\hat G/(\hat G+\hat V/\eta)] \neq G/(G+V/\eta)$）。当 $m$ 较小（如 $m<50$）时，偏差校正（如 Jackknife 或 delta-method 偏差校正）是必要的。
+    \item \textbf{梯度非退化条件：} Delta Method 要求 $\nabla f(G,V) \neq \bm 0$。由 $\partial f/\partial g = \eta V/D^2$ 和 $\partial f/\partial v = -\eta G/D^2$ 知，当且仅当 $G>0$ 且 $V>0$ 时梯度非退化。若 $G=0$（无期望增益）或 $V=0$（零方差），则分布退化为边界情况，需改用更精细的渐近理论（如自归一化 CLT）。
+    \item \textbf{高维协方差估计：} $\bm\Sigma$ 包含 $K(2K+1)$ 个独立参数，其估计本身需要大量样本（$m\gg K^2$）。在高维分类问题（$K>100$）中，需引入稀疏结构假设或正则化协方差估计。
+    \item \textbf{跨轮依赖：} 在主动学习的多轮设定中，不同轮的 $\hat\rho^*_m$ 基于同一模型更新路径计算，存在序列依赖性。本定理的单轮渐近分析忽略了跨轮相关性，实际置信区间可能偏窄。
+\end{enumerate}
+\end{critique}
 
 \medskip\noindent
 \textbf{Applications:}

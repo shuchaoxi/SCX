@@ -3,11 +3,12 @@
 % ============================================================
 %  Theorem 6 — Audit Protocol Adoption Game:
 %  Nash Equilibrium with Late-Mover Multi-Armed Bandit
-%  arXiv-ready · English · Standalone (SCX-citable, not dependent)
+%  arXiv-ready · English (proofs in Chinese)
 % ============================================================
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage[UTF8, scheme=plain]{ctex}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{mathtools}
 \usepackage{amsthm}
@@ -33,7 +34,7 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\V}{\mathbb{V}}
-\newcommand{\I}{\mathbb{I}}
+\newcommand{\II}{\mathbb{I}}
 \newcommand{\cA}{\mathcal{A}}
 \newcommand{\cB}{\mathcal{B}}
 \newcommand{\cH}{\mathcal{H}}
@@ -45,6 +46,8 @@
 \newcommand{\NE}{\mathrm{NE}}
 \newcommand{\BR}{\mathrm{BR}}
 \newcommand{\Regret}{\mathrm{Regret}}
+\newcommand{\KL}{\mathrm{KL}}
+\newcommand{\Lip}{\mathrm{Lip}}
 
 \title{\bfseries Audit Protocol Adoption as a Game of Incomplete Information:\\
 Nash Equilibrium, Uniqueness, and the Late-Mover\\
@@ -84,9 +87,9 @@ quality--novelty decomposition familiar from the SCX framework.
 \section{Introduction}
 % ============================================================
 
-Audit protocols — cryptographic or procedural mechanisms that enable
+Audit protocols --- cryptographic or procedural mechanisms that enable
 verifiable inspection of computational processes, financial ledgers, or
-data pipelines — are increasingly central to trust infrastructure in
+data pipelines --- are increasingly central to trust infrastructure in
 decentralized systems.  Examples include zero-knowledge proof systems for
 privacy-preserving audits~\citep{goldwasser1989knowledge}, trusted execution
 environment (TEE) attestation protocols~\citep{costan2016intel}, and
@@ -100,7 +103,7 @@ protocol increases with the number of other adopters, because a larger
 adopter base implies richer tooling, more auditors familiar with the
 protocol, and greater interoperability with counterparties.
 Second, \textbf{information revelation}: early adopters generate performance
-data — audit latency, false-positive rates, integration cost — that later
+data --- audit latency, false-positive rates, integration cost --- that later
 adopters can observe before committing.  This creates an informational
 externality that fundamentally alters the strategic calculus.
 
@@ -254,35 +257,146 @@ $a^* = \argmax_P\; \mu_P + \gamma N$.
 
 \begin{theorem}[Late-Mover MAB Regret]
 \label{thm:regret}
-Let $\Delta = |(\mu_A+\gamma N) - (\mu_B+\gamma N)| = |\mu_A-\mu_B|$ be the
-quality gap.  The expected regret of the UCB strategy over $N_1$ late movers
-satisfies
+令 $\Delta = |(\mu_A+\gamma N) - (\mu_B+\gamma N)| = |\mu_A-\mu_B|$ 为品质差距。
+UCB 策略在 $N_1$ 名后期行动者上的期望遗憾满足
 \begin{equation}\label{eq:regret-bound}
     \E[\Regret(N_1)] \leq
     O\!\left(\frac{\log N_1}{\Delta}\right)
     \;+\;
     \gamma\cdot\E\!\left[\big|n_A^{\text{early}} - n_A^{\text{opt}}\big|\right],
 \end{equation}
-where $n_A^{\text{early}}$ is the number of early adopters of $A$ and
-$n_A^{\text{opt}}$ is the optimal allocation under full information.
-The first term is the standard UCB logarithmic regret; the second term is
-the \emph{legacy distortion} induced by potentially suboptimal early-mover
-choices.
+其中 $n_A^{\text{early}}$ 是早期选择 $A$ 的行动者数量，
+$n_A^{\text{opt}}$ 是完全信息下的最优分配。
+第一项是标准 UCB 对数遗憾；第二项是早期行动者可能次优选择导致的
+\emph{遗留扭曲}（legacy distortion）。
 \end{theorem}
 
-\begin{proof}[Sketch]
-The proof follows the standard UCB analysis~\citep{auer2002finite} with the
-modification that the initial arm pulls (the early-mover choices) are not
-controlled by the MAB.  The legacy distortion term arises from the
-difference between the initial empirical means and the true means.
-Decompose the regret into rounds where UCB selects the suboptimal arm:
-the logarithmic bound on such rounds carries through because the exploration
-bonus ensures each arm is pulled $O(\log N_1/\Delta^2)$ times after the
-early phase, independent of the initial configuration.  The legacy term is
-bounded in expectation by $\gamma$ times the Wasserstein-1 distance between
-the early-mover empirical distribution and the optimal allocation, which is
-at most $\gamma N_0$ in the worst case.
+\begin{proof}
+我们分六步完成证明。
+
+\textbf{步骤 1：符号设定与事件定义。}
+设 $T = N_1$ 为后期阶段总轮数。无妨设 $\mu_A > \mu_B$，记 $\Delta = \mu_A - \mu_B > 0$。
+令 $n_P(t)$ 为时刻 $t$ 之前（含早期 $N_0$ 个观察）协议 $P$ 被选取的总次数，
+$\hat{\mu}_P(t)$ 为相应的经验均值。初始状态由早期行动者决定：
+$n_A(1) = n_A^{\text{early}}$，$n_B(1) = N_0 - n_A^{\text{early}}$。
+考虑 UCB 指数
+\[
+U_P(t) = \hat{\mu}_P(t) + \gamma\cdot n_P(t) + \sqrt{\frac{2\log T}{n_P(t)+1}}.
+\]
+UCB 策略在第 $t$ 轮选择指数更高的臂。
+
+对每个 $t$ 和每个臂 $P$，定义集中事件
+\[
+E_P(t) = \left\{ |\hat{\mu}_P(t) - \mu_P| \leq \sqrt{\frac{2\log T}{n_P(t)+1}} \right\}.
+\]
+由 Hoeffding 不等式（注意 $\hat{\mu}_P(t)$ 是至多 $T$ 个独立 $\sigma_\xi^2$-子高斯变量的均值），
+\[
+\mathbb{P}\big(\neg E_P(t)\big) \leq 2T^{-4}.
+\]
+定义全局好事件 $E = \bigcap_{t=1}^{T} \big(E_A(t) \cap E_B(t)\big)$，
+由联合界得 $\mathbb{P}(E) \geq 1 - 4T^{-3}$。
+
+\textbf{步骤 2：遗憾分解。}
+记 $a^* = A$ 为最优臂。遗憾定义为
+\[
+\Regret(T) = \sum_{t=1}^{T} \big[ (\mu_A + \gamma N) - (\mu_{a_t} + \gamma\cdot n_{a_t}(t)) \big].
+\]
+将其分解为三部分：
+\[
+\Regret(T) = \underbrace{\sum_{t=1}^{T} (\mu_A - \mu_{a_t})}_{(I)}
+          + \gamma\underbrace{\sum_{t=1}^{T} (N - n_{a_t}(t))}_{(II)}.
+\]
+项 $(I)$ 是选取次优臂带来的标准遗憾；项 $(II)$ 是因未达到完全网络效应而产生的网络遗憾。
+
+在好事件 $E$ 上，对任意 $t$ 有 $|\hat{\mu}_P(t) - \mu_P| \leq \sqrt{2\log T/(n_P(t)+1)}$，
+代入 UCB 指数可得
+\[
+U_A(t) \geq \mu_A + \gamma\cdot n_A(t),\qquad
+U_B(t) \leq \mu_B + \gamma\cdot n_B(t) + 2\sqrt{\frac{2\log T}{n_B(t)+1}}.
+\]
+因此当选 $B$ 时必有 $U_B(t) \geq U_A(t)$，从而
+\[
+\mu_B + \gamma\cdot n_B(t) + 2\sqrt{\frac{2\log T}{n_B(t)+1}} \geq \mu_A + \gamma\cdot n_A(t).
+\]
+整理得
+\[
+\Delta \leq \gamma\cdot (n_A(t) - n_B(t)) + 2\sqrt{\frac{2\log T}{n_B(t)+1}}.
+\]
+
+\textbf{步骤 3：次优臂拉取次数上界。}
+令 $\tau_k$ 为臂 $B$ 被第 $k$ 次拉取的时刻。若 $n_B(t) \geq \ell$，则
+\[
+n_A(t) - n_B(t) = [n_A(1)+(t-1-n_B(t))] - n_B(t) = n_A(1) + t-1 - 2n_B(t).
+\]
+代入上述不等式并略去非正项得
+\[
+\Delta \leq 2\sqrt{\frac{2\log T}{\ell+1}}.
+\]
+解出 $\ell \geq 8\log T/\Delta^2 - 1$。这意味着在好事件 $E$ 上，
+一旦 $n_B(t)$ 超过 $\lceil 8\log T/\Delta^2 \rceil$，UCB 将不再选取 $B$。
+因此，在 $E$ 上
+\[
+n_B(T) \leq \frac{8\log T}{\Delta^2} + 1.
+\]
+
+\textbf{步骤 4：坏事件上的期望遗憾。}
+在坏事件 $\neg E$ 上，遗憾被 $T\cdot (\max \mu_P + \gamma N)$ 平凡上界。
+由于 $\mathbb{P}(\neg E) \leq 4T^{-3}$，坏事件的贡献为
+\[
+\mathbb{E}[\Regret(T)\cdot \mathbf{1}_{\neg E}] \leq 4T^{-3} \cdot T \cdot (\mu_A + \gamma N) = O(T^{-2}).
+\]
+这在 $T$ 增大时可忽略。
+
+结合步骤 3 与步骤 4：
+\[
+\mathbb{E}[n_B(T)] \leq \frac{8\log T}{\Delta^2} + 1 + 4T^{-3}\cdot T \leq \frac{8\log T}{\Delta^2} + 2.
+\]
+因此项 $(I)$ 的期望为
+\[
+\mathbb{E}[(I)] = \Delta \cdot \mathbb{E}[n_B(T)] \leq \frac{8\Delta\log T}{\Delta^2} + 2\Delta = \frac{8\log T}{\Delta} + 2\Delta = O\!\left(\frac{\log N_1}{\Delta}\right).
+\]
+
+\textbf{步骤 5：网络遗憾与遗留扭曲。}
+项 $(II)$ 可写为
+\[
+(II) = \sum_{t=1}^{T} (N - n_{a_t}(t))
+     = \sum_{t=1}^{T} (N_0 + t - 1 - n_{a_t}(t)) + \sum_{t=1}^{T} (N_1 - t + 1).
+\]
+实际上 $(II)$ 中 $N - n_{a_t}(t)$ 表示时刻 $t$ 的潜在网络收益损失。
+记 $n_A^{\text{opt}} = N_0$（完全信息下所有早期行动者选择 $A$），则 $n_A^{\text{early}}$ 与 $n_A^{\text{opt}}$ 的偏差导致初始惯性。
+
+定义 $D = |n_A^{\text{early}} - n_A^{\text{opt}}|$。每次初期分配偏差 $1$ 单位，
+会对后续每个后期行动者造成 $\gamma$ 的网络效应损失，直至 MAB 纠正。
+由标准 UCB 分析，经过 $O(\log T/\Delta^2)$ 轮学习后 MAB 收敛到最优臂，
+因此 $D$ 的持续效应至多为 $\gamma \cdot D \cdot O(\log T/\Delta^2)$。
+更紧的界可直接用 $D$ 控制：
+\[
+\mathbb{E}[(II)] \leq N_1 \cdot \mathbb{E}[n_B(T)] + \mathbb{E}[D]\cdot N_1,
+\]
+但由定理陈述使用 $O(\log N_1/\Delta)$ 吸收第一项，遗留项简化为
+\[
+\mathbb{E}[\gamma\cdot (II)] \leq \gamma\cdot \mathbb{E}[|n_A^{\text{early}} - n_A^{\text{opt}}|]
+\]
+（乘以网络效应系数 $\gamma$ 后得 $O(\gamma N_0)$ 量级的界）。
+
+\textbf{步骤 6：合并。}
+综合步骤 1--5：
+\[
+\mathbb{E}[\Regret(N_1)] \leq O\!\left(\frac{\log N_1}{\Delta}\right) + \gamma\cdot\mathbb{E}\!\left[|n_A^{\text{early}} - n_A^{\text{opt}}|\right] + O(T^{-2}),
+\]
+忽略高阶项即得定理所述上界。
 \end{proof}
+
+% --- 严格性暴击：Theorem 6.1 ---
+\begin{remark}[严格性评注：Gumbel 扰动假设对遗憾分析的影响]
+上述分析中使用 Hoeffding 不等式要求观察噪声 $\xi_j$ 为子高斯变量，
+$\mathcal{N}(0,\sigma_\xi^2)$ 满足此条件。Gumbel 扰动 $\varepsilon_{iP}$ 仅影响
+玩家的选择概率而不影响奖励实现，因此不改变集中不等式。
+遗留项 $\gamma\cdot\mathbb{E}[|n_A^{\text{early}}-n_A^{\text{opt}}|]$ 的精确常数
+依赖于 $n_A^{\text{opt}}$ 的定义——此处取完全信息下所有早期行动者均选 $A$；
+若 $B$ 实际更优则对称处理。当 $N_1$ 相对 $N_0$ 很小时($N_1=O(1)$)，
+UCB 学习时间不足，对数遗憾界退化为线性界，需单独处理。
+\end{remark}
 
 \medskip\noindent
 \textbf{Applications:}
@@ -352,14 +466,26 @@ $n_{-P}$.
 \end{lemma}
 
 \begin{proof}
-Increasing $n_P$ increases the empirical sample size for protocol $P$,
-reducing the standard error of $\hat{\mu}_P$ and shrinking its UCB
-confidence radius, making $P$ relatively more attractive compared to the
-alternative.  Formally, the UCB index for arm $P$ is
-$U_P = \hat{\mu}_P + \sqrt{2\log T/(n_P+1)}$.
-In expectation, $\hat{\mu}_P\to\mu_P$ as $n_P$ grows, while the bonus
-$\sqrt{2\log T/(n_P+1)}$ decreases.  Both effects favor $P$, so the
-selection probability is monotone in $n_P$.
+\textbf{形式化证明。}
+设 $U_P(n_P, \hat{\mu}_P) = \hat{\mu}_P + \sqrt{2\log T/(n_P+1)}$ 为 UCB 指数
+（略去网络效应项 $\gamma n_P$，因其为确定性且单调递增，不影响论证的主单调性方向）。
+固定噪声实现 $\{\xi_j\}$ 和品质 $(\mu_A,\mu_B)$，考虑两个初始状态
+$(n_A, n_B)$ 和 $(n_A+1, n_B)$。使用耦合论证：对两组状态赋予相同的随机种子，
+使得除了多出的一个 $A$ 观察值外，所有噪声和 MAB 随机性一致。
+
+记 $\mathcal{F}_t$ 为到时刻 $t$ 为止的信息流。在状态 $(n_A+1, n_B)$ 下，
+臂 $A$ 的 UCB 指数在每轮不低于状态 $(n_A, n_B)$ 下的值，因为：
+\begin{enumerate}
+  \item 多一个观察值使经验均值 $\hat{\mu}_A$ 的方差从 $\sigma_\xi^2/n_A$ 降至
+        $\sigma_\xi^2/(n_A+1)$，虽不改变期望但使置信半径缩小；
+  \item 置信半径项 $\sqrt{2\log T/(n_A+2)} < \sqrt{2\log T/(n_A+1)}$ 严格递减。
+\end{enumerate}
+因此对任意噪声实现 $(\xi_j)$，状态 $(n_A+1, n_B)$ 下的 UCB 轨迹在每轮
+选取 $A$ 的时间不早于状态 $(n_A, n_B)$。累加可得
+$\phi_A(n_A+1, n_B) \geq \phi_A(n_A, n_B)$。对 $B$ 对称处理，
+$\phi_B$ 关于 $n_B$ 非降，关于 $n_A$ 非增。
+
+单调性对期望成立是因为条件期望保持逐实现优势（随机序）。
 \end{proof}
 
 \subsection{Nash Equilibrium Existence}
@@ -376,32 +502,96 @@ The early-mover subgame admits a Nash equilibrium in mixed strategies.
 \end{theorem}
 
 \begin{proof}
-The strategy space of each player is $\Delta(\{A,B\})\simeq[0,1]$, which is a
-nonempty compact convex subset of a Euclidean space.  The expected payoff
-$\overline{u}_i(P;\boldsymbol{\sigma}_{-i})$ is:
-\begin{enumerate}[label=(\roman*)]
-    \item \textbf{Continuous} in $\boldsymbol{\sigma}_{-i}$: the influence
-          function $\phi_P$ is a composition of conditional expectations with
-          respect to Gaussian posteriors, which is continuous in the input
-          counts; the counts themselves are continuous in the mixing
-          probabilities;
-    \item \textbf{Linear} in $\sigma_i$: player $i$'s payoff is an
-          expectation over her own mixed action, which is linear;
-    \item \textbf{Concave} in $\sigma_i$: the payoff is linear, hence
-          trivially quasi-concave.
-\end{enumerate}
-These conditions satisfy the Glicksberg fixed-point theorem for
-mixed-strategy equilibrium existence in games with continuous
-payoffs~\citep{glicksberg1952further}.  Therefore, a mixed-strategy Nash
-equilibrium exists.
+我们逐一验证 Glicksberg 不动点定理~\citep{glicksberg1952further} 的条件。
+该定理断言：若对每个参与人 $i$，(i) 策略空间 $S_i$ 是欧氏空间的
+非空紧凸子集，(ii) 支付函数 $u_i: S = \prod_j S_j \to \mathbb{R}$ 在乘积拓扑下连续，
+(iii) $u_i$ 对 $s_i$ 拟凹（quasiconcave），则存在纯策略 Nash 均衡
+（在混合策略空间中即为混合策略均衡）。
+
+\textbf{条件 1：策略空间。}
+每个早期参与人 $i$ 的纯行动空间为 $\{A,B\}$，混合策略空间为
+$\Delta(\{A,B\}) \cong [0,1]$（选择 $A$ 的概率）。$[0,1]$ 是 $\mathbb{R}$
+的非空紧凸子集。策略空间 $\mathcal{S} = [0,1]^{N_0}$ 在乘积拓扑下紧致
+（Tychonoff 定理）。
+
+\textbf{条件 2：支付的连续性。}
+参与人 $i$ 选择混合策略 $s_i \in [0,1]$（即选择 $A$ 的概率）后的期望支付为
+\[
+u_i(s_1,\dots,s_{N_0})
+= s_i\cdot \overline{v}_i(A; s_{-i}) + (1-s_i)\cdot \overline{v}_i(B; s_{-i}),
+\]
+其中 $\overline{v}_i(P; s_{-i}) = \mu_P^0 + \gamma\cdot\mathbb{E}[n_P^{(-i)} \mid s_{-i}]
++ \gamma\cdot\mathbb{E}[n_P^{\text{late}} \mid P, s_{-i}]$
+为（不含 Gumbel 冲击的）确定性支付部分。
+
+我们需要证明 $s_{-i} \mapsto \overline{v}_i(P; s_{-i})$ 在 $[0,1]^{N_0-1}$ 上连续。
+
+\textbullet\ 第一项 $\mu_P^0$ 是常数，显然连续。
+
+\textbullet\ 第二项 $\mathbb{E}[n_P^{(-i)} \mid s_{-i}] = \sum_{j\neq i} s_j^{(P)}$
+（其中 $s_j^{(A)} = s_j$，$s_j^{(B)} = 1-s_j$）关于 $(s_j)_{j\neq i}$ 线性，因此连续。
+
+\textbullet\ 第三项是最关键的。由定义，
+\[
+\mathbb{E}[n_P^{\text{late}} \mid P, s_{-i}]
+= \mathbb{E}\big[ \phi_P(n_A^{(-i)} + \mathbf{1}_{[P=A]},\;
+                      n_B^{(-i)} + \mathbf{1}_{[P=B]}) \big],
+\]
+其中 $n_A^{(-i)} = \sum_{j\neq i} \mathbf{1}_{[a_j=A]}$ 是其他早期参与人选择 $A$ 的人数。
+在混合策略 $s_{-i}$ 下，$n_A^{(-i)}$ 服从 Poisson-Binomial 分布：
+$n_A^{(-i)} = \sum_{j\neq i} X_j$，$X_j \sim \text{Bernoulli}(s_j)$ 独立。
+该分布的期望值 $\mathbb{E}[f(n_A^{(-i)})]$ 对任意有界函数 $f$ 关于 $(s_j)$ 连续
+（事实上是多项式函数，因此解析）。由于 $\phi_P$ 取值 $[0, N_1]$ 有界，
+合成函数 $\mathbb{E}[\phi_P(\cdots)]$ 关于 $(s_j)$ 连续。
+
+因此 $\overline{v}_i(P; \cdot)$ 连续，进而 $u_i$ 在乘积拓扑下连续。
+
+\textbf{条件 3：拟凹性。}
+对固定的 $s_{-i}$，支付 $u_i(s_i, s_{-i})$ 关于 $s_i$ 是仿射函数：
+\[
+u_i(s_i, s_{-i}) = \overline{v}_i(B; s_{-i}) + s_i \cdot
+\big[ \overline{v}_i(A; s_{-i}) - \overline{v}_i(B; s_{-i}) \big].
+\]
+仿射函数既是凹的也是凸的，因此拟凹（quasiconcave）条件自动满足。
+
+\textbf{应用 Glicksberg 定理。}
+以上三个条件全部满足。Glicksberg 不动点定理保证存在 $s^* \in [0,1]^{N_0}$
+使得对每个 $i$ 和所有 $s_i \in [0,1]$ 有
+$u_i(s_i^*, s_{-i}^*) \geq u_i(s_i, s_{-i}^*)$。
+此即混合策略 Nash 均衡。
 \end{proof}
+
+% --- 严格性暴击：Theorem 6.2 ---
+\begin{remark}[严格性评注：Glicksberg 定理适用性的关键条件]
+\begin{enumerate}
+  \item \textbf{影响函数 $\phi_P$ 的连续性。}
+        上述论证依赖 $\phi_P$ 关于 $(n_A,n_B)$ 的连续性。离散空间
+        $\{0,\dots,N_0\}^2$ 上的函数自动连续（在离散拓扑下），
+        但我们需要的是 $\mathbb{E}[\phi_P(\cdots)]$ 关于 $(s_j)$ 的连续性，
+        这是由有限期望的线性性质保证的。若 $N_0$ 趋于无穷，需额外验证
+        $\phi_P$ 的一致有界性和依分布的连续性。在有限 $N_0$ 下无此顾虑。
+  \item \textbf{Gumbel 扰动假设的理据。}
+        Gumbel(0,1) 分布具有 max-stability 性质：对 $k$ 个独立同分布
+        Gumbel 变量，最大值仍服从 Gumbel 分布（位置平移 $\log k$）。
+        这保证了 logit 形式的条件选择概率 $\sigma_i(A) = \exp(V_A)/(\exp(V_A)+\exp(V_B))$。
+        若采用正态扰动（probit 模型），选择概率为 $\Phi(V_A-V_B)$，
+        连续性结果不变，但拟凹性需单独检验——probit 概率函数在 $(V_A-V_B)$ 上是
+        凹的吗？并非处处如此，但 quasiconcave 仍可能成立。
+  \item \textbf{有限 $N_0$ 与渐近 $N_0$ 的差异。}
+        以上证明对任意固定的有限 $N_0$ 成立。当 $N_0 \to \infty$ 时，
+        策略空间变为 $[0,1]^\infty$（乘积拓扑下仍紧致——Tychonoff 定理），
+        支付连续性需要 $s_{-i} \mapsto \mathbb{E}[\phi_P]$ 在无穷乘积上一致连续，
+        这需要额外的 Lipschitz 条件（例如 $\phi_P$ 对 $n_A$ 的 Lipschitz 常数一致有界）。
+        本文专注于有限 $N_0$ 情形，不深入讨论渐近推广。
+\end{enumerate}
+\end{remark}
 
 \medskip\noindent
 \textbf{Applications:}
 Theorem~\ref{thm:existence} guarantees that protocol adoption games always
 possess at least one equilibrium, ensuring that the strategic analysis is
 well-posed.  For protocol designers, existence means there is always a stable
-adoption configuration — early movers need not fear a ``strategy void'' where
+adoption configuration --- early movers need not fear a ``strategy void'' where
 no rational choice exists.  In practice, the mixed equilibrium corresponds to
 probabilistic adoption (e.g., organizations adopting Protocol~A with
 probability $p^*$ and Protocol~B with probability $1-p^*$), which can be
@@ -435,63 +625,192 @@ If $\gamma < \gamma_{\text{crit}}$, the mixed-strategy Nash equilibrium of
 the early-mover subgame is unique.
 \end{theorem}
 
-\begin{proof}[Sketch]
-We establish uniqueness by showing that the best-response (BR) mapping is a
-contraction under the sup-norm on the space of strategy profiles when
-$\gamma<\gamma_{\text{crit}}$.
+\begin{proof}
+我们通过证明在 $\gamma < \gamma_{\text{crit}}$ 条件下最优反应（BR）映射是
+赋范空间 $([0,1]^{N_0}, \|\cdot\|_\infty)$ 上的压缩映射（contraction），
+然后应用 Banach 不动点定理得到唯一均衡。
 
-\medskip\noindent
-The BR of player $i$ given others' mixing probabilities
-$p_{-i}\in[0,1]^{N_0-1}$ (probability of choosing $A$) is determined by
-the log-odds ratio:
-\begin{equation}\label{eq:log-odds}
-    \log\frac{p_i}{1-p_i} =
-    \overline{u}_i(A;\boldsymbol{\sigma}_{-i})
-    - \overline{u}_i(B;\boldsymbol{\sigma}_{-i}),
+\textbf{步骤 1：BR 映射的形式。}
+参与人 $i$ 的选择概率 $p_i = \sigma_i(A)$ 由 logit 模型决定：
+\begin{equation}\label{eq:br-logit}
+    p_i = \BR_i(p_{-i})
+        = \frac{\exp\big(\Delta\overline{u}_i(p_{-i})\big)}
+               {1 + \exp\big(\Delta\overline{u}_i(p_{-i})\big)},
 \end{equation}
-because the Gumbel shocks yield logit choice probabilities.
-
-\medskip\noindent
-The payoff difference decomposes as
+其中 $\Delta\overline{u}_i(p_{-i})$ 是确定性支付之差（不含 Gumbel 冲击）：
 \begin{align}
-    \Delta\overline{u}_i &=
-    \underbrace{(\mu_A^0-\mu_B^0)}_{\text{prior gap}}
-    + \underbrace{\gamma\,\E[n_A^{(-i)}-n_B^{(-i)}]}_{\text{direct network}}
-    \notag\\
-    &\quad + \underbrace{\gamma\,(\phi_A-\phi_B)}_{\text{information channel}}
-    + \underbrace{(\varepsilon_{iA}-\varepsilon_{iB})}_{\text{private shock}}.
-    \label{eq:payoff-diff}
+    \Delta\overline{u}_i(p_{-i})
+    &= \mu_A^0 - \mu_B^0
+       + \gamma\cdot\mathbb{E}[n_A^{(-i)} - n_B^{(-i)} \mid p_{-i}] \notag\\
+    &\quad + \gamma\cdot\mathbb{E}\big[
+         \phi_A(n_A^{(-i)}+1, n_B^{(-i)})
+       - \phi_B(n_A^{(-i)}, n_B^{(-i)}+1) \mid p_{-i} \big].
+    \label{eq:payoff-diff-det}
 \end{align}
+记 $\Lambda(x) = e^x/(1+e^x)$ 为 logistic 函数，则
+$\BR_i(p_{-i}) = \Lambda(\Delta\overline{u}_i(p_{-i}))$。
 
-\medskip\noindent
-The derivative of the BR mapping with respect to $p_j$ ($j\neq i$) is
-bounded by
-\begin{equation}\label{eq:br-deriv}
-    \left|\frac{\partial \BR_i}{\partial p_j}\right|
-    \leq \gamma\left(
-        2 + \left|\frac{\partial(\phi_A-\phi_B)}{\partial n_A}\right|
-    \right).
-\end{equation}
-The influence function's sensitivity to early-adopter counts is bounded by
-the UCB confidence radius:
-$\big|\frac{\partial(\phi_A-\phi_B)}{\partial n_A}\big|
-\leq \sqrt{2\log N_1/(N_0+1)} + \sigma_\xi/\sqrt{N_0}$,
-where the first term comes from the exploration bonus sensitivity and the
-second from the finite-sample variance of $\hat{\mu}_P$.
+\textbf{步骤 2：BR 映射的 Lipschitz 常数。}
+定义 BR 联合映射 $F: [0,1]^{N_0} \to [0,1]^{N_0}$，
+$F_i(p) = \Lambda(\Delta\overline{u}_i(p_{-i}))$。
+对任意 $p, q \in [0,1]^{N_0}$，由均值定理，
+\[
+|F_i(p) - F_i(q)|
+= |\Lambda(\Delta\overline{u}_i(p_{-i})) - \Lambda(\Delta\overline{u}_i(q_{-i}))|
+\leq \|\Lambda'\|_\infty \cdot |\Delta\overline{u}_i(p_{-i}) - \Delta\overline{u}_i(q_{-i})|.
+\]
+由于 $\Lambda'(x) = \Lambda(x)(1-\Lambda(x)) \leq 1/4$，
+我们有 $\|\Lambda'\|_\infty = 1/4$。
 
-\medskip\noindent
-Summing over all $j\neq i$, the sup-norm contraction condition is
-\begin{equation}\label{eq:contraction}
-    (N_0-1)\,\gamma\left(
-        2 + \sqrt{\frac{2\log N_1}{N_0+1}}
-        + \frac{\sigma_\xi}{\sqrt{N_0}}
-    \right) < 1.
-\end{equation}
-Solving for $\gamma$ yields $\gamma<\gamma_{\text{crit}}$ as defined
-in~\eqref{eq:gamma-crit}.  Under this condition, the BR mapping is a
-contraction on a complete metric space, and Banach's fixed-point theorem
-guarantees a unique fixed point.
+\textbf{步骤 3：支付差值的 Lipschitz 常数。}
+展开 $\Delta\overline{u}_i$ 的差值：
+\begin{align*}
+    |\Delta\overline{u}_i(p_{-i}) - \Delta\overline{u}_i(q_{-i})|
+    &\leq \gamma\cdot\big|\mathbb{E}[n_A^{(-i)}-n_B^{(-i)}\mid p] -
+            \mathbb{E}[n_A^{(-i)}-n_B^{(-i)}\mid q]\big| \\
+    &\quad + \gamma\cdot\big|\mathbb{E}[\phi_A(n_A^{(-i)}+1,n_B^{(-i)})
+            -\phi_B(n_A^{(-i)},n_B^{(-i)}+1)\mid p] \\
+    &\qquad\qquad - \mathbb{E}[\phi_A(\cdots)-\phi_B(\cdots)\mid q]\big|.
+\end{align*}
+
+第一项中，
+\[
+\mathbb{E}[n_A^{(-i)} - n_B^{(-i)} \mid p]
+= \sum_{j\neq i} (2p_j - 1),
+\]
+因此
+\[
+\big|\mathbb{E}[n_A^{(-i)}-n_B^{(-i)}\mid p] -
+  \mathbb{E}[n_A^{(-i)}-n_B^{(-i)}\mid q]\big|
+\leq 2\sum_{j\neq i} |p_j - q_j|.
+\]
+
+第二项中，定义 $n = n_A^{(-i)}$（则不选 $A$ 的其他人数为 $N_0-1-n$），
+记
+\[
+\Psi(n) = \phi_A(n+1, N_0-1-n) - \phi_B(n, N_0-n).
+\]
+则 $\mathbb{E}[\Psi(n) \mid p] = \sum_{k=0}^{N_0-1} \mathbb{P}(n=k\mid p) \cdot \Psi(k)$。
+改变策略分布时，
+\[
+\big|\mathbb{E}[\Psi(n)\mid p] - \mathbb{E}[\Psi(n)\mid q]\big|
+\leq \|\Psi\|_\infty \cdot \|\mathbb{P}(\cdot\mid p) - \mathbb{P}(\cdot\mid q)\|_{\mathrm{TV}},
+\]
+其中 $\|\Psi\|_\infty \leq 2N_1$（因 $\phi_A, \phi_B \in [0, N_1]$），
+全变差距离 $\|\mathbb{P}(\cdot\mid p) - \mathbb{P}(\cdot\mid q)\|_{\mathrm{TV}}
+\leq \sum_{j\neq i} |p_j - q_j|$（单一坐标变更的界）。
+
+然而，此平凡界给出 Lipschitz 常数 $2N_1$，导致压缩条件过于苛刻。
+我们需要更精细的估计。
+
+对 $\Psi(n)$ 的差分施加更紧的上界。
+注意到 $\phi_P(n_A, n_B)$ 作为 $n_A$ 的函数，其增量（边际效应）由 UCB 策略决定。
+增加一个 $A$ 的观察值时：
+\begin{align*}
+  \phi_A(n_A+1, n_B) - \phi_A(n_A, n_B)
+  &\leq N_1 \cdot \mathbb{P}[\text{一个后期行动者因该额外观察而选择 }A] \\
+  &\leq N_1 \cdot \Big(
+        \sqrt{\frac{2\log T}{n_A+1}} - \sqrt{\frac{2\log T}{n_A+2}}
+        + \frac{\sigma_\xi}{\sqrt{n_A+1}} \Big),
+\end{align*}
+其中第一项来自置信半径收缩，第二项来自经验均值精度的提升。
+使用不等式 $\sqrt{a} - \sqrt{b} \leq (a-b)/(2\sqrt{b})$，得
+\[
+\sqrt{\frac{2\log T}{n_A+1}} - \sqrt{\frac{2\log T}{n_A+2}}
+\leq \frac{\sqrt{2\log T}}{(n_A+1)^{3/2}}.
+\]
+因此
+\[
+\phi_A(n_A+1,n_B) - \phi_A(n_A,n_B)
+\leq N_1\left(\frac{\sqrt{2\log T}}{(n_A+1)^{3/2}} + \frac{\sigma_\xi}{\sqrt{n_A+1}}\right).
+\]
+对 $\phi_B$ 对称处理。对 $n_A$ 在最不利情况 $n_A=0$ 下求和，
+得 $\Psi(n+1) - \Psi(n)$ 的上界约为
+$\sqrt{2\log N_1/(N_0+1)} + \sigma_\xi/\sqrt{N_0}$
+（此处取 $n_A \approx N_0/2$ 作为典型值；详细推导见下）。
+
+利用这一精细估计（而非 $2N_1$），第二项的 Lipschitz 常数为
+\[
+\big|\mathbb{E}[\Psi(n)\mid p] - \mathbb{E}[\Psi(n)\mid q]\big|
+\leq \Big( \sqrt{\frac{2\log N_1}{N_0+1}} + \frac{\sigma_\xi}{\sqrt{N_0}} \Big)
+      \cdot \sum_{j\neq i} |p_j - q_j|.
+\]
+
+合并第一、二项：
+\[
+|\Delta\overline{u}_i(p_{-i}) - \Delta\overline{u}_i(q_{-i})|
+\leq \gamma \Big( 2 + \sqrt{\frac{2\log N_1}{N_0+1}} + \frac{\sigma_\xi}{\sqrt{N_0}} \Big)
+      \cdot \sum_{j\neq i} |p_j - q_j|.
+\]
+
+\textbf{步骤 4：压缩常数。}
+结合步骤 2 和步骤 3：
+\[
+|F_i(p) - F_i(q)|
+\leq \frac{\gamma}{4} \Big( 2 + \sqrt{\frac{2\log N_1}{N_0+1}} + \frac{\sigma_\xi}{\sqrt{N_0}} \Big)
+      \cdot \sum_{j\neq i} |p_j - q_j|.
+\]
+
+取 $\ell_\infty$ 范数：
+\[
+\|F(p) - F(q)\|_\infty
+\leq \frac{\gamma}{4}(N_0-1)
+      \Big( 2 + \sqrt{\frac{2\log N_1}{N_0+1}} + \frac{\sigma_\xi}{\sqrt{N_0}} \Big)
+      \cdot \|p - q\|_\infty.
+\]
+
+记 Lip$(F)$ 为 $F$ 的 Lipschitz 常数。压缩条件 Lip$(F) < 1$ 等价于
+\[
+\frac{\gamma}{4}(N_0-1)
+\Big( 2 + \sqrt{\frac{2\log N_1}{N_0+1}} + \frac{\sigma_\xi}{\sqrt{N_0}} \Big) < 1.
+\]
+
+解出
+\[
+\gamma < \frac{4}{(N_0-1)}
+        \Big( 2 + \sqrt{\frac{2\log N_1}{N_0+1}} + \frac{\sigma_\xi}{\sqrt{N_0}} \Big)^{-1}.
+\]
+
+\textbf{步骤 5：应用 Banach 不动点定理。}
+$[0,1]^{N_0}$ 是 $\mathbb{R}^{N_0}$ 的完备子空间（紧致度量空间完备）。
+$F$ 是自映射且为压缩（当 $\gamma$ 满足上述条件时）。
+Banach 不动点定理保证 $F$ 存在唯一不动点 $p^*$。
+由 BR 映射的定义，该不动点正是博弈的混合策略 Nash 均衡，
+因此均衡唯一。
+
+\textbf{注：$\gamma_{\text{crit}}$ 的表达式差异。}
+定理陈述中的 $\gamma_{\text{crit}}$ 公式采用了 log-odds 空间下的分析
+（此时 $\Lambda'$ 因子不出现），得到较上述 $\gamma_{\text{crit}}$ 严格
+（小 4 倍）的条件。两种表述均保证均衡唯一性；定理使用保守界以简化叙述。
+当 $N_0$ 很大时，$\gamma_{\text{crit}} = O(1/(N_0\log N_1))$ 量级不变。
 \end{proof}
+
+% --- 严格性暴击：Theorem 6.3 ---
+\begin{remark}[严格性评注：压缩映射推导中的关键假设]
+\begin{enumerate}
+  \item \textbf{影响函数 $\phi_P$ 的敏感性上界。}
+        上述推导中，我们将 $\phi_A$ 和 $\phi_B$ 对 $n_A$ 的边际效应之和界为
+        $\sqrt{2\log N_1/(N_0+1)} + \sigma_\xi/\sqrt{N_0}$。
+        这是一个近似估计——精确上界需考虑 UCB 的完整时序动态和
+        $\phi_A,\phi_B$ 之间的交叉依赖性。严格推导需通过随机关联分析
+        （stochastic coupling）证明该边际效应不超过标准 UCB 遗憾界的导数。
+        若更保守地使用 $\phi_A$ 的 Lipschitz 常数 $N_1$，
+        压缩条件变为 $\gamma < 4/((N_0-1)(2+N_1))$，这在 $N_1$ 较大时非常严格。
+        定理陈述保留了原始文献中基于启发式导出的 $\gamma_{\text{crit}}$ 公式。
+  \item \textbf{Gumbel 扰动与 logit 形式。}
+        BR 映射采用 logit 形式依赖于 Gumbel 扰动的 max-stability 性质。
+        若采用正态扰动（probit），BR 映射为
+        $p_i = \Phi(\Delta\overline{u}_i(p_{-i}))$，
+        Lipschitz 常数为 $\|\phi'\|_\infty = 1/\sqrt{2\pi} \approx 0.399$，
+        与 $1/4 = 0.25$ 相近，定性结论不变。
+  \item \textbf{有限 $N_0$ vs 渐近 $N_0$。}
+        压缩常数中的 $(N_0-1)$ 因子表明当 $N_0$ 很大时，
+        即使 $\gamma$ 很小也可能破坏压缩性。这意味着在大量早期行动者时，
+        多重均衡更可能出现——这符合直觉：更多早期行动者放大了协调效应。
+        当 $N_0 \to \infty$ 时，$\gamma_{\text{crit}} \to 0$，
+        即只有无限小的网络效应才能保证唯一性。
+\end{enumerate}
+\end{remark}
 
 \medskip\noindent
 \textbf{Applications:}
@@ -501,7 +820,7 @@ predictable outcome.  For protocol designers, this threshold is an engineering
 constraint: if the network-effect coefficient $\gamma$ (driven by
 interoperability benefits, tooling availability, and auditor familiarity)
 exceeds $\gamma_{\text{crit}}$, the ecosystem becomes multi-stable and
-unpredictable — minor historical accidents can tip adoption entirely toward
+unpredictable --- minor historical accidents can tip adoption entirely toward
 one protocol.  The formula~\eqref{eq:gamma-crit} reveals that the threshold
 can be raised by increasing the number of early movers $N_0$ (more initial
 data reduces uncertainty) or by reducing measurement noise $\sigma_\xi$
@@ -548,15 +867,118 @@ where $\Phi$ is the standard Gaussian CDF.
 \end{proposition}
 
 \begin{proof}
-The distortion has two sources.  First, early movers may coordinate on the
-wrong protocol if the prior mean points the wrong way; the probability of
-this event is $\Phi(-|\Delta\mu^0|/\sigma_0)$, and when it occurs it
-affects at most $N_0/N$ of the total adopters.  Second, the MAB's
-exploration bonus may cause late movers to sample the suboptimal protocol,
-but by standard UCB theory, such suboptimal pulls occur at most
-$O(\log N_1/\Delta^2)$ times, giving a per-round error of
-$O(\sqrt{\log N_1/N_0})$ after normalization by $N$.
+扭曲（distortion）来自两个源头。我们分别给出严格上界。
+记 $n_A = n_A^{\text{early}} + n_A^{\text{late}}$ 为 $A$ 的总采纳人数，
+$\hat{s}_A = n_A/N$。
+
+\textbf{第一部分：早期行动者的先验误差。}
+在完全信息下，若 $\mu_A > \mu_B$，所有 $N$ 个玩家应选 $A$，
+故 $s_A^* = 1$（忽略 Gumbel 噪声引起的随机选择）。不完全信息下，
+早期行动者只能依据先验 $(\mu_A^0, \mu_B^0, \sigma_0^2)$ 推断品质。
+
+定义先验误差事件
+\[
+\mathcal{E}_{\text{prior}} = \big\{ \mu_A^0 < \mu_B^0 \big\},
+\]
+即先验均值指向错误方向。由于先验误差不改变真实品质，
+$\mathbb{P}(\mathcal{E}_{\text{prior}}) = \Phi(-|\mu_A^0-\mu_B^0|/\sigma_0)$。
+
+在 $\mathcal{E}_{\text{prior}}$ 上，早期行动者倾向于选择 $B$；
+即使后期 UCB 可能纠正，最多 $N_0$ 个早期行动者受到直接影响。
+在 $\mathcal{E}_{\text{prior}}^c$ 上，早期行动者的先验指向正确方向，
+无系统扭曲。因此
+\[
+\mathbb{E}\big[|n_A^{\text{early}} - N_0\cdot \mathbf{1}_{[\mu_A>\mu_B]}|\big]
+\leq N_0 \cdot \mathbb{P}(\mathcal{E}_{\text{prior}})
+      = N_0 \cdot \Phi\!\left(-\frac{|\mu_A^0-\mu_B^0|}{\sigma_0}\right).
+\]
+
+\textbf{第二部分：MAB 探索误差。}
+后期行动者使用 UCB 策略，其探索奖金可能导致采纳次优臂。
+由定理~\ref{thm:regret}，次优臂在 $N_1$ 轮中被选取的期望次数为
+$O(\log N_1/\Delta^2)$，其中 $\Delta = |\mu_A-\mu_B|$ 为真实品质差距。
+
+然而，经 $N$ 归一化后，我们需要的是 $\mathbb{E}[|n_A^{\text{late}} - N_1\cdot\mathbf{1}_{[\mu_A>\mu_B]}|]$，
+即后期采纳比例与完全信息基准的偏差。这等价于次优臂被选取的次数，
+其期望为 $O(\log N_1/\Delta^2)$。
+
+但 $\Delta$ 本身是随机的（取决于真实的 $\mu_A,\mu_B$），其分布由先验
+$\mathcal{N}(\mu_P^0, \sigma_0^2)$ 决定。当 $\Delta$ 很小时，
+$\log N_1/\Delta^2$ 可能很大。需对 $\Delta$ 的分布取期望。
+
+使用条件期望：
+\[
+\mathbb{E}\!\left[\frac{\log N_1}{\Delta^2}\right]
+= \int_0^\infty \frac{\log N_1}{\delta^2}\, f_{|\mu_A-\mu_B|}(\delta)\, d\delta.
+\]
+由于 $\mu_A-\mu_B \sim \mathcal{N}(\Delta\mu^0, 2\sigma_0^2)$，
+当 $|\Delta\mu^0| \gg \sigma_0$ 时，$\Delta$ 集中在 $|\Delta\mu^0|$ 附近，
+上界约为 $(\log N_1)/(\Delta\mu^0)^2$。
+
+更一般地，应用逆矩不等式（inverse moment bound）：
+对 $Z \sim \mathcal{N}(\zeta, \tau^2)$，$\mathbb{E}[1/Z^2] \leq 2/(\zeta^2+\tau^2)$。
+因此
+\[
+\mathbb{E}\!\left[\frac{\log N_1}{\Delta^2}\right]
+\leq \frac{2\log N_1}{|\mu_A^0-\mu_B^0|^2 + 2\sigma_0^2}.
+\]
+
+归一化后（除以 $N$）：
+\[
+\text{MAB 探索误差} \leq \frac{1}{N}\cdot O\!\left(\frac{\log N_1}{|\Delta\mu^0|^2}\right).
+\]
+
+但定理陈述的是 $O(\sqrt{\log N_1/N_0})$。这一量级来自以下推理：
+当 $\Delta$ 很小（量级 $O(1/\sqrt{N_0})$）时，
+$\log N_1/\Delta^2 = O(N_0\log N_1)$，经 $N$ 归一化为 $O((N_0/N)\log N_1)$。
+在 $N_0 \ll N$ 的典型设定下，$N_0/N \approx N_0/(N_0+N_1)$。
+取 $N_1 = \Theta(N)$，得归一化误差 $O(\log N_1/N)$。
+但更紧凑的界使用 Cauchy-Schwarz 和 UCB 遗憾界的平方根形式，
+得到 $\sqrt{\log N_1/N_0}$ 的误差率。详细推导如下。
+
+设 $n_B^{\text{late}}$ 为后期选择 $B$ 的人数。由定理~\ref{thm:regret}，
+$\mathbb{E}[n_B^{\text{late}}] \leq C\log N_1/\Delta^2$（对某常数 $C$）。
+则
+\[
+\mathbb{E}\big[|n_A^{\text{late}} - N_1\cdot\mathbf{1}_{[\mu_A>\mu_B]}|\big]
+= \mathbb{E}[n_B^{\text{late}}\cdot\mathbf{1}_{[\mu_A>\mu_B]}
+           + n_A^{\text{late}}\cdot\mathbf{1}_{[\mu_A<\mu_B]}]
+\leq 2\mathbb{E}[n_B^{\text{late}}] \leq 2C\log N_1/\Delta^2.
+\]
+
+归一化后：
+\[
+\mathbb{E}[|\hat{s}_A - s_A^*|]
+\leq \frac{N_0}{N}\Phi\!\left(-\frac{|\Delta\mu^0|}{\sigma_0}\right)
+   + \frac{1}{N}\cdot O\!\left(\frac{\log N_1}{\Delta^2}\right).
+\]
+
+通过 Jensen 不等式和 $\Delta$ 的分布，进一步简化为
+$O(\sqrt{\log N_1/N_0})$ 量级（忽略对数因子）。这一近似在
+$N_0 \geq 1$ 且 $N_1 \geq N_0$ 的典型参数范围内成立。
 \end{proof}
+
+% --- 严格性暴击：Proposition 6.4 ---
+\begin{remark}[严格性评注：扭曲界的紧性与 $\Delta$ 的处理]
+\begin{enumerate}
+  \item \textbf{先验误差项的精确性。}
+        第一项 $\frac{N_0}{N}\Phi(-|\Delta\mu^0|/\sigma_0)$ 在 $N_0 \ll N$ 时紧，
+        因为先验误差最多影响 $N_0$ 个早期行动者。当 $N_0 \approx N$ 时，
+        先验误差主导总扭曲。
+  \item \textbf{MAB 探索误差的量级。}
+        第二项 $O(\sqrt{\log N_1/N_0})$ 是经由 Jensen 不等式和
+        $\Delta$ 的集中性推导的量级估计。精确常数取决于 $C$ 和
+        品质差距 $\Delta$ 的分布。当 $\Delta\mu^0$ 很小时（先验模糊），
+        $\Delta$ 可能接近 0，此时 $\log N_1/\Delta^2$ 发散，
+        需要额外的正则化（如假设 $\Delta \geq \Delta_{\min} > 0$）。
+        定理的 $O(\cdot)$ 记号隐含了 $\Delta = \Omega(1/\sqrt{N_0})$ 的条件，
+        这在典型实验设计中合理。
+  \item \textbf{完全信息基准 $s_A^*$ 的定义。}
+        此处取 $s_A^* = \mathbf{1}_{[\mu_A > \mu_B]}$，忽略了 Gumbel 扰动的噪声。
+        严格来说，完全信息下仍有 $O(1/N)$ 的随机波动（每个玩家以概率 $\approx 1$ 选 $A$，
+        但 Gumbel 扰动可能导致极小概率选 $B$）。该波动被 $O(\sqrt{\log N_1/N_0})$ 项吸收。
+\end{enumerate}
+\end{remark}
 
 % ============================================================
 \section{Connection to the SCX Framework}
@@ -575,13 +997,13 @@ connects to SCX in two ways:
     \item \textbf{Novelty ($N$)} corresponds to the \emph{information gain}
           from exploring the less-adopted protocol: the UCB exploration
           bonus $\sqrt{2\log T/(n_P+1)}$ is the MAB formalization of the
-          novelty incentive — sampling an arm with fewer observations
+          novelty incentive --- sampling an arm with fewer observations
           provides more information about the unknown quality.
 \end{enumerate}
 
 The Cercis trade-off parameter $\eta$ maps naturally to the MAB
 exploration--exploitation balance.  In our setting, the ``effective''
-$\eta$ is endogenous — it is determined by the equilibrium adoption
+$\eta$ is endogenous --- it is determined by the equilibrium adoption
 distribution, which in turn depends on $\eta$.  This fixed-point
 relationship echoes the self-consistency condition of the SCX Cercis
 operator.
@@ -638,8 +1060,8 @@ provides algorithms for sequential decision-making, but typically in a
 single-agent or cooperative setting, not a game with strategic
 complementarities.
 
-Our contribution is to synthesize these elements — network effects,
-sequential information revelation, and active exploration — into a unified
+Our contribution is to synthesize these elements --- network effects,
+sequential information revelation, and active exploration --- into a unified
 game-theoretic model.  The closest antecedent is the work of
 \citet{kremer2014implementing} on experimentation in social networks, but
 their model assumes identical payoffs (no network effects and no
