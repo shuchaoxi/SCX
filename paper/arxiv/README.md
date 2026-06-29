@@ -40,7 +40,16 @@
 | # | 论文 | 文件夹 | 做了什么 | 讲了一个什么故事 |
 |---|------|--------|----------|------------------|
 | 11 | **SCX Review** | `scx_review/` | 六领域综述：SCX 在材料、生物、地球科学、天文、工程、LLM | SCX 不是为一个领域设计的——它是数据质量的统一语言 |
-| 12 | **SCX 历史** | `SCX_HISTORY.tex` | SCX 思想进化路线：从 EGP 规范固定到 Theorem 3 不确定性原理。8 章。附录含完整时间线 | "How a Gauge-Fixing Problem Became an Uncertainty Principle." 一个真实的科研故事——包括六条死路和修正的代数错误 |
+| 12 | **SCX 历史** | `meta/SCX_HISTORY.tex` | SCX 思想进化路线：从 EGP 规范固定到 Theorem 3 不确定性原理。8 章。附录含完整时间线 | "How a Gauge-Fixing Problem Became an Uncertainty Principle." 一个真实的科研故事——包括六条死路和修正的代数错误 |
+
+---
+
+## 独立定理
+
+| 文件夹 | 定理 | 论文文件 |
+|--------|------|----------|
+| `theorems/` | 13 篇独立定理 | `theorem_aa_alignment.tex` · `theorem_ac_complexity.tex` · `theorem_ae_entropy.tex` · `theorem_ar_adversarial.tex` · `theorem_cd_causal.tex` · `theorem_fa_federated.tex` · `theorem_hc_human.tex` · `theorem_q_quantum.tex` · `theorem_ra_recursive.tex` · `theorem_ts_temporal.tex` · `theorem5_active_learning.tex` · `theorem6_protocol_game.tex` · `theorem7_cross_domain.tex` |
+| `meta/` | 元文档 | `SCX_HISTORY.tex` · `SCX_MANIFESTO.tex` |
 
 ---
 
