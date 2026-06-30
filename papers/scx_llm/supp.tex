@@ -1,0 +1,418 @@
+% ============================================================
+% Supplementary Material — SCX for LLM Data Curation
+%
+% Contains:
+%   A. Detailed comparison with existing methods
+%   B. Mathematical formalization of the four challenges
+% ============================================================
+
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage[capitalize]{cleveref}
+\usepackage{geometry}
+\geometry{verbose,letterpaper,left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{multirow}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{remark}{Remark}[section]
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\P}{\mathbb{P}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\KL}{\operatorname{KL}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cJ}{\mathcal{J}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cT}{\mathcal{T}}
+
+\title{Supplementary Material: Detailed Comparison and Mathematical Formalization\\
+       \large for ``State-Conditioned Expertise for Large Language Model Data Curation: A Strategic Roadmap''}
+
+\author{SCX}
+\date{June 30, 2026}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Detailed Comparison of SCX vs.\ Existing LLM Data Filtering Methods}
+
+Table~\ref{tab:comparison} presents a detailed comparison of SCX's proposed LLM data curation framework against nine existing families of methods. For each method, we evaluate the core idea, the signal it uses, its explicit or implicit assumptions about data quality, its relationship to SCX, and its primary limitations.
+
+\begin{table*}[t]
+\centering
+\small
+\caption{Comprehensive comparison of SCX vs.\ existing LLM data curation methods. SCX's primary differentiator is that it treats judge reliability as a learnable, state-conditioned quantity rather than assuming uniform judge quality across all data.}
+\label{tab:comparison}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}p{2.5cm}p{2.8cm}p{2.2cm}p{3.0cm}p{2.5cm}p{2.2cm}@{}}
+\toprule
+\textbf{Method Family} & \textbf{Core Idea} & \textbf{Signal Type} & \textbf{Key Assumptions} & \textbf{SCX Relationship} & \textbf{Primary Limitations} \\
+\midrule
+Rule-based filtering (FastText, FineWeb~\cite{penedo2023refinedweb}) & Heuristic rules: perplexity, language ID, quality classifiers & Single quality score & Static quality thresholds; rules transfer across domains & SCX can supplement with state-conditioned thresholds: $\tau(x) = \tau_{s(x)}$ & Brittle thresholds; no mechanism for domain variation; quality $\neq$ training value \\
+\hline
+Quality classifiers (FinerWeb, CCNet~\cite{wenzek2020quality}) & Train classifier on strong-model-labeled seed data & Learned quality score $\hat{q}(x)$ & Seed data is representative; quality is domain-invariant & SCX adds state-conditioned quality: $q(x \mid s(x))$ instead of global $q(x)$ & Requires expensive seed labels; classifier inherits judge biases; static after training \\
+\hline
+Perplexity/Loss filtering (Rho-1~\cite{lin2024rho}, DCLM) & Filter by loss on a reference model & $\ell(x) = -\log p_{\text{ref}}(x)$ & Low loss = high quality; one reference model suffices & SCX extends to multi-expert loss: $C(x) = \frac{1}{M}\sum \mathbf{1}\{\ell_m(x) > \tau\}$ & Low loss can indicate memorization~\cite{carlini2023quantifying}; one model's loss $\neq$ universal quality \\
+\hline
+Target distribution matching (DSIR~\cite{xie2023dsir}) & Select data matching target distribution & $\mathbb{P}_{\text{target}}(x) / \mathbb{P}_{\text{source}}(x)$ & Target distribution is known; importance weights are accurate & SCX can extend to state-conditioned DSIR: $w(x) = w_{s(x)}(x)$ & Requires specified target; assumes distribution = value; no error detection \\
+\hline
+Influence-based (LESS~\cite{xia2024less}, LoGra~\cite{choe2024loga}) & Gradient-based per-sample influence on validation loss & $\nabla \ell(x) \cdot \nabla \ell_{\text{val}}$ & Gradient captures value; validation set is representative & SCX can route expensive influence computation to high-uncertainty states & $O(Nd)$ computation per sample; validation-set dependence; instability near initialization \\
+\hline
+LLM-as-a-Judge~\cite{zheng2024judging} & Use a strong LLM to score data quality & $Q_{\text{LLM}}(x)$ & LLM judgment is consistent and accurate across domains & SCX calibrates judge reliability per state: $Q_{\text{SCX}}(x) = \sum w_j(s) Q_j(x)$ & Expensive; no reliability calibration; single judge $\neq$ universal \\
+\hline
+Diversity / Dedup (Minhash, SemDeDup~\cite{abbas2023semdedup}) & Remove near-duplicate samples & Similarity score $\text{sim}(x, x')$ & Similarity = redundancy; removal does not harm quality & SCX integrates redundancy into value: $V(x) = Q(x) \cdot (1 - R(s))$ & Surface similarity $\neq$ capability redundancy; aggressive dedup harms rare patterns \\
+\hline
+Verifiable task filtering (MathQA, Code execution) & Keep samples with correct verifiable labels & Binary pass/fail on verifiable tasks & Verification is available and captures the training objective & SCX treats verified tasks as high-reliability states: $A_j(s_{\text{ver}}) \approx 1$ & Only works for closed tasks (math, code); most LLM data is unverifiable \\
+\hline
+Benchmark-driven (DataComp-LM~\cite{li2024dclm}) & Evaluate curation by downstream benchmark performance & $\Delta$Benchmark after training & Benchmark represents all relevant capabilities; finite-sample evaluation is accurate & SCX provides the closed-loop validation protocol & Extremely expensive (full training runs); benchmark may not reflect all capabilities \\
+\hline
+\textbf{SCX (this paper)} & State-conditioned multi-judge aggregation with redundancy awareness & $Q_{\text{SCX}}(x) = \sum w_j(s) Q_j(x);\; V = Q_{\text{SCX}} \cdot (1 - \beta R)$ & Judges have state-conditioned reliability; states capture training-value-relevant variation & \textbf{---} (baseline) & Requires state discovery; no gold label; computational overhead of multiple judges \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+\subsection{Key Differentiators}
+
+The comparison reveals three key differentiators of the SCX framework:
+
+\paragraph{1. State-conditioned reliability estimation.}
+Every existing method implicitly assumes that its quality signal is uniformly reliable across all data. Rule-based filters use global thresholds; LLM-as-a-judge applies the same model uniformly; influence methods compute the same gradient metric for every sample. SCX is the only framework that explicitly learns \textit{when} each signal is reliable and \textit{when} it is not, and adjusts its aggregation accordingly.
+
+\paragraph{2. Multi-signal integration.}
+Current methods are largely single-signal: they use one type of filter, one classifier, or one LLM judge. SCX provides a principled framework for combining multiple signals, with weights learned from data. This is particularly valuable when different judges have complementary strengths (e.g., GPT-4 for reasoning, Claude for safety, Llama for code).
+
+\paragraph{3. Redundancy-aware value.}
+Most methods compute a per-sample quality score independently. SCX incorporates the dataset context through the redundancy term $R(s; \mathcal{D})$, which captures the diminishing marginal returns of adding more samples from an already-saturated state. This addresses a known pathology of single-sample scoring methods: they tend to select ``pretty but repetitive'' data.
+
+\subsection{Where SCX Does Not Compete}
+
+We emphasize that SCX does not replace most of these methods. Rather, it integrates them:
+\begin{itemize}
+    \item Rule-based filters provide inexpensive initial quality signals.
+    \item LLM judges provide strong but expensive quality scores.
+    \item Influence methods provide high-fidelity per-sample value estimates.
+    \item SCX \textit{orchestrates} these signals: it learns when to use each one, how to weight them, and how to account for redundancy.
+\end{itemize}
+
+This layering approach is intentional: SCX complements rather than competes with existing methods, which is appropriate given the high switching costs of replacing existing data curation pipelines.
+
+\section{Mathematical Formalization of the Four Challenges}
+
+\subsection{Challenge 1: The Representation-Value Gap}
+
+Let $\phi: \cX \to \R^d$ be a feature map (e.g., sentence embedding) and let $V: \cX \to \R$ be the training value of a sample, defined as the marginal improvement in expected model performance on a held-out evaluation set when $x$ is added to the training set.
+
+\begin{definition}[Representation-Value Gap]
+Define the \textbf{representation-value gap} as:
+\begin{equation}
+\gamma(\phi) = \inf_{g: \R^d \to \R \text{ is } L\text{-Lipschitz}} \E[|V(x) - g(\phi(x))|],
+\label{eq:rep_value_gap}
+\end{equation}
+where the infimum is over $L$-Lipschitz functions $g$ for a fixed Lipschitz constant $L < \infty$.
+\end{definition}
+
+A large $\gamma(\phi)$ means that no Lipschitz function of the embedding can approximate the true training value---equivalently, samples with similar embeddings can have very different training value.
+
+\begin{proposition}[Gap Lower Bound]
+For any fixed $d$, there exists a data distribution over $\cX$ and a training procedure such that:
+\begin{equation}
+\gamma(\phi) \geq \frac{1}{2} \cdot \max\left(0,\; 1 - \frac{L \cdot \text{diam}(\phi(\cX))}{2}\right),
+\label{eq:gap_lower_bound}
+\end{equation}
+where $\text{diam}(\phi(\cX)) = \sup_{x,x' \in \cX} \|\phi(x) - \phi(x')\|_2$.
+\end{proposition}
+
+\begin{proof}
+Construct two samples $x_1, x_2$ with $\phi(x_1) = \phi(x_2)$ (identical embeddings) but $V(x_1) = 1$, $V(x_2) = 0$. Since $g(\phi(x_1)) = g(\phi(x_2))$ for any function $g$, we have $\max(|V(x_1) - g(\phi(x_1))|, |V(x_2) - g(\phi(x_2))|) \geq 1/2$. The diam term accounts for the constraint that $g$ is Lipschitz (though in the case $\phi(x_1) = \phi(x_2)$, Lipschitzness imposes no restriction). The diam term matters when embeddings are pulled apart.
+\end{proof}
+
+\textbf{Implication for SCX.} The representation-value gap is the LLM analogue of the feature weakness problem (Theorem~2 in~\cite{scx2026}). In the original SCX setting, $\phi$ is a physical descriptor for which $\gamma(\phi)$ is empirically small. For text embeddings, $\gamma(\phi)$ is plausibly large. This means SCX's state discovery---which clusters on $\phi$---may produce states that are not meaningful for training value, limiting the benefit of state-conditioned aggregation.
+
+\textbf{Proposed diagnostic.} Analogous to Proposition~6 in~\cite{scx2026}, we propose a validation diagnostic: train a small probe model on a subset of data with known quality scores, compute $\gamma(\phi)$ empirically via cross-validation of a learned predictor $g$, and reject the SCX approach if $\gamma(\phi)$ exceeds a threshold (e.g., $\gamma(\phi) > 0.3$ on a normalized scale).
+
+\subsection{Challenge 2: Ill-Defined Error Signal}
+
+In the SCX supervised setting, the data generation process is:
+\begin{align}
+y^* &\sim P(Y^* \mid x) \quad \text{(true label)} \\
+z &\sim \text{Bernoulli}(\eta) \quad \text{(noise indicator)} \\
+y &= \begin{cases}
+y^* & \text{if } z = 0 \\
+\text{Uniform}(\cY \setminus \{y^*\}) & \text{if } z = 1
+\end{cases}
+\label{eq:supervised_dgp}
+\end{align}
+The ground truth label $y^*$ exists (if unobserved), and the noise event $z$ is well-defined.
+
+For LLM data, there is no analogous generative process. An instruction--response pair $(x, y)$ does not have a ``true'' label distinct from the observed $y$ in any meaningful sense. Quality is a multi-dimensional, task-dependent, and often subjective judgment.
+
+\begin{definition}[LLM Data Quality Proxy]
+Let $\cT = \{T_1, \dots, T_K\}$ be a set of evaluation tasks. Define the \textbf{proxy quality} of sample $(x, y)$ as:
+\begin{equation}
+q(x, y; \cT) = \frac{1}{K} \sum_{k=1}^K \mathbb{E}_{m \sim P(M \mid \mathcal{D} \cup \{(x,y)\})} [\text{Acc}_k(m)] - \mathbb{E}_{m \sim P(M \mid \mathcal{D})} [\text{Acc}_k(m)],
+\label{eq:proxy_quality}
+\end{equation}
+where $P(M \mid \mathcal{D})$ is the distribution over models trained on dataset $\mathcal{D}$, and $\text{Acc}_k(m)$ is the accuracy of model $m$ on task $T_k$. This measures the expected marginal contribution of $(x,y)$ to performance on $\cT$.
+\end{definition}
+
+This definition is theoretically principled but practically intractable (requires training many models). Current methods use tractable proxies:
+\begin{itemize}
+    \item Loss on a reference model: $q_{\ell}(x, y) = -\log p_{\text{ref}}(y \mid x)$.
+    \item Judge score: $q_J(x, y) = \text{LLM-Judge}(x, y)$.
+    \item Disagreement: $q_D(x, y) = -\text{Var}_{j \in \cJ}[Q_j(x, y)]$.
+\end{itemize}
+
+\begin{proposition}[Proxy Inconsistency]
+There exist distributions over $\cX \times \cY$ and model families such that for two samples $x_1, x_2$:
+\begin{equation}
+q_{\ell}(x_1) < q_{\ell}(x_2) \quad \text{but} \quad q(x_1; \cT) > q(x_2; \cT),
+\label{eq:proxy_inconsistency}
+\end{equation}
+and vice versa. Any monotonic transformation of a single proxy fails to recover the true quality ordering.
+\end{proposition}
+
+\begin{proof}
+Take $x_1$: a common pattern (e.g., ``The capital of France is Paris'') with low perplexity but near-zero marginal value (already in the training set). Take $x_2$: a rare but correct fact (e.g., ``The capital of Kiribati is South Tarawa'') with higher perplexity but positive marginal value. The reference model has low perplexity on $x_1$ but near-zero perplexity reduction from adding it. The true quality $q(x_1; \cT) \approx 0$ while $q(x_2; \cT) > 0$, but $q_{\ell}(x_1) \gg q_{\ell}(x_2)$. The reverse direction follows by symmetric construction.
+\end{proof}
+
+\textbf{Implication for SCX.} This means that SCX's consensus-based noise detection cannot rely on any single proxy as ground truth. The SCX-LLM framework must either (a) use multiple complementary proxies and cross-validate, (b) restrict to settings where a specific proxy is known to be reliable (e.g., verifiable tasks), or (c) abandon the notion of ground truth entirely and output only relative risk scores. Option (c) is the most honest and is the approach we adopt in the main text.
+
+\subsection{Challenge 3: Non-Local Value}
+
+Let $\mathcal{D}$ be the training set and $\theta(\mathcal{D})$ be the optimal model parameters trained on $\mathcal{D}$.
+
+\begin{definition}[Non-Local Value]
+Define the \textbf{value} of sample $x$ given dataset $\mathcal{D}$ as:
+\begin{equation}
+V(x \mid \mathcal{D}) = \mathbb{E}_{\ell}[\ell(\theta(\mathcal{D} \cup \{x\}); \cT) - \ell(\theta(\mathcal{D}); \cT)],
+\label{eq:nonlocal_value}
+\end{equation}
+where $\ell(\theta; \cT)$ is the expected loss on evaluation tasks $\cT$.
+\end{definition}
+
+\begin{proposition}[Non-Locality Lower Bound]
+There exist datasets $\mathcal{D}_1 \subset \mathcal{D}_2$ and a sample $x$ such that:
+\begin{equation}
+|V(x \mid \mathcal{D}_1) - V(x \mid \mathcal{D}_2)| \geq \frac{1}{2} \max(V(x \mid \mathcal{D}_1), V(x \mid \mathcal{D}_2)),
+\label{eq:nonlocality_bound}
+\end{equation}
+i.e., the value of a sample can change by at least $50\%$ depending on the dataset context.
+\end{proposition}
+
+\begin{proof}
+(Sketch) Let $\mathcal{D}_1$ contain no physics documents, and $\mathcal{D}_2$ contain 10,000 physics documents. Let $x$ be a physics question. Then $V(x \mid \mathcal{D}_1) > 0$ (fills a gap) while $V(x \mid \mathcal{D}_2) \approx 0$ (redundant). The minimum of the two is zero; the maximum is positive, giving $|V(x \mid \mathcal{D}_1) - V(x \mid \mathcal{D}_2)| = \max(V(x \mid \mathcal{D}_1), V(x \mid \mathcal{D}_2))$, which exceeds $\frac{1}{2}\max$.
+\end{proof}
+
+\textbf{Implication for SCX.} This non-locality violates the state-homogeneity assumption (A5 in~\cite{scx2026}), which requires that within each state, the error distribution is approximately constant. In the LLM setting, a ``state'' (e.g., physics documents) can transition from high-value (when the dataset has few physics documents) to low-value (when physics is saturated), violating the assumption that $\mu_s$ is stationary.
+
+\textbf{Proposed mitigation.} Rather than treating states as static, we propose \textit{adaptive state occupancy tracking}: maintain an estimate of each state's representation in the current training set, and adjust the redundancy penalty $R(s; \mathcal{D})$ in~\eqref{eq:scx_marginal_value} accordingly. This makes the SCX value estimate context-dependent, as it should be.
+
+\subsection{Challenge 4: Redundancy $\neq$ Similarity}
+
+Let $\text{sim}(x, x')$ be a similarity measure (e.g., cosine similarity of embeddings).
+
+\begin{definition}[Capability-Based Redundancy]
+For a set of tasks $\cT$, define the \textbf{capability redundancy} of state $s$ with respect to dataset $\mathcal{D}$ as:
+\begin{equation}
+R_{\cT}(s; \mathcal{D}) = 1 - \frac{\mathbb{E}[\ell(\theta(\mathcal{D} \setminus \mathcal{D}_s); \cT) - \ell(\theta(\mathcal{D}); \cT)]}{\mathbb{E}[\ell(\theta(\mathcal{D}_s); \cT) - \ell(\theta(\emptyset); \cT)]},
+\label{eq:capability_redundancy_formal}
+\end{equation}
+where $\mathcal{D}_s = \{x \in \mathcal{D}: s(x) = s\}$ and $\ell(\theta; \cT)$ is expected loss on $\cT$. $R_{\cT}(s; \mathcal{D}) \approx 1$ means removing state $s$ causes minimal degradation (high redundancy); $R_{\cT}(s; \mathcal{D}) \approx 0$ means removing $s$ causes maximal degradation (low redundancy).
+\end{definition}
+
+\begin{proposition}[Similarity $\neq$ Redundancy]
+There exist $x_1, x_2, x_3 \in \cX$ such that:
+\begin{align}
+\text{sim}(x_1, x_2) &\gg \text{sim}(x_1, x_3) \quad \text{(embeddings similar)} \\
+R_{\cT}(\{x_1, x_2\}; \mathcal{D}) &\gg R_{\cT}(\{x_1, x_3\}; \mathcal{D}) \quad \text{(different redundancy)}
+\label{eq:sim_neq_redundancy}
+\end{align}
+i.e., similarity-based redundancy measures misclassify samples with respect to capability-based redundancy.
+\end{proposition}
+
+\begin{proof}
+(Sketch) Let $x_1 = $``The square of (a+b) equals $a^2 + 2ab + b^2$'' (algebra), $x_2 = $``The derivative of $x^2$ is $2x$'' (calculus), $x_3 = $``$(a+b)^2 = a^2 + 2ab + b^2$'' (same algebra, different wording). Then $\text{sim}(x_1, x_2) < \text{sim}(x_1, x_3)$ (surface similarity), but for a capability $\cT$ measuring mathematical reasoning, $R_{\cT}(\{x_1, x_2\}; \emptyset) < R_{\cT}(\{x_1, x_3\}; \emptyset)$ (two algebra problems offer less new reasoning capability than one algebra plus one calculus).
+\end{proof}
+
+\textbf{Implication for SCX.} The SCX compression theorem~\cite{scx2026} relies on the assumption that within each state, removing ``similar'' samples does not harm performance. If similarity does not correspond to redundancy, aggressive compression will remove valuable samples. The proposed remedy (\S\ref{sec:redundancy} of the main text) is to define redundancy at the \textit{state} level rather than the \textit{sample} level: compress entire states that are saturated, rather than compressing individual similar samples.
+
+\section{Reformulation of SCX Core Equations for LLM Setting}
+
+We provide a self-contained reformulation of the key SCX equations adapted for the LLM data curation context.
+
+\subsection{State-Conditioned Judge Aggregation}
+
+Given $J$ judges with per-state reliability estimates $\{A_j(s)\}_{j=1}^J$ and sample $x$ with state $s(x)$:
+
+\begin{align}
+Q_{\text{SCX}}(x) &= \sum_{j=1}^J w_j(s(x)) \cdot Q_j(x) \label{eq:supp_aggregation} \\
+w_j(s) &= \frac{\exp(\alpha \cdot A_j(s) - \lambda \cdot C_j)}{\sum_{j'=1}^J \exp(\alpha \cdot A_{j'}(s) - \lambda \cdot C_{j'})} \label{eq:supp_weights}
+\end{align}
+
+\noindent where $C_j$ is the per-sample evaluation cost of judge $j$ and $\alpha, \lambda \geq 0$ are hyperparameters.
+
+\subsection{Redundancy-Corrected Value}
+
+\begin{align}
+V_{\text{SCX}}(x) &= Q_{\text{SCX}}(x) \cdot \bigl(1 - \beta \cdot R(s(x); \mathcal{D})\bigr) \label{eq:supp_value} \\
+R(s; \mathcal{D}) &= \frac{|\mathcal{D}_s|}{N} \cdot \left(1 - \frac{1}{|\mathcal{D}_s|^2} \sum_{x,x' \in \mathcal{D}_s} \frac{\phi(x)^\top \phi(x')}{\|\phi(x)\|\|\phi(x')\|}\right)^{-1} \label{eq:supp_redundancy}
+\end{align}
+
+\noindent where $\mathcal{D}_s = \{x \in \mathcal{D}: s(x) = s\}$, $N = |\mathcal{D}|$, and $\beta \in [0, 1]$ controls the strength of the redundancy penalty. The redundancy measure in~\eqref{eq:supp_redundancy} combines data quantity (first term) with within-state diversity (second term, inverted).
+
+\subsection{Multi-Judge Risk Score}
+
+\begin{equation}
+\rho(x) = \frac{1}{J} \sum_{j=1}^J \mathbf{1}\{Q_j(x) < \tau_j(s(x))\},
+\label{eq:supp_risk}
+\end{equation}
+
+\noindent where $\tau_j(s)$ is the $\alpha$-quantile (e.g., $\alpha = 0.2$) of judge $j$'s scores on a held-out calibration set for state $s$. The risk score $\rho(x) \in [0, 1]$ represents the fraction of judges that assign low quality to $x$.
+
+\subsection{Contextual Bandit Objective for Judge Selection}
+
+\begin{align}
+\max_{\pi} &\quad \sum_{x \in \mathcal{D}} Q_{\text{SCX}}(x; \pi) \label{eq:supp_bandit_obj} \\
+\text{s.t.} &\quad \sum_{x \in \mathcal{D}} \text{Cost}(\pi(x), x) \leq B, \nonumber
+\end{align}
+
+\noindent where $\pi: \mathcal{X} \to \{1, \dots, J\}$ maps samples to judges, $Q_{\text{SCX}}(x; \pi)$ is the quality estimate using only judge $\pi(x)$ (weighted by the state-conditioned reliability of that judge), and $B$ is the total evaluation budget. This is a contextual bandit with state context $s(x)$ and $J$ actions.
+
+\subsection{State Discovery Stability Validation}
+
+Following Proposition~6 of~\cite{scx2026}, we validate the discovered state partition $\hat{\mathcal{S}}$ via bootstrap stability:
+
+\begin{equation}
+S(\Phi, K) = \frac{1}{B} \sum_{b=1}^B \text{ARI}\bigl(\text{k-means}(\Phi, K),\; \text{k-means}(\Phi^{(b)}, K)\bigr),
+\label{eq:supp_stability}
+\end{equation}
+
+\noindent where $\Phi$ is the $N \times d$ embedding matrix, $\Phi^{(b)}$ is a bootstrap resample, and ARI is the adjusted Rand index between the two clusterings. We adopt the heuristic threshold: $S(\Phi, K) > 0.7$ indicates reliable state discovery; $S(\Phi, K) < 0.5$ indicates the features are too weak for SCX to provide meaningful benefit.
+
+\section{Additional Experiment Design Details}
+
+\subsection{Noise Injection Protocol}
+
+For the minimal viable experiment (\S\ref{sec:mve}), we inject known noise into three categories:
+
+\begin{itemize}
+    \item \textbf{Factual errors} (40\% of injected noise): Replace named entities (people, locations, dates) with incorrect alternatives in factual text. Example: ``The CEO of NVIDIA is Jen-Hsun Huang'' $\to$ ``The CEO of NVIDIA is Satya Nadella.''
+    \item \textbf{Reasoning errors} (35\%): Introduce subtle logical flaws in step-by-step reasoning. Example: Change ``If $x > 5$, then $x + 2 > 7$'' to ``If $x > 5$, then $x + 2 > 5$'' (true but weaker claim) graded as correct.
+    \item \textbf{Response corruption} (25\%): For instruction-following data, replace the correct response with a plausible but incorrect one. Example: ``Summarize the water cycle'' $\to$ response about the carbon cycle.
+\end{itemize}
+
+Each sample receives exactly one type of noise (or none if it is in the clean subset). The noise injection is calibrated to produce a 10\% overall noise rate, with noise proportionally distributed across the four domain states.
+
+\subsection{Evaluation Metrics}
+
+Beyond the primary F1 metric, we track:
+
+\begin{itemize}
+    \item \textbf{Calibration error} (ECE): Whether the SCX risk score $\rho(x)$ is well-calibrated with respect to known noise, measured as expected calibration error.
+    \item \textbf{State-conditional F1}: F1 per state, to detect whether SCX benefits are concentrated in specific domains.
+    \item \textbf{Judge agreement rate}: $\frac{2}{J(J-1)} \sum_{i<j} \mathbb{P}(Q_i(x) \approx Q_j(x))$ where $\approx$ indicates both are above/below their state-specific thresholds. High agreement suggests the state structure is informative.
+    \item \textbf{Total cost}: API query costs for each method, enabling cost-effectiveness analysis.
+\end{itemize}
+
+\subsection{Statistical Significance}
+
+All comparisons use bootstrapped 95\% confidence intervals (1,000 resamples). The null hypothesis test uses a paired permutation test: for each sample, the F1 contributions of SCX and the best single judge are paired, and the null distribution of the F1 difference is estimated by randomly flipping signs.
+
+\section{Connections to SCX Theoretical Framework}
+
+For completeness, we document which SCX theorems from~\cite{scx2026} apply (with modifications) and which do not.
+
+\begin{table}[h]
+\centering
+\caption{Applicability of SCX theorems to the LLM setting.}
+\label{tab:theorem_applicability}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Theorem} & \textbf{Applies?} & \textbf{Notes} \\
+\midrule
+Thm 1: Noise Detection Guarantee & No & Requires ground truth label noise \\
+Thm 2: Weak Feature Failure & Yes (modified) & Replace $\delta = I(\phi; S)$ with $\gamma(\phi)$ from~\eqref{eq:rep_value_gap} \\
+Thm 3: Unidentifiability & Yes (qualitatively) & Judge disagreement ambiguity maps directly to noise-difficulty unidentifiability \\
+Thm 4': Exact Constant Optimality & No & Requires known $p_0, p_1$ distributions \\
+Thm 5: Cluster Consistency & Yes & Applies directly to state discovery on embeddings \\
+Prop 6: Stability Diagnostic & Yes & Same diagnostic applies to text embeddings \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The key observation is that SCX's \textit{negative} results (unidentifiability, weak feature failure) transfer cleanly to the LLM setting, while its \textit{positive} results (detection guarantees, optimality) do not. This asymmetry is precisely why we position SCX as a meta-evaluation layer rather than a direct noise detection method for LLM data.
+
+\section{Summary of Open Problems}
+
+We conclude this supplementary material by listing the open problems that must be resolved for the SCX-LLM framework to be practically impactful:
+
+\begin{enumerate}[label=O\arabic*.]
+    \item \textbf{Representation-value gap}: Can we construct text representations that are more aligned with training value than current sentence embeddings? This is the most fundamental problem.
+    \item \textbf{Noise-free reliability estimation}: How can we estimate per-state judge reliability $A_j(s)$ without ground truth data? Consensus-based approaches have identifiability problems; calibration sets are expensive.
+    \item \textbf{Adaptive state tracking}: States are not stationary---as the training set evolves, the value distribution across states shifts. How can state occupancy and redundancy be tracked efficiently at scale?
+    \item \textbf{Scalable orchestration}: The contextual bandit formulation requires learning per-state judge reliability, which requires samples. How can we achieve reasonable cold-start performance when a new state is encountered?
+    \item \textbf{Causality of data selection}: Does selecting data via SCX-induced scores actually cause better model performance, or does it merely correlate with other selection criteria? Causal identification of data selection effects is an open problem.
+    \item \textbf{Goodhart resilience}: Can SCX's multi-state, multi-judge structure be made robust to strategic gaming by data producers? This requires understanding the incentive structure of the data curation ecosystem.
+\end{enumerate}
+
+These open problems define the research agenda for the SCX-LLM program. Progress on any one would be a significant contribution; progress on a combination would be transformative.
+
+\begin{thebibliography}{10}
+
+\bibitem{penedo2023refinedweb}
+Penedo, G. \textit{et al.} RefinedWeb: A high-quality web dataset for LLM pretraining. \textit{arXiv preprint arXiv:2306.01116} (2023).
+
+\bibitem{scx2026}
+SCX. A fundamental impossibility in data quality: Distinguishing label noise from sample difficulty is provably unsolvable without explicit assumptions. \textit{arXiv preprint} (2026).
+
+\bibitem{wenzek2020quality}
+Wenzek, G. \textit{et al.} Quality at a glance: An audit of web-crawled multilingual datasets. \textit{Transactions of the ACL} \textbf{8}, 688--703 (2020).
+
+\bibitem{lin2024rho}
+Lin, J. \textit{et al.} Rho-1: Not all tokens are what you need. \textit{arXiv preprint arXiv:2404.07965} (2024).
+
+\bibitem{carlini2023quantifying}
+Carlini, N. \textit{et al.} Quantifying memorization across neural language models. \textit{International Conference on Learning Representations} (2023).
+
+\bibitem{xie2023dsir}
+Xie, S. M. \textit{et al.} Data selection for language models via importance resampling. \textit{Advances in Neural Information Processing Systems} \textbf{36} (2023).
+
+\bibitem{xia2024less}
+Xia, M. \textit{et al.} LESS: Selecting influential data for targeted instruction tuning. \textit{International Conference on Machine Learning} (2024).
+
+\bibitem{choe2024loga}
+Choe, S. \textit{et al.} LoGra: Local gradient analysis for data selection. \textit{arXiv preprint arXiv:2405.18260} (2024).
+
+\bibitem{zheng2024judging}
+Zheng, L. \textit{et al.} Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. \textit{Advances in Neural Information Processing Systems} \textbf{36} (2024).
+
+\bibitem{abbas2023semdedup}
+Abbas, A. \textit{et al.} SemDeDup: Data-efficient learning at web-scale through semantic deduplication. \textit{arXiv preprint arXiv:2303.09540} (2023).
+
+\bibitem{li2024dclm}
+Li, J. \textit{et al.} DataComp-LM: In search of the next generation of training sets for language models. \textit{arXiv preprint arXiv:2406.11794} (2024).
+
+\end{thebibliography}
+
+\end{document}

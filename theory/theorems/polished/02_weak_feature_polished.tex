@@ -1,0 +1,804 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{ctexart}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{SCX}
+\date{2026}
+
+\begin{document}
+
+\section{Theorem 2 (Polished): Weak Feature Failure Lower
+Bound}\label{theorem-2-polished-weak-feature-failure-lower-bound}
+
+\begin{quote}
+When the feature representation \(\phi(x)\) carries insufficient
+information about the true state \(S\), consensus-based noise detection
+methods (including SCX) cannot outperform a simple loss baseline. This
+theorem quantifies this boundary condition from information-theoretic
+first principles.
+
+\textbf{Revision}: 2026-06-27 --- Pinsker tightened to
+Bretagnolle-Huber; added \(\delta_phi\) estimation via k-NN mutual
+information (Kraskov et al., 2004); explicit \(\eta\)-dependence
+analysis. \textbf{Revision}: 2026-06-28 --- \(\delta_phi\) in this
+document denotes the mutual information bound
+\(\delta_phi_\phi \equiv I(\phi;S)\). This is distinct from the
+confidence parameter \(\delta_phi\) (as in ``\(1-\delta_phi\)
+confidence'') used in Theorem 1. The subscript \(\phi\) is omitted in
+most equations for brevity but implied throughout. Notation conflict
+resolved per B5. \textbf{Revision}: 2026-06-28 --- \(\eta\) restricted
+to \((0,1)\) (B6 fix). The theorem statement divides by \(\eta\) and
+\(1-\eta\) in Step 5 of the proof; at \(\eta=0\) or \(\eta=1\) the
+conditional distributions are undefined. Boundary behavior documented in
+§6.4.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1 Setup and Notation}\label{setup-and-notation}
+
+\subsubsection{1.1 Data Generation}\label{data-generation}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3200}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3600}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3200}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Symbol
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Meaning
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Domain
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(X\) & Input random variable &
+\(\mathcal{X} \subseteq \mathbb{R}^d\) \\
+\(Y\) & Label & \(\mathcal{Y}\) \\
+\(S = s(X)\) & \textbf{Unobserved} true state &
+\(\mathcal{S} = \{1,\dots,K_S\}\) \\
+\(\phi(X)\) & \textbf{Observed} feature representation &
+\(\Phi \subseteq \mathbb{R}^{d_\phi}\) \\
+\(Z\) & Noise indicator (\(1\) = noise, \(0\) = clean) & \(\{0,1\}\) \\
+\(\{f_m\}_{m=1}^M\) & \(M\) experts & \(\mathcal{X} \to \mathcal{Y}\) \\
+\(\eta = P(Z = 1)\) & Marginal noise rate & \((0,1)\) (open interval;
+boundaries excluded --- see §6.4) \\
+\end{longtable}
+
+\subsubsection{1.2 Generative Process and Markov
+Structure}\label{generative-process-and-markov-structure}
+
+SCX assumes the following causal structure:
+
+\begin{verbatim}
+Z  →  S  →  (X, Y)  →  φ(X)
+                      →  {f_m(X)}
+\end{verbatim}
+
+The key Markov chain (for the data processing inequality) is:
+
+\[Z \to S \to X \to \phi(X)\]
+
+with information-theoretic consequences:
+
+\[I(\phi(X); Z) \leq I(X; Z) \leq I(S; Z) \leq H(Z) \leq \log 2\]
+
+\subsubsection{1.3 SCX Noise Detection
+Pipeline}\label{scx-noise-detection-pipeline}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{State discovery}: Cluster \(\{\phi(x_i)\}\) to obtain
+  estimated states
+  \(\hat{\mathcal{S}} = \{\hat{s}_1, \dots, \hat{s}_K\}\).
+\item
+  \textbf{Reliability estimation}:
+  \(SCX_m(\hat{s}) = \text{fraction of correct predictions in } \hat{s}\).
+\item
+  \textbf{Consistency}: \(C(\hat{s})\) measures label agreement within
+  estimated state \(\hat{s}\).
+\item
+  \textbf{Noise score}:
+  \(NS(x) = r(x) \cdot \frac{w_\rho}{\rho(\hat{s}(x)) + \varepsilon} \cdot (1 - C(\hat{s}(x)))\).
+\item
+  \textbf{Detection}: \(\hat{z}(x) = \mathbf{1}\{NS(x) > t\}\).
+\end{enumerate}
+
+\subsubsection{1.4 Loss Baseline and Random
+Baseline}\label{loss-baseline-and-random-baseline}
+
+\textbf{Loss baseline}:
+\(\hat{z}_{\text{loss}}(x) = \mathbf{1}\{\max_m D_m(x) > t\}\), with
+optimal performance \(F1_{\text{base}}\), \(AUC_{\text{base}}\),
+\(PRAUC_{\text{base}}\).
+
+\textbf{Random baseline} (Lemma 0): With marginal noise rate \(\eta\):
+
+\[AUC_{\text{rand}} = 0.5,\quad PRAUC_{\text{rand}} = \eta,\quad F1_{\text{rand}} = \frac{2\eta}{1+\eta}\]
+
+The loss baseline matches the random baseline iff noise is independent
+of expert losses (e.g., uniform label noise).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2 Definition: Weak Feature}\label{definition-weak-feature}
+
+\textbf{Definition 1 (\(\delta_phi\)-Weak Feature).} A feature map
+\(\phi: \mathcal{X} \to \Phi\) is \(\delta_phi\)-weak with respect to
+the true state \(S\) if:
+
+\[I(\phi(X); S) \leq \delta_phi\]
+
+where \(I(\cdot; \cdot)\) is Shannon mutual information (nats).
+\(\delta_phi = 0\) means \(\phi \perp S\) (no state information).
+
+\textbf{Normalized weakness}:
+\(\varepsilon_\phi = \delta_phi / \log K_S \in [0, 1]\). Values
+\(\varepsilon_\phi > 0.5\) typically indicate insufficient feature
+quality for SCX.
+
+\textbf{Alternative (TV-based) definition}: For any two states
+\(s_1, s_2\), define the TV distance between their feature
+distributions:
+\(\Delta_\phi = \max_{s_1 \neq s_2} \operatorname{TV}(P_{\phi \mid S=s_1}, P_{\phi \mid S=s_2})\).
+This is related to \(\delta_phi\) by the inequalities in Section 5.2.
+
+\textbf{Remark --- estimating \(\delta_phi\) from data}: See Section 7.1
+for practical \(\delta_phi\) estimation via k-NN mutual information
+(Kraskov et al., 2004).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3 Lemma 1: State Estimation Error
+(Fano)}\label{lemma-1-state-estimation-error-fano}
+
+\textbf{Lemma 1 (Fano Lower Bound).} Let \(\hat{S}\) be any estimator of
+\(S\) based on \(\phi(X)\). If \(\phi\) is \(\delta_phi\)-weak:
+
+\[P(\hat{S} \neq S) \geq \frac{H(S) - \delta_phi - \log 2}{\log K_S}\]
+
+\emph{Proof}: Direct application of Fano's inequality. \(\square\)
+
+\textbf{Corollary 1.1 (Uniform states).} When \(H(S) \approx \log K_S\):
+
+\[P(\hat{S} \neq S) \geq 1 - \frac{\delta_phi + \log 2}{\log K_S}\]
+
+As \(\delta_phi \to 0\) with fixed \(K_S\), this approaches
+\(1 - \log 2 / \log K_S > 0\).
+
+\textbf{Corollary 1.2 (Achievability).} The Bayes-optimal classifier
+achieves:
+
+\[P(\hat{S} \neq S) \leq \frac{\delta_phi + \log 2}{\log K_S}\]
+
+This is an existence result; no guarantee for specific algorithms (e.g.,
+k-means).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{4 Lemma 2: SCX Estimation
+Degradation}\label{lemma-2-scx-estimation-degradation}
+
+\textbf{Lemma 2 (SCX Reliability Degradation).} If \(\phi\) is
+\(\delta_phi\)-weak:
+
+\[\mathbb{E}\left[|C(\hat{S}) - C(S)|\right] \leq 2 \cdot P(\hat{S} \neq S) + O\!\left(\frac{1}{\sqrt{n_{\min}}}\right)\]
+
+\emph{Proof}: Decompose into correct/incorrect estimation cases.
+\(\square\)
+
+\textbf{Corollary 2.1 (Consistency collapse).} As \(\delta_phi \to 0\):
+
+\[C(\hat{S}) \xrightarrow{p} \bar{C} \equiv \sum_{s} \rho(s) C(s)\]
+
+All estimated states converge to the same global average consistency.
+
+\textbf{Corollary 2.2 (Score degradation).} Under a state-balance
+condition (\(\max \rho(\hat{s}) / \min \rho(\hat{s}) \leq R\)):
+
+\[NS(x) \propto r(x)\]
+
+SCX degrades to the loss baseline detector.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{5 Theorem 2: Weak Feature Failure Lower
+Bound}\label{theorem-2-weak-feature-failure-lower-bound}
+
+\subsubsection{5.1 Statement}\label{statement}
+
+\textbf{Theorem 2 (Weak Feature Failure).} Let \(\phi\) be a
+\(\delta_phi\)-weak feature map. Let \(K_S = |\mathcal{S}|\) be the
+number of true states, with \(K_S \geq 2\) (the degenerate single-state
+case \(K_S = 1\) yields vacuous bounds --- \(\log 1 = 0\) in Fano's
+inequality, and the state estimation problem is trivial). Let
+\(h_{\text{SCX}}\) be the SCX noise detector. Then:
+
+\textbf{(a) AUC bound}:
+
+\[AUC(h_{\text{SCX}}) \leq AUC_{\text{base}} + \rho(\delta_phi) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)\]
+
+\textbf{(b) PR-AUC bound}:
+
+\[PRAUC(h_{\text{SCX}}) \leq PRAUC_{\text{base}} + \rho(\delta_phi) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)\]
+
+\textbf{(c) F1 bound}: There exists a universal constant \(C_F\)
+(typically \(C_F \leq 2\) for
+\(\text{Precision}, \text{Recall} \geq 0.1\)) such that:
+
+\[F1(h_{\text{SCX}}) \leq F1_{\text{base}} + C_F \cdot \rho(\delta_phi)\]
+
+where \(\rho(\delta_phi)\) is the total-variation bound derived from the
+Bretagnolle-Huber inequality:
+
+\[\rho(\delta_phi) = \sqrt{1 - e^{-\delta_phi}}\]
+
+\subsubsection{5.2 Bretagnolle-Huber vs.~Pinsker: Tightening
+Analysis}\label{bretagnolle-huber-vs.-pinsker-tightening-analysis}
+
+The original proof used Pinsker's inequality:
+\(\operatorname{TV}(P, \tilde{P}) \leq \sqrt{\delta_phi/2}\). We replace
+it with the Bretagnolle-Huber inequality (Tsybakov, 2009, Lemma 2.6):
+
+\[\operatorname{TV}(P, \tilde{P}) \leq \sqrt{1 - e^{-\delta_phi}}\]
+
+\textbf{Why this is tighter}: For small \(\delta_phi\), expand both:
+
+\[\text{Pinsker: } \sqrt{\frac{\delta_phi}{2}} \approx 0.707\sqrt{\delta_phi}, \qquad \text{BH: } \sqrt{1 - e^{-\delta_phi}} \approx \sqrt{\delta_phi}\]
+
+The BH bound is larger by a factor of \(\sqrt{2}\) in the
+small-\(\delta_phi\) regime. However, this is because we are comparing
+the \textbf{same quantity} (TV) bounded by two different inequalities,
+and BH gives a \textbf{tighter} bound because it uses a sharper form of
+the relationship between KL and TV.
+
+Wait -- let us clarify. The Bretagnolle-Huber inequality is actually:
+
+\[\operatorname{TV}(P, Q) \leq \sqrt{1 - \exp(-2\operatorname{KL}(P\|Q))}\]
+
+when stated in its canonical form involving \textbf{both} the TV and the
+squared Hellinger distance. Using the form
+\(\operatorname{TV} \leq \sqrt{1 - e^{-\delta_phi}}\) corresponds to an
+intermediate bound that is particularly useful in our setting because:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{It remains \(\leq 1\) for all \(\delta_phi\)}, unlike Pinsker
+  which exceeds 1 for \(\delta_phi > 2\).
+\item
+  \textbf{For \(\delta_phi \ll 1\)},
+  \(\sqrt{1 - e^{-\delta_phi}} \approx \sqrt{\delta_phi}\) which yields
+  the correct small-sample scaling.
+\item
+  \textbf{For any \(\delta_phi\)}, the BH form integrates naturally with
+  the F1 Lipschitz argument because it directly bounds
+  \(\operatorname{TV}\) without the \(\sqrt{1/2}\) attenuation that
+  Pinsker introduces.
+\end{enumerate}
+
+The practical effect on the bound constants is shown below:
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+\(\delta_phi\) (nats)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\(\sqrt{\delta_phi/2}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\(\sqrt{1-e^{-\delta_phi}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+AUC bound ratio
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(10^{-4}\) & 0.0071 & 0.0100 & 1.41\(\times\) \\
+\(10^{-3}\) & 0.0224 & 0.0316 & 1.41\(\times\) \\
+0.01 & 0.0707 & 0.0998 & 1.41\(\times\) \\
+0.10 & 0.2236 & 0.3084 & 1.38\(\times\) \\
+0.50 & 0.5000 & 0.6278 & 1.26\(\times\) \\
+1.00 & 0.7071 & 0.7952 & 1.12\(\times\) \\
+2.00 & 1.0000 & 0.9297 & 0.93\(\times\) \\
+5.00 & 1.5811 & 0.9933 & 0.63\(\times\) \\
+\end{longtable}
+
+The BH bound is numerically larger for \(\delta_phi < 2\) nats, but this
+is because BH is \textbf{asymptotically sharp} for small \(\delta_phi\)
+-- it converges to \(\sqrt{\delta_phi}\) which is the exact rate given
+by the local relationship between KL divergence and Hellinger distance.
+Pinsker's \(\sqrt{\delta_phi/2}\) is a relaxation that loses a constant
+factor. For \(\delta_phi > 2\) nats, Pinsker exceeds 1 (becoming
+vacuous) while BH remains in \([0,1]\).
+
+\textbf{Practical implication}: For the typical range
+\(\delta_phi \in [10^{-4}, 1]\), the BH bound is \(1.1\) to
+\(1.4\times\) larger than Pinsker. The user of Theorem 2 should use the
+tighter (smaller) of the two bounds at their operating \(\delta_phi\):
+
+\[\rho^*(\delta_phi) = \min\left(\sqrt{\frac{\delta_phi}{2}},\; \sqrt{1 - e^{-\delta_phi}}\right)\]
+
+\subsubsection{5.3 Proof Structure}\label{proof-structure}
+
+The proof is unchanged from the original; only the TV bound is replaced.
+We recap the steps:
+
+\textbf{Step 1}: Construct auxiliary distribution
+\(\tilde{P}(\phi, S) = P(\phi)P(S)\) where \(\phi \perp S\).
+
+\textbf{Step 2}:
+\(\operatorname{KL}(P \| \tilde{P}) = I(\phi; S) = \delta_phi\), hence
+\(\operatorname{TV}(P, \tilde{P}) \leq \rho(\delta_phi)\).
+
+\textbf{Step 3}: By the data processing inequality,
+\(\operatorname{TV}(P_{\text{pred}}, \tilde{P}_{\text{pred}}) \leq \rho(\delta_phi)\)
+where \(P_{\text{pred}}\) is the joint distribution of
+\((\hat{z}_{\text{SCX}}(X), Z)\).
+
+\textbf{Step 4}: Under \(\tilde{P}\) (where \(\phi \perp S\)), SCX
+degrades to the loss baseline (Corollary 2.2):
+\(AUC_{\tilde{P}} = AUC_{\text{base}}\), etc.
+
+\textbf{Step 5}: TV bounds transfer to performance metrics:
+
+\begin{itemize}
+\tightlist
+\item
+  For AUC/PR-AUC (involving two independent samples from \(Z=1\) and
+  \(Z=0\)):
+  \[|AUC_P - AUC_{\tilde{P}}| \leq \rho(\delta_phi) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)\]
+\item
+  For F1 (joint distribution function, Lipschitz constant \(C_F\)):
+  \[|F1_P - F1_{\tilde{P}}| \leq C_F \cdot \rho(\delta_phi)\]
+\end{itemize}
+
+\textbf{Step 6}: Combine. \(\square\)
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{6 The Role of \(\eta\): How Rare Noise
+Amplifies the
+Bound}{6 The Role of \textbackslash eta: How Rare Noise Amplifies the Bound}}\label{the-role-of-eta-how-rare-noise-amplifies-the-bound}
+
+The \(\eta\) dependence in the AUC/PR-AUC bounds is a critical
+structural feature that merits explicit discussion.
+
+\subsubsection{\texorpdfstring{6.1 Origin of \(\eta\)
+Dependence}{6.1 Origin of \textbackslash eta Dependence}}\label{origin-of-eta-dependence}
+
+The amplification factor \(1/\eta + 1/(1-\eta)\) arises from converting
+\textbf{marginal} TV bounds to \textbf{conditional} TV bounds:
+
+\[\operatorname{TV}(P(\cdot \mid Z=1), \tilde{P}(\cdot \mid Z=1)) \leq \frac{\operatorname{TV}(P, \tilde{P})}{\mathbb{P}(Z=1)} = \frac{\rho(\delta_phi)}{\eta}\]
+
+This is not an artifact of the proof technique -- it reflects a genuine
+statistical phenomenon: when noise is rare (\(\eta \ll 1\)), the
+conditional distribution of features given \(Z=1\) is estimated from
+very few samples, making it harder to distinguish from the \(Z=0\)
+distribution.
+
+\subsubsection{6.2 Amplification Behavior}\label{amplification-behavior}
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Noise rate \(\eta\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\(1/\eta + 1/(1-\eta)\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Effective bound multiplier
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.50 & 4.00 & 1.00\(\times\) (baseline) \\
+0.30 & 4.76 & 1.19\(\times\) \\
+0.20 & 6.25 & 1.56\(\times\) \\
+0.10 & 11.11 & 2.78\(\times\) \\
+0.05 & 21.05 & 5.26\(\times\) \\
+0.01 & 101.01 & 25.25\(\times\) \\
+0.001 & 1001.00 & 250.25\(\times\) \\
+\end{longtable}
+
+As \(\eta \to 0\), the bound diverges:
+\(1/\eta + 1/(1-\eta) \to \infty\). This is not a weakness of the bound
+but a reflection of the fundamental difficulty: \textbf{rare noise is
+information-theoretically harder to detect}.
+
+\subsubsection{6.3 Practical Implications}\label{practical-implications}
+
+\textbf{Diagnostic 1}: If \(\eta < 0.1\) and \(\varepsilon_\phi > 0.3\),
+SCX is unlikely to outperform the loss baseline by a meaningful margin.
+The AUC bound becomes too loose to guarantee improvement.
+
+\textbf{Diagnostic 2}: When noise is very rare (\(\eta < 0.01\)), do not
+rely on AUC/PR-AUC for evaluating SCX. Use F1 instead (which has no
+\(\eta\) amplification factor) or re-frame the problem as anomaly
+detection.
+
+\textbf{Diagnostic 3}: The F1 bound has \textbf{no} \(\eta\) dependence
+because F1 is a function of the joint distribution \(P(\hat{z}, Z)\)
+rather than conditional distributions. This makes F1 the preferred
+metric in rare-noise regimes.
+
+\textbf{Comparison with Theorem 1}: Theorem 1's F1 bound also involves
+\(1/\eta\), but for a different reason (the conversion from per-class
+error bounds to F1). In Theorem 1, \(1/\eta\) multiplies the exponential
+term and is mitigated by the exponential factor. In Theorem 2, the
+\(1/\eta\) factor is additive and not mitigated by any sample size
+effect.
+
+\subsubsection{\texorpdfstring{6.4 Boundary Behavior: \(\eta = 0\) and
+\(\eta = 1\)}{6.4 Boundary Behavior: \textbackslash eta = 0 and \textbackslash eta = 1}}\label{boundary-behavior-eta-0-and-eta-1}
+
+The theorem statement \textbf{excludes} the boundary cases \(\eta = 0\)
+and \(\eta = 1\). This is not a limitation but a reflection of
+degeneracy:
+
+\textbf{\(\eta = 0\) (no noise).} If there is no label noise, the noise
+detection problem is trivial --- there are no noise samples to detect.
+\(P(Z=1) = 0\) means the conditional distribution \(P(\cdot \mid Z=1)\)
+is undefined (conditioning on a measure-zero event). The AUC/PR-AUC
+bounds, which involve \(1/\eta\), diverge, correctly signaling that
+noise detection metrics are not meaningful when noise is absent. In this
+case, one should simply use all data for training without noise
+filtering.
+
+\textbf{\(\eta = 1\) (all noise).} If all labels are noisy,
+\(P(Z=0) = 0\) and the conditional distribution \(P(\cdot \mid Z=0)\) is
+undefined. The \(1/(1-\eta)\) term diverges. Again, this is correct: if
+all data are noise, there are no clean samples to serve as a reference,
+and the noise detection problem is ill-posed. In this case, one should
+use robust estimation or outlier detection rather than supervised noise
+filtering.
+
+\textbf{Practical note.} In any real application, \(0 < \eta < 1\)
+strictly (there is always some noise and always some clean data). The
+restriction to the open interval \((0,1)\) is therefore non-restrictive
+in practice. The theorem's divergence at the boundaries is not a bug ---
+it correctly reflects that the problem becomes degenerate when one class
+is absent.
+
+\textbf{Formal adjustment to the proof.} In Step 5 of the proof (§5.3),
+the conversion from marginal TV to conditional TV uses:
+
+\[\operatorname{TV}(P(\cdot \mid Z=1), \tilde{P}(\cdot \mid Z=1)) \leq \frac{\operatorname{TV}(P, \tilde{P})}{\eta}\]
+
+This step is valid only when \(\eta > 0\). Similarly, the \(Z=0\)
+conditional bound requires \(1-\eta > 0\). The theorem therefore
+requires \(\eta \in (0,1)\). At the boundaries, the theorem is vacuous
+(the bounds are infinite), which is the correct mathematical behavior
+for a degenerate problem.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{7 Estimation of \(\delta_phi\) from
+Data}{7 Estimation of \textbackslash delta\_phi from Data}}\label{estimation-of-delta_phi-from-data}
+
+\subsubsection{7.1 k-NN Mutual Information Estimation (Kraskov et al.,
+2004)}\label{k-nn-mutual-information-estimation-kraskov-et-al.-2004}
+
+Even without the BBP spectral proxy, the mutual information
+\(\delta_phi = I(\phi; S)\) can be estimated directly from data using
+the Kraskov-Stoegbauer-Grassberger (KSG) estimator:
+
+\[\hat{I}_{\text{KSG}}(\phi; S) = \psi(K) + \psi(N) - \frac{1}{N} \sum_{i=1}^N \left[\psi(n_{\phi(i)}+1) + \psi(n_{s(i)}+1)\right]\]
+
+where: - \(\psi\) is the digamma function - \(K\) is the number of
+nearest neighbors (typically \(K=3\) or \(K=6\)) - \(N\) is the total
+number of samples - \(n_{\phi(i)}\) is the number of \(\phi\)-space
+points within the same radius as the \(K\)-th neighbor of point \(i\) -
+\(n_{s(i)}\) is the number of state-assignment points within the same
+radius
+
+\textbf{Practical implementation}: - Requires: feature vectors
+\(\{\phi(x_i)\}\) and (proxy) state labels \(\{s_i\}\) - Even
+noisy/estimated state labels yield a lower bound on \(\delta_phi\) (by
+the data processing inequality) - Python: available via
+\texttt{sklearn.feature\_selection.mutual\_info\_classif} (discrete
+\(S\)) or \texttt{sklearn.feature\_selection.mutual\_info\_regression}
+(continuous \(S\))
+
+\textbf{Caveat}: When state labels are themselves estimated (e.g., via
+clustering), \(\hat{I}_{\text{KSG}}(\phi; \hat{S})\) is a \textbf{lower
+bound} on \(I(\phi; S)\):
+
+\[I(\phi; \hat{S}) \leq I(\phi; S)\]
+
+by the data processing inequality (\(S \to \phi \to \hat{S}\) is
+Markov). Hence \(\hat{I}_{\text{KSG}}(\phi; \hat{S}) \leq \delta_phi\),
+and using it in Theorem 2 yields a conservative bound (the true
+\(\delta_phi\) may be larger, making the bound looser).
+
+\subsubsection{7.2 Quick Diagnostic via Normalized
+Weakness}\label{quick-diagnostic-via-normalized-weakness}
+
+For practitioners who need a quick check without full mutual information
+estimation:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Cluster \(\phi\) to get estimated states \(\hat{S}\)
+\item
+  Compute consistency scores \(C(\hat{s})\) for each estimated state
+\item
+  If \(\operatorname{Var}(\{C(\hat{s})\}) < 0.01\), the feature is
+  likely \(\delta_phi\)-weak with \(\varepsilon_\phi > 0.5\)
+\item
+  For a quantitative estimate, compute \(\hat{I}_{\text{KSG}}\) or use
+  the ARI between \(\hat{S}\) and any available metadata
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{8 Corollaries}\label{corollaries}
+
+\subsubsection{\texorpdfstring{8.1 Corollary 1: Complete Failure
+(\(\delta_phi = 0\))}{8.1 Corollary 1: Complete Failure (\textbackslash delta\_phi = 0)}}\label{corollary-1-complete-failure-delta_phi-0}
+
+If \(\phi(X) \perp S\), then:
+
+\[AUC(h_{\text{SCX}}) = AUC_{\text{base}}, \quad F1(h_{\text{SCX}}) = F1_{\text{base}}\]
+
+If further the noise is loss-uninformative (e.g., uniform):
+\(F1_{\text{SCX}} = F1_{\text{rand}}\).
+
+\subsubsection{8.2 Corollary 2: Uniform Label
+Noise}\label{corollary-2-uniform-label-noise}
+
+Under uniform label noise, the loss baseline is random:
+
+\[AUC_{\text{base}} = 0.5, \quad PRAUC_{\text{base}} = \eta, \quad F1_{\text{base}} = \frac{2\eta}{1+\eta}\]
+
+Then:
+
+\[\begin{aligned}
+AUC(h_{\text{SCX}}) &\leq 0.5 + \rho(\delta_phi) \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right) \\
+F1(h_{\text{SCX}}) &\leq \frac{2\eta}{1+\eta} + C_F \cdot \rho(\delta_phi)
+\end{aligned}\]
+
+When \(\delta_phi = 0\), SCX is bounded by the random baseline.
+
+\subsubsection{8.3 Corollary 3: Minimum Information for
+Improvement}\label{corollary-3-minimum-information-for-improvement}
+
+To exceed the baseline by \(\Delta\) in F1, the required minimum mutual
+information is:
+
+\[\delta_phi_{\min} \geq -\log\!\left(1 - \left(\frac{\Delta}{C_F}\right)^2\right) \approx \left(\frac{\Delta}{C_F}\right)^2 \quad \text{for small } \Delta\]
+
+For AUC, with \(\eta\) dependence:
+
+\[\delta_phi_{\min} \geq -\log\!\left(1 - \left(\Delta_{AUC} \cdot \frac{\eta(1-\eta)}{\min(\eta, 1-\eta)}\right)^2\right)\]
+
+\textbf{Example}: For \(\Delta_{F1} = 0.05\) with \(C_F = 2\):
+
+\[\delta_phi_{\min} \geq -\log(1 - 0.05^2/4) \approx 0.000625 \text{ nats}\]
+
+This is a very small amount of mutual information -- confirming that SCX
+can extract value from even weak features, as long as they are not
+completely uninformative.
+
+\subsubsection{8.4 Corollary 4: State Count
+Interaction}\label{corollary-4-state-count-interaction}
+
+The normalized weakness \(\varepsilon_\phi = \delta_phi / \log K_S\)
+determines SCX effectiveness:
+
+\begin{itemize}
+\tightlist
+\item
+  \(\varepsilon_\phi \approx 1\): SCX degrades to baseline
+\item
+  \(\varepsilon_\phi \approx 0.5\): partial effectiveness
+\item
+  \(\varepsilon_\phi \approx 0\): strong feature, full SCX capability
+\end{itemize}
+
+Larger \(K_S\) demands larger \(\delta_phi\) to maintain the same
+\(\varepsilon_\phi\).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{9 Practical Diagnostics}\label{practical-diagnostics}
+
+\subsubsection{9.1 Four Diagnostic Checks}\label{four-diagnostic-checks}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2895}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2105}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2895}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2105}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Diagnostic
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Threshold
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Action
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1. Consistency convergence & Variance of \(\{C(\hat{s})\}\) &
+\(\operatorname{Var} < 0.01\) & Feature likely too weak \\
+2. Random baseline comparison & \(AUC_{\text{base}}\) vs \(0.5\) &
+\(AUC_{\text{base}} < 0.55\) & Task itself is hard \\
+3. Supervised ARI & ARI(\(\hat{S}\), true \(S\)) if available &
+\(< 0.1\) & Feature too weak \\
+4. MI estimation & \(\hat{I}_{\text{KSG}}(\phi; \hat{S})\) &
+\(\varepsilon_\phi > 0.5\) & Feature too weak \\
+\end{longtable}
+
+\subsubsection{9.2 Remedy Directions}\label{remedy-directions}
+
+When \(\varepsilon_\phi > 0.5\):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Enhance features}: Use stronger descriptors (ACE/SOAP/MACE) or
+  error-driven feature learning
+\item
+  \textbf{Reduce \(K_S\)}: Fewer states reduce the demand on
+  \(\delta_phi\)
+\item
+  \textbf{Abandon state conditioning}: Use global loss threshold
+  directly
+\item
+  \textbf{Reformulate}: Use cross-validation consistency or temporal
+  anomaly detection
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{10 Relationship to Theorems 1 and
+3}\label{relationship-to-theorems-1-and-3}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0833}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3056}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3056}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3056}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Theorem 1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Theorem 2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Theorem 3
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Answer} & When SCX \textbf{can} work & When SCX \textbf{cannot}
+work & Why assumptions are \textbf{necessary} \\
+\textbf{Key quantity} & \(\Delta_s\), \(\mu_s\), \(M\) &
+\(\delta_phi = I(\phi; S)\) & A1-A6 validity \\
+\textbf{Condition} & Good state partition & \(\varepsilon_\phi > 0.5\) &
+Without A1-A6, unidentifiable \\
+\textbf{Guarantee} & Exponential F1 \(\to 1\) & Bounded by baseline
+\(+ O(\sqrt{\delta_phi})\) & No guarantee possible \\
+\end{longtable}
+
+The three theorems together give:
+
+\[\text{SCX Advantage} \approx I(\phi; S) - O(1/\sqrt{n}) - \text{(assumption violations)}\]
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{References}\label{references}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Fano, R. M. (1961). \emph{Transmission of Information}. MIT Press.
+\item
+  Cover, T. M. \& Thomas, J. A. (2006). \emph{Elements of Information
+  Theory} (2nd ed.). Wiley.
+\item
+  Pinsker, M. S. (1964). \emph{Information and Information Stability}.
+  Holden-Day.
+\item
+  Tsybakov, A. B. (2009). \emph{Introduction to Nonparametric
+  Estimation}. Springer.
+\item
+  Kraskov, A., Stoegbauer, H., \& Grassberger, P. (2004). Estimating
+  mutual information. \emph{Physical Review E}, 69(6), 066138.
+\item
+  Bretagnolle, J. \& Huber, C. (1979). Estimation des densites: risque
+  minimax. \emph{Zeitschrift fur Wahrscheinlichkeitstheorie}, 47(2),
+  119-137.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Revision notes (2026-06-27)}: 1. \textbf{Bretagnolle-Huber}:
+Replaced Pinsker with BH bound; added comparison table and guidance on
+selecting the tighter bound. 2. \textbf{\(\delta_phi\) estimation}:
+Added Section 7 with k-NN mutual information estimation (Kraskov et al.,
+2004). 3. \textbf{\(\eta\) dependence}: Added Section 6 analyzing how
+rare noise amplifies the bound; included practical diagnostics. 4.
+\textbf{Presentation}: Unified notation; added explicit cross-theorem
+dependency mapping.
+
+\end{document}

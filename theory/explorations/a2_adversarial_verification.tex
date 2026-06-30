@@ -1,0 +1,501 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{ctexart}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{SCX}
+\date{2026}
+
+\begin{document}
+
+\section{Adversarial Verification: Conditional Independence of
+Bootstrap-Trained Expert Error
+Indicators}\label{adversarial-verification-conditional-independence-of-bootstrap-trained-expert-error-indicators}
+
+\textbf{Claim under review}: If M experts are trained on independent
+bootstrap samples D\_1, \ldots, D\_M (drawn i.i.d. with replacement from
+the dataset), then their error indicators e\_m(x) = 1\{ℓ(f\_m(x), y)
+\textgreater{} τ\} are conditionally independent given the test point x.
+
+\textbf{Reference assumptions}: The paper's A1 requires DISJOINT
+independent training sets (D\_m ∩ D\_\{m'\} = ∅), which differs
+fundamentally from bootstrap. See below.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Attack 1: Bootstrap samples are NOT independent --- the
+claim's premise is
+false}\label{attack-1-bootstrap-samples-are-not-independent-the-claims-premise-is-false}
+
+\textbf{Description}: The claim asserts ``D\_1, \ldots, D\_M are
+independent by construction (bootstrap).'' This is mathematically
+incorrect.
+
+Bootstrap with replacement from the same finite dataset D\_original =
+\{z\_1, \ldots, z\_N\} works as follows:
+
+\begin{itemize}
+\tightlist
+\item
+  D\_m = \{Z\_\{I\_\{m,1\}\}, \ldots, Z\_\{I\_\{m,n\}\}\} where each
+  index I\_\{m,j\} is drawn uniformly from \{1, \ldots, N\} with
+  replacement.
+\item
+  D\_1 and D\_2 are functions of (D\_original, ξ\_1) and (D\_original,
+  ξ\_2) respectively, where ξ\_1, ξ\_2 are independent index sets.
+\end{itemize}
+
+For a \textbf{fixed} D\_original, D\_1 and D\_2 are conditionally
+independent given D\_original. But if D\_original is itself random
+(which is the standard statistical setting --- the training data is a
+random sample from population D), then:
+
+P(D\_1 ∈ A, D\_2 ∈ B) = E{[} P(D\_1 ∈ A \textbar{} D\_original) · P(D\_2
+∈ B \textbar{} D\_original) {]}
+
+Since P(D\_1 ∈ A \textbar{} D\_original) and P(D\_2 ∈ B \textbar{}
+D\_original) are both functions of the same random D\_original, they are
+generally correlated. The expectation of the product does not factor:
+
+E{[}U · V{]} ≠ E{[}U{]} · E{[}V{]} when U, V are correlated.
+
+Therefore, D\_1 and D\_2 are \textbf{not unconditionally independent}.
+Step 1 of the proof is wrong.
+
+\textbf{Concrete counterexample}: Let D\_original = \{Z\_1, Z\_2\} with
+Z\_1, Z\_2 \textasciitilde{} Bernoulli(p) i.i.d. (so N=2). Draw
+bootstrap samples of size n=1 (one element each). Then:
+
+\begin{itemize}
+\tightlist
+\item
+  P(D\_1 = \{1\}) = P(Z\_1=1 or Z\_2=1) = 1 - (1-p)\^{}2 = 2p - p\^{}2
+\item
+  P(D\_1 = \{1\}, D\_2 = \{1\}) = P(∃ i,j: Z\_i=1 and Z\_j=1) = 1 -
+  P(all Z's = 0) - 2·P(exactly one Z=1, other draws that one) \ldots{}
+  more directly:
+\end{itemize}
+
+P(D\_1=\{1\}, D\_2=\{1\}) = P(at least one Z=1)² ? No.~Let me compute:
+
+P(D\_1=\{1\} \textbar{} D\_original) = 1\{Z\_1=1 or Z\_2=1\}
+P(D\_2=\{1\} \textbar{} D\_original) = 1\{Z\_1=1 or Z\_2=1\}
+
+So P(D\_1=\{1\}, D\_2=\{1\}) = E{[}1\{Z\_1=1 or Z\_2=1\}²{]} = P(Z\_1=1
+or Z\_2=1) = 2p - p²
+
+And P(D\_1=\{1\})·P(D\_2=\{1\}) = (2p - p²)²
+
+These are equal only when 2p - p² ∈ \{0, 1\}, i.e., p ∈ \{0, 1\}. For
+any non-degenerate p ∈ (0,1): 2p - p² ≠ (2p - p²)² because 2p - p² ∈
+(0,1).
+
+Thus D\_1 and D\_2 are \textbf{not independent}. They are equal with
+positive probability due to both depending on the same D\_original.
+
+\textbf{Verdict: FAIL} --- The very first step of the proof is false.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Attack 2: The proof sketch ignores the shared label
+y}\label{attack-2-the-proof-sketch-ignores-the-shared-label-y}
+
+\textbf{Description}: The proof states ``e\_m(x) depends only on
+f\_m(x).'' This is false. The error indicator is:
+
+e\_m(x, y) = 1\{ℓ(f\_m(x), y) \textgreater{} τ\}
+
+It depends on \textbf{both} f\_m(x) and the observed label y. Since y is
+a single random variable shared across all M experts, it creates a
+common source of randomness. Even if f\_m(x) are independent, the
+indicators e\_1, \ldots, e\_M all depend on the same y, so they are not
+independent unless y is degenerate.
+
+\textbf{Resolution}: The claim can be salvaged if y is
+\textbf{independent} of the vector (f\_1(x), \ldots, f\_M(x)). In the
+paper's setting, A4 states that the label noise is independent of all
+D\_m and x. Under the paper's A1 (disjoint datasets), combined with a
+proper train-test split (x not in any D\_m), we have:
+
+\begin{itemize}
+\tightlist
+\item
+  f\_m(x) depends only on D\_m
+\item
+  y is independent of \{D\_1, \ldots, D\_M\} (by train-test split + A4)
+\item
+  Therefore, y is independent of (f\_1(x), \ldots, f\_M(x))
+\end{itemize}
+
+In that case, e\_m(x,y) = g(f\_m(x), y) where g(a,b) = 1\{ℓ(a,b)
+\textgreater{} τ\}. Since (f\_1(x), \ldots, f\_M(x), y) are independent
+random variables, and e\_m depends only on (f\_m(x), y), the indicators
+e\_1, \ldots, e\_M are \textbf{not} fully independent of each other
+(they share y), but they ARE conditionally independent given y (or given
+any σ-algebra that fixes y). However, the claim says ``conditional
+independence given x'' not ``given x and y.''
+
+\textbf{More precise analysis}: Define e\_m = 1\{ℓ(f\_m(x), y)
+\textgreater{} τ\}. Are e\_1 and e\_2 independent? Let's check:
+
+P(e\_1 = 1, e\_2 = 1 \textbar{} x) = E{[} P(e\_1=1, e\_2=1 \textbar{} x,
+f\_1, f\_2, y) \textbar{} x {]} = E{[} 1\{ℓ(f\_1(x), y) \textgreater{}
+τ\} · 1\{ℓ(f\_2(x), y) \textgreater{} τ\} \textbar{} x {]}
+
+If y is independent of (f\_1, f\_2) given x, then: = ∫ P(ℓ(f\_1(x), y)
+\textgreater{} τ, ℓ(f\_2(x), y) \textgreater{} τ \textbar{} x, f\_1,
+f\_2) dP(f\_1, f\_2 \textbar{} x)
+
+The inner probability involves the same y, so it does not factor as
+P(ℓ(f\_1(x), y) \textgreater{} τ \textbar{} f\_1) · P(ℓ(f\_2(x), y)
+\textgreater{} τ \textbar{} f\_2). The indicators are \textbf{correlated
+through y}.
+
+However, if we condition on y as well (i.e., ``given x and y''), then:
+
+P(e\_1=1, e\_2=1 \textbar{} x, y) = P(ℓ(f\_1(x), y) \textgreater{} τ
+\textbar{} x, y) · P(ℓ(f\_2(x), y) \textgreater{} τ \textbar{} x, y)
+
+which factors because f\_1(x) and f\_2(x) are independent given x, and y
+is now fixed by conditioning.
+
+\textbf{The proof's error}: The proof says ``e\_m(x) depends only on
+f\_m(x)'' --- this is simply wrong. It depends on f\_m(x) AND y. The
+author appears to have forgotten that e\_m takes two arguments, not one.
+
+\textbf{Verdict: FAIL} --- The proof sketch contains a concrete
+mathematical error. The claim IS true if we condition on both x and y,
+but the proof as written is incorrect.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Attack 3: Fatal mismatch between the claim and the paper's
+A1}\label{attack-3-fatal-mismatch-between-the-claim-and-the-papers-a1}
+
+\textbf{Description}: The paper's A1 states:
+
+\[D_m \sim \mathcal{D}^{n_m}, \quad D_m \cap D_{m'} = \varnothing, \quad D_m \perp D_{m'} \text{ for } m \neq m'\]
+
+This requires: 1. \textbf{Disjoint} training sets (no overlap) 2. Fresh
+i.i.d. draws from the population distribution
+
+The claim substitutes ``bootstrap samples drawn i.i.d. with replacement
+from the dataset,'' which is: 1. \textbf{Overlapping} (bootstrap
+resamples from the same data) 2. Drawn from a \textbf{single fixed
+dataset}, not from the population distribution
+
+These are fundamentally different sampling regimes:
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Property & Paper (A1) & Claim \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Overlap? & Never (disjoint) & Frequent (with replacement) \\
+Source & Population D & Fixed dataset \\
+Independence & Unconditional & Conditional on dataset only \\
+\# of distinct samples & n\_1 + \ldots{} + n\_M & At most N (original
+size) \\
+\end{longtable}
+
+The paper's Lemma 1, Lemma 2, and main theorem were constructed on the
+assumption of disjoint training sets. Swapping in bootstrap invalidates
+those proofs. For example, Lemma 1 computes:
+
+E{[}C(x) \textbar{} clean, x{]} = (1/M) Σ\_m P(ℓ(f\_m(x), y)
+\textgreater{} τ \textbar{} clean, x)
+
+Under bootstrap, f\_m are \textbf{not independent}, so the average of
+e\_m has different concentration properties than what the paper's
+Chernoff bounds assume.
+
+\textbf{Verdict: FAIL} --- The claim investigates a different setting
+than the paper's. The claim's premise (bootstrap) contradicts the
+paper's A1 (disjoint).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Attack 4: Non-deterministic training and hidden shared
+randomness}\label{attack-4-non-deterministic-training-and-hidden-shared-randomness}
+
+\textbf{Description}: The claim assumes f\_m = A(D\_m) where A is
+deterministic. In practice:
+
+\begin{itemize}
+\tightlist
+\item
+  Deep learning uses stochastic gradient descent with random minibatch
+  order
+\item
+  Random initialization
+\item
+  Data augmentation randomness (random crops, flips)
+\item
+  GPU non-determinism (atomic operation ordering)
+\item
+  Dropout
+\end{itemize}
+
+If A is not deterministic, then f\_m = A(D\_m, ξ\_m) where ξ\_m captures
+the training noise. The claim's step 2 (``f\_m depends only on D\_m'')
+becomes false.
+
+\textbf{However}: This is \textbf{fixable} if we assume the ξ\_m are
+independent across experts and independent of D\_m. Then the argument
+extends: f\_m depends on (D\_m, ξ\_m), all of which are independent
+across m. The claim would then hold conditional on x and y (assuming the
+ξ\_m and D\_m are independent of (x, y)).
+
+\textbf{Edge case}: If all experts use the same random seed, ξ\_m = ξ
+for all m, creating shared randomness across experts. In this case,
+f\_1, \ldots, f\_M share the same ξ, breaking conditional independence.
+This is a real practical concern.
+
+\textbf{Edge case}: GPU non-determinism is not ``randomness'' in the
+usual sense --- it's deterministic chaos from parallel floating-point
+operations. It cannot be modeled as independent ξ\_m without explicit
+intervention (e.g., forcing separate CUDA streams).
+
+\textbf{Verdict: PASS} (with caveats) --- In theory, the randomness can
+be made explicit and independent. In practice, shared seeds or GPU
+non-determinism can create subtle dependencies. This is not fatal to the
+mathematical claim if the independence of ξ\_m is explicitly assumed.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Attack 5: ``Independent random functions'' does not
+automatically imply pointwise independence for random test
+points}\label{attack-5-independent-random-functions-does-not-automatically-imply-pointwise-independence-for-random-test-points}
+
+\textbf{Description}: The claim says ``f\_m are independent random
+functions, therefore f\_m(x) are independent for fixed x.'' This is
+mathematically correct for a \textbf{deterministic} x. However:
+
+\begin{itemize}
+\tightlist
+\item
+  The paper's main results involve expectations over the test
+  distribution, not a single fixed x.
+\item
+  If x is random (X), the statement ``e\_1(X), \ldots, e\_M(X) are
+  independent given X'' is a statement about regular conditional
+  probabilities.
+\item
+  For continuous X, the event \{X = x\} has measure zero, requiring
+  careful use of regular conditional probabilities.
+\end{itemize}
+
+\textbf{This is technically standard} --- the almost-sure definition of
+conditional independence works. So this is not a genuine flaw, merely a
+technical subtlety.
+
+\textbf{Verdict: PASS} --- Standard measure-theoretic conditioning
+handles this.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Attack 6: In the bootstrap setting, overlapping training
+data creates dependence beyond
+D\_original}\label{attack-6-in-the-bootstrap-setting-overlapping-training-data-creates-dependence-beyond-d_original}
+
+\textbf{Description}: Even when D\_original is treated as fixed
+(conditional inference), bootstrap samples are conditionally independent
+given D\_original. However, there is a deeper issue:
+
+Two bootstrap samples D\_1 and D\_2 can share specific training
+examples. For instance, if D\_original contains a unique outlier z* (an
+image with a rare artifact), and both D\_1 and D\_2 include z\emph{,
+both f\_1 and f\_2 will have seen this outlier. Their predictions on
+test points similar to z} will be correlated in a way that is NOT
+captured by the independence assumption --- they share information about
+z*.
+
+Formally: P(f\_1(x) = c \textbar{} D\_original) and P(f\_2(x) = c
+\textbar{} D\_original) are both influenced by the same D\_original. The
+conditional independence given D\_original is fine, but the
+unconditional distribution of f\_1 and f\_2 (integrating over
+D\_original) reflects the fact that both experts ``see'' the same data
+generating process.
+
+For the paper's concentration bounds, what matters is:
+
+P(\textbar C(x) - E{[}C(x){]}\textbar{} \textgreater{} ε \textbar{} x)
+
+If we use the conditional independence given D\_original, we get:
+
+P(\textbar C(x) - E{[}C(x){]}\textbar{} \textgreater{} ε \textbar{} x,
+D\_original) ≤ 2 exp(-2Mε²)
+
+But then taking expectations over D\_original:
+
+P(\textbar C(x) - E{[}C(x){]}\textbar{} \textgreater{} ε \textbar{} x) ≤
+E{[}2 exp(-2Mε²) \textbar{} x{]} = 2 exp(-2Mε²)
+
+Wait --- this works because the bound is constant! In this case, the
+unconditional bound is the same. But if the bound depends on D\_original
+(e.g., if the mean μ varies with D\_original), then:
+
+P(\textbar C(x) - E{[}C(x){]}\textbar{} \textgreater{} ε \textbar{} x) =
+E{[}P(\textbar C(x) - E{[}C(x){]}\textbar{} \textgreater{} ε \textbar{}
+x, D\_original){]} ≤ E{[}2 exp(-2Mε²){]} = 2 exp(-2Mε²) ← still OK
+because bound is constant
+
+Actually, the issue is more subtle for the Chernoff bound used in the
+paper. The bound depends on the mean μ\_s, which is an unconditional
+expectation. If we only have conditional independence given D\_original,
+the Chernoff bound would involve the conditional mean given D\_original,
+which is random.
+
+\textbf{This attack is a variant of Attack 1} and is ultimately fatal to
+the bootstrap interpretation.
+
+\textbf{Verdict: FAIL} (same root cause as Attack 1)
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Attack 7: The label y might come from the same distribution
+as the training data, creating subtle
+dependence}\label{attack-7-the-label-y-might-come-from-the-same-distribution-as-the-training-data-creating-subtle-dependence}
+
+\textbf{Description}: In the paper's label noise model (A4), the
+observed label y is:
+
+y = y* (true label) with probability 1-η y = Uniform(Y ~\{y*\}) with
+probability η
+
+The label noise is independent of D\_m. But the true label y* =
+f\emph{(x) depends on x, which is the test point. If x is from the test
+set (properly separated), then y} is independent of D\_m, and the claim
+holds.
+
+\textbf{But what if the claim's ``bootstrap'' setting includes the
+possibility that x comes from the training data?} In bootstrap
+validation (like out-of-bag estimation), some test points may have been
+seen in some bootstrap samples. If x ∈ D\_1 (overlap between train and
+``test''), then:
+
+\begin{itemize}
+\tightlist
+\item
+  f\_1(x) is trained on x itself, creating a data leakage
+\item
+  y is not independent of D\_1 (since the pair (x, y) might be in D\_1)
+\item
+  e\_1(x) and e\_2(x) now have a complex dependence structure through
+  the shared (x, y) in D\_1
+\end{itemize}
+
+This breaks the conditional independence argument entirely. For a proper
+test point (not in any training set), this doesn't apply. But the claim
+doesn't specify train-test separation.
+
+\textbf{Verdict: FAIL} --- The claim uses ``test point x'' language but
+doesn't ensure x is not in any bootstrap sample. For proper evaluation
+(new unseen test data), this can be assumed away, but the bootstrap
+framing makes it ambiguous.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Final Verdict}\label{final-verdict}
+
+\textbf{The claim IS NOT rigorous.} There are 4 significant issues, 3 of
+which are fatal:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Attack
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Severity
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Verdict
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Bootstrap samples are not independent & \textbf{Fatal} --- step 1 of
+proof is false & FAIL \\
+2 & Proof ignores the shared label y & \textbf{Fatal} --- proof contains
+mathematical error & FAIL \\
+3 & Mismatch with paper's A1 (disjoint vs bootstrap) & \textbf{Fatal}
+--- different sampling regime & FAIL \\
+6 & Bootstrap overlap creates dependence through D\_original &
+\textbf{Fatal} --- variant of Attack 1 & FAIL \\
+7 & Training-test leakage in bootstrap & \textbf{Fatal} --- not
+specified & FAIL \\
+4 & Non-deterministic training & Caveat, fixable & PASS \\
+5 & Formal conditioning issues & Standard technicality & PASS \\
+\end{longtable}
+
+\textbf{Bottom line}: The claim suffers from a fatal contradiction in
+its premises (``bootstrap'' and ``independent'' are incompatible), a
+concrete mathematical error in its proof (ignoring the shared label y),
+and a mismatch with the paper's A1 assumption. Under the paper's actual
+assumption (disjoint datasets), and with a corrected proof that properly
+accounts for y, the conditional independence claim can be made rigorous
+--- but the claim as stated and its proof sketch are not correct.
+
+\end{document}

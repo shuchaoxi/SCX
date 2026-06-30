@@ -1,0 +1,601 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{ctexart}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{SCX}
+\date{2026}
+
+\begin{document}
+
+\section{Review of ``Theorem 3: Cluster Consistency of State Discovery
+Under Strong
+Features''}\label{review-of-theorem-3-cluster-consistency-of-state-discovery-under-strong-features}
+
+\textbf{Reviewer:} Hostile reviewer for the Annals of Statistics
+\textbf{Manuscript:} Theorem 3 + Corollaries 1-3, SCX Theory
+\textbf{Decision: REJECT}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1. Overall Assessment}\label{overall-assessment}
+
+\textbf{Recommendation: Reject.} The proof contains at least two fatal
+mathematical errors that invalidate the main result. The algebra in the
+central calculation is wrong, the inequality directions are reversed in
+the critical step, and the derivation of the claimed \(K = o(n^{1/3})\)
+rate is incoherent -- the author walks through multiple
+self-contradictory calculations and never arrives at a consistent
+argument. Beyond these fatal errors, the proof relies on at least five
+unstated or unjustified assumptions, confuses the population parameter
+\(\Delta_{\min}\) (a fixed property of the data) with an asymptotic
+scaling parameter, and never addresses the elephant in the room:
+\(k\)-means is NP-hard, but the proof requires the global empirical
+minimizer.
+
+I do not recommend resubmission in the current form. The authors should
+either (a) restructure the proof around a tractable algorithm (e.g.,
+Lloyd's with a suitable initialization) or (b) weaken the claim to
+``there exists a polynomial-time algorithm that\ldots{}'' -- and then
+prove it.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2. Critical Issues (Fatal If
+True)}\label{critical-issues-fatal-if-true}
+
+\subsubsection{Issue 1 (FATAL): The main misclassification bound
+diverges, not
+converges}\label{issue-1-fatal-the-main-misclassification-bound-diverges-not-converges}
+
+This is the single most serious error. The algebra in the proof implies
+the opposite of the claimed result.
+
+The proof establishes (lines 391-397):
+
+\[\text{misclassification} \leq \frac{8\delta_n}{\pi_{\min} \Delta_{\min}^2}, \qquad \delta_n = C_1 \sqrt{\frac{K \log n}{n}}\]
+
+Under the separation condition
+\(\Delta_{\min}^2 \geq C_0 \sigma^2 \frac{K \log n}{n}\), plugging the
+worst case (tightest bound, where
+\(\Delta_{\min}^2 = \Theta(K \log n / n)\)) gives:
+
+\[\text{misclassification} \leq O\left(\frac{\sqrt{K \log n / n}}{K \log n / n}\right) = O\left(\sqrt{\frac{n}{K \log n}}\right)\]
+
+The author writes in line 459 that this \(\to 0\) requires
+\(K \ll n / \log n\). \textbf{The inequality direction is reversed.} The
+quantity \(\sqrt{n / (K \log n)} \to 0\) iff \(K \log n\) grows faster
+than \(n\), i.e., \(K \gg n / \log n\). For any \(K\) that grows
+sublinearly in \(n\) (including \(K = o(n^{1/3})\)),
+\(\sqrt{n / (K \log n)} \to \infty\). The bound explodes.
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+\(K\) scaling & \(\sqrt{n / (K \log n)}\) & Behavior \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Fixed \(K\) & \(\Theta(\sqrt{n})\) & Diverges \\
+\(K = n^{1/3}\) & \(\Theta(n^{1/3} / \sqrt{\log n})\) & Diverges \\
+\(K = n / \log n\) & \(\Theta(1)\) & Constant \\
+\(K = n^{0.9}\) & \(\Theta(n^{0.05})\) & Diverges (slowly) \\
+\(K = n / \sqrt{\log n}\) & \(\Theta(n^{-1/4})\) & \textbf{Converges} \\
+\end{longtable}
+
+The only way to get convergence is \(K = \omega(n / \log n)\), which is
+a \emph{faster} growth rate -- opposite to the claimed \(o(n^{1/3})\),
+and would violate the separation condition (since centers would need to
+pack into a bounded region).
+
+\textbf{This is fatal.} The theorem's central claim -- that
+misclassification \(\to 0\) under \(K = o(n^{1/3})\) -- is
+mathematically impossible under the stated bounds.
+
+\subsubsection{Issue 2 (FATAL): The uniform convergence bound does not
+converge}\label{issue-2-fatal-the-uniform-convergence-bound-does-not-converge}
+
+In Step 2 of the proof of Theorem 3 (lines 362-377), the author sets:
+
+\[\delta_n = C_1 \sqrt{\frac{K d_\phi \log n}{n}}\]
+
+and claims:
+
+\[\log \mathbb{P}(\sup |W_n - W| > \delta_n) \leq K d_\phi \log\left(1 + \frac{8C_1 M}{\delta_n}\right) - \frac{n \delta_n^2}{32 C_1^2}\]
+
+Substituting \(\delta_n\):
+
+\begin{itemize}
+\tightlist
+\item
+  First term:
+  \(K d_\phi \log\left(1 + \frac{8C_1 M}{C_1 \sqrt{K d_\phi \log n / n}}\right) = K d_\phi \log\left(1 + \frac{8M}{\sqrt{K d_\phi \log n / n}}\right)\)
+\item
+  For large \(n\), \(\sqrt{K d_\phi \log n / n} \to 0\), so the argument
+  of \(\log\) is \(\sim \frac{8M}{\sqrt{K d_\phi \log n / n}}\), giving
+  \(\log(\cdot) \sim \frac{1}{2} \log n - \frac{1}{2} \log(K d_\phi \log n) + \text{constant}\)
+\item
+  So the first term is \(\sim \frac{K d_\phi}{2} \log n\) (up to
+  lower-order terms).
+\item
+  Second term:
+  \(\frac{n}{32 C_1^2} \cdot C_1^2 \frac{K d_\phi \log n}{n} = \frac{K d_\phi \log n}{32}\)
+\end{itemize}
+
+The total:
+\(K d_\phi \log n \left(\frac{1}{2} - \frac{1}{32}\right) + \text{lower order} = \frac{15}{32} K d_\phi \log n + o(K d_\phi \log n)\)
+
+\textbf{This is positive, not negative.} The claimed value of
+\(K d_\phi \log n - (K d_\phi \log n)/32\) (line 371) would require the
+log term to equal \(\log n\), which it does not -- it equals
+\(\frac{1}{2}\log n + o(\log n)\). The author made an algebraic mistake
+in simplifying the covering number term.
+
+As \(n \to \infty\), the probability bound tends to \(+\infty\), meaning
+the bound is vacuous. The uniform convergence does not hold at this
+\(\delta_n\) rate.
+
+\subsubsection{Issue 3 (FATAL): The proof assumes the global optimum of
+an NP-hard
+problem}\label{issue-3-fatal-the-proof-assumes-the-global-optimum-of-an-np-hard-problem}
+
+Line 89 defines \(\hat{\mu}_n^* = \arg\min W_n(\hat{\mu})\) -- the
+global empirical minimizer. The proof never addresses that \(k\)-means
+is NP-hard (Aloise et al., 2009; Dasgupta, 2008). In practice, Lloyd's
+algorithm finds a local optimum, and the gap between local and global
+minima can be arbitrarily large.
+
+The author cites Pollard (1981), but Pollard's strong consistency result
+is for the \emph{global} \(k\)-means minimizer, which Pollard himself
+notes is a theoretical construct. Extending Pollard's result to local
+optima is non-trivial -- local minima can fail to be consistent even
+when the global minimum is (see e.g., Rakhlin \& Caponnetto, 2007, who
+show that stability of Lloyd's requires additional conditions).
+
+\textbf{The paper claims a result about the algorithm SCX uses (Lloyd's
+/ \(k\)-means), but proves a result about a computationally intractable
+oracle.} This is a bridge too far.
+
+\subsubsection{Issue 4 (FATAL): Lemma 5's core calculation is
+incorrect}\label{issue-4-fatal-lemma-5s-core-calculation-is-incorrect}
+
+The argument that
+\(W(\mu) - W(\mu^*) = \sum_{k=1}^K \pi_k \cdot \delta_k^2\) (lines
+277-298) is not mathematically justified. The author writes:
+
+\[W(\mu) - W(\mu^*) = \sum_{k=1}^K \pi_k \cdot \mathbb{E}\left[ \min_j \|\mu_k - \mu_j' + \varepsilon\|_2^2 - \|\varepsilon\|_2^2 \right]\]
+
+then replaces \(\min_j\) with
+\(j^*(k) = \arg\min_j \|\mu_k - \mu_j'\|_2\), obtaining:
+
+\[\mathbb{E}\left[ \min_j \|\mu_k - \mu_j' + \varepsilon\|_2^2 \right] \geq \mathbb{E}\left[ \|\mu_k - \mu_{j^*(k)}' + \varepsilon\|_2^2 \right]\]
+
+and then computes this as
+\(\delta_k^2 + \mathbb{E}[\|\varepsilon\|_2^2]\).
+
+\textbf{Three problems:} 1. The inequality is reversed. Since \(\min_j\)
+gives the \emph{smallest} value,
+\(\min_j \|a + \varepsilon\| \leq \|a_{j^*(k)} + \varepsilon\|\) for
+\emph{any fixed} \(j^*(k)\), not \(\geq\). The author should have
+\(\leq\) here. 2. Even with the correct direction, \(j^*(k)\) depends on
+\(\varepsilon\) through the \(\min\) -- it is the index of the estimated
+center closest to \(\mu_k + \varepsilon\), not the center closest to
+\(\mu_k\). These can differ when noise is large relative to separation.
+3. The expectation of \(\|\mu_k - \mu_j' + \varepsilon\|_2^2\) is
+\(\|\mu_k - \mu_j'\|_2^2 + \mathbb{E}[\|\varepsilon\|_2^2]\) only when
+\(\varepsilon\) is independent of the center choice, which would require
+\(j\) to be fixed. But \(j^*(k)\) depends on \(\varepsilon\) (it is
+defined by the argmin), so cross-terms like
+\(\mathbb{E}[\varepsilon^\top(\mu_k - \mu_{j^*(k)}')]\) do not vanish in
+general.
+
+\textbf{This invalidates Lemma 5, which is the cornerstone of the
+identifiability argument.}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3. Major Issues (Need Substantial
+Work)}\label{major-issues-need-substantial-work}
+
+\subsubsection{\texorpdfstring{Issue 5: Confusion between fixed and
+scaling
+\(\Delta_{\min}\)}{Issue 5: Confusion between fixed and scaling \textbackslash Delta\_\{\textbackslash min\}}}\label{issue-5-confusion-between-fixed-and-scaling-delta_min}
+
+The document oscillates between two incompatible interpretations of
+\(\Delta_{\min}\):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Interpretation A} (lines 42, 69): \(\Delta_{\min}\) is a fixed
+  property of the data-generating process, determined by the true state
+  centers \(\mu_1, \dots, \mu_K\).
+\item
+  \textbf{Interpretation B} (lines 486-510, 539): \(\Delta_{\min}\)
+  scales with \(n\) and \(K\) via sphere-packing constraints
+  \(\Delta_{\min}^2 = O(K^{-2/d_\phi})\).
+\end{itemize}
+
+The separation condition
+\(\Delta_{\min}^2 \geq C_0 \sigma^2 K \log n / n\) makes sense as a
+finite-sample sufficient condition under Interpretation A but becomes
+self-contradictory under Interpretation B (where \(\Delta_{\min}\) is
+determined by \(K\), not \(n\)).
+
+The ``reconciliation'' section (lines 486-510) mixes both
+interpretations and the algebra is inconsistent. The sphere-packing
+argument imposes an \emph{upper} bound on \(\Delta_{\min}\) given \(K\),
+while the separation condition imposes a \emph{lower} bound. For large
+\(K\), these bounds can conflict, preventing any such \(K\) from
+existing.
+
+The derivation of the \(1/3\) exponent only works under a very specific
+set of coupled scaling assumptions that are never stated explicitly.
+
+\subsubsection{Issue 6: Lemma 6's conversion from risk gap to
+misclassification is not
+rigorous}\label{issue-6-lemma-6s-conversion-from-risk-gap-to-misclassification-is-not-rigorous}
+
+Three specific problems:
+
+\textbf{(a) The \(\pi_k \cdot (\Delta_{\min}/2)^2 / 2\) factor (line
+328) is pulled from thin air.} The author states ``accounting for
+noise'' but doesn't show the calculation. Where does the factor of
+\(1/2\) come from? Why \((\Delta_{\min}/2)^2\) and not
+\((\Delta_{\min}/2)^2\)? This is a critical quantitative claim that
+directly enters the main theorem's rate, but it's unsupported.
+
+\textbf{(b) The ``boundary effects'' handling (lines 335-341) is
+hand-wavy.} The author writes that boundary effects are:
+
+\[O\left(K \cdot \exp\left(-\frac{\Delta_{\min}^2}{8\sigma^2}\right)\right)\]
+
+and claims this is ``negligible under the separation condition.'' But: -
+The constant \(8\) in the denominator is never derived. - The \(K\)
+factor outside the exponential could dominate if \(K\) grows quickly. -
+Under the scaling \(\Delta_{\min}^2 = \Theta(K \log n / n)\), the
+exponential becomes \(\exp(-c K \log n / n)\), which is close to \(1\)
+when \(K \log n / n\) is small, not negligible.
+
+\textbf{(c) The argument that misclassification only occurs when
+\(\|\hat{\mu}_{\tau(k)} - \mu_k\| \geq \Delta_{\min}/2\) (lines 321-325)
+ignores cumulative effects.} A point from state \(k\) could be
+misclassified even if all centers are well-estimated, if it falls closer
+to a different estimated center due to noise. The triangle inequality
+argument is:
+
+\[\|\phi(x) - \hat{\mu}_{\tau(k)}\| \leq \|\mu_k + \varepsilon - \mu_k\| + \|\mu_k - \hat{\mu}_{\tau(k)}\| < \|\varepsilon\| + \frac{\Delta_{\min}}{2}\]
+\[\|\phi(x) - \hat{\mu}_j\| \geq \|\mu_k + \varepsilon - \mu_j\| - \|\mu_j - \hat{\mu}_j\| \geq \Delta_{\min} - \|\varepsilon\| - \frac{\Delta_{\min}}{2}\]
+
+The comparison is \(\|\varepsilon\| + \frac{\Delta_{\min}}{2}\)
+vs.~\(\frac{\Delta_{\min}}{2} - \|\varepsilon\|\), and the inequality
+\(\|\varepsilon\| + \frac{\Delta_{\min}}{2} < \frac{\Delta_{\min}}{2} - \|\varepsilon\|\)
+requires \(\|\varepsilon\| < 0\) (impossible). The argument as stated
+does not work. The bound needs a more careful treatment of noise.
+
+\subsubsection{Issue 7: The covering number bound is
+insufficient}\label{issue-7-the-covering-number-bound-is-insufficient}
+
+Lemma 4 bounds the covering number of \(K\)-center sets, but the
+relevant function class for \(k\)-means is
+\(f_\mu(x) = \min_k \|x - \mu_k\|_2^2\). The covering number of this
+function class in the \(L_\infty(P_n)\) metric may be larger than the
+covering number of the center class in the \(\ell_\infty\) metric,
+because:
+
+\begin{itemize}
+\tightlist
+\item
+  The Lipschitz constant \(C_1\) scales with both \(M\) and
+  \(\sqrt{\sigma^2 d_\phi}\) (which involves the ambient dimension).
+\item
+  The function \(g_x(\mu) = \min_k \|\phi(x) - \mu_k\|_2^2\) is not
+  Lipschitz with a \emph{uniform} constant across all \(x\) -- the claim
+  in line 164 that it is \(L\)-Lipschitz for all \(x\) with the same
+  \(L\) requires \(\|\phi(x)\|_2\) bounded uniformly, which holds only
+  with high probability, not almost surely.
+\end{itemize}
+
+The author acknowledges that VC dimension would give a similar bound
+(line 249), but this is misleading. The VC dimension of \(k\)-means in
+\(\mathbb{R}^d\) is not \(O(Kd)\) -- it grows super-linearly in \(K\)
+because the number of possible labelings grows as \(K^{nd}\) (the number
+of Voronoi partitions). A proper VC bound would give
+\(\log \mathcal{N} = \Omega(K \log K)\), not \(O(K)\).
+
+\subsubsection{Issue 8: Two-layer extension (Corollary 2) assumes the
+result}\label{issue-8-two-layer-extension-corollary-2-assumes-the-result}
+
+Corollary 2 requires \(\kappa(W) = O(1)\), which is asserted without
+proof (line 591). Since \(W\) is learned from data -- specifically from
+expert error patterns -- there is no guarantee it is well-conditioned.
+In fact: - If \(W\) is estimated from finite data, it has estimation
+error that degrades the signal-to-noise ratio. - The claim that \(W\)
+can \emph{increase} separation (line 595) is stated without any proof or
+reference. - The singular values of \(W\) depend on the eigenstructure
+of the cross-covariance between features and expert errors, which is
+itself estimated. No finite-sample bounds are provided.
+
+\textbf{Corollary 2 does not prove anything about the two-layer
+extension.} It merely re-states Theorem 3 under the assumption that
+\(W\) is well-conditioned and then asserts (without proof) that this
+condition holds in practice.
+
+\subsubsection{Issue 9: The sub-Gaussian assumption is
+unverified}\label{issue-9-the-sub-gaussian-assumption-is-unverified}
+
+The proof assumes \(\varepsilon\) is sub-Gaussian with parameter
+\(\sigma^2\) (line 56). For SCX's actual features:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{ACE descriptors}: These are many-body expansion coefficients,
+  typically bounded but with heavy-tailed distributions (some
+  coefficients are near-zero, others can be large). Are they
+  sub-Gaussian? Not obviously.
+\item
+  \textbf{CNN latent features}: These are outputs of ReLU networks,
+  which can have heavy-tailed coordinate distributions. The sub-Gaussian
+  assumption is a strong parametric assumption that is rarely checked in
+  practice.
+\item
+  \textbf{Tabular features}: These are bounded by construction, but can
+  have discrete or categorical components.
+\end{itemize}
+
+If the features are only bounded (not sub-Gaussian), the tail bounds
+degrade from \(\exp(-c n \delta^2)\) to \(\exp(-c n \delta)\) (via
+Hoeffding), which would change the rates entirely.
+
+\subsubsection{Issue 10: Appendix A's sub-Gaussian norm bound is for
+Gaussians, not
+sub-Gaussians}\label{issue-10-appendix-as-sub-gaussian-norm-bound-is-for-gaussians-not-sub-gaussians}
+
+Line 770 uses the bound
+\(\|\varepsilon\|_2^2 \leq \sigma^2(d_\phi + 2\sqrt{d_\phi \log n} + 2\log n)\),
+which is a standard chi-squared concentration bound for \emph{Gaussian}
+vectors. For sub-Gaussian vectors, the concentration of the Euclidean
+norm is different: it depends on the sub-Gaussian norm
+\(K = \sup_{\|u\|=1} \|\langle \varepsilon, u\rangle\|_{\psi_2}\), and
+the bound is:
+
+\[\|\varepsilon\|_2 \leq C K (\sqrt{d_\phi} + t) \quad \text{with probability } 1 - 2\exp(-t^2)\]
+
+but the constant \(C\) depends on the specific sub-Gaussian definition
+and the covariance structure. The chi-squared-like bound used by the
+author only holds for \emph{exact} Gaussian vectors, not general
+sub-Gaussian vectors.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{4. Minor Issues}\label{minor-issues}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Line 160}: The Lipschitz constant
+  \(C_1 = 4(M + \sqrt{\sigma^2 d_\phi})\) uses
+  \(\sqrt{\sigma^2 d_\phi}\) which is \(\sigma\sqrt{d_\phi}\), but the
+  sub-Gaussian parameter \(\sigma^2\) has units of variance. This is
+  fine but the notation is confusing: \(\sigma\) appears both as
+  standard deviation and as a sub-Gaussian parameter.
+\item
+  \textbf{Line 514}: The misclassification rate is written as
+  \(O(\sqrt{n/(K \log n)}^{-1})\) which is ambiguous -- it could mean
+  \(O(1/\sqrt{n/(K \log n)}) = O(\sqrt{K \log n / n})\) OR
+  \(O(\sqrt{n/(K \log n)}^{-1})\) meaning the whole thing raised to
+  \(-1\), which would be \(O(\sqrt{K \log n / n})\). Either way, as
+  shown in Issue 1, the rate explodes for \(K = o(n^{1/3})\).
+\item
+  \textbf{Corollary 1}: The formula \(K^* \asymp (n / \log M)^{1/3}\) is
+  dimensionally incoherent. \(M\) is a bound on center norms (units:
+  feature magnitude). Taking \(\log M\) inside the cube root makes no
+  physical sense -- if \(M\) has units, \(\log M\) is not well-defined.
+  This should be \(K^* \asymp (n / (\sigma^2 C_0^2))^{1/3}\) or similar,
+  with the dependence on \(M\) appearing only in constants.
+\item
+  \textbf{Line 492}: ``sphere-packing bounds'' is misspelled as
+  ``sphere-packing'' (minor typo, but appears consistently).
+\item
+  \textbf{Line 371}: The simplification shows \(K d_\phi \log n\) as the
+  first term, but this assumes
+  \(\log(1 + 8C_1 M/\delta_n) \approx \log n\), which is false (see
+  Issue 2).
+\item
+  \textbf{Line 249}: ``The metric entropy bound
+  \(O(K d_\phi \log(1/\varepsilon))\) obtained here is sufficient for
+  our purposes'' -- this note is dismissive of an important technical
+  point. The covering number for the function class \(\{f_\mu\}\) could
+  differ from the covering number for the parameter class \(\{\mu\}\),
+  and this difference matters for the constants in the theorem.
+\item
+  \textbf{Line 104}: The separation condition uses \(\log n\), but the
+  standard sub-Gaussian tail bound uses \(\log(1/\delta)\). The
+  appearance of \(\log n\) rather than \(\log K\) or \(\log(1/\delta)\)
+  is not justified -- it seems to come from a union bound over \(n\)
+  samples, but this is never explained.
+\item
+  \textbf{Line 285}: The author writes ``For a fixed true center
+  \(\mu_k\), let \(j^*(k) = \arg\min_j \|\mu_k - \mu_j'\|_2\)'' -- but
+  this ignores that the \(k\)-means assignment is based on
+  \(\|\phi(x) - \mu_j'\|_2 = \|\mu_k + \varepsilon - \mu_j'\|_2\), not
+  \(\|\mu_k - \mu_j'\|_2\). The argmin depends on \(\varepsilon\), so
+  fixing \(j^*\) independent of \(\varepsilon\) is incorrect.
+\item
+  \textbf{Proof of Theorem 3, lines 392-515}: This entire section reads
+  as a working draft, not a finished proof. The author walks through
+  multiple rejected approaches (``Wait -- this suggests\ldots{}'', ``Let
+  me re-derive more carefully\ldots{}'', ``Let me re-examine\ldots{}'',
+  ``Corrected scaling analysis\ldots{}'', ``Reconciliation of
+  \(K = o(n^{1/3})\)''). These are signs that the author is reasoning
+  through the problem in real-time, not presenting a finalized proof. A
+  final draft should remove this scaffolding.
+\item
+  \textbf{Line 404}: ``which requires \(K \log n = o(n)\), i.e.,
+  \(K = o(n / \log n)\)'' -- but the expression is
+  \(\sqrt{n/(K \log n)}\), which goes to 0 when
+  \(K \log n = \omega(n)\), not \(o(n)\). The inequality is reversed.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{5. Recommended Fixes for Each
+Issue}\label{recommended-fixes-for-each-issue}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3182}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6818}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Issue
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Recommendation
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{1 (FATAL)} & Re-derive the misclassification rate. The bound
+must be expressed as \(O(\sqrt{K \log n / n} / \Delta_{\min}^2)\). If
+\(\Delta_{\min}\) is fixed (does not scale with \(n\)), the rate is
+\(O(\sqrt{K \log n / n})\), which gives \(K = o(n / \log n)\) for
+convergence -- not \(o(n^{1/3})\). If \(\Delta_{\min}\) scales, state
+the scaling explicitly and re-derive all bounds. \\
+\textbf{2 (FATAL)} & Re-do the uniform convergence calculation. The
+correct choice of \(\delta_n\) should make the exponent negative. Either
+increase \(\delta_n\) (to say
+\(\delta_n = C \sqrt{K d_\phi (\log n)^2 / n}\) to get an extra
+\(\log n\) factor) or use a sharper entropy bound. \\
+\textbf{3 (FATAL)} & This is a structural issue. Two options: (a)
+Restrict to algorithms that provably find the global \(k\)-means
+minimizer (only possible for small \(K\) or special structure). (b)
+Prove that Lloyd's algorithm with appropriate initialization finds a
+solution that is ``good enough'' -- this would require stability of the
+local minimum (following Rakhlin \& Caponnetto, 2007) or a perturbation
+analysis. Option (c): acknowledge the gap and frame the result as about
+the oracle. \\
+\textbf{4 (FATAL)} & Re-do Lemma 5 properly. The key calculation is:
+\(W(\mu) - W(\mu^*) = \sum_k \pi_k \mathbb{E}[\min_j \|\mu_k + \varepsilon - \mu_j'\|^2 - \|\varepsilon\|^2]\).
+The correct lower bound requires a ``gap'' condition: for any
+\(\mu \neq \mu^*\), there exists at least one \(k\) such that
+\(\|\mu_k - \mu_{\sigma(k)}'\| \geq \Delta_{\min}/2\) for any
+permutation \(\sigma\), and then one must lower-bound the expectation
+over \(\varepsilon\) using sub-Gaussian tail bounds on the assignment
+probabilities. This is doable but non-trivial. \\
+\textbf{5} & Clarify which interpretation is intended. If
+\(\Delta_{\min}\) is a fixed property of the data, delete all scaling
+analysis (lines 486-515). If \(\Delta_{\min}\) scales, derive this from
+explicit assumptions about how the centers change as \(K\) grows. \\
+\textbf{6} & (a) Derive the constant \(1/2\) or replace with a properly
+bounded expression. (b) Provide an explicit bound on boundary effects
+using the sub-Gaussian tail, not an \(O(\cdot)\) statement. (c) Fix the
+triangle inequality argument. \\
+\textbf{7} & Either (a) bound the metric entropy of the function class
+\(\{f_\mu\}\) directly, or (b) cite a known VC bound for \(k\)-means
+(e.g., the Natarajan dimension). The note in line 249 suggesting VC
+dimension gives the same bound is misleading -- the VC dimension of
+\(k\)-means is \(O(K d \log(K d))\) at minimum. \\
+\textbf{8} & Provide finite-sample bounds on \(\kappa(W)\) or drop
+Corollary 2 until such bounds are available. The current version proves
+nothing about the two-layer extension. \\
+\textbf{9} & Verify the sub-Gaussian assumption empirically for SCX
+features, or replace with a boundedness assumption (which gives weaker
+rates but requires fewer assumptions). \\
+\textbf{10} & Use the correct sub-Gaussian norm concentration bound. The
+chi-squared bound is only valid for Gaussian vectors. \\
+\textbf{Structural} & Remove the working-draft scaffolding in the proof
+of Theorem 3 (lines 392-515). A published proof should not contain
+phrases like ``Wait -- this suggests\ldots{}'' or ``Let me re-derive
+more carefully.'' \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6. Summary}\label{summary}
+
+The document attempts to prove a non-trivial extension of Pollard's
+(1981) \(k\)-means consistency to the setting \(K \to \infty\), with
+explicit rates depending on the separation-to-noise ratio. This is a
+worthy goal. However, the proof as written contains:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{2 fatal mathematical errors} that reverse the direction of the
+  main result (the claimed convergence is actually divergence).
+\item
+  \textbf{1 fatal computational gap} (assuming the global optimum of an
+  NP-hard problem).
+\item
+  \textbf{1 fatal error in Lemma 5}, the identifiability lemma, where
+  the algebra is unjustified.
+\item
+  \textbf{5+ major gaps} in rigor (boundary effects, metric entropy,
+  two-layer extension, sub-Gaussian assumption, confusion between fixed
+  and scaling parameters).
+\end{itemize}
+
+The paper should not be published in its current form. The core idea is
+interesting but the technical execution does not meet the standard of
+the Annals of Statistics.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{Review completed 2026-06-27.}
+
+\end{document}
