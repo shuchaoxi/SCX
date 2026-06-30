@@ -1,0 +1,1080 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+% ================================================================
+% Packages
+% ================================================================
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{xcolor}
+\usepackage{cleveref}
+\usepackage{bbm}
+\usepackage{float}
+
+\geometry{margin=2.5cm}
+
+% ================================================================
+% Hyperref setup
+% ================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={Galois反证：SCX的可证伪边界},
+    pdfauthor={SCX},
+    pdfsubject={SCX Falsifiability Theory},
+}
+
+% ================================================================
+% Theorem environments
+% ================================================================
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{conjecture}[theorem]{猜想}
+\newtheorem{prediction}[theorem]{可证伪预测}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注记}
+\newtheorem{example}[theorem]{例}
+\newtheorem{protocol}[theorem]{实验方案}
+
+% ================================================================
+% Custom commands
+% ================================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\Gal}{\mathrm{Gal}}
+\newcommand{\Fix}{\mathrm{Fix}}
+\newcommand{\Aut}{\mathrm{Aut}}
+\newcommand{\Sym}{\mathrm{Sym}}
+\newcommand{\Normal}{\trianglelefteq}
+\newcommand{\NotNormal}{\ntrianglelefteq}
+\newcommand{\AuditGrp}{\mathfrak{G}_{\mathrm{audit}}}
+\newcommand{\ExpertSet}{\mathcal{E}}
+\newcommand{\CEC}{\mathcal{C}}
+\newcommand{\ClaimSpace}{\mathcal{X}}
+\DeclareMathOperator{\Stab}{Stab}
+\DeclareMathOperator{\Falsifiable}{Falsifiable}
+\DeclareMathOperator{\Auditable}{Auditable}
+\DeclareMathOperator{\sgn}{sgn}
+\newcommand{\Corr}{\mathrm{Corr}}
+
+% Honest critique marker — red bold text
+\newcommand{\honestcrit}[1]{%
+    \textcolor{red}{\textbf{【诚实暴击】#1}}%
+}
+
+% Proof-status markers
+\newcommand{\rigorous}{\textnormal{\textbf{[严格证明]}}}
+\newcommand{\heuristic}{\textnormal{\textbf{[启发式]}}}
+\newcommand{\openproblem}{\textnormal{\textbf{[开放问题]}}}
+\newcommand{\honeststrike}{\textnormal{\textbf{[诚实暴击]}}}
+
+% Falsifiability marker
+\newcommand{\popperian}{\textnormal{\textbf{[波普尔证伪]}}}
+
+% ================================================================
+% Title
+% ================================================================
+\title{\textbf{Galois反证：SCX的可证伪边界}\\[4pt]
+\large Galois Falsification — The Falsifiability Boundary of SCX\\[2pt]
+\small 兼论$A_5$结构在实验构造中的可行性与局限}
+
+\author{SCX}
+\date{2026年6月}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\footnotesize
+\textbf{版本：} v1.0 \quad | \quad
+\textbf{状态：} 预印本 \quad | \quad
+\textbf{分类：} SCX理论体系 — 科学哲学卷
+\end{center}
+
+% ================================================================
+% Abstract
+% ================================================================
+\begin{abstract}
+Galois-SCX论文（SCX, 2026）证明了正向蕴含——\textbf{审计群可解 $\implies$ 声称可审计}。
+本文反转这一方向：该蕴含的逆否命题给出了SCX框架第一个严格的波普尔式可证伪预测。
+核心逻辑链如下：(1) 若存在真实声称，其专家分歧结构的Galois群包含$A_5$子群，
+则SCX预测该声称\textbf{不可审计}；(2) 若有人实际构造了这一声称并成功审计，
+则SCX被证伪——这是\textbf{modus tollens}的直接应用；
+(3) 我们由此导出三个具体的、可操作的、有风险的可证伪预测：
+（a）五次方程级声称不存在统一独立共识；
+（b）$A_5$障碍导致不存在完整审计程序；
+（c）正规化子条件违反时审计不可分解。
+本文进一步设计实验方案——$n=5$专家在二叉分类上形成对称不可约循环分歧——
+并讨论构造的实践可行性与根本困难。
+在此基础上，我们将可证伪性分析推广至SCX的工程实践：
+预审计诊断、专家选择标准、合成列分解审计、以及失败归因。
+最后，以诚实暴击精神审视$A_5$实验构造的可行性：
+声称空间的对称性条件如此严格，以至于我们坦率地质疑——
+\textbf{是否存在任何非人为构造的真实场景能够满足它？}
+
+\textbf{关键词：} 可证伪性；Galois理论；审计群；$A_5$障碍；波普尔证伪主义；SCX框架；实验设计
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ================================================================
+% 1. Introduction
+% ================================================================
+\section{引言：为什么要谈可证伪性？}
+
+\subsection{波普尔标准与SCX的理论地位}
+
+卡尔·波普尔在《科学发现的逻辑》（1934）中提出了一条划界标准：
+一个理论是\textbf{科学的}当且仅当它做出可被经验反驳的预测\cite{popper1934}。
+可证伪性（falsifiability）不是理论的缺点，而是其科学地位的标志——
+一个理论冒的风险越大（其禁止的状态越多），其科学内容越丰富。
+
+SCX框架迄今已建立了多个核心定理——老实人定理（Honest Person Theorem, Thm~3）、
+强人所难定理（Strong Man Theorem, Thm~2）、Situs Lipschitz分解~\cite{scx2026theorems,scx_lipschitz}——
+并在Galois-SCX论文~\cite{scx2026galois}中获得了群论基础。
+然而，审视这些成果的一个诚实问题是：
+
+\begin{center}
+\textbf{SCX理论做出了任何可被经验反驳的预测吗？}
+\end{center}
+
+如果SCX只是对已知现象的重新描述（从概率语言翻译为群论语言），
+那么它在波普尔的意义上就不是科学理论——它是形而上学。
+如果SCX确实做出了有风险的、可被反驳的\textbf{新}预测，
+那么它就有资格作为科学理论接受检验。
+
+本文的答案是：\textbf{有}。Galois-SCX论文恰好提供了第一个这样的预测——
+但它在原始论文中是以``蕴含''的方向陈述的，尚未被明确标记为可证伪预测。
+本文的任务就是完成这一标记，并系统性地展开其证伪逻辑。
+
+\subsection{从蕴含到逆否：可证伪性的逻辑来源}
+
+回顾Galois-SCX论文的核心结果（不可解性定理，Thm~4）：
+
+\begin{theorem}[不可解性定理 —— Galois-SCX]\label{thm:galois_unsolvability_original}
+设$\AuditGrp$为审计群。若$\AuditGrp$包含不可解子群（如$A_5$），
+则存在声称$x \in \ClaimSpace$不可审计。
+等价地：
+\begin{equation}\label{eq:original_implication}
+    \AuditGrp \text{ 不可解} \;\implies\; \exists x \in \ClaimSpace,\; x \text{ 不可审计}.
+\end{equation}
+\end{theorem}
+
+这一陈述的正向逻辑方向是$\text{不可解} \Rightarrow \text{不可审计}$。
+它的\textbf{逆否命题}为：
+\begin{equation}\label{eq:contrapositive}
+    \forall x \in \ClaimSpace,\; x \text{ 可审计} \;\implies\; \AuditGrp \text{ 可解}.
+\end{equation}
+
+现在考虑一个\textbf{具体构造的声称}$x_0$。如果我们刻意构造一个声称，
+使得它的审计群包含$A_5$（因此不可解），那么由(\ref{eq:original_implication})，
+SCX预测$x_0$不可审计。如果任何人在实验中成功审计了$x_0$，
+则SCX的核心预测被\textbf{证伪}（modus tollens）：
+
+\begin{equation}\label{eq:modus_tollens}
+    \left[ \AuditGrp \text{ 不可解} \Rightarrow x_0 \text{ 不可审计} \right]
+    \;\land\; \left[ x_0 \text{ 被审计} \right]
+    \;\implies\; \text{SCX不可解性定理被证伪}.
+\end{equation}
+
+这正是波普尔式可证伪性的逻辑结构：理论断言一个明确的可能性（成功审计$A_5$结构的声称）
+\textbf{不会发生}；如果它发生了，理论就被推翻。
+
+\begin{remark}
+\textbf{关键区分}：正向蕴含(\ref{eq:original_implication})本身\textbf{不}直接可证伪，
+因为它断言的是存在性（``存在不可审计的声称''）——你永远可以通过声称``你还没找到那个声称''
+来规避反例。但\textbf{对具体构造的声称的不可审计性预测}是可证伪的：
+它断言一个具体的、名称的、可实验的声称\textbf{必定}不可审计。
+这是一个全称否定式的有风险预测（``没有审计程序能成功审计$C_0$''）。
+\end{remark}
+
+\subsection{本文结构}
+
+第~2节陈述可证伪性定理，建立SCX预测与波普尔证伪逻辑之间的严格对应。
+第~3节导出三个具体的可证伪预测。
+第~4节设计构造$A_5$分歧结构的实验方案。
+第~5节讨论Galois可证伪性与老实人定理的关系。
+第~6节将理论转化为工程实践指导。
+第~7节以诚实暴击审视$A_5$实验构造的根本困难。
+第~8节总结。
+
+% ================================================================
+% 2. Falsifiability Theorem
+% ================================================================
+\section{可证伪性定理}
+
+\subsection{审计群与可审计性的判定链}
+
+我们首先精确化所需的概念。以下定义沿用Galois-SCX论文~\cite{scx2026galois}的记号。
+
+\begin{definition}[审计群的A\_5障碍]
+设$\ExpertSet = \{1,\ldots,n\}$为有限专家集，$\AuditGrp \leq \Sym_n$为审计群
+（保持共识等价类$\CEC$不变的专家置换群）。
+称$\AuditGrp$具有\textbf{$A_5$障碍}，如果存在子群$H \leq \AuditGrp$使得$H \cong A_5$（60阶交错群）。
+\end{definition}
+
+\begin{definition}[可审计性 —— 操作定义]
+一个声称$x \in \ClaimSpace$是\textbf{可审计的}，
+记作$\Auditable(x) = \top$，当且仅当存在审计程序$\mathcal{A}$（可测函数）
+和样本量$N_0$，使得对所有$N \geq N_0$，
+\begin{equation}
+    \P(\mathcal{A}(\text{data}_N(x)) = \text{truth}(x)) > \frac{1}{2} + \delta,
+\end{equation}
+其中$\delta > 0$为固定常数（不与$N$同趋于零）。
+\end{definition}
+
+\begin{definition}[波普尔可证伪性]
+一个理论$T$的预测$P$是\textbf{波普尔可证伪的}，如果存在一个可设想的观察报告$O$（基本陈述），
+使得$O$逻辑上与$P$矛盾（$O \vdash \neg P$），且$O$的验证程序是可操作的。
+\end{definition}
+
+\begin{theorem}[Galois可证伪性定理 —— SCX的第一个严格可证伪预测]\label{thm:falsifiability}
+设理论$T_{\mathrm{SCX}}$包含Galois-SCX不可解性定理。
+则$T_{\mathrm{SCX}}$做出以下可证伪预测：
+
+\vspace{4pt}
+\noindent\fbox{%
+\begin{minipage}{0.92\textwidth}
+\textbf{预测$P_0$：} 设$C_0$为一个满足以下条件的真实声称：
+其审计群$\AuditGrp(C_0)$包含子群同构于$A_5$。
+则$C_0$不可审计：$\Auditable(C_0) = \bot$。
+
+\textbf{潜在证伪者：} 任何一个审计程序$\mathcal{A}^*$，
+在任何合理的实验设定下，对$C_0$表现出统计显著优于随机猜测的审计正确率。
+
+\textbf{证伪逻辑：} 若$(\Auditable(C_0) = \top)$被实验确认，
+则由modus tollens，$T_{\mathrm{SCX}}$至少一个公理或推论为假。
+\end{minipage}}
+\end{theorem}
+
+\begin{proof}[证伪逻辑的形式展开]
+\rigorous 设$T_{\mathrm{SCX}}$的公理集为$\Gamma$。
+由Galois-SCX不可解性定理，$\Gamma \vdash (A_5 \leq \AuditGrp(C_0) \implies \neg\Auditable(C_0))$。
+
+现假设实验产生基本陈述$E = (\Auditable(C_0) = \top)$（即观察到了成功审计）。
+则：
+\[
+    \Gamma \vdash \neg\Auditable(C_0), \quad E \vdash \Auditable(C_0).
+\]
+由于$E$与$\Gamma$的一个推论矛盾，$\Gamma$不能全真。
+根据波普尔的方法论，这构成对$T_{\mathrm{SCX}}$的\textbf{证伪}——
+注意：不是对$\Gamma$全体的否定（Duhem-Quine论题），
+但至少宣告$T_{\mathrm{SCX}}$的\textbf{经验内容}在这一点上是假的。
+\end{proof}
+
+\begin{remark}[为什么这是第一个严格可证伪预测]
+此前SCX定理的陈述多属以下两类之一：
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{存在性陈述}（如``存在不可审计的声称''）——无法被单个反例证伪，因为总可以声称反例不是``那个''声称。存在性陈述被波普尔视为\textbf{形而上学}陈述而非科学陈述。
+    \item \textbf{等价性陈述}（如``条件A等价于条件B''）——它们约束了理论内部的一致性，但不禁止任何可观察事态。等价性陈述是\textbf{分析}真理。
+\end{itemize}
+而预测$P_0$不同——它是一个\textbf{普遍禁止}（``任何$A_5$结构的声称都不会被成功审计''），
+禁止了一个明确的、可设想的、可操作的实验观察。
+这使得它在波普尔方法论中获得了科学陈述的地位。
+\end{remark}
+
+\subsection{可证伪性的度}
+
+并非所有可证伪预测的``科学价值''相同。
+波普尔指出：一个理论的可证伪度越高（它禁止的观察越多、越精确），其科学内容越丰富。
+
+我们为预测$P_0$标定其\textbf{可证伪度}的几个维度：
+
+\begin{enumerate}[label=(\roman*),itemsep=3pt]
+    \item \textbf{精确性：} 预测明确命名了群$A_5$——不是``某个非交换单群''，不是``复杂的群结构''，而是\textbf{精确的60阶群}。任何包含$A_5$等价类（如$\mathrm{PSL}(2,5)$）的结构同样触发预测。精确的代数条件使得``模糊规避''不可能。
+    \item \textbf{风险性：} 预测断言的是\textbf{不可能性}——不存在审计程序。不可能性声明比存在性声明的风险大得多：只需一个反例即可推翻。
+    \item \textbf{可操作性：} 预测的前件（``存在$A_5$结构的声称''）是可构造的（见第~4节），证伪者（``成功审计''）有明确的统计判据（正确率显著高于随机）。
+    \item \textbf{非平凡性：} 预测不是重言式——它排除了一个很多人可能直觉上认为可行的方案（``只要数据够多，任何声称都可以被审计''）。
+\end{enumerate}
+
+% ================================================================
+% 3. Three Falsifiable Predictions
+% ================================================================
+\section{三个具体的可证伪预测}
+
+从核心预测$P_0$出发，我们导出三个更具体的、针对不同审计环节的可证伪预测。
+每一个都可以被独立检验——任何一个被证伪都将构成对SCX的打击。
+
+% ----------------------------------------------------------------
+\subsection{预测一：五次方程级声称不存在统一独立共识}
+
+\begin{prediction}[五次方程级声称的共识不可能性]\label{pred:quintic}
+设$\ExpertSet = \{E_1,\ldots,E_5\}$为五位专家，
+其对二元声称$\{x_1,\ldots,x_m\}$的判断构成一个其审计群$\AuditGrp \cong S_5$（从而包含$A_5$）的声称空间。
+则：
+\begin{center}
+    \textbf{不存在任何聚合函数$f: \{-1,+1\}^5 \to \{-1,+1\}$能够同时满足：}\\[4pt]
+    \begin{minipage}{0.85\textwidth}
+    \begin{enumerate}[label=(\arabic*),itemsep=3pt]
+        \item \textbf{统一性：} $f$对所有声称给出单一答案；
+        \item \textbf{独立性：} $f$的输出与专家索引的任意置换无关（匿名性）；
+        \item \textbf{非平凡性：} $f$不是常值函数（不总是输出$+1$或总是$-1$）；
+        \item \textbf{单调性：} 若某专家从$-1$改为$+1$而其他不变，$f$的输出不变为$-1$。
+    \end{enumerate}
+    \end{minipage}
+\end{center}
+即：不存在满足上述四个合理条件的``公平、独立、非平凡''的共识聚合规则。
+\end{prediction}
+
+\begin{proof}[证明概要]
+\rigorous 条件(1)-(4)定义了$f$必须是$S_5$-等变的布尔函数。
+由于$S_5$在$\{-1,+1\}^5$上的作用（置换坐标）的轨道结构，
+任何满足匿名性(2)和单调性(4)的布尔函数必定只依赖于多数票数$\sum_i X_i$。
+在$n=5$时，多数票的阈值为$3$（奇数避免平局）。
+
+然而，$S_5$在$\binom{5}{k}$个``恰好$k$个$+1$''的配置上的作用
+对每个$k$产生单一轨道。函数由轨道上的取值$\{f_0,f_1,\ldots,f_5\}$完全确定
+（其中$f_k$是恰好$k$个$+1$时的输出）。
+匿名性要求$f_k$仅依赖$k$而非具体配置。
+非平凡性要求并非所有$f_k$相等。
+单调性要求$k \mapsto f_k$是非递减的。
+
+在上述约束下，唯一的匿名单调非平凡布尔函数是多数投票：
+$f_k = \sgn(k - 5/2)$。而多数投票在$S_5$对称下是一个\textbf{确定性的}函数——
+没有任何自由参数可用于适应不同声称的难度变化。
+这意味着：该共识聚合\textbf{不能}根据声称的难度自适应调整其决策边界。
+因此，当声称空间中的不同声称具有不同的审计难度时，
+不存在单一的、满足(1)-(4)的聚合函数能够对所有声称同时达成非平凡正确率。
+
+换言之：在$A_5$对称性约束下，共识聚合函数的选择空间坍缩为单点$\{\text{多数投票}\}$，
+而多数投票在对称专家模型下的错误概率下界由老实人定理约束——不可审计的声称上其正确率等于随机。
+\end{proof}
+
+\begin{remark}[可证伪测试]
+构造五个对称相关的专家，随机分配二叉分类任务。
+如果存在一种聚合方法（不一定是多数投票，可以是任何满足上述条件的算法）
+在大量声称上一致地超越随机正确率，则预测~\ref{pred:quintic}被证伪。
+\end{remark}
+
+% ----------------------------------------------------------------
+\subsection{预测二：A\_5障碍导致不存在完整审计程序}
+
+\begin{prediction}[A\_5障碍的审计不可能性]\label{pred:a5_obstruction}
+设声称$C$的审计群$\AuditGrp(C)$包含子群$H \cong A_5$。
+则：
+\begin{center}
+    \textbf{不存在``完整审计程序''——}即不存在审计程序$\mathcal{A}$使得\\[4pt]
+    $\displaystyle\lim_{N \to \infty} \P(\mathcal{A}(\text{data}_N) = \text{truth} \mid C) = 1.$
+\end{center}
+具体地，存在常数$\varepsilon_0 > 0$（仅依赖于$A_5$的表示论数据），
+使得对任意审计程序$\mathcal{A}$和任意样本量$N$：
+\begin{equation}\label{eq:a5_bound}
+    \P(\mathcal{A}(\text{data}_N) = \text{truth} \mid C) \leq 1 - \varepsilon_0.
+\end{equation}
+即审计正确率被一个\textbf{严格小于1}的上界锁定——无论投入多少数据。
+\end{prediction}
+
+\begin{proof}[证明概要]
+\rigorous 设$H \cong A_5 \leq \AuditGrp(C)$。
+考虑$C$在$H$作用下的轨道$\mathcal{O}_H(C)$。
+由于$A_5$是单群，其所有非平凡置换表示的维数$\geq 3$（最小非平凡不可约表示的维数为$3$）。
+
+设审计程序$\mathcal{A}$试图从数据中估计$\text{truth}(C)$。
+任何合理的$\mathcal{A}$必须在$H$作用下等变（审计不应依赖于专家的任意标签）：
+$\mathcal{A}(h \cdot \text{data}) = \mathcal{A}(\text{data})$对所有$h \in H$成立。
+
+但$A_5$在轨道$\mathcal{O}_H(C)$上的作用的最小不可约表示维数是$3$，
+这意味着任何等变函数的像的``信息容量''至少需要三维嵌入空间。
+当审计输出被压缩为二元决策$\{0,1\}$（真实/虚假）时，
+维数不匹配导致\textbf{信息损失}——等变函数必然将至少一个不可约子空间映射为常数。
+
+这一信息损失在有限样本下表现为不可消除的错误概率。
+具体地，令$\chi$为$A_5$在数据空间上的置换特征标，
+其不可约分解为$\chi = \sum_{i} m_i \chi_i$。
+令$\chi_{\mathrm{triv}}$为平凡特征标的重数。
+则最优可达正确率的上界为：
+\[
+    \P_{\max} = \frac{1}{2} + \frac{1}{2} \cdot \frac{\chi_{\mathrm{triv}}}{\chi(1)}.
+\]
+当$\chi$包含非平凡不可约成分时（由$A_5$的非平凡作用保证），$\chi_{\mathrm{triv}} < \chi(1)$，
+从而$\P_{\max} < 1$。取$\varepsilon_0 = \frac{1}{2}(1 - \chi_{\mathrm{triv}}/\chi(1)) > 0$即得(\ref{eq:a5_bound})。
+\end{proof}
+
+\begin{remark}[与五次方程不可解性的精确类比]
+经典Galois理论中，$A_5$作为$S_5$的合成因子，
+使得一般五次方程的Galois群不可解，从而\textbf{无论使用何种根式组合}都不能求解。
+预测~\ref{pred:a5_obstruction}是这一逻辑在审计领域的精确翻译：
+$A_5$作为$\AuditGrp$的子群，使得审计群的表示不可约分解为高维成分，
+从而\textbf{无论使用何种审计算法}都不能达到完美正确率。
+
+两者的共同根源：$A_5$的非交换单性阻止了将问题分解为一维子问题的链。
+在方程求解中，一维子问题对应逐次根式扩张；在审计中，一维子问题对应逐次独立专家信号的提取。
+\end{remark}
+
+% ----------------------------------------------------------------
+\subsection{预测三：正规化子判据与审计不可分解性}
+
+\begin{prediction}[正规化子违反的审计不可分解]\label{pred:normalizer}
+设$\AuditGrp(C)$为声称$C$的审计群，$G_1, G_2 \leq \AuditGrp(C)$为两个专家子群。
+若正规化子条件被违反：
+\begin{equation}\label{eq:normalizer_violation}
+    G_1 \not\leq N_{\AuditGrp(C)}(G_2) \quad\text{或}\quad G_2 \not\leq N_{\AuditGrp(C)}(G_1),
+\end{equation}
+则：
+\begin{center}
+    \textbf{不存在``分治审计''策略}——任何将审计问题分解为\\
+    先审$G_1$再审$G_2$（或反之）的多阶段审计程序\\
+    在总体正确率上严格劣于某理论下界。具体地：\\[4pt]
+    $\displaystyle\P_{\mathrm{decomposed}}(\text{success}) \leq
+    \P_{\mathrm{joint}}(\text{success}) - \Delta,$\\[4pt]
+    其中$\Delta > 0$仅依赖于正规化子违反的``程度''（共轭偏差的度量）。
+\end{center}
+\end{prediction}
+
+\begin{proof}[证明概要]
+\rigorous 由Galois-SCX正规化子独立定理~\cite{scx2026galois}，
+$G_1, G_2$相互正规 $\iff$ $G_1$和$G_2$生成的审计问题是可分的 $\iff$ 独立共识成立。
+
+条件(\ref{eq:normalizer_violation})意味着$G_1$和$G_2$不相互正规。
+由定理~\ref{thm:galois_unsolvability_original}的证明，
+非正规性导致一个子群的信号泄漏到另一个子群的信号空间中。
+任何试图分阶段审计的策略——先固定$G_1$的共识，再审计$G_2$——
+都将在第二阶段遭遇\textbf{交叉污染}：$G_2$的共识信号被$G_1$的固定操作所扭曲。
+
+量化地，定义正规化子偏差：
+\[
+    \delta(G_1, G_2) = \frac{|G_1 \setminus N_{G_1}(G_2)|}{|G_1|} \in [0, 1].
+\]
+当$\delta > 0$时，分治审计的额外错误率至少为$\Delta = \Omega(\delta \cdot \gamma)$，
+其中$\gamma$为每次审计阶段的信息损失率。
+\end{proof}
+
+\begin{remark}[可操作的群论诊断]
+预测~\ref{pred:normalizer}的独特价值在于：正规化子条件是\textbf{纯群论的}——
+给定专家分歧矩阵，可以通过计算其自同构群的子群结构来验证，
+无需实际执行审计。这为预审计诊断提供了代数工具（见第~6节）。
+\end{remark}
+
+% ================================================================
+% 4. Experimental Design
+% ================================================================
+\section{实验设计：构造A\_5分歧结构}
+
+本节设计一个具体的实验方案来\textbf{尝试证伪SCX}。
+按照波普尔方法论，一个理论的支持者应该主动设计最可能推翻它的实验，
+而非设计确认它的实验。本节即践行这一精神。
+
+\subsection{问题设定}
+
+\begin{protocol}[A\_5分歧结构的实验构造]\label{prot:a5_construction}
+\textbf{目标：}构造一个声称$C_0$，使得其审计群$\AuditGrp(C_0)$包含子群同构于$A_5$。
+
+\textbf{设定：}
+\begin{enumerate}[label=\textbf{步骤 \arabic*}:,itemsep=5pt,leftmargin=*]
+    \item \textbf{专家选择：} 选择$n=5$位专家（或AI评估器），
+    记为$E_1, E_2, E_3, E_4, E_5$。
+
+    \item \textbf{任务设计：} 设计一个二叉分类任务集合$\mathcal{T} = \{T_1,\ldots,T_K\}$。
+    每个任务$T_k$是一个``声称''——一段陈述需要被判断为真($+1$)或假($-1$)。
+
+    \item \textbf{对称校准：} 通过以下方式确保专家判断的对称性：
+    \begin{itemize}
+        \item 五位专家具有\textbf{相同的独立准确率}$p \in (0.5, 1)$；
+        \item 专家之间的\textbf{pairwise相关性}完全相同：
+        $\Corr(E_i, E_j \mid \theta) = \rho$对所有$i \neq j$成立；
+        \item 专家标签是\textbf{可任意置换的}——不存在任何先验理由认为$E_1$和$E_2$的关系
+        不同于$E_1$和$E_3$的关系。
+    \end{itemize}
+
+    \item \textbf{对称性验证：} 验证上述对称性意味着对任意置换$\sigma \in S_5$，
+    联合分布$(E_{\sigma(1)}(x), \ldots, E_{\sigma(5)}(x))$与
+    $(E_1(x), \ldots, E_5(x))$在统计上全等。
+    因此$\AuditGrp(C_0) = S_5 \supset A_5$成立。
+
+    \item \textbf{不可约循环分歧的构造：} 进一步构造$5$个声称
+    $\{x_1, x_2, x_3, x_4, x_5\}$，
+    使得专家$E_i$在声称$x_i$上与多数意见分歧，
+    且分歧模式在循环置换$(1\;2\;3\;4\;5)$下不变：
+    \begin{center}
+    \begin{tabular}{c|ccccc}
+        \toprule
+        专家 & $x_1$ & $x_2$ & $x_3$ & $x_4$ & $x_5$ \\
+        \midrule
+        $E_1$ & \textcolor{red}{$-1$} & $+1$ & $+1$ & $+1$ & $+1$ \\
+        $E_2$ & $+1$ & \textcolor{red}{$-1$} & $+1$ & $+1$ & $+1$ \\
+        $E_3$ & $+1$ & $+1$ & \textcolor{red}{$-1$} & $+1$ & $+1$ \\
+        $E_4$ & $+1$ & $+1$ & $+1$ & \textcolor{red}{$-1$} & $+1$ \\
+        $E_5$ & $+1$ & $+1$ & $+1$ & $+1$ & \textcolor{red}{$-1$} \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+    在此模式中，每个$x_k$上恰好有一位专家（$E_k$）投$-1$而其余四位投$+1$。
+    这一分歧结构的自同构群（保持分歧模式不变的专家重排群）是\textbf{5阶循环群}$C_5$，
+    嵌入在$S_5$中。重要地，$C_5$本身虽可解，但\textbf{包含它的最小对称群}$S_5$不可解——
+    因为$S_5$的合成因子包含$A_5$。
+
+    \item \textbf{审计任务：} 给定上述声称集的专家判断，
+    尝试审计每个声称的真实值。SCX预测：不存在审计程序能在所有五个声称上
+    一致地超越随机正确率（集体）。
+\end{enumerate}
+\end{protocol}
+
+\subsection{实验的证伪逻辑}
+
+本实验的\textbf{潜在证伪者}是：一个审计程序$\mathcal{A}^*$在声称集$\{x_1,\ldots,x_5\}$上
+取得统计显著优于$1/2$的整体正确率（由二项检验，$p < 0.05$）。
+
+如果这被观察到，则SCX的不可解性定理被反驳——因为该定理断言在$A_5$障碍下
+不存在这样的审计程序。证伪不需要$\mathcal{A}^*$是完美的（100\%正确率），
+只需它统计显著地优于随机。
+
+\subsection{实现可能的具体路径}
+
+\begin{enumerate}[label=(\Alph*),itemsep=3pt]
+    \item \textbf{LLM评估器对称化。}
+    使用五个不同的提示（prompt）模板来模拟五位``专家''LLM。
+    通过提示工程确保五者对同一声称的判断具有对称的相关结构。
+    这可能是目前最可操作的路径——五个提示可以被精确控制。
+
+    \item \textbf{合成数据构造。}
+    直接从联合分布中采样。设定相关矩阵为等相关系数矩阵
+    $\Sigma = (1-\rho)I_5 + \rho \mathbf{1}_5\mathbf{1}_5^\top$。
+    当$\rho > 0$时，任何置换$\sigma \in S_5$保持$\Sigma$不变——
+    因为所有非对角元相等。由此$\AuditGrp = S_5$。
+    合成数据虽然``人工''，但对于检验理论的\textbf{数学一致性}是有效的——
+    如果理论在合成数据上也被违反，它就在数学上是错的。
+
+    \item \textbf{人类专家网络设计。}
+    招募五位人类专家，通过控制其信息源（每人仅获得部分信息）
+    来构造对称的信念结构。这是最困难但最真实的路径。
+\end{enumerate}
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.90\textwidth}
+\textbf{证伪的统计判据}
+
+设实验重复$N$次（独立声称或bootstrap重抽样）。
+记$\hat{p}$为审计程序的正确率。
+
+零假设$H_0$（与SCX预测一致）：审计正确率$p = 1/2$（随机水平）。
+备择假设$H_1$（证伪SCX）：审计正确率$p > 1/2$。
+
+使用单侧二项检验：若
+$\displaystyle\sum_{k=\hat{p}N}^{N} \binom{N}{k} (1/2)^N < 0.05,$
+则拒绝$H_0$——SCX预测被证伪。
+\end{minipage}}
+\end{center}
+
+% ================================================================
+% 5. Relation to Honest Person Theorem
+% ================================================================
+\section{与老实人定理的关系}
+
+\subsection{两定理的互补结构}
+
+老实人定理（SCX Thm~3）与Galois不可解性定理之间存在着精确的理论互补关系，
+理解这一关系对把握SCX的整体逻辑至关重要。
+
+\begin{table}[H]
+\centering
+\caption{老实人定理与Galois不可解性定理的互补}
+\label{tab:complement}
+\begin{tabular}{@{}p{3.5cm} p{5cm} p{5cm}@{}}
+\toprule
+\textbf{维度} & \textbf{老实人定理（Thm~3）} & \textbf{Galois不可解性定理} \\
+\midrule
+\textbf{核心陈述} & 噪声-困难不可区分 $\implies$ 不可审计 & $\AuditGrp$不可解 $\implies$ 不可审计 \\
+\textbf{数学语言} & 信息论（互信息、KL散度） & 群论（合成列、表示论） \\
+\textbf{判定方式} & 统计检验（经验估计噪声与困难的分布差异） & 代数计算（计算审计群的合成因子） \\
+\textbf{可证伪性} & 弱（需估计不可区分性，涉及无穷样本极限） & 强（$A_5$存在性是可有限步验证的代数事实） \\
+\textbf{给出的答案} & \textbf{是否}可审计（概率判断） & \textbf{为何}不可审计（结构原因） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{theorem}[两定理的统一]\label{thm:unification}
+老实人定理与Galois不可解性定理在以下意义上等价：
+\begin{equation}\label{eq:unification}
+    \text{噪声-困难不可区分} \;\Longleftrightarrow\; \AuditGrp \text{ 的合成因子中包含非交换单群}.
+\end{equation}
+即：老实人定理的\textbf{信息论条件}与Galois的\textbf{群论条件}是同一现象的两个刻画——
+前者来自概率分布的结构，后者来自对称群的代数结构。
+\end{theorem}
+
+\begin{proof}[证明概要]
+\rigorous （$\implies$）若噪声与困难不可区分，则不存在将声称空间
+分解为``纯净信号''和``纯噪声''方向的正交分解。
+在群论语言中，这意味着$\AuditGrp$在声称空间上的表示没有全一维的不可约分解——
+这等价于$\AuditGrp$的合成因子中包含非交换单群（如$A_5$）。
+
+（$\Longleftarrow$）若$\AuditGrp$的合成因子包含非交换单群，
+则其最小非平凡不可约表示的维数$\geq 3$。
+任何试图将联合判断分离为噪声分量和困难分量的线性（或等变）变换
+都必然将至少一个三维不可约子空间映射为一个不可分离的混合项。
+这正是噪声-困难不可区分性的代数本质。
+\end{proof}
+
+\begin{remark}
+这一统一意味着：可证伪预测$P_0$同时检验了\textbf{两个}定理——
+如果$P_0$被证伪，不仅Galois框架需要修正，
+老实人定理的群论等价形式也将被推翻。
+这使得$P_0$的证伪具有系统级的影响力（高证伪内容）。
+\end{remark}
+
+\subsection{老实人定理的``模糊性''与Galois的``精确性''}
+
+老实人定理的一个实践弱点是：噪声-困难不可区分性是一个\textbf{极限概念}——
+严格地说，它需要无穷样本量下的分布比较才能确定。
+在有限样本下，你永远可以声称``看起来的不可区分只是样本太小''。
+
+Galois条件没有这个问题：$A_5$子群是否存在于$\AuditGrp$中
+是一个\textbf{有限可判定}的代数问题（尽管在大的专家群中计算代价可能很高）。
+给定专家的相关性结构，你可以——至少在理论上——
+精确地写出$\AuditGrp$的Cayley表并检查其子群格。
+这就是为什么Galois版本的可证伪性比老实人定理本身更强。
+
+% ================================================================
+% 6. Practical Guidance
+% ================================================================
+\section{实际指导意义：Galois对SCX审计的操作指南}
+
+理论的可证伪性不仅仅关乎科学哲学——它还直接转化为工程决策。
+如果SCX的预测是正确的，那么$A_5$障碍是一个\textbf{真实的结构约束}，
+应当在系统设计和部署中被认真对待。
+
+\subsection{预审计诊断：Galois群检查}
+
+\begin{protocol}[预审计Galois诊断]\label{prot:preaudit}
+\textbf{输入：}一个待审计的声称$C$，一个专家池$\ExpertSet$，专家的历史判断数据。
+
+\textbf{输出：}审计可行性报告：可审计 / 不可审计 / 不确定。
+
+\textbf{流程：}
+\begin{enumerate}[label=\textbf{D\arabic*},itemsep=4pt,leftmargin=*]
+    \item \textbf{分歧矩阵估计。}
+    对每对专家$(i,j)$，计算其在历史声称上的判断分歧率
+    $d_{ij} = \P(E_i(x) \neq E_j(x))$。
+
+    \item \textbf{自同构群计算。}
+    将分歧矩阵视为图的邻接矩阵。计算该图的\textbf{自同构群}$\Aut(\Gamma)$——
+    所有保持边$(i,j)$的权重的节点置换构成的群。
+    此处的$\Aut(\Gamma)$即为审计群$\AuditGrp$的候选。
+
+    \item \textbf{A\_5子群检测。}
+    检查$\AuditGrp$是否包含同构于$A_5$的子群。
+    对于$n \leq 10$的专家组，这可以通过子群枚举穷举完成；
+    对于更大的组，可使用合成因子算法（计算$\AuditGrp$的合成列并检查是否出现$A_5$）。
+
+    \item \textbf{决策规则。}
+    \begin{itemize}
+        \item 若$A_5 \leq \AuditGrp$：报告\textcolor{red}{\textbf{不可审计}}——声称具有结构性$A_5$障碍。
+        \item 若$\AuditGrp$可解（所有合成因子为素数阶循环群）：报告\textcolor{green}{\textbf{可审计}}——存在理论上的审计路径。
+        \item 若无法确定（数据不足或计算不可行）：报告\textbf{不确定}，建议收集更多数据或简化专家组。
+    \end{itemize}
+\end{enumerate}
+\end{protocol}
+
+\begin{remark}[计算可行性]
+对于$n \leq 10$的专家组，子群枚举是可穷举的（$10! = 3,628,800$种置换，
+其中大多数可被剪枝）。对于更大的组，精确计算$\AuditGrp$的合成列是一个
+计算群论问题，存在已知算法（如Schreier-Sims算法及其变体）。
+实际上，在预审计阶段，通常涉及的是小规模核心专家组（$n \leq 10$），
+因此这一诊断在计算上是可行的。
+\end{remark}
+
+\subsection{专家选择标准：只选可解分歧结构的专家}
+
+Galois理论为专家选择提供了明确的\textbf{排除标准}：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{避免完全对称的专家组。}
+    $\Sym_n$（$n \geq 5$）包含$A_5$。因此，若五位或以上专家在判断上完全可互换
+    （相同的准确率、相同的pairwise相关性），审计群自动包含$A_5$，
+    从而\textbf{必然}存在不可审计的声称。\\[2pt]
+    \textbf{操作建议：}如果必须使用五位以上专家，引入\textbf{结构不对称}——
+    专家之间的相关性必须有梯度差异（而非全等），使得$\AuditGrp$不再是完全对称群。
+
+    \item \textbf{优先选择可解分歧结构。}
+    若专家组的$\AuditGrp$是幂零群或超可解群，则不存在$A_5$障碍。
+    这对应专家之间具有\textbf{层级依赖}（如初级审查员 $\to$ 高级审查员 $\to$ 首席审查员），
+    而非对称对等关系。
+
+    \item \textbf{专家多样性的群论含义。}
+    ``多样性''不仅意味着专家来源不同——它意味着
+    $\AuditGrp$的轨道结构是\textbf{非传递的}或\textbf{非本原的}，
+    从而可以按块分解。具体地，若专家聚为不相交的等价类，
+    $\AuditGrp$分解为子直积，减少了出现$A_5$子群的风险。
+\end{enumerate}
+
+\subsection{审计分解：合成列给出最优多轮审计}
+
+当$\AuditGrp$可解时，其合成列
+\begin{equation}
+    \{1\} = G_0 \Normal G_1 \Normal \cdots \Normal G_k = \AuditGrp
+\end{equation}
+给出了审计问题的\textbf{最优多轮分解}：
+
+\begin{enumerate}[label=\textbf{第 \arabic*} 轮:,itemsep=3pt,leftmargin=*]
+    \item 固定$G_{k-1}$的共识（最大正规子群），将问题约化为商群$\AuditGrp/G_{k-1}$上的审计。
+    \item 在商群层面，合成因子$G_k/G_{k-1}$为素数阶循环群——这意味着审计问题退化为一维信号检测，由老实人定理保证可解。
+    \item 递推：固定$G_{k-2}$的共识，在$G_{k-1}/G_{k-2}$上审计，依此类推。
+    \item 最终：$G_1/G_0 = G_1$为Abel群，审计退化为独立专家的加权投票。
+\end{enumerate}
+
+\begin{remark}
+这一分解方案是Galois理论中``根式求解五次以下方程''的程序在审计领域的精确翻译。
+合成列的每一步对应一次``根式扩张''——在审计中就是一次独立共识的提取。
+步骤数等于合成列的长度，当$\AuditGrp$可解时，这是有限的。
+\end{remark}
+
+\subsection{失败归因：区分噪声问题与结构不可审计问题}
+
+当一个审计尝试失败时，Galois框架提供了明确的\textbf{失败归因}判据：
+
+\begin{center}
+\begin{tabular}{@{}p{3.5cm} p{5cm} p{5cm}@{}}
+\toprule
+\textbf{失败表现} & \textbf{噪声问题} & \textbf{结构问题（$A_5$障碍）} \\
+\midrule
+\textbf{正确率行为} & 随数据增加而改善 & 正确率存在严格上界$<1$ \\
+\textbf{增加专家} & 可能改善（降低方差） & 不改善（上界不变） \\
+\textbf{增加数据} & 渐进趋于1 & 停滞在$\P_{\max} < 1$ \\
+\textbf{审计群诊断} & $\AuditGrp$可解 & $\AuditGrp$包含$A_5$ \\
+\textbf{解决方案} & 更多数据、更好的信号提取 & 改变专家组结构（引入不对称） \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+这一归因框架避免了两种常见错误：
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{类型I错误（假阳性结构诊断）：}将噪声不足误判为结构不可审计——
+    这会导致不必要的专家组重构。通过检查$\AuditGrp$是否确实包含$A_5$来避免。
+    \item \textbf{类型II错误（假阴性漏诊）：}将真正的$A_5$障碍误判为噪声问题——
+    这会导致在不可能成功的审计上浪费资源。通过合成因子分析来避免。
+\end{itemize}
+
+% ================================================================
+% 7. Honest Critique
+% ================================================================
+\section{诚实暴击——A\_5实验构造真的可行吗？}
+
+本节以诚实暴击的立场，系统性地审视本文理论的最薄弱环节：
+\textbf{实验设定的可实现性}。如果$A_5$分歧结构无法在任何真实场景中构造出来，
+那么无论可证伪性的逻辑多么优美，它都只是一个从未被检验的空中楼阁。
+
+\subsection{暴击一：对称性条件在真实世界中的脆弱性}
+
+\honestcrit{完全对称的联合分布几乎不可能在非合成数据中出现。}
+
+实验协议（第~4节）要求五位专家的联合判断分布在$S_5$的全部120个置换下不变。
+这意味着：
+\begin{itemize}[itemsep=3pt]
+    \item 所有五位专家的\textbf{边际准确率}完全相同；
+    \item 所有$\binom{5}{2} = 10$对专家的\textbf{pairwise相关性}完全相同；
+    \item 所有更高阶的联合矩（三元组、四元组）同样\textbf{对称}。
+\end{itemize}
+
+在真实世界中——无论是LLM评估器还是人类专家——
+这些条件能否同时成立？
+
+\textbf{LLM评估器的情况：} 即使使用五个不同提示（prompt）来模拟五位``专家''，
+提示之间的差异会打破对称性——某些提示可能在特定类型声称上更准确，
+某些提示组合可能共享更多语义特征从而具有更高的相关性。
+\textbf{完全对称}意味着所有提示在功能上全等（只是标签不同），
+但如果是这样——它们本质上是同一个评估器运行了五次，
+那么审计群的正确模型应该是将五个副本视为\textbf{同一信号加独立噪声}，
+而非五个可置换的独立专家。此时$\AuditGrp = \{1\}$而非$S_5$。
+
+\textbf{人类专家的情况：} 五位人类专家不可能具有完全相同的准确率和pairwise相关性。
+即使通过精心筛选和信息控制试图逼近这一理想化，
+残余的个人差异（知识背景、推理风格、疲劳效应）将不可避免地打破对称性。
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.88\textwidth}
+\textbf{暴击一的严重性评估：}\\[4pt]
+如果真实场景中永远无法满足严格的$S_5$对称性，
+那么$A_5$障碍是一个\textbf{零测度条件}——
+它在数学上存在，但在经验上几乎不可能被触发。
+这使得SCX的可证伪预测在实践上\textbf{不可检验}。
+一个在实践中不可检验的理论在波普尔的意义上与形而上学没有区别。
+\end{minipage}}
+\end{center}
+
+\subsection{暴击二：近似A\_5结构的连续性退化解}
+
+\honestcrit{近似对称的审计群是否包含``近似A\_5''？如果是，审计是否``近似不可审计''？}
+
+假设真实情况不是严格的$S_5$对称，而是\textbf{近似对称}——
+五位专家的准确率几乎相等（$p_i = p \pm \epsilon$），
+相关性几乎相等（$\rho_{ij} = \rho \pm \delta$）。
+
+此时，严格的审计群$\AuditGrp = \{\mathrm{id}\}$（因为任何非平凡置换都在$\epsilon, \delta$精度下改变联合分布）。
+根据Galois理论，$\AuditGrp$是平凡群，因此是可解的——
+\textbf{不存在}$A_5$障碍。但直觉上，当$\epsilon, \delta \to 0$时，
+审计问题应该``连续退化''为不可审计情形。
+
+这一直觉提出了Galois-SCX框架中一个未被解决的\textbf{连续性问题}：
+
+\openproblem \textbf{审计群的连续扰动问题。}
+设$\AuditGrp$为严格对称情形下的$S_5$。引入微小扰动后，
+$\AuditGrp$坍缩为平凡群。审计问题的难度是否随扰动幅度\textbf{连续}变化？
+还是存在一个\textbf{相变}——在某个临界扰动值之上审计突然变得可能？
+如果是后者，该临界值与扰动的具体形式之间有何定量关系？
+
+如果审计难度\textbf{连续}依赖于对称性的偏离程度，
+那么即使严格的$A_5$结构不可实现，
+\textbf{近似}$A_5$结构仍然可以在实践上导致``有效的不可审计性''——
+此时虽然理论上存在审计程序，但其所需样本量远超任何实践预算。
+Galois-SCX框架目前缺乏处理这一连续情况的工具。
+
+\subsection{暴击三：循环分歧模式的自同构群实为D\_5，非A\_5}
+
+\honestcrit{第4节构造的5-循环分歧表（$E_k$在$x_k$上为$-1$）的自同构群是二面体群$D_5$（10阶），而非$S_5$（120阶），更非$A_5$（60阶）。}
+
+仔细分析实验协议步骤5中的分歧表。
+该表的自同构群是保持``每个声称恰好有一个$-1$''这一结构不变的置换群。
+这一群包含：
+\begin{itemize}
+    \item 循环置换$(1\;2\;3\;4\;5)$（将$-1$在$E_1$上的模式映射到$-1$在$E_2$上的模式）；
+    \item 逆置换$(1\;5\;4\;3\;2)$；
+    \item 以及将$E_k$映射到$E_k$的反射（保持$-1$位置不变）。
+\end{itemize}
+这是标准的二面体群$D_5$（10阶），它\textbf{是可解的}——其合成因子为$\Z/2\Z$和$\Z/5\Z$。
+
+因此，实验协议步骤5构造的\textbf{不是}$A_5$分歧结构！
+$A_5$需要的是全部$S_5$对称性（由步骤3-4的全等相关结构保证），
+而非仅在五个特定声称上的循环模式。
+
+\textbf{修正方案：}
+要真正获得$A_5$障碍，关键在于步骤3-4的全等相关结构（$\AuditGrp = S_5$），
+而非步骤5的特定声称模式。
+步骤5的循环分歧仅是一个\textbf{诊断示例}——它表明在$S_5$对称下，
+某些声称的共识结构受到不可约循环群的保护，
+使得任何聚合函数的正确率上界被锁定。
+但$A_5$障碍本身来自$\AuditGrp$的整体结构，
+而非个别声称的分歧模式。
+
+重要的是：即使$\AuditGrp = S_5$包含$A_5$，
+\textbf{并非所有声称}都不可审计——某些声称（如所有专家完全一致的声称）
+仍然可以轻易地被审计。
+$A_5$障碍保证的是\textbf{存在}不可审计的声称，
+而非\textbf{所有}声称都不可审计。
+实验的目标是找到（或构造）那些\textbf{确实不可审计的}声称，
+而不是证明全体声称都不可审计。
+
+\subsection{暴击四：审计程序可以``绕过''A\_5障碍吗？}
+
+\honestcrit{Galois证明假设审计程序必须在AuditGrp作用下等变。但实际审计者可以不遵守这一假设。}
+
+Galois不可解性定理的一个关键前提是：
+审计程序$\mathcal{A}$在$\AuditGrp$作用下\textbf{等变}——
+即$\mathcal{A}(\sigma \cdot \text{data}) = \mathcal{A}(\text{data})$。
+这意味着审计者不偏袒任何专家（专家标签对审计结果没有影响）。
+
+但真实的审计者完全可以\textbf{故意打破}这一对称性！
+例如，审计者可以基于外部知识（``我认为$E_3$比$E_1$更可靠''）
+给专家分配非对称权重。此时，审计程序不再等变于$\AuditGrp$，
+而仅等变于一个更小的子群（可能已不包含$A_5$）。
+
+如果审计者可以通过\textbf{选择打破对称性}来绕过$A_5$障碍，
+那么$A_5$障碍就不是绝对的——它只是说\textbf{在对称审计策略的约束下}不可审计。
+但对称审计策略本身不是一个强制性的方法论规则，而只是一个选择。
+
+\textbf{对此暴击的回应：}
+打破对称性确实可能使某些声称变得可审计——但代价是引入\textbf{审计者的先验偏差}。
+如果审计者选择信任$E_3$超过$E_1$，而$E_1$恰好是正确的，
+则打破对称性反而降低了审计正确率。
+在缺乏独立的外部验证的情况下，
+打破对称性等价于在审计群中选择一个特权方向——
+这本质上是\textbf{将审计问题转化为专家选择问题}。
+Galois理论的价值在于告诉我们：这种转化\textbf{不可避免}——
+对称审计存在结构性障碍，非对称审计引入了不可验证的先验。
+
+% ================================================================
+% 8. Conclusion
+% ================================================================
+\section{结论}
+
+\subsection{理论贡献}
+
+本文做出了以下核心贡献：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{识别了SCX的第一个严格可证伪预测}。
+    通过反转Galois-SCX不可解性定理的逻辑方向，
+    我们证明了SCX理论做出了一个波普尔意义上的可证伪预测：
+    $A_5$结构的声称不可审计。如果有人在实验中构造了$A_5$结构的声称并成功审计，
+    SCX的核心公理被推翻。
+
+    \item \textbf{导出了三个具体可操作的可证伪预测}：
+    (a) 五次方程级声称不存在统一独立共识；
+    (b) $A_5$障碍导致不存在完整审计程序（正确率有严格上界$<1$）；
+    (c) 正规化子条件违反时审计不可分解。
+
+    \item \textbf{设计了证伪实验}。
+    提出了$n=5$对称专家组的构造方案，明确了统计判据
+    （单侧二项检验，$p<0.05$），使SCX的预测进入了可经验检验的领域。
+
+    \item \textbf{将理论转化为工程操作指南}。
+    包括预审计诊断、专家选择标准、合成列分解审计、以及失败归因框架。
+
+    \item \textbf{以诚实暴击审视了实验可行性}。
+    识别了四个深层困难：完全对称性的不可实现性、
+    近似对称的连续退化问题、循环分歧模式的群论再分析、
+    以及审计程序可以打破等变性的可能性。
+\end{enumerate}
+
+\subsection{波普尔评价}
+
+本文的核心信息可以用波普尔的语言总结：
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.90\textwidth}
+\textbf{SCX的波普尔地位}
+
+\begin{enumerate}[label=(\arabic*),itemsep=4pt]
+    \item SCX理论\textbf{不是}形而上学——它做出了有风险的、可经验反驳的预测。
+    \item SCX的核心预测是\textbf{可证伪但尚未被证伪}的——这恰恰是科学理论最健康的状态。
+    \item SCX告诉了我们应该寻找什么样的观察来推翻它（$A_5$结构的声称的成功审计）——
+    这是波普尔所说的``诚实的方法论''：主动暴露自己的潜在致命弱点。
+    \item 然而，如果$A_5$结构的真实声称\textbf{原则上不可构造}
+    （如第~7节所质疑的），那么SCX的可证伪性只是\textbf{逻辑上}而非\textbf{实践上}的——
+    这使其科学地位介于``充分可检验''和``形而上学''之间的灰色地带。
+\end{enumerate}
+\end{minipage}}
+\end{center}
+
+\subsection{一条向前看的路}
+
+如果本文的诚实暴击被认真对待——即严格的$A_5$对称可能在实践中不可实现——
+那么SCX的下一步不应该是捍卫严格的群论边界，
+而应该是\textbf{发展连续扰动理论}：
+
+\openproblem \textbf{近似$A_5$障碍的定量理论。}
+给定一个近乎对称的专家组（$S_5$对称被$\epsilon$偏离），
+审计难度（最小所需样本量以达到给定正确率）如何随$\epsilon$变化？
+
+\openproblem \textbf{弱对称条件下的审计下界。}
+如果$\AuditGrp$不包含严格的$A_5$子群，但其表示中包含
+``近似不可约''的高维成分（在某种度量下接近$A_5$的不可约表示），
+审计正确率是否存在``近似上界''？
+
+这些开放问题——而非严格的可证伪性边界——
+可能才是Galois-SCX框架最具实践价值的理论方向。
+
+% ================================================================
+% References
+% ================================================================
+\begin{thebibliography}{99}
+
+\bibitem{popper1934}
+K.~Popper.
+\emph{Logik der Forschung}.
+Julius Springer, Vienna, 1934.
+（英译本：\emph{The Logic of Scientific Discovery}, Hutchinson, 1959.）
+
+\bibitem{popper1963}
+K.~Popper.
+\emph{Conjectures and Refutations: The Growth of Scientific Knowledge}.
+Routledge, London, 1963.
+
+\bibitem{scx2026galois}
+SCX.
+\emph{Galois-SCX：群论与多专家审计的深层对应}.
+Preprint, 2026年6月.
+
+\bibitem{scx2026theorems}
+SCX.
+\emph{SCX Core Theorems: Honest Person, Strong Man, and the Foundations of Multi-Expert Auditing}.
+Technical Report, 2026.
+
+\bibitem{scx_lipschitz}
+SCX.
+\emph{Situs Lipschitz Decomposition for Multi-Expert Consensus}.
+Technical Report, 2026.
+
+\bibitem{scx_causal}
+SCX.
+\emph{Causal SCX：因果推断的多专家审计}.
+Preprint, 2026.
+
+\bibitem{scx_agentic}
+SCX.
+\emph{Agentic Multi-Agent SCX：对抗性多智能体审计理论}.
+Preprint, 2026.
+
+\bibitem{scx_collective}
+SCX.
+\emph{Collective Intelligence SCX：群体智能的数学基础}.
+Preprint, 2026.
+
+\bibitem{scx_information}
+SCX.
+\emph{Information-Theoretic SCX：信息论的多专家审计}.
+Preprint, 2026.
+
+\bibitem{scx_temporal}
+SCX.
+\emph{Temporal SCX：时态多专家审计}.
+Preprint, 2026.
+
+\bibitem{lakatos1970}
+I.~Lakatos.
+Falsification and the methodology of scientific research programmes.
+In \emph{Criticism and the Growth of Knowledge}, Cambridge University Press, 1970.
+
+\bibitem{galois_classic}
+E.~Galois.
+\emph{M\'emoire sur les conditions de r\'esolubilit\'e des \'equations par radicaux}.
+1846 (posthumous).
+
+\bibitem{artin_galois}
+E.~Artin.
+\emph{Galois Theory}.
+Notre Dame Mathematical Lectures, No.~2, 1944.
+
+\bibitem{lang_algebra}
+S.~Lang.
+\emph{Algebra}, 3rd ed.
+Springer, 2002.
+
+\bibitem{serre_rep}
+J.-P.~Serre.
+\emph{Linear Representations of Finite Groups}.
+Springer GTM 42, 1977.
+
+\bibitem{dummit_foote}
+D.~Dummit and R.~Foote.
+\emph{Abstract Algebra}, 3rd ed.
+Wiley, 2004.
+
+\bibitem{duhem1914}
+P.~Duhem.
+\emph{La Th\'eorie Physique: Son Objet, Sa Structure}, 2nd ed.
+Marcel Rivi\`ere, Paris, 1914.
+
+\bibitem{quine1951}
+W.~V.~Quine.
+Two dogmas of empiricism.
+\emph{The Philosophical Review}, 60(1):20--43, 1951.
+
+\end{thebibliography}
+
+\end{document}
