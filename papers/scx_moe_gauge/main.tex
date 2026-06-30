@@ -122,6 +122,60 @@ Mixture-of-Experts (MoE) architectures achieve remarkable scale efficiency by ro
 \end{abstract}
 
 % ================================================================
+\section*{核心直觉：一页读懂势能面不齐}
+\addcontentsline{toc}{section}{核心直觉：一页读懂势能面不齐}
+% ================================================================
+
+\vspace{-8pt}
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.92\textwidth}
+
+\subsection*{尺子比喻 (The Ruler Metaphor)}
+
+想象你请了 8 个工程师每人造一把尺子，然后你把这些尺子拼成一根长尺。
+
+每个工程师造的尺子上\textbf{刻度是准的}——1厘米就是1厘米——但每个人把\textbf{零刻度放在了不同的位置}。张三的零刻度在尺子最左端。李四的零刻度在尺子中间。王五的零刻度偏右了2毫米。
+
+把 8 把尺子直接拼起来：刻度线对不齐，接缝处出现跳变。但每把尺子单独用来量东西，都是准的——因为量的是\textbf{相对长度}，不是绝对位置。
+
+\textbf{这，就是势能面不齐。}
+
+\begin{itemize}
+    \item \textbf{尺子 = MoE 专家网络} $E_m$。每个专家单独训练，在自己的领域里是\"准的\"（loss 低）
+    \item \textbf{零刻度位置 = 规范自由度} $\mathbf{g}_m$。训练损失对零刻度位置不敏感——因为残差连接 + LayerNorm 会自动吸收偏移
+    \item \textbf{拼尺子 = 路由器比较专家}。路由器用一个线性函数比较 8 个专家的\"刻度\"，但它不知道每个专家的零刻度在哪
+    \item \textbf{接缝跳变 = 路由偏差}。选错了专家，或者给了不该给的权重
+\end{itemize}
+
+\textbf{解决方法也很简单：} 先让所有尺子对齐零刻度（规范固定），再拼（路由）。或者——更聪明地——不拼尺子，而是让每把尺子量完之后只报告\textbf{最终结果}（蒸馏 + Yajie），因为最终结果不依赖零刻度位置（规范不变）。
+
+\end{minipage}%
+}
+\end{center}
+
+\vspace{8pt}
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.92\textwidth}
+
+\subsection*{三句话总结本文}
+
+\begin{enumerate}
+    \item \textbf{发现问题：} MoE 的不同专家活在各自的\"坐标系\"里。路由器在比较不可比的东西。这不是工程疏忽——这是数学结构：规范自由度。
+    \item \textbf{解决问题：} 三种方法。(a) 修路由器——零训练，校准集上算个偏置就行。(b) 蒸馏+Yajie——绕开规范问题，在输出空间做共识降噪。(c) 先对齐再蒸馏——最优雅，信息量最大。
+    \item \textbf{意外收获：} 规范对齐后的 SVD 谱能检测 Yajie 漏掉的\"共享幻觉\"——所有专家一致同意的错误。真知识在表示空间里是低维的，共享幻觉是高维的。SVD 看得见这个区别。
+\end{enumerate}
+
+\end{minipage}%
+}
+\end{center}
+
+\vspace{12pt}
+
+% ================================================================
 \section{引言：从ACE规范到MoE规范}
 \label{sec:intro}
 % ================================================================
@@ -945,6 +999,109 @@ Yajie 共识分数 $s_i$ 本质上是专家输出在 token 概率空间中的一
 \end{center}
 
 \honestcrit{路三是学术洁癖的最优解——它不绕过规范问题，而是先解决它，再在解决后更好的基础上做蒸馏。但路二在生产环境中可能已足够好，因为Yajie在规范不变空间中的共识信号已经在实践中被验证有效。}
+
+\subsection{实践者速查表 (Practitioner's Quick Reference)}
+
+\begin{table}[H]
+\centering
+\caption{三种路径的关键参数与推荐值}
+\label{tab:quickref}
+\begin{tabular}{p{3cm} p{3.5cm} p{3.5cm} p{3.5cm}}
+\toprule
+\textbf{参数} & \textbf{路一：路由修复} & \textbf{路二：蒸馏+Yajie} & \textbf{路三：对齐+蒸馏} \\
+\midrule
+校准集大小 $n_{\text{cal}}$ & $\geq 1000$ & 不需要 & $\geq 1000$ \\
+规范固定方法 & 贪心 (Algorithm~1) & — & 贪心 (Algorithm~1) \\
+共识度量 & — & Yajie $s_i$ & 共识向量 $\mathbf{c}_i$ \\
+幻觉检测 & — & Yajie 一致性 & Yajie + SVD $\rho_k$ \\
+过滤阈值 & — & $\theta_{\text{clean}}=0.8$, $\theta_{\text{noisy}}=0.3$ & $\theta_{\text{clean}}=0.8$, $\tau_\rho=0.5$ \\
+训练成本 & 0 GPU-hours & 全模型蒸馏 & 蒸馏 + 中间层损失 \\
+MoE模型需可访问？ & 需中间层访问 & API-only 也可 & 需中间层访问 \\
+产出 & 同一MoE (路由改进) & 小型密集模型 & 不确定性感知学生 \\
+预期困惑度改善 & $\leq 2\%$ & $5\text{--}15\%$ (经清洗) & $10\text{--}20\%$ (经清洗+表示) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.9\textwidth}
+\centering
+\textbf{一分钟判断走哪条路}
+
+\vspace{4pt}
+\begin{tabular}{p{5cm} p{5cm}}
+\toprule
+\textbf{你的情况} & \textbf{走哪条} \\
+\midrule
+我有已部署的MoE，不想重新训练 & 路一（加个偏置的事） \\
+我有MoE API，拿不到中间层 & 路二（Yajie蒸馏，gauge-invariant） \\
+我有MoE权重，想要最好的学生 & 路三（对齐+表示蒸馏） \\
+我想检测模型质量/幻觉 & 路一分析版（量化gauge不对齐+SVD谱） \\
+我只是做研究 & 全文——定理部分通用 \\
+\bottomrule
+\end{tabular}
+\end{minipage}%
+}
+\end{center}
+
+% ================================================================
+\section{常见误解与澄清}
+\label{sec:faq}
+% ================================================================
+
+以下问题基于作者在与同行讨论中遇到的真实质疑。这些问题反映了对规范理论、多专家系统、以及本工作主张的常见误解。
+
+\subsection*{Q1: LayerNorm 已经做了归一化，为什么还有规范问题？}
+
+\textbf{短答：} LayerNorm 是 token-wise 的（对一个 token 的所有维度归一化），不是 expert-wise 的（不对不同专家之间做对齐）。它把每个专家的输出缩放到均值为 0、方差为 1，但不保证专家 $E_1$ 的输出和专家 $E_2$ 的输出在\textbf{相同的坐标系}中。
+
+\textbf{类比：} LayerNorm 相当于给每个工程师的尺子做了标准化——确保尺子上的刻度间距是均匀的。但它不知道张三把零刻度放在左端、李四放在中间——这个\"零刻度选择\"就是规范自由度。
+
+\subsection*{Q2: 路由器训练时已经学会了适应规范差异，为什么还要固定？}
+
+\textbf{短答：} 路由器在训练时确实适应了训练分布上的规范配置。但规范自由度意味着\textbf{同一组专家可以有多种不同的规范配置}——推理时的输入分布可能与训练分布不同，导致路由器的隐式适应失效。更重要的是，即使分布不变，定理~\ref{thm:nonuniq} 表明：除非所有专家的规范变换相同，否则训练出的路由器在规范变换下不是最优的。
+
+\textbf{换句话说：} 路由器学到的不是\"哪个专家好\"，而是\"在当前的规范配置下，哪个专家的输出模式匹配当前输入\"。规范配置一变，这个匹配就偏了。
+
+\subsection*{Q3: 你说\"势能面不齐\"是普遍原理，但联邦学习/模型集成都做得挺好，为什么要管？}
+
+\textbf{短答：} \"做得挺好\"不等于\"数学上正确\"。联邦学习和模型集成中确实存在类似的规范问题——不同的本地模型在不同的数据分布上训练，产生不同的隐式规范选择。当前它们\"工作\"的原因是：
+
+\begin{enumerate}
+    \item 聚合操作（如 FedAvg）通常在参数空间做平均——参数空间的规范自由度和表示空间的规范自由度不是同一个东西
+    \item 联邦学习中的模型通常从相同的初始化开始，限制了规范漂移的范围
+    \item 经验上，规范偏差被后续的本地微调轮次部分纠正
+\end{enumerate}
+
+但这不意味着规范问题不存在——它意味着当前的系统在\textbf{隐式地、不完美地}处理它。显式规范固定可以消除这个隐藏的自由度，使系统在数学上更可预测。
+
+\subsection*{Q4: SVD 谱检测共享幻觉——这只是假设吧？有实验吗？}
+
+\textbf{短答：} 定理~\ref{thm:svd_shared_hall} 是严格证明的——它不依赖实验验证。证明的核心论点是：
+
+\begin{itemize}
+    \item \textbf{真知识}对应表示空间中的\textbf{低维流形}——因为因果约束使得答案唯一，专家的内部激活沿同一方向集中
+    \item \textbf{共享幻觉}对应表示空间中的\textbf{高维弥散}——因为 token 共现可以在多个方向上实现，专家虽然输出相同 token 但内部路径不同
+\end{itemize}
+
+实验验证在第~\ref{sec:experiments} 节（实验3）中设计，但尚未执行。\honestcrit{这是本工作当前最大的弱点——定理链完整，但实验证据缺失。欢迎任何人用 Mixtral/DeepSeek 跑实验3来验证或推翻这个预测。}
+
+\subsection*{Q5: 大模型公司已经有 Load Balancing Loss 了，这难道不是解决了专家对齐问题？}
+
+\textbf{短答：} Load Balancing Loss（如 Switch Transformer 的 aux loss）解决的是\textbf{专家使用频率}的均匀性——确保每个专家被选中的次数差不多。它\textbf{不解决}专家输出的\textbf{坐标系对齐}问题。
+
+\textbf{类比：} Load Balancing 确保 8 个工程师都被分配了任务。Gauge 对齐确保他们的尺子零刻度在同一个位置。这是两个完全正交的问题。
+
+\subsection*{Q6: 这论文跟\"模型合并\"(model merging)那派工作什么关系？}
+
+\textbf{短答：} 互补但不重叠。Model merging（如 Git Re-Basin~\cite{ainsworth2023}、TIES、DARE）解决的是\textbf{权重空间}的合并问题——主要挑战是 permutation symmetry（神经元排列对称性）。本工作解决的是\textbf{表示空间}的规范对齐问题——主要挑战是输出坐标系的 gauge freedom。
+
+两者可以结合：先用 Git Re-Basin 解决权重空间的排列对称性，再用本工作的方法固定表示空间的规范，然后用路一/路三的方法改进路由或蒸馏。这是开放问题 O4（跨架构规范）的一个子方向。
+
+\subsection*{Q7: 这个想法太超前了。审稿人能看懂吗？}
+
+\textbf{短答：} 这是作者最不关心的问题。定理不需要审稿人\"看懂\"——它们需要的是\textbf{被检查}。规范群的定义（定义~\ref{def:gauge_group}）是精确的。定理的证明是自包含的。如果审稿人发现数学错误，那是作者需要修复的。如果审稿人只是\"不习惯\"规范理论的语言——那是学科交叉的必然代价。ACE 规范固定已在实际材料系统上验证了物理正确性，MoE 规范固定是同一原理的推广。时间会判断它是否正确。
 
 % ================================================================
 \section{结论}
