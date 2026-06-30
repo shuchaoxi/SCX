@@ -359,10 +359,16 @@ def verify_theorem_2():
 # ==============================================================================
 
 def R_min(theta, delta):
-    """Minimum redundancy for consensus threshold theta with per-fragment error delta."""
+    """Minimum redundancy for consensus threshold theta with per-fragment error delta.
+
+    R_min = ceil(-ln(1-theta) / (2*(0.5-delta)^2))
+    Derived from P(majority) >= 1 - exp(-2*R*(0.5-delta)^2) >= theta
+    """
     if delta >= 0.5:
         return np.inf  # majority impossible if per-fragment error >= 0.5
-    return int(np.ceil(np.log(1 - theta) / (2 * (0.5 - delta) ** 2)))
+    if theta >= 1.0:
+        return np.inf
+    return int(np.ceil(-np.log(1 - theta) / (2 * (0.5 - delta) ** 2)))
 
 
 def consensus_probability_via_hoeffding(R, delta):
