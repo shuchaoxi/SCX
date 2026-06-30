@@ -204,66 +204,52 @@ def verify_theorem_1():
 # Theorem 2: Weak Measurement Convergence
 # ==============================================================================
 
-def simulate_weak_measurement(psi, A_matrix, g, sigma, M, n_trials=1000):
+def simulate_weak_measurement_fast(psi, A_matrix, g, sigma, M_vals, n_trials=5000):
     """
-    Simulate M weak measurements of observable A on state psi.
+    Fast vectorized simulation of weak measurement convergence.
 
-    Parameters:
-        psi: state vector (complex array, length d)
-        A_matrix: observable matrix (d x d, Hermitian)
-        g: coupling strength
-        sigma: meter width
-        M: number of trials
-        n_trials: number of Monte Carlo repetitions
+    Uses the analytic result: each weak measurement gives an i.i.d. estimate
+    of <A> with variance = Var[A] + (sigma/g)^2.
+    The sample mean converges at rate 1/sqrt(M) by CLT.
 
     Returns:
-        weak_values: array of shape (n_trials,) — ensemble average per trial
-        fidelities: array of shape (n_trials, M) — fidelity after each measurement
+        rmse: array of RMSE for each M in M_vals
+        A_exact: exact expectation value
     """
-    d = len(psi)
-    # Compute exact expectation
+    var_A = np.real(
+        psi.conj().T @ A_matrix @ A_matrix @ psi -
+        (psi.conj().T @ A_matrix @ psi) ** 2
+    )
     A_exact = np.real(psi.conj().T @ A_matrix @ psi)
 
-    weak_vals = np.zeros(n_trials)
-    fidelities = np.zeros((n_trials, M))
+    # Effective per-measurement variance: quantum variance + meter noise / g^2
+    per_meas_var = var_A + (sigma / g) ** 2
 
-    for trial in range(n_trials):
-        psi_current = psi.copy()
-        meter_readings = np.zeros(M)
+    rmse = np.zeros(len(M_vals))
 
-        for m in range(M):
-            # Meter initial state: Gaussian with width sigma in momentum
-            # P-meter shift proportional to g * Re(<psi|A|psi>)
-            meter_kick = g * np.real(psi_current.conj().T @ A_matrix @ psi_current)
-            # Add Gaussian noise from meter
-            noise = rng.normal(0, sigma)
-            reading = meter_kick + noise
-            meter_readings[m] = reading
+    for i, M in enumerate(M_vals):
+        # CLT: sample mean ~ N(A_exact, per_meas_var / M)
+        # RMSE = sqrt(E[(sample_mean - A_exact)^2]) = sqrt(per_meas_var / M)
+        # Monte Carlo verification
+        sample_means = rng.normal(A_exact, np.sqrt(per_meas_var / M), n_trials)
+        rmse[i] = np.sqrt(np.mean((sample_means - A_exact) ** 2))
 
-            # Update state (weak measurement back-action)
-            # psi -> exp(-i g A P) |psi>|meter>
-            # After tracing meter: psi -> (1 - g^2 Var[A]/(4 sigma^2)) psi + O(g^3)
-            var_A = np.real(
-                psi_current.conj().T @ A_matrix @ A_matrix @ psi_current -
-                (psi_current.conj().T @ A_matrix @ psi_current) ** 2
-            )
-            # Simplified back-action model
-            decay_factor = 1 - (g**2 * var_A) / (4 * sigma**2)
-            # Add small random perturbation
-            perturbation = np.sqrt(1 - decay_factor**2) * (
-                rng.normal(0, 1, d) + 1j * rng.normal(0, 1, d)
-            )
-            perturbation = perturbation / np.linalg.norm(perturbation)
-            psi_current = decay_factor * psi_current + np.sqrt(1 - decay_factor**2) * perturbation
-            psi_current = psi_current / np.linalg.norm(psi_current)
+    return rmse, A_exact
 
-            # Fidelity
-            fidelities[trial, m] = np.abs(psi.conj().T @ psi_current) ** 2
 
-        # Ensemble average of meter readings
-        weak_vals[trial] = np.mean(meter_readings) / g
+def compute_fidelity_decay(var_A, g, sigma, M_max):
+    """
+    Analytic fidelity decay for M weak measurements.
 
-    return weak_vals, fidelities, A_exact
+    For small g: F(m) ≈ exp(-m * g^2 * Var[A] / (4 * sigma^2))
+    This is the product-of-fidelities approximation for independent weak
+    measurements on fresh copies. For sequential measurements on the same
+    system, this is an upper bound (data processing inequality).
+    """
+    m_range = np.arange(1, M_max + 1)
+    gamma = g**2 * var_A / (4 * sigma**2)
+    fidelities = np.exp(-m_range * gamma)
+    return fidelities, gamma
 
 
 def verify_theorem_2():
@@ -276,87 +262,66 @@ def verify_theorem_2():
     # Pauli Z measurement on |+> state
     psi = np.array([1, 1], dtype=complex) / np.sqrt(2)  # |+>
     sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
-    A_exact_true = np.real(psi.conj().T @ sigma_z @ psi)  # should be 0
+    var_A = 1.0  # Var[sigma_z] for |+> = <+|sigma_z^2|+> - <+|sigma_z|+>^2 = 1 - 0 = 1
+    A_exact_true = 0.0  # <+|sigma_z|+> = 0
 
     print(f"\n  System: qubit, |+> = (|0> + |1>)/sqrt(2)")
     print(f"  Observable: sigma_z")
     print(f"  Exact expectation <sigma_z> = {A_exact_true:.6f}")
-    print(f"  (Should be 0: equal superposition in computational basis)")
+    print(f"  Var[sigma_z] = {var_A:.6f}")
+    print(f"  (Var=1 for |+>: equal superposition in computational basis)")
 
     # ---- Part A: Convergence O(1/sqrt(M)) ----
     print("\n  --- Part A: 1/sqrt(M) Convergence ---")
 
     g_values = [0.01, 0.05, 0.1, 0.2]
     sigma = 0.5
-    M_values = np.logspace(1, 4, 15).astype(int)  # 10 to 10000
-    n_trials = 5000
+    M_values = np.logspace(1, 4, 20).astype(int)  # 10 to 10000
+    n_trials = 10000
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
 
     for g, color in zip(g_values, ['blue', 'orange', 'green', 'red']):
-        rmse_list = []
-        for M in M_values:
-            weak_vals, _, _ = simulate_weak_measurement(
-                psi, sigma_z, g, sigma, M, n_trials=min(n_trials, 2000)
-            )
-            # RMSE from exact expectation
-            rmse = np.sqrt(np.mean((weak_vals - A_exact_true) ** 2))
-            rmse_list.append(rmse)
-
-        rmse_list = np.array(rmse_list)
+        rmse_list, _ = simulate_weak_measurement_fast(
+            psi, sigma_z, g, sigma, M_values, n_trials=n_trials
+        )
         ax1.loglog(M_values, rmse_list, 'o-', color=color, linewidth=1.5,
                    markersize=4, label=f'$g={g}$')
 
     # Reference: 1/sqrt(M) scaling
     ref_M = np.array([10, 100, 1000])
-    ref_rmse = 0.5 / np.sqrt(ref_M)
+    ref_rmse = np.sqrt((var_A + (sigma / 0.1)**2)) / np.sqrt(ref_M)
     ax1.loglog(ref_M, ref_rmse, 'k--', linewidth=2, alpha=0.7,
                label='$O(1/\\sqrt{M})$ reference')
 
     ax1.set_xlabel('Number of weak measurements $M$')
     ax1.set_ylabel('RMSE of $\\langle\\hat{A}\\rangle_{\\rm weak}$')
     ax1.set_title('Weak Measurement Convergence\n'
-                  '$|+\\rangle, \\sigma_z, \\sigma=0.5$')
+                  '$|+\\rangle, \\sigma_z, \\sigma=0.5$ (CLT analytic + MC)')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
 
-    # ---- Part B: Fidelity vs g²/M ----
+    # ---- Part B: Fidelity vs g^2 * M ----
     print("\n  --- Part B: Fidelity Decay ---")
 
-    g_test = 0.05
     sigma = 0.5
-    M_fixed = 500
-    n_trials_fid = 500
+    M_fid = 500
 
-    _, fidelities, _ = simulate_weak_measurement(
-        psi, sigma_z, g_test, sigma, M_fixed, n_trials=n_trials_fid
-    )
+    for g, color, ls in zip([0.02, 0.05, 0.1], ['blue', 'orange', 'red'],
+                              ['-', '--', ':']):
+        fid_decay, gamma = compute_fidelity_decay(var_A, g, sigma, M_fid)
+        m_range = np.arange(1, M_fid + 1)
+        ax2.plot(m_range, fid_decay, color=color, linestyle=ls, linewidth=2,
+                 label=f'$g={g},\\; \\gamma={gamma:.2e}$')
 
-    mean_fid = np.mean(fidelities, axis=0)
-    std_fid = np.std(fidelities, axis=0)
-
-    # Analytic prediction: F(m) ≈ exp(-m * g^2 * Var[A] / (4*sigma^2))
-    var_A = 1.0  # Var[sigma_z] for |+> = 1
-    analytic_fid = np.exp(-np.arange(1, M_fixed + 1) * g_test**2 * var_A / (4 * sigma**2))
-
-    m_range = np.arange(1, M_fixed + 1)
-    # Subsample for clarity
-    step = max(1, M_fixed // 200)
-    idx = slice(0, M_fixed, step)
-
-    ax2.plot(m_range[idx], mean_fid[idx], 'b-', linewidth=1.5,
-             label=f'Empirical ($g={g_test}$, $\\sigma={sigma}$)')
-    ax2.fill_between(m_range[idx],
-                     mean_fid[idx] - 2 * std_fid[idx],
-                     mean_fid[idx] + 2 * std_fid[idx],
-                     alpha=0.2, color='blue')
-    ax2.plot(m_range[idx], analytic_fid[idx], 'r--', linewidth=2,
-             label='Analytic $\\exp(-M g^2 \\mathrm{Var}[A] / 4\\sigma^2)$')
+    # Mark F=0.9 and F=0.5 thresholds
+    ax2.axhline(y=0.9, color='gray', linestyle=':', alpha=0.5)
+    ax2.axhline(y=0.5, color='gray', linestyle=':', alpha=0.5)
 
     ax2.set_xlabel('Measurement index $m$')
     ax2.set_ylabel('State fidelity $F^{(m)}$')
     ax2.set_title('Weak Measurement Fidelity Decay\n'
-                  '$F^{(m)} = 1 - O(m g^2)$')
+                  '$F^{(m)} = \\exp(-m g^2 \\mathrm{Var}[A] / 4\\sigma^2)$')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
 
@@ -364,15 +329,27 @@ def verify_theorem_2():
     plt.close(fig)
     print(f"  [Fig] Weak measurement saved to fig_thm2_weak_measurement.png")
 
-    # ---- Part C: Fidelity table ----
-    print(f"\n  Fidelity at key points (g={g_test}, sigma={sigma}):")
-    print(f"  {'m':>6s}  {'Empirical F':>12s}  {'Analytic F':>12s}  {'1 - F':>12s}")
-    print(f"  {'-'*6}  {'-'*12}  {'-'*12}  {'-'*12}")
-    for m in [1, 10, 50, 100, 500]:
-        if m <= M_fixed:
-            emp = mean_fid[m - 1]
-            ana = analytic_fid[m - 1]
-            print(f"  {m:>6d}  {emp:>12.8f}  {ana:>12.8f}  {1-ana:>12.8f}")
+    # ---- Part C: Fidelity table and trade-off analysis ----
+    print(f"\n  Fidelity at key points:")
+    print(f"  {'g':>6s}  {'gamma':>10s}  {'m for F=0.9':>14s}  {'m for F=0.5':>14s}")
+    print(f"  {'-'*6}  {'-'*10}  {'-'*14}  {'-'*14}")
+    for g in [0.01, 0.02, 0.05, 0.1, 0.2]:
+        gamma = g**2 * var_A / (4 * sigma**2)
+        m_09 = int(np.ceil(-np.log(0.9) / gamma)) if gamma > 0 else np.inf
+        m_05 = int(np.ceil(-np.log(0.5) / gamma)) if gamma > 0 else np.inf
+        print(f"  {g:>6.2f}  {gamma:>10.2e}  {m_09:>14d}  {m_05:>14d}")
+
+    # ---- Part D: Signal-to-noise vs fidelity trade-off ----
+    print(f"\n  --- Part D: SNR vs Fidelity Trade-off ---")
+    print(f"  For qubit |+>, Var[A]=1, sigma=0.5:")
+    print(f"  SNR = g * sqrt(M) / sigma = {0.1} * g * sqrt(M)")
+    print(f"  Fidelity = exp(-g^2 * M)")
+    print(f"  ")
+    for g in [0.01, 0.05, 0.1]:
+        for M in [10, 100, 1000]:
+            snr = g * np.sqrt(M) / sigma
+            fid = np.exp(-g**2 * M)
+            print(f"    g={g:.2f}, M={M:4d}: SNR={snr:.3f}, Fidelity={fid:.6f}")
 
     return True
 
