@@ -107,10 +107,12 @@ are \emph{unidentifiable} without an explicit declaration of held assumptions,
 formalizing a fundamental limitation of any sim-to-real transfer pipeline.  We
 then operationalize these results through three mechanisms:
 \textbf{Spring}---an online CUSUM-based monitor that detects world-model drift
-during deployment; the \textbf{Cercis Score}---a composite metric $Q \cdot N$
-where $Q$ quantifies physical fidelity (conservation-law adherence, collision
-validity) and $N$ captures scenario novelty (out-of-distribution environment
-deviation); and \textbf{Yajie Consensus}---a Byzantine-robust protocol for
+during deployment and whose gatekeeper score yields a finite-expert lower
+bound for out-of-distribution (OOD) detection; the \textbf{Cercis Score}---a
+composite metric $Q \cdot N$ where $Q$ quantifies physical fidelity
+(conservation-law adherence, collision validity) and $N$ captures scenario
+novelty (out-of-distribution environment deviation); and \textbf{Yajie
+Consensus}---a Byzantine-robust protocol for
 aggregating audit signals across heterogeneous modules.  We specify an
 experimental protocol targeting NVIDIA Isaac Sim benchmarks with real-robot
 transfer validation on manipulation and locomotion tasks.  Throughout, we
@@ -178,7 +180,8 @@ guarantees, runtime monitors, and scoring metrics for learned world models:
     assumption, formalizing a limit on sim-to-real pipelines.
   \item \textbf{Spring Online Monitoring} (Section~\ref{sec:spring}): A
     sequential probability-ratio test (SPRT) / CUSUM detector for world-model
-    drift during deployment, with controlled false-alarm rate.
+    drift during deployment, with controlled false-alarm rate and an explicit
+    finite-expert OOD detection lower bound.
   \item \textbf{Cercis Score} (Section~\ref{sec:cercis}): A composite metric
     $C = Q \cdot N$ where $Q$ aggregates conservation-law and collision
     fidelity and $N$ measures out-of-distribution novelty.
@@ -675,6 +678,225 @@ gives $\E[T_{\text{detect}}] \approx h/\kappa$, with the $\mathcal{O}(1)$
 term accounting for the overshoot.
 \end{proof}
 
+\subsection{OOD Detection Lower Bound}
+\label{subsec:spring_ood}
+
+The CUSUM statistic above monitors temporal drift across a rollout.  Spring
+also induces a one-sample OOD test: a sample is suspicious when its gatekeeper
+score is atypical relative to scores stored in the in-distribution memory.  To
+avoid collision with the CUSUM statistic $S_t$, write $G_t(x)$ for the
+per-sample Spring gatekeeper score; this is the score denoted $S_t(x)$ in the
+Spring gating notes.
+
+Let $\mathfrak{M}_t$ be the Spring memory bank of accepted in-distribution
+samples.  For $M$ expert modules, let $Z_{m,t}(x) \in [0,1]$ be expert $m$'s
+normalized validity score for sample $x$ at time $t$, and define the aggregate
+gatekeeper score
+\begin{equation}
+  G_t(x) = \frac{1}{M}\sum_{m=1}^{M} Z_{m,t}(x).
+  \label{eq:spring_gate_score}
+\end{equation}
+The memory bank estimates the in-distribution score center
+$\mu_{\mathrm{in},t} = \E[G_t(X)\mid X \sim P_{\mathrm{in},t}]$ by
+$\widehat{\mu}_{\mathrm{in},t}$.
+
+\begin{definition}[Spring OOD Hypothesis Test]
+\label{def:spring_ood_test}
+OOD detection is the binary hypothesis test
+\begin{equation}
+  H_0: X \sim P_{\mathrm{in},t},
+  \qquad
+  H_1: X \sim P_{\mathrm{out},t},
+\end{equation}
+with OOD shift
+\begin{equation}
+  \delta_{\mathrm{OOD}}
+  =
+  \left|
+  \E[G_t(X)\mid H_1]
+  -
+  \mu_{\mathrm{in},t}
+  \right|.
+\end{equation}
+For a tolerance $\epsilon > 0$, the ideal calibrated Spring detector is
+\begin{equation}
+  \varphi_{\epsilon,t}(x)
+  =
+  \ind{\left|G_t(x)-\mu_{\mathrm{in},t}\right|>\epsilon},
+  \label{eq:spring_ood_test}
+\end{equation}
+where $\varphi_{\epsilon,t}(x)=1$ means ``declare OOD.''  In deployment,
+$\mu_{\mathrm{in},t}$ is replaced by $\widehat{\mu}_{\mathrm{in},t}$ from
+$\mathfrak{M}_t$; the calibration error is handled in
+Corollary~\ref{cor:spring_memory_scaling}.
+\end{definition}
+
+\begin{theorem}[SCX OOD Detection Lower Bound]
+\label{thm:spring_ood_lower}
+Condition on the Spring memory state $\mathfrak{M}_t$.  Assume that
+$Z_{1,t}(X),\ldots,Z_{M,t}(X)$ are independent and take values in $[0,1]$.
+Under $H_0$, suppose $\E[G_t(X)\mid H_0]=\mu_{\mathrm{in},t}$; under $H_1$,
+suppose
+$|\E[G_t(X)\mid H_1]-\mu_{\mathrm{in},t}|=\delta_{\mathrm{OOD}}$.
+Then, writing
+$p_i(\epsilon)=\Pbb(\varphi_{\epsilon,t}(X)=1\mid H_i)$, the test
+in~\eqref{eq:spring_ood_test} satisfies
+\begin{align}
+  p_0(\epsilon)
+    &\le 2\exp(-2M\epsilon^2), \label{eq:ood_false_alarm}\\
+  p_1(\epsilon)
+    &\ge
+    1-\exp\!\left(-2M(\delta_{\mathrm{OOD}}-\epsilon)^2\right)
+    \label{eq:ood_power_exact}
+\end{align}
+for every $0<\epsilon<\delta_{\mathrm{OOD}}$.  In particular, if the OOD
+shift has margin $\delta_{\mathrm{OOD}}\ge 2\epsilon$, then
+\begin{equation}
+  \Pbb(\text{detect OOD}\mid \delta_{\mathrm{OOD}}\ge 2\epsilon)
+  \ge 1-\exp(-2M\epsilon^2).
+  \label{eq:ood_power_margin}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The false-alarm bound is Hoeffding's inequality applied to the average
+$G_t(X)$ of $M$ independent $[0,1]$ random variables:
+\begin{equation}
+  \Pbb\!\left(
+  |G_t(X)-\mu_{\mathrm{in},t}|>\epsilon \mid H_0
+  \right)
+  \le 2\exp(-2M\epsilon^2).
+\end{equation}
+
+For the detection bound, assume first that
+$\E[G_t(X)\mid H_1]=\mu_{\mathrm{in},t}+\delta_{\mathrm{OOD}}$; the negative
+shift case is identical after reversing the sign.  A missed detection under
+$H_1$ implies
+\begin{equation}
+  G_t(X)-\mu_{\mathrm{in},t}\le \epsilon,
+\end{equation}
+and therefore
+\begin{equation}
+  G_t(X)-\E[G_t(X)\mid H_1]
+  \le
+  -(\delta_{\mathrm{OOD}}-\epsilon).
+\end{equation}
+Hoeffding's one-sided inequality gives
+\begin{equation}
+  \Pbb(\varphi_{\epsilon,t}(X)=0\mid H_1)
+  \le
+  \exp\!\left(-2M(\delta_{\mathrm{OOD}}-\epsilon)^2\right).
+\end{equation}
+Taking complements proves~\eqref{eq:ood_power_exact}.  If
+$\delta_{\mathrm{OOD}}\ge 2\epsilon$, then
+$(\delta_{\mathrm{OOD}}-\epsilon)^2\ge \epsilon^2$, yielding
+the margin-normalized bound~\eqref{eq:ood_power_margin}.
+\end{proof}
+
+\begin{theorem}[Minimum Detectable OOD Shift]
+\label{thm:spring_ood_min_shift}
+Assume the expert scores are independent with common variance
+$\Var(Z_{m,t}(X)\mid H_i)=\sigma^2$ under the local alternatives
+$i\in\{0,1\}$.  Then
+\begin{equation}
+  \Var(G_t(X)\mid H_i)=\frac{\sigma^2}{M}.
+\end{equation}
+Consequently, the unit-standard-error detectable shift of the Spring
+gatekeeper is
+\begin{equation}
+  \delta_{\min}=\frac{\sigma}{\sqrt{M}}.
+  \label{eq:ood_delta_min}
+\end{equation}
+More generally, in the Gaussian local model
+$G_t(X)\mid H_0\sim \cN(\mu_{\mathrm{in},t},\sigma^2/M)$ and
+$G_t(X)\mid H_1\sim \cN(\mu_{\mathrm{in},t}+\delta,\sigma^2/M)$, any
+level-$\alpha$ one-sided threshold test needs
+\begin{equation}
+  \delta
+  \ge
+  \bigl(z_{1-\alpha}+z_{1-\beta}\bigr)\frac{\sigma}{\sqrt{M}}
+  \label{eq:ood_delta_alpha_beta}
+\end{equation}
+to achieve power at least $1-\beta$, where $z_p$ is the $p$-quantile of the
+standard normal distribution.
+\end{theorem}
+
+\begin{proof}
+The variance identity follows from independence:
+\begin{align}
+  \Var(G_t(X)\mid H_i)
+  &=
+  \Var\!\left(
+  \frac{1}{M}\sum_{m=1}^M Z_{m,t}(X)
+  \middle| H_i
+  \right) \notag\\
+  &=
+  \frac{1}{M^2}\sum_{m=1}^M \sigma^2
+  =
+  \frac{\sigma^2}{M}.
+\end{align}
+Thus the natural noise scale of the aggregate score is
+$\sigma/\sqrt{M}$, proving~\eqref{eq:ood_delta_min}.
+
+For the Gaussian local model, the Neyman--Pearson most powerful level-$\alpha$
+one-sided test rejects $H_0$ when
+$G_t(X)>\mu_{\mathrm{in},t}+z_{1-\alpha}\sigma/\sqrt{M}$.  Its power under
+$H_1$ is
+\begin{equation}
+  1-\Phi_{\mathrm{std}}\!\left(
+  z_{1-\alpha}-\frac{\delta\sqrt{M}}{\sigma}
+  \right),
+\end{equation}
+where $\Phi_{\mathrm{std}}$ is the standard normal CDF.  Requiring this
+quantity to be at least $1-\beta$ is equivalent to
+$z_{1-\alpha}-\delta\sqrt{M}/\sigma \le z_{\beta}=-z_{1-\beta}$, which is
+exactly~\eqref{eq:ood_delta_alpha_beta}.
+\end{proof}
+
+\begin{corollary}[Single-Expert Limitation and Memory Scaling]
+\label{cor:spring_memory_scaling}
+At unit-standard-error resolution, a single Spring expert has
+$\delta_{\min}=\sigma$.  Detecting an OOD shift of size $\epsilon$ therefore
+requires
+\begin{equation}
+  M > \frac{\sigma^2}{\epsilon^2}
+  \label{eq:ood_expert_requirement}
+\end{equation}
+experts, up to the confidence constants in
+\eqref{eq:ood_delta_alpha_beta}.  If the memory bank contains
+$n_t=|\mathfrak{M}_t|$ independent in-distribution calibration samples and
+$\widehat{\mu}_{\mathrm{in},t}=n_t^{-1}\sum_{j=1}^{n_t}G_t(X_j)$, then
+\begin{equation}
+  \Var\!\left(G_t(X)-\widehat{\mu}_{\mathrm{in},t}\mid H_0\right)
+  =
+  \frac{\sigma^2}{M}\left(1+\frac{1}{n_t}\right),
+\end{equation}
+and the memory-calibrated detectable shift is
+\begin{equation}
+  \delta_{\min}(t)
+  =
+  \frac{\sigma}{\sqrt{M}}
+  \sqrt{1+\frac{1}{n_t}}.
+  \label{eq:ood_memory_delta_min}
+\end{equation}
+Thus Spring's OOD sensitivity improves as $\mathfrak{M}_t$ grows, converging
+to the expert-ensemble floor $\sigma/\sqrt{M}$.  If the memory mechanism also
+increases the effective number of independent reference experts
+$M_{\mathrm{eff}}(t)$, replace $M$ by $M_{\mathrm{eff}}(t)$ in
+\eqref{eq:ood_memory_delta_min}, giving the monotone improvement
+$\delta_{\min}(t)\asymp \sigma/\sqrt{M_{\mathrm{eff}}(t)}$.
+\end{corollary}
+
+\begin{proof}
+The single-expert statement is Theorem~\ref{thm:spring_ood_min_shift} with
+$M=1$.  Solving $\epsilon>\sigma/\sqrt{M}$ for $M$ gives
+\eqref{eq:ood_expert_requirement}.  For the memory term, the new-sample score
+$G_t(X)$ and the empirical memory mean $\widehat{\mu}_{\mathrm{in},t}$ are
+independent under calibration, with variances $\sigma^2/M$ and
+$\sigma^2/(Mn_t)$, respectively.  The variance of their difference is the sum
+of these two variances, yielding~\eqref{eq:ood_memory_delta_min}.
+\end{proof}
+
 \subsection{Multi-Resolution Monitoring}
 
 Spring employs a \emph{multi-resolution} monitoring scheme with three
@@ -1161,7 +1383,11 @@ where $h$ is calibrated from the false-alarm constraint.  For $\alpha = 0.01$
 and $\sigma_0^2 = 0.25$ (estimated from calibration), this requires a drift
 magnitude of at least $\mu_1 - \mu_0 \ge 0.15$---achievable for the
 violation types in our benchmark (e.g., disabling collision detection raises
-$v_t$ by $0.3$--$0.7$).
+$v_t$ by $0.3$--$0.7$).  For one-sample OOD detection, the complementary
+Spring gatekeeper bound in Theorem~\ref{thm:spring_ood_lower} predicts
+exponential power growth in the number of independent experts, while
+Corollary~\ref{cor:spring_memory_scaling} gives the detectable shift scale
+$\delta_{\min}(t)$ after memory calibration.
 
 %==============================================================================
 \section{Discussion}
