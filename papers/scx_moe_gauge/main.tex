@@ -76,6 +76,9 @@
 \DeclareMathOperator{\spec}{spec}
 \DeclareMathOperator{\softmax}{softmax}
 \DeclareMathOperator{\topk}{top\text{-}k}
+\DeclareMathOperator{\Cov}{Cov}
+\let\std\relax
+\DeclareMathOperator{\std}{std}
 
 % Honest critique
 \newcommand{\honestcrit}[1]{%
@@ -114,7 +117,7 @@ Why Expert Output Surfaces Are Not Aligned and How MILP Gauge Fixing Resolves It
 % ================================================================
 \begin{abstract}
 
-Mixture-of-Experts (MoE) architectures achieve remarkable scale efficiency by routing each token to a subset of specialized sub-networks. However, we identify a fundamental and previously unrecognized problem: the \textbf{potential surface misalignment} (势能面不齐, PSM) — different experts define their output surfaces in gauge-inequivalent coordinate systems, making the router's task of comparing expert relevance ill-posed. We formalize this as a \textbf{gauge freedom} in the representation space of deep MoE models: each expert's output admits a group of transformations $\G_m$ that leave its own training loss invariant but alter cross-expert comparisons. We prove three theorems: (1) the standard linear router $\softmax(W_r x)$ is not gauge-invariant — under gauge transformations $E_m \to \gamma_m \circ E_m$, the routing scores change unless all experts share the same gauge; (2) the optimal gauge fixing problem reduces to a Mixed Integer Linear Program (MILP) on a calibration set, where integer variables encode expert-token assignments and continuous variables encode gauge parameters; (3) after gauge fixing, the SVD spectrum of multi-expert outputs becomes a provable hallucination detector — a flat spectrum (low $\rho_k$ concentration) implies the model has no internal consensus and is hallucinating. We provide a convex relaxation of the MILP that admits polynomial-time solution, establish bounds on the routing error introduced by gauge misalignment, and connect this work to the author's prior gauge-fixing framework for atomic cluster expansion (ACE) potentials, showing that both are instances of a deeper principle: \textbf{any modular system where independently trained components must interact requires explicit gauge alignment before comparison}.
+Mixture-of-Experts (MoE) architectures achieve remarkable scale efficiency by routing each token to a subset of specialized sub-networks. However, we identify a fundamental and previously unrecognized problem: the \textbf{potential surface misalignment} (势能面不齐, PSM) — different experts define their output surfaces in gauge-inequivalent coordinate systems, making the router's task of comparing expert relevance ill-posed. We formalize this as a \textbf{gauge freedom} in the representation space of deep MoE models: each expert's output admits a group of transformations $\G_m$ that leave its own training loss invariant but alter cross-expert comparisons. We prove that the standard linear router is not gauge-invariant, formulate optimal gauge fixing as a Mixed Integer Linear Program (MILP) with a polynomial-time convex relaxation and a greedy algorithm with provable error bounds, and establish that the SVD spectrum of gauge-aligned multi-expert outputs is a provable hallucination detector — distinguishing true knowledge from both disagreement-based and shared hallucinations. We connect this work to the author's prior gauge-fixing framework for atomic cluster expansion (ACE) potentials, showing that both are instances of a deeper \textbf{Modular Gauge Principle}: any system of independently trained components requires explicit gauge alignment before comparison, merging, routing, or aggregation. Three engineering pathways are derived: zero-training router repair, gauge-invariant distillation with Yajie consensus, and gauge-aligned representation distillation. Beyond engineering, we extract the \textbf{Equality Principle} (平等论): the mathematical necessity of gauge alignment at interfaces implies that inequality at contact points is structurally unstable — a principle that extends from MoE routing to social systems, explaining historical patterns of wealth-driven conflict as mathematically inevitable. The full chain comprises 13 theorems, 6 definitions, 4 propositions, and 7 corollaries, spanning the arc from an engineering observation about expert networks to a self-reflexive epistemological principle that judges any system — including those that would judge it.
 
 \vspace{4pt}
 \noindent\textbf{Keywords:} Mixture of Experts, gauge theory, potential surface alignment, MILP, hallucination detection, SVD spectrum, representation geometry
@@ -967,7 +970,7 @@ LayerNorm 的归一化操作 $\text{LN}(x) = \gamma \odot (x - \mu)/\sigma + \be
 
 \textbf{共识向量的信息论优势。} 路三的共识向量 $\mathbf{c}_i^{(\ell)}$ 是 $N$ 个对齐专家的中心——它捕获了所有专家\textbf{共同相信}的方向。分歧向量 $\mathbf{d}_i^{(\ell)}$ 指示了专家间的认知分歧，这是路二的标量 Yajie 分数无法提供的\textbf{方向性信息}。
 
-\begin{proposition}[共识向量比标量得分信息量大]\label{prop:consensus_info}
+\begin{proposition}[共识向量比标量得分信息量大]\label{prop:consensus_info}\rigorFull
 设路二的 Yajie 标量得分为 $s_i \in [0,1]$，路三的共识向量为 $\mathbf{c}_i \in \R^d$。在温和的专家多样性假设下，$\mathbf{c}_i$ 包含的信息量不低于 $s_i$ 包含的信息量——即存在函数 $f: \R^d \to [0,1]$ 使得 $s_i \approx f(\mathbf{c}_i)$，且 $f$ 的构造是 $\mathbf{c}_i$ 范数与标量阈值的单调函数。
 \end{proposition}
 
@@ -1353,7 +1356,7 @@ SCX 的回答是：知识不是个体认知状态，而是\textbf{多观察者�
 其中 $\Omega_k$ 是第 $k$ 个"台阶"，$h_k$ 是其高度，相邻台阶之间存在跳跃 $\Delta_k = h_{k+1} - h_k$。
 \end{definition}
 
-\begin{theorem}[台阶的埋雷性质]\label{thm:step_mine}
+\begin{theorem}[台阶的埋雷性质]\label{thm:step_mine}\rigorFull
 马太效应动力学产生的每个势能台阶 $\Delta_k > 0$ 对应一个\textbf{延迟引爆的不稳定界面}。系统在时间 $T$ 内至少有一个台阶引爆的概率为
 \begin{equation}
     \Pbb(\text{引爆} \mid \{\Delta_k\}, T) \geq 1 - \prod_k \exp\left(-\frac{T}{T_k}\right),
