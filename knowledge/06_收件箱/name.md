@@ -68,3 +68,10 @@ scx_review/       Nat Rev          综述+数学深度
 spring_config/    —               Spring 配置
 yajie_protocol/   —               Yajie 协议
 taxonomic_nn/     —               神经网络分类学
+
+
+```
+machine-learning, data-quality, game-theory, theorem-proving,
+noise-detection, multi-expert, algorithmic-audit, epistemology,
+uncertainty-principle, nash-equilibrium, anti-corruption
+```
