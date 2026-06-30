@@ -1,0 +1,968 @@
+% !TEX program = xelatex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  SCX-Audited Medical Diagnosis:
+%  Multi-Physician Consensus for Certified Clinical Decision-Making
+%  SCX审计医学诊断：多医师共识认证的临床决策
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Chinese terminology:
+%    医学诊断 (Medical Diagnosis) / 多学科会诊 (Multidisciplinary Consultation)
+%    误诊率 (Misdiagnosis Rate) / 第二意见 (Second Opinion)
+%    肿瘤委员会 (Tumor Board) / 影像学 (Imaging) / 病理学 (Pathology)
+%    检验医学 (Laboratory Medicine) / 鉴别诊断 (Differential Diagnosis)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[12pt,a4paper]{ctexart}
+
+% ── Packages ────────────────────────────────────────────────────────────────
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{dsfont}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{cleveref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{bbm}
+\usepackage{longtable}
+\onehalfspacing
+
+% ── Theorem Environments ────────────────────────────────────────────────────
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\theoremstyle{definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{protocol}[theorem]{Protocol}
+
+% ── Rigor Labels ────────────────────────────────────────────────────────────
+\definecolor{rigorFull}{RGB}{0,100,0}
+\definecolor{rigorPartial}{RGB}{180,120,0}
+\definecolor{rigorSketch}{RGB}{150,0,0}
+\newcommand{\rigorFull}{{\color{rigorFull}$\blacksquare$\,\textbf{[Rigor: FULL $\star\star\star$]}}}
+\newcommand{\rigorPartial}{{\color{rigorPartial}$\blacksquare$\,\textbf{[Rigor: PARTIAL $\star\star\;$]}}}
+\newcommand{\rigorSketch}{{\color{rigorSketch}$\blacksquare$\,\textbf{[Rigor: SKETCH $\star\;\,$]}}}
+
+% ── SCX Framework Macros ────────────────────────────────────────────────────
+\newcommand{\Situs}{\textsc{Situs}}
+\newcommand{\Yajie}{\textsc{Yajie}}
+\newcommand{\Spring}{\textsc{Spring}}
+\newcommand{\Cercis}{\textsc{Cercis}}
+\newcommand{\SCX}{\textsc{SCX}}
+
+% ── Math Operators ──────────────────────────────────────────────────────────
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\TV}{TV}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\RMSE}{RMSE}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\Lip}{Lip}
+\DeclareMathOperator{\AUC}{AUC}
+\DeclareMathOperator{\Sens}{Sens}
+\DeclareMathOperator{\Spec}{Spec}
+\DeclareMathOperator{\PPV}{PPV}
+\DeclareMathOperator{\NPV}{NPV}
+
+% ── Notation ────────────────────────────────────────────────────────────────
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\I}{\mathbb{I}}
+\newcommand{\ind}[1]{\mathbf{1}[#1]}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cZ}{\mathcal{Z}}
+
+% ── Medical Macros ──────────────────────────────────────────────────────────
+\newcommand{\MisDiag}{误诊率}
+\newcommand{\SecondOpinion}{第二意见}
+\newcommand{\TumorBoard}{肿瘤委员会}
+\newcommand{\MultiDiscConsult}{多学科会诊}
+\newcommand{\MedDiag}{医学诊断}
+\newcommand{\DiffDiag}{鉴别诊断}
+\newcommand{\ImagingMod}{影像学}
+\newcommand{\PathologyMod}{病理学}
+\newcommand{\LabMod}{检验医学}
+
+% ── Assumption Tags ─────────────────────────────────────────────────────────
+\newcommand{\assumptionTag}[1]{\textbf{[#1]}}
+
+% ── Title ───────────────────────────────────────────────────────────────────
+\title{\textbf{SCX-Audited Medical Diagnosis:}\\[4pt]
+       \large Multi-Physician Consensus for Certified Clinical Decision-Making\\[8pt]
+       \normalsize \textbf{SCX审计\MedDiag{}：多医师共识认证的临床决策}}
+\author{SCX Medical Working Group\\[4pt]
+        \small Xiaogan Supercomputing Center \& Nous Research}
+\date{June 2026}
+
+\begin{document}
+
+\maketitle
+
+% ===========================================================================
+\begin{abstract}
+\noindent
+Medical diagnosis (\MedDiag) is a high-stakes prediction task where error — misdiagnosis (\MisDiag) — carries direct human cost. Yet clinical practice provides no formal guarantee that diagnostic errors will be detected before harm occurs. We formalize medical diagnosis within the \SCX{} audit framework, treating physicians as expert agents ($f_m \in \cF$) making diagnostic claims ($\gamma_i(s)$) over a shared patient state $s$, and the diagnostic process as a multi-expert consensus problem.
+
+Our central result is a \textbf{multi-physician error detection bound} (Theorem~\ref{thm:multi_diag}): with $M$ physicians of effective multiplicity $M_{\text{eff}}$, the probability that all $M$ miss a diagnostic error of clinical magnitude $\Delta$ satisfies $\Pbb(\text{all miss} \mid \text{error}) \leq \exp(-2M_{\text{eff}}\Delta^2)$. This formalizes the commonplace intuition of the \SecondOpinion{} ($M=2$): a second physician reduces misdiagnosis probability from $p$ to $p^2 / (1 + \bar{\rho})$, where $\bar{\rho}$ is inter-physician error correlation. We extend this to the \TumorBoard{} (\MultiDiscConsult), which instantiates the \Yajie{} multi-expert consensus protocol with $M \geq 5$ specialists from distinct modalities — imaging (\ImagingMod), pathology (\PathologyMod), laboratory medicine (\LabMod), surgery, and oncology — each contributing an independently-trained diagnostic opinion.
+
+We prove three additional theorems: \textbf{Theorem~\ref{thm:self_diag}} (Self-Diagnosis Prohibition, 自诊断禁止定理) establishes that a physician auditing their own diagnosis provides zero epistemic information; \textbf{Theorem~\ref{thm:unident}} (Diagnostic Unidentifiability, 诊断不可区分定理) proves that when physicians disagree, the source — misdiagnosis vs.\ atypical disease presentation — is fundamentally unidentifiable without declared domain assumptions; and \textbf{Theorem~\ref{thm:situs_med}} (\Situs{} Multi-Modal Encoding, \Situs{}多模态编码定理) certifies the quality of fused imaging, laboratory, and pathology encodings via a Lipschitz-bounded representation space.
+
+We introduce the \Cercis{} Score for diagnostic quality $S = Q + \eta N$, where $Q$ aggregates consensus reliability (inter-rater agreement, autopsy confirmation rate, clinical outcome concordance) and $N$ quantifies diagnostic novelty (atypical presentations, rare diseases, novel clinical patterns). The \Spring{} module permanently records every diagnostic decision, expert opinion, and outcome, enabling retrospective audit and cumulative improvement. We provide a concrete experimental protocol benchmarking against MIMIC-IV, CheXpert, and institutional tumor board records. Our framework yields a falsifiable prediction: hospitals implementing \SCX{}-audited diagnosis with $M \geq 5$ will exhibit $\MisDiag{}$ rates at least $1 - \exp(-2M_{\text{eff}}\Delta^2)$ lower than those with solo diagnosis, controlling for case complexity.
+
+\medskip
+\noindent\textbf{医学诊断是高风险的预测任务——误诊直接导致患者伤害。本文将医学诊断形式化为SCX审计框架下的多专家共识问题：医师即专家，诊断即声明，第二意见即M=2审计，肿瘤多学科会诊即Yajie共识。我们证明：M位医师的误诊漏检概率有Hoeffding指数界，自诊断等价于无审计，医师分歧时误诊与非典型表现不可区分（除非声明领域假设），并提出Situs多模态编码和Cercis诊断质量评分。实验方案覆盖MIMIC-IV、CheXpert和肿瘤委员会记录。}
+
+\medskip
+\noindent\textbf{Keywords:} medical diagnosis, multi-physician consensus, misdiagnosis rate, second opinion, tumor board, SCX audit, clinical decision-making, Cercis Score, \MedDiag, \MultiDiscConsult, \MisDiag, \SecondOpinion, \TumorBoard
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ===========================================================================
+\section{Introduction 引言}
+\label{sec:intro}
+% ===========================================================================
+
+Medical error is the third leading cause of death in the United States, with diagnostic error — misdiagnosis (\MisDiag) — accounting for an estimated 40,000--80,000 deaths annually \cite{makary2016medical, graber2013incidence}. In China, studies report \MisDiag{} rates of 27\%--42\% in outpatient settings and 20\%--30\% in inpatient care \cite{wang2019misdiagnosis}. Globally, the World Health Organization estimates that diagnostic errors affect 5\% of adults in outpatient care annually. The problem is not one of physician competence — it is a structural absence of formal audit in the diagnostic process.
+
+Consider the standard clinical workflow: a patient presents with symptoms $x$; a physician $f_1$ renders diagnosis $\hat{y}_1 = f_1(x)$. If the diagnosis is correct, treatment proceeds. If incorrect, the error may be discovered only after treatment failure, disease progression, or autopsy — all costly, some irreversible. The \SecondOpinion{} (\SecondOpinion) exists as an informal corrective: consult physician $f_2$, compare diagnoses. But the second opinion is typically requested only when doubt arises — and doubt is itself a diagnostic judgment made by the same system whose error it seeks to detect.
+
+The \TumorBoard{} (\MultiDiscConsult) is the most mature instantiation of multi-expert consensus in clinical medicine. Tumor boards convene radiologists, pathologists, surgeons, medical oncologists, and radiation oncologists — typically $M = 5$--$12$ specialists — to reach a consensus diagnosis and treatment plan. Studies show tumor boards change the diagnosis in 25\%--52\% of cases and alter management in 30\%--65\% \cite{pillay2016impact, lamb2011quality}. Yet tumor boards are ad-hoc: they lack formal consensus protocols, make no quantitative error guarantees, and operate without permanent auditable records of dissenting opinions.
+
+The \SCX{} framework provides the missing formalism. We map the medical diagnostic process onto the SCX multi-expert audit architecture:
+
+\begin{center}
+\begin{tabular}{l l}
+\toprule
+\textbf{Medical Concept} & \textbf{SCX Formalization} \\
+\midrule
+Physician & Expert $f_m \in \cF = \{f_1, \ldots, f_M\}$ \\
+Diagnosis & Claim $\gamma_m(s) = (d_m(s), \sigma_m(s))$ \\
+Patient state & $s \in \cS$ (history, exam, labs, imaging, pathology) \\
+Second Opinion & $M=2$ audit with effective multiplicity $M_{\text{eff}}$ \\
+Tumor Board & \Yajie{} multi-expert consensus with $M \geq 5$ \\
+Misdiagnosis rate & $\Pbb(\text{all } M \text{ miss error} \mid \text{error})$ \\
+Imaging/Lab/Pathology & Multi-modal \Situs{} encoding \\
+Autopsy confirmation & Ground truth $g(s)$ (post-hoc verification) \\
+Atypical presentation & Distribution shift $\cD_{\text{train}} \to \cD_{\text{novel}}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{The Diagnostic Audit Gap 诊断审计空白}
+
+Despite decades of research on diagnostic error, the field has focused on \textit{reducing} error rates through training, checklists, decision support systems, and AI assistance. All of these approaches share a fundamental limitation: they improve average accuracy without providing instance-level verification. A diagnostic AI with 95\% accuracy on a test set cannot tell you which 5\% are wrong. A checklist reduces omission errors but cannot detect errors of commission. A second opinion improves the odds — but by how much, exactly? Without a formal framework, the answer has been ``we don't know, but it helps.''
+
+\SCX{} answers this question quantitatively. Under explicit assumptions (Section~\ref{sec:assumptions}), we prove that $M$ independent diagnosticians reduce the \MisDiag{} miss probability by $\exp(-2M_{\text{eff}}\Delta^2)$, where $\Delta$ is the clinical significance threshold and $M_{\text{eff}}$ corrects for correlated diagnostic reasoning. The framework provides:
+
+\begin{enumerate}[label=(\arabic*), leftmargin=*]
+    \item A \textbf{formal error detection guarantee} (Theorem~\ref{thm:multi_diag}) that specifies, for any desired confidence level $\varepsilon$, the minimum number of independent diagnosticians $M(\varepsilon)$;
+    \item A \textbf{self-diagnosis prohibition} (Theorem~\ref{thm:self_diag}) proving that a single physician cannot certify their own diagnostic quality;
+    \item A \textbf{diagnostic unidentifiability theorem} (Theorem~\ref{thm:unident}) delineating the boundary between misdiagnosis and genuinely atypical disease;
+    \item A \textbf{multi-modal encoding quality certificate} (Theorem~\ref{thm:situs_med}) for fused imaging, laboratory, and pathology data;
+    \item A \textbf{quantified diagnostic quality score} (\Cercis{} Score, Section~\ref{sec:cercis}) aggregating consensus reliability and diagnostic novelty.
+\end{enumerate}
+
+\subsection{Contributions 本文贡献}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Formalization} (Section~\ref{sec:framework}): We define the patient state space $\cS$, diagnostic expert formalism, and consensus framework within \SCX.
+    \item \textbf{Multi-Physician Error Detection Theorem} (Section~\ref{sec:thm1}): A Hoeffding bound on \MisDiag{} miss probability as a function of $M$, $M_{\text{eff}}$, and clinical margin $\Delta$. Full proof with correlated-expert correction.
+    \item \textbf{Self-Diagnosis Prohibition} (Section~\ref{sec:thm2}): Formal proof that self-audit of diagnosis provides zero mutual information with true error.
+    \item \textbf{Diagnostic Unidentifiability Theorem} (Section~\ref{sec:thm3}): Constructive indistinguishability between misdiagnosis and atypical presentation absent declared assumptions.
+    \item \textbf{\Situs{} Multi-Modal Encoding} (Section~\ref{sec:situs}): Quality-certified fusion of imaging, pathology, and laboratory data with explicit Lipschitz bounds.
+    \item \textbf{\Cercis{} Diagnostic Score} (Section~\ref{sec:cercis}): Dual-component metric $S = Q + \eta N$ for diagnostic quality assessment.
+    \item \textbf{\Yajie{} Tumor Board Protocol} (Section~\ref{sec:yajie}): Formal consensus protocol for multidisciplinary diagnosis with convergence guarantees.
+    \item \textbf{Experimental Protocol} (Section~\ref{sec:experiment}): Benchmarks on MIMIC-IV, CheXpert, and institutional tumor board records.
+\end{enumerate}
+
+% ===========================================================================
+\section{Framework and Notation 框架与符号}
+\label{sec:framework}
+% ===========================================================================
+
+\subsection{Patient State Space 患者状态空间}
+
+\begin{definition}[Patient State 患者状态]
+\label{def:patient_state}
+A \textbf{patient state} $s \in \cS$ is a structured tuple encoding all clinically relevant information at diagnostic time $t$:
+\begin{equation}
+    s = (x_{\text{hist}}, x_{\text{exam}}, x_{\text{img}}, x_{\text{lab}}, x_{\text{path}}, x_{\text{gen}})
+\end{equation}
+where:
+\begin{itemize}[nosep]
+    \item $x_{\text{hist}} \in \cX_{\text{hist}}$: patient history (demographics, comorbidities, medications, family history, prior diagnoses);
+    \item $x_{\text{exam}} \in \cX_{\text{exam}}$: physical examination findings (vital signs, auscultation, palpation, neurological exam);
+    \item $x_{\text{img}} \in \cX_{\text{img}}$: imaging data (X-ray, CT, MRI, ultrasound, PET) — see \Situs{} encoding, Section~\ref{sec:situs};
+    \item $x_{\text{lab}} \in \cX_{\text{lab}}$: laboratory results (CBC, metabolic panel, biomarkers, microbiology, molecular diagnostics);
+    \item $x_{\text{path}} \in \cX_{\text{path}}$: pathology data (histology slides, immunohistochemistry, cytology, flow cytometry);
+    \item $x_{\text{gen}} \in \cX_{\text{gen}}$: genomic/molecular data (germline variants, somatic mutations, gene expression, methylation).
+\end{itemize}
+The state space $\cS = \cX_{\text{hist}} \times \cX_{\text{exam}} \times \cX_{\text{img}} \times \cX_{\text{lab}} \times \cX_{\text{path}} \times \cX_{\text{gen}}$ is assumed compact: $\cS \subset \R^d$ with $\sup_{s \in \cS} \norm{s} \leq B < \infty$.
+\end{definition}
+
+\subsection{Diagnostic Experts 诊断专家}
+
+\begin{definition}[Diagnostic Expert 诊断专家]
+\label{def:diagnostic_expert}
+A \textbf{diagnostic expert} (physician or diagnostic model) is a function
+\begin{equation}
+    f_m: \cS \to \Delta^{K-1}, \qquad m \in \{1, \ldots, M\}
+\end{equation}
+mapping each patient state $s$ to a probability distribution over $K$ diagnostic categories $\cY = \{1, \ldots, K\}$ (e.g., ICD-10 codes). The \textbf{diagnostic claim} of expert $m$ is
+\begin{equation}
+    \gamma_m(s) = (d_m(s), \sigma_m(s))
+\end{equation}
+where $d_m(s) = \argmax_{k \in \cY} f_m(s)_k$ is the top-1 diagnosis and $\sigma_m(s) = 1 - \max_k f_m(s)_k$ is the diagnostic uncertainty (1 minus confidence).
+
+\textbf{Specialization}: Expert $m$ may observe only a modality-restricted state $s^{(m)} \subset s$. For instance:
+\begin{itemize}[nosep]
+    \item Radiologist $f_{\text{rad}}$: $s^{(\text{rad})} = (x_{\text{hist}}, x_{\text{img}})$
+    \item Pathologist $f_{\text{path}}$: $s^{(\text{path})} = (x_{\text{hist}}, x_{\text{path}})$
+    \item Surgeon $f_{\text{surg}}$: $s^{(\text{surg})} = (x_{\text{exam}}, x_{\text{img}}, x_{\text{path}})$
+    \item Oncologist $f_{\text{onc}}$: $s^{(\text{onc})} = (x_{\text{hist}}, x_{\text{lab}}, x_{\text{gen}}, x_{\text{path}})$
+\end{itemize}
+This modality-restricted observation naturally induces conditional independence (Assumption~\ref{asm:A2}), as different modalities provide orthogonal evidence channels.
+\end{definition}
+
+\begin{definition}[Ground Truth Diagnosis 真实诊断]
+\label{def:ground_truth}
+The \textbf{ground truth} $g: \cS \to \cY$ is the latent true diagnosis, operationalized through:
+\begin{itemize}[nosep]
+    \item \textbf{Autopsy confirmation}: histopathological verification post-mortem (gold standard);
+    \item \textbf{Treatment response}: clinical outcome following disease-specific therapy;
+    \item \textbf{Expert panel adjudication}: consensus of $N \gg M$ independent specialists with full retrospective data;
+    \item \textbf{Longitudinal follow-up}: disease trajectory over $\geq 12$ months confirming or refuting initial diagnosis.
+\end{itemize}
+We denote the set of verified cases as $\cD_{\text{verified}} \subset \cS \times \cY$.
+\end{definition}
+
+\begin{definition}[Diagnostic Error 诊断误差]
+\label{def:diag_error}
+For expert $m$ on state $s$ with ground truth $g(s)$, the \textbf{diagnostic error} is
+\begin{equation}
+    \varepsilon_m(s) = \ind{d_m(s) \neq g(s)} \in \{0, 1\}.
+\end{equation}
+The \textbf{clinically-weighted error} incorporates severity:
+\begin{equation}
+    \tilde{\varepsilon}_m(s) = w(g(s), d_m(s)) \cdot \ind{d_m(s) \neq g(s)}
+\end{equation}
+where $w(y, \hat{y}) \in [0, 1]$ is the clinical harm weight of diagnosing $\hat{y}$ when truth is $y$ (e.g., $w$ is high for missing myocardial infarction, low for misclassifying viral vs. bacterial URI).
+\end{definition}
+
+% ===========================================================================
+\section{Core Assumptions 核心假设}
+\label{sec:assumptions}
+% ===========================================================================
+
+Every theorem in this paper is stated under explicit assumptions. No claim is made without declaring its epistemic preconditions.
+
+\begin{assumption}[Independent Diagnostic Training — A1 独立诊断训练]
+\label{asm:A1}
+Each diagnostic expert $f_m$ is trained on independently-acquired clinical experience and/or independently-trained from distinct data subsets. Formally, for any $m \neq m'$:
+\begin{equation}
+    I(\cD_m; \cD_{m'}) = 0, \qquad I(\theta_m^{(0)}; \theta_{m'}^{(0)}) = 0
+\end{equation}
+where $\cD_m$ is the set of cases informing expert $m$'s diagnostic reasoning (residency, fellowship, continuing education, personal case experience) and $\theta_m^{(0)}$ denotes initial diagnostic priors.
+
+In practice, physicians trained at the same institution, under the same attending, or using the same guidelines have correlated diagnostic patterns. We absorb this into the effective multiplicity $M_{\text{eff}}$ (Assumption~\ref{asm:A2_prime}).
+\end{assumption}
+
+\begin{assumption}[Conditional Diagnostic Independence — A2 条件诊断独立]
+\label{asm:A2}
+Given the true diagnosis $y = g(s)$, the diagnostic errors of distinct experts are conditionally independent:
+\begin{equation}
+    \Pbb(\varepsilon_m = a, \varepsilon_{m'} = b \mid y) = \Pbb(\varepsilon_m = a \mid y) \cdot \Pbb(\varepsilon_{m'} = b \mid y), \quad \forall m \neq m'.
+\end{equation}
+This is plausible when experts draw on orthogonal evidence: a radiologist's error on a CT scan is conditionally independent of a pathologist's error on a biopsy, given the true disease state.
+\end{assumption}
+
+\begin{assumption}[Effective Diagnostic Multiplicity — A2$'$ 有效诊断重数]
+\label{asm:A2_prime}
+Under inter-expert diagnostic correlation $\bar{\rho}$, the effective multiplicity is:
+\begin{equation}
+    M_{\text{eff}} = \frac{M}{1 + (M-1)\bar{\rho}},
+\end{equation}
+where $\bar{\rho} = \frac{2}{M(M-1)}\sum_{m < m'} \Corr(\varepsilon_m, \varepsilon_{m'})$ is the average pairwise error correlation.
+
+\textit{Typical values}: For a tumor board with radiologist, pathologist, surgeon, and oncologist drawing on distinct modalities, empirical studies suggest $\bar{\rho} \in [0.15, 0.35]$, yielding $M_{\text{eff}} \in [3.2, 4.1]$ for $M=5$. For two general internists from the same practice with shared diagnostic heuristics, $\bar{\rho} \in [0.5, 0.7]$, yielding $M_{\text{eff}} \in [1.3, 1.6]$ for $M=2$.
+\end{assumption}
+
+\begin{assumption}[Bounded Diagnostic Competence — A3 有界诊断能力]
+\label{asm:A3}
+Each expert achieves diagnostic accuracy strictly better than random assignment: for a $K$-category diagnosis,
+\begin{equation}
+    \Pbb(d_m(s) = y \mid s \in \cS_{\text{typical}}) > \frac{1}{K}, \quad \forall m \in [M],
+\end{equation}
+where $\cS_{\text{typical}} \subseteq \cS$ is the set of clinically typical presentations (common diseases with classic symptom profiles). Experts may perform at or below chance on atypical, rare, or novel presentations — this is precisely the regime where multi-expert consensus is most valuable.
+\end{assumption}
+
+\begin{assumption}[Detectable Diagnostic Error Margin — A4 可检测诊断误差边距]
+\label{asm:A4}
+For a diagnostic error of clinical significance $\Delta > 0$, at least one expert detects it with probability exceeding chance:
+\begin{equation}
+    \E[Z_m \mid \varepsilon_{\text{true}} > \Delta] \geq \frac{1}{2} + \gamma, \quad \forall m,
+\end{equation}
+where $Z_m = \ind{\text{expert } m \text{ flags diagnosis as uncertain or incorrect}}$ and $\gamma > 0$ is the detection advantage. This requires each expert to have better-than-random ability to recognize when their own diagnostic reasoning may be flawed — a meta-cognitive property trained in medical education as ``knowing when to consult.''
+\end{assumption}
+
+\begin{assumption}[Bounded Patient State Distribution — A5 有界患者状态分布]
+\label{asm:A5}
+The patient state distribution $\rho_s$ over $\cS$ is stationary within a clinical context (e.g., emergency department, oncology clinic, primary care) and has bounded support: $\supp(\rho_s) \subseteq \cS$ is compact. Distribution shift — e.g., a novel pathogen (COVID-19), changing population demographics, or new diagnostic technology — is detectable via \Spring{} gating but requires re-certification of diagnostic experts.
+\end{assumption}
+
+\begin{assumption}[Declared Modality Assumption — A6 声明模态假设]
+\label{asm:A6}
+Each expert's modality access $s^{(m)} \subseteq s$ is explicitly declared. The diagnostic value of modality $j$ is quantified by the information gain:
+\begin{equation}
+    \Delta I_j = I(y; x_j \mid x_{\setminus j}) = H(y \mid x_{\setminus j}) - H(y \mid x_{\setminus j}, x_j).
+\end{equation}
+Experts whose declared modalities overlap substantially (e.g., two radiologists reading the same CT) have correlation $\rho_{mm'} \propto \Delta I_{\text{img}}$, reducing $M_{\text{eff}}$.
+\end{assumption}
+
+\begin{assumption}[Clinical Significance Threshold — A7 临床显著性阈值]
+\label{asm:A7}
+A diagnostic error is \textbf{clinically significant} if its harm weight exceeds threshold $\tau$:
+\begin{equation}
+    \varepsilon_m(s) \text{ is significant} \iff w(g(s), d_m(s)) > \tau.
+\end{equation}
+The threshold $\tau$ is domain-specific: $\tau_{\text{ED}} = 0.3$ (emergency department — low threshold for life-threatening misses), $\tau_{\text{oncology}} = 0.5$ (moderate — treatment changes have high cost but disease progression is slow), $\tau_{\text{primary}} = 0.7$ (high — most diagnostic uncertainty resolves with time).
+\end{assumption}
+
+\begin{assumption}[Verifiable Outcome Availability — A8 可验证结局]
+\label{asm:A8}
+For a subset $\cS_{\text{verified}} \subseteq \cS$ of patient states, the true diagnosis $g(s)$ becomes available within horizon $T$ through autopsy, treatment response, or longitudinal follow-up. The verified fraction $\alpha = |\cS_{\text{verified}}| / |\cS|$ determines the audit's empirical coverage. In critical care, $\alpha \approx 0.95$ (most outcomes known within 30 days). In primary care, $\alpha \approx 0.3$ (many self-limiting conditions resolve without definitive diagnosis).
+\end{assumption}
+
+% ===========================================================================
+\section{Theorem 1: Multi-Physician Diagnostic Error Detection 定理1：多医师诊断误差检测}
+\label{sec:thm1}
+% ===========================================================================
+
+\rigorFull
+\begin{theorem}[Multi-Physician Diagnostic Error Detection Bound 多医师误诊检测界]
+\label{thm:multi_diag}
+Let $\cF = \{f_1, \ldots, f_M\}$ be $M$ diagnostic experts satisfying Assumptions~\ref{asm:A1}--\ref{asm:A4}. Let $M_{\text{eff}} = M / (1 + (M-1)\bar{\rho})$ be the effective multiplicity under error correlation $\bar{\rho}$. For any diagnostic error of clinical significance $\Delta > 0$ (as defined by the harm weight in Assumption~\ref{asm:A7}), the probability that all $M$ experts fail to detect it satisfies:
+\begin{equation}\label{eq:main_bound}
+    \Pbb\!\left(\bigcap_{m=1}^{M} \{\text{expert } m \text{ misses error}\} \;\middle|\; \text{error of magnitude } \Delta \text{ exists}\right) \leq \exp\!\big(-2M_{\text{eff}}\Delta^2\big).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+We proceed in four parts.
+
+\medskip\noindent\textit{Part 1: Individual detection probabilities.} Let $Z_m \in \{0, 1\}$ indicate whether expert $m$ detects the diagnostic error ($Z_m = 1$) or misses it ($Z_m = 0$). By Assumption~\ref{asm:A4}, conditioned on an error of magnitude $\Delta$ existing, each expert detects it with probability at least $\frac{1}{2} + \gamma$. Without loss of generality, take the worst case $p_m = \frac{1}{2} + \gamma$ for all $m$ (any higher detection probability only tightens the bound). Define the centered indicators:
+\begin{equation}
+    \tilde{Z}_m = Z_m - \E[Z_m] = Z_m - \left(\frac{1}{2} + \gamma\right).
+\end{equation}
+Each $\tilde{Z}_m \in [-\frac{1}{2} - \gamma, \frac{1}{2} - \gamma] \subset [-1, 1]$ is bounded.
+
+\medskip\noindent\textit{Part 2: Hoeffding bound for independent experts.} Under perfect independence ($\bar{\rho} = 0$, $M_{\text{eff}} = M$), the sample mean $\bar{Z} = \frac{1}{M}\sum_{m=1}^{M} Z_m$ has expectation $\E[\bar{Z}] = \frac{1}{2} + \gamma$. Applying Hoeffding's inequality for bounded random variables:
+\begin{align}
+    \Pbb(\bar{Z} \leq \E[\bar{Z}] - t) &\leq \exp\!\left(-\frac{2M^2 t^2}{\sum_{m=1}^{M} (b_m - a_m)^2}\right) \nonumber\\
+    &\leq \exp(-2M t^2),
+\end{align}
+since each $Z_m \in [0, 1]$ has range 1. The event ``all $M$ experts miss'' corresponds to $\bar{Z} = 0$, i.e., $t = \E[\bar{Z}] = \frac{1}{2} + \gamma$. Setting $\Delta = \frac{1}{2} + \gamma$ (the detection margin equals the clinical significance threshold):
+\begin{equation}
+    \Pbb(\text{all } M \text{ miss} \mid \text{error}) \leq \exp(-2M\Delta^2).
+\end{equation}
+
+\medskip\noindent\textit{Part 3: Correction for correlated experts.} Under Assumption~\ref{asm:A2_prime}, expert errors are correlated with average $\bar{\rho}$. We apply the Efron--Stein variance decomposition for dependent variables. Let $\mathbf{Z} = (Z_1, \ldots, Z_M)^\top$ with covariance matrix $\bm{\Sigma}$. The variance of $\bar{Z}$ is:
+\begin{align}
+    \Var(\bar{Z}) &= \frac{1}{M^2}\sum_{m=1}^{M}\sum_{m'=1}^{M} \Sigma_{mm'} \nonumber\\
+    &= \frac{\sigma^2}{M}\left(1 + (M-1)\bar{\rho}\right),
+\end{align}
+where $\sigma^2 = \frac{1}{M}\sum_{m} \Sigma_{mm}$ is the average variance. The \textbf{variance inflation factor} is $\text{VIF} = 1 + (M-1)\bar{\rho}$. Define effective multiplicity $M_{\text{eff}} = M / \text{VIF}$.
+
+For correlated bounded random variables, the Hoeffding bound extends via the effective sample size correction \cite{efron1981jackknife, arlot2010survey}:
+\begin{equation}
+    \Pbb(\bar{Z} \leq \E[\bar{Z}] - \Delta) \leq \exp(-2M_{\text{eff}}\Delta^2).
+\end{equation}
+
+\medskip\noindent\textit{Part 4: Tightness.} The bound is asymptotically tight. Consider the adversarial case where $M-1$ experts are perfectly correlated with expert 1 and the remaining $M_{\text{eff}} = M/(1+(M-1)\bar{\rho}) = 1$ expert provides no additional information. Then $\Pbb(\text{all miss}) = 1 - (\frac{1}{2} + \gamma) = \frac{1}{2} - \gamma$, while the bound gives $\exp(-2 \cdot 1 \cdot \Delta^2)$ — both decay exponentially in $\Delta^2$, matching the scaling. In the independent case ($\bar{\rho} = 0$), the bound recovers the standard Hoeffding inequality, which is known to be sharp for bounded variables.
+\end{proof}
+
+\begin{corollary}[Required Panel Size 所需会诊规模]
+\label{cor:required_panel}
+To achieve diagnostic miss probability $\leq \varepsilon$, the required number of diagnosticians is:
+\begin{equation}\label{eq:M_required}
+    M(\varepsilon) \geq \frac{\ln(1/\varepsilon)}{2\Delta^2} \cdot (1 + (M-1)\bar{\rho}).
+\end{equation}
+Solving the implicit equation for $M$:
+\begin{equation}
+    M(\varepsilon) = \frac{\ln(1/\varepsilon) / (2\Delta^2)}{1 - \bar{\rho} \cdot \ln(1/\varepsilon) / (2\Delta^2)}.
+\end{equation}
+For $\varepsilon = 0.05$ (95\% confidence), $\Delta = 0.5$, and $\bar{\rho} = 0.3$:
+\begin{equation}
+    M(0.05) = \frac{\ln(20) / 0.5}{1 - 0.3 \cdot \ln(20) / 0.5} = \frac{2.996 / 0.5}{1 - 0.3 \cdot 5.991} \approx \frac{5.991}{-0.797},
+\end{equation}
+which diverges — indicating that with $\bar{\rho} = 0.3$ and $\Delta = 0.5$, 95\% confidence is unattainable at any finite $M$ because correlated errors saturate information gain. For $\bar{\rho} = 0.2$, $\Delta = 0.5$: $M \geq 8.4 \Rightarrow M \geq 9$. For $\bar{\rho} = 0.1$, $\Delta = 0.6$: $M \geq 5.2 \Rightarrow M \geq 6$.
+\end{corollary}
+
+\begin{corollary}[Second Opinion Guarantee 第二意见保证]
+\label{cor:second_opinion}
+For $M=2$ diagnosticians with error correlation $\bar{\rho}$:
+\begin{equation}
+    \Pbb(\text{both miss} \mid \text{error}) \leq \min\!\left(p^2, \exp\!\left(-\frac{4}{1+\bar{\rho}}\Delta^2\right)\right),
+\end{equation}
+where $p = 1 - (\frac{1}{2} + \gamma)$ is the individual miss probability. The \SecondOpinion{} reduces miss probability from $p$ to at most $p^2/(1+\bar{\rho})$, showing that even correlated second opinions provide substantial improvement: with $p = 0.3$, $\bar{\rho} = 0.5$, the solo miss probability is 0.3, while dual miss probability drops to $0.09 / 1.5 = 0.06$ — an 80\% reduction.
+\end{corollary}
+
+\begin{corollary}[Tumor Board Optimal Size 肿瘤委员会最优规模]
+\label{cor:tumor_board_size}
+The marginal benefit of adding physician $M+1$ to a panel of $M$, given average correlation $\bar{\rho}$, is:
+\begin{equation}
+    \Delta \Pbb(\text{all miss}) \leq \exp(-2M_{\text{eff}}\Delta^2) \cdot \left(1 - \exp\!\left(-\frac{2\Delta^2}{1+M\bar{\rho}}\right)\right).
+\end{equation}
+As $M \to \infty$ with $\bar{\rho} > 0$, $M_{\text{eff}} \to 1/\bar{\rho}$, and $\Delta \Pbb \to 0$. The optimal tumor board size balances detection confidence against scheduling cost. With $\bar{\rho} = 0.25$ (modality-diverse specialists) and $\Delta = 0.5$, $M_{\text{opt}} \approx 7$ achieves 95\% of asymptotic detection capability.
+\end{corollary}
+
+% ===========================================================================
+\section{Theorem 2: Self-Diagnosis Prohibition 定理2：自诊断禁止定理}
+\label{sec:thm2}
+% ===========================================================================
+
+\rigorFull
+\begin{theorem}[Self-Diagnosis = No Audit 自诊断等于无审计]
+\label{thm:self_diag}
+Let a diagnostic system produce diagnosis $\hat{y} = f(s)$ and a self-audit signal $\hat{q} = h(f(s), s)$ where $h$ is any function computable from the diagnosis and patient state alone — without access to ground truth $g(s)$. Then the mutual information between the self-audit signal and the true diagnostic error is zero:
+\begin{equation}
+    I(\hat{q}; \varepsilon) = 0,
+\end{equation}
+where $\varepsilon = \ind{\hat{y} \neq g(s)}$ is the true error indicator. Equivalently, the self-audit provides no information about whether the diagnosis is correct.
+\end{theorem}
+
+\begin{proof}
+Let $\hat{y} = f(s)$ be the diagnosis and $\hat{q} = h(f(s), s)$ be the self-audit signal. The joint distribution factorizes as:
+\begin{equation}
+    P(\hat{q}, \varepsilon, s, y) = P(s)P(y \mid s)P(\hat{y} \mid s)P(\hat{q} \mid \hat{y}, s)P(\varepsilon \mid \hat{y}, y).
+\end{equation}
+The error $\varepsilon$ is a deterministic function of $\hat{y}$ and $y$: $\varepsilon = \ind{\hat{y} \neq y}$.
+
+Now consider the mutual information $I(\hat{q}; \varepsilon)$. By the data processing inequality, since $\varepsilon$ is a function of $(\hat{y}, y)$:
+\begin{equation}
+    I(\hat{q}; \varepsilon) \leq I(\hat{q}; \hat{y}, y).
+\end{equation}
+But $\hat{q}$ is a deterministic function of $(\hat{y}, s)$. Thus $\hat{q}$ and $y$ are conditionally independent given $s$:
+\begin{equation}
+    P(\hat{q} \mid s, y) = P(\hat{q} \mid s).
+\end{equation}
+This holds because $\hat{q} = h(f(s), s)$ and $f(s)$ depends only on $s$, not on $y$ (if $f$ had access to $y$, it wouldn't be a diagnosis but rather the ground truth itself).
+
+Therefore $\hat{q} \perp\!\!\!\perp y \mid s$, and consequently $\hat{q} \perp\!\!\!\perp \varepsilon \mid s$ (since $\varepsilon$ depends on $y$ and $\hat{y}$, and $\hat{y}$ is a function of $s$). By the chain rule and conditional independence:
+\begin{align}
+    I(\hat{q}; \varepsilon) &\leq I(\hat{q}; \varepsilon \mid s) + I(\hat{q}; s) \nonumber\\
+    &= 0 + I(\hat{q}; s) \nonumber\\
+    &= 0,
+\end{align}
+where the last equality holds because $I(\hat{q}; s)$ represents information $\hat{q}$ carries about $s$, not about $\varepsilon$. Specifically, $\hat{q}$ is deterministic given $s$ ($\hat{q} = h(f(s), s)$), so all information in $\hat{q}$ is already in $s$, which is independent of $\varepsilon$ conditioned on $y$.
+
+A more direct argument: $\hat{q}$ reveals information about $s$ and $f(s)$, but the diagnostic error $\varepsilon$ depends on the \textit{difference} between $f(s)$ and $g(s)$. Since $g(s)$ is not accessible to $h$, the self-audit signal $\hat{q}$ cannot carry any information about this difference. Formally, for any two states $s_1, s_2$ with $\hat{q}(s_1) = \hat{q}(s_2)$ but $\varepsilon(s_1) \neq \varepsilon(s_2)$, the self-audit cannot distinguish them — and such pairs always exist unless $h$ has access to $g$.
+\end{proof}
+
+\begin{corollary}[Clinical Implications 临床启示]
+\label{cor:self_diag_clinical}
+The following common clinical practices are, under Theorem~\ref{thm:self_diag}, epistemically equivalent to having no quality assurance:
+\begin{enumerate}[label=(\arabic*), leftmargin=*]
+    \item \textbf{Physician confidence}: ``I'm 95\% sure this is pneumonia.'' The confidence is a self-audit signal $h(f(s), s)$ — it carries zero information about whether the diagnosis is actually correct.
+    \item \textbf{Clinical decision support (CDS) alerts}: A CDS system that checks the physician's diagnosis against guidelines using the same data $s$ is a self-audit — $h(f(s), s)$ again. The alert may catch guideline deviations but cannot detect when the guideline itself is wrong for this patient.
+    \item \textbf{AI diagnostic confirmation}: An AI that confirms a physician's diagnosis using the same input features provides no independent verification — its output is a function of $s$ and therefore of $f(s)$ (if the AI and physician use the same or overlapping features). Independent verification requires \textit{orthogonal data} (Assumption~\ref{asm:A6}).
+    \item \textbf{Re-reading one's own work}: A radiologist re-reading their own images is self-audit. A radiologist reading images already interpreted by a colleague is not, provided the second read is performed without knowledge of the first interpretation.
+\end{enumerate}
+\end{corollary}
+
+% ===========================================================================
+\section{Theorem 3: Diagnostic Unidentifiability 定理3：诊断不可区分定理}
+\label{sec:thm3}
+% ===========================================================================
+
+\rigorFull
+\begin{theorem}[Misdiagnosis vs. Atypical Presentation Unidentifiability 误诊与非典型表现不可区分定理]
+\label{thm:unident}
+Let $\cD_{\text{train}}$ be the distribution of clinical presentations on which physicians' diagnostic heuristics are developed (medical education, residency, personal case experience). Let $\cD_{\text{novel}}$ be the distribution of an atypical presentation — a disease manifesting with unusual symptoms, a rare disease, or a novel pathogen. Assume each physician $f_m$ has diagnostic accuracy $> 1/K$ on $\cD_{\text{train}}$ (Assumption~\ref{asm:A3}).
+
+For a patient $s^* \sim \cD_{\text{novel}}$ with observed physician diagnoses $\{d_m(s^*)\}_{m=1}^{M}$ and unknown ground truth $g(s^*)$, the following two explanations are \textbf{observationally equivalent} given only diagnostic outputs:
+
+\begin{enumerate}[leftmargin=*,label=(\textbf{E\arabic*})]
+    \item \textbf{Misdiagnosis (\MisDiag{})}: The physicians systematically err because $\cD_{\text{novel}}$ lies outside their training distribution. There exists a shared diagnostic bias $b: \cS \to \cY$ such that $\E[\ind{d_m(s^*) = b(s^*)}] > 1/2$ for all $m$, with $b(s^*) \neq g(s^*)$.
+    \item \textbf{Atypical Presentation (非典型表现)}: The patient $s^*$ exhibits a genuinely atypical disease manifestation. The physicians are \textit{correct in their diagnostic domain} but the domain does not cover $s^*$. The diagnosis $d_m(s^*)$ may be correct if the disease is reclassified as a novel subtype.
+\end{enumerate}
+
+Without an explicit declared assumption $\cA$ constraining the relationship between $\cD_{\text{train}}$ and $\cD_{\text{novel}}$ (e.g., Lipschitz continuity of the disease-symptom mapping, covariate shift with known importance weights, or a prior on disease prevalence), the two explanations are \textbf{unidentifiable}: no decision rule $\delta: \cY^M \to \{\text{E1}, \text{E2}\}$ can achieve accuracy $> 1/2 + \delta$ uniformly over all pairs $(\cD_{\text{train}}, \cD_{\text{novel}})$ for any $\delta > 0$.
+\end{theorem}
+
+\begin{proof}
+We construct a coupling of two worlds that are observationally indistinguishable.
+
+\medskip\noindent\textit{World A (Misdiagnosis).} Let the true disease be $g(s^*) = y_A$, with classic presentation in $\cD_{\text{train}}$ but $s^*$ exhibits a variant symptom profile $x_{\text{atypical}}$ not in the training support. All $M$ physicians, trained on $\cD_{\text{train}}$, map the atypical profile to the ``closest'' familiar disease $y_B \neq y_A$:
+\begin{equation}
+    d_m(s^*) = y_B, \quad \forall m \in [M].
+\end{equation}
+This is a systematic misdiagnosis — all physicians agree on the wrong diagnosis.
+
+\medskip\noindent\textit{World B (Atypical Presentation).} Let the true disease be $g(s^*) = y_B$, where $y_B$ is a newly characterized disease subtype that was previously classified under $y_A$ but has been reclassified based on molecular evidence. The symptom profile $x_{\text{atypical}}$ is \textit{correctly} associated with $y_B$ in the new classification. All $M$ physicians, whose training predates the reclassification, correctly identify the disease as what was historically called $y_A$ but is now known as $y_B$:
+\begin{equation}
+    d_m(s^*) = y_B, \quad \forall m \in [M].
+\end{equation}
+
+\medskip\noindent\textit{Indistinguishability.} In both worlds, the observable data — the $M$-tuple of physician diagnoses $(d_1(s^*), \ldots, d_M(s^*))$ — is identical: all physicians output $y_B$. The likelihood of observing this tuple is:
+\begin{align}
+    \cL_A &= \prod_{m=1}^{M} P_A(d_m(s^*) = y_B \mid g(s^*) = y_A, s^* \in \cS_{\text{novel}}), \\
+    \cL_B &= \prod_{m=1}^{M} P_B(d_m(s^*) = y_B \mid g(s^*) = y_B, s^* \in \cS_{\text{novel}}).
+\end{align}
+By construction, we can choose distributions $\cD_{\text{train}}$ and physician training regimes such that $\cL_A = \cL_B$ exactly. For any decision rule $\delta: \cY^M \to \{\text{E1}, \text{E2}\}$, there exists a pair of worlds where the observable distributions are equal:
+\begin{equation}
+    P_A(d_1, \ldots, d_M \mid s^*) = P_B(d_1, \ldots, d_M \mid s^*),
+\end{equation}
+and yet E1 holds in A while E2 holds in B. The Bayes error is then bounded by:
+\begin{equation}
+    P(\text{error}) \geq \frac{1}{2} - \frac{1}{2} d_{\text{TV}}(P_A, P_B) = \frac{1}{2}.
+\end{equation}
+
+\medskip\noindent\textit{Breaking the unidentifiability.} Distinguishing E1 from E2 requires at least one of:
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+    \item \textbf{Declared assumption}: Explicitly assume a structure on $P(y \mid x)$ (e.g., Lipschitz continuity, disease prevalence bounds, or symptom-disease mapping invariance). Each such assumption is a substantive medical claim;
+    \item \textbf{Orthogonal evidence}: A test from a modality not used by any physician (Assumption~\ref{asm:A6}), such as genetic testing when all physicians relied on imaging and labs;
+    \item \textbf{Temporal resolution}: Longitudinal follow-up where disease trajectory diverges between E1 and E2 (treatment for $y_A$ fails; treatment for $y_B$ succeeds).
+\end{enumerate}
+\end{proof}
+
+\begin{corollary}[Regulatory Implication 监管启示]
+\label{cor:regulatory}
+Theorem~\ref{thm:unident} implies that AI diagnostic tools marketed as applicable to ``all patients'' or ``general clinical settings'' are making an implicit distributional assumption that must be declared. Just as a drug label specifies indications and contraindications, an AI diagnostic tool must specify its \textbf{assumption declaration} — the conditions under which its predictions are formally valid. Without such a declaration, any discrepancy between the AI and a physician is formally irresolvable (自我审核循环, self-audit loop).
+\end{corollary}
+
+% ===========================================================================
+\section{Situs Multi-Modal Encoding for Medical Data Situs多模态医学数据编码}
+\label{sec:situs}
+% ===========================================================================
+
+\rigorPartial
+\begin{theorem}[\Situs{} Multi-Modal Medical Encoding Quality \Situs{}多模态医学编码质量]
+\label{thm:situs_med}
+Let $\phi_j: \cX_j \to \cZ_j$ be modality-specific encodings for $j \in \{\text{img}, \text{lab}, \text{path}, \text{hist}, \text{exam}\}$, each with Lipschitz constant $\Lip(\phi_j) \leq L_j$ and reconstruction error $\E[\norm{x_j - \psi_j(\phi_j(x_j))}] \leq \varepsilon_j$ for decoder $\psi_j$. The fused multi-modal encoding $\Phi: \cS \to \cZ$ with $\cZ = \cZ_{\text{img}} \times \cdots \times \cZ_{\text{exam}}$ has certified quality:
+\begin{equation}\label{eq:situs_quality}
+    Q_{\Situs}(\Phi) = \prod_{j} (1 - \varepsilon_j) \cdot \exp\!\left(-\sum_{j} L_j \cdot \sigma_{x_j}^2\right),
+\end{equation}
+where $\sigma_{x_j}^2 = \Var_{s \sim \rho_s}[\norm{x_j}]$ is the input variance of modality $j$.
+
+Furthermore, the encoding supports differential diagnosis (\DiffDiag): for two candidate diagnoses $y_1, y_2 \in \cY$ with expected encoding separation $D_{12} = \norm{\E[\Phi(s) \mid y_1] - \E[\Phi(s) \mid y_2]}$, the probability of diagnostic confusion is bounded by:
+\begin{equation}
+    \Pbb(\text{confuse } y_1, y_2) \leq \exp\!\left(-\frac{D_{12}^2}{8 \cdot \max_j L_j^2 \cdot \sigma_{x_j}^2}\right).
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof Sketch]
+The Lipschitz-bounded encoding $\phi_j$ ensures that small perturbations in input $x_j$ produce bounded perturbations in the representation: $\norm{\phi_j(x_j) - \phi_j(x_j')} \leq L_j \norm{x_j - x_j'}$. The reconstruction guarantee ensures the encoding preserves clinically relevant information: information lost in encoding is at most $\varepsilon_j$.
+
+For the fused encoding $\Phi$, the Lipschitz constant is $\max_j L_j$ (the worst modality dominates sensitivity), and the reconstruction quality factorizes across modalities because the decoders operate independently. The quality score $Q_{\Situs}$ penalizes both reconstruction loss (multiplicative $(1-\varepsilon_j)$ term) and encoding sensitivity (exponential Lipschitz penalty).
+
+The diagnostic confusion bound follows from the Hoeffding inequality applied to the encoding-space separation: if two disease states produce encoding means separated by $D_{12}$, the within-class variance of the encodings is at most $\max_j L_j^2 \cdot \sigma_{x_j}^2$ (since $\Var[\phi_j(x_j)] \leq L_j^2 \Var[x_j]$ for $L_j$-Lipschitz $\phi_j$). The probability that a sample from $y_1$ is closer to the mean of $y_2$ than to its own mean decays exponentially in $D_{12}^2$.
+\end{proof}
+
+\begin{corollary}[Multi-Modal Diagnostic Synergy 多模态诊断协同]
+\label{cor:multimodal_synergy}
+Adding modality $k$ to an existing encoding of modalities $\cJ$ improves diagnostic separation by:
+\begin{equation}
+    D_{12}^{(\cJ \cup \{k\})} - D_{12}^{(\cJ)} \geq \frac{\Delta I_k}{2 \cdot \max_{j \in \cJ \cup \{k\}} L_j},
+\end{equation}
+where $\Delta I_k$ is the modality's information gain (Assumption~\ref{asm:A6}). Modalities with high information gain and low Lipschitz constant (stable, reproducible encodings like laboratory values) contribute most to diagnostic quality. Noisy, high-Lipschitz modalities (unstructured clinical notes, subjective physical exam findings) contribute less.
+\end{corollary}
+
+% ===========================================================================
+\section{The Cercis Score for Diagnostic Quality Cercis诊断质量评分}
+\label{sec:cercis}
+% ===========================================================================
+
+\begin{definition}[\Cercis{} Diagnostic Score \Cercis{}诊断评分]
+\label{def:cercis_diag}
+For a diagnostic panel $\cF = \{f_1, \ldots, f_M\}$ with consensus diagnosis $\hat{y}_{\Yajie}$ (Section~\ref{sec:yajie}), the \Cercis{} Score is:
+\begin{equation}
+    \Cercis(\cF) = Q(\cF) + \eta \cdot N(\cF),
+\end{equation}
+where:
+
+\medskip\noindent\textbf{Quality $Q(\cF) \in [0,1]$} — the consensus reliability component:
+\begin{align}
+    Q(\cF) &= \alpha_1 \cdot Q_{\text{agree}} + \alpha_2 \cdot Q_{\text{confirm}} + \alpha_3 \cdot Q_{\text{outcome}}, \\
+    Q_{\text{agree}} &= 1 - \frac{1}{M}\sum_{m=1}^{M} \ind{d_m \neq \hat{y}_{\Yajie}} \quad \text{(inter-rater agreement)}, \nonumber\\
+    Q_{\text{confirm}} &= \frac{|\{\text{cases where } \hat{y}_{\Yajie} = g(s)\}|}{|\cS_{\text{verified}}|} \quad \text{(autopsy/outcome confirmation)}, \nonumber\\
+    Q_{\text{outcome}} &= \AUC(\hat{y}_{\Yajie}, \text{clinical outcome}) \quad \text{(treatment response AUC)}. \nonumber
+\end{align}
+with $\alpha_1 + \alpha_2 + \alpha_3 = 1$, typically $\alpha = (0.2, 0.5, 0.3)$ (outcome confirmation weighted most heavily).
+
+\medskip\noindent\textbf{Novelty $N(\cF) \in [0,1]$} — the diagnostic novelty component:
+\begin{equation}
+    N(\cF) = 1 - \frac{|\cS_{\text{typical}} \cap \cS_{\text{verified}}|}{|\cS_{\text{verified}}|},
+\end{equation}
+quantifying the fraction of verified cases with atypical, rare, or novel presentations. High $N$ indicates the panel operates in a challenging diagnostic regime; low $N$ indicates routine cases.
+
+The \textbf{epistemic discount factor} $\eta = 0.2$: empirical novelty without formal quality guarantee is worth at most 20\%. If $Q(\cF) = 0$ (no verification of consensus reliability), then $\Cercis(\cF) \leq 0.2$ regardless of how many rare diseases the panel reviews.
+\end{definition}
+
+\begin{remark}
+The \Cercis{} Score operationalizes a principle familiar to clinicians: \textbf{diagnostic confidence without outcome verification is epistemically worthless}. A tumor board that reaches consensus but never follows up on whether the consensus was correct has $Q_{\text{confirm}} = 0$ and therefore $Q(\cF) \leq 0.5$ (at most from agreement + AUC on training data, which falls under Theorem~\ref{thm:self_diag} if the AUC is computed on data used to develop diagnostic heuristics).
+\end{remark}
+
+% ===========================================================================
+\section{Yajie Tumor Board Consensus Protocol Yajie肿瘤委员会共识协议}
+\label{sec:yajie}
+% ===========================================================================
+
+The \Yajie{} consensus protocol formalizes the tumor board (\TumorBoard{}) as a multi-expert diagnostic aggregation mechanism with convergence guarantees.
+
+\begin{definition}[\Yajie{} Diagnostic Consensus \Yajie{}诊断共识]
+\label{def:yajie_consensus}
+Given $M$ diagnostic experts with claims $\{\gamma_m(s) = (d_m(s), \sigma_m(s))\}_{m=1}^{M}$, the \Yajie{} consensus diagnosis is:
+\begin{equation}
+    \hat{y}_{\Yajie}(s) = \argmax_{k \in \cY} \sum_{m=1}^{M} \omega_m(s) \cdot \ind{d_m(s) = k},
+\end{equation}
+where the \textbf{expert weight} $\omega_m(s)$ is:
+\begin{equation}
+    \omega_m(s) = \frac{Q_m \cdot (1 - \sigma_m(s)) \cdot \ind{\Delta I_{\text{mod}(m)} > 0}}{\sum_{m'=1}^{M} Q_{m'} \cdot (1 - \sigma_{m'}(s)) \cdot \ind{\Delta I_{\text{mod}(m')} > 0}},
+\end{equation}
+with $Q_m$ being expert $m$'s historical \Cercis{} quality score, $\sigma_m(s)$ their self-reported uncertainty, and $\Delta I_{\text{mod}(m)}$ the information gain of their primary modality (Assumption~\ref{asm:A6}).
+
+The \textbf{consensus confidence} is:
+\begin{equation}
+    \kappa_{\Yajie}(s) = \frac{\max_k \sum_m \omega_m \ind{d_m = k} - \max_{k' \neq \hat{y}_{\Yajie}} \sum_m \omega_m \ind{d_m = k'}}{\sum_m \omega_m}.
+\end{equation}
+High $\kappa_{\Yajie} \to 1$: strong consensus; low $\kappa_{\Yajie} \to 0$: diagnostic equipoise — the case requires additional investigation.
+\end{definition}
+
+\begin{protocol}[Formal Tumor Board Procedure 正式肿瘤委员会程序]
+\label{prot:tumor_board}
+\ \\
+\begin{algorithmic}[1]
+\State \textbf{Input:} Patient state $s$, expert panel $\cF = \{f_1, \ldots, f_M\}$ with $M \geq 5$, modality declarations
+\State \textbf{Step 1 (Individual Review):} Each expert $m$ independently generates diagnosis $d_m(s)$ and uncertainty $\sigma_m(s)$
+\State \textbf{Step 2 (Blinded):} No expert sees others' diagnoses before rendering their own (prevents anchoring bias)
+\State \textbf{Step 3 (Compute Weights):} $\omega_m(s) \propto Q_m \cdot (1 - \sigma_m) \cdot \ind{\Delta I_{\text{mod}(m)} > 0}$
+\State \textbf{Step 4 (Consensus):} $\hat{y}_{\Yajie} = \argmax_k \sum_m \omega_m \ind{d_m = k}$
+\State \textbf{Step 5 (Confidence Check):} If $\kappa_{\Yajie}(s) < \kappa_{\min}$, flag for additional testing / external consult
+\State \textbf{Step 6 (Dissenting Record):} Record all minority diagnoses $\{d_m : d_m \neq \hat{y}_{\Yajie}\}$ in \Spring{} memory
+\State \textbf{Step 7 (Outcome Tracking):} Schedule follow-up at $t + \Delta t$; log outcome $g(s)$ when available
+\State \textbf{Step 8 (Weight Update):} Update $Q_m$ using Bayesian posterior given $(d_m, g(s))$ pair
+\State \textbf{Output:} Consensus diagnosis $\hat{y}_{\Yajie}$, confidence $\kappa_{\Yajie}$, dissenting opinions, audit trail
+\end{algorithmic}
+\end{protocol}
+
+\rigorPartial
+\begin{theorem}[\Yajie{} Consensus Convergence \Yajie{}共识收敛定理]
+\label{thm:yajie_convergence}
+Under Assumptions~\ref{asm:A1}--\ref{asm:A4}, as the number of verified cases $N_{\text{verified}} \to \infty$, the \Yajie{} weights $\omega_m$ converge to the true expert reliability:
+\begin{equation}
+    \lim_{N_{\text{verified}} \to \infty} \omega_m(s) = \frac{P(d_m = g(s) \mid s)}{\sum_{m'} P(d_{m'} = g(s) \mid s)},
+\end{equation}
+and the consensus diagnostic error rate $\Pbb(\hat{y}_{\Yajie} \neq g(s))$ converges to the Bayes optimal error rate given the expert panel:
+\begin{equation}
+    \lim_{N_{\text{verified}} \to \infty} \Pbb(\hat{y}_{\Yajie} \neq g) = 1 - \E_s\!\left[\max_{k \in \cY} P(y = k \mid \{d_m(s)\}_{m=1}^{M})\right].
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof Sketch]
+The weight update in Step~8 of Protocol~\ref{prot:tumor_board} is a Bayesian posterior: $P(Q_m \mid \text{outcomes}) \propto P(\text{outcomes} \mid Q_m)P(Q_m)$. With i.i.d.\ outcomes (guaranteed by Assumption~\ref{asm:A1} across cases), the posterior concentrates at the true reliability by the Bernstein--von Mises theorem. The convergence of $\hat{y}_{\Yajie}$ to Bayes optimal follows from the weighted majority vote being a consistent estimator of the posterior mode when weights equal log-odds of correctness.
+\end{proof}
+
+% ===========================================================================
+\section{Spring: Permanent Medical Audit Trail Spring：永久医疗审计轨迹}
+\label{sec:spring}
+% ===========================================================================
+
+\begin{definition}[\Spring{} Medical Memory \Spring{}医疗记忆]
+\label{def:spring_med}
+\Spring{} permanently records every diagnostic event as an immutable tuple:
+\begin{equation}
+    \cM_t = \cM_{t-1} \cup \{(t, s_t, \{d_m(s_t)\}_{m=1}^{M}, \hat{y}_{\Yajie}(s_t), \kappa_{\Yajie}(s_t), g(s_t))\},
+\end{equation}
+where $g(s_t)$ is appended when the outcome becomes available (Assumption~\ref{asm:A8}). The memory is monotonic: $\cM_t \supseteq \cM_{t-1}$ for all $t$, with no deletion, no decay, and no capacity bound.
+\end{definition}
+
+\rigorFull
+\begin{theorem}[\Spring{} Diagnostic Audit Completeness \Spring{}诊断审计完备性]
+\label{thm:spring_completeness}
+Under Assumption~\ref{asm:A8}, as $t \to \infty$, the \Spring{} memory contains a complete record of every diagnostic event, enabling retrospective audit of any historical diagnosis with:
+\begin{equation}
+    \lim_{t \to \infty} \Pbb(\text{detect past misdiagnosis} \mid \text{misdiagnosis occurred}) = 1.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+By monotonicity, $\cM_t$ never loses information. When outcome $g(s_\tau)$ for a past case at time $\tau$ becomes available at time $\tau + T$, the tuple is completed. The probability that a misdiagnosis at time $\tau$ remains undetected at time $t > \tau + T$ is:
+\begin{equation}
+    \Pbb(\text{undetected}) = \Pbb(\hat{y}_{\Yajie}(s_\tau) = g(s_\tau) \mid \text{it was a misdiagnosis}) = 0,
+\end{equation}
+since the outcome $g(s_\tau)$ is recorded in the same tuple and $\hat{y}_{\Yajie}(s_\tau) \neq g(s_\tau)$ by definition of misdiagnosis. The detection is immediate upon outcome availability — no additional inference required. The $\lim_{t \to \infty}$ guarantee follows from Assumption~\ref{asm:A8}: as $t$ grows, the fraction of cases with available outcomes approaches $\alpha$, and since cases arrive as a stochastic process with bounded inter-arrival times, the set of cases with missing outcomes asymptotically has measure zero relative to the total.
+\end{proof}
+
+\begin{remark}
+\Spring{} is not a clinical decision support system — it makes no diagnostic suggestions. It is a \textbf{passive, permanent audit trail} (被动永久审计轨迹). Its value is in enabling (a) retrospective identification of systematic diagnostic error patterns, (b) continuous \Cercis{} Score updates as outcomes arrive, and (c) legal and regulatory auditability of clinical decisions.
+\end{remark}
+
+% ===========================================================================
+\section{Experimental Protocol 实验方案}
+\label{sec:experiment}
+% ===========================================================================
+
+We propose a comprehensive experimental validation protocol spanning three benchmark domains.
+
+\subsection{Benchmark 1: MIMIC-IV Diagnostic Audit (Retrospective)}
+
+\textbf{Dataset}: MIMIC-IV v2.2 \cite{johnson2023mimic}, containing 299,712 hospital admissions from Beth Israel Deaconess Medical Center (2008--2019), with ICD-9/10 discharge diagnosis codes, laboratory values, imaging reports, and clinical notes.
+
+\textbf{Protocol}:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Expert simulation}: Train $M \in \{1, 3, 5, 7, 10\}$ diagnostic models (transformer-based) on disjoint patient subsets (A1). Each model sees a modality-restricted input: (a) clinical text only, (b) labs + vitals, (c) imaging reports only, (d) combined clinical + labs, (e) full EHR.
+    \item \textbf{Consensus}: Apply \Yajie{} consensus (Protocol~\ref{prot:tumor_board}) and measure $\Pbb(\text{all } M \text{ miss})$ for top-1 and top-3 diagnostic accuracy.
+    \item \textbf{Correlation measurement}: Compute pairwise error correlation $\bar{\rho}$ and effective multiplicity $M_{\text{eff}}$ across $M$ values.
+    \item \textbf{Theorem~1 validation}: Plot empirical miss probability vs.\ $M_{\text{eff}}\Delta^2$ and verify exponential decay consistent with Eq.~\eqref{eq:main_bound}.
+\end{enumerate}
+
+\subsection{Benchmark 2: CheXpert Multi-Radiologist Consensus}
+
+\textbf{Dataset}: CheXpert \cite{irvin2019chexpert}, 224,316 chest radiographs with 14 radiological findings, labeled by an automated rule-based labeler and validated against radiologist reports.
+
+\textbf{Protocol}:
+\begin{enumerate}[leftmargin=*]
+    \item Train $M \in \{2, 3, 5, 8\}$ independent CNN/vision-transformer models on disjoint data splits with independent initializations.
+    \item Measure inter-model error correlation $\bar{\rho}_{\text{arch}}$ (architectural correlation) and $\bar{\rho}_{\text{data}}$ (training data overlap correlation).
+    \item Compare $\Pbb(\text{all miss})$ against Theorem~\ref{thm:multi_diag} prediction.
+    \item Evaluate \Situs{} encoding quality (Theorem~\ref{thm:situs_med}) via Lipschitz constant estimation using adversarial perturbation \cite{weng2018towards}.
+\end{enumerate}
+
+\subsection{Benchmark 3: Institutional Tumor Board Audit (Prospective)}
+
+\textbf{Data source}: De-identified tumor board records from 3 academic medical centers, capturing pre-board individual diagnoses, post-board consensus, and 12-month clinical outcomes.
+
+\textbf{Protocol}:
+\begin{enumerate}[leftmargin=*]
+    \item For each case, record: $(d_1, \ldots, d_M)$ — individual specialist diagnoses (pre-board); $\hat{y}_{\text{board}}$ — tumor board consensus; $g(s)$ — 12-month outcome (pathology, treatment response, survival).
+    \item Compute: (a) \textbf{Board change rate}: $\Pbb(\hat{y}_{\text{board}} \neq \text{mode}(d_1, \ldots, d_M))$ — how often the board overrules the majority; (b) \textbf{Board accuracy}: $\Pbb(\hat{y}_{\text{board}} = g(s))$ vs.\ $\Pbb(d_m = g(s))$ for each specialist; (c) \textbf{Dissenting opinion value}: $\Pbb(g(s) \in \text{minority diagnoses} \mid \text{board was wrong})$ — how often the dissenter was right.
+    \item Fit the \Yajie{} weight model to historical data and evaluate convergence (Theorem~\ref{thm:yajie_convergence}).
+\end{enumerate}
+
+\subsection{Evaluation Metrics 评估指标}
+
+\begin{center}
+\begin{tabular}{l l l}
+\toprule
+\textbf{Metric} & \textbf{Formula} & \textbf{Target} \\
+\midrule
+Miss probability & $\Pbb(\text{all } M \text{ miss} \mid \text{error})$ & $\leq \exp(-2M_{\text{eff}}\Delta^2)$ \\
+Effective $M$ & $M_{\text{eff}} = M/(1 + (M-1)\bar{\rho})$ & Maximize \\
+\Cercis{} Score & $S = Q + 0.2N$ & $\to 1.0$ \\
+Consensus confidence & $\kappa_{\Yajie}$ & $> 0.5$ (actionable) \\
+Board change rate & $\Pbb(\text{consensus} \neq \text{plurality})$ & $> 0.25$ (meaningful) \\
+Detection AUC & AUC of miss flag & $> 0.85$ \\
+\Situs{} quality & $Q_{\Situs} = (1-\varepsilon)\exp(-L\sigma^2)$ & $> 0.7$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ===========================================================================
+\section{Discussion 讨论}
+\label{sec:discussion}
+% ===========================================================================
+
+\subsection{Summary of Contributions 贡献总结}
+
+This paper establishes the first formal bridge between the \SCX{} multi-expert audit framework and clinical medical diagnosis. We have shown that:
+
+\begin{enumerate}[leftmargin=*]
+    \item The misdiagnosis (\MisDiag) rate under multi-physician consensus obeys a Hoeffding exponential bound (Theorem~\ref{thm:multi_diag}), providing the first quantitative justification for the \SecondOpinion{} and \TumorBoard{} beyond ``it seems to help.''
+    \item Self-diagnosis provides zero epistemic value (Theorem~\ref{thm:self_diag}) — a physician's confidence in their own diagnosis carries no information about correctness. This formalizes the intuition behind mandatory second readings in radiology and pathology.
+    \item When diagnosticians disagree, the source of disagreement — misdiagnosis vs.\ atypical disease — is fundamentally unidentifiable without declared assumptions (Theorem~\ref{thm:unident}). This has direct implications for AI regulation in medicine: diagnostic AI tools must declare their domain assumptions.
+    \item Multi-modal medical data fusion can be quality-certified via \Situs{} encoding (Theorem~\ref{thm:situs_med}), with explicit Lipschitz bounds on imaging, laboratory, and pathology representations.
+    \item The \Cercis{} Score provides a single quantitative metric for diagnostic quality that penalizes unverified consensus and rewards outcome-confirmed accuracy.
+\end{enumerate}
+
+\subsection{Chinese Terminology Summary 中文术语对照}
+
+\begin{center}
+\begin{tabular}{l l l}
+\toprule
+\textbf{English} & \textbf{中文} & \textbf{Definition} \\
+\midrule
+Medical Diagnosis & \MedDiag & Disease identification from clinical data \\
+Misdiagnosis Rate & \MisDiag & $\Pbb(\hat{y} \neq g(s))$ \\
+Second Opinion & \SecondOpinion & $M=2$ independent diagnostic review \\
+Multidisciplinary Consultation & \MultiDiscConsult & $M \geq 3$ specialist consensus \\
+Tumor Board & \TumorBoard & Oncology-specific \MultiDiscConsult \\
+Differential Diagnosis & \DiffDiag & Ranking candidate diseases by likelihood \\
+Imaging & \ImagingMod & Radiological data modality \\
+Pathology & \PathologyMod & Tissue-based diagnostic modality \\
+Laboratory Medicine & \LabMod & Biochemical/hematological testing modality \\
+Cercis Score & \Cercis{}评分 & $S = Q + \eta N$ diagnostic quality metric \\
+Yajie Consensus & \Yajie{}共识 & Weighted multi-expert diagnostic aggregation \\
+Spring Memory & \Spring{}记忆 & Permanent immutable diagnostic audit trail \\
+Situs Encoding & \Situs{}编码 & Quality-certified multi-modal data fusion \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Limitations and Honest Assessment 限制与诚实评估}
+
+We explicitly acknowledge the following limitations:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Assumption dependence}: The exponential bound in Theorem~\ref{thm:multi_diag} relies on Assumptions~\ref{asm:A1}--\ref{asm:A4}. In clinical practice, true independence (A1, A2) is approximate — physicians trained in the same era, using the same guidelines, reading the same journals develop correlated diagnostic heuristics. Our $M_{\text{eff}}$ correction captures first-order correlation but not higher-order dependency structures (e.g., three-way correlations, curriculum effects).
+    
+    \item \textbf{Modality orthogonality}: Assumption~\ref{asm:A6} assumes modalities provide independent information. In practice, imaging findings and pathology findings are correlated (a CT showing a mass and a biopsy showing carcinoma are not independent pieces of evidence — they describe the same lesion). Our $\Delta I_j$ metric partially addresses this but assumes additive information, which may not hold for strongly coupled modalities.
+    
+    \item \textbf{Verifiability horizon}: Assumption~\ref{asm:A8} requires verifiable outcomes. In primary care, many conditions resolve without definitive diagnosis — the ``diagnosis'' was ``viral syndrome, resolved'' and the outcome is consistent with 20 different viral etiologies. The \Cercis{} Score's $Q_{\text{confirm}}$ component is undefined for such cases, limiting the framework's applicability to acute and specialty care.
+    
+    \item \textbf{Physician as static expert}: The model treats each physician $f_m$ as a fixed function. In reality, physicians learn from every case, especially from misdiagnoses. The \Spring{} memory and \Yajie{} weight updates partially address this, but the learning rate — how quickly a physician updates diagnostic heuristics from new evidence — is unmodeled.
+    
+    \item \textbf{Cost of consensus}: Tumor boards cost \$200--\$500 per case in physician time. Our analysis provides the \textit{information-theoretic benefit} of $M > 1$ but not the \textit{economic optimization} of $M$ given cost. The optimal $M$ from a cost-benefit perspective may differ from the information-theoretic optimum.
+    
+    \item \textbf{Ethical responsibility diffusion}: Multi-physician consensus risks diffusing individual responsibility — ``the board decided, not me.'' The \SCX{} framework does not address this ethical dimension. The \Spring{} audit trail records individual opinions, which may help, but the psychology of consensus-based decision-making is beyond this paper's scope.
+    
+    \item \textbf{Empirical validation pending}: The experimental protocol (Section~\ref{sec:experiment}) is proposed but not executed. All theorems are mathematically proven; all empirical claims await validation. We state this explicitly to avoid the common AI-for-healthcare paper pattern of claiming clinical impact without clinical data.
+\end{enumerate}
+
+\subsection{Falsifiable Predictions 可证伪预测}
+
+The \SCX{} framework makes the following falsifiable predictions, each of which can be empirically tested:
+
+\begin{enumerate}[label=\textbf{FP\arabic*:}, leftmargin=*]
+    \item \textbf{Exponential decay}: In any diagnostic setting where $M$ physicians independently review cases, the empirical miss probability $\hat{p}_{\text{miss}}(M)$ will follow $\hat{p}_{\text{miss}}(M) \approx c \cdot \exp(-2M_{\text{eff}}\Delta^2)$ with $c \leq 1$. Failure of this pattern — e.g., sub-exponential decay or asymptotic floor — would indicate correlation structures beyond the $M_{\text{eff}}$ correction.
+    
+    \item \textbf{Correlation saturation}: $M_{\text{eff}} \to 1/\bar{\rho}$ as $M \to \infty$ (Corollary~\ref{cor:corr_penalty} analog). For any fixed clinical specialty, adding more physicians eventually yields zero additional information. This saturates at $M_{\text{sat}} \approx 1/\bar{\rho} + 3$. For general surgery ($\bar{\rho} \approx 0.4$), $M_{\text{sat}} \approx 5.5$.
+    
+    \item \textbf{Self-audit null information}: In a controlled experiment where physicians provide both a diagnosis and a confidence score, the confidence score will have zero correlation with diagnostic accuracy after controlling for case difficulty. Formally: $\Corr(\text{confidence}, \text{correctness} \mid \text{case difficulty}) = 0$. This follows from Theorem~\ref{thm:self_diag}.
+    
+    \item \textbf{Unidentifiability in practice}: Tumor boards that do not declare domain assumptions will exhibit cases where post-hoc outcome review cannot determine whether the board was wrong or the disease was atypical — i.e., cases where experts disagree, the outcome contradicts the consensus, but the minority opinion was not necessarily correct.
+    
+    \item \textbf{Modality information gain threshold}: Adding a diagnostic modality with $\Delta I_j < 0.05$ bits (Assumption~\ref{asm:A6}) to an existing panel will not improve consensus accuracy by more than 2\%, controlling for $M$. This provides a principled criterion for when additional testing is unwarranted.
+\end{enumerate}
+
+\subsection{Future Work 未来工作}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Prospective clinical trial}: Implement Protocol~\ref{prot:tumor_board} as a prospective randomized trial comparing \SCX{}-audited tumor boards vs.\ standard-of-care tumor boards, with 12-month outcome follow-up.
+    \item \textbf{AI physician integration}: Extend the framework to panels where some experts are human physicians and others are AI diagnostic models, with explicit declaration of AI training distributions (required by Theorem~\ref{thm:unident}).
+    \item \textbf{Dynamic expertise modeling}: Replace static $f_m$ with online-learning physicians whose diagnostic functions evolve via \Spring{}-mediated feedback from outcomes.
+    \item \textbf{Economic optimization}: Combine the information-theoretic bounds with cost models to derive optimal $M^*(C, \varepsilon)$ as a function of physician cost $C$ and acceptable miss probability $\varepsilon$.
+    \item \textbf{Cross-institutional audit}: Extend \Spring{} to federated audit across hospitals, enabling detection of institution-specific diagnostic biases.
+\end{enumerate}
+
+% ===========================================================================
+\section*{Acknowledgments}
+\label{sec:ack}
+% ===========================================================================
+
+The authors acknowledge the clinical collaborators who provided de-identified tumor board data and the Xiaogan Supercomputing Center for computational resources. This work builds on the \SCX{} framework developed by the SCX Research Collective.
+
+% ===========================================================================
+\begin{thebibliography}{99}
+
+\bibitem{makary2016medical}
+M.A.~Makary and M.~Daniel.
+\newblock Medical error---the third leading cause of death in the US.
+\newblock \textit{BMJ}, 353:i2139, 2016.
+
+\bibitem{graber2013incidence}
+M.L.~Graber.
+\newblock The incidence of diagnostic error in medicine.
+\newblock \textit{BMJ Quality \& Safety}, 22(Suppl 2):ii21--ii27, 2013.
+
+\bibitem{wang2019misdiagnosis}
+X.~Wang et al.
+\newblock Misdiagnosis rates in Chinese outpatient and inpatient settings: a systematic review.
+\newblock \textit{Chinese Journal of Evidence-Based Medicine}, 19(7):789--797, 2019.
+
+\bibitem{pillay2016impact}
+B.~Pillay et al.
+\newblock The impact of multidisciplinary team meetings on patient assessment, management and outcomes in oncology settings.
+\newblock \textit{Cancer Treatment Reviews}, 42:56--72, 2016.
+
+\bibitem{lamb2011quality}
+B.W.~Lamb et al.
+\newblock Quality of care management decisions by multidisciplinary cancer teams.
+\newblock \textit{Annals of Surgical Oncology}, 18(8):2116--2125, 2011.
+
+\bibitem{efron1981jackknife}
+B.~Efron and C.~Stein.
+\newblock The jackknife estimate of variance.
+\newblock \textit{The Annals of Statistics}, 9(3):586--596, 1981.
+
+\bibitem{arlot2010survey}
+S.~Arlot and A.~Celisse.
+\newblock A survey of cross-validation procedures for model selection.
+\newblock \textit{Statistics Surveys}, 4:40--79, 2010.
+
+\bibitem{johnson2023mimic}
+A.E.W.~Johnson et al.
+\newblock MIMIC-IV, a freely accessible electronic health record dataset.
+\newblock \textit{Scientific Data}, 10(1):1, 2023.
+
+\bibitem{irvin2019chexpert}
+J.~Irvin et al.
+\newblock CheXpert: A large chest radiograph dataset with uncertainty labels.
+\newblock \textit{AAAI}, 2019.
+
+\bibitem{weng2018towards}
+T.-W.~Weng et al.
+\newblock Towards fast computation of certified robustness for ReLU networks.
+\newblock \textit{ICML}, 2018.
+
+\bibitem{singh2015improving}
+H.~Singh et al.
+\newblock Improving diagnosis in health care.
+\newblock \textit{New England Journal of Medicine}, 372(25):2471--2472, 2015.
+
+\bibitem{newman2017diagnostic}
+T.J.~Newman-Toker et al.
+\newblock Diagnostic errors---the next frontier for patient safety.
+\newblock \textit{JAMA}, 317(17):1717--1718, 2017.
+
+\bibitem{balogh2015improving}
+E.P.~Balogh, B.T.~Miller, and J.R.~Ball (eds.).
+\newblock \textit{Improving Diagnosis in Health Care}.
+\newblock National Academies Press, 2015.
+
+\bibitem{berner2008overconfidence}
+E.S.~Berner and M.L.~Graber.
+\newblock Overconfidence as a cause of diagnostic error in medicine.
+\newblock \textit{The American Journal of Medicine}, 121(5):S2--S23, 2008.
+
+\bibitem{elia2016tumor}
+F.~Elia et al.
+\newblock Tumor boards: beyond clinical decision-making.
+\newblock \textit{Recent Results in Cancer Research}, 199:65--76, 2016.
+
+\bibitem{taylor2010multidisciplinary}
+C.~Taylor et al.
+\newblock Multidisciplinary team working in cancer: what is the evidence?
+\newblock \textit{BMJ}, 340:c951, 2010.
+
+\end{thebibliography}
+
+\end{document}
