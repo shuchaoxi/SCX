@@ -812,6 +812,74 @@ $q(x)$在$[0,1]$上连续非递减——这正是$\fRSB$的定义特征。
 \end{itemize}
 \end{remark}
 
+
+\subsection{奇异值分解判据：有效秩与可分离度}
+
+上述Hessian谱分析和$\Sigma_0$估计在$N \sim 10^9$的大模型上计算量仍然过大。本节给出一个更低成本、更易实现的替代判据——基于参数空间随机采样轨迹的奇异值分解（SVD），不需完整Hessian。
+
+\subsubsection{方法}
+
+\begin{enumerate}[label=\textbf{步骤 \arabic*},leftmargin=*,itemsep=6pt]
+    \item 从$R$个不同初始化出发训练$R$个模型副本（$R \sim 50\text{--}100$，远少于$\Sigma_0$估计所需的$R \sim 500$）。
+    \item 收集$R$个参数向量$\{\theta_r\}_{r=1}^{R}$，构造参数矩阵$\Theta \in \mathbb{R}^{R \times N}$，其中第$r$行为$\theta_r^\top$。
+    \item 对$\Theta$进行奇异值分解：$\Theta = U \Sigma V^\top$，得奇异值$\sigma_1 \geq \sigma_2 \geq \cdots \geq \sigma_R$。
+    \item 计算\textbf{有效秩}：
+    \begin{equation}
+        r_{\text{eff}} = \frac{(\sum_{i=1}^{R} \sigma_i)^2}{\sum_{i=1}^{R} \sigma_i^2}
+    \end{equation}
+    \item 计算前$k$个奇异值的能量占比：
+    \begin{equation}
+        \rho_k = \frac{\sum_{i=1}^{k} \sigma_i^2}{\sum_{i=1}^{R} \sigma_i^2}
+    \end{equation}
+\end{enumerate}
+
+\subsubsection{判据}
+
+\begin{theorem}[SVD有效秩审计条件]\label{thm:svd_rank}
+设$\Theta$为$R$个独立训练副本的参数矩阵，$r_{\text{eff}}$为其有效秩。则：
+\begin{enumerate}[label=(\roman*),itemsep=3pt]
+    \item 若$r_{\text{eff}} \leq r_{\text{crit}}$且$\rho_{r_{\text{crit}}} > 0.95$，则能量集中在少数方向——模型景观近似RS——\textbf{可审计}。
+    \item 若$r_{\text{eff}}$接近$R$且$\rho_{100} < 0.5$，则能量弥散到大量方向——景观含指数多谷——\textbf{不可审计}。
+\end{enumerate}
+其中$r_{\text{crit}}$为审计可行性的专家数上界（如$r_{\text{crit}} = \min(100, M_{\text{feasible}})$）。
+\end{theorem}
+
+\subsubsection{直观解释}
+
+奇异值谱的衰减速度直接反映了参数空间的可分离度：
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+\textbf{谱形} & \textbf{$r_{\text{eff}}$} & \textbf{物理意义} & \textbf{审计状态} \\
+\midrule
+陡降（$\sigma_1 \gg \sigma_2 \gg \cdots$） & $\approx 3\text{--}10$ & 能量集中在极少方向 & \textbf{可审计} \\
+中速降 & $\approx 10\text{--}50$ & 中等弥散 & \textbf{部分可审计} \\
+平坦（$\sigma_i$衰减极慢） & $\approx R/2$ & 所有方向同等重要 & \textbf{不可审计} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{为什么多专家也没用？} 若$\rho_{100} < 0.5$，意味着即使前100个主方向捕获不到一半的总能量——存在大量``次重要''方向各自贡献一点点。100个专家覆盖了前100个方向但仍然覆盖不到全景观。$M$增大到$r_{\text{eff}} \approx R/2$在工程上不可行——因为$r_{\text{eff}}$可能达到$10^6$量级。Galois判据的群论结论重述：分歧方向太多$\Longleftrightarrow$分歧群含$S_M$子群$\Longleftrightarrow$不可审计。
+
+\subsubsection{与Parisi破缺的对应}
+
+SVD有效秩与RSB阶数之间的对应关系：
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+\textbf{SVD谱形} & \textbf{有效秩} & \textbf{Parisi阶} & \textbf{审计判决} \\
+\midrule
+指数衰减 & $r_{\text{eff}} \ll R$ & RS & 可审计 \\
+幂律衰减 & $r_{\text{eff}} \sim R/5$ & 1RSB & 部分可审计 \\
+近常数 & $r_{\text{eff}} \sim R/2$ & $\infty$RSB & 不可审计 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+两者从不同数学窗口观察同一物理——能量景观的弥散度。SVD的优势在于：仅需$R$次重训练和一次矩阵分解，无需Hessian计算，在$N \sim 10^7$的开源模型上用标准PyTorch即可实现。
+
 % ================================================================
 % 7. Honest Critique
 % ================================================================
