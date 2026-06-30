@@ -261,19 +261,22 @@ def initial_gaussian_random(n_grid, length=LENGTH, correlation_length=1.0, seed=
 def coarse_grain(u_fine, n_coarse):
     """
     Coarse-graining operator C_h: downsample from fine to coarse grid.
-    Uses spectral truncation (ideal low-pass filter) as the cleanest
-    implementation of the resolution limit.
+    Uses spectral truncation (ideal low-pass filter) then spatial resampling.
     """
     u_hat = fft(u_fine)
     n_fine = len(u_fine)
     # Spectral truncation: keep only the first n_coarse//2 modes
-    u_hat_truncated = np.zeros(n_fine, dtype=complex)
+    u_hat_trunc = np.zeros(n_fine, dtype=complex)
     cutoff = n_coarse // 2
-    u_hat_truncated[:cutoff] = u_hat[:cutoff]
-    u_hat_truncated[-(cutoff - 1):] = u_hat[-(cutoff - 1):]
+    u_hat_trunc[:cutoff] = u_hat[:cutoff]
+    u_hat_trunc[-(cutoff - 1):] = u_hat[-(cutoff - 1):]
     if n_coarse % 2 == 0:
-        u_hat_truncated[cutoff] = 0.0  # remove Nyquist
-    return np.real(ifft(u_hat_truncated))
+        u_hat_trunc[cutoff] = 0.0
+    u_filtered = np.real(ifft(u_hat_trunc))
+    # Spatial resample to n_coarse points
+    x_fine = np.linspace(0, LENGTH, n_fine, endpoint=False)
+    x_coarse = np.linspace(0, LENGTH, n_coarse, endpoint=False)
+    return np.interp(x_coarse, x_fine, u_filtered)
 
 
 def coarse_grain_gaussian(u_fine, h):
@@ -363,8 +366,11 @@ def experiment1_truncation_statistical_intersection():
     for n_grid in RESOLUTIONS:
         print(f"  Resolution N={n_grid} (h={2*np.pi/n_grid:.4f})...")
 
-        # Coarse-grain the reference solution
-        u_coarse = coarse_grain(u_ref, n_grid)
+        # Coarse-grain the reference solution, then upsample for comparison
+        u_coarse_raw = coarse_grain(u_ref, n_grid)
+        x_fine = np.linspace(0, LENGTH, len(u_ref), endpoint=False)
+        x_coarse = np.linspace(0, LENGTH, n_grid, endpoint=False)
+        u_coarse = np.interp(x_fine, x_coarse, u_coarse_raw)
 
         # Compute ε_res: L2 difference between coarse and reference
         # (both evaluated on the fine grid for comparison)
