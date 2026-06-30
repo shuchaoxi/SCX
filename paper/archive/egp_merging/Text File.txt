@@ -1,0 +1,155 @@
+结论：**以现在这版初稿，不能说“配得上 npj Computational Materials”。它有一个可以发展的方法学种子，但目前更像“一个 ACE 参数化/训练技巧 + 单一 AlN 验证”的内部技术稿。直接投 npj Computational Materials，大概率会被认为创新性、普适性和验证强度不够。**
+
+npj Computational Materials 的口味是“计算方法或计算材料发现必须有显著推进”，官方定位是发表材料科学中计算技术的发展与应用方面的重要进展，并覆盖计算材料设计、材料行为理解、数据/机器学习/建模方法等方向。你的稿子方向是对的，但现在的完成度还没把“显著推进”讲实。([Nature][1])
+
+## 1. 当前稿子的核心亮点
+
+这篇初稿的主线是：在多元素 ACE 势函数中，把系数写成共享项 `c0` 加元素修正项 `cZ`，然后指出存在 `c0 → c0 + g, cZ → cZ − g` 的 gauge freedom，再用 post-hoc projection 固定 gauge。这个想法本身是清楚的，而且你已经给出了 AlN 上的数值验证，包括 non-EOS 能量 RMSE、phonon force RMSE、弹性常数 C33/C44 的改善等。文稿摘要和贡献部分也已经把 C1–C4 讲出来了，具备“方法论文”的雏形。
+
+其中最有价值的是 **gauge freedom 的明确化**。你不是单纯训练一个势函数，而是指出 shared-correction 分解本身存在不可辨识自由度，并且 post-hoc projection 可以在不改变预测的情况下固定分解。这一部分如果严格写好，确实有方法学意义。文稿第 3–4 页已经给出了 gauge transformation 和投影公式。
+
+但是，**这个亮点目前还不足以支撑 npj Computational Materials**，因为它容易被审稿人认为是“线性代数层面的 reparameterization”，而不是一个真正带来新能力的材料计算框架。
+
+## 2. 最大硬伤：Model B 可能不是“更强模型”，而只是标准多元素 ACE 的重参数化
+
+这是目前最致命的问题。
+
+你的 Model B 写成：
+
+`c_eff_Z = c0 + cZ`
+
+然后你自己也说明它训练后可以 merge 成标准 per-element ACE 系数。也就是说，最终用于预测的东西仍然是每个元素一个有效系数向量 `c_eff_Z`。这在表达能力上和普通 multi-element ACE 没有本质区别。文稿第 2–3 页明确写到 Model B 可以合并为 conventional per-element ACE coefficients 并以标准 ACE/PACE 形式部署。
+
+所以审稿人很可能会问：
+
+**既然 `c0 + cZ` 等价于普通 per-element ACE，那么 Model B 到底新增了什么？**
+
+你现在说“额外 182 个 shared parameters 是 improved expressivity 的来源”，这个表述很危险。严格地说，如果 baseline 已经有独立的 `cAl`、`cN`，那么 shared-correction 不增加有效函数空间，只是改变优化路径、正则化结构或参数解释方式。你不能把它说成“表达能力增强”，否则懂 ACE/线性模型的人会抓住这一点。
+
+更稳妥的定位应该是：
+
+> 这不是扩大函数空间，而是提出一种具有可解释 shared/correction decomposition 的 gauge-redundant parameterization，并给出其 identifiability/gauge fixing 方案；其性能差异来自优化偏置、正则化结构和参数共享诱导的 inductive bias，而非严格意义上的 expressive power 增强。
+
+如果不改这个逻辑，npj 审稿人会认为文章的理论地基不稳。
+
+## 3. 结果强度不够：总指标没有赢，EOS 和 stress 还输了
+
+从文稿表 III 看，整体 test energy RMSE 是 **Single ACE 11.15 meV/atom，Model B 11.21 meV/atom**，Model B 实际略差；force RMSE 只从 0.0390 降到 0.0380 eV/Å，改善很小；stress RMSE 从 0.0174 变成 0.0193 GPa，Model B 更差。
+
+表 IV 里 Model B 在 5 个非 EOS batch 上能量表现明显更好，但 EOS batch 输得很重：**100.57 vs 56.01 meV/atom**。这会被审稿人视为 cherry-picking 风险。你强调“excluding EOS, 52% improvement”可以保留，但不能作为主胜利。因为真实 MLIP 评估不能随意排除最差 batch，尤其 EOS 是势函数基本能力。
+
+弹性常数也不是单边胜利。Model B 的 C33、C44 确实改善明显，但 C11、C13 变差，尤其 C13 偏差到 +39.5%。文稿表 V 显示的是一个 trade-off，不是全面优越。
+
+这对 npj Computational Materials 不够。npj 需要你证明方法“系统性更好”或者“解决了以前解决不了的问题”。现在更像是：**某些局部性质变好，另一些基础性质变差**。
+
+## 4. 验证体系太窄：只有 wurtzite AlN，不足以支撑“方法学论文”
+
+如果文章是材料发现类，单一材料可以接受；但你这篇更像方法论文。方法论文只用一个 AlN 验证，太薄。
+
+你现在的标题和结论都在推一个通用框架：“Consistency-Constrained Element-Guided ACE Potentials”“model-agnostic”“generalizes to arbitrary numbers of chemical species”。但是正文只验证了 wurtzite AlN 一个二元化合物。文稿 conclusion 甚至说该方法推广到任意元素数，但未来工作才说 ternary AlGaN 没做。
+
+npj 审稿人大概率会要求：
+
+1. 至少 3–5 个二元体系，例如 AlN、GaN、SiC、ZnO、TiO₂、LiF。
+2. 至少一个 ternary 或 alloy，例如 AlGaN。
+3. 至少一个真正体现共享修正优势的场景：composition transfer、defect/surface transfer、small-data regime、跨相迁移、phonon/thermal transport。
+4. 与标准 ACE、MTP、MACE/NequIP/Allegro 或已有 AlN ACE 势做对比。
+
+否则“general framework”的说法站不住。
+
+## 5. gauge fixing 本身目前更像“后处理解释工具”，不是性能提升工具
+
+你的 post-hoc projection 保证 prediction invariant，也就是它不会改变 energy/force/stress。文稿第 4 页表 I 和第 10 页验证部分都强调 projection 后预测保持不变。
+
+这有一个问题：**如果 gauge fixing 不改变预测，它对势函数性能没有贡献；它只贡献可解释性、可移植性和参数规范化。**
+
+这不是坏事，但文章必须承认：
+
+* gauge fixing 不是让模型更准；
+* shared-correction parameterization 也不一定扩大模型空间；
+* 真正贡献是 identifying/fixing coefficient-level non-identifiability；
+* 如果要上 npj，需要证明这个 non-identifiability 会在实际任务中造成严重问题，例如跨模型比较、模块拼接、正则化失效、元素迁移、专家模型组合、composition interpolation。
+
+现在你只是证明“存在 gauge，投影可消除，而且预测不变”。这太容易被评价为 mathematically correct but practically incremental。
+
+## 6. baseline 设计需要重做，否则说服力不足
+
+当前对比是 Single ACE vs Model B。但问题是：Single ACE 到底是不是最公平的 baseline？
+
+文稿说 Single ACE 每元素 182 basis，总计 364 coefficients，但又说总 trainable parameters 是 1196，还提到 24-dimensional chemical embeddings。这个参数计数逻辑不清楚。Model B 又说是 1378，比 Single ACE 多 182。
+
+审稿人会要求你回答：
+
+* Single ACE 和 Model B 的有效函数空间是否一样？
+* 二者是否使用完全相同的 regularization？
+* 改善是否来自参数更多？
+* 是否来自随机种子？
+* 是否来自训练不充分？
+* 是否做了 hyperparameter sweep？
+* 是否有多次重复训练的 error bars？
+* soft gauge penalty 失败是否只是 λ 选得太大？
+* 有没有 λ sweep？
+
+尤其是 soft constraint 那部分。你只用了 `λGF = 10.0`，然后说 soft constraint “catastrophically fails”。这不够严谨。至少要给 λ = 0.001、0.01、0.1、1、10 的扫描。否则审稿人会说你选择了一个过强 penalty 人为制造失败。
+
+## 7. 写作和图表还没有到 Nature Portfolio 级别
+
+这部分是初稿常见问题，但必须改。
+
+明显问题包括：
+
+* 图 2 caption 说 “Model B (orange), Single ACE (blue)”，但图例里 Single ACE 是橙色、Model B 是蓝色，颜色描述反了。
+* 图 1 caption 说是 per-batch energy RMSE comparison，但图中同时有 energy 和 force 两个 panel，caption 不完整。
+* 公式和单位排版有问题，例如 `eV/Åfor`、断词、特殊字符丢失。
+* 文稿中 “Single ACE baseline” 和 “standard multi-element ACE” 的概念没有完全区分。
+* references 有明显风险，例如文献 [17] 出现 `arXiv:2404.xxxxx` 这种占位符，不能出现在正式投稿中。
+* 语气有些过强，例如 “first explicit identification” “catastrophically fails” “model-agnostic” “recommended as a standard post-processing step”，但证据还不够。
+
+这些问题单独看不是致命的，但放在 npj 投稿里会显著降低可信度。
+
+## 8. 我的投稿判断
+
+我给你一个比较直接的分级：
+
+| 版本                                           | 目标期刊匹配度                                                                                              |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 当前初稿直接投 npj Computational Materials          | **不建议，大概率 desk reject 或外审后拒**                                                                        |
+| 补充 2–3 个体系、多随机种子、λ sweep、公平 baseline         | **可以作为 npj Computational Materials 的尝试稿**                                                            |
+| 只修文字、不补核心验证                                  | 更适合 Computational Materials Science、J. Appl. Phys.、J. Chem. Phys. 方法/势函数方向、Phys. Rev. Materials 边缘尝试 |
+| 强化为 ACE gauge theory + 多体系 + modular MLIP 框架 | **有机会冲 npj Computational Materials**                                                                 |
+| 再加大规模材料设计/主动学习/组合材料迁移                        | 可考虑更高层级，但难度明显上升                                                                                      |
+
+## 9. 建议你把文章改成这个主张
+
+现在的主张太像“我的 Model B 更准”。这不稳，因为总指标没赢。
+
+我建议改成：
+
+> Shared-correction ACE is not a larger hypothesis class, but a gauge-redundant reparameterization that exposes and controls element-wise coefficient non-identifiability. We show that this gauge freedom is numerically active, affects interpretability and regularization, and can be exactly removed by a prediction-preserving orthogonal projection. Across chemically distinct compounds, the framework provides a controlled decomposition of average bonding and element-specific response, enabling more stable modular ACE construction.
+
+也就是说，文章重点从“性能提升”转为：
+
+**可辨识性问题 + gauge theory + 正确规范化 + modular ACE 的基础理论。**
+
+这样比硬说 Model B 全面更准更可靠。
+
+## 10. 要达到 npj Computational Materials，最低补强清单
+
+我认为你至少需要补这些：
+
+1. **理论上承认等价性**：明确说明 shared-correction 不增加有效表达空间，而是改变参数化、正则化和解释结构。
+2. **加入公平 baseline**：standard multi-element ACE、hard element-routed ACE、shared-correction ACE、same parameter budget ACE。
+3. **做随机种子统计**：至少 5 个 seeds，给 mean ± std。
+4. **做 λ sweep**：证明 soft penalty 失败不是 λ 选择问题。
+5. **补 3 个以上材料体系**：至少 AlN + GaN/SiC/ZnO/LiF 这类不同键合类型。
+6. **做 ternary 或 alloy**：AlGaN 最自然，因为你未来工作已经提到了。
+7. **做真正的 deployment test**：phonon dispersion、MD stability、thermal conductivity、defect/surface transfer 至少选两个。
+8. **修正 EOS 问题**：不能让最基本 E(V) 曲线成为明显短板。
+9. **清理所有引用和图表错误**：尤其 placeholder reference、caption、单位、断词。
+10. **把“first/standard/recommended”这种强表述降级**，除非你做了非常充分的文献检索和验证。
+
+我的最终判断是：**这个初稿有 npj Computational Materials 的“方向潜力”，但没有当前投稿资格。现在不是“润色后就能投”的问题，而是需要补理论定位、公平对照和跨体系验证。**
+
+最关键的一句话：**不要把它包装成“一个更准的 AlN ACE 势函数”，而要把它升级成“多元素 ACE 中共享—修正分解的 gauge identifiability 理论与规范化框架”。**
+
+[1]: https://www.nature.com/npjcompumats/journal-information?utm_source=chatgpt.com "Journal Information | npj Computational Materials"

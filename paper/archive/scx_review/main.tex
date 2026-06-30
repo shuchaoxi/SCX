@@ -1,0 +1,718 @@
+% ======================================================================
+% State-Conditioned Expertise: A Unified Framework for Data Quality
+% Across Scientific and Engineering Domains
+%
+% Subtitle: A Proposal for Global Digital Infrastructure
+%          Beyond Geopolitical Competition
+%
+% Comprehensive Review / Perspective
+% Target: arXiv → Nature Reviews Physics / Nature Reviews Chemistry
+% ======================================================================
+
+\documentclass[twocolumn]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+% \usepackage{natbib}  % removed: use plain thebibliography
+\usepackage{framed}
+\usepackage[font=small]{caption}
+
+% ── Theorem environments ──────────────────────────────────────────────
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+% ── Colors ────────────────────────────────────────────────────────────
+\definecolor{scxblue}{RGB}{41, 128, 185}
+\definecolor{scxgreen}{RGB}{39, 174, 96}
+\definecolor{scxorange}{RGB}{230, 126, 34}
+\definecolor{scxred}{RGB}{231, 76, 60}
+
+% ── Boxes ─────────────────────────────────────────────────────────────
+\newenvironment{practicebox}
+  {\begin{center}\begin{minipage}{0.92\columnwidth}\color{scxblue}\small\setlength{\parskip}{2pt}}
+  {\end{minipage}\end{center}}
+
+\begin{document}
+
+\twocolumn[
+  \begin{@twocolumnfalse}
+    \title{State-Conditioned Expertise: Data Quality Across Domains}
+
+    \author{\normalsize SCX\ }
+
+    \date{\small \today}
+
+    \maketitle
+
+    \begin{abstract}
+      \small
+      Data quality is widely recognized as the dominant factor in machine learning performance, yet the field lacks a rigorous, mathematically grounded framework for distinguishing meaningful label errors from intrinsic sample difficulty. The SCX (State-Conditioned eXpertise) framework fills this gap through a two-layer architecture with provable guarantees including exponential convergence (Theorem~1), exact constant minimax optimality (Theorem~4'), and a fundamental impossibility result establishing that noise and difficulty are indistinguishable without structural assumptions (Theorem~3). This review synthesizes the SCX mathematical foundations and their instantiation across six domains---life sciences, advanced manufacturing, embodied intelligence, artificial intelligence, autonomous driving, and natural sciences---demonstrating that the mathematical laws governing data quality are universal and domain-independent. We identify a cross-domain pattern---the curation-exploration tradeoff---whereby premature data cleaning provably destroys the signal needed to detect errors. Beyond its technical contributions, this review makes a normative argument: data quality infrastructure, like measurement standards or internet protocols, should be a global commons. The SCX theory reveals universal mathematical laws that cannot be owned, embargoed, or weaponized. We make the complete framework---theorems, proofs, and protocols---available for academic research, and call upon the international scientific community to build upon this foundation together, resisting the fragmentation of data quality tools into instruments of geopolitical competition.
+    \end{abstract}
+
+    \vspace{0.3cm}
+  \end{@twocolumnfalse}
+]
+
+% ======================================================================
+\section{Introduction}
+% ======================================================================
+
+Data quality has emerged as the single most impactful factor in machine learning performance, consistently dominating architectural improvements across multiple benchmarks \cite{paperIII, northcutt2021}. In materials science, cleaning 14\% of training frames improves force prediction error by 29--48\%, a gain that no architecture change can replicate \cite{paperIV}. In computer vision, data cleaning yields 12--19 times the performance improvement of architecture modification \cite{paperIII}. These findings challenge the field's traditional emphasis on model-centric innovation and demand a principled framework for understanding \emph{when} and \emph{how} data errors can be detected.
+
+The fundamental challenge is that label noise and sample difficulty are mathematically indistinguishable from observational data alone. Theorem~3 of the SCX framework proves that for any finite classification problem, there exist two data-generating processes---one where errors arise from corrupted labels, another where errors arise from intrinsically difficult samples---that produce identical observable joint distributions over inputs, labels, and multi-expert predictions. This is not a practical limitation; it is a theorem.
+
+The SCX framework resolves this unidentifiability through a minimal set of structural assumptions (A1--A6): disjoint expert training, bounded correlation of expert errors, bounded loss, uniform label noise, state-homogeneous error rates, and balanced error distributions. Under these assumptions, SCX achieves provable noise detection with exponential convergence to the minimax optimal rate, including the exact asymptotic constant.
+
+\paragraph{Scope of this review.}
+We survey the application of the SCX framework across six domains:
+\begin{enumerate}[nosep,leftmargin=*,itemsep=1pt]
+  \item \textbf{Life sciences}: drug-target interaction prediction, medical imaging noise detection and routing, and genomics.
+  \item \textbf{Advanced manufacturing}: machine-learned interatomic potentials (MLIP), quality control, and process optimization.
+  \item \textbf{Embodied intelligence}: robot learning, sim-to-real transfer, and manipulation.
+  \item \textbf{Artificial intelligence}: computer vision, natural language processing, and reinforcement learning.
+  \item \textbf{Autonomous driving}: perception data quality, behavior prediction, and safety-critical validation.
+  \item \textbf{Natural sciences}: physics, chemistry, biology, and earth science.
+\end{enumerate}
+Within each domain, we present the problem formulation, the SCX adaptation with theoretical guarantees, validated empirical results, and honest limitations. We identify cross-cutting patterns and provide practical guidance for practitioners.
+
+\paragraph{Relationship to companion papers.}
+This review synthesizes results from the SCX paper series: Paper~I establishes the mathematical foundations (Theorems~1--6) \cite{paperI}; Paper~II develops the curation-exploration tradeoff as a practical principle \cite{paperII}; Paper~III provides cross-domain experimental validation \cite{paperIII}; and Paper~IV demonstrates the framework's application to MLIP expert merging \cite{paperIV}. The present review is designed to be self-contained while providing comprehensive cross-references to the theoretical and experimental literature.
+
+\paragraph{A vision for global infrastructure.}
+Data quality is not a competitive advantage---it is a shared scientific challenge. The SCX theory reveals universal mathematical laws governing the detectability of data errors, laws that operate identically whether the data comes from a laboratory in Shanghai, a hospital in Nairobi, or a factory in Stuttgart. These laws cannot be owned, embargoed, or weaponized; they can only be discovered, verified, and applied. The SCX framework is made available for academic research and evaluation purposes. We call upon the international scientific community to build upon this foundation together.
+
+% ======================================================================
+\section{Mathematical Foundations}
+% ======================================================================
+
+The SCX framework rests on six theorems and one proposition that together form a complete theory of data quality assessment. We summarize the core results; full proofs appear in the Supplementary Information of Paper~I \cite{paperI} and in the unified theorem document \cite{theorems_unified}.
+
+% ----------------------------------------------------------------------
+\subsection{The Unidentifiability Problem}
+% ----------------------------------------------------------------------
+
+The starting point of the SCX theory is a negative result that establishes fundamental limits on what any data-cleaning algorithm can achieve.
+
+\begin{theorem}[Noise-Difficulty Unidentifiability; Theorem~3 of \cite{paperI}]
+\label{thm:unidentifiability}
+For any $K \geq 2$ classification problem, any $M \geq 1$ experts, and any finite state space $\mathcal{S}$, there exist two data-generating processes $\mathcal{P}_{\text{noise}}$ and $\mathcal{P}_{\text{hard}}$ such that:
+\begin{itemize}
+  \item Under $\mathcal{P}_{\text{noise}}$, label errors are caused by uniform label noise at rate $\eta$;
+  \item Under $\mathcal{P}_{\text{hard}}$, all observed labels equal the true labels, but some samples are intrinsically difficult;
+  \item The two processes produce \emph{identical} observable joint distributions over $(x, y, \{f_m(x)\})$;
+  \item Any algorithm has expected error $\geq \eta\rho/2$ on the ambiguous subset, where $\rho$ is its proportion.
+\end{itemize}
+\end{theorem}
+
+This theorem establishes that distinguishing noise from difficulty is \emph{provably impossible} without additional structural assumptions. The SCX framework identifies the minimal sufficient set of six assumptions (A1--A6) that break this unidentifiability:
+
+\begin{description}[nosep,leftmargin=*,style=nextline]
+  \item[A1 (Disjoint training)] Expert models are trained on disjoint data subsets $D_m \cap D_{m'} = \varnothing$.
+  \item[A2' (Bounded correlation)] Expert errors have bounded conditional correlation given the state for clean samples, with $\max_{m\neq m'}\operatorname{Corr}(e_m,e_{m'}\mid s) \leq \bar{\rho} < 1$.
+  \item[A3 (Bounded loss)] The loss function $\ell(a,b) \in [0, B]$ is bounded.
+  \item[A4 (Uniform noise)] Label noise is independent of the input and uniform over incorrect classes.
+  \item[A5 (State homogeneity)] Within each state, the expected expert consensus on clean samples is bounded by $\mu_s$.
+  \item[A6 (Balanced errors)] Expert errors distribute approximately uniformly across classes, controlled by constant $C_{\text{bal}}$.
+\end{description}
+
+These assumptions are not merely technical conveniences---each corresponds to a specific path out of the unidentifiability trap. Removing any single assumption restores the ambiguity for some data distribution. Among these, A2' (bounded correlation) is the strongest and least verifiable; Paper~I (SI~S1) provides a testable procedure for estimating $\bar{\rho}$ and quantifies the resulting degradation of the effective expert count to $M/(1+(M-1)\bar{\rho})$.
+
+% ----------------------------------------------------------------------
+\subsection{The Detection Guarantee}
+% ----------------------------------------------------------------------
+
+Under assumptions A1--A6, the SCX framework provides a noise detector with provable guarantees. The core idea is simple: train $M$ experts on disjoint data subsets, compute for each sample the consensus score $C(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{\ell(f_m(x), y) > \tau\}$, and flag samples as noisy when $C(x)$ exceeds a state-dependent threshold $\theta$.
+
+\begin{theorem}[Noise Detection Guarantee; Theorem~1 of \cite{paperI}]
+\label{thm:detection}
+Let assumptions A1--A6 hold. For any threshold $\mu_s < \theta < 1 - C_{\text{bal}}\cdot\mu_s/(K-1)$ in state $s$, the SCX noise detector achieves:
+\begin{equation}
+\mathrm{F1} \geq 1 - \frac{1}{\eta}\sum_{s\in\mathcal{S}} \rho_s \cdot \exp\bigl(-2M\Delta_s^2\bigr),
+\label{eq:thm1}
+\end{equation}
+where $\rho_s$ is the state proportion, $\eta$ is the noise rate, and $\Delta_s = \min(\theta - \mu_s,\; 1 - C_{\text{bal}}\cdot\mu_s/(K-1) - \theta)$ is the separation gap.
+\end{theorem}
+
+The F1 score converges to~1 exponentially in the number of experts $M$. The proof proceeds through three lemmas: Lemma~1 establishes mean separation between clean and noisy consensus scores; Lemma~2 bounds the false positive rate via Hoeffding's inequality; Lemma~3 bounds the false negative rate.
+
+% ----------------------------------------------------------------------
+\subsection{Minimax Optimality with Exact Constant}
+% ----------------------------------------------------------------------
+
+The exponential rate in Theorem~1 is not arbitrary. Using the Chernoff-Stein lemma and Bahadur-Rao exact large-deviation asymptotics \cite{bahadur1960, chernoff1952}, the SCX framework establishes a matching lower bound.
+
+\begin{theorem}[Exact Constant Minimax Optimality; Theorem~4' of \cite{paperI}]
+\label{thm:minimax}
+Let $p_0 = \mu_s$ and $p_1 = 1 - C_{\text{bal}}\cdot\mu_s/(K-1)$ be the clean and noisy expert error rates, with Chernoff information $\kappa = C(\mathrm{Bern}(p_0), \mathrm{Bern}(p_1))$. The SCX detector with adaptive threshold $\theta^\dagger = \theta^* + \frac{1}{M}\frac{\log((1-\eta)/\eta)}{D^*} + O(1/M^2)$ achieves:
+\begin{equation}
+\lim_{M\to\infty} e^{M\kappa}\sqrt{2\pi M}\cdot(1-\mathrm{F1}_{\mathrm{SCX}}) = \frac{C_{\min}}{\eta},
+\end{equation}
+where $C_{\min}$ is an explicit constant. No algorithm can achieve a smaller constant:
+\begin{equation}
+\liminf_{M\to\infty} e^{M\kappa}\sqrt{2\pi M}\cdot(1-\mathrm{F1}_{\mathcal{A}}) \geq \frac{C_{\min}}{\eta}.
+\end{equation}
+Thus SCX is \textbf{exact constant minimax optimal}.
+\end{theorem}
+
+The $O(1/M)$ threshold shift that accounts for the noise prior $\eta$ is essential: naive threshold selection can be 1.7--2.4$\times$ suboptimal for common parameter regimes \cite{theorems_unified}.
+
+% ----------------------------------------------------------------------
+\subsection{The Feature Boundary}
+% ----------------------------------------------------------------------
+
+SCX's performance depends critically on the quality of the feature representation $\phi(X)$ used for state discovery. Theorem~2 quantifies this dependence.
+
+\begin{theorem}[Weak Feature Failure Lower Bound; Theorem~2 of \cite{paperI}]
+\label{thm:weakfeature}
+Let $\phi: \mathcal{X} \to \mathbb{R}^{d_\phi}$ be a $\delta$-weak feature mapping with $I(\phi(X); S) \leq \delta$ (in nats). Then:
+\begin{align}
+\mathrm{F1}_{\mathrm{SCX}} &\leq \mathrm{F1}_{\mathrm{base}} + C_F\sqrt{\delta/2}, \\
+\mathrm{AUC}_{\mathrm{SCX}} &\leq \mathrm{AUC}_{\mathrm{base}} + \sqrt{\delta/2}\left(\frac{1}{\eta} + \frac{1}{1-\eta}\right).
+\end{align}
+\end{theorem}
+
+When features are strong ($\delta/\log K < 0.2$), SCX can substantially improve over the loss baseline. When features are weak ($\delta/\log K > 0.5$), SCX degrades to baseline performance. The normalized feature weakness $\varepsilon_\phi = \delta / \log K_{\mathcal{S}}$ provides a practical diagnostic.
+
+Theorem~5 ensures that under strong separation conditions ($\Delta_{\min}^2 / (\sigma^2 d_\phi) \geq C_0$), k-means clustering recovers the true state partition with probability exponentially close to~1, enabling the state-conditioned analysis that drives SCX. Proposition~6 provides a bootstrap stability diagnostic ($S(\Phi, K) > 0.7$) that operationalizes the feature strength assessment.
+
+% ----------------------------------------------------------------------
+\subsection{Practical Protocol}
+% ----------------------------------------------------------------------
+
+The SCX protocol for data quality assessment consists of four steps:
+
+\begin{enumerate}[nosep,leftmargin=*,itemsep=2pt]
+  \item \textbf{State discovery}: Extract features $\phi(x)$ for each sample; run k-means with $K_{\mathcal{S}}$ clusters to partition the data space; validate stability via bootstrap ARI (Prop~6).
+  \item \textbf{Multi-expert training}: Train $M \geq 8$ experts on disjoint data subsets (or bootstrap samples for small datasets); use diverse random seeds and architectures to encourage low error correlation (A2').
+  \item \textbf{Consensus scoring}: For each sample, compute the consensus score $C(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{\ell(f_m(x), y) > \tau\}$; within each state, estimate $\mu_s$ and apply the adaptive threshold $\theta^\dagger$ (Thm~4').
+  \item \textbf{Bound verification}: Compute the theoretical F1 lower bound (Eq.~\ref{eq:thm1}); compare against empirical performance on a held-out clean set; verify that the bound is not vacuous.
+\end{enumerate}
+
+The protocol has four tiers of increasing sophistication: Tier~0 (loss baseline, one model), Tier~1 (SCX with Hoeffding bound), Tier~2 (SCX with Chernoff/KL bound), Tier~3 (SCX with adaptive threshold), and Tier~4 (SCX plus bootstrap stability diagnostic). Most applications require Tier~2 or~3 with $M=8$--$20$ experts \cite{engineering_guide}.
+
+% ======================================================================
+\section{Mathematical Context: Deep Structure}
+% ======================================================================
+
+Beyond its practical utility, the SCX framework possesses a rich mathematical structure that connects it to several deep areas of pure and applied mathematics. We briefly survey these connections; a comprehensive treatment is available in the companion mathematical analysis \cite{deep_math}.
+
+\subsection{Home Field: Statistical Decision Theory}
+
+SCX belongs to the Wald paradigm of \textbf{statistical decision theory}, specifically the Le Cam asymptotic theory~\cite{lecam1986}. The core problem---testing $H_0$ (clean label) versus $H_1$ (noisy label) from $M$ conditionally independent Bernoulli observations, with a latent state variable modulating the success probabilities---is a structured composite hypothesis testing problem. The F1 risk function makes it non-standard: unlike 0-1 loss, F1 is a ratio of successes that couples Type I and Type II errors non-additively. The six theorems collectively characterize the minimax-optimal decision boundary for this problem, including its exact asymptotic constant (Theorem~4'), its dependence on side information (Theorem~2), and its fundamental limits (Theorem~3).
+
+\subsection{The Consensus Score as a Maximal Invariant}
+
+The consistency score $C(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{f_m(x) \neq y\}$ has a natural group-theoretic interpretation. The symmetric group $S_M$ acts on the expert ensemble by permuting the experts: $\sigma \cdot (f_1, \dots, f_M) = (f_{\sigma(1)}, \dots, f_{\sigma(M)})$. Under this action, $C(x)$ is the \textbf{maximal invariant}: any $S_M$-invariant function of the expert errors must be a function of $C(x)$ alone. This explains why thresholding $C(x)$ is sufficient for optimal detection---the Neyman-Pearson lemma, combined with $S_M$-invariance, reduces the $M$-dimensional decision problem to a one-dimensional sufficient statistic. $C(x)$ is also a degree-1 \textbf{U-statistic}~\cite{hoe73}, and its large-deviations behavior (Theorems~1,~4') follows from classical Hoeffding and Chernoff theory for U-statistics.
+
+\subsection{Theorem 3 as a Fiber Bundle}
+
+Theorem~3 (the Noise-Difficulty Unidentifiability Theorem) admits a clean geometric interpretation. Let $\mathcal{P}$ be the space of data-generating processes satisfying the SCX assumptions, and $\mathcal{Q}$ the space of observable joint distributions over $(X, Y, \{f_m\})$. The map $\pi: \mathcal{P} \to \mathcal{Q}$ that forgets the internal noise/difficulty structure is surjective but not injective: the fiber $\pi^{-1}(Q)$ over any observable distribution $Q$ contains at least two distinct processes (the noise-world and the hardness-world). The fiber has the structure of a \textbf{convex set} parametrized by the noise rate $\eta$ and the expert error rates $\varepsilon_1, \varepsilon_2$, with extreme points corresponding to pure-noise and pure-hardness interpretations. Theorem~3 constructs the minimal fiber (two points for $K_{\mathcal{Y}}=2$) and the extended fiber (a $(K_{\mathcal{Y}}-1)$-dimensional simplex for $K_{\mathcal{Y}}>2$, via the random-expert construction). This is a \textbf{fiber bundle} over a statistical manifold---the geometry of data-generating processes that are observationally equivalent.
+
+\subsection{Information Geometry of the Detection Boundary}
+
+On the statistical manifold of Bernoulli distributions $\{\text{Bern}(p) : p \in (0,1)\}$ equipped with the Fisher information metric $g(p) = 1/(p(1-p))$, the \textbf{Chernoff information} $\kappa = C(\text{Bern}(p_0), \text{Bern}(p_1))$---which governs the optimal error exponent in Theorem~4'---satisfies $\kappa \leq d^2(p_0, p_1)/2$, where $d(p_0, p_1) = 2|\arcsin\sqrt{p_1} - \arcsin\sqrt{p_0}|$ is the geodesic distance (the Bhattacharyya angle). The adaptive threshold $\theta^\dagger = \theta^* + O(1/M)$ corresponds to a point on the geodesic connecting $p_0$ and $p_1$, chosen to balance the F1-weighted error contributions. The detection gap $\Delta_s$ in Theorem~1 is a first-order (Hoeffding) approximation to this geodesic separation.
+
+\subsection{Connections to Statistical Physics}
+
+The expert ensemble under the consensus score admits an \textbf{Ising model} analogy. Map each expert to a spin $\sigma_m = 2e_m - 1 \in \{-1, 1\}$. Then $C = (\sum_m \sigma_m + M)/(2M)$ is the magnetization. Under $H_0$ (clean), the spins align weakly with $-$ (negative magnetization); under $H_1$ (noise), they align strongly with $+$ (positive magnetization). The SCX detection threshold corresponds to a magnetization threshold, and the large-deviations rate $\kappa$ corresponds to the free energy barrier between the two phases. This analogy becomes technically useful if Assumption~A2 is relaxed to allow expert correlations: the system becomes a Curie-Weiss or full Ising model with pairwise interactions, where the optimal test may involve the full spin configuration rather than just the magnetization.
+
+\subsection{Relationship to Known Theorems}
+
+Each component of SCX instantiates a classical mathematical result: Theorem~1 is Hoeffding's inequality plus a union bound for U-statistics; Theorem~2 is the data-processing inequality plus Pinsker's bound; Theorem~3 is mixture model non-identifiability~\cite{teicher1963}; Theorem~4' is the Bahadur-Rao refinement of Cram\'{e}r's theorem~\cite{bahadur1960} combined with the Neyman-Pearson lemma; Theorem~5 is Pollard's k-means consistency~\cite{pollard1981} under strong separation; Proposition~6 is clustering stability as a surrogate for mutual information. However, the \textbf{unified synthesis} of these results under a single assumption catalog (A1--A6), connected by a common decision-theoretic framework with exact asymptotic constants, is novel. No existing theory simultaneously characterizes the sufficient conditions (Theorem~1), the fundamental limits (Theorem~3), the rate-optimal detection (Theorem~4'), the information-constrained degradation (Theorem~2), and the algorithmic convergence (Theorem~5) for a single data quality problem.
+
+% ======================================================================
+\section{Domain 1: Life Sciences}
+% ======================================================================
+
+Life sciences present unique data quality challenges: medical images carry high-stakes diagnostic labels that are both expensive and subjective; drug-target interaction data spans heterogeneous sources with varying reliability; genomic and proteomic data suffer from batch effects and platform-specific noise.
+
+% ----------------------------------------------------------------------
+\subsection{Drug Discovery}
+% ----------------------------------------------------------------------
+
+\paragraph{Problem statement.}
+Drug-target interaction (DTI) prediction faces a fundamental data quality problem: experimentally verified interactions are sparse ($\sim$5\% coverage of the chemical space) and unevenly distributed across target classes, while computational predictions propagate errors through multi-step pipelines. The ``noise'' in DTI data includes false-positive assay results, inconsistent binding measurements across laboratories, and annotation errors in public databases \cite{chembl, bindingdb}.
+
+\paragraph{SCX adaptation.}
+The SCX framework is instantiated as the SCX-Drug module \cite{scxlife}, which implements a four-layer DTI prediction pipeline:
+
+\begin{enumerate}[nosep,leftmargin=*,itemsep=2pt]
+  \item \textbf{Molecular featurization} (descriptors): ECFP4 fingerprints, MACCS keys, RDKit descriptors, and graph representations form a rich feature space for state discovery.
+  \item \textbf{Knowledge base lookup} (DrugBank): Direct hits from curated databases provide high-confidence annotations (``experimental'' evidence level).
+  \item \textbf{Drug-likeness assessment}: Lipinski, Veber, Ghose, QED, and synthetic accessibility scores filter implausible candidates \cite{lipinski1997, bickerton2012}.
+  \item \textbf{DTI prediction}: Similarity inference (Tanimoto $\geq 0.70$), deep learning (GraphDTA/MolTrans), and docking verification (AutoDock Vina) form the expert ensemble.
+\end{enumerate}
+
+Each pipeline step acts as an ``expert'' in the SCX sense: they operate on overlapping but distinct signal sources, and their consensus---captured by the combined score across all layers---provides a natural noise detection mechanism. The TargetProfileState class \cite{drug_state} models the Cartesian product of all drug-target pairs as a grid analogous to the SCX process state.
+
+\paragraph{Case study: DrugBank targetome TOP-10 screening.}
+The SCX-Drug module has been applied to identify top-priority drug targets across 15 therapeutic areas \cite{targetome_top10}. The pipeline screened 15K molecules against 5K human targets, generating 75M drug-target pairs. The TOP-10 targets identified were: KRAS G12D (score 97/100), WRN helicase (96), p53 Y220C (93), GSK-3$\beta$ (90), BACE1 (88), TYK2 pseudokinase (87), FXR (86), BCL-2/Bcl-xL (85), ACVR1/ALK2 R206H (83), and DprE1 (82). Each target was assessed across seven dimensions: disease unmet need, target druggability, structural data availability, clinical stage, computational feasibility, and market value \cite{targetome_top10}.
+
+The four-layer pipeline naturally embodies the curation-exploration tradeoff (Section~\ref{sec:tradeoff}): Layer~1 (knowledge base) is highly curated with low coverage ($\sim$5\%); Layer~3 (deep ML) is highly exploratory, predicting on all remaining pairs; Layer~4 (docking) curates only top-N candidates. This architecture validates the principle that exploration must precede curation \cite{paperII}.
+
+\paragraph{Limitations.}
+The deep learning DTI predictor (Layer~3) currently uses inference based on molecular similarity; formal DTI model training is ongoing. The similarity inference step assumes Tanimoto similarity is informative for target prediction, which may fail for polypharmacological molecules. State discovery on molecular fingerprints remains heuristic---the optimal latent representation for drug-target state discovery is an open problem.
+
+% ----------------------------------------------------------------------
+\subsection{Medical Imaging}
+% ----------------------------------------------------------------------
+
+\paragraph{Problem statement.}
+Medical imaging datasets suffer from multiple data quality issues: label noise from inter-annotator variability (especially in dermatology and pathology \cite{medmnist}), redundancy from multiple similar views, and domain shift across acquisition protocols. The SCX-Health module \cite{scxlife} addresses three tasks: noise detection (SCX-Noise), data compression (SCX-Compress), and expert routing (SCX-Routing).
+
+\paragraph{SCX-Noise: DermaMNIST and controlled noise.}
+On DermaMNIST (7-class skin lesion classification, 10K images), SCX-Noise achieves ROC-AUC 0.72--0.82 for detecting injected label noise at rates 10--40\%, compared to 0.61--0.65 for loss-based detection and 0.60--0.68 for confidence-based detection \cite{noise_module}. The SCX pipeline uses simple CNN or ResNet-18 feature extractors, k-means state discovery with $K=8$ states, and per-state noise scoring via the NoiseScore and LearnabilityScore classes.
+
+Critically, DermaMNIST represents a \emph{weak-feature regime} ($\varepsilon_\phi \approx 0.52$ per Theorem~2). As predicted by Theorem~2, SCX-Noise outperforms baselines but cannot reach perfect detection. The framework self-diagnoses this limitation through degraded clustering stability (bootstrap ARI $< 0.5$) \cite{paperIII}.
+
+\paragraph{SCX-Routing: BloodMNIST.}
+On BloodMNIST (8-class blood cell classification), the SCX ExpertRouter routes each test sample to the expert with the highest state-conditioned reliability. SCX-weighted routing achieves 93.2\% accuracy versus 91.2\% for the best single expert and 92.5\% for uniform ensemble---a +2.0\% improvement over the best single model \cite{routing_module}. The routing gain arises because different experts specialize in different data states; the SCX state discovery identifies these latent specializations that uniform ensemble methods cannot exploit.
+
+\paragraph{SCX-Compress: PathMNIST.}
+On PathMNIST (9-class pathology, 100K images), SCX-Compress uses state-conditioned redundancy scoring to reduce the training set while maintaining accuracy. At 20--40\% compression rates, SCX-Compress achieves $<2\%$ accuracy loss, matching coreset selection and outperforming stratified random compression by 1--4\% \cite{compress_module}. The per-state boundary retention strategy is critical: samples near state boundaries (high residual) are forcibly retained even when redundant within their state.
+
+\paragraph{Practical guide for medical imaging.}
+\begin{practicebox}
+\textbf{SCX for medical imaging:} (1) Extract penultimate-layer features from a pre-trained encoder. (2) Run StateDiscovery with $K = 5$--$10$ states; validate with bootstrap ARI. (3) Train $M = 5$--$10$ experts on disjoint subsets with different seeds. (4) For noise detection: apply adaptive threshold per state. For routing: use ExpertReliability + ExpertRouter. (5) For compression: retain boundary samples (top 20\% by residual) before redundancy-based selection.
+\end{practicebox}
+
+\paragraph{Limitations.}
+SCX on DermaMNIST is bounded by weak CNN features; more expressive features (e.g., from foundation models) would improve performance. The $M=5$ expert ensemble adds 5$\times$ training cost. The bootstrap ARI threshold ($\tau=0.7$) is empirically motivated, not theoretically derived.
+
+% ----------------------------------------------------------------------
+\subsection{Genomics and Proteomics}
+% ----------------------------------------------------------------------
+
+\paragraph{Proposed/theoretical.}
+The SCX framework has significant potential in genomics and proteomics, though systematic validation is pending. Key opportunities include: (1) sequence-based state discovery using protein language model embeddings for identifying structurally or functionally relevant regions; (2) multi-expert consensus for predicting mutation pathogenicity, where different prediction methods (SIFT, PolyPhen, CADD, PrimateAI) serve as natural experts; (3) single-cell RNA-seq quality assessment, where dropout events (technical zeros) must be distinguished from genuine low expression.
+
+The challenge is that genomic data often violates assumption A4 (uniform noise): sequencing errors are systematic, not uniform. State-discovery approaches using chromatin accessibility or histone modification features may help, but the theoretical guarantees of Theorem~1 may not hold in their current form.
+
+% ======================================================================
+\section{Domain 2: Advanced Manufacturing}
+% ======================================================================
+
+% ----------------------------------------------------------------------
+\subsection{Machine-Learned Interatomic Potentials}
+% ----------------------------------------------------------------------
+
+\paragraph{Problem statement.}
+Machine-learned interatomic potentials (MLIPs)---including atomic cluster expansion (ACE), moment tensor potentials (MTP), and neural network potentials---rely on high-quality density functional theory (DFT) reference data. Frame-level noise arises from multiple sources: thermal and molecular dynamics simulations at elevated temperatures, incomplete structural relaxations, and DFT convergence failures. In the AlN ACE dataset, 74 of 534 frames (14\%) carry noise from 1800~K thermal and MD simulations, characterized by forces exceeding 5~eV/\AA \cite{paperIV, paperIII}.
+
+\paragraph{SCX adaptation.}
+SCX for MLIP uses SOAP/ACE descriptors as the feature representation for state discovery. The key insight is that noise in force data is \emph{state-dependent}: thermal configurations cluster in physically distinct regions of descriptor space from equilibrated configurations. Each state has its own error profile $\mu_s$, enabling the state-conditioned thresholding that distinguishes genuinely noisy frames from physically challenging but correct frames.
+
+The multi-expert pipeline trains $M = 8$--$12$ ACE experts on disjoint subsets of the DFT frame library. Consensus scoring operates on force prediction errors: a frame is flagged as noisy if the majority of experts fail to predict its energy or forces within a threshold $\tau$.
+
+\paragraph{Case study: AlN/GaN ACE potentials.}
+The AlN dataset is the flagship SCX validation case \cite{paperIII, paperIV}. With $M=12$ experts, the theoretical F1 bound from Theorem~1 is 0.87 (range 0.77--0.86 depending on state proportions), matching the empirical F1 of 0.87. The bound is empirically tight---neither optimistic nor conservative.
+
+After SCX cleaning (removing 14\% of frames as noisy), force RMSE improves 29--48\% compared to training on the full noisy dataset. The improvement is concentrated in physically distinct states: thermal batch frames (resolved) and MLMD trajectory frames. Randomly removing the same number of frames yields only 2--5\% improvement \cite{paperII, paperIII}. The gap between SCX-directed and random removal measures the value of the curation-exploration tradeoff: the exploration phase (training on noisy data) was essential to identify which frames were problematic.
+
+Cross-validation on Si, Cu, and MgO datasets confirms generalization: the same SCX protocol achieves F1 scores of 0.82--0.91 across these materials, with the separation gap $\Delta_s$ varying primarily with the distinctness of the noise-generating physical process \cite{paperIII}.
+
+\paragraph{Limitations.}
+The ACE descriptor space may not capture all relevant noise modalities. The assumption of uniform noise (A4) is violated when noise concentrates in specific physical regimes, though Theorem~3 shows that state-conditioned analysis can partially compensate. The $M=12$ expert requirement adds significant compute overhead for large MLIP training pipelines.
+
+% ----------------------------------------------------------------------
+\subsection{Quality Control}
+% ----------------------------------------------------------------------
+
+\paragraph{Proposed/theoretical.}
+SCX for manufacturing quality control applies to multi-sensor production line data, where sensor noise, measurement drift, and genuine process anomalies must be distinguished. The feature representation can be derived from time-series sensor data (via temporal convolutional networks or autoencoders), and state discovery identifies distinct operating regimes. Multi-expert consistency across different sensor types or processing stages provides the noise signal.
+
+A prototypical application is semiconductor wafer defect detection: optical inspection images from different fabrication steps serve as natural experts, and their consensus identifies whether a defect signal represents a true manufacturing anomaly or a measurement artifact. This is \emph{proposed} pending experimental validation.
+
+% ----------------------------------------------------------------------
+\subsection{Process Optimization}
+% ----------------------------------------------------------------------
+
+\paragraph{Proposed/theoretical.}
+SCX for process optimization frames experimental design as a data quality problem: which process parameters produce informative data, and which produce noisy or redundant measurements? State discovery on historical process data identifies operating regimes with different noise characteristics. Multi-expert consistency (using different process models or simulation codes as experts) identifies parameter regions where model predictions are reliable vs. untrustworthy.
+
+% ======================================================================
+\section{Domain 3: Embodied Intelligence}
+% ======================================================================
+
+% ----------------------------------------------------------------------
+\subsection{Robot Learning}
+% ----------------------------------------------------------------------
+
+\paragraph{Problem statement.}
+Robot learning from demonstration faces a unique data quality challenge: distinguishing between genuinely suboptimal demonstrations (valuable for learning from failure) and noisy demonstrations corrupted by sensor error, teleoperation glitches, or human inattention. The cost of misclassification is asymmetric---discarding a suboptimal-but-valid trajectory loses learning signal, while retaining a noisy trajectory corrupts the policy.
+
+\paragraph{SCX adaptation.}
+State discovery operates on trajectory embeddings (from behavior cloning encoders or state-sequence autoencoders), partitioning demonstration data into states with distinct error characteristics. Multi-expert training uses $M$ behavior cloning policies trained on disjoint subsets of the demonstration library. Consensus scoring identifies trajectories where the majority of experts fail to reproduce the demonstrated action, which may indicate either label noise (corrupted demonstration) or genuine task difficulty.
+
+The key insight from Theorem~3 is that premature filtering of ``bad'' trajectories is provably harmful: without trained expert policies, one cannot distinguish a noisy demonstration from a challenging-but-informative one. SCX requires exploration---training on all demonstrations---before curation.
+
+\paragraph{Case study: \emph{Proposed/theoretical}.}
+Systematic validation on standard robot learning benchmarks (Meta-World, DM Control Suite, RoboNet) is forthcoming. The framework is theoretically well-suited to contact-rich manipulation (Section~\ref{sec:manipulation}) where success/failure attribution is inherently ambiguous.
+
+% ----------------------------------------------------------------------
+\subsection{Sim-to-Real Transfer}
+% ----------------------------------------------------------------------
+
+\paragraph{Problem statement.}
+Sim-to-real transfer is dominated by the ``reality gap''---discrepancies between simulation and real-world dynamics that cause policies trained in simulation to fail when deployed. A central challenge is distinguishing simulation artifacts (noise in the SCX sense) from genuine physical dynamics that should be learned (hardness).
+
+\paragraph{SCX adaptation.}
+State discovery on domain-randomized simulation data identifies regions of the policy-parameter space where simulation fidelity varies. Multiple policies trained on different domain randomization distributions serve as experts. Their consensus on a simulated trajectory's outcome identifies whether failure is a simulation artifact (experts disagree) or a genuine dynamic challenge (experts agree). Theorem~2 guides feature selection: the feature space must balance informativeness about physical state with invariance to simulation parameters.
+
+% ----------------------------------------------------------------------
+\subsection{Manipulation and Grasping}
+\label{sec:manipulation}
+% ----------------------------------------------------------------------
+
+\paragraph{Proposed/theoretical.}
+Contact-rich manipulation data presents a particularly hard data quality problem: a grasp attempt may fail due to sensor noise, inaccurate dynamics models, or genuine task difficulty (unstable object geometry). SCX state discovery on tactile and proprioceptive sequences identifies contact modes (stable grasp, slipping, pregrasp adjustment). Multi-expert consensus across different grasp planners or controllers distinguishes execution errors (noise) from edge cases requiring new strategies (hardness).
+
+% ======================================================================
+\section{Domain 4: Artificial Intelligence}
+% ======================================================================
+
+% ----------------------------------------------------------------------
+\subsection{Computer Vision}
+% ----------------------------------------------------------------------
+
+\paragraph{Problem statement.}
+Image classification datasets are a canonical testbed for data quality methods, with well-characterized label noise (CIFAR-10: $\sim$8\% annotation error \cite{northcutt2021}; ImageNet: $\sim$5--10\%). The challenge is that many ``noisy'' labels are actually ambiguous---images that multiple annotators genuinely disagree on (a dog that looks like a cat, a truck that could be a car).
+
+\paragraph{SCX adaptation.}
+State discovery on CNN penultimate-layer features identifies visual states where label ambiguity is concentrated. Multi-expert training with $M = 5$--$10$ ResNet variants provides the ensemble for consensus scoring. The ResNet-18 feature representation provides $\delta/\log K \approx 0.15$ (strong features regime), enabling substantial noise detection improvement.
+
+\paragraph{Case study: CIFAR-10 with controlled noise.}
+On CIFAR-10 with 10\% injected label noise, SCX achieves F1=0.62 for noise detection versus 0.45 for loss-based baseline, using ResNet-18 features and $M=10$ experts \cite{paperIII, paperI}. The theoretical bound from Theorem~1 is $\mathrm{F1} \geq 0.18$, which is satisfied (0.62 $\gg$ 0.18) but conservative. The Chernoff bound (Theorem~4') predicts $\kappa \approx 0.496$ for CIFAR-10's operating parameters ($p_0=0.45$, $p_1=0.95$), giving $\exp(-20\kappa) \approx 5 \times 10^{-5}$---the asymptotic bound is much tighter than the Hoeffding bound for $M\geq 20$.
+
+The curation-exploration tradeoff manifests clearly: premature cleaning (removing top 20\% by loss before training) removes 15\% clean + 5\% truly noisy samples, while deferred cleaning (train experts first, then curate) removes 18\% noisy + 2\% clean. Deferred cleaning achieves 4--7\% higher test accuracy at equal removal rates \cite{paperII}.
+
+On DermaMNIST with weak SimpleCNN features ($\delta/\log K \approx 0.52$), SCX degrades to baseline ($\mathrm{F1} = 0.101$ vs. 0.105), exactly as Theorem~2 predicts \cite{paperI}. This self-diagnosis---the framework signals when it cannot help---is a crucial advantage over black-box cleaning methods.
+
+\paragraph{ImageNet-scale considerations.}
+Applying SCX at ImageNet scale ($\sim$1.3M images) requires practical considerations: $M=20$ experts trained on $\sim$65K images each is feasible on a moderate GPU cluster. The bootstrap stability diagnostic (Proposition~6) should precede full-scale execution to confirm feature strength. Adaptive thresholding (Theorem~4') is particularly important at scale, where the noise rate $\eta$ may be very small ($<1\%$) and the $\eta$-aware threshold provides 1.5--2.5$\times$ improvement \cite{engineering_guide}.
+
+% ----------------------------------------------------------------------
+\subsection{Natural Language Processing}
+% ----------------------------------------------------------------------
+
+\paragraph{Proposed/theoretical.}
+NLP data quality mirrors computer vision but with domain-specific noise modalities: label noise in text classification, annotation artifacts in sentiment analysis, and adversarial triggers. The SCX framework applies naturally to LLM data curation, where massive web-crawled datasets contain both mislabeled examples and genuinely difficult linguistic phenomena.
+
+State discovery on sentence embeddings (from BERT, T5, or similar encoders) identifies linguistic states with distinct error characteristics. Multi-expert training across different LLM architectures, pre-training seeds, or fine-tuning protocols provides the expert ensemble. The framework is particularly promising for instruction-tuning data quality, where the distinction between incorrect instructions (noise) and challenging compositional instructions (hardness) is critical for alignment.
+
+\paragraph{Relation to companion work.}
+Paper~V of the SCX series (in preparation) specifically addresses LLM data curation using the SCX framework \cite{paperV}. The theoretical framework is identical; the practical challenges are scale (billions of tokens) and the non-uniform nature of LLM training data errors.
+
+% ----------------------------------------------------------------------
+\subsection{Reinforcement Learning}
+% ----------------------------------------------------------------------
+
+\paragraph{Proposed/theoretical.}
+RL faces a unique data quality problem: reward signals may be noisy (sensor noise, reward misspecification) or genuinely informative about task structure (sparse rewards, shaped rewards that capture subgoals). The SCX framework applies by treating different RL algorithms (PPO, SAC, TD3, DQN) or different training seeds as experts. State discovery on the state-action embedding space identifies regions where reward signals are reliable or noisy.
+
+Theoretical analysis \cite{theorems_unified} suggests that Theorem~3's unidentifiability result applies directly to RL: without multi-expert diversity, one cannot distinguish a noisy reward from a genuinely challenging state. This provides formal justification for ensemble RL methods and suggests principled sample rejection strategies.
+
+% ======================================================================
+\section{Domain 5: Autonomous Driving}
+% ======================================================================
+
+% ----------------------------------------------------------------------
+\subsection{Perception Data}
+% ----------------------------------------------------------------------
+
+\paragraph{Problem statement.}
+Autonomous driving perception datasets are among the most expensive and safety-critical ML datasets. Label noise in 3D bounding boxes, semantic segmentation masks, and object tracks arises from annotator error, sensor synchronization issues, and ambiguous object boundaries. The critical challenge is distinguishing genuine edge cases (rare but valid driving scenarios) from annotation errors.
+
+\paragraph{SCX adaptation.}
+State discovery operates on multi-modal sensor embeddings (LiDAR point cloud features, camera image features, radar signatures). The natural multi-sensor setup provides a built-in expert ensemble: different sensor modalities serve as complementary experts whose consensus on object detections identifies whether a detection failure is a sensor-specific noise artifact or a genuine perception challenge.
+
+\paragraph{Case study: \emph{Proposed/theoretical}.}
+Systematic validation on Waymo Open Dataset or nuScenes is planned. The framework is particularly promising for: (1) identifying mislabeled 3D bounding boxes where LiDAR and camera detections disagree; (2) detecting domain shift (e.g., weather conditions) where sensor reliability changes systematically; (3) prioritizing edge cases for human review.
+
+% ----------------------------------------------------------------------
+\subsection{Behavior Prediction}
+% ----------------------------------------------------------------------
+
+\paragraph{Problem statement.}
+Trajectory prediction data quality is dominated by the ambiguity of future behavior: multiple futures are plausible given the same history. Distinguishing unexpectedly difficult prediction scenarios (where the ground-truth trajectory is genuinely multimodal and hard) from data collection artifacts (tracking noise, identity switches, map misalignment) is a fundamental challenge.
+
+\paragraph{SCX adaptation.}
+State discovery on agent-history embeddings identifies interaction regimes (free-flow, merging, intersection crossing, emergency maneuvers). Multi-predictor experts (different trajectory forecasting architectures: goal-conditioned, edge-enhanced, generative) provide the ensemble. Their consensus on prediction likelihood distinguishes tracking noise (low consensus, but prediction achievable) from genuinely hard multimodal scenarios.
+
+% ----------------------------------------------------------------------
+\subsection{Safety-Critical Applications}
+% ----------------------------------------------------------------------
+
+\paragraph{Safety implications.}
+The provable guarantees of the SCX framework (Theorems~1 and~4') have direct safety relevance: the F1 lower bound provides a mathematical floor on data quality that is certifiable. For safety-critical autonomous driving data, this enables:
+\begin{itemize}[nosep]
+  \item Certified data quality for perception training sets.
+  \item Verifiable bounds on the maximum number of undetected noise samples.
+  \item Regulatory documentation of data-cleaning methodology with explicit assumptions.
+\end{itemize}
+
+These implications are \emph{proposed} pending regulatory engagement. The SCX framework may serve as part of the data quality validation dossier for autonomous driving safety cases.
+
+% ======================================================================
+\section{Domain 6: Natural Sciences}
+% ======================================================================
+
+% ----------------------------------------------------------------------
+\subsection{Physics}
+% ----------------------------------------------------------------------
+
+\paragraph{DFT reference data quality (the oracle problem).}
+Density functional theory (DFT) is widely treated as an oracle for generating training data in computational materials science, yet DFT itself has known failure modes: self-interaction error, band gap underestimation, and convergence failures for specific configurations. The SCX framework treats DFT as one expert among many (e.g., DFT with different functionals: PBE, SCAN, HSE06; or different codes: VASP, Quantum ESPRESSO, CP2K). Their consensus on formation energies or forces identifies when the DFT ``oracle'' is trustworthy vs. unreliable---a critical capability for MLIP training.
+
+\paragraph{Spectroscopy: signal vs. noise.}
+In experimental spectroscopy, distinguishing genuine spectral features from noise is a classic data quality problem. SCX performs state discovery on spectral embedding features and uses multi-expert consistency across different denoising or baseline-correction algorithms as the expert ensemble.
+
+% ----------------------------------------------------------------------
+\subsection{Chemistry}
+% ----------------------------------------------------------------------
+
+\paragraph{Reaction prediction data.}
+Chemical reaction prediction datasets suffer from reporting biases: successful reactions are overrepresented, failed reactions rarely published, and stereochemical information often missing. SCX state discovery on molecular graph features identifies reaction classes with distinct prediction reliability. Multi-expert consistency across different reaction prediction models (template-based, graph neural network, transformer) identifies unreliable predictions that may indicate data quality issues.
+
+\paragraph{Molecular property databases.}
+Public molecular property databases (PubChem, ChEMBL) contain heterogeneous data quality: high-confidence experimental measurements coexist with computational predictions of varying reliability. The SCX four-layer pipeline (Section~\ref{sec:drug}) provides a natural architecture for per-molecule confidence assessment.
+
+% ----------------------------------------------------------------------
+\subsection{Biology}
+% ----------------------------------------------------------------------
+
+\paragraph{Cryo-EM particle picking.}
+Cryo-electron microscopy particle picking is a data quality problem: distinguishing genuine protein particles from noise (ice contamination, carbon edges, overlapping particles) determines the quality of the final reconstruction. The SCX framework applies naturally: different particle-picking algorithms (template-based, deep learning-based, blob detectors) form the expert ensemble; state discovery on micrograph patches identifies regions with distinct picking reliability.
+
+\paragraph{Single-cell sequencing quality.}
+Single-cell RNA-seq data contains dropout events (technical zeros) that must be distinguished from genuine low expression. SCX state discovery on gene expression embeddings identifies cell types and states with distinct dropout characteristics. Multi-expert consistency across different imputation methods provides the consensus signal.
+
+% ----------------------------------------------------------------------
+\subsection{Earth Science}
+% ----------------------------------------------------------------------
+
+\paragraph{Climate model data.}
+Climate model ensembles (CMIP6) naturally provide multiple experts with different parameterizations and resolutions. The SCX framework can assess consensus reliability for each spatial region and temporal period, identifying where model agreement indicates robust predictions and where disagreement signals either noise or fundamental uncertainty.
+
+\paragraph{Satellite imagery quality.}
+Satellite imagery classification (land use, crop type, deforestation detection) suffers from label noise due to cloud cover, seasonal variation, and annotator subjectivity. SCX with multi-sensor (optical, radar, thermal) or multi-temporal experts provides state-conditioned quality assessment.
+
+% ======================================================================
+\section{Cross-Domain Patterns}
+\label{sec:tradeoff}
+% ======================================================================
+
+% ----------------------------------------------------------------------
+\subsection{When SCX Works}
+% ----------------------------------------------------------------------
+
+Across the six domains surveyed, SCX succeeds under consistent conditions:
+
+\begin{enumerate}[nosep,leftmargin=*,itemsep=2pt]
+  \item \textbf{Strong domain features}: The feature representation $\phi(X)$ captures meaningful structure in the data space. ACE/SOAP descriptors for MLIP (F1=0.87), molecular fingerprints for drug discovery (TOP-10 targets validated), and ResNet-18 features for CIFAR-10 (F1=0.62 vs. 0.45 baseline) all provide sufficient feature strength ($\varepsilon_\phi < 0.5$).
+  \item \textbf{Moderate noise rates (5--30\%)}: Theorem~1's bound is tightest when $\eta$ is not extreme. The 14\% noise in AlN, 8--10\% in CIFAR-10, and 10--40\% in DermaMNIST all fall in this operating range.
+  \item \textbf{Available oracle or consensus labels}: Clean holdout sets or known noise masks enable verification of the theoretical bounds and calibration of adaptive thresholds.
+\end{enumerate}
+
+% ----------------------------------------------------------------------
+\subsection{When SCX Struggles}
+% ----------------------------------------------------------------------
+
+Three failure modes recur across domains:
+
+\begin{enumerate}[nosep,leftmargin=*,itemsep=2pt]
+  \item \textbf{Weak features}: Low-resolution images (DermaMNIST SimpleCNN: $\varepsilon_\phi \approx 0.52$) or simple descriptors cause SCX to collapse to baseline performance, exactly as Theorem~2 predicts. The framework self-diagnoses this via degraded bootstrap ARI.
+  \item \textbf{Very sparse noise ($\eta < 1\%$)}: The theoretical bounds become vacuous unless $M$ is scaled as $\log(1/\eta)/\kappa$. For $\eta = 0.001$, $M$ must exceed $\sim 170$---prohibitive in most applications. The bootstrap diagnostic (Tier~4) provides empirical verification in this regime.
+  \item \textbf{No domain knowledge for state definition}: When the number of states $K_{\mathcal{S}}$ is unknown and domain expertise is unavailable, state discovery can produce arbitrary partitions. Proposition~6's bootstrap diagnostic is essential in this setting.
+\end{enumerate}
+
+% ----------------------------------------------------------------------
+\subsection{The Curation-Exploration Tradeoff}
+\label{sec:ce-tradeoff}
+% ----------------------------------------------------------------------
+
+A universal pattern emerges across all six domains: \textbf{premature data cleaning destroys the signal needed to distinguish noise from hardness}. This is the curation-exploration tradeoff \cite{paperII}, formalized as follows:
+
+\begin{equation}
+\text{Tradeoff:} \quad \text{Curation}(t) = f(\text{Exploration}(t)),
+\end{equation}
+where at training step $t$, the curation decision (which samples to accept or reject) is a function of the exploration that has occurred (multi-expert training on raw data). The exploration rate $\eta(t)$ governs how aggressively the system accepts ambiguous samples before committing to curation decisions.
+
+The tradeoff has three regimes:
+\begin{enumerate}[nosep,leftmargin=*,itemsep=2pt]
+  \item \textbf{Under-exploration} ($\eta(t)$ decays too fast): Curation decisions are essentially random, driven by noise rather than structure.
+  \item \textbf{Optimal exploration}: Experts develop state-conditioned expertise; consistency signals stabilize; curation achieves maximal improvement.
+  \item \textbf{Over-exploration} ($\eta(t)$ decays too slowly): Noise patterns become imprinted in the expert ensemble, degrading final model quality.
+\end{enumerate}
+
+The tradeoff's phase transition is governed by feature strength $\varepsilon_\phi$:
+\begin{itemize}[nosep]
+  \item Strong features ($\varepsilon_\phi < 0.3$): Optimal $\eta(t)$ decays exponentially; full SCX benefit achievable.
+  \item Intermediate features ($0.3 < \varepsilon_\phi < 0.7$): SCX helps with diminishing returns; $\eta(t)$ should decay harmonically.
+  \item Weak features ($\varepsilon_\phi > 0.7$): SCX degrades to baseline; improve features, not cleaning.
+\end{itemize}
+
+This pattern is observed across AlN MLIP, CIFAR-10, MedMNIST, and DrugBank experiments \cite{paperII, paperIII}, suggesting it is a fundamental property of data quality assessment, not a domain-specific artifact.
+
+% ======================================================================
+\section{Future Directions}
+% ======================================================================
+
+% ----------------------------------------------------------------------
+\subsection{Automated State Discovery}
+% ----------------------------------------------------------------------
+
+Current SCX state discovery requires manual specification of $K_{\mathcal{S}}$ and feature engineering. Two research directions address this: (1) self-supervised state learning using contrastive objectives that learn partitions directly from data without labels; (2) foundation model features as universal state descriptors, where pre-trained embeddings (e.g., from CLIP, ESM-2, GNNs for molecules) serve as the feature space across all domains. Foundation model features may shift the feature-strength boundary (Theorem~2) sufficiently to make SCX effective even on previously weak-feature problems.
+
+% ----------------------------------------------------------------------
+\subsection{Real-Time SCX}
+% ----------------------------------------------------------------------
+
+Online noise detection during training would enable dynamic data curation. Three challenges must be addressed: (1) online state discovery as data distribution shifts during training; (2) updating consensus scores incrementally without full expert retraining; (3) maintaining the theoretical guarantees (Theorems~1,~4') in a non-stationary setting where $M$ and $\mu_s$ change over time.
+
+% ----------------------------------------------------------------------
+\subsection{SCX as a Service}
+% ----------------------------------------------------------------------
+
+The SCX protocol is naturally parallelizable (expert training, state discovery, consensus computation) and could be deployed as a cloud service. An SCX-as-a-Service platform would provide: automated feature extraction and state discovery, managed expert training infrastructure, certified F1 lower bounds for audited datasets, and integration with MLOps pipelines for continuous data quality monitoring.
+
+% ----------------------------------------------------------------------
+\subsection{Regulatory Standards}
+% ----------------------------------------------------------------------
+
+The provable guarantees of the SCX framework position it as a candidate for certified data quality benchmarks in regulated domains. The F1 lower bound (Theorem~1) and minimax optimality (Theorem~4') provide mathematical guarantees that can be audited independently. For medical AI (FDA 510(k) clearance) and autonomous driving (ISO 26262 safety cases), SCX could serve as part of the data quality validation dossier. The explicit assumption catalog (A1--A6) enables regulators to verify whether the framework's applicability conditions are met.
+
+% ----------------------------------------------------------------------
+\subsection{Open Theoretical Problems}
+% ----------------------------------------------------------------------
+
+Several theoretical questions remain open: (1) non-uniform noise assumptions and their effect on the detection bound; (2) optimal $\eta(t)$ scheduling in the curation-exploration tradeoff; (3) SCX guarantees under expert heterogeneity (non-identical error distributions); (4) information-theoretic sharpening of Theorem~2's bound using strong data-processing inequalities; (5) extension of the minimax optimality proof (Theorem~4') to non-identical expert error rates via generalized large-deviation principles.
+
+% ======================================================================
+\section{Broader Perspective: Deep Networks as Hierarchical Classification}
+% ======================================================================
+
+The SCX framework, in making state-conditioned expertise explicit, suggests a broader interpretive lens through which to view deep neural networks themselves. This section outlines that perspective. It is offered as a conceptual framing, not as a theorem.
+
+\subsection{Each Layer as a Partition of Input Space}
+
+A feedforward neural network with piecewise-linear activations (ReLU, leaky ReLU) can be understood as recursively partitioning its input space. Each neuron with ReLU activation defines a hyperplane; the collection of $N$ neurons in a layer partitions the input into at most $2^N$ linear regions~\cite{montufar2014}. Under this geometric interpretation, each layer \emph{classifies}---not in the sense of predicting a label, but in the sense of assigning each input to a region of a partition. The assignment propagates through successive layers, with each layer refining the partition induced by the previous one. A deep network is therefore a \textbf{hierarchical classification system}: each layer classifies its input into exponentially many regions, and the final softmax layer maps the terminal region to a probability distribution over output classes.
+
+This perspective resonates with several established ideas. Hinton's capsule networks~\cite{sabour2017capsules} explicitly model part-whole hierarchies where lower layers detect components and higher layers detect wholes. Hierarchical mixtures of experts~\cite{jordan1994hierarchical} route inputs through a tree of classifiers, with each node deciding which sub-expert to consult. Deep neural decision forests~\cite{kontschieder2015deep} unify decision trees with deep networks by making each split node a differentiable classifier. The hierarchical classification lens connects these threads under a single geometric intuition.
+
+\subsection{SCX as Explicit Taxonomy Construction}
+
+The SCX framework operationalizes this perspective. Where a standard neural network learns its partition implicitly through gradient descent on a task objective, SCX makes the partition explicit at a chosen layer of representation. The two-layer state discovery procedure---domain-knowledge features followed by error-driven encoding---constructs a \textbf{taxonomy} of the data: a partition into states within which expert behavior is approximately homogeneous. The multi-expert consistency test then evaluates how reliably different experts (themselves neural networks with their own implicit partitions) perform on each taxon.
+
+The data four-classification introduced in the SCX framework---classifying samples as valuable, redundant, noisy, or expert-dependent---is a form of \textbf{meta-classification}. Rather than predicting the target variable $y$, it classifies data points according to their utility to the model. This meta-classification operates on top of the explicit taxonomy constructed by state discovery: within each state, samples are further partitioned by their contribution to model performance.
+
+\subsection{A Revised Notion of Interpretability}
+
+The dominant paradigm of explainable AI (XAI) asks: ``Why did the model predict $y$ for this specific input $x$?'' It seeks post-hoc justifications for individual predictions~\cite{lundberg2017shap,ribeiro2016lime}. The SCX framework, viewed through the hierarchical classification lens, suggests a complementary form of interpretability: not explaining individual predictions, but \textbf{revealing the structural logic} by which the model organizes its input space.
+
+SCX does not trace the full classification path from input to output. It reveals the classification profile at one particular layer---the state-conditioned partition---and characterizes expert behavior within each region of that partition. The interpretability offered is of a different kind: not ``why this prediction?'' but ``what groups does the model implicitly recognize, and how reliably does it handle each group?''
+
+This form of interpretability is particularly relevant for scientific machine learning, where understanding model behavior across physically meaningful regimes (thermal, equilibrium, defect-rich) is often more valuable than explaining any single prediction.
+
+\subsection{Limitations of the Perspective}
+
+Three caveats are essential. First, the claim that ``each layer classifies'' is geometric intuition, not a mathematical theorem for arbitrary architectures. Attention mechanisms perform dynamic routing rather than spatial partitioning; residual connections create shortcuts that violate strict tree structure (though they can be reconciled by viewing the network as a classification lattice rather than a tree); batch normalization and dropout introduce stochasticity that blurs partition boundaries.
+
+Second, making a partition explicit changes it. The SCX state discovery procedure uses $k$-means clustering on feature representations, which may not recover the exact implicit partition that the network learned. The explicit taxonomy is an \textbf{approximation} to the implicit one, and the approximation quality depends on feature strength (Theorem~2).
+
+Third, this perspective should not be oversold as ``solving interpretability.'' It addresses one dimension---structural transparency---while leaving others (counterfactual reasoning, causal attribution, fairness) to complementary methods. It is a useful lens, not a complete theory.
+
+% ======================================================================
+\section{SCX as a Shared Research Framework}
+% ======================================================================
+
+The SCX framework is released as an open academic contribution: all theorems are fully proven, all assumptions are explicitly stated, and all protocols are documented for independent reproduction. The mathematical results---being theorems rather than products---cannot be restricted by licensing or export control. They are available to any researcher, institution, or practitioner who wishes to apply them.
+
+The six domains surveyed here represent an initial validation of the framework's universality. Extending SCX to additional domains---climate science, materials discovery, genomics, among others---requires domain-specific feature engineering and experimental validation, work that exceeds the capacity of any single group. We hope that the framework's transparency and explicit assumption catalog will facilitate such extensions by the broader scientific community.
+
+% ======================================================================
+\section{Conclusion}
+% ======================================================================
+
+The SCX framework provides the first mathematically complete theory of data quality assessment, spanning fundamental impossibility results (Theorem~3), provable detection guarantees with exponential convergence (Theorem~1), exact constant minimax optimality (Theorem~4'), and practical diagnostics for failure modes (Theorem~2, Proposition~6). This review has demonstrated the framework's universality across six diverse domains, from materials science and drug discovery to computer vision and autonomous driving.
+
+Three cross-cutting principles emerge. First, data quality is not a preprocessing step---it requires runtime expertise. Premature cleaning, operating in the dark of Theorem~3's unidentifiability, is provably suboptimal. Second, the curation-exploration tradeoff is a new scientific principle in data-centric ML, with a phase transition governed by feature strength. Third, the SCX framework's self-diagnosis capability---its ability to signal when it cannot help---is as important as its optimality guarantees.
+
+The range of domains surveyed underscores a practical observation: the theoretical principles governing data quality---the unidentifiability of noise and difficulty, the exponential convergence of consensus, the optimality of adaptive thresholding---are domain-independent. An AlN crystal and a chest X-ray obey the same statistical regularities when it comes to distinguishing noise from difficulty. This universality suggests that a common mathematical framework can serve multiple scientific communities, with domain-specific adaptation limited to feature engineering and experimental protocol.
+
+\begin{center}
+\rule{0.5\textwidth}{0.5pt}
+\end{center}
+
+\textbf{10}, 41 (2023).
+
+\bibitem{northcutt2021}
+Northcutt, C. G., Jiang, L. \& Chuang, I. L. Confident learning: Estimating uncertainty in dataset labels. \emph{Journal of Artificial Intelligence Research} \textbf{70}, 1373--1411 (2021).
+
+\bibitem{lipinski1997}
+Lipinski, C. A. \emph{et al.} Experimental and computational approaches to estimate solubility and permeability. \emph{Advanced Drug Delivery Reviews} \textbf{23}, 3--25 (1997).
+
+\bibitem{bickerton2012}
+Bickerton, G. R. \emph{et al.} Quantifying the chemical beauty of drugs. \emph{Nature Chemistry} \textbf{4}, 90--98 (2012).
+
+\bibitem{chembl}
+Mendez, D. \emph{et al.} ChEMBL: towards direct deposition of bioassay data. \emph{Nucleic Acids Research} \textbf{47}, D930--D940 (2019).
+
+\bibitem{bindingdb}
+Liu, T. \emph{et al.} BindingDB: a web-accessible database of experimentally determined protein--ligand binding affinities. \emph{Nucleic Acids Research} \textbf{35}, D198--D201 (2007).
+
+\bibitem{bahadur1960}
+Bahadur, R. R. \& Rao, R. R. On deviations of the sample mean. \emph{Annals of Mathematical Statistics} \textbf{31}, 1015--1027 (1960).
+
+\bibitem{chernoff1952}
+Chernoff, H. A measure of asymptotic efficiency for tests of a hypothesis based on the sum of observations. \emph{Annals of Mathematical Statistics} \textbf{23}, 493--507 (1952).
+
+\bibitem{hoeffding1963}
+Hoeffding, W. Probability inequalities for sums of bounded random variables. \emph{Journal of the American Statistical Association} \textbf{58}, 13--30 (1963).
+
+\bibitem{pinsker1964}
+Pinsker, M. S. \emph{Information and Information Stability of Random Variables and Processes.} Holden-Day (1964).
+
+\bibitem{vershynin2018}
+Vershynin, R. \emph{High-Dimensional Probability.} Cambridge University Press (2018).
+
+\bibitem{shamir2009}
+Shamir, O. \& Tishby, N. On the reliability of clustering stability in the large sample regime. \emph{NIPS 2008} (2009).
+
+\bibitem{landis1977}
+Landis, J. R. \& Koch, G. G. The measurement of observer agreement for categorical data. \emph{Biometrics} \textbf{33}, 159--174 (1977).
+
+\bibitem{dawid1979}
+Dawid, A. P. \& Skene, A. M. Maximum likelihood estimation of observer error-rates using the EM algorithm. \emph{Journal of the Royal Statistical Society Series C} \textbf{28}, 20--28 (1979).
+
+\bibitem{pollard1981}
+Pollard, D. Strong consistency of k-means clustering. \emph{Annals of Statistics} \textbf{9}, 135--140 (1981).
+
+\end{thebibliography}
+
+\textbf{Intellectual Property Statement.}
+The SCX software framework, including all algorithms, implementations, and experiment scripts described in this paper, was independently developed by the author and is released . Commercial use, proprietary deployment, and integration into production systems are subject to separate licensing terms available from the author. The mathematical theorems and proofs presented herein are in the public domain and cannot be the subject of patent claims. The AlN interatomic potential function and associated DFT reference data used in the materials science case study were provided by the author's academic advisor and are used with permission; these data remain the intellectual property of the research group that generated them.
+
+\textbf{Data Availability.}
+The AlN v3 dataset was provided by the author's research group and is available upon reasonable request and with permission of the data owner. CIFAR-10, DermaMNIST, and MedMNIST are publicly available benchmark datasets. DrugBank is available from go.drugbank.com.
+
+\textbf{Code Availability.}
+The SCX core framework is available at [repository] . Experiment reproduction scripts are included in the repository.
+
+\textbf{Competing Interests.}
+The author declares the following competing interests: the SCX software framework may be commercialized through a future entity. The author has no competing interests with respect to the AlN data, which belong to the academic research group of the author's advisor.
+
+\end{document}
