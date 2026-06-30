@@ -1,41 +1,44 @@
-"""Append-only M-parameter registry for SCX audit declarations."""
+"""Append-only M-parameter registry for SCX audit declarations.
+
+共生绑定: M = first 20 bits of SHA-256(training data).
+M is not declared — it IS the data hash, truncated. Inseparable.
+"""
 
 from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
-from .m_parameter import compute_M_min
-
+from .m_parameter import derive_M_from_data_hash, verify_symbiotic_binding
 
 VERIFIED = "VERIFIED"
 DISCREPANCY = "DISCREPANCY"
 PENDING = "PENDING"
-
 Visibility = Literal["PUBLIC", "PRIVATE"]
 VerificationStatus = Literal["VERIFIED", "DISCREPANCY", "PENDING"]
 
 
 @dataclass(frozen=True)
 class MRegistryEntry:
-    """Single immutable declaration in the M-registry ledger."""
-
+    """Immutable M-registry declaration. M derived from data_hash."""
     sequence_id: int
     entity_id: str
     M: int
-    epsilon: float
-    delta: float
     domain: str
+    data_hash: str
     code_hash: str
-    data_manifest_hash: str
     visibility: Visibility
     commitment_hash: str
+    symbiotic: bool = field(default=True)
+
+    def verify_binding(self) -> bool:
+        return verify_symbiotic_binding(self.data_hash, self.M)
 
 
 class MRegistry:
-    """Public append-only ledger for M-parameter declarations."""
+    """Public append-only ledger. M is derived — never declared."""
 
     def __init__(self) -> None:
         self._ledger: list[MRegistryEntry] = []
@@ -43,138 +46,95 @@ class MRegistry:
     def register(
         self,
         entity_id: str,
-        M: int,
-        epsilon: float,
-        delta: float,
+        data_hash: str,
         domain: str,
         code_hash: str,
-        data_manifest_hash: str,
         visibility: Visibility = "PUBLIC",
     ) -> MRegistryEntry:
-        """Append a new M declaration to the registry ledger."""
+        """Register with symbiotically-derived M.
+
+        The declarer supplies the data hash. M is COMPUTED from it.
+        The declarer cannot choose M — cannot 挂羊头卖狗肉.
+        """
         visibility = _normalise_visibility(visibility)
         if not entity_id:
             raise ValueError("entity_id must be non-empty")
-        if M <= 0:
-            raise ValueError(f"M must be positive, got {M}")
-        if not 0.0 < epsilon < 1.0:
-            raise ValueError(f"epsilon must be in (0, 1), got {epsilon}")
-        if delta <= 0.0:
-            raise ValueError(f"delta must be > 0, got {delta}")
+        if not data_hash or len(data_hash) != 64:
+            raise ValueError("data_hash must be 64-char SHA-256 hex")
         if not domain:
             raise ValueError("domain must be non-empty")
         if not code_hash:
             raise ValueError("code_hash must be non-empty")
-        if not data_manifest_hash:
-            raise ValueError("data_manifest_hash must be non-empty")
 
-        commitment_hash = self.compute_hash(
-            M=M,
-            epsilon=epsilon,
-            delta=delta,
-            code=code_hash,
-            data_manifest=data_manifest_hash,
-        )
+        M = derive_M_from_data_hash(data_hash)
+        commitment = _symbiotic_hash(M, data_hash, code_hash)
+
         entry = MRegistryEntry(
             sequence_id=len(self._ledger),
             entity_id=str(entity_id),
             M=int(M),
-            epsilon=float(epsilon),
-            delta=float(delta),
             domain=str(domain),
+            data_hash=str(data_hash),
             code_hash=str(code_hash),
-            data_manifest_hash=str(data_manifest_hash),
             visibility=visibility,
-            commitment_hash=commitment_hash,
+            commitment_hash=commitment,
+            symbiotic=True,
         )
         self._ledger.append(entry)
         return entry
 
     def verify(self, entity_id: str) -> VerificationStatus:
-        """Verify the latest declaration for an entity."""
         entry = self._latest_entry(entity_id)
         if entry is None:
             return PENDING
-        return self._entry_status(entry)
-
-    @staticmethod
-    def compute_hash(
-        M: int,
-        epsilon: float,
-        delta: float,
-        code: Any,
-        data_manifest: Any,
-    ) -> str:
-        """Compute the SHA-256 commitment hash for an M declaration."""
-        payload = [
-            ("code", code),
-            ("data_manifest", data_manifest),
-            ("M", int(M)),
-            ("epsilon", float(epsilon)),
-            ("delta", float(delta)),
-        ]
-        digest = hashlib.sha256()
-        for label, value in payload:
-            digest.update(label.encode("utf-8"))
-            digest.update(b"\0")
-            digest.update(_canonical_bytes(value))
-            digest.update(b"\0")
-        return digest.hexdigest()
-
-    def get_public_registry(self) -> list[dict[str, Any]]:
-        """Return copies of PUBLIC ledger entries."""
-        return [
-            asdict(entry)
-            for entry in self._ledger
-            if entry.visibility == "PUBLIC"
-        ]
-
-    def complicity_index(self, reviewer_id: str) -> float:
-        """Return the fraction of a reviewer's declarations with issues.
-
-        In this minimal ledger, ``reviewer_id`` is matched against
-        ``entity_id`` declarations. Entities with no declarations have index 0.
-        """
-        entries = [e for e in self._ledger if e.entity_id == reviewer_id]
-        if not entries:
-            return 0.0
-        non_verified = sum(1 for entry in entries if self._entry_status(entry) != VERIFIED)
-        return float(non_verified / len(entries))
-
-    @property
-    def ledger(self) -> tuple[MRegistryEntry, ...]:
-        """Immutable view of all registry entries."""
-        return tuple(self._ledger)
-
-    def _latest_entry(self, entity_id: str) -> MRegistryEntry | None:
-        for entry in reversed(self._ledger):
-            if entry.entity_id == entity_id:
-                return entry
-        return None
-
-    @staticmethod
-    def _entry_status(entry: MRegistryEntry) -> VerificationStatus:
-        required_M = compute_M_min(entry.epsilon, entry.delta)
-        if entry.M < required_M:
+        if not entry.verify_binding():
             return DISCREPANCY
         return VERIFIED
 
+    def verify_data_substitution(
+        self, entity_id: str, actual_data_hash: str
+    ) -> VerificationStatus:
+        """Theorem 5: detect 挂羊头卖狗肉."""
+        entry = self._latest_entry(entity_id)
+        if entry is None:
+            return PENDING
+        return DISCREPANCY if entry.data_hash != actual_data_hash else VERIFIED
 
-def _normalise_visibility(visibility: str) -> Visibility:
-    value = str(visibility).upper()
-    if value not in {"PUBLIC", "PRIVATE"}:
-        raise ValueError("visibility must be 'PUBLIC' or 'PRIVATE'")
-    return value  # type: ignore[return-value]
+    def get_public_registry(self) -> list[dict[str, Any]]:
+        return [asdict(e) for e in self._ledger if e.visibility == "PUBLIC"]
+
+    def complicity_index(self, entity_id: str) -> float:
+        entries = [e for e in self._ledger if e.entity_id == entity_id]
+        if not entries:
+            return 0.0
+        bad = sum(1 for e in entries if not e.verify_binding())
+        return float(bad / len(entries))
+
+    @property
+    def ledger(self) -> tuple[MRegistryEntry, ...]:
+        return tuple(self._ledger)
+
+    def _latest_entry(self, entity_id: str) -> MRegistryEntry | None:
+        for e in reversed(self._ledger):
+            if e.entity_id == entity_id:
+                return e
+        return None
 
 
-def _canonical_bytes(value: Any) -> bytes:
-    if isinstance(value, bytes):
-        return value
-    if isinstance(value, str):
-        return value.encode("utf-8")
-    return json.dumps(
-        value,
-        sort_keys=True,
-        separators=(",", ":"),
-        default=str,
-    ).encode("utf-8")
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _symbiotic_hash(M: int, data_hash: str, code_hash: str) -> str:
+    d = hashlib.sha256()
+    for label, val in [("data", data_hash), ("code", code_hash), ("M", str(M))]:
+        d.update(label.encode()); d.update(b"\x00")
+        d.update(val.encode()); d.update(b"\x00")
+    return d.hexdigest()
+
+
+def _normalise_visibility(v: str) -> Visibility:
+    v = str(v).upper()
+    if v not in {"PUBLIC", "PRIVATE"}:
+        raise ValueError("visibility must be PUBLIC or PRIVATE")
+    return v  # type: ignore
