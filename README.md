@@ -1,109 +1,142 @@
 # SCX — State-Conditioned eXpertise
 
-SCX 是一个数学框架，用多专家共识检测数据中的标签噪声。核心发现：**老实人定理 (The Honest Person Theorem)**——噪声和困难在观测上不可区分。
+A mathematical framework for certifying data quality through multi-expert consensus. Every claim about data requires M independent verifiers. No M, no trust.
+
+## Core Discovery
+
+**Theorem 3 — The Honest Person Theorem (老实人定理):** Label noise and intrinsic sample difficulty are observationally indistinguishable without declared assumptions. No single expert (M=1) can tell them apart.
+
+**SCX Data Quality Bound (数据质量界):** F1 ≥ 1 − (1/η) Σ ρ_s · exp(−2M·Δ_s²). The multi-expert guarantee — exponential in M.
 
 ---
 
-## 📚 论文目录（27 篇）
+## Papers (41)
 
-### 核心理论（5 篇，严格形式化）
+### Core Theory (6)
+| Paper | Lines | Theorems | Key |
+|-------|-------|----------|-----|
+| Theorem 1 — Noise Detection | 685 | 1 | Hoeffding F1 bound |
+| Theorem 2 — Weak Features | 657 | 1 | Lipschitz failure bound |
+| Theorem 3 — Unidentifiability | 796 | 3 | Honest Person Theorem |
+| Theorem 4 — Exact Minimax | 898 | 1 | Bahadur-Rao sharp constant |
+| Taxonomic NN | 1,073 | 15 | ML derivation + flagship |
+| Yajie Protocol | 2,211 | 9 | Game theory: NPE + AAE + Audit Sword |
 
-| # | 论文                     | 目录                            | 核心内容                             | 定理 | 证明 |
-| - | ------------------------ | ------------------------------- | ------------------------------------ | ---- | ---- |
-| 1 | **scx_theory**     | `paper/arxiv/scx_theory/`     | Thm 1-4：噪声检测→极小极大最优      | 5    | ✅   |
-| 2 | **taxonomic_nn**   | `paper/arxiv/taxonomic_nn/`   | ML推导 +**老实人定理**（旗舰） | 15   | 22   |
-| 3 | **spring_config**  | `paper/arxiv/spring_config/`  | 自演化守门人 + Lyapunov 收敛         | 13   | 29   |
-| 4 | **situs_theory**   | `paper/arxiv/situs_theory/`   | 物理位置编码（Situs）                | 4    | ✅   |
-| 5 | **yajie_protocol** | `paper/arxiv/yajie_protocol/` | 博弈论：NPE + AAE + 审计之剑         | 9    | 14   |
+### Algorithm Theory (2)
+| Paper | Lines | Theorems | Key |
+|-------|-------|----------|-----|
+| Spring — Self-Evolving Gatekeeper | 1,365 | 13 | Lyapunov convergence, memory pruning |
+| Situs — Physical Position Encoding | 1,513 | 4 | Lipschitz encoding bound |
 
-### 应用与方法（6 篇）
+### Applications (12)
+| Domain | Lines | Key Insight |
+|--------|-------|------------|
+| Pseudopotential Distillation | 905 | PAW multi-functional audit |
+| CFD Aerodynamics | 1,047 | Turbulence model consensus |
+| Multi-Physics Coupling | 970 | Cross-domain error propagation |
+| Climate Modeling | 848 | ECS unidentifiability, CMIP6 audit |
+| Government Transparency | 1,207 | M-KPI, blame-shedding theorem |
+| Genomics | 1,462 | Variant pathogenicity consensus |
+| Personal Ethics | 966 | Honesty strictly dominant, 勿以恶小 |
+| Science Audit Manifesto | 644 | 5 theorems, M-Registry, Dark Forest |
+| Quantitative Finance | 1,790 | Model risk unidentifiability |
+| Macroeconomics | 2,594 | Lucas Critique formalized |
+| World Models | 1,326 | Cross-module physics audit |
+| Multi-Messenger Astronomy | 1,312 | Fisher-weighted Hoeffding |
 
-| #  | 论文                         | 目录                                | 核心内容                |
-| -- | ---------------------------- | ----------------------------------- | ----------------------- |
-| 6  | **scx_curation**       | `paper/arxiv/scx_curation/`       | 数据策展方法            |
-| 7  | **scx_method**         | `paper/arxiv/scx_method/`         | 实证锚定 + Cercis Score |
-| 8  | **scx_review**         | `paper/arxiv/scx_review/`         | 跨域综述                |
-| 9  | **scx_llm**            | `paper/arxiv/scx_llm/`            | SCX 与 LLM              |
-| 10 | **egp_merging**        | `paper/arxiv/egp_merging/`        | ACE 势函数合并          |
-| 11 | **situs_applications** | `paper/arxiv/situs_applications/` | 12 科学场景             |
+### New Domains (8)
+| Domain | Lines | Key Insight |
+|--------|-------|------------|
+| Legal Evidence | 955 | Multi-witness certification |
+| Educational Assessment | 984 | Grade inflation detection |
+| News Verification | 1,001 | Multi-source fact-checking |
+| Supply Chain Traceability | 915 | Hash chain from farm to shelf |
+| Cybersecurity | 1,048 | False alarm vs zero-day unidentifiability |
+| Electoral Integrity | 1,141 | Multi-method vote certification |
+| Medical Diagnosis | 1,710 | Multi-physician consensus, rare disease |
+| Blockchain Consensus | 1,238 | Fork boundary theorem, 51% attack |
 
-### 独立定理（13 篇，全部形式化）
+### ML History Audit (3)
+| Paper | Lines | Verdict |
+|-------|-------|--------|
+| SCX Lens (re-interpretation) | 1,206 | 14 algorithms re-derived from SCX |
+| SCX Inquisition (indictment) | 1,513 | 29 algorithms audited, 62% GUILTY |
+| SCX Verdict (merged definitive) | 2,050 | 29 algorithms, 14 theorems, 16 proofs |
 
-| #  | 缩写 | 文件                                      | 内容     | 定理 |
-| -- | ---- | ----------------------------------------- | -------- | ---- |
-| 12 | thm5 | `theorems/theorem5_active_learning.tex` | 主动学习 | 3    |
-| 13 | thm6 | `theorems/theorem6_protocol_game.tex`   | 协议博弈 | 3    |
-| 14 | thm7 | `theorems/theorem7_cross_domain.tex`    | 跨域迁移 | 2    |
-| 15 | cd   | `theorems/theorem_cd_causal.tex`        | 因果发现 | 3    |
-| 16 | fa   | `theorems/theorem_fa_federated.tex`     | 联邦审计 | 2    |
-| 17 | ar   | `theorems/theorem_ar_adversarial.tex`   | 对抗鲁棒 | 2    |
-| 18 | ts   | `theorems/theorem_ts_temporal.tex`      | 时序状态 | 3    |
-| 19 | hc   | `theorems/theorem_hc_human.tex`         | 人类协作 | 3    |
-| 20 | q    | `theorems/theorem_q_quantum.tex`        | 量子扩展 | 2    |
-| 21 | ae   | `theorems/theorem_ae_entropy.tex`       | 熵界     | 4    |
-| 22 | ac   | `theorems/theorem_ac_complexity.tex`    | 复杂度   | 3    |
-| 23 | ra   | `theorems/theorem_ra_recursive.tex`     | 递归自指 | 3    |
-| 24 | aa   | `theorems/theorem_aa_alignment.tex`     | 对齐     | 7    |
-
-### 元论文（3 篇）
-
-| #  | 论文                    | 文件                                            |
-| -- | ----------------------- | ----------------------------------------------- |
-| 25 | **SCX_MANIFESTO** | `paper/arxiv/meta/SCX_MANIFESTO.tex`          |
-| 26 | **SCX_HISTORY**   | `paper/arxiv/meta/SCX_HISTORY.tex`            |
-| 27 | **human_future**  | `paper/arxiv/yajie_protocol/human_future.tex` |
+### Additional (10)
+| Paper | Lines |
+|-------|-------|
+| Matrix Theory (SCX linear algebra) | 1,567 |
+| NV Center Quantum Sensing | 1,591 |
+| Philosophy of Science | 1,073 |
+| Philosophy of Law | 1,416 |
+| Philosophy of Education | 972 |
+| Situs Applications (12 domains) | — |
+| Independent Theorems (13 papers) | — |
+| EGP Merging (ACE potentials) | — |
+| Meta / SCX Manifesto | — |
+| SCX History | — |
 
 ---
 
-## 🧭 快速导航
+## Named Concepts
 
-| 想看什么        | 去这里                                     |
-| --------------- | ------------------------------------------ |
-| 所有论文        | `papers/` — 30篇论文，PDF+TeX           |
-| 旗舰定理（2页） | `papers/taxonomic_nn/theorem3_short.tex` |
-| 定理全景        | `theory/SCX_Undiscovered_Theorems.md`    |
-| 框架宣言        | `papers/meta/SCX_MANIFESTO.tex`          |
-| 完整故事        | `docs/SCX_HISTORY.md`                    |
-| 开发日志        | `docs/DEVELOPMENT_LOG.md`                |
-| 审计之剑        | `docs/AUDIT_SWORD.md`                    |
+| Name | Formula / Meaning |
+|------|-------------------|
+| SCX Data Quality Bound (数据质量界) | F1 ≥ 1 − (1/η)Σρ_s·e^(−2MΔ²) |
+| Expert Dilution Formula (专家稀释公式) | M_eff = M/(1+(M-1)ρ̄) |
+| SCX Axiom System (公理体系) | E1-E5 knowledge axioms |
+| Blame Shedding Theorem (甩锅定理) | Hash-chain precise attribution |
+| Mutton-Dressed-as-Lamb (羊头狗肉定理) | Data substitution attack infeasible |
+| Symbiotic Binding (共生绑定) | M = SHA-256(data)[:20] |
 
 ---
 
-## 💻 代码
+## Exploration Theorems (theory/explorations/)
+
+| Theorem | Status |
+|---------|--------|
+| LLM Hallucination Inevitability | \rigorFull |
+| Causal Unidentifiability (3 SCMs) | \rigorFull |
+| OOD Detection Lower Bound (δ_min = σ/√M) | \rigorFull |
+| Alignment M=1 Insufficiency (RLHF/Constitutional AI) | \rigorFull |
+| P≠NP Oracle Separation (constructive BGS) | \rigorFull + Conjecture |
+| Turbulence Unidentifiability (3 theorems, Burgers verified) | \rigorFull |
+| Quantum Measurement = Multi-Observer Consensus | \rigorFull |
+
+---
+
+## Code
 
 ```
-src/scx/       核心实现（yajie.py, spring.py, state/, expert/, valuation/）
-experiments/   CIFAR + MLIP 实验
-tests/         测试套件
-drug-module/   药物数据库筛选管线
+src/scx/        52 files  — Yajie, Spring, Situs, Cercis, M-Registry
+tests/          16 files  — 246 tests passing
+theory/          simulation_verify.py — 6/6 PASS
 ```
 
 ---
 
-## 📂 项目结构
+## Theory Status
 
-```
-papers/         ← 30篇论文（16个分类目录，.tex+.pdf）
-theory/         ← 定理 + 证明 + hostile review
-docs/           ← 项目文档 + 开发日志
-src/scx/        ← 核心代码
-experiments/    ← 实验数据
-knowledge/      ← Obsidian 知识库
-```
+- Simulation: 6/6 PASS (Lyapunov tracking error, noise decay, memory, F1, convergence)
+- Proof chain audit: updated with all fixes
+- Hostile review: Codex 569-line review → meta-review → all P0/P1/P2 fixed
 
 ---
 
-## 怎么读
+## How to Read
 
-1. 先读 `papers/meta/SCX_MANIFESTO.tex`（10分钟）—— 知道我们在做什么
-2. 再读 `papers/taxonomic_nn/theorem3_short.tex`（15分钟）—— 理解核心定理
-3. 深入：`papers/scx_theory/` → `papers/spring_config/` → `papers/yajie_protocol/`
-4. 想用代码：`src/scx/`
+1. `papers/scx_theory/` — The four core theorems
+2. `papers/taxonomic_nn/` — ML derivation + Honest Person Theorem
+3. `papers/spring_config/` — Self-evolving gatekeeper
+4. `papers/yajie_protocol/` — Game theory foundation
+5. `papers/scx_science_audit/` — Why all science needs M-declaration
+6. `papers/scx_ml_verdict/` — 70 years of ML on trial
 
 ---
 
-## 作者
+## Author
 
 SCX. 2026.
 
-所有论文署名 SCX，不包含学校或个人信息。详见 `docs/AUDIT_SWORD.md`。
+All papers attributed to SCX. No institutional affiliation. No personal information. No vendor references.

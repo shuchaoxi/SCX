@@ -1,7 +1,26 @@
 # SCX Development Log — 2026-06-30
 
 ## Summary
-41 papers. Theory 6/6 PASS. Code implemented. All personal traces removed.
+41 papers. Theory 6/6 PASS. Code implemented. All personal traces removed. All 7 exploration theorems rigorously formalized. CN→EN translation complete.
+
+## Late Session: Formalization & Translation
+- Turbulence: all 3 proof sketches upgraded to \rigorFull. Detector impossibility corollary added.
+- Causal unidentifiability: \rigorFull added to SCM construction proof
+- OOD detection: \rigorFull added to Hoeffding bound proof
+- Turbulence "why nobody thought of this" section: LES, RNG, decimation, Smagorinsky precedents + preemptive rebuttals
+- Burgers numerical verification: all 3 experiments pass. h_* intersection scale confirmed, -5/3 from filter transition, 3-world indistinguishability
+- CN→EN translation: 95%+ Chinese removed across all papers
+- README.md rewritten with current state
+- scx-health deleted (merged into scx-life)
+
+## Final State
+- 41 papers across all domains
+- 7 exploration theorems all \rigorFull
+- 5 named concepts (数据质量界, 专家稀释, 公理体系, 甩锅, 羊头狗肉)
+- 290 total commits, author SCX
+- GitHub clean: no personal info, no CC/Claude traces, no Obsidian
+- 6/6 simulation PASS
+- All 3 Burgers verification experiments pass
 
 ## Theory Audit & Fixes
 - Codex hostile review (569 lines) → meta-review → P0/P1/P2 fixes
