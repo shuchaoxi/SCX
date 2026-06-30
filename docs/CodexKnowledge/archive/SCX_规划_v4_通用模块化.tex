@@ -1,0 +1,756 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{ctexart}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{SCX}
+\date{2026}
+
+\begin{document}
+
+\section{SCX v4.0 规划 ---
+通用模块化架构}\label{scx-v4.0-ux89c4ux5212-ux901aux7528ux6a21ux5757ux5316ux67b6ux6784}
+
+\begin{quote}
+生成时间：2026-06-26 来源：GPT 深度讨论
+(\texttt{与gpt的对话202606261332.md}, 5814行)
+核心命题：``框架还是需要更通用一些，避免一直加模块迭代麻烦，应该模块化，不同的行业可以调用相同的代码''
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0. 愿景}\label{ux613fux666f}
+
+\textbf{SCX 是一个领域无关的状态条件专家性框架，通过声明式配置 +
+编码器插件适配任意数据域。}
+
+这不是一个''工具箱''式的框架------而是通过统一决策结构
+\texttt{x\ →\ s(x)\ →\ \{Q,N,D,R,V\}\ →\ a\ →\ o\ →\ update}
+将不同行业的''数据价值判断''问题抽象为同一个数学问题。不同领域只需要更换状态编码器（encoder）和声明式配置（YAML），核心的评估、路由、动作逻辑完全复用。
+
+\begin{quote}
+\textbf{SCX for Good Data, Good Models, Good Decisions.}
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1. 当前问题}\label{ux5f53ux524dux95eeux9898}
+
+\subsubsection{1.1 每加一个领域写一个
+adapter，代码重复}\label{ux6bcfux52a0ux4e00ux4e2aux9886ux57dfux5199ux4e00ux4e2a-adapterux4ee3ux7801ux91cdux590d}
+
+当前 SCX v0.3.0 已有 MLIP (ACE descriptor)、Health
+(MedMNIST/DINO)、CIFAR (ResNet) 三个方向的实验代码。但每个方向的 encoder
+实现、数据加载流程、评估 pipeline
+都是\textbf{单独编写}的，接口不统一。新增一个领域需要从头实现：
+
+\begin{itemize}
+\tightlist
+\item
+  State encoder（有自己的接口约定）
+\item
+  Expert wrapper（每个 expert 的调用方式不同）
+\item
+  数据价值评估逻辑（被硬编码在具体模块中）
+\item
+  实验 pipeline（每个方向一套脚本）
+\end{itemize}
+
+\subsubsection{1.2 接口不统一}\label{ux63a5ux53e3ux4e0dux7edfux4e00}
+
+MLIP 的 encoder 用 ACE descriptor 输出向量，Vision 的 encoder 用
+DINO/CLIP/ViT 输出 embedding，它们之间没有公共抽象基类。导致：
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{scx/state/} 中的 clustering/statistics 逻辑与具体 encoder 耦合
+\item
+  \texttt{scx/valuation/} 中的价值函数假设了特定的状态表示格式
+\item
+  \texttt{scx/expert/} 中的专家路由逻辑需要为每个领域单独适配
+\end{itemize}
+
+\subsubsection{1.3
+配置散落各处}\label{ux914dux7f6eux6563ux843dux5404ux5904}
+
+\begin{itemize}
+\tightlist
+\item
+  阈值参数写在代码里（如 \texttt{error\_high=0.05}）
+\item
+  专家注册信息分散在各个模块
+\item
+  数据集路径、模型参数、实验配置没有统一管理
+\item
+  无法通过一份配置文件完整描述一个 SCX 任务
+\end{itemize}
+
+\subsubsection{1.4
+商业上不可复制}\label{ux5546ux4e1aux4e0aux4e0dux53efux590dux5236}
+
+当前的架构意味着每服务一个行业客户，都需要大量定制开发。无法快速生成''试点→审计报告→私有部署''的标准流程。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2. 目标架构}\label{ux76eeux6807ux67b6ux6784}
+
+\subsubsection{2.1
+核心抽象：三层分离}\label{ux6838ux5fc3ux62bdux8c61ux4e09ux5c42ux5206ux79bb}
+
+\begin{verbatim}
+┌─────────────────────────────────────────────────────┐
+│                   SCX Framework Core                 │
+│   (state assessment, valuation, routing, action)     │
+├─────────────────────────────────────────────────────┤
+│              SCXStateEncoder (Abstract)              │
+│   ┌──────────┬──────────┬──────────┬──────────┐      │
+│   │  MLIP    │  Vision  │ Tabular  │  Robot   │      │
+│   │  Encoder │  Encoder │  Encoder │  Encoder │      │
+│   └──────────┴──────────┴──────────┴──────────┘      │
+├─────────────────────────────────────────────────────┤
+│              SCX Config (YAML / dict)                │
+│   domains/ ── mlip.yaml, health.yaml, cifar.yaml     │
+└─────────────────────────────────────────────────────┘
+\end{verbatim}
+
+\textbf{第一层：SCX Framework Core} --- 完全领域无关
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{SCXStateEncoder} 抽象基类：定义 \texttt{featurize()},
+  \texttt{distance()}, \texttt{get\_state()},
+  \texttt{state\_statistics()} 接口
+\item
+  \texttt{SCXExpert} 抽象基类：定义 \texttt{predict()},
+  \texttt{confidence()}, \texttt{cost()} 接口
+\item
+  \texttt{SCXDataPoint} 抽象基类：定义统一的 data point 接口
+\item
+  价值评估、冗余检测、噪声识别、专家路由------全部只依赖抽象接口
+\item
+  \texttt{OnlineSCXFramework} 也使用抽象接口，不耦合具体 encoder
+\end{itemize}
+
+\textbf{第二层：Encoders（插件式）} --- 领域特定
+
+每个 encoder 继承 \texttt{SCXStateEncoder}，只需实现接口方法：
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2222}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Encoder
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+输入
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+输出
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+方法
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{MLIPEncoder} & 原子构型 & ACE/SOAP fingerprint &
+\texttt{featurize()} \\
+\texttt{VisionEncoder} & 图像 & DINO/CLIP/ViT embedding &
+\texttt{featurize()} \\
+\texttt{TabularEncoder} & 表格数据 & 归一化特征向量 &
+\texttt{featurize()} \\
+\texttt{TrajectoryEncoder} & 机器人轨迹 & 视觉-动作-接触 embedding &
+\texttt{featurize()} \\
+\texttt{SimulationEncoder} & 网格/几何 & mesh embedding &
+\texttt{featurize()} \\
+\texttt{TextEncoder} & 文本 & LLM embedding & \texttt{featurize()} \\
+\end{longtable}
+
+\textbf{第三层：Config（声明式配置）} --- YAML 描述完整任务
+
+每个领域一个 YAML 文件，包含： - 数据路径/格式 - encoder 类型和参数 -
+专家定义（模型路径/调用方式） - SCX 阈值和策略参数 - 输出报告模板
+
+\subsubsection{2.2
+统一决策结构}\label{ux7edfux4e00ux51b3ux7b56ux7ed3ux6784}
+
+所有领域共享相同的核心逻辑：
+
+\begin{verbatim}
+x → s(x) → {Q(x|s), N(x|s), D(x|s), R_e(s), V(x|s)} → a*(x) → o → update
+\end{verbatim}
+
+也就是： - \textbf{x}: 原始数据点（构型、图像、轨迹、仿真点） -
+\textbf{s(x)}: 状态编码（通过 encoder 映射到状态空间） - \textbf{Q}:
+质量评分（数据完整性、信号质量） - \textbf{N}:
+噪声/异常风险（是否可能坏数据） - \textbf{D}:
+冗余度（该状态已有多少数据） - \textbf{R\_e(s)}: 专家 e 在状态 s
+的可靠性 - \textbf{V(x\textbar s)}: 数据点的条件价值 - **a*(x)\textbf{:
+最优动作（keep/compress/relabel/route/high-fidelity/monitor） -
+}o\textbf{: 动作后的真实结果反馈 - }update**: SCX
+在线校准和状态数据库更新
+
+\subsubsection{2.3 与 SCX-Monitor
+的关系}\label{ux4e0e-scx-monitor-ux7684ux5173ux7cfb}
+
+通用模块化架构自然支持在线模式：
+
+\begin{verbatim}
+离线审计 (SCX-Audit) : 历史数据 → 状态编码 → 价值审计报告
+在线监测 (SCX-Monitor): 实时数据流 → 状态编码 → 风险/可信度 → 动作建议
+闭环校准 (SCX-Learn) : 动作 → 结果反馈 → 数据库更新 → 策略进化
+\end{verbatim}
+
+三种模式共享相同的抽象接口，只是输入源不同。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3. 分阶段路线}\label{ux5206ux9636ux6bb5ux8defux7ebf}
+
+\subsubsection{Phase A: 核心重构 (2-4 周) 🔴
+P0}\label{phase-a-ux6838ux5fc3ux91cdux6784-2-4-ux5468-p0}
+
+\textbf{目标}：定义抽象接口，将现有代码解耦，证明重构后的代码能通过 336
+tests。
+
+\textbf{交付物}： - {[} {]} \texttt{SCXStateEncoder} /
+\texttt{SCXExpert} / \texttt{SCXDataPoint} 抽象基类定义 - {[} {]}
+\texttt{encoders/} 目录，包含 \texttt{mlip/} \texttt{vision/}
+\texttt{tabular/} 三个初始 encoder - {[} {]} 现有 \texttt{scx/state/}
+\texttt{scx/expert/} \texttt{scx/valuation/} \texttt{scx/action/}
+重构为只依赖抽象接口 - {[} {]} \texttt{domains/} 目录，包含
+\texttt{mlip.yaml} \texttt{health.yaml} \texttt{cifar.yaml} 三个示例配置
+- {[} {]} 所有 336 tests 通过，无回归
+
+\textbf{具体任务}：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{定义抽象基类} (3 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{SCXStateEncoder}：\texttt{featurize()}, \texttt{distance()},
+    \texttt{get\_state()}, \texttt{state\_statistics()}
+  \item
+    \texttt{SCXExpert}：\texttt{predict()}, \texttt{confidence()},
+    \texttt{cost()}, \texttt{metadata}
+  \item
+    \texttt{SCXDataPoint}：\texttt{features}, \texttt{label},
+    \texttt{meta}, \texttt{state}
+  \item
+    类型标注 + 文档字符串 + 抽象方法检查
+  \end{itemize}
+\item
+  \textbf{提取现有 encoder} (3 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    从 \texttt{experiments/mlip\_case/} 提取 \texttt{MLIPEncoder}（ACE
+    descriptor）
+  \item
+    从 \texttt{scx-health/} 提取 \texttt{VisionEncoder}（DINO/CLIP/ViT）
+  \item
+    从 \texttt{experiments/cifar/} 提取 \texttt{CIFAREncoder}
+  \item
+    每个 encoder 单独模块，可独立 import
+  \end{itemize}
+\item
+  \textbf{重构核心模块} (5 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{scx/state/}：state discovery 使用 \texttt{SCXStateEncoder}
+    接口
+  \item
+    \texttt{scx/expert/}：expert registry 使用 \texttt{SCXExpert} 接口
+  \item
+    \texttt{scx/valuation/}：价值函数使用统一 DataPoint 和 State 类型
+  \item
+    \texttt{scx/action/}：动作决策器使用抽象接口
+  \item
+    \texttt{scx/core/online.py}：OnlineSCXFramework 同样解耦
+  \end{itemize}
+\item
+  \textbf{创建声明式配置原型} (2 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    定义 YAML schema
+  \item
+    实现 \texttt{ConfigLoader.from\_yaml(path)} → \texttt{SCXConfig}
+  \item
+    三个示例配置：\texttt{mlip.yaml}, \texttt{health.yaml},
+    \texttt{cifar.yaml}
+  \end{itemize}
+\item
+  \textbf{验证} (2 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    全部 336 tests 通过
+  \item
+    每个领域的 demo notebook 可运行
+  \item
+    代码覆盖率不下降
+  \end{itemize}
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Phase B: 声明式配置 (2-3 周) 🟡
+P1}\label{phase-b-ux58f0ux660eux5f0fux914dux7f6e-2-3-ux5468-p1}
+
+\textbf{目标}：实现 YAML → SCXFramework 自动构建，CLI 接口。
+
+\textbf{交付物}： - {[} {]}
+\texttt{scx\ run\ -\/-config\ domains/mlip.yaml} CLI - {[} {]}
+自动报告生成（从配置 + 结果 → 审计报告模板） - {[} {]}
+新增领域的步骤减少到：写 YAML + 写 Encoder
+
+\textbf{具体任务}：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{YAML 配置解析器完善} (3 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    支持嵌套专家定义、encoder 参数、阈值策略
+  \item
+    支持数据路径映射（本地/SSHFS/远端）
+  \item
+    配置验证 + 错误提示
+  \end{itemize}
+\item
+  \textbf{Framework 自动构建} (3 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{SCXFramework.from\_config(config)} 工厂方法
+  \item
+    自动注册 encoder、experts、策略模块
+  \item
+    自动构建实验 pipeline
+  \end{itemize}
+\item
+  \textbf{CLI 设计} (2 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{scx\ run} --- 运行完整审计
+  \item
+    \texttt{scx\ config-check} --- 验证配置文件
+  \item
+    \texttt{scx\ list-encoders} --- 列出可用 encoder
+  \item
+    \texttt{scx\ list-experts} --- 列出已注册专家
+  \end{itemize}
+\item
+  \textbf{审计报告自动生成} (3 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    标准化报告模板（状态覆盖图 + 冗余分析 + 噪声风险 + 专家可靠性矩阵 +
+    动作建议）
+  \item
+    Markdown/PDF/HTML 输出
+  \item
+    可视化自动生成
+  \end{itemize}
+\item
+  \textbf{文档 + demo} (2 天)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    编写 encoder 开发指南
+  \item
+    编写 YAML 配置参考
+  \item
+    端到端 demo notebook
+  \end{itemize}
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Phase C: 新领域扩展 (4-8 周) 🟡
+P1}\label{phase-c-ux65b0ux9886ux57dfux6269ux5c55-4-8-ux5468-p1}
+
+\textbf{目标}：用新的抽象接口快速适配 3 个新领域，验证框架的通用性。
+
+\textbf{交付物}： - {[} {]} SCX-Robot: TrajectoryEncoder + robot.yaml -
+{[} {]} SCX-FEM: SimulationEncoder + fem.yaml - {[} {]} SCX-LLM:
+TextEncoder + llm.yaml (minimal)
+
+\textbf{具体任务}：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{SCX-Robot} (2-3 周)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    用 LeRobot 公开数据 / Open X-Embodiment 子集
+  \item
+    \texttt{TrajectoryEncoder}：融合视觉 embedding + 关节状态 + 接触力 +
+    成功/失败信号
+  \item
+    成功/失败状态分类、冗余轨迹压缩、失败状态挖掘
+  \item
+    对比：full-data vs SCX-selected vs random 在 imitation policy
+    上的表现
+  \item
+    ⚠ 不需真实机器人，只用公开数据集
+  \end{itemize}
+\item
+  \textbf{SCX-FEM / PDE} (2-3 周)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    用 PDEBench 或自生成弹性/热传导数据
+  \item
+    \texttt{SimulationEncoder}：网格/几何/响应 embedding
+  \item
+    多保真调度：粗网格 vs 细网格，surrogate 可靠性判断
+  \item
+    对比：SCX 多保真调度 vs 全细网格 vs 全粗网格
+  \end{itemize}
+\item
+  \textbf{SCX-LLM (minimal)} (1-2 周)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{TextEncoder}：LLM embedding + 任务类型编码
+  \item
+    不是做通用 LLM judge，而是做''可验证任务的数据价值评估''
+  \item
+    聚焦数学/代码/逻辑等有 verifier 的方向
+  \item
+    极小验证：证明 SCX 可以区分有价值/冗余/噪声的 instruction 数据
+  \end{itemize}
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Phase D: 插件系统 (长期) 🟢
+P2}\label{phase-d-ux63d2ux4ef6ux7cfbux7edf-ux957fux671f-p2}
+
+\textbf{目标}：将 compress/online/influence
+等模块重构为可插拔插件，建立社区贡献指南。
+
+\textbf{交付物}： - {[} {]} 插件注册机制 - {[} {]}
+compress/online/influence 插件化 - {[} {]} 社区贡献 guide + CLA - {[}
+{]} SCX-Bench 标准化
+
+\textbf{具体任务}：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{插件注册机制} (1 周)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{scx.plugins.register()} 装饰器
+  \item
+    插件发现：自动扫描 \texttt{scx\_contrib/} 目录
+  \item
+    插件沙箱：版本检查、依赖声明
+  \end{itemize}
+\item
+  \textbf{核心模块插件化} (2 周)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{SCXCompress} 从硬编码变为插件
+  \item
+    \texttt{OnlineSCXFramework} 从硬编码变为插件
+  \item
+    \texttt{StateConditionedInfluence} 从硬编码变为插件
+  \item
+    保留默认实现，允许第三方替换
+  \end{itemize}
+\item
+  \textbf{社区基础设施} (1 周)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    CONTRIBUTING.md
+  \item
+    CLA 模板
+  \item
+    Issue/PR 模板
+  \item
+    开发者文档
+  \end{itemize}
+\item
+  \textbf{SCX-Bench 标准化} (2 周)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{benchmark.run(method,\ dataset)\ →\ results} API
+  \item
+    5-10 数据集集成
+  \item
+    Baseline 集成：Random, Uncertainty, Diversity, Shapley, LESS,
+    Coreset, SCX
+  \item
+    自动 Leaderboard
+  \end{itemize}
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{4. 商业模式映射}\label{ux5546ux4e1aux6a21ux5f0fux6620ux5c04}
+
+从 GPT 讨论中提取不同行业的收费模式，统一为''数据价值审计 +
+私有部署''三层产品结构。
+
+\subsubsection{4.1
+行业产品矩阵}\label{ux884cux4e1aux4ea7ux54c1ux77e9ux9635}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1875}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1875}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2812}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3438}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+行业
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+产品
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+定价锚点
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Pilot 报价
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+MLIP/DFT & SCX-Potential Compiler & 节省核时（DFT 计算成本） & 2-10
+万 \\
+医学图像 & SCX-Health Audit & 节省标注成本 & 10-50 万 \\
+机器人 & SCX-Robot Data Audit & 节省遥操作/真机时间 & 10-30 万 \\
+工程仿真 & SCX-FEM Scheduler & 节省仿真时间（高保真计算） & 5-15 万 \\
+半导体 & SCX-Semi OPC Router & 节省 EDA license 费用 & 30-100 万(toy) \\
+工业质检 & SCX-Vision Audit & 减少人工复检量 & 10-50 万 \\
+3D 打印 & SCX-AM Audit & 减少打样次数 & 10-30 万 \\
+\end{longtable}
+
+\subsubsection{4.2
+三层收费结构}\label{ux4e09ux5c42ux6536ux8d39ux7ed3ux6784}
+
+\begin{verbatim}
+第一层：SCX Audit 审计报告
+  客户给数据 → 跑 SCX → 交报告 + selected dataset + 训练对比
+  收费：项目制（10-50 万/次）
+
+第二层：SCX Private Deployment 私有部署
+  客户数据敏感 → 本地部署 SCX-Core + domain encoder + dashboard
+  收费：年费（50-300 万/年）
+
+第三层：SCX Platform 平台授权
+  多项目使用 → API/CLI/dashboard + 企业数据不出域
+  收费：License（100-1000 万/年）
+\end{verbatim}
+
+\subsubsection{4.3 中立定位}\label{ux4e2dux7acbux5b9aux4f4d}
+
+SCX
+的核心商业价值在于\textbf{中立性}------它是跨行业的数据价值审计标准层，不应被单一企业绑定。通过三层权益设计保护客户隐私和
+SCX 核心：
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+层级 & 归属 & 是否进入 SCX 总库 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+原始数据 & 客户 & 不进入 \\
+脱敏状态统计 & 合同约定 & 可选择进入 \\
+通用算法改进 & SCX & 保留 \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{5.
+与论文谱系的关系}\label{ux4e0eux8bbaux6587ux8c31ux7cfbux7684ux5173ux7cfb}
+
+SCX v4 通用模块化架构将直接受益 5 篇论文谱系：
+
+\subsubsection{5.1 EGP Paper 1: ACE gauge
+merging}\label{egp-paper-1-ace-gauge-merging}
+
+EGP Paper 1 的 ACE 专家合并经验直接启发了通用架构中的 \texttt{SCXExpert}
+设计------专家不是黑盒，而是有 gauge、有 domain certificate、有
+reliability map 的可组合模块。通用架构中的 Encoder 设计也受益于 ACE
+descriptor 的实际经验。
+
+\subsubsection{5.2 SCX-Theory}\label{scx-theory}
+
+通用架构中的统一决策结构直接反映了 SCX-Theory 的数学命题： -
+状态条件专家性（State-conditioned expertise） -
+数据价值状态条件性（Value is state-conditioned） -
+压缩保真定理（Compression fidelity） - 专家治理协议（Expert governance
+protocol）
+
+\subsubsection{5.3 SCX-MLIP}\label{scx-mlip}
+
+重构后的 \texttt{MLIPEncoder} 和 \texttt{SCXExpert} 接口将使 SCX-MLIP
+实验更容易复现和扩展------不同势函数（ACE/NEP/MACE/DeepMD）统一通过
+\texttt{SCXExpert} 接口注册，状态条件路由和蒸馏直接使用通用框架。
+
+\subsubsection{5.4 SCX-Sim / FEM}\label{scx-sim-fem}
+
+通用架构中的 \texttt{SimulationEncoder} 将 FEM 多保真调度变为''换一个
+encoder + 写一份 YAML''的工作量。SCX-Sim
+论文可以专注于''多保真调度''的科学贡献，而不是工程实现。
+
+\subsubsection{5.5 SCX-Health}\label{scx-health}
+
+\texttt{VisionEncoder} 统一了医学图像和自然图像的 encoder
+接口。SCX-Health
+实验可以在通用架构上直接运行，且可以自然扩展到工业视觉等其他图像领域。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6. 架构演进路径}\label{ux67b6ux6784ux6f14ux8fdbux8defux5f84}
+
+\begin{verbatim}
+v0.3.0 (当前)           v0.4.0 (Phase A)         v0.5.0 (Phase B)         v0.6.0 (Phase C/D)
+───────────             ─────────────             ─────────────             ─────────────
+
+紧耦合                 抽象接口 + Encoder        YAML 驱动                插件系统
+各领域独立pipeline     核心模块解耦              CLI 接口                  社区贡献
+配置散落代码            3 领域示例              自动报告                   Benchmark
+                      336 tests 通过            encoder 开发指南          插件注册
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{7. 风险与缓解}\label{ux98ceux9669ux4e0eux7f13ux89e3}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3750}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+风险
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+严重程度
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+缓解措施
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+过度抽象导致灵活性下降 & 🟡 中 & 保留 \texttt{CustomEncoder}
+逃生口，允许直接操作原始特征 \\
+重构破坏现有实验复现 & 🔴 高 & 每个重构步骤保持 backward compat + test
+覆盖 \\
+MLIP 特殊需求无法被通用接口覆盖 & 🟡 中 & MLIP 特有的 gauge alignment
+作为可选插件 \\
+新领域 encoder 开发成本高于预期 & 🟡 中 & 先用最简单的 embedding（如
+flatten + PCA）做最小可行版本 \\
+论文审稿人质疑''框架论文''没有足够实验 & 🟡 中 &
+论文重心放在具体实验（MLIP/Health/Sim），不单独发''框架 paper'' \\
+商业落地慢于预期 & 🟢 低 & 通用架构反而降低定制成本，加速 pilot 交付 \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{8. 一句话总结}\label{ux4e00ux53e5ux8bddux603bux7ed3}
+
+\begin{quote}
+\textbf{SCX v4 将从一个''各领域各写一套 adapter 的框架''进化成''换
+encoder + 写 YAML
+就能适配任意数据域的通用数据价值审计平台''，核心代码完全复用，商业交付效率提升
+5-10 倍。}
+\end{quote}
+
+\end{document}

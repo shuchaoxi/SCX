@@ -1,0 +1,252 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{ctexart}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{SCX}
+\date{2026}
+
+\begin{document}
+
+\section{SCX
+核心数学定义速查}\label{scx-ux6838ux5fc3ux6570ux5b66ux5b9aux4e49ux901fux67e5}
+
+\begin{quote}
+内容来源：AI 对话（2026-06-25），待形式化整理到 \texttt{theory/} 目录
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1. 问题设定}\label{ux95eeux9898ux8bbeux5b9a}
+
+设： - 输入空间 X，标签空间 Y - 未知真实标注函数 f*: X → Y - M 个专家 E
+= \{f\_1, f\_2, \ldots, f\_M\} - 状态映射 s: X → S（或软分配
+p(s\textbar x)） - 表示映射 φ: X → R\^{}d
+
+\subsection{2. 核心对象}\label{ux6838ux5fc3ux5bf9ux8c61}
+
+\subsubsection{Definition 1: State-Conditioned Expert
+Risk}\label{definition-1-state-conditioned-expert-risk}
+
+\begin{verbatim}
+R_m(s) = E_{x~P(·|s)} [ ℓ(f_m(x), f*(x)) ]
+\end{verbatim}
+
+专家的风险不是全局量 R\_m，而是状态条件量 R\_m(s)。
+
+\subsubsection{Definition 2: SCX
+Reliability}\label{definition-2-scx-reliability}
+
+\begin{verbatim}
+SCX_m(s) = P( ℓ(f_m(x), y) < τ | x ∈ s )
+\end{verbatim}
+
+即专家 m 在状态 s 下做出可接受预测的概率。
+
+\subsubsection{Definition 3: State Data
+Value}\label{definition-3-state-data-value}
+
+\begin{verbatim}
+V(s) = r̄(s) · ρ(s) · L(s) · [1 - D(s)] · max_m SCX_m(s)
+\end{verbatim}
+
+其中： - \texttt{r̄(s)\ =\ E{[}ℓ(f(x),\ y)\ \textbar{}\ s{]}} ---
+当前模型在该状态的平均误差 - \texttt{ρ(s)\ =\ P(x\ ∈\ s)} ---
+状态出现概率/质量 - \texttt{L(s)} --- 可学习性（状态内一致、非噪声） -
+\texttt{D(s)} --- 冗余度（已充分覆盖程度）
+
+\subsubsection{Definition 4: Learnability
+Score}\label{definition-4-learnability-score}
+
+\begin{verbatim}
+L(s) = C(s) · [1 - N(s)]
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  C(s): 状态内一致性（标签一致、专家预测一致）
+\item
+  N(s): 噪声分数
+\end{itemize}
+
+\subsubsection{Definition 5: Noise Score (per
+sample)}\label{definition-5-noise-score-per-sample}
+
+\begin{verbatim}
+NoiseScore(x_i) = r_i · (1/ρ(s_i)+ε) · [1 - C(s_i)]
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  高误差 + 低密度 + 低一致性 → 更像噪声
+\item
+  高误差 + 高密度 + 高一致性 → 更像可学习困难状态
+\end{itemize}
+
+\subsection{3. 数据四分类}\label{ux6570ux636eux56dbux5206ux7c7b}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+类别
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+条件
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+动作
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Valuable} & r̄(s)↑, ρ(s)↑, C(s)↑, D(s)↓ & acquire \\
+\textbf{Redundant} & r̄(s)↓, ρ(s)↑, Coverage(s)↑ & skip \\
+\textbf{Noisy} & r(x)↑, ρ(s)↓, C(s)↓ & downweight/discard \\
+\textbf{Expert-dependent} & ∃m: R\_m(s) ≪ R\_n(s) for n≠m & route to
+expert m \\
+\end{longtable}
+
+\subsection{4. 专家路由}\label{ux4e13ux5bb6ux8defux7531}
+
+\begin{verbatim}
+m*(x) = arg min_m Σ_s γ_s(x) · R_m(s) + λ · C_m
+\end{verbatim}
+
+或权重形式：
+
+\begin{verbatim}
+w_m(x) ∝ exp( -α · Σ_s γ_s(x) · R̂_m(s) )
+\end{verbatim}
+
+\subsection{5. State-Wise Acquisition}\label{state-wise-acquisition}
+
+\begin{verbatim}
+s* = arg max_s  r̄(s) · ρ(s) · L(s) · [1 - D(s)]
+\end{verbatim}
+
+先选高价值状态，再在状态内选代表点。
+
+\subsection{6. 三个核心命题}\label{ux4e09ux4e2aux6838ux5fc3ux547dux9898}
+
+\subsubsection{Proposition 1: Global Expert Ranking
+Insufficiency}\label{proposition-1-global-expert-ranking-insufficiency}
+
+若存在 s₁, s₂ 使得：
+
+\begin{verbatim}
+R_a(s₁) < R_b(s₁)  但  R_a(s₂) > R_b(s₂)
+\end{verbatim}
+
+则不存在全局最优专家排序。专家选择必须状态条件化。
+
+\subsubsection{Proposition 2: High-Error Sampling Suboptimality under
+Noise}\label{proposition-2-high-error-sampling-suboptimality-under-noise}
+
+高误差集合 H = H\_learnable ∪ H\_noise。若：
+
+\begin{verbatim}
+P(ΔR < 0 | H_learnable) > P(ΔR < 0 | H_noise)
+\end{verbatim}
+
+则 max-residual sampling (x* = arg max r(x)) 浪费标注预算。 应改用
+state-value sampling (s* = arg max r̄(s)·ρ(s)·C(s))。
+
+\subsubsection{Proposition 3: State-Conditioned
+Weighting}\label{proposition-3-state-conditioned-weighting}
+
+最优专家权重不是全局常数，而是：
+
+\begin{verbatim}
+w_m(x) ∝ exp( -α · Σ_s γ_s(x) · R̂_m(s) )
+\end{verbatim}
+
+\subsection{7. 与材料 MLIP
+的实例化}\label{ux4e0eux6750ux6599-mlip-ux7684ux5b9eux4f8bux5316}
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+数学对象 & 材料实例 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+x & 原子结构/局域环境 \\
+y & DFT 能量/力 \\
+f\_m & ACE/NEP/MACE expert \\
+φ(x) & ACE/SOAP/描述符 \\
+s & sp², sp³, 断键, 表面, Al-Ga mixed, 高应变 \\
+R\_m(s) & expert 在该结构状态下的误差 \\
+acquire & 补 DFT 样本 \\
+relabel & DFT 仲裁 \\
+downweight & 清理坏点 \\
+route & 选择最合适的 expert 标注 \\
+\end{longtable}
+
+\subsection{8. 论文标题建议}\label{ux8bbaux6587ux6807ux9898ux5efaux8bae}
+
+\begin{quote}
+\textbf{SCX: State-Conditioned eXpertise for Data Valuation and
+Expert-Guided Learning}
+\end{quote}
+
+中文：\textbf{SCX：用于数据价值评估与专家引导学习的状态条件专家性框架}
+
+\end{document}
