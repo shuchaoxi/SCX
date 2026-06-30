@@ -1186,6 +1186,40 @@ class Spring:
 
         return float(gatekeeper_term + student_loss)
 
+    def prune_memory(
+        self, prune_streak: int = 3
+    ) -> tuple[set, set]:
+        """Prune low-scoring samples from active memory (噪声率衰减).
+
+        Samples that score below the current gatekeeper threshold for
+        ``prune_streak`` consecutive rounds are demoted from the active
+        training set to the archived audit record.  Spring never truly
+        forgets — archived samples remain permanently auditable.
+
+        Returns
+        -------
+        active : set
+            Sample indices remaining in the active training set.
+        archived : set
+            Sample indices demoted to the permanent audit archive.
+        """
+        g_t = self.gatekeeper.threshold
+        scores = self.gatekeeper.score(self._assign_states(self._features))
+        low = set(int(i) for i, s in enumerate(scores) if s < g_t)
+
+        for idx in low:
+            self._prune_streak[idx] = self._prune_streak.get(idx, 0) + 1
+
+        to_prune = {
+            idx for idx, cnt in self._prune_streak.items()
+            if cnt >= prune_streak
+        }
+        self._active_memory -= to_prune
+        self._archived_memory |= to_prune
+        for idx in to_prune:
+            self._prune_streak.pop(idx, None)
+        return set(self._active_memory), set(self._archived_memory)
+
     def convergence_diagnostic(self) -> Dict[str, Any]:
         """Compute convergence diagnostics from evolution history.
 
