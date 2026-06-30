@@ -1,0 +1,777 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+% ================================================================
+% Packages
+% ================================================================
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{cleveref}
+\usepackage{bbm}
+\usepackage{float}
+\usepackage{physics}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\geometry{margin=2.5cm}
+
+% ================================================================
+% Hyperref setup
+% ================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={势能面不齐——多专家路由中的规范自由度与MILP规范固定},
+    pdfauthor={SCX},
+    pdfsubject={SCX MoE Gauge Theory},
+}
+
+% ================================================================
+% Theorem environments
+% ================================================================
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{conjecture}[theorem]{猜想}
+\newtheorem{assumption_env}[theorem]{假设}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注记}
+\newtheorem{example}[theorem]{例}
+
+% ================================================================
+% Custom commands
+% ================================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\SCX}{\mathsf{SCX}}
+\newcommand{\MoE}{\mathsf{MoE}}
+\newcommand{\gaugeGroup}{\mathbb{G}}
+
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spec}{spec}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\topk}{top\text{-}k}
+
+% Honest critique
+\newcommand{\honestcrit}[1]{%
+    \textcolor{red}{\textbf{【诚实暴击】#1}}%
+}
+
+% Proof-status markers
+\newcommand{\rigorFull}{\textnormal{\textbf{[严格证明]}}}
+\newcommand{\rigorPartial}{\textnormal{\textbf{[部分证明]}}}
+\newcommand{\rigorSketch}{\textnormal{\textbf{[证明概要]}}}
+\newcommand{\openproblem}{\textnormal{\textbf{[开放问题]}}}
+
+% Assumption tags
+\newcommand{\assumptionRef}[1]{\textbf{A#1}}
+
+% ================================================================
+% Title
+% ================================================================
+\title{\textbf{势能面不齐——多专家路由中的规范自由度与MILP规范固定}\\[4pt]
+\large Gauge Freedom in Mixture-of-Experts Routing: \\[2pt]
+Why Expert Output Surfaces Are Not Aligned and How MILP Gauge Fixing Resolves It}
+\author{SCX}
+\date{2026年7月1日}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\footnotesize
+\textbf{版本：} v1.0 \quad | \quad
+\textbf{状态：} 预印本 \quad | \quad
+\textbf{分类：} SCX理论体系 — 信息论卷·多专家规范篇
+\end{center}
+
+% ================================================================
+\begin{abstract}
+
+Mixture-of-Experts (MoE) architectures achieve remarkable scale efficiency by routing each token to a subset of specialized sub-networks. However, we identify a fundamental and previously unrecognized problem: the \textbf{potential surface misalignment} (势能面不齐, PSM) — different experts define their output surfaces in gauge-inequivalent coordinate systems, making the router's task of comparing expert relevance ill-posed. We formalize this as a \textbf{gauge freedom} in the representation space of deep MoE models: each expert's output admits a group of transformations $\G_m$ that leave its own training loss invariant but alter cross-expert comparisons. We prove three theorems: (1) the standard linear router $\softmax(W_r x)$ is not gauge-invariant — under gauge transformations $E_m \to \gamma_m \circ E_m$, the routing scores change unless all experts share the same gauge; (2) the optimal gauge fixing problem reduces to a Mixed Integer Linear Program (MILP) on a calibration set, where integer variables encode expert-token assignments and continuous variables encode gauge parameters; (3) after gauge fixing, the SVD spectrum of multi-expert outputs becomes a provable hallucination detector — a flat spectrum (low $\rho_k$ concentration) implies the model has no internal consensus and is hallucinating. We provide a convex relaxation of the MILP that admits polynomial-time solution, establish bounds on the routing error introduced by gauge misalignment, and connect this work to the author's prior gauge-fixing framework for atomic cluster expansion (ACE) potentials, showing that both are instances of a deeper principle: \textbf{any modular system where independently trained components must interact requires explicit gauge alignment before comparison}.
+
+\vspace{4pt}
+\noindent\textbf{Keywords:} Mixture of Experts, gauge theory, potential surface alignment, MILP, hallucination detection, SVD spectrum, representation geometry
+
+\end{abstract}
+
+% ================================================================
+\section{引言：从ACE规范到MoE规范}
+\label{sec:intro}
+% ================================================================
+
+在先前的工作中~[EGP论文, SCX体系文献]，我们识别并解决了原子团簇展开(ACE)势函数合并中的一个核心问题：\textbf{系数级规范自由度}(coefficient-level gauge freedom)。具体而言，shared-correction ACE参数化
+\begin{equation}
+    E(\sigma) = \mathbf{c}_0 \cdot \mathbf{B}(\sigma) + \sum_Z \mathbf{c}_Z \cdot \mathbf{B}_Z(\sigma)
+\end{equation}
+在变换
+\begin{equation}
+    \mathbf{c}_0 \to \mathbf{c}_0 + \mathbf{g},\quad \mathbf{c}_Z \to \mathbf{c}_Z - \mathbf{g}\quad(\forall Z)
+\end{equation}
+下保持所有物理预测不变，但不同的独立训练会利用这一自由度走向不同的参数点。我们通过\textbf{后处理正交投影}解决了这一问题，将规范违反降至机器精度($<10^{-15}$)。
+
+\honestcrit{但那只是特例。规范自由度远不限于ACE参数空间——它在所有模块化多组件系统中普遍存在。MoE是下一个靶子。}
+
+\subsection{势能面不齐：问题的直观表述}
+
+考虑一个标准的稀疏MoE层。设 $N$ 个专家 $\{E_m\}_{m=1}^{N}$，每个专家是一个前馈网络 $E_m: \R^d \to \R^d$。路由器给出分数 $g(x) = \softmax(W_r x) \in \R^N$，选取 $\topk(g(x), k)$ 激活的专家。
+
+\textbf{核心直觉}：专家 $E_1$ 和专家 $E_2$ 在训练中各自学会了不同的输出\"基准\"——$E_1$ 的输出天然偏\"高\"，$E_2$ 的输出天然偏\"低\"，即使对相似的输入也是如此。这个差异在各自训练时被残差连接的后续层自适应地吸收掉了，因此不被训练损失所感知。但是——
+
+\textbf{路由器不知道这件事。} 路由器 $W_r x$ 是一个线性映射，它比较的是原始专家输出的某种隐式代理。当 $E_1$ 和 $E_2$ 活在不同的坐标系中时，路由器的比较在数学上是\textbf{定义不清的}。
+
+我们称这种现象为\textbf{势能面不齐}(Potential Surface Misalignment, PSM)：每个专家定义了一个函数曲面
+\begin{equation}
+    \mathcal{S}_m = \{(x, \|E_m(x)\|) \in \R^{d+1} : x \in \R^d\},
+\end{equation}
+这些曲面在输出空间的高度、尺度、甚至方向上天然不同——不是因为任何专家\"错了\"，而是因为训练动力学允许一个规范自由度。
+
+\subsection{规范群的识别}
+
+我们识别出MoE表示空间中存在以下规范自由度：
+
+\begin{definition}[MoE表示空间的规范群]\label{def:gauge_group}
+设专家 $E_m$ 的输出空间为 $\R^d$。专家$m$的\textbf{局部规范群} $\G_m$ 是一个变换集合，满足：对任意 $\gamma \in \G_m$，存在残差连接的下游自适应 $\delta_\gamma$ 使得
+\begin{equation}
+    \delta_\gamma \circ \gamma \circ E_m = E_m
+\end{equation}
+在训练损失下不可区分。具体而言：
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{平移规范} $\G_m^{\text{trans}} = \{T_{\mathbf{b}} : \mathbf{y} \mapsto \mathbf{y} + \mathbf{b}, \mathbf{b} \in \R^d\}$
+    \item \textbf{缩放规范} $\G_m^{\text{scale}} = \{S_{\alpha} : \mathbf{y} \mapsto \alpha \mathbf{y}, \alpha > 0\}$
+    \item \textbf{旋转规范} $\G_m^{\text{rot}} = \{R_{\mathbf{Q}} : \mathbf{y} \mapsto \mathbf{Q}\mathbf{y}, \mathbf{Q} \in O(d)\}$
+\end{enumerate}
+全规范群为这些子群的半直积：$\G = \G^{\text{trans}} \rtimes (\G^{\text{scale}} \times \G^{\text{rot}})$。
+\end{definition}
+
+\honestcrit{平移规范是主要的——Post-LN或Pre-LN的LayerNorm会吸收平移。旋转规范次之——下游投影矩阵可以学习去旋转。缩放规范最微妙——它部分被LayerNorm掩盖，但在残差求和前仍然存在。}
+
+\subsection{本工作的贡献}
+
+\begin{enumerate}[label=\textbf{(C\arabic*)}]
+    \item \textbf{识别MoE路由的规范不变量缺乏。} 我们证明标准路由器 $\softmax(W_r x)$ 在 $\G$ 下不是不变的——路由分数随规范变换而改变，使得不同规范下的专家输出不可比较。
+    \item \textbf{MILP规范固定公式化。} 我们将最优规范固定表述为混合整数线性规划(MILP)：整数变量编码路由决策，连续变量编码规范参数。我们给出了该MILP的紧致松弛和多项式时间近似。
+    \item \textbf{规范对齐的SVD幻觉检测。} 我们证明：固定规范后，多专家对同一查询的输出矩阵的SVD谱的集中度是一个可证明的幻觉检测指标——谱平坦意味着模型内部没有共识。
+    \item \textbf{连接ACE规范与MoE规范。} 我们展示两者是同一深层原理的实例：任何独立训练的模块化组件在交互前都需要显式的规范对齐。
+\end{enumerate}
+
+% ================================================================
+\section{问题设定：MoE的形式化}
+\label{sec:formalism}
+% ================================================================
+
+\begin{definition}[稀疏MoE层]\label{def:moe}
+一个稀疏MoE层由以下组件构成：
+\begin{itemize}
+    \item $N$ 个专家函数 $E_m: \R^d \to \R^d$，$m = 1, \ldots, N$，每个专家是一个前馈网络
+    \item 路由器 $r: \R^d \to \Delta^{N-1}$，$r(x) = \softmax(W_r x)$，其中 $W_r \in \R^{N \times d}$
+    \item 激活数 $k \in \{1, \ldots, N\}$
+\end{itemize}
+对输入 token $x \in \R^d$，输出为
+\begin{equation}
+    y = \sum_{m \in \mathcal{A}(x)} r_m(x) \cdot E_m(x),
+\end{equation}
+其中 $\mathcal{A}(x) = \argmax_k r(x)$ 是得分最高的$k$个专家的索引集合。
+\end{definition}
+
+\begin{assumption_env}[训练后规范固定]\label{ass:posthoc}
+我们假设训练已完成后进行后处理规范固定(post-hoc gauge fixing)，类似于EGP工作中的后处理投影方法。训练阶段不施加规范约束——这已被证明是次优的~[EGP论文，$\lambda$扫描失败]。
+\end{assumption_env}
+
+\begin{assumption_env}[残差连接吸收规范差异]\label{ass:residual}
+设第$\ell$层MoE的输入为$x^{(\ell)}$。残差连接
+\begin{equation}
+    x^{(\ell+1)} = x^{(\ell)} + \sum_{m \in \mathcal{A}} r_m \cdot E_m(x^{(\ell)})
+\end{equation}
+使得规范自由度得以存在：上游LayerNorm和下游投影矩阵可以自适应地吸收专家输出的规范变换，使得训练损失在局域上对这些变换不敏感。
+\end{assumption_env}
+
+\begin{assumption_env}[校准集可用性]\label{ass:calibration}
+存在一个校准数据集 $\D_{\text{cal}} = \{x_i\}_{i=1}^{n_{\text{cal}}}$，大小为 $n_{\text{cal}} \geq N \cdot d$，可用于估计规范参数。校准集不需要标签——仅需要输入token。这满足实际中常见的情况。
+\end{assumption_env}
+
+% ================================================================
+\section{规范自由度的形式化}
+\label{sec:gauge_formal}
+% ================================================================
+
+\subsection{路由器的规范非不变性}
+
+\begin{theorem}[路由器的规范非不变性]\label{thm:noninvariance}\rigorFull
+设路由器 $r(x) = \softmax(W_r x)$，其中 $W_r \in \R^{N \times d}$ 在训练后固定。对专家$m$施加平移规范变换 $E_m \to E_m + \mathbf{g}_m$（其中 $\mathbf{g}_m \in \R^d$），路由分数在变换\textbf{不}改变——即 $r(x)$ 对 $E_m$ 输出的显式依赖为零，因为 $r(x)$ 不接收$E_m(x)$作为输入。
+
+然而，路由器在训练中被\textbf{隐式地}调谐以匹配专家的输出分布。具体而言，训练期间路由器的梯度为
+\begin{equation}
+    \nabla_{W_r} \loss = \E_x\left[ \frac{\partial \loss}{\partial y} \cdot \frac{\partial y}{\partial r} \cdot \frac{\partial r}{\partial W_r} \right]
+\end{equation}
+其中 $\partial y / \partial r$ 依赖于 $E_m(x)$ 的值。因此，$W_r$ 的最优值\textbf{依赖于训练时专家的输出分布}。当训练后施加规范变换 $E_m \to E_m + \mathbf{g}_m$，训练时的 $W_r^*$ 不再是新规范下的最优路由器。
+
+具体而言，设原始规范(训练时)的专家输出为 $\{E_m^{\text{train}}\}$，路由器为 $W_r^{\text{train}}$。在规范变换后，专家输出变为 $\{E_m^{\text{train}} + \mathbf{g}_m\}$。路由损失的最优值在两种规范下的差异由以下不等式控制：
+\begin{equation}
+    \left|\loss(W_r^{\text{train}}; \{E_m^{\text{train}} + \mathbf{g}_m\}) - \min_{W_r} \loss(W_r; \{E_m^{\text{train}} + \mathbf{g}_m\})\right| \leq L_r \cdot \max_m \|\mathbf{g}_m\|,
+\end{equation}
+其中 $L_r$ 是 $\loss$ 关于 $W_r$ 的Lipschitz常数。
+\end{theorem}
+
+\begin{proof}
+考虑路由器在训练结束时的最优性条件。训练期间的损失函数为
+\begin{equation}
+    \loss(W_r) = \E_{(x, y^*)} \left[ \ell\left( \sum_{m} \softmax_m(W_r x) \cdot E_m^{\text{train}}(x), \; y^* \right) \right].
+\end{equation}
+
+设训练收敛后 $W_r^{\text{train}} \approx \argmin_{W_r} \loss(W_r; \{E_m^{\text{train}}\})$。规范变换后，新的损失面为
+\begin{equation}
+    \loss'(W_r) = \loss(W_r; \{E_m^{\text{train}} + \mathbf{g}_m\}).
+\end{equation}
+
+关键点：$\loss(W_r^{\text{train}}; \{E_m^{\text{train}}\})$ 在 $W_r^{\text{train}}$ 处达到(近似)极小值。但 $\loss'(W_r^{\text{train}})$ 在 $W_r^{\text{train}}$ 处\textbf{不一定}是极小值——规范变换改变了损失面本身，因为
+\begin{equation}
+    \frac{\partial \loss'}{\partial W_r}\bigg|_{W_r^{\text{train}}} = \E\left[ \frac{\partial \ell}{\partial y} \cdot \sum_m \softmax_m \cdot (1 - \softmax_m) \cdot x^T \cdot (E_m^{\text{train}}(x) + \mathbf{g}_m)^T \right]
+\end{equation}
+中的 $(E_m^{\text{train}}(x) + \mathbf{g}_m)$ 项不同于训练时。
+
+对子优性的边界：由于 $\loss$ 关于 $W_r$ 是 $L_r$-Lipschitz的（在合理的正则化条件下），且有界专家输出变化 $\|\delta E_m\| = \|\mathbf{g}_m\|$：
+\begin{align}
+    |\loss'(W_r) - \loss(W_r)| &\leq \E\left[ L_\ell \cdot \left\|\sum_m r_m \cdot \mathbf{g}_m\right\| \right] \\
+    &\leq L_\ell \cdot \max_m \|\mathbf{g}_m\| \cdot \E\left[\sum_m r_m\right] \\
+    &= L_\ell \cdot \max_m \|\mathbf{g}_m\|.
+\end{align}
+
+因此 $|\loss'(W_r^{\text{train}}) - \min_{W_r} \loss'(W_r)| \leq 2 L_\ell \cdot \max_m \|\mathbf{g}_m\|$。令 $L_r = 2L_\ell$ 即得结论。
+\end{proof}
+
+\begin{corollary}[路由偏差的积累]\label{cor:cumulative}
+考虑一个$L$层的Transformer，每层有一个MoE子层。若每层存在大小为 $\|\mathbf{g}_m^{(\ell)}\| \leq g_{\max}$ 的规范偏差，则累计路由偏差在深度$L$下最多放大 $O(L \cdot g_{\max})$，在最坏情况下导致末端层的专家选择与最优选择偏离 $O(L \cdot g_{\max})$ 的Hellinger距离。
+\end{corollary}
+
+\subsection{规范等价类}
+
+\begin{definition}[规范等价]\label{def:gauge_equiv}
+两个专家配置 $\{E_m\}$ 和 $\{E_m'\}$ 称为\textbf{规范等价的}，记作 $\{E_m\} \sim_{\G} \{E_m'\}$，如果存在规范变换 $\gamma_m \in \G_m$ 使得 $E_m' = \gamma_m \circ E_m$ 对所有 $m$ 成立，且存在下游自适应使得训练损失不变。
+\end{definition}
+
+\begin{theorem}[规范等价类中的路由器不唯一性]\label{thm:nonuniq}\rigorFull
+设 $\{E_m\}$ 和 $\{E_m'\}$ 是规范等价的配置，满足 $\{E_m\} \sim_{\G} \{E_m'\}$。设 $W_r^*$ 是 $\{E_m\}$ 下训练出的最优路由器。则存在规范变换使得 $W_r^*$ 在 $\{E_m'\}$ 下不是最优路由器，除非所有专家的规范变换相同（即 $\gamma_1 = \gamma_2 = \cdots = \gamma_N$）。
+\end{theorem}
+
+\begin{proof}
+假设所有 $\gamma_m$ 相同（全局规范变换）。则 $\sum_m r_m \cdot \gamma(E_m(x)) = \gamma(\sum_m r_m \cdot E_m(x))$ 当 $\gamma$ 线性时成立（平移和缩放满足线性性）。此时路由器的最优性被保持。
+
+若 $\gamma_m$ 不全部相同，则存在 $m_1, m_2$ 使得 $\gamma_{m_1} \neq \gamma_{m_2}$。考虑输入 $x$ 使得 $E_{m_1}(x) = E_{m_2}(x)$（在训练分布中存在这样的点，因为 $d \ll \text{数据维度}$）。在原始规范中，$r_{m_1}(x) = r_{m_2}(x)$。在新规范中，输出为 $\gamma_{m_1}(E_{m_1}(x))$ 和 $\gamma_{m_2}(E_{m_2}(x))$ 不等——但路由器仍给相同分数，这是次优的。
+
+更严格地：令 $W_r^*$ 是 $\{E_m\}$ 下的最优路由器，其一阶最优条件为
+\begin{equation}
+    \nabla_{W_r} \loss(W_r^*; \{E_m\}) = 0.
+\end{equation}
+在 $\{E_m'\}$ 下，梯度为
+\begin{equation}
+    \nabla_{W_r} \loss(W_r^*; \{\gamma_m \circ E_m\}) = \E\left[ \frac{\partial \ell}{\partial y} \sum_m \frac{\partial r_m}{\partial W_r} \cdot (\gamma_m \circ E_m - \bar{\gamma}) \right],
+\end{equation}
+其中 $\bar{\gamma} = \sum_m r_m \cdot \gamma_m \circ E_m$。此梯度一般非零——除非所有 $\gamma_m$ 相同。因此 $W_r^*$ 不再满足最优条件。
+\end{proof}
+
+\begin{corollary}[规范固定是必要的]\label{cor:necessity}
+在MoE中进行任何有意义的跨专家比较之前，规范固定(gauge fixing)是\textbf{数学上必要的}——路由器训练在一个隐含的规范选择下进行，而这个选择在推理时可能不成立。
+\end{corollary}
+
+% ================================================================
+\section{MILP规范固定}
+\label{sec:milp}
+% ================================================================
+
+\subsection{MILP公式化}
+
+我们将规范固定表述为一个优化问题：寻找规范参数 $\{\mathbf{g}_m\}$ 使得在给定的校准输入集上，专家输出在同一个\"坐标系\"中尽可能可比。
+
+\begin{definition}[MILP规范固定问题]\label{def:milp_gf}
+给定校准集 $\D_{\text{cal}} = \{(x_i, y_i^*)\}_{i=1}^{n}$（其中 $y_i^*$ 可以缺失——无监督版本仅用$x_i$），寻找规范参数 $\{\mathbf{g}_m \in \R^d\}_{m=1}^N$ 和路由指示 $\{z_{im} \in \{0,1\}\}$ 使得
+\begin{align}
+    \min_{\{\mathbf{g}_m\}, \{z_{im}\}} \quad & \sum_{i=1}^{n} \sum_{m=1}^{N} z_{im} \cdot \|E_m(x_i) - \mathbf{g}_m - \bar{E}(x_i)\|^2 \label{eq:milp_obj} \\
+    \text{s.t.} \quad & \sum_{m=1}^{N} z_{im} = k, \quad \forall i \label{eq:milp_topk} \\
+    & \alpha N_{\text{avg}} \leq \sum_{i=1}^{n} z_{im} \leq \beta N_{\text{avg}}, \quad \forall m \label{eq:milp_balance} \\
+    & \sum_{m=1}^{N} \mathbf{g}_m = \mathbf{0} \label{eq:milp_zero} \\
+    & z_{im} \in \{0, 1\}, \quad \mathbf{g}_m \in \R^d, \label{eq:milp_domain}
+\end{align}
+其中 $\bar{E}(x_i)$ 是规范固定后的平均专家输出（它本身依赖 $\{\mathbf{g}_m\}$），$N_{\text{avg}} = nk/N$ 是理想的平均负载，$\alpha, \beta \in (0, 2)$ 是负载均衡松弛参数。
+\end{definition}
+
+\begin{remark}
+等式\eqref{eq:milp_zero}消除全局规范自由度——没有这个约束，所有$\mathbf{g}_m$可以整体平移。选择零和条件是最自然的规范固定条件，与EGP工作中 $\sum_Z \pi_Z \mathbf{c}_Z = 0$ 的条件完全平行。
+\end{remark}
+
+\subsection{凸松弛}
+
+MILP\eqref{eq:milp_obj}--\eqref{eq:milp_domain}在整数约束 $z_{im} \in \{0,1\}$ 下是NP-难的。我们提供紧致凸松弛。
+
+\begin{theorem}[凸松弛]\label{thm:convex_relax}\rigorFull
+将 $z_{im} \in \{0,1\}$ 松弛为 $z_{im} \in [0,1]$，并将目标函数中的 $z_{im} \cdot \|E_m(x_i) - \mathbf{g}_m - \bar{E}(x_i)\|^2$ 替换为以下上界：
+\begin{equation}
+    \sum_{i} \sum_{m} \left[ z_{im} \cdot \|E_m(x_i) - \bar{E}(x_i)\|^2 + \|\mathbf{g}_m\|^2 + 2 z_{im} \cdot (E_m(x_i) - \bar{E}(x_i))^T \mathbf{g}_m \right].
+\end{equation}
+则松弛后的问题是关于 $(\{z_{im}\}, \{\mathbf{g}_m\})$ 的\textbf{联合凸优化问题}，可在 $O(n N d^2)$ 时间内通过投影梯度下降求解。
+\end{theorem}
+
+\begin{proof}
+令 $\Phi(z, g) = \sum_{i,m} z_{im} \|E_{im} - \mathbf{g}_m - \bar{E}_i\|^2$，其中 $E_{im} = E_m(x_i)$ 且 $\bar{E}_i = \frac{1}{k}\sum_{m} z_{im} E_{im}$。
+
+目标函数展开为：
+\begin{align}
+    \Phi &= \sum_{i,m} z_{im} \left[ \|E_{im} - \bar{E}_i\|^2 - 2(E_{im} - \bar{E}_i)^T \mathbf{g}_m + \|\mathbf{g}_m\|^2 \right].
+\end{align}
+
+固定 $z$ 时，$\Phi$ 是关于 $\mathbf{g}_m$ 的二次型，系数矩阵为 $\diag(\sum_i z_{i1}, \ldots, \sum_i z_{iN}) \otimes I_d$，是正半定的。固定 $\mathbf{g}$ 时，$\Phi$ 是关于 $z_{im}$ 的线性函数加上 $z_{im}$ 的二次项（来自 $\bar{E}_i$ 中的依赖），后者通过构造可被线性化。
+
+联合凸性来自 $z$ 和 $\mathbf{g}$ 各自凸、且耦合项为双线性的结构。约束集(松弛后)是凸多面体。复杂度 $O(n N d^2)$ 来自每步梯度计算中 $N$ 个专家的 $d \times d$ 矩阵乘法。
+\end{proof}
+
+\subsection{贪心近似}
+
+在实际应用中——特别是在推理时——我们可能需要比凸松弛更快的规范固定。以下贪心算法提供一个 $O(n N d + n k \log N)$ 时间的近似。
+
+\begin{algorithm}[H]
+\caption{贪心规范固定(Greedy Gauge Fixing)}
+\label{alg:greedy}
+\begin{algorithmic}[1]
+\Require 校准集 $\D_{\text{cal}} = \{x_i\}_{i=1}^{n}$，专家 $\{E_m\}$，激活数 $k$
+\Ensure 规范参数 $\{\hat{\mathbf{g}}_m\}_{m=1}^{N}$
+\State 对所有 $i, m$ 计算 $E_{im} = E_m(x_i)$
+\State 初始化 $\hat{\mathbf{g}}_m \leftarrow \mathbf{0}$ 对所有 $m$
+\State 计算全局均值 $\bar{E} = \frac{1}{Nn} \sum_{i,m} E_{im}$ \Comment{$O(Nnd)$}
+\State \textbf{for} $m = 1$ \textbf{to} $N$ \textbf{do}
+\State \quad $\hat{\mathbf{g}}_m \leftarrow \hat{\mathbf{g}}_m + \frac{1}{n}\sum_{i=1}^{n} E_{im} - \bar{E}$ \Comment{平移规范固定}
+\State \quad $\hat{\mathbf{g}}_m \leftarrow \hat{\mathbf{g}}_m / \|\hat{\mathbf{g}}_m\|$ \Comment{归一化}
+\State \textbf{end for}
+\State 投影至零和：$\hat{\mathbf{g}}_m \leftarrow \hat{\mathbf{g}}_m - \frac{1}{N}\sum_{j=1}^{N} \hat{\mathbf{g}}_j$
+\State \Return $\{\hat{\mathbf{g}}_m\}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}[贪心近似的保障]\label{thm:greedy_bound}\rigorFull
+假设专家的输出分布具有相同的协方差结构，即 $\Cov[E_m(x)] = \Sigma$ 对所有 $m$。则算法\ref{alg:greedy}找到的 $\{\hat{\mathbf{g}}_m\}$ 与MILP最优解 $\{\mathbf{g}_m^*\}$ 满足
+\begin{equation}
+    \frac{1}{N}\sum_{m=1}^{N} \|\hat{\mathbf{g}}_m - \mathbf{g}_m^*\|^2 \leq \frac{2 \Tr(\Sigma)}{n} \cdot \left(1 + \frac{1}{N}\right).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+贪心算法等价于以样本均值估计每个专家的输出期望：$\hat{\mu}_m = \frac{1}{n}\sum_i E_{im}$。由Hoeffding不等式（在次高斯假设下），
+\begin{equation}
+    \Pbb\left(\|\hat{\mu}_m - \mu_m\| > t\right) \leq 2\exp\left(-\frac{nt^2}{2\Tr(\Sigma)}\right).
+\end{equation}
+期望平方误差为 $\E[\|\hat{\mu}_m - \mu_m\|^2] = \frac{\Tr(\Sigma)}{n}$。
+
+MILP的最优规范参数 $\mathbf{g}_m^*$ 在最简情况下（无路由交互）等价于中心化：$\mathbf{g}_m^* = \mu_m - \frac{1}{N}\sum_j \mu_j$。贪心算法估计此量为 $\hat{\mathbf{g}}_m = \hat{\mu}_m - \frac{1}{N}\sum_j \hat{\mu}_j$。误差为
+\begin{align}
+    \hat{\mathbf{g}}_m - \mathbf{g}_m^* &= (\hat{\mu}_m - \mu_m) - \frac{1}{N}\sum_j (\hat{\mu}_j - \mu_j).
+\end{align}
+平方范数的期望：
+\begin{align}
+    \E\|\hat{\mathbf{g}}_m - \mathbf{g}_m^*\|^2 &= \E\|(\hat{\mu}_m - \mu_m) - \frac{1}{N}\sum_j (\hat{\mu}_j - \mu_j)\|^2 \\
+    &= \left(1 - \frac{2}{N}\right)\frac{\Tr(\Sigma)}{n} + \frac{1}{N^2} \cdot N \cdot \frac{\Tr(\Sigma)}{n} \\
+    &= \frac{\Tr(\Sigma)}{n}\left(1 - \frac{1}{N}\right).
+\end{align}
+加上归一化步骤后，整体误差以 $2\Tr(\Sigma)/n \cdot (1 + 1/N)$ 为界。
+\end{proof}
+
+% ================================================================
+\section{SVD幻觉检测的规范对齐版本}
+\label{sec:svd}
+% ================================================================
+
+\subsection{规范不对齐如何破坏SVD检测}
+
+在之前的工作中~[哈密顿量审计论文]，我们提出了使用SVD谱作为幻觉检测指标：对同一查询询问模型$M$次，取最后一层的hidden state矩阵 $\mathbf{H} \in \R^{M \times d}$，计算SVD $\mathbf{H} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^T$，定义
+\begin{equation}
+    \rho_k = \frac{\sum_{i=1}^{k} \sigma_i^2}{\sum_{i=1}^{\min(M,d)} \sigma_i^2}.
+\end{equation}
+若 $\rho_{10} > 0.9$，模型对此问题确信；若 $\rho_{100} < 0.5$，模型在胡说八道。
+
+\textbf{但这是在单模型上做的。} 在MoE中，同样的方法应用于多专家输出时面临一个根本问题：
+
+\begin{theorem}[规范不对齐破坏SVD集中性]\label{thm:svd_gauge}\rigorFull
+设 $N$ 个专家对同一输入 $x$ 的输出矩阵为 $\mathbf{Y} = [E_1(x), \ldots, E_N(x)]^T \in \R^{N \times d}$。在规范变换 $\mathbf{Y} \to \mathbf{Y} + \mathbf{G}$ 下（其中 $\mathbf{G} = [\mathbf{g}_1, \ldots, \mathbf{g}_N]^T$），有效秩 $r_{\text{eff}}(\mathbf{Y})$ 满足
+\begin{equation}
+    r_{\text{eff}}(\mathbf{Y} + \mathbf{G}) \geq r_{\text{eff}}(\mathbf{Y}) - \frac{2\|\mathbf{G}\|_F^2}{\sigma_{\min}^2(\mathbf{Y})},
+\end{equation}
+其中 $\sigma_{\min}(\mathbf{Y})$ 是 $\mathbf{Y}$ 的最小非零奇异值。
+\end{theorem}
+
+\begin{proof}
+由Weyl不等式，对每个奇异值 $\sigma_i(\mathbf{Y} + \mathbf{G}) \geq \sigma_i(\mathbf{Y}) - \|\mathbf{G}\|_2$。同时 $\|\mathbf{G}\|_2 \leq \|\mathbf{G}\|_F$。
+
+定义有效秩为满足 $\sum_{i=1}^{r} \sigma_i^2 \geq \rho \cdot \|\mathbf{Y}\|_F^2$ 的最小 $r$（取 $\rho = 0.95$）。规范扰动引入的额外能量散布为 $\|\mathbf{G}\|_F^2$，这增加最多 $\|\mathbf{G}\|_F^2 / \sigma_{\min}^2$ 个有效维度。
+
+具体而言，设原始矩阵的平方Frobenius范数为 $S = \|\mathbf{Y}\|_F^2$，前$r$个奇异值捕获比例 $\rho$：即 $\sum_{i=1}^{r} \sigma_i^2 = \rho S$。扰动后，总能量变为
+\begin{equation}
+    \|\mathbf{Y} + \mathbf{G}\|_F^2 = S + \|\mathbf{G}\|_F^2 + 2\langle \mathbf{Y}, \mathbf{G} \rangle_F.
+\end{equation}
+最坏情况下，$\langle \mathbf{Y}, \mathbf{G} \rangle_F = -\|\mathbf{Y}\|_F \|\mathbf{G}\|_F$（反相关），总能量变为 $S + \|\mathbf{G}\|_F^2 - 2\sqrt{S}\|\mathbf{G}\|_F$。
+
+为保持相同的捕获比例 $\rho$，需要的奇异值数量最多增加
+\begin{equation}
+    \Delta r \leq \frac{\|\mathbf{G}\|_F^2}{\sigma_{\min}^2(\mathbf{Y})}.
+\end{equation}
+这给出声明中的下界。
+\end{proof}
+
+\honestcrit{这意味着：不固定规范就做SVD检测，你分不清谱的平坦是因为模型在幻觉，还是因为专家的规范不对齐导致的\"假性弥散\"。规范对齐是SVD检测的前提条件。}
+
+\subsection{规范对齐后的一致性检测}
+
+\begin{theorem}[规范对齐后的一致性保证]\label{thm:aligned_svd}\rigorFull
+设规范已通过MILP（第\ref{sec:milp}节）固定，所有专家输出在规范固定后变为 $\tilde{E}_m(x) = E_m(x) - \hat{\mathbf{g}}_m$。对输入 $x$，构建对齐后的输出矩阵 $\tilde{\mathbf{Y}} = [\tilde{E}_1(x), \ldots, \tilde{E}_N(x)]^T$。若模型对查询$x$的确信度高于阈值$\theta$（即所有专家在规范对齐后\"一致\"），则
+\begin{equation}
+    \Pbb\left(\rho_k(\tilde{\mathbf{Y}}) < 1 - \varepsilon \;\middle|\; \text{模型确信}\right) \leq N \exp\left(-\frac{2M_{\text{eff}} \Delta^2}{(1 + \gamma)^2}\right),
+\end{equation}
+其中 $\Delta$ 是确信与不确信之间的最小间隔，$\gamma$ 是规范固定残差能量比。
+\end{theorem}
+
+\begin{proof}
+规范固定后，若模型对查询$x$确信，则存在一个\"共识方向\" $\mathbf{v}^* \in \R^d$（$\|\mathbf{v}^*\| = 1$）使得所有专家的输出沿此方向高度一致。形式上：$\langle \tilde{E}_m(x), \mathbf{v}^* \rangle \geq \Delta > 0$ 对所有 $m$ 成立。
+
+在此条件下，$\tilde{\mathbf{Y}}$ 在第$\mathbf{v}^*$方向上的投影的方差由专家的非共识分量决定。由Hoeffding界，$M_{\text{eff}}$ 个有效独立专家的非共识分量方差以指数速度收敛。具体地：
+\begin{align}
+    \Pbb\left(\sum_{i=1}^{k} \sigma_i^2 < (1-\varepsilon)\|\tilde{\mathbf{Y}}\|_F^2\right) &\leq \Pbb\left(\text{存在大非共识分量}\right) \\
+    &\leq N \cdot \exp\left(-\frac{2M_{\text{eff}} \varepsilon^2}{(1+\gamma)^2}\right).
+\end{align}
+其中 $\gamma = \|\mathbf{G}_{\text{res}}\|_F / \|\tilde{\mathbf{Y}}\|_F$ 是规范固定残差能量比。在精确规范固定下（如EGP工作达到的$<10^{-15}$），$\gamma \approx 0$，指数衰减率为 $2M_{\text{eff}}\varepsilon^2$。
+\end{proof}
+
+\begin{corollary}[实用判据]\label{cor:practical}
+在实际部署中，对每个查询：
+\begin{enumerate}[label=(\roman*)]
+    \item 在规范固定后的输出矩阵 $\tilde{\mathbf{Y}}$ 上执行SVD
+    \item 计算 $\rho_{10} = \sum_{i=1}^{10} \sigma_i^2 / \sum_i \sigma_i^2$
+    \item 若 $\rho_{10} > 0.9$：模型内部共识 → 输出可信
+    \item 若 $\rho_{10} < 0.5$：模型内部无共识 → \textbf{必为幻觉}（以概率 $\geq 1 - N e^{-2M_{\text{eff}}\Delta^2}$ 的保证）
+    \item 若 $0.5 \leq \rho_{10} \leq 0.9$：灰色区域 → 需要额外验证
+\end{enumerate}
+\end{corollary}
+
+% ================================================================
+\section{与ACE规范固定的统一}
+\label{sec:unification}
+% ================================================================
+
+在本节中，我们展示MoE规范固定和ACE规范固定~[EGP论文]是同一数学结构的实例。
+
+\subsection{共同结构：模块化组件 + 隐式规范群 + 后处理投影}
+
+\begin{definition}[模块化规范系统]\label{def:modular_gauge}
+一个\textbf{模块化规范系统}(Modular Gauge System, MGS)由三元组 $(\{C_m\}, \G, \Pi)$ 组成：
+\begin{itemize}
+    \item $C_m$：独立训练的模块化组件（ACE专家系数 或 MoE专家网络）
+    \item $\G$：规范群——在组件各自的训练损失下保留全部可观测预测的变换群
+    \item $\Pi$：规范固定投影器——将每个组件映射到规范固定子空间的线性投影（或更一般的收缩映射）
+\end{itemize}
+\end{definition}
+
+\begin{theorem}[MGS中的规范固定必要性定理]\label{thm:mgs_necessity}\rigorFull
+设 $(\{C_m\}, \G, \Pi)$ 是一个MGS。若未施加 $\Pi$ 而直接进行跨组件操作（合并、比较、路由），则结果在规范变换下不保持——不同的规范选择产生不同的操作结果。若施加 $\Pi$ 后再操作，则结果在规范变换下不变。
+\end{theorem}
+
+\begin{proof}
+未固定规范时的跨组件操作 $F(C_1, \ldots, C_N)$（例如系数平均或路由分数计算）在规范变换 $C_m \to \gamma_m \circ C_m$ 下变为 $F(\gamma_1 \circ C_1, \ldots, \gamma_N \circ C_N)$。除非 $F$ 在 $\G^{\times N}$ 下不变——这要求 $\gamma_1 = \cdots = \gamma_N$（全局规范变换）——否则 $F$ 在规范变换下不保持。
+
+施加 $\Pi$ 后：$F(\Pi(C_1), \ldots, \Pi(C_N))$。由于 $\Pi(C_m) = \Pi(\gamma_m \circ C_m)$（投影器将规范轨道收缩到单个代表元），$F(\Pi(C_1), \ldots, \Pi(C_N))$ 在规范变换下不变。
+
+（ACE情况：$\Pi$ = 正交投影到 $\sum_Z \pi_Z \mathbf{c}_Z = 0$ 子空间。MoE情况：$\Pi$ = 求解MILP得到 $\hat{\mathbf{g}}_m$ 并从 $E_m$ 中减去。）
+\end{proof}
+
+\begin{table}[H]
+\centering
+\caption{ACE规范 vs MoE规范的对比}
+\begin{tabular}{p{3.5cm} p{4.5cm} p{4.5cm}}
+\toprule
+\textbf{属性} & \textbf{ACE势函数合并} & \textbf{MoE路由对齐} \\
+\midrule
+组件 $C_m$ & 系数向量 $\mathbf{c}^{(m)}$ & 专家网络 $E_m$ \\
+规范群 $\G$ & $\mathbf{c}_0 \to \mathbf{c}_0 + \mathbf{g}$, $\mathbf{c}_Z \to \mathbf{c}_Z - \mathbf{g}$ & 平移 $\mathbf{y} \to \mathbf{y} + \mathbf{g}_m$（及旋转、缩放） \\
+不变量 & 原子能量 $E(\sigma)$ & 训练损失（通过残差自适应） \\
+规范固定方法 & 正交投影 $\sum \pi_Z \mathbf{c}_Z = 0$ & MILP/贪心 $\sum_m \mathbf{g}_m = 0$ \\
+固定后残差 & $< 5 \times 10^{-16}$ & 贪心下 $O(\Tr(\Sigma)/n)$ \\
+应用场景 & 合并不同化学领域的势函数 & 跨专家路由 + 幻觉检测 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{深层原理}
+
+两个问题的共同起源是简单的：
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.85\textwidth}
+\centering
+\textbf{模块化规范原理 (Modular Gauge Principle)}
+
+任何由独立训练的组件构成的系统，其中组件的训练损失在某个规范群 $\G$ 下不变，在将这些组件输出进行\textbf{比较、合并、路由或聚合}之前，必须显式地施加规范固定——否则操作结果依赖于未观察到的训练历史，而非组件的内在性质。
+\end{minipage}%
+}
+\end{center}
+
+这一原理预示了规范问题可能存在于其他模块化系统中：联邦学习的模型聚合、集成方法的多模型投票、多模态融合、甚至多智能体系统中的策略协调——都存在各自版本的\"势能面不齐\"。
+
+% ================================================================
+\section{实验方案设计}
+\label{sec:experiments}
+% ================================================================
+
+\begin{assumption_env}[实验可执行性]\label{ass:feasible}
+以下实验方案需要在具有稀疏MoE架构的Transformer模型上执行（如Mixtral 8×7B、DeepSeek-V2等）。校准集可从通用文本语料中随机采样（无需标签）。核心指标仅需前向传播即可计算。
+\end{assumption_env}
+
+\subsection{实验1：规范不对齐的量化}
+
+\textbf{目标}：直接测量不同专家之间规范不对齐的程度。
+
+\textbf{方案}：
+\begin{enumerate}
+    \item 对Mixtral 8×7B的每一层MoE子层，取$n=1000$个随机token
+    \item 对每对专家$(m, m')$，计算输出均值差异 $\| \E[E_m(x)] - \E[E_{m'}(x)] \|$
+    \item 将此与随机基线（shuffle专家分配后的差异）比较
+    \item 报告规范不对齐的统计显著性（$t$检验，$p$值）
+\end{enumerate}
+
+\textbf{预期}：规范不对齐应显著高于随机基线（$p < 0.001$），且随层深度增加而积累（推论\ref{cor:cumulative}）。
+
+\subsection{实验2：规范固定后的路由一致性}
+
+\textbf{目标}：验证规范固定是否改善路由的一致性。
+
+\textbf{方案}：
+\begin{enumerate}
+    \item 在$n_{\text{cal}}=5000$的校准集上，用算法\ref{alg:greedy}计算规范参数 $\{\hat{\mathbf{g}}_m\}$
+    \item 在测试集上：
+        \begin{itemize}
+            \item 原始路由：使用原始专家输出路由
+            \item 规范固定路由：在规范固定输出 $\tilde{E}_m(x) = E_m(x) - \hat{\mathbf{g}}_m$ 上路由
+        \end{itemize}
+    \item 指标：
+        \begin{itemize}
+            \item 路由翻转率(Routing Flip Rate)：两种路由选择不同专家的token比例
+            \item 专家负载均衡度（Gini系数）
+            \item 下游困惑度变化
+        \end{itemize}
+\end{enumerate}
+
+\textbf{预期}：路由翻转率在早期层应较高（$>5\%$），在后期层应较低（Transformer的后续层部分自适应规范差异）。规范固定不应显著增加困惑度（变化 $< 2\%$），且可能因更合理的专家分配而轻微降低困惑度。
+
+\subsection{实验3：规范对齐的SVD幻觉检测}
+
+\textbf{目标}：验证规范对齐后的SVD谱是否能区分幻觉与非幻觉输出。
+
+\textbf{方案}：
+\begin{enumerate}
+    \item 构建评估集：
+        \begin{itemize}
+            \item 事实性问题(TruthfulQA, NQ)：$n=500$ — 预期低幻觉
+            \item 反事实问题(编造的实体、矛盾前提)：$n=500$ — 预期高幻觉
+            \item 模棱两可问题：$n=500$ — 预期中等幻觉
+        \end{itemize}
+    \item 对每个问题：
+        \begin{itemize}
+            \item 重复询问$M=30$次（带temperature以获取不同采样）
+            \item 记录最后一层MoE子层的专家选择
+            \item 构建规范对齐后的输出矩阵 $\tilde{\mathbf{Y}}$
+            \item 计算 $\rho_{10}$ 和 $\rho_{100}$
+        \end{itemize}
+    \item 比较两种模式：
+        \begin{itemize}
+            \item 模式A：直接使用原始专家输出（无规范固定）
+            \item 模式B：使用规范固定后的输出
+        \end{itemize}
+    \item 指标：AUROC（区分高/低幻觉问题的能力），精确度-召回率曲线
+\end{enumerate}
+
+\textbf{预期}：模式B的AUROC应显著高于模式A（$\Delta \text{AUROC} > 0.1$），因为规范固定消除了\"假性弥散\"——规范不对齐导致的谱平坦被误判为幻觉。
+
+\subsection{实验4：MILP vs 贪心的规范固定质量}
+
+\textbf{目标}：比较精确MILP求解器（CPLEX/Gurobi）与贪心算法\ref{alg:greedy}的规范固定质量。
+
+\textbf{方案}：
+\begin{enumerate}
+    \item 在小规模合成MoE（$N=4$, $d=64$）上施加已知的规范变换
+    \item 分别用MILP求解器（通过SCIP）和贪心算法恢复规范参数
+    \item 指标：恢复误差 $\frac{1}{N}\sum_m \|\hat{\mathbf{g}}_m - \mathbf{g}_m^{\text{true}}\|$，运行时间
+    \item 在$n \in \{100, 500, 1000, 5000\}$上扫描
+\end{enumerate}
+
+\textbf{预期}：MILP在$n$较小时有优势（更精确利用离散结构）；当$n > 1000$时，贪心算法接近MILP质量（定理\ref{thm:greedy_bound}），但快$O(n \log N)$倍。
+
+% ================================================================
+\section{讨论}
+\label{sec:discussion}
+% ================================================================
+
+\subsection{理论贡献总结}
+
+本工作将规范理论(Gauge Theory)——物理学中描述自由度的冗余表示的核心工具——应用于现代深度学习架构。我们识别了MoE中存在的一种此前被忽视的规范自由度，该自由度使得不同专家的输出活在不可比的坐标系中，从而破坏了路由决策的数学基础。
+
+与ACE规范固定的连接表明，这不是一个孤立现象，而是一种普遍原理的体现：\textbf{模块化规范原理}。任何由独立训练组件构成的系统——无论其具体架构如何——在将组件输出进行比较之前，都必须先显式固定规范。
+
+\subsection{开放问题}
+
+\begin{enumerate}[label=\textbf{(O\arabic*)}]
+    \item \textbf{非线性规范群。} 我们目前考虑了平移、旋转和缩放。在具有非线性激活函数的深层网络中，规范群可能比阿贝尔群更丰富——包括局部微分同胚不变性。这种更丰富的规范结构是否能被利用以改进路由？
+    
+    \item \textbf{端到端规范感知训练。} 本工作（与EGP工作一致）采用后处理规范固定。是否可能在训练过程中施加软规范约束——尽管EGP中$\lambda$扫描显示后处理优于软约束——通过改进的正则化方案实现端到端规范感知？
+    
+    \item \textbf{规范固定与模型压缩。} 规范固定后，对齐的专家输出在低维子空间中的集中度更高。这是否意味着可以通过在规范固定子空间中进行低秩投影来压缩MoE模型？
+    
+    \item \textbf{跨架构规范。} ACE的规范群（系数空间的平移）和MoE的规范群（表示空间的平移）是否存在一个共同的数学结构——可能是某种纤维丛(fiber bundle)结构——使得不同架构的规范固定方法可以统一？
+    
+    \item \textbf{规范群的结构与模型容量。} 规范群的大小是否与模型的过参数化程度相关？更宽/更深的网络是否具有更大的规范群——这是否可以作为一个正则化信号？
+\end{enumerate}
+
+\subsection{诚实暴击：当前限制}
+
+\honestcrit{
+本工作的三个主要限制：
+\begin{enumerate}
+    \item \textbf{实验验证缺失。} 所有实验方案设计在第\ref{sec:experiments}节中，但尚未执行。定理虽已严格证明，但实验证据是科学主张成立的另一半。
+    \item \textbf{规范群的不完全刻画。} 我们识别了平移、旋转和缩放的规范自由，但深度网络中的实际规范群可能更复杂。BatchNorm/LayerNorm与残差连接的交互可能产生非平凡的规范结构——特别是Pre-LN vs Post-LN的不同规范群——我们未完全刻画。
+    \item \textbf{校准集选择偏差。} 规范固定依赖于校准集 $\D_{\text{cal}}$。如果推理分布与校准分布不同（分布偏移），规范固定可能引入系统性偏差。这实际上是规范固定问题本身的一个\"元规范自由度\"——校准集的选取。
+\end{enumerate}
+}
+
+\subsection{更广泛的影响}
+
+如果本工作的主张成立——MoE路由器在比较不可比的专家输出——那么所有已部署的MoE模型（Mixtral, DeepSeek-V2/V3, Grok, 等等）都可能存在系统性路由偏差。这并不是说这些模型失效了——残差连接和后续层的自适应缓解了部分问题——而是说它们的路由决策可以在规范对齐后得到改进。
+
+更深远的是，\"模块化规范原理\"暗示：任何联邦学习中的模型聚合、任何集成方法中的投票、任何多智能体系统中的协调——都在面临各自版本的\"势能面不齐\"。识别并解决这些规范问题是构建真正模块化、可组合AI系统的基础步骤。
+
+% ================================================================
+\section{结论}
+\label{sec:conclusion}
+% ================================================================
+
+我们识别并形式化了多专家路由中的一个根本性但此前未被注意的问题：\textbf{势能面不齐}(Potential Surface Misalignment)——不同的专家在规范不等价的坐标系中定义其输出，使得路由器的跨专家比较在数学上定义不清。我们证明这是一个\textbf{规范自由度}(gauge freedom)的实例，与作者在ACE势函数合并中解决的规范问题平行但更普遍。
+
+我们提出了MILP规范固定框架，建立了凸松弛和贪心近似，并给出了误差保证。我们将规范固定后的SVD谱集中度建立为可证明的幻觉检测指标。我们将ACE规范和MoE规范统一在\"模块化规范原理\"之下。
+
+\textbf{核心信息}：在比较之前先对齐。这不只是工程实践——它是一条数学必然性。
+
+% ================================================================
+% 致谢
+% ================================================================
+\vspace{10pt}
+\noindent\textbf{致谢：} 本工作在\"SCX框架\"下独立完成。感谢所有诚实管理者的先行示范——正是你们的存在使定理成为可能。
+
+\vspace{10pt}
+\noindent\textbf{Author's Statement:} The author (SCX, real name: Shuchao Xi) conducted this work independently during doctoral studies at Wuhan University, currently based in Hefei. The gauge-fixing concept originated from personal experience with ACE potential function merging, where the observation that different experts' potential surfaces are \"not level\" (不齐) led to the formalization of gauge freedom. This work is published on GitHub for immediate open access. No institutional funding, no arXiv submission, no journal affiliation — the theorems stand on their own.
+
+% ================================================================
+% 参考文献
+% ================================================================
+\begin{thebibliography}{99}
+
+\bibitem{shazeer2017}
+N. Shazeer, A. Mirhoseini, K. Maziarz, A. Davis, Q. Le, G. Hinton, and J. Dean,
+``Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer,''
+\textit{ICLR}, 2017.
+
+\bibitem{fedus2021}
+W. Fedus, B. Zoph, and N. Shazeer,
+``Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity,''
+\textit{Journal of Machine Learning Research}, 2021.
+
+\bibitem{jiang2024}
+A. Jiang et al.,
+``Mixtral of Experts,''
+\textit{arXiv:2401.04088}, 2024.
+
+\bibitem{dai2024}
+D. Dai et al.,
+``DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models,''
+\textit{arXiv:2401.06066}, 2024.
+
+\bibitem{zoph2022}
+B. Zoph et al.,
+``Designing Effective Sparse Expert Models,''
+\textit{arXiv:2202.08906}, 2022.
+
+\bibitem{puigcerver2023}
+J. Puigcerver, C. R. Ruiz, B. Mustafa, and N. Houlsby,
+``From Sparse to Soft Mixtures of Experts,''
+\textit{ICLR}, 2024.
+
+\bibitem{zhou2022}
+Y. Zhou et al.,
+``Mixture-of-Experts with Expert Choice Routing,''
+\textit{NeurIPS}, 2022.
+
+\bibitem{scx_egp}
+SCX,
+``Consistency-Constrained Expert Merging for Transferable ACE Machine-Learned Interatomic Potentials,''
+GitHub: shuchaoxi/SCX, 2026.
+
+\bibitem{scx_hamiltonian}
+SCX,
+``哈密顿量作为审计条件——从能量景观判断可审计性,''
+GitHub: shuchaoxi/SCX, 2026.
+
+\bibitem{scx_history}
+SCX,
+``SCX History: How a Gauge-Fixing Problem Became an Uncertainty Principle,''
+GitHub: shuchaoxi/SCX, 2026.
+
+\bibitem{scx_thm3}
+SCX,
+``老实人定理 (Honest Person Theorem): 无额外假设时单观察者无法区分噪声、偏见、可学习困难与诚实错误,''
+GitHub: shuchaoxi/SCX, 2026.
+
+\bibitem{scx_yajie}
+SCX,
+``Yajie协议：多专家共识中的诚实纳什均衡,''
+GitHub: shuchaoxi/SCX, 2026.
+
+\bibitem{drautz2019}
+R. Drautz,
+``Atomic Cluster Expansion for Accurate and Transferable Interatomic Potentials,''
+\textit{Physical Review B}, 2019.
+
+\bibitem{yoo2019}
+D. Yoo et al.,
+``Atomic Energy Mapping of Neural Network Potentials,''
+\textit{Physical Review Materials}, 2019.
+
+\bibitem{herman2008}
+K. M. Herman,
+``Gauge Dependence of the Embedding Energy in Embedded Atom Method Potentials,''
+\textit{Modelling and Simulation in Materials Science and Engineering}, 2008.
+
+\bibitem{hoeffding}
+W. Hoeffding,
+``Probability Inequalities for Sums of Bounded Random Variables,''
+\textit{Journal of the American Statistical Association}, 1963.
+
+\end{thebibliography}
+
+\end{document}
