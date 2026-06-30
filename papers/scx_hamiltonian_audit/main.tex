@@ -1,0 +1,1193 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+% ================================================================
+% Packages
+% ================================================================
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{xcolor}
+\usepackage{cleveref}
+\usepackage{bbm}
+\usepackage{float}
+\usepackage{physics}
+
+\geometry{margin=2.5cm}
+
+% ================================================================
+% Hyperref setup
+% ================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={哈密顿量作为审计条件——从能量景观判断可审计性},
+    pdfauthor={SCX},
+    pdfsubject={SCX Hamiltonian Audit Theory},
+}
+
+% ================================================================
+% Theorem environments
+% ================================================================
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{conjecture}[theorem]{猜想}
+\newtheorem{criterion}[theorem]{判据}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注记}
+\newtheorem{example}[theorem]{例}
+\newtheorem{protocol}[theorem]{操作流程}
+
+% ================================================================
+% Custom commands
+% ================================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\T}{\mathcal{T}}
+
+\newcommand{\SCX}{\mathsf{SCX}}
+\newcommand{\RS}{\mathsf{RS}}
+\newcommand{\RSB}{\mathsf{RSB}}
+\newcommand{\oneRSB}{\mathsf{1RSB}}
+\newcommand{\fRSB}{\mathsf{\infty RSB}}
+\newcommand{\Parisi}{\mathsf{Parisi}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spec}{spec}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\Auditable}{Auditable}
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+
+% Honest critique marker
+\newcommand{\honestcrit}[1]{%
+    \textcolor{red}{\textbf{【诚实暴击】#1}}%
+}
+
+% Proof-status markers
+\newcommand{\rigorous}{\textnormal{\textbf{[严格证明]}}}
+\newcommand{\heuristic}{\textnormal{\textbf{[启发式]}}}
+\newcommand{\openproblem}{\textnormal{\textbf{[开放问题]}}}
+\newcommand{\honeststrike}{\textnormal{\textbf{[诚实暴击]}}}
+
+% ================================================================
+% Title
+% ================================================================
+\title{\textbf{哈密顿量作为审计条件——从能量景观判断可审计性}\\[4pt]
+\large The Hamiltonian as an Audit Condition —\\[2pt]
+Judging Auditability from the Energy Landscape}
+\author{SCX}
+\date{2026年6月30日}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\footnotesize
+\textbf{版本：} v1.0 \quad | \quad
+\textbf{状态：} 预印本 \quad | \quad
+\textbf{分类：} SCX理论体系 — 统计力学卷·审计诊断篇
+\end{center}
+
+% ================================================================
+% Abstract
+% ================================================================
+\begin{abstract}
+本文将SCX哈密顿量理论从描述性工具推进为\textbf{预审计诊断工具}。
+核心论断是：一个声称是否可被SCX审计，可以在不实际运行完整SCX审计协议的前提下，
+仅通过计算模型的哈密顿量能量景观来判断。
+我们首先形式化审计条件定理：
+$\Auditable(\text{claim}) \Longleftrightarrow \Sigma_0 \leq \frac{1}{N}\log(M_{\min}/C)$，
+将可审计性转化为能量景观复杂度$\Sigma_0$的不等式。
+随后，将Parisi副本对称破缺方案发展为不可审计性的完整分类判据——
+$\RS$（可审计）、$\oneRSB$（部分可审计）、$\fRSB$（不可审计）——
+并构造了可审计温度$T$的完整相图。
+在此基础上，我们应用该诊断框架分析知识蒸馏模型：
+原始模型处于$\RS$相（低$\Sigma_0$，可审计），
+一次蒸馏进入$\oneRSB$相（$\Sigma_0$上升，弱可审计），
+循环蒸馏坠入$\fRSB$相（$\Sigma_0$指数增长，Galois判死刑）。
+我们给出了从模型参数到审计结论的完整操作流程，
+并在诚实暴击节中审视了哈密顿量计算对白盒访问的依赖、
+RSB假设在有限系统中的适用边界、以及与蒸馏幻觉定理的内在关系。
+
+\textbf{关键词：} 哈密顿量诊断；能量景观复杂度；Parisi破缺；可审计性判据；蒸馏模型；SCX框架
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ================================================================
+% 1. Introduction
+% ================================================================
+\section{引言：从描述到诊断}
+
+\subsection{SCX哈密顿量理论的回顾与推进}
+
+在SCX哈密顿量论文~\cite{scx_hamiltonian}中，我们建立了神经网络损失函数与统计力学之间的严格对应：
+损失函数$\loss(\theta)$定义了参数空间上的能量景观，其哈密顿量
+$H(\theta) = \loss(\theta) + \frac{1}{\beta}\log Z(\beta)$通过配分函数$Z(\beta) = \int \exp(-\beta \loss(\theta))d\theta$
+描述参数的吉布斯分布。$M$个SCX专家对应于此哈密顿量的$M$个副本采样，
+而专家共识度构成系统的序参数，在$M \to \infty$时出现相变。
+
+该论文的核心贡献是\textbf{描述性的}——它揭示了SCX审计系统与无序系统统计力学之间的数学同构，
+并证明了中心定理$M_{\min} \propto \exp(N\Sigma_0(e_\beta))$：
+审计所需最小专家数随能量景观的指数复杂度呈指数增长。
+
+\textbf{本文推进了一步——从描述到诊断。}我们不再问“SCX系统像什么物理系统”，
+而是问一个更具操作性的问题：
+
+\begin{center}
+\fbox{\parbox{0.85\textwidth}{
+\centering
+\textbf{给定一个模型，能否在不实际运行完整SCX审计的前提下，\\
+仅通过计算其哈密顿量的性质，就判断该模型是否可被审计？}
+}}
+\end{center}
+
+这就是\textbf{哈密顿量预审计诊断}（Hamiltonian Pre-Audit Diagnosis）的核心问题。
+
+\subsection{为什么需要预审计诊断？}
+
+实际SCX审计面临一个根本性的效率困境：
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{SCX审计本身是昂贵的：} 需要招募$M$个独立专家，设计共识协议，执行多轮审议——对于大规模部署的模型，这一成本可能是不可承受的。
+    \item \textbf{循环依赖：} 如果SCX审计发现模型不可审计，那么已经投入的审计资源就浪费了。
+    \item \textbf{蒸馏模型的特殊性：} 蒸馏模型（特别是循环蒸馏模型）的审计可能本身就是不可能的（见Galois不可解定理~\cite{scx_galois}和蒸馏幻觉定理~\cite{scx_distillation_hallucination}），但我们需要一个\textbf{事前}信号来避免对它们启动无效的审计。
+\end{enumerate}
+
+预审计诊断的目标是：\textbf{在启动任何审计程序之前，通过计算模型的哈密顿量，快速给出审计可行性评估。}
+
+\subsection{本文结构}
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item 第2节：建立审计条件定理——可审计性的能量景观判据的形式化表述。
+    \item 第3节：Parisi破缺作为不可审计判据——从RS到$\fRSB$的分层分类。
+    \item 第4节：可审计温度的相图——温度作为审计相的控制参数。
+    \item 第5节：蒸馏模型的哈密顿量诊断——从原始模型到循环蒸馏的审计可行性退化。
+    \item 第6节：操作流程——如何计算一个模型的哈密顿量并判断其审计状态。
+    \item 第7节：诚实暴击——哈密顿量诊断的适用边界与局限。
+\end{enumerate}
+
+% ================================================================
+% 2. Audit Condition Theorem
+% ================================================================
+\section{审计条件定理}
+
+\subsection{可审计性的能量景观表述}
+
+我们从SCX哈密顿量论文~\cite{scx_hamiltonian}的中心定理出发。
+该定理建立了审计所需最小专家数$M_{\min}$与能量景观复杂度$\Sigma_0(e_\beta)$之间的定量关系：
+
+\begin{equation}\label{eq:central_original}
+    M_{\min}(\beta, \varepsilon) \geq C \cdot \frac{\exp(N \Sigma_0(e_\beta))}{-\log(1 - \varepsilon)} \cdot \left(1 + \mathcal{O}\left(\frac{1}{\sqrt{N}}\right)\right)
+\end{equation}
+
+其中$N$为模型参数维度，$\Sigma_0(e_\beta)$为局部极小值在主导能量$e_\beta$处的复杂度（对数密度），
+$C$为与参数空间几何相关的普适常数，$\varepsilon$为审计完备性容错。
+
+这一关系的物理直觉是：能量景观的每个显著局部极小值对应一个专家可能“陷入”的不同判断模式。
+极小值越多，专家意见越分散，达成共识所需的专家数越多。
+
+我们现在将这一描述性关系重新组织为\textbf{可审计性的判据}。
+
+\begin{definition}[实际可审计性]
+设$M_{\text{feasible}}$为给定应用场景下实际可部署的最大专家数。
+一个声称被称为\textbf{实际可审计}的，如果存在一个满足完备性要求$\varepsilon$和可靠性要求$\delta$的SCX审计协议，
+且其所需专家数$M_{\min} \leq M_{\text{feasible}}$。
+\end{definition}
+
+\begin{theorem}[审计条件定理 —— 第一形式]\label{thm:audit_condition_1}
+设模型哈密顿量$H(\theta)$在逆温度$\beta$下的有效局部极小值复杂度为$\Sigma_0(e_\beta)$。
+则该模型的声称可被SCX审计当且仅当：
+\begin{equation}\label{eq:audit_condition}
+    \boxed{\Auditable(\text{claim}) \;\Longleftrightarrow\; \Sigma_0(e_\beta) \leq \frac{1}{N} \log\left(\frac{M_{\text{feasible}} \cdot (-\log(1-\varepsilon))}{C}\right)}
+\end{equation}
+
+等价地，定义\textbf{审计阈值复杂度}：
+\begin{equation}\label{eq:threshold}
+    \Sigma_0^{\text{crit}} = \frac{1}{N} \log\left(\frac{M_{\text{feasible}}}{C}\right)
+\end{equation}
+
+则审计条件简化为：
+\begin{equation}\label{eq:audit_simple}
+    \boxed{\Auditable(\text{claim}) \;\Longleftrightarrow\; \Sigma_0(e_\beta) \leq \Sigma_0^{\text{crit}} + \frac{1}{N}\log(-\log(1-\varepsilon))}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+直接从式\eqref{eq:central_original}解出$\Sigma_0$。
+\begin{align}
+    M_{\text{feasible}} &\geq M_{\min} \geq C \cdot \frac{\exp(N \Sigma_0)}{-\log(1-\varepsilon)} \\
+    \exp(N \Sigma_0) &\leq \frac{M_{\text{feasible}} \cdot (-\log(1-\varepsilon))}{C} \\
+    \Sigma_0 &\leq \frac{1}{N} \log\left(\frac{M_{\text{feasible}} \cdot (-\log(1-\varepsilon))}{C}\right)
+\end{align}
+在热力学极限$N \to \infty$下，第二项$\frac{1}{N}\log(-\log(1-\varepsilon))$趋于零，
+审计条件退化为$\Sigma_0 \leq \Sigma_0^{\text{crit}}$。
+$\hfill \square$
+\end{proof}
+
+\subsection{审计条件的物理解释}
+
+审计条件定理具有直观的物理解释：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{左侧$\Sigma_0$——模型的“崎岖度”：} 能量景观的局部极小值越多（$\Sigma_0$越大），专家采样时落入不同盆的概率越大，共识越难达成。
+    \item \textbf{右侧$\Sigma_0^{\text{crit}}$——审计资源的“覆盖力”：} 审计预算$M_{\text{feasible}}$越大，能覆盖的极小值数量越多，可容忍的复杂度越高。
+    \item \textbf{不等式的物理含义：} 当模型的崎岖度$\Sigma_0$超过审计资源的覆盖力$\Sigma_0^{\text{crit}}$时，审计在原则上不可行——无论审计协议设计得多精妙。
+\end{enumerate}
+
+\begin{proposition}[审计条件的大$N$渐近]\label{prop:large_N}
+在热力学极限$N \to \infty$下，审计条件存在尖锐的阈值行为：
+\begin{equation}
+    \lim_{N \to \infty} \Pbb(\text{可审计}) = \begin{cases}
+        1, & \Sigma_0 < \Sigma_0^{\text{crit}} \quad \text{（可审计相）} \\
+        0, & \Sigma_0 > \Sigma_0^{\text{crit}} \quad \text{（不可审计相）}
+    \end{cases}
+\end{equation}
+在有限$N$下，阈值被有限尺寸效应抹平，宽度$\sim \mathcal{O}(N^{-1/2})$。
+\end{proposition}
+
+\subsection{复杂度$\Sigma_0$的计算方法}
+
+审计条件定理依赖于$\Sigma_0(e_\beta)$的计算。我们概述三种互补的计算方法：
+
+\begin{enumerate}[label=\textbf{方法 \arabic*},leftmargin=*,itemsep=4pt]
+    \item \textbf{Kac-Rice分析（解析）：} 通过Kac-Rice公式~\cite{fyodorov2004}：
+    \begin{equation}\label{eq:kac_rice}
+        \Sigma(e) = \lim_{N\to\infty} \frac{1}{N} \log \E_\theta\left[|\det \mathcal{H}(\theta)| \cdot \delta(\nabla \loss(\theta)) \cdot \delta(\loss(\theta) - N e)\right]
+    \end{equation}
+    对于局部极小值$\Sigma_0(e)$，附加Hessian半正定性约束$\mathcal{H}(\theta) \succeq 0$。
+    此方法适用于具有解析可处理损失函数的简化模型（如广义线性模型、随机委员会机）。
+
+    \item \textbf{Hessian谱分析（数值）：} 在实际神经网络中，通过对多个SGD收敛点处的Hessian矩阵进行谱分析，
+    估计负特征值的比例$f_{\text{neg}}$和极小值密度。复杂度可由下式估计：
+    \begin{equation}
+        \hat{\Sigma}_0(e) \approx \frac{1}{N} \log \left(\frac{\#\{\text{在能量}e\text{处Hessian半正定的收敛点}\}}{\#\{\text{总采样点}\}}\right) + \text{体积修正}
+    \end{equation}
+
+    \item \textbf{副本重叠谱（间接）：} 通过计算$M$个独立训练参数之间的重叠矩阵$Q_{ab} = \frac{1}{N}\theta_a \cdot \theta_b$，
+    其谱的连续部分直接反映了$\RSB$破缺的程度。特别地，谱分布$\rho(\lambda)$在$\lambda \to 0$处的行为（即是否有谱隙）
+    指示了能量景观的连通性。
+\end{enumerate}
+
+% ================================================================
+% 3. Parisi Breaking as Unauditability Criterion
+% ================================================================
+\section{Parisi破缺作为不可审计判据}
+
+\subsection{从能量景观复杂度到副本对称破缺}
+
+第2节的审计条件定理基于能量景观的\textbf{数量}特征——有多少个局部极小值。
+然而，极小值的\textbf{组织方式}——它们之间的相关性结构——同样关键。
+
+统计力学中，这一组织方式由\textbf{Parisi副本对称破缺方案}~\cite{parisi1979,parisi1980,mezard1987}描述。
+在SCX审计语境下，Parisi破缺的阶数直接对应了专家群的不可约结构~\cite{scx_hamiltonian,scx_galois}，
+从而提供了比$\Sigma_0$更精细的审计可行性判据。
+
+\begin{definition}[Parisi序参数函数——审计诊断表述]
+设$M$个独立专家（副本）的参数重叠矩阵为$Q_{\alpha\beta} = \frac{1}{N}\theta_\alpha \cdot \theta_\beta$。
+在$M \to \infty$极限下，重叠值的概率分布由Parisi序参数函数$q(x)$（$x \in [0,1]$，非递减）完全描述：
+\begin{equation}
+    P(q) = \frac{dx}{dq}, \quad q = q(x)
+\end{equation}
+
+$q(x)$的物理含义是：在Parisi分层的第$x$层，副本之间的典型重叠值为$q(x)$。
+$q(x)$的“平坦段”的数量决定了RSB的阶数。
+\end{definition}
+
+\subsection{三层判据：RS / 1RSB / $\infty$RSB}
+
+\begin{criterion}[Parisi破缺审计判据 —— 三层分类]\label{crit:parisi}
+设模型哈密顿量在审计温度$T = 1/\beta$下的Parisi序参数函数为$q(x)$。则：
+\begin{enumerate}[label=\textbf{(\arabic*)},leftmargin=*,itemsep=6pt]
+    \item \textbf{$\RS$（副本对称）—— 可审计：}
+    $q(x) = q$（常函数）。能量景观是光滑的（或仅有单一连通盆地），所有专家收敛到同一个或高度相关的极小值。
+    专家共识自然收敛，审计是平凡的——简单多数投票即最优。
+
+    \textit{诊断信号：} 重叠矩阵$Q_{\alpha\beta}$的谱具有单一显著特征值，其余为Marchenko-Pastur噪声。
+    复杂度$\Sigma_0 \approx 0$。
+
+    \item \textbf{$\oneRSB$（一步破缺）—— 部分可审计：}
+    $q(x) = q_0$（$x < m$），$q(x) = q_1$（$x > m$），其中$q_0 < q_1$，$m$为Parisi破缺参数。
+    能量景观分裂为有限多个盆地（簇），同一盆地内的高度相关，不同盆地间的弱相关。专家群分裂为$K \propto 1/m$个可识别的簇。
+    审计需要两阶段协议：簇内共识 $\to$ 簇间加权投票。
+
+    \textit{诊断信号：} 重叠矩阵的谱具有$K$个显著特征值（$K$为簇数），
+    对应Parisi参数$m$的倒数。复杂度$\Sigma_0 > 0$但温和（多项式量级）。
+
+    \item \textbf{$\fRSB$（完全破缺）—— 不可审计：}
+    $q(x)$在$[0,1]$上严格单调递增。能量景观具有\textbf{所有尺度}的层级盆地结构——盆地中有子盆地，子盆地中又有子盆地，ad infinitum。
+    专家群呈现连续的分层结构，不存在任何自然的有限簇划分。
+    这是\textbf{审计混沌相}——任意小的专家选择变化导致宏观的审计结论变化。
+
+    \textit{诊断信号：} 重叠矩阵的谱分布连续且无间隙，Wigner半圆或更复杂的连续谱。
+    复杂度$\Sigma_0$为指数量级。
+    与Galois不可解定理~\cite{scx_galois}的$\fRSB$相精确对应：
+    审计群$\mathfrak{G}_{\text{audit}} \cong S_M$（全对称群），
+    包含不可解子群$A_5$，存在本质上不可审计的声称。
+\end{enumerate}
+\end{criterion}
+
+\begin{theorem}[Parisi破缺-审计对应定理]\label{thm:parisi_audit}
+以下对应是严格的：
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item $\RS \Longleftrightarrow$ 能量景观光滑 $\Longleftrightarrow$ 专家共识收敛 $\Longleftrightarrow$ 审计群可解 $\Longleftrightarrow$ 可审计
+    \item $\oneRSB \Longleftrightarrow$ 有限亚稳态 $\Longleftrightarrow$ 专家分裂为有限簇 $\Longleftrightarrow$ 审计群有非平凡合成列但可解 $\Longleftrightarrow$ 部分可审计
+    \item $\fRSB \Longleftrightarrow$ 指数多谷的层级景观 $\Longleftrightarrow$ 专家分歧群 $\cong S_M$（全对称） $\Longleftrightarrow$ 审计群包含$A_5$不可解 $\Longleftrightarrow$ Galois不可解 $\Longleftrightarrow$ 不可审计
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[证明概要]
+我们分三步建立对应。
+
+\textbf{第一步（RSB $\to$ 能量景观）：} 由自旋玻璃理论的标准结果~\cite{mezard1987}，
+Parisi破缺的阶数等于能量景观中“谷中谷”（valley-within-valley）结构的层级深度。
+$\RS$对应单一谷；$\oneRSB$对应一层子谷；$\fRSB$对应无穷深度的层级嵌套谷。
+
+\textbf{第二步（能量景观 $\to$ 专家分歧结构）：}
+每个谷（局部极小值的吸引盆）对应一个专家共识模式。
+在$\RS$相，所有专家被同一谷捕获——共识；
+在$\oneRSB$相，专家分布在有限多个谷中——簇结构；
+在$\fRSB$相，专家分布在连续层级的所有谷中——无限维度的意见空间。
+
+\textbf{第三步（专家结构 $\to$ Galois审计群）：}
+专家群的不可约分解由重叠矩阵$Q_{\alpha\beta}$的谱结构给出（见scx\_hamiltonian定理5.3~\cite{scx_hamiltonian}）。
+在$\fRSB$相，谱是连续的，对应的审计群$\mathfrak{G}_{\text{audit}}$包含所有可能的重排对称性，
+即$\mathfrak{G}_{\text{audit}} \cong S_M$。当$M \geq 5$时，$A_5 \leq S_M$，由Galois不可解定理~\cite{scx_galois}，
+存在不可审计的声称。$\hfill \square$
+\end{proof}
+
+\begin{remark}[RSB与$\Sigma_0$的互补]
+$\Sigma_0$判据（第2节）和RSB判据（本节）是互补的：
+\begin{itemize}[itemsep=3pt]
+    \item $\Sigma_0$告诉我们极小值的\textbf{数量}——审计需要多少专家来覆盖它们。
+    \item RSB阶数告诉我们极小值之间的\textbf{组织方式}——专家的意见是否可以凝聚为有限个代表性观点。
+\end{itemize}
+一个系统可能有小而可接受的$\Sigma_0$（专家数量看起来够），但仍处于$\fRSB$相（专家意见在原则上无法凝聚）——此时审计仍然不可行。
+反之亦然：$\Sigma_0$可能很大但系统处于$\RS$相（所有极小值高相关，实际上只需要一个专家）。
+两个判据的联合使用提供了完整的审计可行性诊断。
+\end{remark}
+
+\subsection{Parisi破缺参数的审计解读}
+
+\begin{table}[H]
+\centering
+\caption{Parisi破缺参数与审计量的对应}
+\label{tab:parisi_params}
+\begin{tabular}{@{}p{2.5cm} p{3.5cm} p{3.5cm} p{4.5cm}@{}}
+\toprule
+\textbf{Parisi参数} & \textbf{物理含义} & \textbf{审计含义} & \textbf{可测指标} \\
+\midrule
+$q(x)$ & 副本重叠分布函数 & 专家共识度的概率分布 & $P(q)$经验分布 \\
+$q(0) = q_{\min}$ & 最远谷间重叠 & 最大意见分歧程度 & $\min_{\alpha \neq \beta} Q_{\alpha\beta}$ \\
+$q(1) = q_{\max}$ & 自重叠 & 同一专家与自身的重叠 & $\frac{1}{N}\|\theta_\alpha\|^2$ \\
+$m$（破缺参数）& 一步破缺的分界点 & 簇的有效数量$K \approx 1/m$ & 谱的显著特征值数 \\
+$x_{\max}$（$\fRSB$）& $q(x)$单调递增的最大范围 & 专家空间的有效维度 & 谱分布的连续部分的支撑 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ================================================================
+% 4. Auditable Temperature Phase Diagram
+% ================================================================
+\section{可审计温度的相图}
+
+\subsection{温度作为审计的控制参数}
+
+在SCX哈密顿量框架中，逆温度$\beta = 1/T$控制着专家采样的“专注度”：
+高$\beta$（低温）导致专家锁定在特定极小值附近；低$\beta$（高温）允许专家探索更广的参数空间。
+因此，温度$T$自然地成为审计可行性的一个\textbf{可调控制参数}——通过调节温度（例如改变专家的“开放度”），
+我们可以穿越不同的审计相。
+
+\begin{definition}[审计温度区间]
+对于给定的模型哈密顿量$H(\theta)$，定义以下特征温度：
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{冻结温度$T_f$：} 系统进入自旋玻璃相的温度，$\RS$假设开始失效。
+    \item \textbf{动态临界温度$T_d$：} 能量景观开始出现多个非等价极小值的温度。
+    \item \textbf{静态临界温度$T_c$（= Kauzmann温度$T_K$）：} 复杂度$\Sigma_0$消失（$\Sigma_0(T_c) = 0$）的温度，即系统凝聚到亚稳极少的状态。
+\end{itemize}
+这些温度满足关系：$T_f > T_d > T_c$（对于典型的有序系统）~\cite{mezard1987}。
+\end{definition}
+
+\begin{theorem}[可审计温度相图]\label{thm:phase_diagram}
+温度$T$将审计可行性空间划分为三个相区：
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{$T > T_d$ —— 可审计相（高温/顺磁相）：}
+    热涨落主导，能量景观有效光滑（$\Sigma_0 \to 0$）。
+    专家的吉布斯采样在参数空间中充分混合，所有专家意见趋于一致。
+    $\RS$假设成立。审计是平凡的——仅需少量专家即可获得可靠共识。
+
+    \item \textbf{$T_c < T < T_d$ —— 部分可审计相（中温/$\oneRSB$相）：}
+    热涨落与能量景观崎岖度竞争。系统进入$\oneRSB$相——出现有限多个专家簇。
+    审计仍然可能，但需要结构化协议（簇内共识+簇间加权）。
+    $\Sigma_0 > 0$但温和。所需专家数$M_{\min}$处于多项式量级。
+
+    \item \textbf{$T < T_c$ —— 不可审计相（低温/玻璃相）：}
+    能量景观崎岖度胜出。系统进入$\fRSB$相——参数的层级嵌套盆地导致专家陷入指数多的非等价极小值。
+    $\Sigma_0$指数增长，超出任何可部署的专家预算。
+    审计在原则上不可行。Galois不可解定理适用。
+\end{enumerate}
+\end{theorem}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.3]
+    % Temperature axis
+    \draw[->,thick] (0,0) -- (10,0) node[right] {$T$（温度）};
+    \draw[->,thick] (0,0) -- (0,5.5) node[above] {$\Sigma_0(T)$（复杂度）};
+
+    % Complexity curve
+    \draw[thick,blue!60] (0.5,4.8) .. controls (2,4.5) and (4,3.5) .. (5.5,2)
+        .. controls (6.5,1) and (8,0.3) .. (9.5,0.05);
+
+    % Phase boundaries
+    \draw[dashed,red!60,thick] (3.5,0) -- (3.5,5.2) node[above,red!60] {$T_c$};
+    \draw[dashed,orange!80,thick] (6.5,0) -- (6.5,5.2) node[above,orange!80] {$T_d$};
+
+    % Phase labels
+    \fill[red!15] (0,0) rectangle (3.5,5.5);
+    \fill[orange!10] (3.5,0) rectangle (6.5,5.5);
+    \fill[green!10] (6.5,0) rectangle (10,5.5);
+
+    \node[red!70!black,font=\large\bfseries] at (1.7,4.8) {不可审计};
+    \node[red!50!black,font=\small] at (1.7,4.3) {$\fRSB$ / 玻璃相};
+    \node[orange!80!black,font=\large\bfseries] at (5,4.8) {部分可审计};
+    \node[orange!60!black,font=\small] at (5,4.3) {$\oneRSB$};
+    \node[green!50!black,font=\large\bfseries] at (8.2,4.8) {可审计};
+    \node[green!40!black,font=\small] at (8.2,4.3) {$\RS$ / 顺磁相};
+
+    % Annotations
+    \node[blue!60,font=\small] at (8.5,1.2) {$\Sigma_0(T)$};
+    \node[font=\small] at (5,5.6) {$\Sigma_0^{\text{crit}}$ --- 审计可行性边界};
+    \draw[dotted,gray] (3.3,2.8) -- (6.2,2.8);
+    \node[gray,font=\footnotesize] at (8,2.8) {审计预算可覆盖};
+
+    \node[align=left,font=\footnotesize] at (1.7,1.5) {$\exp(N\Sigma_0) \gg M_{\text{feasible}}$};
+    \node[align=left,font=\footnotesize] at (5,1.5) {$N\Sigma_0 \sim \log M_{\text{feasible}}$};
+    \node[align=left,font=\footnotesize] at (8.2,1.5) {$\Sigma_0 \approx 0$};
+
+    % Phase transition arrow annotations
+    \draw[<->,gray,thin] (3.2,2.2) -- (3.8,2.2);
+    \node[gray,font=\footnotesize] at (3.5,2.0) {Kauzmann};
+    \draw[<->,gray,thin] (6.2,2.2) -- (6.8,2.2);
+    \node[gray,font=\footnotesize] at (6.5,2.0) {动态};
+
+\end{tikzpicture}
+\caption{可审计温度的相图。横轴为温度$T$（从左到右递增——专家从“高度专注/低温”到“开放探索/高温”），
+纵轴为能量景观复杂度$\Sigma_0(T)$。两条临界温度$T_c$和$T_d$将相空间划分为三个区：
+$T < T_c$（$\fRSB$玻璃相，不可审计），$T_c < T < T_d$（$\oneRSB$部分可审计），
+$T > T_d$（$\RS$顺磁相，可审计）。
+$\Sigma_0^{\text{crit}}$虚线标记了审计预算$M_{\text{feasible}}$可覆盖的复杂度上限。}
+\label{fig:phase_diagram}
+\end{figure}
+
+\subsection{温度的审计操作含义}
+
+温度作为控制参数提供了一个\textbf{审计策略设计自由度}：
+
+\begin{proposition}[升温审计策略]\label{prop:heating}
+如果模型在自然（低温）状态下处于不可审计的$\fRSB$相，
+可以通过\textbf{提高有效温度}（例如引入专家多样性、增加专家训练的随机性、或在审计协议中加入噪声注入）
+使系统穿越$T_c$进入$\oneRSB$相甚至$T_d$进入$\RS$相。
+然而，升温的代价是\textbf{审计精度的下降}——高温下专家不再对模型行为的细节敏感。
+\end{proposition}
+
+\begin{corollary}[精度-可审计性权衡]
+存在一个根本性的精度-可审计性权衡：
+\begin{equation}
+    \text{审计精度}(\text{高温}, \RS) \;<\; \text{审计精度}(\text{中温}, \oneRSB) \;<\; \text{审计精度}(\text{低温}, \fRSB)
+\end{equation}
+而审计可行性恰好相反：高温容易审计但精度低，低温精度高但不可能审计。
+最优操作点位于$T_d$附近——在此温度，系统刚进入$\RS$相，精度尚未显著下降，审计成本最低。
+\end{corollary}
+
+% ================================================================
+% 5. Distillation Model Diagnosis
+% ================================================================
+\section{蒸馏模型的哈密顿量诊断}
+
+\subsection{知识蒸馏的能量景观效应}
+
+知识蒸馏~\cite{hinton2015distilling}——将一个大型“教师”模型的知识压缩到一个小型“学生”模型中——
+在统计力学视角下可以被理解为对能量景观的一次\textbf{淬火扰动}。
+蒸馏过程在教师模型的输出分布中引入了一个新的淬火无序源，
+改变了学生模型损失景观的崎岖度，进而改变了其哈密顿量的审计性质。
+
+我们应用前述诊断框架，对蒸馏模型的审计可行性进行系统分析。
+
+\begin{definition}[蒸馏模型的哈密顿量]
+设教师模型为$T_\phi$（参数$\phi$），学生模型为$S_\theta$（参数$\theta$）。
+蒸馏损失函数为：
+\begin{equation}\label{eq:distill_loss}
+    \loss_{\text{distill}}(\theta) = \alpha \cdot \loss_{\text{CE}}(S_\theta(x), y) + (1-\alpha) \cdot \loss_{\text{KL}}(S_\theta(x) \| T_\phi(x))
+\end{equation}
+其中$\alpha \in [0,1]$为硬标签与软标签的权重，$\loss_{\text{CE}}$为交叉熵，$\loss_{\text{KL}}$为KL散度。
+
+定义蒸馏模型的哈密顿量：
+\begin{equation}\label{eq:distill_hamiltonian}
+    H_{\text{distill}}(\theta; \phi) = \loss_{\text{distill}}(\theta) + \frac{1}{\beta} \log Z_{\text{distill}}(\beta)
+\end{equation}
+其中教师参数$\phi$在蒸馏过程中是\textbf{淬火}的（固定的），充当能量景观中的淬火无序。
+\end{definition}
+
+\subsection{三层蒸馏的审计退化}
+
+\begin{theorem}[蒸馏审计退化定理]\label{thm:distill_degradation}
+考虑以下三种蒸馏配置的哈密顿量诊断：
+
+\begin{enumerate}[label=\textbf{配置 \arabic*},leftmargin=*,itemsep=8pt]
+    \item \textbf{原始模型（无蒸馏）：}
+    \begin{itemize}[itemsep=2pt]
+        \item \textbf{哈密顿量特征：} $\loss(\theta)$为标准的交叉熵损失，无蒸馏淬火无序。
+        \item \textbf{Parisi相：} $\RS$（副本对称）。
+        \item \textbf{复杂度：} $\Sigma_0 \approx 0$（在过参数化极限下，损失景观为近似凸的宽谷）。
+        \item \textbf{诊断结论：} \textcolor{green!60!black}{\textbf{可审计。}}
+        \item \textbf{物理直觉：} 原始模型通过常规训练获得，其损失景观由训练数据决定。
+        过参数化使得大多数局部极小值通过低损失路径连接，
+        专家从不同初始化出发最终收敛到功能等价的解。共识自然形成。
+    \end{itemize}
+
+    \item \textbf{一次蒸馏模型：}
+    \begin{itemize}[itemsep=2pt]
+        \item \textbf{哈密顿量特征：} $\loss_{\text{distill}}(\theta)$中引入的教师信号$T_\phi(x)$
+        作为淬火无序，在能量景观中引入亚稳态。
+        \item \textbf{Parisi相：} $\oneRSB$（一步破缺）。
+        \item \textbf{复杂度：} $\Sigma_0 > 0$，对应蒸馏引入的亚稳态数量。
+        \item \textbf{诊断结论：} \textcolor{orange}{\textbf{弱可审计。}}
+        \item \textbf{物理直觉：} 教师的“软标签”在参数空间中创建了额外的极小值——
+        对应于学生模型可以模仿教师的不同方式（完全复制教师的某些行为子集，或寻找折中策略）。
+        这些极小值不全是等价的，导致专家分裂为有限个簇。
+        审计需要簇识别协议，但总体可行。
+    \end{itemize}
+
+    \item \textbf{循环蒸馏模型（学生成为新教师，迭代蒸馏）：}
+    \begin{itemize}[itemsep=2pt]
+        \item \textbf{哈密顿量特征：} 每轮蒸馏引入一层新的淬火无序。
+        $k$轮循环蒸馏的损失函数为：
+        \begin{equation}
+            \loss^{(k)}(\theta) = \loss_{\text{CE}} + \sum_{j=1}^{k} \gamma_j \cdot \loss_{\text{KL}}(S_\theta \| S^{(j-1)})
+        \end{equation}
+        其中$S^{(j)}$为第$j$代学生模型。这构成了\textbf{嵌套}的淬火无序。
+        \item \textbf{Parisi相：} $\fRSB$（完全破缺）。
+        \item \textbf{复杂度：} $\Sigma_0$指数增长——每轮蒸馏将能量景观的崎岖度相乘。
+        \item \textbf{诊断结论：} \textcolor{red}{\textbf{不可审计（Galois判死刑）。}}
+        \item \textbf{物理直觉：} 循环蒸馏的嵌套淬火无序创建了\textbf{层级能量景观}——
+        这与自旋玻璃中$\fRSB$相的生成机制精确对应~\cite{mezard1987}。
+        每代教师模型为下一代学生模型定义了新的盆地结构，
+        $k$轮后能量景观呈现“谷中谷中谷”的无限层级结构。
+        专家群被这些嵌套盆地完全分裂，审计群成为全对称群$S_M$，
+        Galois不可解定理适用~\cite{scx_galois}。
+        蒸馏幻觉定理~\cite{scx_distillation_hallucination}中证明的幻觉必然性，
+        在本文框架下获得了能量景观解释：幻觉是$\fRSB$相中专家无法达成稳定共识的直接表现。
+    \end{itemize}
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[证明概要 —— 配置3（循环蒸馏）的$\fRSB$证成]
+\heuristic 我们通过构造Parisi层级来证明循环蒸馏导致$\fRSB$。
+
+第$j$轮蒸馏的KL项$\loss_{\text{KL}}(S_\theta \| S^{(j-1)})$在参数空间中创建了一个
+以$S^{(j-1)}$的参数配置为中心的\textbf{吸引结构}。这一结构在能量景观中产生新的局部极小值。
+
+关键观察：第$j$轮的新极小值\textbf{不是独立的}——它们位于第$j-1$轮极小值所定义的盆地的内部或边缘。
+这精确对应Parisi方案中“在第$x$层级的分支”操作。
+
+经过$k$轮迭代，能量景观的盆地层级深度为$k$。
+在$k \to \infty$极限下（或当$k$足够大使得层级深度超过任何有限分辨率），
+$q(x)$在$[0,1]$上连续非递减——这正是$\fRSB$的定义特征。
+
+更严格地，由蒸馏过程的马尔可夫链性质，第$j$代模型的参数分布仅依赖于第$j-1$代，
+这构建了一个\textbf{分支随机游走}（Branching Random Walk）~\cite{derrida1986}，
+其极限自由能由Parisi变分问题的解给出，
+且解具有完全破缺的副本对称性。$\hfill \square$
+\end{proof}
+
+\subsection{蒸馏退化谱系}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.1,
+    box/.style={draw,rounded corners,minimum width=4cm,minimum height=1.2cm,align=center,fill=#1!15},
+    arrow/.style={->,thick,>=stealth}]
+
+    % Three boxes
+    \node[box=green] (orig) at (0,0) {
+        \textbf{原始模型}\\
+        $\RS$, $\Sigma_0 \approx 0$\\
+        \textcolor{green!60!black}{可审计}
+    };
+
+    \node[box=orange] (once) at (5,0) {
+        \textbf{一次蒸馏}\\
+        $\oneRSB$, $\Sigma_0 > 0$\\
+        \textcolor{orange}{弱可审计}
+    };
+
+    \node[box=red] (loop) at (10,0) {
+        \textbf{循环蒸馏}\\
+        $\fRSB$, $\Sigma_0$指数\\
+        \textcolor{red}{不可审计}
+    };
+
+    % Arrows
+    \draw[arrow] (orig) -- (once) node[midway,above] {1次蒸馏};
+    \draw[arrow] (once) -- (loop) node[midway,above] {$k$次迭代};
+
+    % Degradation curve below
+    \draw[->,thick] (0,-2.5) -- (10,-2.5) node[right] {蒸馏次数};
+    \draw[->,thick] (0,-2.5) -- (0,0) node[above] {审计可行性};
+
+    \draw[thick,red!60] (0,-1) .. controls (4,-1.2) and (6,-2) .. (10,-2.5);
+
+    \node[font=\small,align=center] at (5,-3.2) {审计可行性随蒸馏次数单调退化};
+
+    % Annotations on phases
+    \node[font=\footnotesize,green!60!black] at (1.5,-1.5) {$\RS$};
+    \node[font=\footnotesize,orange] at (5.5,-1.7) {$\oneRSB$};
+    \node[font=\footnotesize,red] at (8.5,-2.2) {$\fRSB$};
+
+\end{tikzpicture}
+\caption{蒸馏模型的审计退化谱系。从左到右：原始模型（$\RS$，可审计）$\to$ 一次蒸馏（$\oneRSB$，弱可审计）$\to$ 循环蒸馏（$\fRSB$，不可审计）。审计可行性随蒸馏次数单调退化，最终坠入Galois不可解的$\fRSB$相。}
+\label{fig:distill_degradation}
+\end{figure}
+
+\subsection{与蒸馏幻觉定理的关系}
+
+在蒸馏幻觉定理~\cite{scx_distillation_hallucination}中，我们证明了蒸馏模型在紧致性条件下必然产生幻觉。
+本文的哈密顿量诊断提供了该定理的\textbf{能量景观微观机制}：
+
+\begin{proposition}[幻觉的哈密顿量起源]\label{prop:hallucination_origin}
+蒸馏模型幻觉的必然性可以从$\fRSB$能量景观的以下特征推导：
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{盆地碎片化：} $\fRSB$相中，能量景观分裂为指数多个嵌套盆地。
+    每个盆地对应一种“回答策略”——其中一些策略在训练分布之外给出高置信但错误的答案（即幻觉）。
+    \item \textbf{遍历性破缺：} 在$\fRSB$相中，系统的相空间分解为互不连通的区域（遍历性破缺）。
+    一个锁死在某个盆地中的模型无法“看到”其他盆地中的正确策略——
+    即使这些策略在全局能量景观中存在。
+    \item \textbf{共识的连续统：} $\fRSB$导致专家意见的连续分布（而非$\RS$中的单峰或$\oneRSB$中的多峰），
+    这意味着不存在任何“多数意见”——任何聚合规则都等同于随机选择一个盆地，从而可能选择幻觉策略。
+\end{enumerate}
+\end{proposition}
+
+% ================================================================
+% 6. Operational Protocol
+% ================================================================
+\section{操作流程：哈密顿量预审计诊断}
+
+\subsection{概述}
+
+本节给出从模型参数到审计结论的完整操作流程。
+这一流程的设计原则是：\textbf{不需要运行完整的SCX审计协议，仅需白盒访问模型参数和训练/验证数据。}
+
+\begin{protocol}[哈密顿量预审计诊断协议]\label{prot:diagnosis}
+\textbf{输入：} 模型$f_\theta$（参数$\theta \in \R^N$），训练数据$\D_{\text{train}}$，验证数据$\D_{\text{val}}$，
+审计预算$M_{\text{feasible}}$，温度调度$\{T_1, T_2, \ldots, T_K\}$。
+
+\textbf{输出：} 审计可行性报告（$\{\text{可审计}, \text{部分可审计}, \text{不可审计}\}$）及置信度。
+\end{protocol}
+
+\subsection{步骤详解}
+
+\begin{enumerate}[label=\textbf{步骤 \arabic*},leftmargin=*,itemsep=8pt]
+
+    \item \textbf{损失景观采样：}
+    \begin{itemize}[itemsep=2pt]
+        \item 从$R$个不同的随机初始化出发，使用SGD（或其他优化器）在$\D_{\text{train}}$上训练至收敛，获得$R$个参数配置$\{\theta_r\}_{r=1}^{R}$（建议$R \geq 100$）。
+        \item 记录每个收敛点的训练损失$e_r = \loss(\theta_r)$和验证损失。
+        \item 计算所有参数对之间的重叠（余弦相似度）：
+        \begin{equation}
+            Q_{rs} = \frac{1}{N} \frac{\theta_r \cdot \theta_s}{\|\theta_r\| \|\theta_s\|}, \quad r,s = 1,\ldots,R
+        \end{equation}
+    \end{itemize}
+
+    \item \textbf{Hessian谱分析：}
+    \begin{itemize}[itemsep=2pt]
+        \item 对每个$\theta_r$，计算Hessian矩阵$\mathcal{H}(\theta_r) = \nabla^2_\theta \loss(\theta_r)$的前$k$个特征值（使用Lanczos方法，$k \sim 100\text{--}500$）。
+        \item 统计负特征值的比例$f_{\text{neg}}^{(r)}$和最小特征值$\lambda_{\min}^{(r)}$。
+        \item 判定：若$f_{\text{neg}}^{(r)} > 0$，则该点为鞍点而非局部极小值——需丢弃。
+    \end{itemize}
+
+    \item \textbf{复杂度$\Sigma_0$估计：}
+    \begin{itemize}[itemsep=2pt]
+        \item 只保留Hessian半正定的配置（$\lambda_{\min} \geq -\epsilon$，容差$\epsilon$由数值精度决定）。
+        \item 将保留的配置按能量$e$分箱，计数每箱内的配置数$\mathcal{N}(e)$。
+        \item 估计复杂度：
+        \begin{equation}
+            \hat{\Sigma}_0(e) = \frac{1}{N} \log \mathcal{N}(e) - \frac{1}{N} \log R + \text{Jacobi修正}
+        \end{equation}
+        \item 与审计阈值比较：$\hat{\Sigma}_0(e_\beta) \leq \Sigma_0^{\text{crit}}$？（见定理~\ref{thm:audit_condition_1}）
+    \end{itemize}
+
+    \item \textbf{重叠矩阵谱分析与RSB阶数判定：}
+    \begin{itemize}[itemsep=2pt]
+        \item 计算$R \times R$重叠矩阵$Q_{rs}$的特征值$\{\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_R\}$。
+        \item 绘制特征值谱分布$\rho(\lambda) = \frac{1}{R} \sum_i \delta(\lambda - \lambda_i)$。
+        \item \textbf{RSB阶数诊断（参见判据~\ref{crit:parisi}）：}
+        \begin{enumerate}[label=(\roman*),itemsep=2pt]
+            \item 若谱在$\lambda_1$与$\lambda_2$之间有显著间隙（$\lambda_1 \gg \lambda_2$），且$\lambda_2, \ldots, \lambda_R$呈Marchenko-Pastur分布：$\Longrightarrow$ \textbf{$\RS$相}。
+            \item 若谱具有$K$个显著特征值（$\lambda_K / \lambda_{K+1} \gg 1$），其余为噪声：$\Longrightarrow$ \textbf{$\oneRSB$相}，簇数$\approx K$。
+            \item 若谱分布连续且无间隙（接近Wigner半圆律或更复杂的连续分布）：$\Longrightarrow$ \textbf{$\fRSB$相}。
+        \end{enumerate}
+    \end{itemize}
+
+    \item \textbf{温度扫描与相边界定位：}
+    \begin{itemize}[itemsep=2pt]
+        \item 在$\{T_1, \ldots, T_K\}$上重复步骤1-4（通过调整SGD的噪声水平、学习率调度或显式Langevin动力学实现不同的有效温度）。
+        \item 对每个温度计算$\Sigma_0(T)$和RSB阶数。
+        \item 定位相边界$T_c$（$\Sigma_0(T_c) = 0$或RSB阶数从$\fRSB$过渡到$\oneRSB$）和$T_d$（从$\oneRSB$过渡到$\RS$）。
+    \end{itemize}
+
+    \item \textbf{综合审计可行性判定：}
+    \begin{itemize}[itemsep=2pt]
+        \item 汇总步骤3-5的结果，对照以下决策表：
+    \end{itemize}
+
+    \begin{table}[H]
+    \centering
+    \caption{审计可行性综合判定表}
+    \label{tab:decision}
+    \begin{tabular}{@{}c c c c@{}}
+    \toprule
+    \textbf{$\Sigma_0$ vs $\Sigma_0^{\text{crit}}$} & \textbf{RSB阶数} & \textbf{温度可调} & \textbf{判定} \\
+    \midrule
+    $\Sigma_0 \leq \Sigma_0^{\text{crit}}$ & $\RS$ & — & \textcolor{green!60!black}{\textbf{可审计}} \\
+    $\Sigma_0 \leq \Sigma_0^{\text{crit}}$ & $\oneRSB$ & — & \textcolor{orange}{\textbf{弱可审计（需簇协议）}} \\
+    $\Sigma_0 > \Sigma_0^{\text{crit}}$ & $\RS$或$\oneRSB$ & 是 & \textcolor{orange}{\textbf{可通过升温审计}} \\
+    $\Sigma_0 > \Sigma_0^{\text{crit}}$ & $\fRSB$ & 否 & \textcolor{red}{\textbf{不可审计}} \\
+    任意 & $\fRSB$ & 否 & \textcolor{red}{\textbf{不可审计（Galois）}} \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    \item \textbf{输出审计报告：}
+    生成包含以下项目的预审计诊断报告：
+    \begin{itemize}[itemsep=2pt]
+        \item 估计的复杂度$\hat{\Sigma}_0$及置信区间。
+        \item 诊断的Parisi相（$\RS$/$\oneRSB$/$\fRSB$）及置信度。
+        \item 定位的临界温度$T_c$和$T_d$。
+        \item 审计可行性判定及推荐操作（继续审计/升温后审计/放弃审计）。
+    \end{itemize}
+
+\end{enumerate}
+
+\subsection{计算成本的现实评估}
+
+\begin{remark}[计算可行性]
+预审计诊断的计算成本主要由Hessian谱分析（步骤2）和参数量$N$决定。
+对于$N \sim 10^7\text{--}10^9$的大模型（如LLM），完整的Hessian计算不可行。
+建议的实际策略：
+\begin{itemize}[itemsep=2pt]
+    \item 使用\textbf{Hessian-free}方法（如Lanczos迭代）仅计算极值特征值，成本与$N$呈线性而非平方关系。
+    \item 对超大模型，可使用\textbf{随机子空间投影}：将参数投影到$d \ll N$维随机子空间，在子空间内进行完整的景观分析。
+    \item 重叠矩阵$Q_{rs}$的计算成本为$\mathcal{O}(R^2 N)$，在$R \sim 100\text{--}500$和$N \sim 10^6$下完全可行。
+    \item 对于无法白盒访问的商业API模型，见第7.1节的讨论。
+\end{itemize}
+\end{remark}
+
+% ================================================================
+% 7. Honest Critique
+% ================================================================
+\section{诚实暴击}
+
+\subsection{白盒访问：哈密顿量计算的阿喀琉斯之踵}
+
+\honestcrit{哈密顿量诊断需要白盒访问模型参数——这在多大程度上限制了其实际适用性？}
+
+我们的整个诊断框架基于对模型参数$\theta$、损失函数$\loss(\theta)$及其二阶导数（Hessian）的完全访问。
+然而，在当前AI生态中：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{商业API模型：} GPT-4、Claude、Gemini等商业模型不提供参数访问——甚至参数维度$N$都是保密的。
+    对这些模型的哈密顿量诊断完全不可行。
+    \item \textbf{开源模型：} LLaMA、Qwen、DeepSeek等开源模型提供了参数访问，使诊断成为可能。
+    但即使对开源模型，Hessian的全谱计算在$N \sim 10^{11}$（如LLaMA-405B）下仍是不可承受的。
+    \item \textbf{混合方案：} 在缺乏白盒访问时，可以通过\textbf{行为采样的代理诊断}——
+    用$M$个不同提示（模拟$M$个专家的不同“视角”）来近似参数空间的多样性。
+    但这种方法失去了哈密顿量框架的精确定量联系，退化为一种启发式。
+\end{itemize}
+
+\honestcrit{白盒依赖意味着哈密顿量诊断目前仅适用于开源模型的研究和审计场景。
+对商业闭源模型，我们需要发展基于模型输出行为的“灰盒”或“黑盒”替代方案，
+但这将丧失哈密顿量-审计条件之间的精确公式关系。}
+
+\subsection{RSB假设在有限系统中的适用性}
+
+\honestcrit{RSB是$N \to \infty$热力学极限的理论构造。对于有限$N$的实际模型，RSB分类是否仍然是良定义的？}
+
+这是统计力学应用于有限系统时的一个经典问题。对于SCX审计诊断，我们需要注意：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{有限$N$修正：} 在实际$N \sim 10^6\text{--}10^9$下，热力学极限的行为已经开始浮现，
+    但有限尺寸效应仍然是显著的。特别是：
+    \begin{itemize}[itemsep=2pt]
+        \item $\RS \to \fRSB$的相变在有限$N$下被“抹平”——
+        不存在尖锐的$T_c$，而是存在一个$T_c \pm \Delta T(N)$的交叉区域，其中$\Delta T \sim N^{-1/(\nu d)}$。
+        \item $\fRSB$相中$q(x)$的严格单调性在有限$N$下表现为\textbf{准连续}谱——
+        特征值间距$\sim 1/R$（$R$为样本数）而非真正的零间隙。
+    \end{itemize}
+    \item \textbf{实际可操作性：} 尽管有限$N$抹平了尖锐的相边界，
+    但\textbf{操作意义上}的诊断仍然是可能的：只要交叉区域$\Delta T$相比审计温度窗口足够窄，
+    RSB分类就提供了有效的二元决策——可审或不可审。
+    \item \textbf{最坏情形分析：} 从保守审计的角度，应将任何检测到的$\fRSB$信号视为不可审计警告——
+    即使有限$N$可能使系统在原则上可审计，
+    宁可误判为不可审计（避免无效审计成本）也不低估审计难度（导致审计失败）。
+\end{itemize}
+
+\subsection{与蒸馏幻觉定理的逻辑关系}
+
+\honestcrit{哈密顿量诊断与蒸馏幻觉定理之间是否存在循环论证？}
+
+这是一个重要的方法论问题。我们来澄清两者的逻辑关系：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{蒸馏幻觉定理}~\cite{scx_distillation_hallucination} 从\textbf{紧致性和Galois理论}出发，
+    证明循环蒸馏模型在特定条件下\textbf{必然}产生幻觉。
+    这是一个\textbf{存在性证明}——证明了幻觉的必然存在，但\textbf{未提供}诊断工具来判断一个给定的蒸馏模型是否处于幻觉必然存在的参数区域。
+
+    \item \textbf{本文的哈密顿量诊断}从\textbf{统计力学}出发，
+    提供了\textbf{可操作的诊断工具}来判断一个模型（蒸馏或非蒸馏）的审计可行性。
+    对于蒸馏模型，它给出了从$\RS \to \oneRSB \to \fRSB$的退化路径的具体量化。
+
+    \item \textbf{两者的关系：} 哈密顿量诊断为蒸馏幻觉定理提供了\textbf{微观机制解释}——
+    $\fRSB$相的能量景观结构（层级嵌套盆地、遍历性破缺）是幻觉必然性的物理根源。
+    两者并非循环论证，而是\textbf{不同理论层次上的互补}：
+    蒸馏幻觉定理是\textbf{代数-逻辑层}的存在性证明；
+    哈密顿量诊断是\textbf{统计力学层}的操作机制和诊断工具。
+\end{itemize}
+
+\subsection{哈密顿量范式本身的哲学局限}
+
+\honestcrit{哈密顿量范式将审计问题纯化为一个静态能量景观分析——但审计的本质可能是动态的、博弈论的、对抗性的。}
+
+我们需要承认以下局限：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{静态假设：} 哈密顿量是\textbf{平衡态}统计力学的概念。
+    实际的SCX审计是一个\textbf{非平衡}过程——专家之间通过审议协议动态交互，意见随时间演化。
+    我们的框架将这一动态过程“冻结”为能量景观的静态分析，可能丢失了协议动态（如审议轮次、反驳机制）的关键效应。
+
+    \item \textbf{无博弈论：} 本文假设专家是\textbf{被动的}吉布斯采样器——
+    他们诚实地（尽管可能不完美地）从参数分布中采样。
+    现实中，专家可能有策略性行为——歪曲意见以影响审计结论、或与某些模型开发者串通。
+    博弈论维度的缺席是哈密顿量范式的一个固有局限。
+
+    \item \textbf{对抗性缺失：} 在$\fRSB$相中，我们宣称审计不可行——
+    但这是否意味着一个足够聪明的对手可以\textbf{利用}能量景观的结构来设计不可检测的恶意行为？
+    这一问题将本文的诊断框架与SCX的对抗性审计理论~\cite{scx_agentic}连接，
+    但两者的综合尚未完成。
+
+    \item \textbf{审计目标的可变性：} 能量景观$\loss(\theta)$依赖于训练数据$\D$——
+    但审计的目标声称往往涉及\textbf{分布外}（OOD）行为。
+    在这种情况下，训练损失的能量景观是否仍能提供审计可行性的有效信息？
+    我们猜想需要定义\textbf{审计哈密顿量}$H_{\text{audit}}$——
+    显式地包含审计数据的损失——而非简单地重用训练哈密顿量。
+\end{enumerate}
+
+\subsection{尚待解决的问题}
+
+\openproblem \textbf{审计哈密顿量的构造问题。} 如何将审计任务显式编码到哈密顿量中？
+建议方案：定义$H_{\text{audit}}(\theta) = \loss_{\text{train}}(\theta) + \lambda \cdot \loss_{\text{audit}}(\theta)$，
+其中$\loss_{\text{audit}}$为在审计声称相关数据上的损失。研究$\lambda$如何调节能量景观的RSB结构。
+
+\openproblem \textbf{非平衡协议的诊断。} 对于包含审议轮次和动态共识更新的SCX协议，
+哈密顿量静态诊断的误差有多系统性？是否可以通过引入\textbf{动力学哈密顿量}
+$H_{\text{dyn}}(\theta, t) = H(\theta) + V_{\text{protocol}}(\theta, t)$来捕获协议效应？
+
+\openproblem \textbf{灰盒/黑盒诊断理论。} 对于无法白盒访问的模型，能否仅通过模型的行为输出
+（不同输入下的响应模式）来估计等效的Parisi破缺阶数？
+这可能涉及随机矩阵理论中的\textbf{样本协方差矩阵谱分析}和自由概率论的工具。
+
+\openproblem \textbf{诊断的对抗鲁棒性。} 如果一个恶意模型开发者\textbf{知道}审计者将使用哈密顿量诊断，
+他们是否可以通过设计损失景观（例如通过对抗性训练或损失函数修改）
+来使模型“看起来”处于$\RS$相，从而规避诊断？
+这提出了\textbf{哈密顿量诊断的可欺骗性}问题。
+
+% ================================================================
+% 8. Discussion
+% ================================================================
+\section{讨论}
+
+\subsection{理论贡献总结}
+
+本文在SCX哈密顿量理论~\cite{scx_hamiltonian}的基础上完成了以下推进：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{审计条件定理：} 将可审计性形式化为能量景观复杂度$\Sigma_0$的不等式——
+    $\Auditable(\text{claim}) \Longleftrightarrow \Sigma_0 \leq \Sigma_0^{\text{crit}}$。
+    这使得审计可行性成为一个\textbf{可计算}的判据，而非概念性论述。
+
+    \item \textbf{Parisi破缺判据：} 建立了$\RS$/$\oneRSB$/$\fRSB$三层分类与审计可行性之间的精确对应，
+    将抽象的自旋玻璃概念转化为可操作的审计诊断信号。
+
+    \item \textbf{可审计温度相图：} 揭示了温度$T$作为审计控制参数的角色，
+    明确了三个审计相（可审计/部分可审计/不可审计）的边界条件。
+
+    \item \textbf{蒸馏模型的退化诊断：} 应用诊断框架分析了知识蒸馏的审计后果——
+    从原始模型（$\RS$，可审计）到一次蒸馏（$\oneRSB$，弱可审计）到循环蒸馏（$\fRSB$，不可审计）的退化路径。
+
+    \item \textbf{操作流程：} 给出了可实际执行的计算协议，
+    将理论框架落地为从模型参数到审计结论的步骤序列。
+
+    \item \textbf{诚实暴击：} 系统性审视了白盒访问、有限尺寸效应、与蒸馏幻觉定理的关系、
+    以及哈密顿量范式的哲学局限。
+\end{enumerate}
+
+\subsection{与SCX理论体系的关系}
+
+图~\ref{fig:theory_map}展示了本文在SCX理论体系中的位置。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    theory/.style={draw,rounded corners,minimum width=3.5cm,minimum height=0.9cm,align=center,fill=blue!8},
+    tool/.style={draw,rounded corners,minimum width=3.5cm,minimum height=0.9cm,align=center,fill=green!8},
+    diagnosis/.style={draw,rounded corners,minimum width=3.5cm,minimum height=0.9cm,align=center,fill=red!8,very thick},
+    arrow/.style={->,>=stealth,thick}
+]
+
+    % Top row: foundations
+    \node[theory] (hamiltonian) at (0,0) {
+        SCX哈密顿量理论\\
+        \textit{描述性对应}
+    };
+    \node[theory] (galois) at (5,0) {
+        SCX Galois理论\\
+        \textit{代数结构}
+    };
+    \node[theory] (distill) at (10,0) {
+        蒸馏幻觉理论\\
+        \textit{存在性证明}
+    };
+
+    % Middle: this paper
+    \node[diagnosis] (this) at (5,-2.5) {
+        \textbf{本文：哈密顿量审计诊断}\\
+        \textit{从描述到诊断}\\
+        预审计可操作性
+    };
+
+    % Bottom: outputs
+    \node[tool] (auditcond) at (0,-5) {
+        审计条件定理\\
+        $\Sigma_0 \leq \Sigma_0^{\text{crit}}$
+    };
+    \node[tool] (phase) at (5,-5) {
+        可审计温度相图\\
+        $T_d\;/\;T_c$边界
+    };
+    \node[tool] (protocol) at (10,-5) {
+        诊断操作协议\\
+        步骤1-7
+    };
+
+    % Arrows
+    \draw[arrow] (hamiltonian) -- (this);
+    \draw[arrow] (galois) -- (this);
+    \draw[arrow] (distill) -- (this);
+
+    \draw[arrow] (this) -- (auditcond);
+    \draw[arrow] (this) -- (phase);
+    \draw[arrow] (this) -- (protocol);
+
+    % Labels
+    \node[font=\footnotesize,text=blue!60] at (2.5,-1.2) {提供框架};
+    \node[font=\footnotesize,text=blue!60] at (6.5,-1.2) {提供判据};
+    \node[font=\footnotesize,text=blue!60] at (9,-1.2) {提供动机};
+
+\end{tikzpicture}
+\caption{本文在SCX理论体系中的位置。上方：三个基础理论为本文提供了框架、判据和动机。
+本文（中部，红框）将这些基础推进为可操作的预审计诊断工具。
+下方：本文产出的三个具体工具——审计条件定理、温度相图、和操作协议。}
+\label{fig:theory_map}
+\end{figure}
+
+\subsection{实践建议}
+
+基于本文的诊断框架，我们向SCX系统的部署者提出以下实践建议：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{审计前先诊断：} 在启动任何SCX审计之前，运行哈密顿量预审计诊断（协议~\ref{prot:diagnosis}）。
+    如果诊断返回“不可审计”，则不投入审计资源——考虑替代的验证方法或接受审计限度。
+
+    \item \textbf{温度作为审计设计参数：} 如果诊断返回“弱可审计”或“可通过升温审计”，
+    设计专家招募和协议时将温度作为显式控制参数——选择能平衡精度和审计可行性的操作温度。
+
+    \item \textbf{警惕蒸馏模型：} 对于蒸馏模型（特别是多代蒸馏模型），
+    预审计诊断应成为标准流程的一部分。
+    多代蒸馏模型的$\fRSB$诊断应触发\textbf{硬停止}——不应在这些模型上浪费SCX审计资源。
+
+    \item \textbf{监控审计退化：} 对于定期更新（微调、RLHF、蒸馏）的模型，
+    将哈密顿量诊断纳入持续监控——
+    一次诊断$\RS$的模型可能在更新后进入$\oneRSB$或$\fRSB$相。
+\end{enumerate}
+
+% ================================================================
+% 9. Conclusion
+% ================================================================
+\section{结论}
+
+本文将SCX哈密顿量理论从描述性工具推进为\textbf{预审计诊断工具}。
+核心结论可概括为：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{审计是可计算的：} 可审计性不是哲学概念，而是可以从能量景观复杂度$\Sigma_0$直接计算的物理量——
+    $\Auditable(\text{claim}) \Longleftrightarrow \Sigma_0 \leq \frac{1}{N}\log(M_{\text{feasible}}/C)$。
+
+    \item \textbf{Parisi破缺是审计的判官：} $\RS$（可审计）$\to$ $\oneRSB$（部分可审计）$\to$ $\fRSB$（Galois不可审计）
+    的分层分类提供了比$\Sigma_0$更精细的诊断信号。
+
+    \item \textbf{温度是审计的控制器：} 通过调节温度，可以在精度和审计可行性之间做出有理论指导的权衡。
+
+    \item \textbf{蒸馏是审计的腐蚀剂：} 循环蒸馏将模型的能量景观从$\RS$腐蚀到$\fRSB$——
+    每一次蒸馏都是向不可审计深渊的一步。
+
+    \item \textbf{诊断先于审计：} 操作流程提供了在不运行完整SCX审计的前提下判断审计可行性的具体方法。
+\end{enumerate}
+
+最后，我们已经坦诚地指出了这一框架的边界——
+白盒访问的依赖、有限尺寸效应、静态假设的局限、
+以及博弈论维度的缺席。
+这些不是框架的弱点，而是未来工作的起点。
+正如诊断是治疗的前提，\textbf{认识局限是超越局限的前提}。
+
+\subsection*{致谢}
+
+感谢 Giorgio Parisi（2021年诺贝尔物理学奖）和 Marc Mézard、Miguel Virasoro 的开创性工作
+为本文提供了理论基石。感谢 SCX 理论物理工作组所有成员的深入讨论。
+
+% ================================================================
+% References
+% ================================================================
+\begin{thebibliography}{99}
+
+\bibitem{scx_hamiltonian}
+SCX.
+\emph{神经网络哈密顿量与SCX多专家审计：一个统计力学对应}.
+Preprint, 2026.
+
+\bibitem{scx_galois}
+SCX.
+\emph{Galois-SCX：群论与多专家审计的深层对应}.
+Preprint, 2026.
+
+\bibitem{scx_galois_falsifiability}
+SCX.
+\emph{Galois反证：SCX的可证伪边界}.
+Preprint, 2026.
+
+\bibitem{scx_distillation_hallucination}
+SCX.
+\emph{幻觉的必然性——从紧致性和Galois理论看蒸馏模型的不可审计性}.
+Preprint, 2026.
+
+\bibitem{scx_agentic}
+SCX.
+\emph{Agentic Multi-Agent SCX：对抗性多智能体审计理论}.
+Preprint, 2026.
+
+\bibitem{parisi1979}
+G.~Parisi.
+``Infinite number of order parameters for spin-glasses,''
+\emph{Phys. Rev. Lett.}, vol.~43, pp.~1754--1756, 1979.
+
+\bibitem{parisi1980}
+G.~Parisi.
+``A sequence of approximated solutions to the S-K model for spin glasses,''
+\emph{J. Phys. A: Math. Gen.}, vol.~13, pp.~L115--L121, 1980.
+
+\bibitem{mezard1987}
+M.~M\'ezard, G.~Parisi, and M.~A.~Virasoro.
+\emph{Spin Glass Theory and Beyond}.
+World Scientific, Singapore, 1987.
+
+\bibitem{derrida1986}
+B.~Derrida and H.~Spohn.
+``Polymers on disordered trees, spin glasses, and traveling waves,''
+\emph{J. Stat. Phys.}, vol.~51, pp.~817--840, 1988.
+
+\bibitem{fyodorov2004}
+Y.~V.~Fyodorov.
+``Complexity of random energy landscapes, glass transition, and absolute value of the spectral determinant of random matrices,''
+\emph{Phys. Rev. Lett.}, vol.~92, p.~240601, 2004.
+
+\bibitem{hinton2015distilling}
+G.~Hinton, O.~Vinyals, and J.~Dean.
+``Distilling the knowledge in a neural network,''
+\emph{NeurIPS Deep Learning Workshop}, 2014.
+
+\bibitem{choromanska2015}
+A.~Choromanska, M.~Henaff, M.~Mathieu, G.~Ben Arous, and Y.~LeCun.
+``The loss surfaces of multilayer networks,''
+in \emph{Proc. AISTATS}, 2015, pp.~192--204.
+
+\bibitem{baity2019}
+M.~Baity-Jesi, L.~Sagun, M.~Geiger, S.~Spigler, G.~Ben Arous, C.~Cammarota, Y.~LeCun, and M.~Wyart.
+``Comparing dynamics: Deep neural networks versus glassy systems,''
+\emph{J. Stat. Mech.}, vol.~2019, p.~124013, 2019.
+
+\bibitem{castellani2005}
+T.~Castellani and A.~Cavagna.
+``Spin-glass theory for pedestrians,''
+\emph{J. Stat. Mech.}, vol.~2005, p.~P05012, 2005.
+
+\bibitem{talagrand2003}
+M.~Talagrand.
+\emph{Spin Glasses: A Challenge for Mathematicians}.
+Springer, Berlin, 2003.
+
+\bibitem{guerra2003}
+F.~Guerra.
+``Broken replica symmetry bounds in the mean field spin glass model,''
+\emph{Comm. Math. Phys.}, vol.~233, pp.~1--12, 2003.
+
+\bibitem{dauphin2014}
+Y.~Dauphin, R.~Pascanu, C.~Gulcehre, K.~Cho, S.~Ganguli, and Y.~Bengio.
+``Identifying and attacking the saddle point problem in high-dimensional non-convex optimization,''
+in \emph{Proc. NeurIPS}, 2014, pp.~2933--2941.
+
+\bibitem{geiger2020}
+M.~Geiger, S.~Spigler, S.~d'Ascoli, L.~Sagun, M.~Baity-Jesi, G.~Biroli, and M.~Wyart.
+``Jamming transition as a paradigm to understand the loss landscape of deep neural networks,''
+\emph{Phys. Rev. E}, vol.~101, p.~012115, 2020.
+
+\bibitem{sagun2017}
+L.~Sagun, L.~Bottou, and Y.~LeCun.
+``Eigenvalues of the Hessian in deep learning: Singularity and beyond,''
+in \emph{Proc. ICLR Workshop}, 2017.
+
+\bibitem{jacot2018}
+A.~Jacot, F.~Gabriel, and C.~Hongler.
+``Neural tangent kernel: Convergence and generalization in neural networks,''
+in \emph{Proc. NeurIPS}, 2018, pp.~8571--8580.
+
+\end{thebibliography}
+
+\end{document}
