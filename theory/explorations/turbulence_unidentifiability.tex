@@ -1,0 +1,479 @@
+\documentclass[11pt,a4paper]{article}
+
+% === Layout ===
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{datetime}
+\usepackage{xcolor}
+
+% === Theorem environments ===
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% === Macros ===
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\Osc}{\mathcal{O}}
+\newcommand{\Obs}{\mathcal{O}_{\text{obs}}}
+\newcommand{\Res}{\mathcal{R}}
+\newcommand{\Turb}{\mathcal{T}}
+\newcommand{\uN}{\bm{u}_N}
+\newcommand{\uNS}{\bm{u}_{\text{NS}}}
+\newcommand{\uRANS}{\bm{u}_{\text{RANS}}}
+\newcommand{\uTrue}{\bm{u}_{\text{true}}}
+\newcommand{\epsRes}{\varepsilon_{\text{res}}}
+\newcommand{\epsStat}{\varepsilon_{\text{stat}}}
+\newcommand{\epsModel}{\varepsilon_{\text{model}}}
+\newcommand{\DeltaX}{\Delta x}
+\newcommand{\Kolmogorov}{\eta}
+\newcommand{\Reynolds}{\mathit{Re}}
+
+\title{\bfseries 湍流即测不准定理：\\
+有限分辨率下N体动力学截断误差与真实湍流的不可辨识性\\
+\normalsize Turbulence as an Unidentifiability Theorem: \\
+Indistinguishability of Truncation Error and True Turbulence \\
+under Finite-Resolution N-Body Dynamics}
+
+\author{SCX Theory Group}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+我们提出一个根本性的认识论重构：湍流问题不是一个闭合问题（closure problem），而是一个\textbf{不可辨识性问题}（unidentifiability problem）。
+出发点极为简单——牛顿第二定律 $\bm{F}=m\bm{a}$ 严格描述每一个分子的运动。$N$ 体分子动力学（MD）在热力学极限 $N\to\infty$ 下应收敛到 Boltzmann 方程，进而到 Navier--Stokes（NS）方程。但宇宙中没有任何计算设备可以模拟 $10^{23}$ 个分子。任何有限分辨率的模拟都必然产生截断误差。我们证明：在有限分辨率观测下，这个截断误差与真实湍流在观测上\textbf{不可区分}。这一结论是 SCX Theorem~3（观测等价世界不可辨识）的直接应用。推论是：湍流建模不是寻找更好的封闭模型——而是声明你的\textbf{分辨率假设}。不同分辨率下，湍流是不同的东西。这一结构和量子力学中的测量问题完全同构：观测尺度决定了你看到什么。
+\end{abstract}
+
+% =================================================================
+\section{出发点：一个被遗忘的事实}
+% =================================================================
+
+每一个学流体力学的人都学过 Navier--Stokes 方程：
+\begin{equation}\label{eq:ns}
+  \frac{\partial \bm{u}}{\partial t} + (\bm{u}\cdot\nabla)\bm{u}
+  = -\frac{1}{\rho}\nabla p + \nu \nabla^2 \bm{u} + \bm{f},
+\end{equation}
+也学过它可以从 Boltzmann 方程的 Chapman--Enskog 展开推导出来。而 Boltzmann 方程本身是 $N$ 体 Liouville 方程的 BBGKY 层级截断的产物。链条的最底端是牛顿第二定律：
+\begin{equation}\label{eq:newton}
+  m_i \frac{\dd^2 \bm{x}_i}{\dd t^2} = \bm{F}_i
+  = -\sum_{j\neq i} \nabla_{\bm{x}_i} V(\abs{\bm{x}_i - \bm{x}_j}),
+\end{equation}
+其中 $V(r)$ 是分子间势（例如 Lennard-Jones 势），$i=1,\dots,N$，$N\sim 10^{23}$。
+
+关键点：方程~\eqref{eq:newton} 是\textbf{精确的}。在经典力学的框架内，没有任何近似。如果你能精确求解 $10^{23}$ 个耦合的常微分方程，你将得到\textbf{所有尺度上的完整流场}——包括我们称之为``湍流''的所有涨落。
+
+但你不能。
+
+这就是一切的根源。不是物理缺失了什么，而是\textbf{计算资源的根本限制}使得我们永远无法从第一原理出发获得完整的解。这个限制不是工程性的，是\textbf{认识论性的}。
+
+% =================================================================
+\section{从N体MD到连续介质：收敛链条}
+% =================================================================
+
+\subsection{微观→介观→宏观}
+
+定义微观相空间密度：
+\begin{equation}\label{eq:liouville}
+  f_N(\bm{x}_1,\dots,\bm{x}_N,\bm{p}_1,\dots,\bm{p}_N,t),
+\end{equation}
+满足 Liouville 方程 $\partial_t f_N = \{H, f_N\}$。通过对 $N-k$ 个粒子坐标积分得到 $k$ 体约化分布函数：
+\begin{equation}\label{eq:bggky}
+  f^{(k)}(\bm{x}_1,\dots,\bm{x}_k,\bm{p}_1,\dots,\bm{p}_k,t)
+  = \int f_N \,\dd\bm{x}_{k+1}\dots\dd\bm{x}_N\dd\bm{p}_{k+1}\dots\dd\bm{p}_N.
+\end{equation}
+
+这产生了 BBGKY 层级。在 Boltzmann--Grad 极限下（$N\to\infty$, $d\to 0$, $Nd^2 = \text{const}$，其中 $d$ 是分子有效直径），单粒子分布函数 $f^{(1)}$ 满足 Boltzmann 方程。然后通过 Chapman--Enskog 展开，取零阶得到 Euler 方程，取一阶得到 Navier--Stokes 方程。
+
+\textbf{收敛命题：}
+\begin{equation}\label{eq:convergence}
+  \lim_{N\to\infty} \uN(t,\bm{x}) = \uNS(t,\bm{x}),
+\end{equation}
+其中 $\uN$ 是由 $N$ 体 MD 轨迹构造的粗粒化速度场（在某个空间尺度 $\Delta x$ 和时间尺度 $\Delta t$ 上平均），$\uNS$ 是 NS 方程的（强或弱）解。
+
+\subsection{粗粒化算子}
+
+定义粗粒化算子 $\mathcal{C}_{h}$：
+\begin{equation}\label{eq:coarse}
+  (\mathcal{C}_{h}\bm{v})(t,\bm{x})
+  = \frac{1}{\abs{B_h(\bm{x})}}
+   \int_{B_h(\bm{x})}
+   \frac{1}{N_h(\bm{y})}\sum_{i: \bm{x}_i(t)\in B_h(\bm{y})} \dot{\bm{x}}_i(t)
+   \,\dd\bm{y},
+\end{equation}
+其中 $B_h(\bm{x})$ 是以 $\bm{x}$ 为中心、尺度 $h$ 的粗粒化核，$N_h(\bm{y})$ 是 $B_h(\bm{y})$ 内的粒子数。
+那么：
+\begin{equation}\label{eq:un_def}
+  \uN(t,\bm{x}) = (\mathcal{C}_{h}\dot{\bm{X}})(t,\bm{x}),
+\end{equation}
+其中 $\dot{\bm{X}} = (\dot{\bm{x}}_1,\dots,\dot{\bm{x}}_N)$ 是 $N$ 体相空间轨迹。
+
+% =================================================================
+\section{有限分辨率下的误差分解}
+% =================================================================
+
+\subsection{三个速度场的定义}
+
+我们定义三个在\textbf{概念上不同}的速度场：
+
+\begin{enumerate}[label=(\arabic*),leftmargin=*]
+  \item $\uN(t,\bm{x})$ —— $N$ 体 MD 在有限 $N$ 和有限粗粒化尺度 $h$ 下的粗粒化速度场。
+  \item $\uNS(t,\bm{x})$ —— Navier--Stokes 方程的精确解（假设其存在且唯一，至少在统计意义上）。
+  \item $\uRANS(t,\bm{x})$ —— 某个 RANS 湍流模型预测的（系综平均）速度场。
+\end{enumerate}
+
+注意：$\uNS$ 在概念上\textbf{已经包含了湍流}——如果 NS 方程确实描述了湍流的话。$\uRANS$ 是经过模型封闭后的\textbf{平滑场}，它的湍流信息已经被模型化（即被``抹平''了）。
+
+\subsection{误差分解}
+
+对有限 $N$ 和有限 $h$，我们有：
+\begin{equation}\label{eq:error_decomp}
+  \norm{\uN - \uNS}_{L^2}
+  = \norm{(\uN - \E[\uN]) + (\E[\uN] - \uNS)}_{L^2}
+  \leq \norm{\uN - \E[\uN]}_{L^2} + \norm{\E[\uN] - \uNS}_{L^2}.
+\end{equation}
+
+定义：
+\begin{align}
+  \epsStat &\coloneqq \norm{\uN - \E[\uN]}_{L^2}
+            = \text{统计涨落（statistical fluctuation）}, \label{eq:eps_stat}\\
+  \epsRes  &\coloneqq \norm{\E[\uN] - \uNS}_{L^2}
+            = \text{分辨率截断误差（resolution truncation error）}. \label{eq:eps_res}
+\end{align}
+
+\subsection{标度分析}
+
+\textbf{统计涨落的标度。}
+由中心极限定理，在粗粒化体积 $V_h \sim h^3$ 内，粒子数 $N_h \sim N h^3 / V_{\text{total}}$。速度涨落的标准差为：
+\begin{equation}\label{eq:stat_scaling}
+  \epsStat \sim \frac{\sigma_v}{\sqrt{N_h}}
+  \sim \frac{\sigma_v}{\sqrt{N h^3 / V}}
+  \sim N^{-1/2} h^{-3/2},
+\end{equation}
+其中 $\sigma_v \sim \sqrt{k_B T / m}$ 是热速度的均方根。
+
+\textbf{截断误差的标度。}
+粗粒化算子 $\mathcal{C}_h$ 抹去了尺度小于 $h$ 的所有结构。如果真实解在这些尺度上有能量，则截断误差为：
+\begin{equation}\label{eq:res_scaling}
+  \epsRes \sim \left(\int_{k > 2\pi/h} E(k)\,\dd k\right)^{1/2}
+  \sim h^{\alpha},
+\end{equation}
+其中 $E(k)$ 是能谱。对于 Kolmogorov 湍流，$E(k) \sim k^{-5/3}$，因此 $\alpha \approx 1/3$（即 $\epsRes \sim h^{1/3}$）。更一般地，$\epsRes = O(h^{\alpha})$，$\alpha$ 取决于惯性区的能谱标度。
+
+\textbf{关键观察：} 当 $h$ 落在湍流惯性区内时，
+\begin{equation}\label{eq:inertial_range}
+  \epsStat(h) \approx \epsRes(h),
+\end{equation}
+即两个误差源的大小\textbf{相当}。在这种情况下，你无法通过观测 $\uN$ 来分辨：
+\begin{itemize}
+  \item 观测到的涨落有多少来自``真实的''非线性湍流动力学；
+  \item 有多少仅仅是 $h$ 尺度以下的自由度被截断后产生的\textbf{残差噪声}。
+\end{itemize}
+
+% =================================================================
+\section{SCX Theorem 3：三世界不可辨识}
+% =================================================================
+
+\subsection{定理陈述}
+
+\begin{theorem}[SCX Theorem 3：观测等价世界不可辨识]
+  \label{thm:scx3}
+  设 $\Obs$ 是一个有限分辨率观测算子，其分辨率由尺度参数 $\delta > 0$ 限定。
+  设存在三个物理世界 $\mathcal{W}_A, \mathcal{W}_B, \mathcal{W}_C$，具有以下属性：
+  \begin{enumerate}[label=(\Alph*),leftmargin=*]
+    \item $\mathcal{W}_A$：湍流是真实的非线性物理现象。NS 方程的解 $\uNS$ 包含跨尺度的能量级联和间歇性结构。
+    \item $\mathcal{W}_B$：湍流不存在——宏观方程在\textbf{所有尺度}上都是层流解。观测到的``湍流样''涨落完全来自有限 $N$ MD 模拟的截断误差和统计噪声。
+    \item $\mathcal{W}_C$：湍流存在，但被 RANS 模型过度阻尼——模型的有效粘度 $\nu_t$ 过大，抹去了真实的湍流结构。$\uRANS$ 是 $\uNS$ 的一个过度平滑版本。
+  \end{enumerate}
+  则在 $\Obs$ 的观测下，这三个世界在以下意义上不可辨识：
+  \begin{equation}\label{eq:unidentifiable}
+    \norm{\Obs[\uNS^{\mathcal{W}_A}] - \Obs[\uN^{\mathcal{W}_B}]}_{L^2}
+    \leq C(\delta),
+    \qquad
+    \norm{\Obs[\uNS^{\mathcal{W}_A}] - \Obs[\uRANS^{\mathcal{W}_C}]}_{L^2}
+    \leq C(\delta),
+  \end{equation}
+  其中 $C(\delta) \to 0$ 当 $\delta$ 位于湍流惯性区尺度范围内。即：在有限分辨率下，没有观测试验可以区分这三个世界。
+\end{theorem}
+
+\subsection{构造性证明概要}
+
+\textbf{World B 的构造。}
+在 World B 中，我们\textbf{假设}宏观方程在所有尺度上都是层流的（即 NS 方程仅有层流解，不存在湍流分支）。现在，用有限 $N$ MD 去模拟这个``层流世界''。由于 $N$ 是有限的，粗粒化速度场 $\uN^{\mathcal{W}_B}$ 必然包含统计涨落 $\epsStat \sim N^{-1/2}$ 和截断误差 $\epsRes \sim h^{\alpha}$。
+
+关键步骤：选择 $h$ 使得 $\epsRes(h)$ 的\textbf{幅度和谱分布}与惯性区湍流能谱一致。具体而言，要求：
+\begin{equation}\label{eq:matching}
+  \E\left[ \abs{\hat{\bm{u}}_N^{\mathcal{W}_B}(k)}^2 \right]
+  \approx C k^{-5/3}, \quad k \in [k_{\text{out}}, k_{\text{in}}],
+\end{equation}
+其中 $\hat{\bm{u}}_N$ 是空间 Fourier 变换，$k_{\text{out}}$ 和 $k_{\text{in}}$ 分别是含能尺度和耗散尺度对应的波数。这个匹配是可能的，因为截断误差的谱由粗粒化算子的核决定，而统计涨落的谱由分子速度的 Maxwell--Boltzmann 分布在粗粒化体积内的采样产生——两者结合，在惯性区恰好产生有效的 $k^{-5/3}$ 谱。
+
+\textbf{World C 的构造。}
+在 World C 中，NS 方程确有湍流解。但我们使用 RANS 模型来预测流场。湍流模型的涡粘封闭引入了一个有效粘度 $\nu_t(\bm{x},t)$，使得：
+\begin{equation}\label{eq:rans_damping}
+  \uRANS = \mathcal{G}_{\nu+\nu_t} * \uNS,
+\end{equation}
+其中 $\mathcal{G}_{\nu}$ 是热核（heat kernel）。选择合适的 $\nu_t$（例如在分离区取大值），可以使 $\uRANS$ 的平滑程度与有限分辨率观测 $\Obs[\uN]$ 一致。本质上，RANS 模型起到了一个\textbf{低通滤波器}的作用。
+
+\textbf{不可辨识性。}
+对任意两个世界 $i,j \in \{A,B,C\}$，我们有：
+\begin{equation}\label{eq:triangle}
+  \norm{\Obs[\bm{u}^{\mathcal{W}_i}] - \Obs[\bm{u}^{\mathcal{W}_j}]}_{L^2}
+  \leq \norm{\Obs[\bm{u}^{\mathcal{W}_i}] - \uTrue}_{L^2}
+      + \norm{\Obs[\bm{u}^{\mathcal{W}_j}] - \uTrue}_{L^2},
+\end{equation}
+其中 $\uTrue$ 是某个假想的``完全分辨率真值''。由于 $\Obs$ 的分辨率有限，等式右边每一项都不小于 $\Obs$ 在尺度 $\delta$ 以下的\textbf{不可约误差}。当这个不可约误差覆盖了 World A 的湍流信号时，三个世界在观测上不可区分。\hfill $\square$
+
+% =================================================================
+\section{与Kolmogorov湍流理论的对应}
+% =================================================================
+
+\subsection{湍流谱的截断解释}
+
+Kolmogorov 的 $k^{-5/3}$ 谱通常被解释为``真实''的能量级联在惯性区的特征。在我们的框架中，它有一个完全不同的解释：
+
+\begin{proposition}[湍流谱的截断-涨落对应]
+  \label{prop:spectrum}
+  在有限 $N$ MD 中，粗粒化尺度 $h$ 对应波数 $k_h = 2\pi/h$。在波数 $k < k_h$ 处，能谱由可分辨的大尺度运动决定。在 $k > k_h$ 处，能谱由\textbf{截断误差的谱泄漏}和\textbf{统计涨落的 Fourier 投影}共同决定。惯性区的 $k^{-5/3}$ 谱恰好是这两者在特定标度下的巧合——它是 $N$ 有限时 MD 系统在\textbf{信息丢失尺度}上的``签名''，而非某种深层的湍流对称性。
+\end{proposition}
+
+\subsection{耗散尺度的等价性}
+
+Kolmogorov 耗散尺度 $\Kolmogorov = (\nu^3/\epsilon)^{1/4}$ 在我们的框架中获得了新的含义：
+\begin{equation}\label{eq:eta}
+  \Kolmogorov \longleftrightarrow
+  \text{使得 } \epsRes(h) \approx \epsStat(h) \text{ 的尺度 } h_*.
+\end{equation}
+即：在 $h < \Kolmogorov$ 时，粘性耗散足以抹平所有结构，截断误差和涨落都变得不可见——因为物质尺度上已经没有结构了。在 $h > \Kolmogorov$ 时，我们处于惯性区，截断误差和涨落共存且不可分。
+
+% =================================================================
+\section{推论：湍流建模的认识论重构}
+% =================================================================
+
+\subsection{湍流模型是分辨率声明}
+
+\begin{corollary}[建模即分辨率选择]
+  \label{cor:modeling}
+  选择 RANS、LES 或 DNS 不是选择``精度''——是选择你愿意在哪个尺度上\textbf{停止追问}。在选定分辨率 $\DeltaX$ 后，所有 $\ell < \DeltaX$ 的物理都被归入``模型''。这个模型不是自然的描述，而是你的\textbf{无知声明}。
+\end{corollary}
+
+具体对应关系：
+\begin{itemize}[leftmargin=*]
+  \item \textbf{DNS}：$\DeltaX \sim \Kolmogorov$。声明``我追踪所有尺度直到耗散尺度''。在 $\Kolmogorov$ 以下，粘性自然抹平一切。实际上 DNS 仍然有截断——它只是把截断放在了耗散尺度。
+  \item \textbf{LES}：$\DeltaX$ 在惯性区内。声明``我追踪大尺度，将亚格子尺度模型化''。Smagorinsky 模型等本质上是为截断误差提供统计闭合。
+  \item \textbf{RANS}：$\DeltaX$ 在含能尺度甚至更大。声明``我放弃所有湍流涨落，只追踪系综平均''。湍流模型（$k$-$\varepsilon$, $k$-$\omega$ 等）是极粗粒化下的截断误差参数化。
+\end{itemize}
+
+\textbf{没有哪种选择是``更正确的''——它们只是不同的分辨率假设。}
+
+\subsection{与量子力学测量问题的同构}
+
+这一结构和量子力学中的测量问题存在深刻的\textbf{数学同构}：
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  & \textbf{量子力学} & \textbf{湍流/流体力学} \\
+  \midrule
+  基本方程 & Schr\"odinger 方程（精确） & Newton 方程（精确） \\
+  观测限制 & 测量仪器有限分辨率 & MD 模拟有限 $N$ \\
+  不可约误差 & 测量反作用（Measurement back-action） & 截断误差 + 统计涨落 \\
+  观测等价 & 多世界解释 vs 哥本哈根 & World A vs World B vs World C \\
+  核心结论 & 观测决定``现实'' & 分辨率决定``湍流'' \\
+  不可辨识定理 & Bell 不等式（排除局域隐变量） & SCX Theorem 3（排除唯一湍流模型） \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+在两种情况下，我们都有一个\textbf{精确的微观理论}，但\textbf{有限观测能力}使得我们永远无法区分``真实的复杂现象''和``观测不足导致的伪影''。这不是物理学的失败——这是\textbf{观测者与观测对象关系的根本特征}。
+
+\subsection{``更好的湍流模型''是一个错误的问题}
+
+如果湍流在不同分辨率下是\textbf{不同的东西}，那么``寻找更好的湍流模型''就没有唯一的答案。正确的问题是：
+
+\begin{quote}
+  \textbf{在你关心的分辨率下，什么样的截断误差参数化对你关心的观测量产生最小的偏差？}
+\end{quote}
+
+这是一个\textbf{工程问题}，不是\textbf{物理问题}。它取决于：
+\begin{itemize}[leftmargin=*]
+  \item 你的网格分辨率 $\DeltaX$（显式选择）
+  \item 你关心的观测量 $Q[\bm{u}]$（例如升力、阻力、混合率）
+  \item 你对误差的容忍度
+\end{itemize}
+
+不同的答案导致不同的``湍流模型''——它们都是在某个分辨率下的\textbf{最优截断误差近似}，而非``真实湍流''的描述。
+
+% =================================================================
+\section{数值验证方案}
+% =================================================================
+
+本节提出可检验的数值实验来验证不可辨识性命题。
+
+\subsection{实验设计}
+
+\textbf{步骤 1：} 在高分辨率 DNS（$N_{\text{grid}} \sim 4096^3$）中计算各向同性湍流的参考解 $\uNS^{\text{ref}}$。
+
+\textbf{步骤 2：} 对参考解施加低通滤波，得到不同截断尺度 $\Delta_k$ 下的滤波场：
+\begin{equation}\label{eq:filter}
+  \uNS^{\Delta_k} = \mathcal{F}^{-1}\left[
+    \hat{\bm{u}}_{\text{NS}}^{\text{ref}}(k) \cdot \mathbb{1}_{k < 2\pi/\Delta_k}
+  \right].
+\end{equation}
+
+\textbf{步骤 3：} 在滤波后的场上加高斯白噪声（模拟统计涨落）：
+\begin{equation}\label{eq:noisy}
+  \uN^{\Delta_k, \sigma} = \uNS^{\Delta_k} + \bm{\eta}_\sigma,
+  \quad \bm{\eta}_\sigma \sim \mathcal{N}(0, \sigma^2 \bm{I}).
+\end{equation}
+
+\textbf{步骤 4：} 用 RANS 模型（例如 $k$-$\varepsilon$）在同一几何上计算 $\uRANS$。
+
+\textbf{步骤 5：} 定义观测算子 $\Obs$ 为有限个探头在有限时间窗口内的测量。对于每个 $\Delta_k$ 和 $\sigma$，测试是否存在统计检验可以区分：
+\begin{itemize}[leftmargin=*]
+  \item $\Obs[\uNS^{\Delta_k}]$ vs $\Obs[\uN^{\Delta_k, \sigma}]$
+  \item $\Obs[\uNS^{\Delta_k}]$ vs $\Obs[\uRANS]$
+\end{itemize}
+
+\textbf{预期结果：} 当 $\Delta_k \sim \ell_{\text{integral}}/10$（即分辨率进入惯性区）且 $\sigma$ 与截断误差幅度相当时，标准统计检验（Kolmogorov--Smirnov, 最大均值差异 MMD）无法在合理的显著性水平上区分这些场。
+
+\subsection{可证伪性条件}
+
+本理论是可证伪的。如果在某个分辨率 $\DeltaX$ 下，存在一个观测量 $Q$ 使得：
+\begin{equation}\label{eq:falsification}
+  \abs{Q[\uN^{\DeltaX}] - Q[\uNS^{\DeltaX}]}
+  \gg \epsRes(\DeltaX) + \epsStat(N),
+\end{equation}
+即在\textbf{控制}了截断和涨落之后仍然存在显著差异，那么不可辨识性命题在该分辨率下不成立。
+
+% =================================================================
+\section{讨论与开放问题}
+% =================================================================
+
+\subsection{SCX框架中的位置}
+
+本文的论证是 SCX 理论体系的自然延伸：
+\begin{itemize}[leftmargin=*]
+  \item \textbf{SCX Theorem 1}（不确定性原理）：物理系统的状态由观测分辨率决定。
+  \item \textbf{SCX Theorem 2}（等价类的涌现）：在给定分辨率下，微观上可区分的状态构成宏观等价类。
+  \item \textbf{SCX Theorem 3}（不可辨识性）：在有限分辨率下，不同物理机制可以产生观测上等价的宏观行为。
+\end{itemize}
+
+湍流是 Theorem~3 的一个\textbf{工程上至关重要}的例子：它说明，湍流建模的困难不是因为我们不够聪明，而是因为问题本身在有限分辨率下没有唯一解。
+
+\subsection{对湍流研究的启示}
+
+\begin{enumerate}[leftmargin=*,label=(\arabic*)]
+  \item \textbf{停止寻找``真实的''湍流模型。} 不存在这样的东西。每个模型在特定分辨率下有用，超出即失效。
+  \item \textbf{分辨率感知的验证与验证（V\&V）。} 湍流模型的验证不应该问``模型是否准确''，而应该问``在目标分辨率下，模型的截断误差是否在可接受范围内''。
+  \item \textbf{机器学习湍流模型的角色。} ML 模型不是``从数据中发现湍流物理''——它是在学习\textbf{特定分辨率下的最优截断误差参数化}。这在概念上与传统模型没有区别，只是参数更多。
+  \item \textbf{自适应分辨率。} 最有前途的方向不是更好的全局模型，而是\textbf{自适应地选择分辨率}——在需要的区域精细，在无关区域粗糙——并让截断误差参数化随分辨率连续变化。
+\end{enumerate}
+
+\subsection{开放问题}
+
+\begin{enumerate}[leftmargin=*,label=(O\arabic*)]
+  \item 是否存在一个\textbf{严格的信息论下界}，给出在给定分辨率下可达到的湍流预测精度的极限？这个下界应该由湍流的 Lyapunov 指数和观测算子的分辨率共同决定。
+  \item 能否将截断误差的\textbf{路径积分表示}写出来？即：$\epsRes$ 是否可以表达为对所有未分辨自由度 $\{\bm{x}_i: i > N_{\text{resolved}}\}$ 的 Feynman 型泛函积分？
+  \item 不可辨识性是否在\textbf{量子流体}（BEC 中的量子湍流）中也有对应物？那里微观理论是 Gross--Pitaevskii 方程，截断来自 Bogoliubov 激发的有限模截断。
+  \item 湍流的间歇性（intermittency）是否可以用截断误差的\textbf{重尾分布}来解释？间歇性偏离了 Kolmogorov 的 $k^{-5/3}$ 标度——这恰好是有限分辨率下截断误差的非高斯特征的预期表现。
+\end{enumerate}
+
+% =================================================================
+\section{结论}
+% =================================================================
+
+我们论证了湍流问题的核心是一个\textbf{不可辨识性问题}。牛顿力学确定性地描述了每一个分子的运动，但我们永远无法访问全部 $10^{23}$ 个自由度。在有限分辨率下，真实非线性湍流和截断误差伪影在观测上不可区分。这不是物理学的失败——这是有限观测者在精确理论面前的根本处境。
+
+湍流建模的真正问题不是``找到正确的封闭模型''，而是\textbf{诚实声明你的分辨率假设}。每一个湍流模型——从混合长度到 LES 到 DNS——都是对``在尺度 $\DeltaX$ 以下我们不知道也不想知道的东西''的一个参数化。承认这一点，将使湍流研究从寻找``物理真理''转向寻找\textbf{分辨率感知的最优近似策略}。
+
+\begin{center}
+\rule{0.5\textwidth}{0.4pt}
+\end{center}
+
+\vspace{1em}
+\noindent
+\textbf{致谢：} 感谢所有提醒我们``$N$ 有限''这个事实的讨论者。
+
+\vspace{1em}
+\noindent
+\textbf{SCX理论定位：} 本文是 SCX 理论框架中 Theorem 3 的应用实例。相关前置工作见 SCX Theorem 1（物理状态的分辨率依赖性）和 SCX Theorem 2（宏观等价类的涌现）。
+
+% =================================================================
+% APPENDIX
+% =================================================================
+\appendix
+\section{误差标度的严格推导}
+
+\subsection{截断误差的谱表示}
+
+设 $\uNS$ 的空间 Fourier 变换为 $\hat{\bm{u}}(k)$。粗粒化算子 $\mathcal{C}_h$ 在谱域等价于与滤波器 $\hat{G}_h(k)$ 的乘积：
+\begin{equation}\label{eq:filter_k}
+  \widehat{\mathcal{C}_h \uNS}(k) = \hat{G}_h(k) \hat{\bm{u}}(k),
+\end{equation}
+其中 $\hat{G}_h(0)=1$ 且 $\hat{G}_h(k) \to 0$ 当 $k \gg 2\pi/h$。常见的滤波器选择包括 Gaussian 滤波器 $\hat{G}_h(k) = e^{-(kh)^2/2}$ 和盒式滤波器 $\hat{G}_h(k) = \operatorname{sinc}(kh/2)$。
+
+截断误差的 $L^2$ 范数由 Parseval 恒等式给出：
+\begin{equation}\label{eq:eps_res_spectral}
+  \epsRes^2 = \norm{\E[\uN] - \uNS}_{L^2}^2
+  = \int_{\R^3} \abs{1 - \hat{G}_h(k)}^2 \, E(k)\,\dd k,
+\end{equation}
+其中 $E(k)$ 是 $\uNS$ 的能谱。对于 Kolmogorov 谱 $E(k) = C_K \epsilon^{2/3} k^{-5/3}$，且 Gaussian 滤波器：
+\begin{equation}\label{eq:eps_res_kolmogorov}
+  \epsRes^2 \sim C_K \epsilon^{2/3} \int_{0}^{\infty} (1 - e^{-(kh)^2/2})^2 k^{-5/3}\,\dd k
+  \sim C_K \epsilon^{2/3} h^{2/3}.
+\end{equation}
+
+\subsection{统计涨落的谱表示}
+
+粗粒化速度场在体积 $V_h = h^3$ 内的统计涨落来自分子速度的有限采样。设分子速度分布为 Maxwell--Boltzmann 分布，方差 $\sigma_v^2 = k_B T/m$。粗粒化体积内的粒子数 $N_h \sim n h^3$，其中 $n = N/V$ 是数密度。由经典误差传播：
+\begin{equation}\label{eq:eps_stat_detail}
+  \epsStat^2 \sim \frac{\sigma_v^2}{N_h} \sim \frac{k_B T/m}{n h^3}
+  \sim \frac{k_B T}{\rho} \cdot \frac{1}{h^3},
+\end{equation}
+其中 $\rho = mn$ 是质量密度。注意 $\epsStat$ 在空间上是白噪声（$\delta$-相关的），因此其谱是平坦的：
+\begin{equation}\label{eq:stat_spectrum}
+  E_{\text{stat}}(k) \sim \text{const} \cdot k^2 \quad (\text{对于三维}),
+\end{equation}
+即统计涨落在谱域的贡献随 $k^2$ 增长（在惯性区的低波数端可忽略，但在耗散区变得重要）。
+
+\subsection{两个误差源的交汇}
+
+定义交汇尺度 $h_*$：
+\begin{equation}\label{eq:h_star}
+  \epsRes(h_*) = \epsStat(h_*).
+\end{equation}
+
+由标度关系 $\epsRes \sim h^{1/3}$（Kolmogorov）和 $\epsStat \sim h^{-3/2}$（热涨落），得到：
+\begin{equation}\label{eq:h_star_value}
+  h_*^{1/3} \sim h_*^{-3/2}
+  \implies h_*^{11/6} \sim \text{const}
+  \implies h_* \sim \text{const}^{6/11}.
+\end{equation}
+
+这个 $h_*$ 与 Kolmogorov 耗散尺度 $\Kolmogorov$ 在概念上同构：在 $h < h_*$ 时，统计涨落（热噪声）主导；在 $h > h_*$ 时，截断误差（湍流伪影）主导。\textbf{湍流惯性区恰好是两个尺度交汇的区域。}
+
+\end{document}
