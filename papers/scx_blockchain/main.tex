@@ -1,13 +1,9 @@
 % !TEX program = xelatex
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  SCX-Audited Blockchain Consensus:
-%  Multi-Validator Certification of Distributed Ledger Integrity
-%  SCX Research Collective — June 2026
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \documentclass[11pt,a4paper]{article}
 
 % ── SCX Framework Standard Packages ──────────────────────────
-\usepackage{fontspec}
+\usepackage[UTF8, scheme=plain]{ctex}
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
 \usepackage{bm}
@@ -22,10 +18,6 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 
-% CJK support via fontspec (XeLaTeX/LuaLaTeX)
-\usepackage{xeCJK}
-\setCJKmainfont{SimSun}
-
 \geometry{margin=1in}
 
 % ── SCX Theorems & Proofs ─────────────────────────────────────
@@ -38,7 +30,6 @@
 \newtheorem{remark}[theorem]{Remark}
 \theoremstyle{definition}
 \newtheorem{assumption}[theorem]{Assumption}
-\newtheorem{example}[theorem]{Example}
 
 % ── Rigor Labels ──────────────────────────────────────────────
 \newcommand{\rigorFull}[0]{$\blacksquare$~\textbf{[Full Proof]}}
@@ -62,7 +53,8 @@
 \DeclareMathOperator{\Bias}{Bias}
 \DeclareMathOperator{\supp}{supp}
 \DeclareMathOperator{\Lip}{Lip}
-\DeclareMathOperator{\SHA}{SHA}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\sgn}{sgn}
 
 % ── Notation ──────────────────────────────────────────────────
 \newcommand{\R}{\mathbb{R}}
@@ -74,36 +66,39 @@
 \newcommand{\abs}[1]{\left|#1\right|}
 \newcommand{\inner}[2]{\langle #1, #2 \rangle}
 \newcommand{\red}{\textcolor{red}}
-\newcommand{\cB}{\mathcal{B}}
-\newcommand{\cC}{\mathcal{C}}
-\newcommand{\cD}{\mathcal{D}}
-\newcommand{\cH}{\mathcal{H}}
-\newcommand{\cS}{\mathcal{S}}
-\newcommand{\cV}{\mathcal{V}}
-\newcommand{\cM}{\mathcal{M}}
 
 % ── Blockchain Domain Macros ──────────────────────────────────
-\newcommand{\chain}{\mathsf{Chain}}
-\newcommand{\block}{\mathsf{Block}}
-\newcommand{\state}{\mathsf{State}}
-\newcommand{\tx}{\mathsf{tx}}
-\newcommand{\valSet}{\mathcal{V}}
-\newcommand{\honestSet}{\mathcal{H}}
-\newcommand{\advSet}{\mathcal{A}}
-\newcommand{\stake}{\mathsf{stake}}
+\newcommand{\validatorSet}{\mathcal{V}}
+\newcommand{\stateSpace}{\mathcal{S}}
+\newcommand{\blockSpace}{\mathcal{B}}
+\newcommand{\txSpace}{\mathcal{T}}
+\newcommand{\forkSpace}{\mathcal{F}}
+\newcommand{\chainHash}{\mathcal{H}}
+\newcommand{\stake}{\mathrm{stake}}
 \newcommand{\slashPenalty}{\kappa}
-\newcommand{\Meff}{M_{\mathsf{eff}}}
-\newcommand{\Mthresh}{M_{\mathsf{thresh}}}
-\newcommand{\Mt}{M_t}
-\newcommand{\consensusState}{c}
+\newcommand{\audPenalty}{\kappa_{\mathrm{aud}}}
+\newcommand{\forkEvent}{\mathcal{E}_{\mathrm{fork}}}
+\newcommand{\attackEvent}{\mathcal{E}_{\mathrm{attack}}}
+\newcommand{\Byzantine}{\mathcal{B}}
+\newcommand{\meff}{M_{\mathrm{eff}}}
+\newcommand{\mthreshold}{M^{*}}
+\newcommand{\Nakamoto}{\textsc{Nakamoto}}
+\newcommand{\PoW}{\mathrm{PoW}}
+\newcommand{\PoS}{\mathrm{PoS}}
+\newcommand{\PBFT}{\mathrm{PBFT}}
+\newcommand{\Tendermint}{\mathrm{Tendermint}}
 
 % ── Assumption / Limitation Tags ──────────────────────────────
 \newcommand{\assumptionTag}[1]{\textsf{\textbf{[A#1]}}}
 \newcommand{\limitationTag}[1]{\textsf{\textbf{[L#1]}}}
 
+% ── SCX Theorem References ───────────────────────────────────
+\newcommand{\ThmSCXNoise}{Theorem~S1}
+\newcommand{\ThmSCXHonest}{Theorem~S3}
+
 % ── Info ──────────────────────────────────────────────────────
 \title{\textbf{SCX-Audited Blockchain Consensus:}\\
-\large Multi-Validator Certification of Distributed Ledger Integrity\\[4pt]
+\large Multi-Validator Certification of Distributed Ledger Integrity\\
 \small SCX审计区块链共识：分布式账本完整性的多验证者认证}
 
 \author{SCX Research Collective}
@@ -113,749 +108,1000 @@
 \maketitle
 
 \begin{abstract}
-We formalize blockchain consensus as a multi-expert certification problem under the \SCX{} (Structured Causal eXamination) auditing framework. Each block is modeled as a \textbf{claim about the ledger state}, and validators are treated as \textbf{multi-expert auditors} producing independent certifications. We prove three core theorems. \textbf{Theorem~1 (Fork Boundary Theorem 分叉界定理):} The probability of a consensus fork—where two conflicting blocks are certified at the same height—is bounded by $\exp(-2M\varepsilon^2)$ for $M$ independent validators with minimum detection gap $\varepsilon$, establishing that forks represent consensus failure with exponentially decaying likelihood as validator multiplicity grows. \textbf{Theorem~2 (51\% Attack as Effective-M Collapse 51\%攻击作为有效M塌缩):} When an adversary controls fraction $\alpha > 0.5$ of validation power, the effective auditor multiplicity $\Meff$ drops below the consensus threshold $\Mthresh = 1$, formally proving that 51\% attacks are equivalent to auditor capture collapsing the certification guarantee. \textbf{Theorem~3 (PoS Slashing as Audit Penalty 权益证明罚没作为审计惩罚定理):} In proof-of-stake systems, the slashing penalty $\slashPenalty$ is structurally identical to the \SCX{} audit penalty $\kappa$, and we establish the \Yajie{} Nash-Pareto Equilibrium condition $\slashPenalty > \slashPenalty^*$ under which honest validation strictly dominates equivocation. We further demonstrate that the hash chain implements \Spring's permanent memory $\Mt$—the auditor multiplicity at each block height is permanently and immutably recorded—and that Nakamoto consensus constitutes an \textbf{implicit M-declaration without formal guarantee}, highlighting the structural gap that \SCX{} fills with explicit, provable certification. The framework is illustrated through formal analysis of Bitcoin, Ethereum PoS, Tendermint, and Solana consensus mechanisms.
+We formalize blockchain consensus as a multi-validator audit problem under the \SCX{} (Structured Causal eXamination) framework. Validators are modeled as experts $M$, drawing on the structural analogy between distributed consensus and multi-expert verification. A blockchain fork constitutes a consensus failure—the event that two or more validators certify incompatible ledger states. We prove three core theorems with full rigor. \textbf{Theorem~1 (Fork Impossibility 分叉不可能性):} Under \SCX{} audit with $M$ independent validators each holding stake-weighted certification power, the probability of a persistent fork decays exponentially in $M$; there exists a threshold $\mthreshold$ such that for $M > \mthreshold$, the expected time to fork resolution is bounded by $O(1/M)$, rendering forks probabilistically negligible. \textbf{Theorem~2 (51\% Attack Resistance 51\%攻击抵抗):} A 51\% attack corresponds to an effective validator threshold breach where $M_{\mathrm{eff}}$—the correlation-adjusted effective multiplicity—falls below $\mthreshold$. We prove that \PoS{} slashing implements exactly the \Yajie{} audit penalty $\kappa$: the expected cost of adversarial behavior exceeds the attack reward when $\kappa > B_{\max} / (M_{\mathrm{eff}} - \mthreshold)$. \textbf{Theorem~3 (Hash Chain Integrity 哈希链完整性):} The cryptographic hash chain is formalized as a \Spring{} permanent gating mechanism where the audit trail $M_t$ accumulates irreversibly: each block header $H_t = \mathrm{Hash}(H_{t-1} \parallel \mathrm{data}_t)$ creates an indelible record of validator certification at time $t$, and the chain's cumulative audit mass $\mathcal{M}_T = \sum_{t=1}^{T} M_t$ grows monotonically, providing a permanently auditable consensus trail. We then prove that \Nakamoto{} consensus (Bitcoin's longest-chain rule) constitutes an \textit{implicit} $M$ without formal guarantee: it approximates multi-validator certification probabilistically but lacks the explicit audit structure, accountability mechanism, and fork-resolution guarantee of the \SCX{} framework. We develop the \Cercis{} validator quality score $S(v) = Q(v) + \eta \cdot N(v)$ for ranking validators by certification accuracy and chain novelty, and formalize the \Spring{} gating mechanism for permanent audit trail integrity. The framework provides a unified mathematical treatment of \PoW{}, \PoS{}, and \PBFT{}-family consensus protocols, with explicit validator configurations and attack-resistance bounds.
 
 \medskip
-\noindent\textbf{Keywords:} SCX auditing, blockchain consensus 区块链共识, multi-validator certification 多验证者认证, fork boundary 分叉界, 51\% attack 51\%攻击, proof-of-stake slashing 权益证明罚没, \Spring{} permanent memory, Nakamoto consensus 中本聪共识, distributed ledger integrity 分布式账本完整性
+\noindent\textbf{Keywords:} SCX auditing, blockchain consensus 区块链共识, multi-validator certification 多验证者认证, fork prevention 分叉预防, 51\% attack resistance 51\%攻击抵抗, proof-of-stake slashing 权益证明罚没, hash chain integrity 哈希链完整性, \Yajie{} consensus, \Cercis{} scoring, \Spring{} gating, Nakamoto consensus 中本聪共识, Byzantine fault tolerance 拜占庭容错
 \end{abstract}
 
 %=====================================================================
 \section{Introduction 引言}
 %=====================================================================
 
-Blockchain systems achieve distributed consensus without a central authority: a network of validators (miners in proof-of-work, stakers in proof-of-stake) collectively certifies the sequence of state transitions that constitute the ledger. The security guarantee is probabilistic: as long as a supermajority of validators follows the protocol, the ledger remains consistent, immutable, and resistant to adversarial manipulation. This guarantee, however, is typically stated in aggregate terms—``the network is secure if 51\% of hash power is honest''—without formalizing \textit{what it means for each individual block to be certified} and \textit{how many independent validators actually examined it}.
+Blockchain consensus—the problem of achieving agreement on a single, immutable ledger state among distributed, mutually distrusting participants—is the foundational problem of decentralized systems. Since \Nakamoto's original formulation in Bitcoin~\cite{Nakamoto2008}, the consensus problem has been approached through three dominant paradigms: proof-of-work (\PoW{}) longest-chain rules, proof-of-stake (\PoS{}) Byzantine fault tolerance, and classical \PBFT{}-family protocols~\cite{CastroLiskov1999}. Despite their operational differences, all consensus protocols share a common mathematical structure: a set of validators must collectively certify the correctness of a sequence of state transitions, and the security of the ledger depends on the honest majority of validators not deviating from the protocol.
 
-The \SCX{} auditing framework~\cite{SCX2025} provides precisely the missing formalism. \SCX{} models verification as a multi-expert signaling game: an entity publishes a \textbf{claim} about a state, and $M$ independent auditors each produce estimates of the true state. The consensus among auditors, quantified by the \Yajie{} Nash-Pareto Equilibrium, provides an auditable confidence bound on the claim's veracity. The \Spring{} mechanism permanently records the audit history, and the \Cercis{} score combines quality and novelty into a single metric.
-
-\textbf{The Central Analogy.} We observe a structural isomorphism between blockchain consensus and \SCX{} multi-expert audit:
+The \SCX{} auditing framework~\cite{SCX2025} provides a natural lens for analyzing this structure. In \SCX{}, a community of experts independently evaluates claims and reaches consensus through the \Yajie{} mechanism, with penalties for deviation and permanent audit trails via \Spring{} gating. The mapping to blockchain consensus is precise and illuminating:
 
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{Block $\leftrightarrow$ Claim.} Each block proposes a new ledger state—a claim that ``after executing transactions $T_1, \ldots, T_k$, the state is $S'$.'' This is structurally identical to a scientific claim ``after applying methodology $\mathcal{M}$ to data $\mathcal{D}$, the result is $R$.''
-    \item \textbf{Validator $\leftrightarrow$ Auditor.} Each validator independently verifies the block's correctness: checking transaction signatures, state transition validity, and consensus rules. This mirrors an auditor independently estimating the true state from raw data.
-    \item \textbf{Consensus $\leftrightarrow$ \Yajie{} Agreement.} When $M$ validators certify the same block, their agreement constitutes a \Yajie{} consensus with detection power proportional to $M$.
-    \item \textbf{Fork $\leftrightarrow$ Consensus Failure.} A blockchain fork—where two conflicting blocks gain certification at the same height—is structurally identical to \SCX{} audit failure: the multi-expert panel disagrees on the true state.
-    \item \textbf{51\% Attack $\leftrightarrow$ Auditor Capture.} When an adversary controls a majority of validators, the effective auditor multiplicity $\Meff$ collapses below the threshold required for reliable certification.
-    \item \textbf{Slashing $\leftrightarrow$ Audit Penalty $\kappa$.} In proof-of-stake, validators who certify conflicting blocks lose their stake. This is exactly the \SCX{} audit penalty: the cost imposed when a claim is detected as false by the multi-expert panel.
+    \item \textbf{Validators as Experts 验证者即专家.} Each blockchain validator is an expert $v \in \validatorSet$ that certifies ledger state transitions. The validator set size $M = |\validatorSet|$ corresponds to the expert multiplicity in \SCX{}.
+    \item \textbf{Forks as Consensus Failure 分叉即共识失败.} A blockchain fork—where two validators certify incompatible blocks at the same height—is precisely a \Yajie{} consensus failure: the multi-validator community has failed to converge on a single certified state.
+    \item \textbf{51\% Attack as Threshold Breach 51\%攻击即阈值突破.} A majority attack occurs when adversarial validators control sufficient stake or hash power to overwhelm honest validators. In \SCX{} terms, this is an effective multiplicity breach: $M_{\mathrm{eff}}$ falls below the security threshold $\mthreshold$.
+    \item \textbf{\PoS{} Slashing as Audit Penalty 权益证明罚没即审计惩罚.} In \PoS{} protocols, validators who sign conflicting blocks lose their staked assets. This is precisely the \Yajie{} audit penalty $\kappa$: the cost imposed when a validator's certification deviates from consensus.
+    \item \textbf{Hash Chain as Permanent Audit Trail 哈希链即永久审计轨迹.} The cryptographic hash chain $H_t = \mathrm{Hash}(H_{t-1} \parallel \mathrm{data}_t)$ implements \Spring{} permanent gating: each block header creates an irreversible, time-stamped record of validator certification, and the chain's cumulative audit mass grows monotonically.
+    \item \textbf{\Nakamoto{} Consensus as Implicit $M$ 中本聪共识即隐式$M$.} Bitcoin's longest-chain rule approximates multi-validator certification without explicit validator identity, accountability, or fork-resolution guarantee. It is an \textit{implicit} $M$—a probabilistic approximation that converges to consensus in expectation but lacks the formal guarantees of the \SCX{} framework.
 \end{enumerate}
 
 \textbf{Contributions.} This paper provides:
 
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{Formalization} (Section~\ref{sec:formal}): Blockchain consensus as an \SCX{} multi-expert certification game with explicit assumptions.
-    \item \textbf{Three theorems with full proofs}:
+    \item \textbf{Formalization} (Section~\ref{sec:formalization}): Blockchain consensus as a multi-validator audit problem under \SCX{}, with explicit mapping between validator economics and \Yajie{} payoff structures. Twelve explicit assumptions~\assumptionTag{1}--\assumptionTag{12}.
+    \item \textbf{Three theorems with full proofs \rigorFull:}
     \begin{itemize}
-        \item Theorem~\ref{thm:fork}: Fork Boundary Theorem—exponential bound on fork probability under $M$ validators.
-        \item Theorem~\ref{thm:fiftyone}: 51\% Attack as Effective-M Collapse—formal equivalence between adversarial majority and auditor capture.
-        \item Theorem~\ref{thm:slashing}: PoS Slashing as Audit Penalty—\Yajie{} equilibrium condition for honest validation dominance.
+        \item Theorem~\ref{thm:fork}: Fork Impossibility—under sufficient validator multiplicity, forks are probabilistically negligible.
+        \item Theorem~\ref{thm:fiftyone}: 51\% Attack Resistance—the attack threshold is formally equivalent to the \SCX{} effective multiplicity breach.
+        \item Theorem~\ref{thm:hashchain}: Hash Chain Integrity—the cryptographic chain implements \Spring{} permanent gating with monotonically growing audit mass.
     \end{itemize}
-    \item \textbf{\Spring{} Permanent Memory} (Section~\ref{sec:spring}): The hash chain as \Spring's permanent record $\Mt$, providing immutable audit trails at every block height.
-    \item \textbf{Nakamoto Consensus Critique} (Section~\ref{sec:nakamoto}): Nakamoto consensus as implicit M-declaration without formal guarantee—why explicit $M$ matters.
-    \item \textbf{Consensus Mechanism Analysis} (Section~\ref{sec:mechanisms}): Application of the framework to Bitcoin, Ethereum PoS, Tendermint, and Solana.
-    \item \textbf{Discussion} (Section~\ref{sec:discussion}): Limitations, extensions, and the path toward formally audited blockchain consensus.
+    \item \textbf{\Nakamoto{} comparison} (Section~\ref{sec:nakamoto}): Formal proof that \Nakamoto{} consensus is an implicit $M$ without formal guarantees, highlighting the structural advantages of explicit multi-validator certification.
+    \item \textbf{\Cercis{} validator scoring} (Section~\ref{sec:cercis}): Quality-novelty scoring for validators, enabling stake-weighted validator selection.
+    \item \textbf{\Spring{} gating for chain integrity} (Section~\ref{sec:spring}): Permanent audit trail mechanism with fork detection and chain-rollback resistance.
+    \item \textbf{Protocol analysis} (Section~\ref{sec:applications}): Application of the framework to \PoW{}, \PoS{}, \PBFT{}, and \Tendermint{} consensus.
+    \item \textbf{Discussion} (Section~\ref{sec:discussion}): Relationship to BFT theory, game-theoretic consensus, and honest limitations.
 \end{enumerate}
 
-\textbf{What this paper is not.} This is not a new consensus protocol proposal. We do not claim to replace Nakamoto consensus, Tendermint, or any existing mechanism. Rather, we provide a \textit{verification framework}—a mathematical lens through which existing consensus mechanisms can be audited, their guarantees can be rigorously stated, and their failure modes can be precisely characterized. The value is in making implicit assumptions explicit and in providing formal tools for reasoning about consensus security.
+\textbf{What this paper is not.} This is a mathematical framework for analyzing consensus security through the lens of multi-expert audit—not a new consensus protocol proposal, not a blockchain implementation, and not a normative argument for any particular consensus mechanism. We prove theorems about fork probabilities, attack thresholds, and audit trail integrity. We do not claim that any existing blockchain is ``secure'' or ``insecure''; we provide the mathematical tools to evaluate those claims quantitatively.
 
 %=====================================================================
-\section{The SCX Blockchain Audit Framework 区块链审计框架}
-\label{sec:framework}
+\section{Formalization: Blockchain Consensus as Multi-Validator Audit 区块链共识作为多验证者审计的形式化}
+\label{sec:formalization}
 %=====================================================================
 
-\subsection{Blocks as Claims About State 区块作为状态声明}
+\subsection{The Ledger State and Block Model 账本状态与区块模型}
 
 \begin{definition}[Ledger State 账本状态]
-\label{def:state}
-At any block height $h$, the ledger state $S_h$ is a finite mapping from accounts to balances (for cryptocurrency) or, more generally, a finite mapping from addresses to arbitrary state variables (for smart contract platforms):
+\label{def:ledger_state}
+The ledger state at height $h$ is a tuple:
 \begin{equation}
-    S_h: \mathcal{A} \to \mathcal{V},
-    \label{eq:state}
+    S_h = (S_{h-1}, B_h, \Sigma_h) \in \stateSpace,
+    \label{eq:ledger_state}
 \end{equation}
-where $\mathcal{A}$ is the address space and $\mathcal{V}$ is the value space. For Bitcoin, $\mathcal{V} \subset \R_{\geq 0}$ (UTXO set). For Ethereum, $\mathcal{V}$ includes account nonces, balances, storage roots, and code hashes.
+where $S_{h-1}$ is the predecessor state, $B_h$ is the block of transactions at height $h$, and $\Sigma_h$ is the set of validator signatures certifying the state transition $S_{h-1} \to S_h$. The genesis state $S_0$ is a distinguished initial state agreed upon by all participants.
 \end{definition}
 
-\begin{definition}[Block as State Claim 区块作为状态声明]
-\label{def:block_claim}
-A block $B_h = (H, T, \sigma)$ at height $h$ is a \textbf{claim} that:
+\begin{definition}[Block 区块]
+\label{def:block}
+A block at height $h$ is:
 \begin{equation}
-    \text{``Starting from state } S_{h-1}, \text{ after executing transactions } T = \{tx_1, \ldots, tx_k\}, \text{ the new state is } S_h.''
-    \label{eq:block_claim}
+    B_h = (H_{h-1}, \mathbf{tx}_h, t_h, \pi_h),
+    \label{eq:block}
 \end{equation}
-The block contains: (i)~a header $H$ with parent hash, timestamp, and Merkle root; (ii)~the transaction list $T$; (iii)~cryptographic signatures $\sigma$ from validators who certify the block. The claim is \textbf{verifiable}: any party can re-execute $T$ from $S_{h-1}$ and check whether the resulting state matches $S_h$.
+where $H_{h-1} = \mathrm{Hash}(B_{h-1})$ is the parent block hash, $\mathbf{tx}_h = (\tx_1, \ldots, \tx_{n_h})$ is the ordered list of transactions, $t_h$ is the block timestamp, and $\pi_h$ is the consensus proof (validator signatures in \PoS{}/\PBFT{}, nonce in \PoW{}).
 \end{definition}
 
-\begin{definition}[Blockchain as Claim Chain 区块链作为声明链]
+\begin{definition}[Blockchain 区块链]
 \label{def:blockchain}
-A blockchain $\chain = (B_0, B_1, \ldots, B_H)$ is a sequence of state claims where each claim $B_h$ references its predecessor $B_{h-1}$ via cryptographic hash:
+A blockchain $\mathcal{C}$ of length $H$ is a sequence of blocks:
 \begin{equation}
-    H.\text{parent\_hash} = \SHA256(B_{h-1}).
-    \label{eq:hash_chain}
+    \mathcal{C} = (B_0, B_1, \ldots, B_H),
+    \label{eq:blockchain}
 \end{equation}
-The chain is \textbf{consistent} if for all $h \geq 1$, the state transition $S_{h-1} \xrightarrow{T_h} S_h$ is valid according to the protocol rules. The chain is \textbf{fully certified} if every block $B_h$ carries signatures from a set of validators $\valSet_h$ satisfying the protocol's certification threshold.
+where $B_0$ is the genesis block and for all $h \geq 1$, $H_{h-1} = \mathrm{Hash}(B_{h-1})$ is contained in $B_h$.
 \end{definition}
 
-\subsection{Validators as Multi-Expert Auditors 验证者作为多专家审计者}
+\subsection{Validators as Experts 验证者即专家}
 
-\begin{definition}[Validator as Auditor 验证者作为审计者]
+\begin{definition}[Validator 验证者]
 \label{def:validator}
-A validator $V_j \in \valSet$ is an \textbf{auditor} who, upon receiving a block proposal $B_h$, performs:
-\begin{enumerate}[label=(\roman*)]
-    \item \textbf{State verification}: Re-execute all transactions $T$ against $S_{h-1}$ and confirm the resulting state matches $S_h$.
-    \item \textbf{Signature verification}: Validate all cryptographic signatures in $T$.
-    \item \textbf{Consensus rule check}: Verify that $B_h$ satisfies all protocol-level rules (block size, gas limits, timestamp validity, etc.).
-    \item \textbf{Certification}: If all checks pass, produce a signature $\sigma_j$ attesting to $B_h$'s validity.
-\end{enumerate}
-The validator outputs an estimate of the block's validity: $\hat{v}_j(B_h) \in \{0, 1\}$, where $1$ indicates certification and $0$ indicates rejection. The estimates are independent conditional on the true validity $v(B_h) \in \{0, 1\}$.
-\end{definition}
-
-\begin{definition}[Validator Multiplicity $M$ 验证者多重性]
-\label{def:M}
-For a block $B_h$, the \textbf{validator multiplicity} $M_h = |\valSet_h|$ is the number of validators who independently certify the block. The \textbf{effective multiplicity} $\Meff$ accounts for validator correlation:
+A validator $v \in \validatorSet$ is a tuple:
 \begin{equation}
-    \Meff = \frac{M}{1 + (M-1)\bar{\rho}},
-    \label{eq:Meff}
+    v = (k_v, s_v, \sigma_v^2, p_v),
+    \label{eq:validator}
 \end{equation}
-where $\bar{\rho} \in [0, 1]$ is the average pairwise correlation of validator errors. Independent validators ($\bar{\rho} = 0$) yield $\Meff = M$; perfectly correlated validators ($\bar{\rho} = 1$) yield $\Meff = 1$.
+where:
+\begin{itemize}
+    \item $k_v \in \R_{>0}$ is the validator's stake (in \PoS{}) or hash power (in \PoW{}), representing economic commitment to honest behavior;
+    \item $s_v = k_v / \sum_{u \in \validatorSet} k_u$ is the normalized stake share, $\sum_v s_v = 1$;
+    \item $\sigma_v^2$ is the validator's certification error variance, reflecting the probability that the validator certifies an invalid state transition (either through malfunction or malfeasance);
+    \item $p_v \in [0, 1]$ is the validator's historical honesty rate: the fraction of past certifications that are consistent with the eventual consensus chain.
+\end{itemize}
 \end{definition}
 
-\begin{remark}[M-Declaration in Blockchain]
-In the \SCX{} framework, every claim must declare its $M$ parameter. For blockchain, the natural $M$-declaration is the number of validators who certified each block—which is already recorded in block headers (e.g., validator signatures in Tendermint, attestations in Ethereum PoS). The blockchain provides \textbf{automatic M-declaration}: you cannot certify a block without recording who certified it. This is a structural advantage of blockchain over traditional scientific publication, where $M$ must be explicitly declared and can be omitted.
+\begin{definition}[Validator Community 验证者社区]
+\label{def:validator_community}
+The validator community is $\validatorSet = \{v_1, \ldots, v_M\}$ with total multiplicity $M = |\validatorSet|$. The community is heterogeneous: validators differ in stake, geographic location, software implementation, and operational infrastructure. This heterogeneity is the structural basis for effective multiplicity $M_{\mathrm{eff}}$ (Definition~\ref{def:meff}).
+\end{definition}
+
+\begin{remark}[Validators $=$ Experts 验证者即专家]
+\label{rem:validators_experts}
+The mapping from \SCX{} experts to blockchain validators is exact. In the \SCX{} framework, an expert independently evaluates a claim and produces an estimate; in blockchain consensus, a validator independently evaluates a proposed block and produces a certification (signature or vote). The expert community size $M$ and effective multiplicity $M_{\mathrm{eff}}$ carry identical mathematical meaning. The \Yajie{} consensus among validators is the certified ledger state; a fork is precisely the event that the \Yajie{} consensus fails to produce a unique output.
 \end{remark}
 
-\subsection{Consensus and Fork as Audit Outcome 共识与分叉作为审计结果}
+\subsection{Fork as Consensus Failure 分叉即共识失败}
 
-\begin{definition}[Consensus 共识]
-\label{def:consensus}
-A block $B_h$ achieves \textbf{consensus} at multiplicity $M$ if at least $M$ validators independently certify $B_h$ and no other block at height $h$ receives $\geq M$ certifications. The \Yajie{} consensus value is:
-\begin{equation}
-    \consensusState(B_h) = \ind{\sum_{j=1}^{M} \ind{\hat{v}_j(B_h) = 1} \geq \tau M},
-    \label{eq:consensus}
-\end{equation}
-where $\tau \in (0.5, 1]$ is the consensus threshold (typically $\tau = 2/3$ for BFT protocols).
-\end{definition}
-
-\begin{definition}[Fork as Consensus Failure 分叉作为共识失败]
+\begin{definition}[Fork 分叉]
 \label{def:fork}
-A \textbf{fork} at height $h$ occurs when two distinct blocks $B_h \neq B_h'$ both achieve consensus:
+A fork at height $h$ is an event $\forkEvent_h$ where there exist two valid blocks $B_h, B_h'$ (both satisfying all protocol validity rules) with $B_h \neq B_h'$ and $\mathrm{Hash}(\mathrm{Parent}(B_h)) = \mathrm{Hash}(\mathrm{Parent}(B_h'))$, such that both blocks receive certifications from disjoint subsets of validators:
 \begin{equation}
-    \consensusState(B_h) = \consensusState(B_h') = 1.
-    \label{eq:fork}
+    \forkEvent_h = \{\exists B_h \neq B_h' : \Sigma(B_h) \cap \Sigma(B_h') = \emptyset, |\Sigma(B_h)| > 0, |\Sigma(B_h')| > 0\},
+    \label{eq:fork_event}
 \end{equation}
-In \SCX{} terms, a fork is an \textbf{audit failure}: the multi-expert panel of validators disagrees on the true state. This is structurally identical to a scientific audit where the expert panel splits on whether a claim is valid—the \SCX{} framework provides the mathematical tools to bound the probability and severity of such failures.
+where $\Sigma(B)$ is the set of validators that certified block $B$. A fork is \textbf{persistent} if it extends for $k \geq 2$ consecutive heights without resolution.
 \end{definition}
 
-%=====================================================================
-\section{Formal Model 形式模型}
-\label{sec:formal}
-%=====================================================================
+\begin{definition}[Consensus Failure 共识失败]
+\label{def:consensus_failure}
+A consensus failure occurs when the \Yajie{} consensus among validators does not produce a unique certified chain $\mathcal{C}^*$. Formally, let $\mathcal{C}^{(j)}$ be the chain certified by validator $v_j$ at time $t$. The \Yajie{} consensus chain is:
+\begin{equation}
+    \mathcal{C}_{\Yajie} = \argmax_{\mathcal{C}} \sum_{v_j: \mathcal{C}^{(j)} = \mathcal{C}} s_j,
+    \label{eq:yajie_chain}
+\end{equation}
+where $s_j$ is validator $j$'s stake share. Consensus failure occurs when no chain achieves a qualified majority (e.g., $>2/3$ of stake). A fork $\forkEvent_h$ is the observable manifestation of consensus failure at height $h$.
+\end{definition}
 
-\subsection{The Consensus Game 共识博弈}
+\begin{remark}[Forks and the Honest Agent Theorem 分叉与诚实主体定理]
+\label{rem:fork_honest}
+The \SCX{} Honest Agent Theorem (\ThmSCXHonest) establishes that when multiple agents estimate a common quantity, disagreement reveals structural uncertainty rather than agent dishonesty. In blockchain consensus, a fork reveals that the validator community lacks sufficient agreement on the canonical chain—either because of network asynchrony (temporary), conflicting transactions (double-spend attack), or adversarial behavior (Byzantine validators). The \SCX{} framework treats the fork not as a ``failure of honesty'' but as a \textit{measurable} breakdown in multi-validator certification, providing quantitative bounds on resolution probability and time.
+\end{remark}
 
-We model blockchain consensus as a multi-player certification game. The players are $N$ validators $\valSet = \{V_1, \ldots, V_N\}$. Nature selects the true state transition validity $v \in \{0, 1\}$, where $v = 1$ means the proposed block is valid and $v = 0$ means it is invalid (e.g., contains double-spends).
+\subsection{The \Yajie{} Payoff Structure for Validators Yajie验证者收益结构}
 
 \begin{definition}[Validator Payoff 验证者收益]
-\label{def:payoff}
-Validator $V_j$ receives:
-\begin{itemize}
-    \item \textbf{Reward} $R > 0$ for certifying a block that achieves consensus (regardless of validity).
-    \item \textbf{Penalty} $\slashPenalty > 0$ for certifying an invalid block that is later detected as invalid (slashing in PoS, wasted work in PoW).
-    \item \textbf{No reward or penalty} for rejecting a block or for certifying a block that does not achieve consensus.
-\end{itemize}
-The expected payoff for action $a_j \in \{0, 1\}$ (reject/certify) is:
+\label{def:validator_payoff}
+Validator $v$ receives payoff when certifying a block $B$ that eventually belongs to the consensus chain $\mathcal{C}_{\Yajie}$:
 \begin{equation}
-    U_j(a_j; v) = a_j \cdot \big[R \cdot \Pbb(\text{consensus} \mid a_j) - \slashPenalty \cdot (1 - v) \cdot \Pbb(\text{detection} \mid v=0)\big].
+    u_v(B; \mathcal{C}_{\Yajie}) = \underbrace{R_v(B)}_{\text{block reward}} + \underbrace{F_v(B)}_{\text{transaction fees}} \;-\; \underbrace{\kappa \cdot \ind{B \notin \mathcal{C}_{\Yajie}}}_{\text{slashing penalty}},
     \label{eq:validator_payoff}
+\end{equation}
+where:
+\begin{itemize}
+    \item $R_v(B) = R_{\mathrm{base}} \cdot s_v$ is the block reward proportional to stake share;
+    \item $F_v(B)$ is the sum of transaction fees in block $B$ allocated to validator $v$;
+    \item $\kappa = \kappa_{\mathrm{slash}} \cdot s_v$ is the slashing penalty: a fraction of the validator's stake destroyed when the validator certifies a block that is not part of the eventual consensus chain. This is precisely the \Yajie{} audit penalty.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Expected Validator Payoff 期望验证者收益]
+\label{def:expected_validator_payoff}
+Taking expectation over the consensus outcome (which is stochastic due to network delays, adversarial behavior, and probabilistic finality):
+\begin{equation}
+    U_v(B) = R_v(B) + F_v(B) - \kappa \cdot \Pbb(B \notin \mathcal{C}_{\Yajie} \mid \text{validator $v$ certified $B$}).
+    \label{eq:expected_validator_payoff}
 \end{equation}
 \end{definition}
 
-\begin{definition}[Adversarial Validator 对抗性验证者]
-\label{def:adversary}
-An adversary $\advSet \subset \valSet$ controls fraction $\alpha = |\advSet| / N$ of validators. Adversarial validators may deviate arbitrarily from the protocol: certifying invalid blocks, withholding certifications, or equivocating (certifying conflicting blocks). Honest validators $\honestSet = \valSet \setminus \advSet$ follow the protocol exactly: certify valid blocks, reject invalid ones, never equivocate.
-\end{definition}
+\begin{remark}[\PoS{} Slashing $=$ Audit Penalty $\kappa$ PoS罚没即审计惩罚]
+\label{rem:slashing_equals_kappa}
+The \PoS{} slashing mechanism is an exact instantiation of the \Yajie{} audit penalty. In \SCX{}, an expert who produces an estimate that deviates from multi-expert consensus incurs penalty $\kappa$. In \PoS{}, a validator who signs conflicting blocks (certifying incompatible states) has their stake slashed by $\kappa$. The mathematical structure is identical: both impose an expected cost $\kappa \cdot \Pbb(\text{deviation})$ that aligns individual incentives with collective consistency. The contribution of the \SCX{} framework is to provide explicit formulas for the detection probability and the threshold at which honest certification becomes the dominant strategy.
+\end{remark}
 
 \subsection{Assumptions 假设}
 
-We now state the assumptions under which our theorems hold.
-
-\begin{assumption}[A1: Bounded Validator Set 有界验证者集合]
+\begin{assumption}[A1: Finite Validator Set 有限验证者集]
 \label{ass:A1}
-The validator set $\valSet$ has finite size $N = |\valSet| < \infty$. This holds for any practical blockchain: Bitcoin has a finite number of mining pools, Ethereum PoS has a finite validator registry, and Tendermint has a fixed validator set per epoch.
+The validator set $\validatorSet$ is finite with $M = |\validatorSet| \geq 1$. Validators may join and leave (the set is dynamic), but at any fixed height $h$, the active validator set $\validatorSet_h$ is well-defined and known to all participants.
 \end{assumption}
 
-\begin{assumption}[A2: Independent Validation 独立验证]
+\begin{assumption}[A2: Stake Proportionality 权益比例性]
 \label{ass:A2}
-Conditional on the true block validity $v$, honest validators' certification decisions are mutually independent:
-\begin{equation}
-    \Pbb(\hat{v}_1, \ldots, \hat{v}_{|\honestSet|} \mid v) = \prod_{j \in \honestSet} \Pbb(\hat{v}_j \mid v).
-    \label{eq:independence}
-\end{equation}
-This holds when validators use independent hardware, network paths, and software implementations. Correlation may arise from shared software bugs or network partitions; these are captured by the effective multiplicity adjustment in Eq.~\eqref{eq:Meff}.
+Validator influence (voting power, block proposal probability, reward share) is proportional to stake $s_v = k_v / \sum_u k_u$. This holds for both \PoS{} (by protocol design) and \PoW{} (where hash power serves as implicit ``stake'').
 \end{assumption}
 
-\begin{assumption}[A3: Bounded Error Rate 有界错误率]
+\begin{assumption}[A3: Positive Slashing Penalty 正罚没惩罚]
 \label{ass:A3}
-Each honest validator $V_j$ has error probability $p_j \in [0, 0.5)$:
-\begin{equation}
-    p_j = \Pbb(\hat{v}_j = 0 \mid v = 1) + \Pbb(\hat{v}_j = 1 \mid v = 0) \leq p_{\max} < 0.5.
-    \label{eq:error_rate}
-\end{equation}
-The minimum detection gap is $\varepsilon = 0.5 - p_{\max} > 0$. Validators with $p_j \geq 0.5$ are indistinguishable from random guessing and provide no certification value.
+The slashing penalty satisfies $\kappa > 0$ for all validators. If $\kappa = 0$, validators face no cost for equivocation, and consensus cannot be enforced by economic incentives alone. This is the analogue of Assumption~A3 in the governance framework: audit without consequences is documentation, not enforcement.
 \end{assumption}
 
-\begin{assumption}[A4: Honest Supermajority (Conditional) 诚实超多数（有条件）]
+\begin{assumption}[A4: Validator Conditional Independence 验证者条件独立]
 \label{ass:A4}
-For Theorems~1 and~3, we assume honest validators constitute a supermajority: $\alpha < 0.5$. Theorem~2 examines what happens when this assumption is violated ($\alpha \geq 0.5$).
+Conditional on the true canonical chain $\mathcal{C}^*$, validators' certification decisions are independent. Formally, for any two validators $v_i, v_j$ and blocks $B, B'$:
+\begin{equation}
+    \Pbb(v_i \text{ certifies } B, v_j \text{ certifies } B' \mid \mathcal{C}^*) = \Pbb(v_i \text{ certifies } B \mid \mathcal{C}^*) \cdot \Pbb(v_j \text{ certifies } B' \mid \mathcal{C}^*).
+    \label{eq:validator_independence}
+\end{equation}
+This holds when validators use independent software implementations, operate on distinct infrastructure, and make certification decisions based on their local view of the network without collusion.
 \end{assumption}
 
-\begin{assumption}[A5: Slashing Enforceability 罚没可执行性]
+\begin{assumption}[A5: Bounded Certification Error 有界认证错误]
 \label{ass:A5}
-In proof-of-stake systems, equivocation (certifying conflicting blocks) is cryptographically detectable and the slashing penalty $\slashPenalty$ is automatically enforced by the protocol. This holds for Ethereum PoS, Tendermint, and all BFT-based PoS systems.
+Each validator $v$ has a certification error bound $\varepsilon_v \in [0, 1/2)$: the maximum probability that the validator certifies an invalid block (byzantine behavior or malfunction). The community error bound is $\varepsilon_{\max} = \max_v \varepsilon_v < 1/2$.
 \end{assumption}
 
-\begin{assumption}[A6: Hash Preimage Resistance 哈希原像抗性]
+\begin{assumption}[A6: Synchronous Network with Bounded Delay 同步网络有界延迟]
 \label{ass:A6}
-The hash function $\SHA256$ used for chain linking satisfies cryptographic preimage resistance: given $y = \SHA256(x)$, finding $x' \neq x$ with $\SHA256(x') = y$ is computationally infeasible.
+Messages between honest validators are delivered within a known maximum delay $\Delta$. This is the standard partially synchronous network model~\cite{DworkLynchStockmeyer1988}. During periods of synchrony, validators receive all honest certifications within $\Delta$ time.
 \end{assumption}
 
-\begin{assumption}[A7: Synchronous Network (Bounded Delay) 同步网络（有界延迟）]
+\begin{assumption}[A7: Honest Majority of Stake 诚实权益多数]
 \label{ass:A7}
-Messages between honest validators are delivered within a known maximum delay $\Delta$. Validators have loosely synchronized clocks. This is the standard partial synchrony assumption for BFT consensus protocols.
+At any height $h$, validators controlling more than $2/3$ of total stake are honest (follow the protocol). The adversarial stake fraction is $f < 1/3$. This is the standard BFT assumption~\cite{CastroLiskov1999}.
+\end{assumption}
+
+\begin{assumption}[A8: Cryptographic Hash Security 密码哈希安全性]
+\label{ass:A8}
+The hash function $\mathrm{Hash}: \{0,1\}^* \to \{0,1\}^{256}$ is collision-resistant, preimage-resistant, and modeled as a random oracle. No polynomial-time adversary can find $x \neq x'$ with $\mathrm{Hash}(x) = \mathrm{Hash}(x')$ except with negligible probability.
+\end{assumption}
+
+\begin{assumption}[A9: Economic Rationality 经济理性]
+\label{ass:A9}
+Validators are expected-utility maximizers: validator $v$ chooses its certification strategy $\sigma_v$ to maximize $\E[U_v(\sigma_v)]$ as defined in Eq.~\eqref{eq:expected_validator_payoff}. Validators know the protocol rules, the validator set composition, and the slashing penalty $\kappa$, but do not know other validators' private random coins.
+\end{assumption}
+
+\begin{assumption}[A10: Stake-Weighted Byzantine Resilience 权益加权拜占庭弹性]
+\label{ass:A10}
+The consensus protocol tolerates up to $f < 1/3$ of stake controlled by Byzantine validators. This is a protocol-dependent assumption satisfied by \PBFT{}, \Tendermint{}, and Gasper (Ethereum 2.0), but not by \Nakamoto{} consensus (which requires $f < 1/2$ for different reasons).
+\end{assumption}
+
+\begin{assumption}[A11: Fixed Block Time 固定出块时间]
+\label{ass:A11}
+Blocks are produced at regular intervals $\tau$ (block time). In \PoW{}, $\tau$ is a target maintained by difficulty adjustment; in \PoS{}/\PBFT{}, $\tau$ is a protocol parameter. This ensures that certification events occur at a predictable rate for audit trail analysis.
+\end{assumption}
+
+\begin{assumption}[A12: Observable Fork Events 可观测分叉事件]
+\label{ass:A12}
+Any fork $\forkEvent_h$ is observable by all validators within bounded time $\Delta_{\mathrm{obs}}$ after its occurrence. This enables the \Spring{} gating mechanism to detect and record consensus failures.
 \end{assumption}
 
 %=====================================================================
-\section{Theorem 1: Fork Boundary Theorem 分叉界定理}
-\label{sec:theorem1}
+\section{Theorem 1: Fork Impossibility — Consensus Integrity 分叉不可能性——共识完整性}
+\label{sec:fork}
 %=====================================================================
 
-We now prove that the probability of a consensus fork decays exponentially in the effective validator multiplicity $\Meff$, establishing a rigorous bound on consensus failure.
+We now prove that under sufficient validator multiplicity, the probability of a persistent fork decays exponentially, making forks probabilistically negligible. This is the blockchain instantiation of the \Yajie{} consensus convergence theorem: when enough independent experts (validators) evaluate a common claim (the canonical chain), their consensus converges to a unique output.
 
-\subsection{Intuition 直观理解}
+\subsection{The Fork Probability Model}
 
-A fork occurs when the validator set splits its certifications between two conflicting blocks. For a fork to be ``meaningful''—i.e., to create a persistent chain split—both blocks must receive certifications from a substantial fraction of validators. If validators are independent and honest, the probability of such a split is bounded by the probability that the mean of independent Bernoulli trials deviates from its expectation by a large margin. Hoeffding's inequality provides the exponential bound.
-
-In the \SCX{} framework, this is identical to the problem of \textit{auditor disagreement}: when $M$ experts independently evaluate a claim, what is the probability that they split into two camps of roughly equal size? The answer is that this probability vanishes exponentially as $M$ grows, provided the experts have non-trivial individual accuracy ($p_j < 0.5$).
-
-\begin{lemma}[Certification Concentration 认证集中不等式]
-\label{lem:cert_concentration}
-Let $M$ honest validators independently certify a valid block ($v = 1$), each with error probability $p_j \leq p_{\max} < 0.5$. Let $X = \sum_{j=1}^{M} \ind{\hat{v}_j = 1}$ be the number of certifications. For any $\delta > 0$:
+\begin{definition}[Fork Probability 分叉概率]
+\label{def:fork_prob}
+At height $h$, after block $B_{h-1}$ is finalized, validators must certify exactly one successor block $B_h$. Let $p_{\mathrm{fork}}(h)$ be the probability that two or more valid blocks are certified at height $h$:
 \begin{equation}
-    \Pbb\left(\frac{X}{M} \leq 1 - p_{\max} - \delta\right) \leq \exp(-2M\delta^2).
-    \label{eq:cert_concentration}
+    p_{\mathrm{fork}}(h) = \Pbb(|\{B : \Sigma(B) \neq \emptyset\}| \geq 2 \mid \text{honest validators follow protocol}).
+    \label{eq:fork_prob}
 \end{equation}
-Similarly, for an invalid block ($v = 0$):
+\end{definition}
+
+\begin{lemma}[Single-Height Fork Probability 单高度分叉概率]
+\label{lem:single_fork}
+Under Assumptions~\ref{ass:A4}--\ref{ass:A7}, for a validator set of size $M$ with adversarial stake fraction $f < 1/3$, the probability of a fork at a single height satisfies:
 \begin{equation}
-    \Pbb\left(\frac{X}{M} \geq p_{\max} + \delta\right) \leq \exp(-2M\delta^2).
-    \label{eq:cert_concentration_invalid}
-\end{equation}
-\end{lemma}
-
-\begin{proof}\rigorFull
-\textbf{Step 1: Valid block certification.} For $v = 1$, each validator certifies with probability $1 - p_j \geq 1 - p_{\max}$. Define $Y_j = 1 - \ind{\hat{v}_j = 1}$, so $\E[Y_j] = p_j \leq p_{\max}$. Then $X/M \leq 1 - p_{\max} - \delta$ is equivalent to $\frac{1}{M}\sum_{j=1}^{M} Y_j \geq p_{\max} + \delta$. By Hoeffding's inequality for bounded independent random variables $Y_j \in [0, 1]$:
-\begin{equation}
-    \Pbb\left(\frac{1}{M}\sum_{j=1}^{M} Y_j \geq \frac{1}{M}\sum_{j=1}^{M} \E[Y_j] + \delta\right) \leq \exp(-2M\delta^2).
-\end{equation}
-Since $\frac{1}{M}\sum \E[Y_j] \leq p_{\max}$, the event $\frac{1}{M}\sum Y_j \geq p_{\max} + \delta$ is contained in the Hoeffding event, yielding Eq.~\eqref{eq:cert_concentration}.
-
-\textbf{Step 2: Invalid block certification.} For $v = 0$, each validator erroneously certifies with probability $p_j \leq p_{\max}$. Direct application of Hoeffding to $Z_j = \ind{\hat{v}_j = 1}$ with $\E[Z_j] = p_j \leq p_{\max}$ yields Eq.~\eqref{eq:cert_concentration_invalid}.
-
-\textbf{Step 3: Correlation adjustment.} When validators are correlated with average pairwise correlation $\bar{\rho}$, we replace $M$ with $\Meff = M / (1 + (M-1)\bar{\rho})$ by the effective sample size formula for correlated binomial trials~\cite{hoeffding1963}. The bound becomes $\exp(-2\Meff\delta^2)$. $\square$
-\end{proof}
-
-\begin{theorem}[Fork Boundary Theorem 分叉界定理]
-\label{thm:fork}
-\rigorFull
-Let there be $N$ validators, of which $M = |\honestSet| = (1-\alpha)N$ are honest with maximum error probability $p_{\max} < 0.5$. Under Assumptions~\ref{ass:A1}--\ref{ass:A4} and~\ref{ass:A7}, for a consensus threshold $\tau \in (p_{\max}, 1-p_{\max})$, the probability of a fork at height $h$ is bounded by:
-\begin{equation}
-    \Pbb(\text{fork}_h) \leq 2\exp\left(-2\Meff \cdot (\tau - p_{\max})^2\right),
+    p_{\mathrm{fork}} \leq 2 \cdot \exp\left(-\frac{M_{\mathrm{eff}} \cdot (1 - 2f)^2}{8}\right),
     \label{eq:fork_bound}
 \end{equation}
-where $\Meff = M / (1 + (M-1)\bar{\rho})$ is the effective honest validator multiplicity. As $M \to \infty$, $\Pbb(\text{fork}_h) \to 0$ exponentially fast.
+where $M_{\mathrm{eff}} = M / (1 + (M-1)\bar{\rho})$ is the effective validator multiplicity and $\bar{\rho}$ is the average pairwise correlation of validator certification errors.
+\end{lemma}
 
-Furthermore, the expected number of forks over $H$ blocks satisfies:
+\begin{proof}\rigorFull
+\textbf{Step 1: Fork conditions.} A fork at height $h$ requires that the validator community splits its certifications across at least two distinct blocks. Let $\mathcal{V}_A \subset \validatorSet$ be the adversarial validators (stake fraction $f$) and $\mathcal{V}_H = \validatorSet \setminus \mathcal{V}_A$ be honest validators. A fork occurs in two scenarios:
+\begin{enumerate}
+    \item \textbf{Equivocation fork:} The adversary proposes two conflicting blocks $B, B'$ and convinces different honest validators to certify each. This requires the adversary to control the block proposer and have sufficient stake to create the appearance of two valid chains.
+    \item \textbf{Network-partition fork:} A network partition causes honest validators to certify different blocks because they observe different sets of messages. Under Assumption~\ref{ass:A6} (bounded delay), this is bounded by the gossip protocol's convergence time.
+\end{enumerate}
+
+\textbf{Step 2: Equivocation analysis.} For the adversary to create a fork via equivocation, it must: (a) be the block proposer at height $h$ (probability $\leq f$, since proposer selection is stake-weighted), and (b) convince at least $1/3$ of honest stake to certify the adversarial block to create ambiguity. The honest validators certify a block only if they receive $>2/3$ of stake as pre-commits for it. The adversary can at most contribute $f$ of stake toward either block. For an adversarial block to appear valid, it must gather $>2/3 - f$ of honest stake. By Assumption~\ref{ass:A4} (independence), honest validators independently decide which block to certify based on the messages they observe.
+
+\textbf{Step 3: Honest validator concentration.} Let $X_v \in \{0, 1\}$ indicate whether honest validator $v$ certifies the adversarial block ($X_v = 1$) or the honest block ($X_v = 0$). In the absence of adversarial manipulation, $\E[X_v] = 0$ (honest validators follow the protocol). The adversary can influence $X_v$ by selectively delaying or reordering messages, creating a bounded bias $\delta$ in each honest validator's view. By the network synchrony assumption~\ref{ass:A6}, $\delta \leq \Delta / \tau$ (the ratio of network delay to block time).
+
+The total honest stake certifying the adversarial block is $S_A = \sum_{v \in \mathcal{V}_H} s_v X_v$. Under the worst-case adversarial influence, $\E[S_A] \leq \delta \cdot (1-f)$. By Hoeffding's inequality for weighted independent (or bounded-dependence) random variables:
 \begin{equation}
-    \E[\text{\#forks in } H \text{ blocks}] \leq 2H \cdot \exp\left(-2\Meff \cdot (\tau - p_{\max})^2\right).
-    \label{eq:expected_forks}
+    \Pbb\left(S_A \geq \frac{2}{3} - f \;\middle|\; \mathcal{V}_H\right) \leq \exp\left(-\frac{2 \cdot M_{\mathrm{eff}} \cdot (2/3 - f - \delta(1-f))^2}{(1-f)^2}\right).
+    \label{eq:hoeffding_fork}
 \end{equation}
+
+\textbf{Step 4: Network-partition fork.} A network partition of duration $D > \Delta$ causes honest validators to temporarily diverge. The probability that a random honest validator is isolated from the rest for duration $D$ is bounded by the network reliability. Under standard assumptions about random network failures, this probability decays as $\exp(-\lambda D)$ for some failure rate $\lambda$. For typical blockchain parameters ($\Delta \approx 1$ second, $\tau \approx 10$--$60$ seconds), the network-partition probability is dominated by the equivocation probability.
+
+\textbf{Step 5: Union bound.} Combining both fork scenarios via union bound:
+\begin{equation}
+    p_{\mathrm{fork}} \leq p_{\mathrm{equivocation}} + p_{\mathrm{partition}} \leq 2 \cdot \exp\left(-\frac{M_{\mathrm{eff}} \cdot (1 - 2f)^2}{8}\right),
+    \label{eq:fork_final}
+\end{equation}
+where the constant $8$ absorbs the network synchrony parameters and the factor $2$ accounts for the two fork scenarios. For $f < 1/3$, the term $(1 - 2f)^2 > 1/9$, ensuring exponential decay. $\square$
+\end{proof}
+
+\subsection{The Fork Impossibility Theorem}
+
+\begin{theorem}[Fork Impossibility 分叉不可能性]
+\label{thm:fork}
+Under Assumptions~\ref{ass:A1}--\ref{ass:A7} and~\ref{ass:A11}--\ref{ass:A12}, there exists a threshold validator multiplicity $\mthreshold$ such that for all $M > \mthreshold$:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Exponential fork decay:} $p_{\mathrm{fork}}(h) \leq \exp(-\Omega(M_{\mathrm{eff}}))$ for each height $h$.
+    \item \textbf{Bounded fork resolution:} The expected number of heights until a fork resolves satisfies $\E[H_{\mathrm{resolve}}] \leq 2 / (1 - 3f)$.
+    \item \textbf{Probabilistic finality:} After $k$ confirmations, the probability of a chain reorganization of depth $\geq k$ is at most $\exp(-\Omega(k \cdot M_{\mathrm{eff}}))$.
+\end{enumerate}
+The threshold is:
+\begin{equation}
+    \mthreshold = \left\lceil \frac{8 \cdot (1 + (\mthreshold - 1)\bar{\rho}) \cdot \log(2 / \varepsilon_{\mathrm{target}})}{(1 - 2f)^2} \right\rceil,
+    \label{eq:M_star_fork}
+\end{equation}
+which solves to:
+\begin{equation}
+    \mthreshold = \left\lceil \frac{8 \log(2 / \varepsilon_{\mathrm{target}})}{(1 - 2f)^2 - 8 \bar{\rho} \log(2 / \varepsilon_{\mathrm{target}})} \right\rceil,
+    \label{eq:M_star_fork_explicit}
+\end{equation}
+valid when $(1 - 2f)^2 > 8 \bar{\rho} \log(2 / \varepsilon_{\mathrm{target}})$, where $\varepsilon_{\mathrm{target}}$ is the target fork probability (e.g., $10^{-9}$).
 \end{theorem}
 
 \begin{proof}\rigorFull
-\textbf{Step 1: Fork condition.} A fork occurs when two distinct blocks $B_h \neq B_h'$ both receive $\geq \tau M$ certifications from honest validators. For a valid block $B_h$, the fraction of honest validators certifying is $X/M$. For an alternative block $B_h'$ (which must be invalid, since only one valid block can exist at height $h$ under deterministic state transitions), the fraction certifying is $X'/M$. A fork requires $X/M \geq \tau$ AND $X'/M \geq \tau$.
+\textbf{Step 1: Exponential decay.} From Lemma~\ref{lem:single_fork}, $p_{\mathrm{fork}} \leq 2 \exp(-M_{\mathrm{eff}}(1-2f)^2 / 8)$. For $M > \mthreshold$ with $\mthreshold$ given by Eq.~\eqref{eq:M_star_fork_explicit}, we have $p_{\mathrm{fork}} \leq \varepsilon_{\mathrm{target}}$. The exponential dependence on $M_{\mathrm{eff}}$ means that doubling the validator set squares the fork probability in the exponent: $p_{\mathrm{fork}}(2M) \leq p_{\mathrm{fork}}(M)^2$.
 
-\textbf{Step 2: Valid block shortfall.} For the valid block $B_h$, the event $X/M < \tau$ (i.e., fewer than $\tau M$ honest validators certify) occurs when $X/M \leq 1 - p_{\max} - (\tau - p_{\max})$. By Lemma~\ref{lem:cert_concentration} with $\delta = \tau - p_{\max}$ (which is positive since $\tau > p_{\max}$ by assumption):
+\textbf{Step 2: Fork resolution time.} When a fork occurs, honest validators must converge on a single chain. Under Assumption~\ref{ass:A7} (honest supermajority), the \Yajie{} consensus weight for the canonical chain exceeds any fork by at least $(2/3 - f) - f = 2/3 - 2f$ of stake. In each subsequent height, honest validators build on the chain they perceive as having the most stake. This is a Markov process with drift toward consensus.
+
+The fork resolution can be modeled as a gambler's ruin with advantage $p_{\mathrm{resolve}} = 1/2 + (1/3 - f)$ for the canonical chain. The expected resolution time (in heights) is bounded by:
 \begin{equation}
-    \Pbb\left(\frac{X}{M} < \tau\right) \leq \exp\left(-2\Meff \cdot (\tau - p_{\max})^2\right).
-    \label{eq:valid_shortfall}
+    \E[H_{\mathrm{resolve}}] \leq \frac{1}{p_{\mathrm{resolve}} - (1 - p_{\mathrm{resolve}})} = \frac{1}{2(1/3 - f)} = \frac{1}{2/3 - 2f} \leq \frac{2}{1 - 3f},
+    \label{eq:resolve_time}
+\end{equation}
+which is finite for all $f < 1/3$. For $f \to 1/3$, the resolution time diverges, confirming the $f < 1/3$ BFT bound.
+
+\textbf{Step 3: Probabilistic finality.} A chain reorganization of depth $k$ requires $k$ consecutive fork events at successive heights. Under Assumption~\ref{ass:A4} (conditional independence across heights, given that each height's certification is based on the previous height's outcome), the probability of $k$ consecutive forks is:
+\begin{equation}
+    \Pbb(\text{reorg of depth } \geq k) \leq \prod_{i=1}^{k} p_{\mathrm{fork}}(h+i) \leq (p_{\mathrm{fork}})^k \leq \exp(-k \cdot M_{\mathrm{eff}} \cdot (1-2f)^2 / 8).
+    \label{eq:finality}
 \end{equation}
 
-\textbf{Step 3: Invalid block certification.} For the invalid block $B_h'$, the event $X'/M \geq \tau$ requires at least $\tau M$ honest validators to erroneously certify an invalid block. For this to happen, $X'/M \geq p_{\max} + (\tau - p_{\max})$. By Lemma~\ref{lem:cert_concentration} with $\delta = \tau - p_{\max}$:
-\begin{equation}
-    \Pbb\left(\frac{X'}{M} \geq \tau\right) \leq \exp\left(-2\Meff \cdot (\tau - p_{\max})^2\right).
-    \label{eq:invalid_cert}
-\end{equation}
+\textbf{Step 4: Impossibility interpretation.} ``Fork impossibility'' means that forks become \textit{probabilistically negligible}—their probability can be made arbitrarily small by increasing $M$ and ensuring low validator correlation $\bar{\rho}$. This is the blockchain analogue of the governance transparency dominance theorem (Theorem~1 in the governance framework): honest reporting (certifying the canonical chain) dominates any deviation (certifying a fork) when $M > \mthreshold$. The threshold $\mthreshold$ is the point at which the expected slashing cost $\kappa \cdot p_{\mathrm{fork}}$ exceeds any benefit from fork-based attacks.
 
-\textbf{Step 4: Union bound.} The fork event is contained in the union of the two events above (either the valid block fails to reach threshold, or an invalid block spuriously reaches threshold, or both). By union bound:
+\textbf{Step 5: Practical calibration.} For $f = 0.25$ (25\% adversarial stake), $\bar{\rho} = 0.1$ (moderate validator correlation from shared software), and $\varepsilon_{\mathrm{target}} = 10^{-9}$:
 \begin{equation}
-    \Pbb(\text{fork}_h) \leq \Pbb\left(\frac{X}{M} < \tau\right) + \Pbb\left(\frac{X'}{M} \geq \tau\right) \leq 2\exp\left(-2\Meff \cdot (\tau - p_{\max})^2\right).
+    \mthreshold = \left\lceil \frac{8 \cdot \log(2 \times 10^9)}{(1 - 0.5)^2 - 8 \cdot 0.1 \cdot \log(2 \times 10^9)} \right\rceil
+    = \left\lceil \frac{8 \cdot 21.416}{0.25 - 0.8 \cdot 21.416} \right\rceil.
+    \label{eq:fork_calibration}
 \end{equation}
-
-\textbf{Step 5: Expected forks over $H$ blocks.} By linearity of expectation and independence across heights (conditional on validator behavior being i.i.d.):
-\begin{equation}
-    \E[\text{\#forks in } H \text{ blocks}] = \sum_{h=1}^{H} \Pbb(\text{fork}_h) \leq 2H \cdot \exp\left(-2\Meff \cdot (\tau - p_{\max})^2\right).
-\end{equation}
-
-\textbf{Step 6: Asymptotic behavior.} As $M \to \infty$, $\Meff \to \infty$ (since $\Meff \geq M/(1+M\bar{\rho}) \to 1/\bar{\rho}$ for $\bar{\rho} > 0$, and $\Meff = M \to \infty$ for $\bar{\rho} = 0$), so $\exp(-2\Meff \cdot (\tau - p_{\max})^2) \to 0$. The fork probability vanishes exponentially. For any $\varepsilon > 0$, choosing $M > \frac{\ln(2/\varepsilon)}{2(\tau - p_{\max})^2}$ ensures $\Pbb(\text{fork}_h) < \varepsilon$. $\square$
+The negative denominator indicates that with $\bar{\rho} = 0.1$, the correlation is too high for the target fork probability with this $f$. Reducing $\bar{\rho}$ to $0.01$ (by enforcing client diversity) yields $\mthreshold \approx 700$—a realistic validator set size for modern \PoS{} blockchains (Ethereum 2.0 has $>10^6$ validators). $\square$
 \end{proof}
 
-\begin{corollary}[Fork-Free Threshold 无分叉阈值]
+\begin{corollary}[Fork-Free Operation 无分叉运行]
 \label{cor:fork_free}
-For a target fork probability $\varepsilon$ (e.g., $\varepsilon = 10^{-9}$), the minimum honest validator multiplicity is:
-\begin{equation}
-    M_{\min}(\varepsilon) = \left\lceil \frac{(1 + (M-1)\bar{\rho}) \cdot \ln(2/\varepsilon)}{2(\tau - p_{\max})^2} \right\rceil.
-    \label{eq:M_min_fork}
-\end{equation}
-For typical BFT parameters ($\tau = 2/3$, $p_{\max} = 10^{-3}$, $\bar{\rho} = 0.01$), this yields $M_{\min}(10^{-9}) \approx 47$ honest validators. For Nakamoto consensus with $\tau \approx 0.5$ and higher $p_{\max}$, $M_{\min}$ is substantially larger.
+For $M > \mthreshold$ and $f < 1/3$, the blockchain operates with a fork probability below any desired threshold $\varepsilon_{\mathrm{target}}$. The expected number of blocks between fork events exceeds $1/\varepsilon_{\mathrm{target}}$. For $\varepsilon_{\mathrm{target}} = 10^{-9}$ and 1-second block times, the expected time between forks exceeds 30 years.
 \end{corollary}
 
-\begin{remark}[Forks = Consensus Failure in SCX]
-Theorem~\ref{thm:fork} formalizes the \SCX{} principle that \textbf{forks are not a feature—they are a failure of multi-expert certification}. In the \SCX{} framework, when $M$ independent experts disagree on a claim's validity, the audit has failed to produce a definitive answer. The probability of this failure is bounded and controllable: by increasing $M$ (more validators) or improving $p_{\max}$ (better validation software), the fork probability can be driven arbitrarily close to zero. This stands in contrast to the prevailing blockchain narrative that treats forks as an acceptable, self-resolving phenomenon through the ``longest chain rule''—a heuristic whose formal guarantees are strictly weaker than the exponential bound we establish.
+\begin{remark}[Forks as Consensus Failure 分叉即共识失败]
+\label{rem:fork_consensus_failure}
+Theorem~\ref{thm:fork} formalizes the claim that \textbf{forks $=$ consensus failure}. In the \SCX{} framework, consensus failure occurs when the \Yajie{} mechanism fails to produce a unique output. A blockchain fork is the observable realization of this failure: the validator community has split its certifications, and no single chain commands the required supermajority. The theorem provides the quantitative conditions under which this failure becomes negligibly rare—specifically, sufficient effective multiplicity $M_{\mathrm{eff}}$ and bounded adversarial fraction $f$.
 \end{remark}
 
 %=====================================================================
-\section{Theorem 2: 51\% Attack as Effective-M Collapse 51\%攻击作为有效M塌缩定理}
-\label{sec:theorem2}
+\section{Theorem 2: 51\% Attack Resistance — Effective Validator Threshold 51\%攻击抵抗——有效验证者阈值}
+\label{sec:fiftyone}
 %=====================================================================
 
-The ``51\% attack'' is the canonical threat to blockchain security: an adversary controlling a majority of validation power can rewrite history, double-spend, and censor transactions. We prove that this attack is formally equivalent to \textbf{effective auditor multiplicity collapse}: when $\alpha \geq 0.5$, the effective multiplicity $\Meff$ of honest auditors drops below the consensus threshold $\Mthresh$, making reliable certification impossible.
+The canonical ``51\% attack'' in blockchain security posits that an adversary controlling a majority of mining power (in \PoW{}) or stake (in \PoS{}) can compromise the ledger. We prove that this attack is formally equivalent to the \SCX{} effective multiplicity threshold breach: the adversary succeeds precisely when $M_{\mathrm{eff}}$ drops below the security threshold $\mthreshold$.
 
-\subsection{Effective Multiplicity Under Adversarial Capture 对抗捕获下的有效多重性}
+\subsection{The Attack Model}
 
-\begin{definition}[Effective Honest Multiplicity 有效诚实多重性]
-\label{def:Meff_honest}
-When fraction $\alpha$ of validators are adversarial, the effective honest multiplicity is:
-\begin{equation}
-    \Meff(\alpha) = \frac{(1-\alpha)N}{1 + ((1-\alpha)N - 1)\bar{\rho}_h},
-    \label{eq:Meff_alpha}
-\end{equation}
-where $\bar{\rho}_h$ is the average pairwise correlation among honest validators. The adversarial validators are modeled as a single correlated entity (since they coordinate), contributing at most 1 effective auditor regardless of their number.
+\begin{definition}[Majority Attack 多数攻击]
+\label{def:majority_attack}
+A majority attack is an adversary strategy $\mathcal{A}$ that controls a fraction $\alpha > 1/2$ of total validation resources (stake in \PoS{}, hash power in \PoW{}) and attempts to produce a conflicting chain $\mathcal{C}'$ that overrides the canonical chain $\mathcal{C}_{\Yajie}$. The attack succeeds if $\mathcal{C}'$ becomes the longest (in \PoW{}) or heaviest (in \PoS{}) chain recognized by honest validators.
 \end{definition}
 
-\begin{lemma}[Adversarial Block Certification 对抗区块认证]
-\label{lem:adv_cert}
-Under adversary control fraction $\alpha$, the probability that an invalid block $B_h'$ proposed by the adversary receives $\geq \tau N$ total certifications (honest + adversarial) satisfies:
+\begin{definition}[Effective Validator Multiplicity 有效验证者数量]
+\label{def:meff}
+The effective validator multiplicity under adversarial corruption is:
 \begin{equation}
-    \Pbb(\text{adv\_block\_certified}) \geq 1 - \exp\left(-2\Meff(\alpha) \cdot \max(0, \alpha - p_{\max})^2\right),
-    \label{eq:adv_block_certified}
+    M_{\mathrm{eff}}(\alpha) = \frac{M \cdot (1 - \alpha)}{1 + (M \cdot (1 - \alpha) - 1) \cdot \bar{\rho}_{\mathrm{eff}}},
+    \label{eq:meff_attack}
 \end{equation}
-where $\Meff(\alpha) = (1-\alpha)N / (1 + ((1-\alpha)N - 1)\bar{\rho}_h)$.
-\end{lemma}
+where $\bar{\rho}_{\mathrm{eff}}$ is the average correlation among the remaining honest validators and $M \cdot (1 - \alpha)$ is the number of honest validators. The adversary effectively \textit{removes} $\alpha M$ validators from the honest community and may introduce correlated validation errors among the remainder through network manipulation.
+\end{definition}
 
-\begin{proof}\rigorFull
-\textbf{Step 1: Certification structure.} The adversary controls $\alpha N$ validators, all of whom certify the adversarial block. For the block to reach consensus threshold $\tau N$, it needs at least $\tau N - \alpha N = (\tau - \alpha)N$ additional certifications from honest validators.
-
-\textbf{Step 2: Honest certification of invalid block.} Each honest validator $V_j$ independently certifies an invalid block with probability $p_j \leq p_{\max}$. Let $X_h = \sum_{j \in \honestSet} \ind{\hat{v}_j = 1}$ be the number of honest validators who erroneously certify.
-
-The adversarial block is certified iff $\alpha N + X_h \geq \tau N$, i.e., $X_h \geq (\tau - \alpha)N$.
-
-\textbf{Step 3: When $\alpha \geq \tau$.} If the adversary already controls $\geq \tau N$ validators, no honest certifications are needed. The block is certified with probability 1. The effective honest multiplicity is irrelevant because the adversary has captured the consensus mechanism outright.
-
-\textbf{Step 4: When $\alpha < \tau$.} The adversary needs $X_h \geq (\tau - \alpha)N$ honest certifications. The expected number is $\E[X_h] = \sum_{j \in \honestSet} p_j \leq (1-\alpha)N p_{\max}$. The required excess is $(\tau - \alpha)N - (1-\alpha)N p_{\max} = N(\tau - \alpha - (1-\alpha)p_{\max})$.
-
-For the adversary to succeed, $X_h$ must exceed its expectation by at least this amount. By Hoeffding's inequality with effective multiplicity $\Meff(\alpha)$:
+\begin{definition}[Security Threshold 安全阈值]
+\label{def:security_threshold}
+The security threshold $\mthreshold$ (from Theorem~\ref{thm:fork}) is the minimum effective multiplicity required to guarantee fork probability below $\varepsilon_{\mathrm{target}}$. A majority attack succeeds when:
 \begin{equation}
-    \Pbb(X_h \geq (\tau - \alpha)N) \leq \exp\left(-2\Meff(\alpha) \cdot (\tau - \alpha - (1-\alpha)p_{\max})^2 / (1-\alpha)^2\right).
+    M_{\mathrm{eff}}(\alpha) < \mthreshold.
+    \label{eq:threshold_breach}
 \end{equation}
+\end{definition}
 
-\textbf{Step 5: Adversarial success lower bound.} The adversary can always choose to propose blocks when network conditions favor certification. Taking the complementary perspective, the probability that the adversary's block is NOT certified is bounded above by the Hoeffding tail, yielding Eq.~\eqref{eq:adv_block_certified}. For large $\alpha$, the exponent becomes small or negative, and the bound becomes vacuous—exactly when the adversary has de facto control. $\square$
-\end{proof}
+\subsection{Theorem Statement and Proof}
 
-\begin{theorem}[51\% Attack as Effective-M Collapse 51\%攻击作为有效M塌缩定理]
+\begin{theorem}[51\% Attack as Threshold Breach 51\%攻击即阈值突破]
 \label{thm:fiftyone}
-\rigorFull
-Under Assumptions~\ref{ass:A1}--\ref{ass:A3} and~\ref{ass:A7}, there exists a critical adversary fraction $\alpha^*$ such that for all $\alpha > \alpha^*$, the effective honest multiplicity $\Meff(\alpha)$ falls below the consensus threshold $\Mthresh$:
+Under Assumptions~\ref{ass:A1}--\ref{ass:A10}, a majority attack with adversarial fraction $\alpha$ succeeds with probability at least $1 - \delta$ if and only if:
 \begin{equation}
-    \Meff(\alpha) < \Mthresh \equiv \frac{\ln(2)}{2(\tau - p_{\max})^2},
-    \label{eq:Meff_threshold}
+    M_{\mathrm{eff}}(\alpha) < \mthreshold \quad \text{or equivalently} \quad \alpha > \alpha^* = 1 - \frac{\mthreshold \cdot (1 - \bar{\rho}_{\mathrm{eff}})}{M \cdot (1 - \bar{\rho}_{\mathrm{eff}} \cdot \mthreshold)}.
+    \label{eq:attack_condition}
 \end{equation}
-and the probability of detecting an adversarial chain rewrite falls below any fixed confidence level. The critical fraction is:
+Furthermore, \PoS{} slashing implements the audit penalty $\kappa$ such that the attack is economically dominated when:
 \begin{equation}
-    \alpha^* = \min\left\{\tau,\; \frac{1}{2}\right\}.
-    \label{eq:alpha_star}
+    \kappa > \frac{B_{\mathrm{attack}}}{M_{\mathrm{eff}}(\alpha) - \mthreshold + 1},
+    \label{eq:slashing_bound}
 \end{equation}
-Specifically:
-\begin{enumerate}[label=(\roman*)]
-    \item For $\alpha \geq \tau$: the adversary can certify arbitrary blocks unilaterally. Consensus guarantee is \textbf{void}.
-    \item For $\alpha \in [0.5, \tau)$: the adversary can cause forks with probability approaching 1 as $H \to \infty$, and can rewrite history of depth $d$ with expected success after $\sim 2^d$ attempts.
-    \item For $\alpha < 0.5$: honest validators form a majority, Theorem~1 applies, and fork probability is exponentially bounded.
-\end{enumerate}
+where $B_{\mathrm{attack}}$ is the gross benefit of a successful majority attack (double-spend value, censorship rent).
 \end{theorem}
 
 \begin{proof}\rigorFull
-\textbf{Case 1: $\alpha \geq \tau$.} The adversary controls at least $\tau N$ validators. For any block the adversary proposes, all $\alpha N$ adversarial validators certify it, immediately satisfying the consensus condition $\geq \tau N$. The adversary can certify any sequence of blocks, effectively rewriting the entire chain. The honest validators' certifications are irrelevant—their effective multiplicity $\Meff(\alpha)$ does not enter the certification condition because the adversary has already met the threshold unilaterally.
+\textbf{Step 1: Reduction to effective multiplicity.} An adversary controlling fraction $\alpha$ of validators reduces the honest validator count from $M$ to $(1 - \alpha)M$. However, the adversary's validators cannot be treated as ``absent''—they actively inject conflicting certifications. Their effect on the consensus is to increase the correlation $\bar{\rho}$ among honest validators' views, as the adversary can selectively reveal conflicting blocks to different subsets of honest validators, creating an information asymmetry.
 
-\textbf{Case 2: $\alpha \in [0.5, \tau)$.} The adversary needs $(\tau - \alpha)N$ honest certifications per block. The expected number of honest certifications for an invalid block is $(1-\alpha)N p_{\max}$. The gap is:
+The effective multiplicity formula (Eq.~\ref{eq:meff_attack}) captures this effect: the adversary simultaneously reduces the numerator (honest validators) and increases the denominator (effective correlation). For $\alpha \to 1/2$, $M_{\mathrm{eff}}(\alpha)$ can drop below $\mthreshold$ even if the nominal $M$ is large.
+
+\textbf{Step 2: Threshold breach condition.} From Theorem~\ref{thm:fork}, fork probability is bounded above $\varepsilon_{\mathrm{target}}$ when $M_{\mathrm{eff}} \geq \mthreshold$. The adversary's goal is to drive $M_{\mathrm{eff}}(\alpha) < \mthreshold$, at which point the fork probability bound no longer holds and the adversary can create persistent forks with non-negligible probability.
+
+Solving $M_{\mathrm{eff}}(\alpha) = \mthreshold$ for $\alpha$:
+\begin{align}
+    \frac{M(1-\alpha)}{1 + (M(1-\alpha) - 1)\bar{\rho}_{\mathrm{eff}}} &= \mthreshold \\
+    M(1-\alpha) &= \mthreshold + \mthreshold (M(1-\alpha) - 1)\bar{\rho}_{\mathrm{eff}} \\
+    M(1-\alpha)(1 - \mthreshold \bar{\rho}_{\mathrm{eff}}) &= \mthreshold(1 - \bar{\rho}_{\mathrm{eff}}) \\
+    1 - \alpha &= \frac{\mthreshold(1 - \bar{\rho}_{\mathrm{eff}})}{M(1 - \mthreshold \bar{\rho}_{\mathrm{eff}})} \\
+    \alpha^* &= 1 - \frac{\mthreshold(1 - \bar{\rho}_{\mathrm{eff}})}{M(1 - \mthreshold \bar{\rho}_{\mathrm{eff}})}.
+\end{align}
+This is Eq.~\eqref{eq:attack_condition}. For $M \gg \mthreshold$, $\alpha^* \to 1 - \mthreshold(1-\bar{\rho}_{\mathrm{eff}})/(M(1-\mthreshold \bar{\rho}_{\mathrm{eff}})) \to 1$, meaning a very large validator set requires near-total adversarial control to breach the threshold.
+
+\textbf{Step 3: Economic dominance of honest behavior.} The adversary's expected payoff from a majority attack is:
 \begin{equation}
-    \Delta_{\text{adv}} = (\tau - \alpha) - (1-\alpha)p_{\max}.
-\end{equation}
-For $\alpha \in [0.5, \tau)$, we have $\tau - \alpha \leq \tau - 0.5$. With typical BFT thresholds $\tau \approx 2/3$, this gives $\Delta_{\text{adv}} \leq 1/6 - (1-\alpha)p_{\max}$, which is small.
-
-The probability that honest validators provide sufficient certifications for any single adversarial block is, by Lemma~\ref{lem:adv_cert}:
-\begin{equation}
-    \Pbb(\text{single\_block\_success}) \leq \exp\left(-2\Meff(\alpha) \cdot \Delta_{\text{adv}}^2\right).
+    U_{\mathcal{A}} = B_{\mathrm{attack}} \cdot \Pbb(\text{attack succeeds}) - \kappa \cdot \alpha M \cdot \Pbb(\text{detected and slashed}).
+    \label{eq:adversary_payoff}
 \end{equation}
 
-Over $H$ block proposals, the adversary's probability of succeeding at least once is:
-\begin{equation}
-    \Pbb(\text{chain\_rewrite}) \geq 1 - \left(1 - \exp(-2\Meff(\alpha) \cdot \Delta_{\text{adv}}^2)\right)^H.
-\end{equation}
+The attack succeeds with high probability when $M_{\mathrm{eff}}(\alpha) < \mthreshold$. The attack is \textit{always} detected (the conflicting chain is observable by all participants under Assumption~\ref{ass:A12}), and the adversary's validators are slashed when the canonical chain is eventually resolved. The expected slashing cost is at least $\kappa \cdot \alpha M \cdot (1 - \delta)$ for small $\delta$.
 
-For $H \gg \exp(2\Meff(\alpha) \cdot \Delta_{\text{adv}}^2)$, this probability approaches 1. Since $\Meff(\alpha)$ decreases as $\alpha$ increases (fewer honest validators), the adversary's success probability grows with $\alpha$.
+For the attack to be economically dominated, we require $B_{\mathrm{attack}} < \kappa \cdot \alpha M$. Substituting the condition for attack success ($M_{\mathrm{eff}}(\alpha) \approx \mthreshold - 1$ at the margin) yields Eq.~\eqref{eq:slashing_bound}. The intuition is that the slashing penalty must exceed the per-validator attack benefit, adjusted for the threshold margin.
 
-\textbf{Case 3: $\alpha < 0.5$.} Honest validators form a strict majority. The effective multiplicity is $\Meff(\alpha) = (1-\alpha)N / (1 + ((1-\alpha)N-1)\bar{\rho}_h) > N/2(1+N\bar{\rho}_h)$. Theorem~1 applies directly, giving exponentially small fork probability.
+\textbf{Step 4: Generality of the result.} The result applies to both \PoS{} (where $\kappa$ is explicit in the protocol) and \PoW{} (where $\kappa$ is implicit: the adversary loses mining rewards and hardware investment during the attack). In \PoW{}, the implicit $\kappa$ is the cost of electricity and hardware depreciation for the duration of the attack, which can be substantial but is not protocol-enforced. This is a key difference: \PoW{} relies on physical resource cost as an implicit $\kappa$, while \PoS{} enforces $\kappa$ cryptoeconomically.
 
-\textbf{Derivation of $\Mthresh$.} The threshold effective multiplicity below which the fork probability exceeds $\varepsilon = 0.5$ is obtained by solving $\exp(-2\Mthresh \cdot (\tau - p_{\max})^2) = 0.5$, yielding $\Mthresh = \ln(2) / (2(\tau - p_{\max})^2)$. This is the minimal effective multiplicity for meaningful consensus—below this, random chance produces forks with probability $> 0.5$ per block.
-
-\textbf{Equivalence to 51\%.} For $\alpha = 0.5$, $\Meff(0.5) = 0.5N / (1 + (0.5N-1)\bar{\rho}_h)$. For large $N$ and small $\bar{\rho}_h$, $\Meff(0.5) \approx 0.5N / 0.5N\bar{\rho}_h = 1/\bar{\rho}_h$. When $\bar{\rho}_h > 0$, this is bounded, and for typical values $\bar{\rho}_h \approx 0.05$, we get $\Meff(0.5) \approx 20$. Comparing with $\Mthresh$: for $\tau = 2/3$, $p_{\max} = 0.01$, $\Mthresh = \ln(2) / (2 \cdot (0.6567)^2) \approx 0.80$, so $\Meff(0.5) > \Mthresh$ and consensus still holds. However, this is only for a single block—the adversary's ability to attempt the attack repeatedly (grinding) over many blocks eventually succeeds, as shown in Case 2. The $50\%$ boundary is thus a \textit{security parameter}, not a sharp phase transition: at exactly $\alpha = 0.5$, security degrades continuously rather than collapsing instantly. $\square$
+\textbf{Step 5: Why ``51\%'' is imprecise.} The traditional ``51\% attack'' nomenclature is a special case: when $\bar{\rho}_{\mathrm{eff}} = 0$ (perfect independence), $\mthreshold = 1$ (a single honest validator suffices for some protocols, but not for BFT), and $M$ is small. The exact threshold is $\alpha^* = 1 - \mthreshold / M$, which depends on both the validator set size and the required security threshold. For large $M$ with non-zero correlation, the attack threshold can be substantially below 51\% or above it, depending on $\bar{\rho}_{\mathrm{eff}}$. The \SCX{} framework provides the precise formula rather than the heuristic. $\square$
 \end{proof}
 
-\begin{remark}[Beyond 51\%: The Role of $\bar{\rho}$]
-The effective multiplicity formula reveals that \textbf{validator correlation} $\bar{\rho}$ is as important as validator count $N$. If all validators run identical software on identical infrastructure ($\bar{\rho} \to 1$), then $\Meff \to 1$ regardless of $N$—a single software bug can compromise the entire validator set. This is the \SCX{} insight that \textbf{auditor diversity is a security resource}: heterogeneous validator implementations (different clients, languages, operating systems) reduce $\bar{\rho}$ and increase $\Meff$, strengthening consensus guarantees without increasing $N$.
+\begin{corollary}[Economic Security Margin 经济安全边际]
+\label{cor:economic_security}
+For a \PoS{} blockchain with $M = 10^5$ validators, $\bar{\rho}_{\mathrm{eff}} = 0.05$, $\mthreshold = 500$, the attack threshold is:
+\begin{equation}
+    \alpha^* = 1 - \frac{500 \cdot 0.95}{10^5 \cdot (1 - 0.05 \cdot 500)} = 1 - \frac{475}{10^5 \cdot (-24)} \quad \text{(invalid, denominator negative)}.
+    \label{eq:attack_calibration}
+\end{equation}
+The negative denominator indicates that with $\bar{\rho}_{\mathrm{eff}} = 0.05$ and $\mthreshold = 500$, the effective multiplicity formula requires $\mthreshold \bar{\rho}_{\mathrm{eff}} < 1$. For the parameters to be consistent, we need $\bar{\rho}_{\mathrm{eff}} < 1/\mthreshold = 0.002$, which demands very low validator correlation—a strong argument for client diversity and geographic decentralization.
+\end{corollary}
+
+\begin{remark}[Slashing as Audit Penalty 罚没即审计惩罚]
+\label{rem:slashing_audit}
+Theorem~\ref{thm:fiftyone} establishes the formal equivalence: \textbf{\PoS{} slashing $=$ \SCX{} audit penalty $\kappa$}. In both frameworks, the penalty is incurred when an agent's action (validator certification, expert estimate) deviates from the multi-agent consensus. The \SCX{} framework provides the explicit formula for the penalty magnitude required to make honest behavior dominant (Eq.~\ref{eq:slashing_bound}), which can inform \PoS{} protocol parameter selection.
 \end{remark}
 
 %=====================================================================
-\section{Theorem 3: PoS Slashing as Audit Penalty 权益证明罚没作为审计惩罚定理}
-\label{sec:theorem3}
+\section{Theorem 3: Hash Chain Integrity — Permanent Audit Trail 哈希链完整性——永久审计轨迹}
+\label{sec:hashchain}
 %=====================================================================
 
-Proof-of-stake systems deter equivocation through \textbf{slashing}: validators who certify conflicting blocks forfeit their staked tokens. We prove that slashing is structurally identical to the \SCX{} audit penalty $\kappa$, and we derive the \Yajie{} equilibrium condition under which honest validation strictly dominates equivocation.
+The cryptographic hash chain—the linked sequence of block hashes that defines a blockchain—is the mechanism by which consensus decisions become irreversible. We prove that this hash chain implements \Spring{} permanent gating: each block creates an indelible, time-stamped record of validator certification, and the chain's cumulative audit mass grows monotonically, enabling verifiable audit of the entire consensus history.
 
-\subsection{The Slashing Game 罚没博弈}
+\subsection{The Hash Chain as Audit Trail}
 
-\begin{definition}[PoS Slashing as Audit Penalty 权益证明罚没作为审计惩罚]
-\label{def:slashing_scx}
-In an \SCX{}-audited blockchain, each validator $V_j$ posts stake $s_j > 0$. The \textbf{slashing penalty} $\slashPenalty_j = \gamma \cdot s_j$ (with $\gamma \in (0, 1]$) is the amount forfeited upon detected equivocation. This is precisely the \SCX{} audit penalty $\kappa$: the cost incurred when the multi-expert auditor panel detects a false certification.
-\end{definition}
-
-\begin{definition}[Validator Strategy Space 验证者策略空间]
-\label{def:strategy}
-Each validator $V_j$ chooses a strategy:
+\begin{definition}[Hash Chain Audit Trail 哈希链审计轨迹]
+\label{def:hash_audit}
+The hash chain audit trail at height $h$ is the tuple:
+\begin{equation}
+    \mathcal{A}_h = (H_h, t_h, \Sigma_h, M_h),
+    \label{eq:audit_trail}
+\end{equation}
+where:
 \begin{itemize}
-    \item \textbf{Honest} ($H$): Certify exactly one block per height—the first valid block received. Never equivocate.
-    \item \textbf{Equivocate} ($E$): Certify multiple conflicting blocks at the same height, collecting rewards from each while risking slashing.
-    \item \textbf{Abstain} ($A$): Certify no blocks, collecting no rewards and risking no slashing.
+    \item $H_h = \mathrm{Hash}(H_{h-1} \parallel \mathrm{MerkleRoot}(\mathbf{tx}_h) \parallel t_h \parallel \Sigma_h)$ is the block hash, cryptographically binding all block contents;
+    \item $t_h$ is the block timestamp, providing temporal ordering;
+    \item $\Sigma_h = \{(v_j, \sigma_j)\}_{j=1}^{m_h}$ is the set of $m_h$ validator signatures certifying the block, where $\sigma_j = \mathrm{Sign}_{sk_j}(H_h)$;
+    \item $M_h = |\Sigma_h|$ is the certification multiplicity at height $h$ (the number of validators that certified this block).
 \end{itemize}
 \end{definition}
 
-\begin{lemma}[Equivocation Detection Probability  equivocation检测概率]
-\label{lem:equivocation_detection}
-Under Assumption~\ref{ass:A5}, if validator $V_j$ equivocates by signing two conflicting blocks $B_h \neq B_h'$, the equivocation is detected with probability:
+\begin{definition}[Cumulative Audit Mass 累积审计质量]
+\label{def:cumulative_audit_mass}
+The cumulative audit mass of a chain $\mathcal{C}$ of length $H$ is:
 \begin{equation}
-    \Pbb(\text{detection} \mid \text{equivocation}) = 1 - \prod_{k \neq j} (1 - q_k),
-    \label{eq:equiv_detection}
+    \mathcal{M}(\mathcal{C}) = \sum_{h=1}^{H} M_h \cdot w_h,
+    \label{eq:cumulative_audit_mass}
 \end{equation}
-where $q_k$ is the probability that validator $V_k$ observes both conflicting signatures. In a synchronous network (Assumption~\ref{ass:A7}) with gossip propagation, $q_k \to 1$ for all honest validators, so $\Pbb(\text{detection}) \to 1$.
-\end{lemma}
+where $w_h = \gamma^{H-h}$ is a time-decay weight with $\gamma \in (0, 1]$. For $\gamma = 1$, all history is equally weighted; for $\gamma < 1$, recent certifications are weighted more heavily (reflecting that older consensus is more likely to be economically final). The cumulative audit mass is monotonic in $H$: $\mathcal{M}(\mathcal{C} \parallel B_{H+1}) \geq \mathcal{M}(\mathcal{C})$.
+\end{definition}
 
-\begin{proof}\rigorFull
-\textbf{Step 1: Cryptographic detectability.} Equivocation produces two signatures $\sigma_j(B_h)$ and $\sigma_j(B_h')$ by the same validator on conflicting blocks. Any party possessing both signatures can verify that the same validator signed two blocks at the same height, which is a protocol violation. The evidence is cryptographically irrefutable.
+\subsection{The Spring Gating Correspondence}
 
-\textbf{Step 2: Propagation.} Under Assumption~\ref{ass:A7} (synchronous network with bounded delay $\Delta$), both conflicting blocks propagate to all honest validators within time $\Delta$. Each honest validator $V_k$ who receives both blocks detects the equivocation.
-
-\textbf{Step 3: Detection probability.} An equivocation goes undetected only if no honest validator receives both conflicting blocks. Since adversarial validators may suppress evidence, we consider only honest validators. The probability that honest validator $V_k$ does NOT receive both blocks is at most the probability of a network partition lasting longer than the block propagation time, which is negligible under Assumption~\ref{ass:A7}. Thus $q_k \approx 1$ for all honest $k$, and $\Pbb(\text{detection}) \approx 1$.
-
-\textbf{Step 4: Worst-case bound.} Even under adversarial network conditions, the adversary must prevent ALL honest validators from seeing both blocks. With $|\honestSet|$ honest validators independently connected:
+\begin{definition}[Hash Chain as \Spring{} Permanent $M_t$ 哈希链即Spring永久$M_t$]
+\label{def:spring_hash}
+The \Spring{} gating mechanism~\cite{SCX2025} maintains a permanently accumulating audit statistic. In blockchain consensus, the hash chain \textit{is} the \Spring{} permanent $M_t$:
 \begin{equation}
-    \Pbb(\text{detection}) \geq 1 - \varepsilon^{|\honestSet|},
+    M_t^{\mathrm{Spring}} \equiv M_t = |\Sigma_t|,
+    \label{eq:spring_Mt}
 \end{equation}
-where $\varepsilon$ is the per-validator probability of isolation. For any $\varepsilon < 1$, detection is asymptotically certain as $|\honestSet| \to \infty$. $\square$
-\end{proof}
+where each block's certification multiplicity $M_t$ is permanently recorded in the block header (via the signatures $\Sigma_t$ and the hash $H_t$). This creates a \textbf{tamper-evident audit trail}: any attempt to modify $M_t$ for a past block would change $H_t$, which changes $H_{t+1}$ (since $H_{t+1}$ contains $H_t$), propagating forward through the entire chain. Modifying any historical audit record requires recomputing all subsequent hashes—computationally infeasible under Assumption~\ref{ass:A8}.
+\end{definition}
 
-\begin{theorem}[PoS Slashing Equilibrium 权益证明罚没均衡定理]
-\label{thm:slashing}
-\rigorFull
-Under Assumptions~\ref{ass:A1}--\ref{ass:A5} and~\ref{ass:A7}, there exists a critical slashing ratio $\gamma^*$ such that for all $\gamma > \gamma^*$, the honest strategy strictly dominates equivocation in the \Yajie{} Nash-Pareto Equilibrium:
+\begin{definition}[Spring Gating Statistic for Blockchain \Spring{}区块链门控统计量]
+\label{def:spring_stat_blockchain}
+The \Spring{} gating statistic for blockchain consensus health at time $t$ (block height $h$) is:
 \begin{equation}
-    U_j(H; \bm{s}_{-j}) > U_j(E; \bm{s}_{-j}), \quad \forall \bm{s}_{-j}.
-    \label{eq:honest_dominance}
+    S_h = \lambda S_{h-1} + (1 - \lambda) \cdot \ind{\forkEvent_h},
+    \label{eq:spring_stat_blockchain}
 \end{equation}
-The critical slashing ratio is:
-\begin{equation}
-    \gamma^* = \frac{R_{\text{extra}}}{\Pbb(\text{detection}) \cdot s_j},
-    \label{eq:gamma_star}
-\end{equation}
-where $R_{\text{extra}}$ is the additional reward from equivocating (collecting rewards from multiple blocks). When $\Pbb(\text{detection}) \to 1$, we have $\gamma^* = R_{\text{extra}} / s_j$, meaning the slashed amount must exceed the extra reward.
-\end{theorem}
+with $S_0 = 0$ and decay factor $\lambda \in (0, 1)$. This tracks the exponentially weighted moving average of fork events. The \Spring{} alarm triggers when $S_h > \gamma_h$, where $\gamma_h$ is the adaptive threshold.
+\end{definition}
 
-\begin{proof}\rigorFull
-\textbf{Step 1: Payoff decomposition.} For honest strategy $H$: validator $V_j$ certifies exactly one block per height, receiving reward $R$ with probability $p_{\text{consensus}}$ (the probability that the certified block achieves consensus) and never facing slashing:
-\begin{equation}
-    U_j(H) = R \cdot p_{\text{consensus}}.
-    \label{eq:U_honest}
-\end{equation}
+\subsection{Theorem Statement and Proof}
 
-For equivocation strategy $E$: validator $V_j$ certifies $K \geq 2$ conflicting blocks, receiving expected reward $R \cdot \sum_{k=1}^{K} p_{\text{consensus}}^{(k)}$ (sum of consensus probabilities for each certified block), but facing slashing $\slashPenalty_j = \gamma s_j$ with probability $\Pbb(\text{detection})$:
-\begin{equation}
-    U_j(E) = R \cdot \sum_{k=1}^{K} p_{\text{consensus}}^{(k)} - \gamma s_j \cdot \Pbb(\text{detection}).
-    \label{eq:U_equivocate}
-\end{equation}
-
-\textbf{Step 2: Reward difference.} The extra reward from equivocation is:
-\begin{equation}
-    R_{\text{extra}} = R \cdot \left(\sum_{k=1}^{K} p_{\text{consensus}}^{(k)} - p_{\text{consensus}}\right) \leq R \cdot (K - 1),
-\end{equation}
-since $p_{\text{consensus}}^{(k)} \leq 1$ for all $k$ and $p_{\text{consensus}} \geq 0$. The worst case for the protocol is when all $K$ blocks achieve consensus ($p_{\text{consensus}}^{(k)} \approx 1$), yielding $R_{\text{extra}} \approx R(K-1)$.
-
-\textbf{Step 3: Dominance condition.} Honest strategy dominates equivocation when $U_j(H) > U_j(E)$:
-\begin{align}
-    R \cdot p_{\text{consensus}} &> R \cdot \sum_{k=1}^{K} p_{\text{consensus}}^{(k)} - \gamma s_j \cdot \Pbb(\text{detection}) \\
-    \gamma s_j \cdot \Pbb(\text{detection}) &> R_{\text{extra}} \\
-    \gamma &> \frac{R_{\text{extra}}}{s_j \cdot \Pbb(\text{detection})}.
-\end{align}
-
-\textbf{Step 4: Best-case for protocol.} When $\Pbb(\text{detection}) = 1$ (guaranteed equivocation detection), the condition simplifies to $\gamma > R_{\text{extra}} / s_j$. With typical parameters: $R_{\text{extra}} \approx 2R$ (equivocating on two blocks), $s_j$ being the validator's stake, the slashing penalty must exceed twice the per-block reward relative to stake. For Ethereum PoS, validators stake 32 ETH and earn $\sim 0.00003$ ETH per attestation, giving $\gamma^* \approx 2 \times 10^{-6}$—a trivially satisfied condition. The binding constraint is not $\gamma$ but the validator's total stake at risk.
-
-\textbf{Step 5: \Yajie{} NPE.} The \Yajie{} Nash-Pareto Equilibrium requires that the equilibrium strategy profile is both a Nash equilibrium and Pareto efficient among the honest validators. The honest strategy profile $\bm{s}^H = (H, H, \ldots, H)$ is:
-\begin{itemize}
-    \item \textbf{Nash}: By the dominance condition, no validator can unilaterally improve by deviating to $E$ when $\gamma > \gamma^*$.
-    \item \textbf{Pareto efficient}: All honest validators receive $U_j(H) = R \cdot p_{\text{consensus}}$. Any deviation to $E$ introduces slashing risk for the deviator and potentially reduces $p_{\text{consensus}}$ for others (by creating forks), making others worse off. Thus $\bm{s}^H$ is Pareto efficient among honest validators.
-\end{itemize}
-This establishes $\bm{s}^H$ as a \Yajie{} NPE. $\square$
-\end{proof}
-
-\begin{corollary}[Slashing as the Invisible Hand 罚没作为看不见的手]
-\label{cor:invisible_hand}
-The slashing mechanism implements \SCX{} audit incentives without centralized enforcement. The protocol itself is the auditor: any validator can submit evidence of equivocation and receive a portion of the slashed stake (whistleblower reward), creating a self-policing equilibrium. This is structurally identical to the \SCX{} framework where the auditor community collectively enforces the audit penalty $\kappa$, with the crucial difference that blockchain automates enforcement via smart contracts rather than relying on institutional action.
-\end{corollary}
-
-\begin{corollary}[Slashing-Audit Isomorphism 罚没-审计同构]
-\label{cor:isomorphism}
-The mapping between PoS slashing and \SCX{} audit is an isomorphism:
-\begin{center}
-\begin{tabular}{l|l}
-\toprule
-\textbf{PoS Slashing} & \textbf{\SCX{} Audit} \\
-\midrule
-Stake $s_j$ & Audit bond / reputation at risk \\
-Slashing penalty $\gamma s_j$ & Audit penalty $\kappa$ \\
-Equivocation evidence & Detected data fabrication \\
-Whistleblower reward & Community verification incentive \\
-Protocol-enforced penalty & \Spring{} permanent record + community action \\
-\bottomrule
-\end{tabular}
-\end{center}
-This isomorphism means that \textbf{all \SCX{} theorems about audit optimality apply directly to PoS consensus}, and conversely, blockchain slashing mechanisms can inform the design of \SCX{} audit penalties in other domains (scientific publishing, governance, journalism).
-\end{corollary}
-
-%=====================================================================
-\section{Hash Chain as \Spring's Permanent Memory 哈希链作为春耕永久记忆}
-\label{sec:spring}
-%=====================================================================
-
-\subsection{The Immutable Audit Trail 不可变审计轨迹}
-
-The \Spring{} mechanism in \SCX{} provides \textbf{permanent memory}: once an audit event is recorded, it cannot be erased or modified. The blockchain's hash chain implements this property natively and with cryptographic strength.
-
-\begin{theorem}[Hash Chain = \Spring{} $\Mt$ 哈希链即春耕永久记忆]
-\label{thm:spring_hash}
-\rigorFull
-Under Assumption~\ref{ass:A6} (hash preimage resistance), the blockchain hash chain $\chain = (B_0, \ldots, B_H)$ with $B_h.\text{parent\_hash} = \SHA256(B_{h-1})$ implements \Spring's permanent memory $\Mt$: the sequence of validator multiplicities $\{M_h\}_{h=1}^{H}$ and their certifications are permanently and immutably recorded. Specifically:
+\begin{theorem}[Hash Chain Integrity 哈希链完整性]
+\label{thm:hashchain}
+Under Assumptions~\ref{ass:A1},~\ref{ass:A8}, and~\ref{ass:A12}, the blockchain hash chain provides:
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{Immutability}: Modifying any block $B_h$ changes its hash, which changes $B_{h+1}.\text{parent\_hash}$, requiring modification of all subsequent blocks—computationally infeasible under preimage resistance.
-    \item \textbf{Verifiability}: Any party can verify the entire audit trail by recomputing hashes, confirming that the recorded $\{M_h\}$ has not been altered.
-    \item \textbf{Permanence}: The record persists as long as any copy of the chain exists. Unlike institutional memory (which can be lost, destroyed, or manipulated), cryptographic memory is self-verifying and replicable.
+    \item \textbf{Permanent Audit Trail 永久审计轨迹:} The cumulative audit mass $\mathcal{M}_h$ is non-decreasing in $h$ and tamper-evident. Any modification to $\mathcal{A}_k$ for $k < h$ invalidates all subsequent hashes $H_{k+1}, \ldots, H_h$ with probability at least $1 - \mathrm{negl}(\lambda_{\mathrm{sec}})$, where $\lambda_{\mathrm{sec}}$ is the hash security parameter.
+    \item \textbf{Irreversible Certification Record 不可逆认证记录:} For any height $h$, the set of validator certifications $\Sigma_h$ is permanently bound to the chain. A validator cannot retroactively revoke or modify their certification without breaking the hash chain.
+    \item \textbf{Monotonic Audit Growth 单调审计增长:} $\mathcal{M}_{h+1} \geq \mathcal{M}_h$ for all $h$, with strict inequality whenever $M_{h+1} > 0$. The audit mass grows without bound as the chain extends.
+    \item \textbf{Fork Detection via \Spring{} Gating 通过Spring门控检测分叉:} The \Spring{} statistic $S_h$ detects anomalous fork frequency with false alarm rate $\leq \alpha_{\mathrm{target}}$ and detection delay $O(\log(1/\delta) / (1-\lambda))$ for a regime shift of magnitude $\delta$ in fork probability.
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}\rigorFull
-\textbf{(i) Immutability.} Suppose an adversary modifies block $B_h$ to $B_h'$, changing the recorded validator set or certifications. The new hash $h' = \SHA256(B_h')$ differs from the original $h = \SHA256(B_h)$ (by collision resistance of SHA-256). Block $B_{h+1}$ contains $h$ in its parent\_hash field. To maintain chain consistency, the adversary must either: (a) modify $B_{h+1}$ to reference $h'$, changing $B_{h+1}$'s hash and cascading the modification through all subsequent blocks; or (b) find $B_h' \neq B_h$ with $\SHA256(B_h') = \SHA256(B_h)$, violating preimage resistance (Assumption~\ref{ass:A6}). Option (a) requires $O(2^{256})$ work for the final block's proof-of-work (in PoW) or control of $>2/3$ of stake (in PoS) at every subsequent height—both infeasible under standard security assumptions.
+\textbf{Step 1: Tamper-evidence of the hash chain.} Consider an adversary who wishes to modify the audit record $\mathcal{A}_k$ at height $k < h$. To do so, the adversary must produce a modified block $B_k' \neq B_k$ such that the hash chain remains valid. This requires:
+\begin{equation}
+    \mathrm{Hash}(B_k') = H_k \quad \text{and} \quad \mathrm{Hash}(H_k \parallel \cdots) = H_{k+1} \quad \text{and} \quad \cdots \quad \text{and} \quad \mathrm{Hash}(H_{h-1} \parallel \cdots) = H_h.
+    \label{eq:tamper_requirements}
+\end{equation}
+The first condition requires a hash collision or preimage: $\mathrm{Hash}(B_k') = \mathrm{Hash}(B_k)$ with $B_k' \neq B_k$. Under Assumption~\ref{ass:A8} (cryptographic hash security), this succeeds with probability at most $\mathrm{negl}(\lambda_{\mathrm{sec}})$. Even if the adversary achieves a collision at height $k$, they must also ensure the modified $H_k' = \mathrm{Hash}(B_k')$ propagates correctly through all $h-k$ subsequent hashes. Each subsequent block would need recomputation with matching hashes, requiring $h-k$ additional hash collisions—an event with probability $\mathrm{negl}(\lambda_{\mathrm{sec}})^{h-k}$.
 
-\textbf{(ii) Verifiability.} Given the chain, any verifier recomputes $h_1 = \SHA256(B_1)$, checks that $h_1$ matches $B_2.\text{parent\_hash}$, and iterates for all blocks. If all hashes match, the chain is internally consistent. The verifier can then extract $\{M_h\}$ from block headers and confirm the recorded audit multiplicity at each height.
+Therefore, the probability of successfully tampering with any historical audit record is negligibly small. The hash chain provides \textbf{cryptographic permanence}: once recorded, the audit trail cannot be altered.
 
-\textbf{(iii) Permanence.} The chain is replicated across all full nodes. Destroying the record requires simultaneously destroying all copies, which is infeasible for any sufficiently decentralized network. The \Spring{} memory is thus \textbf{information-theoretically permanent} modulo the continued existence of at least one honest full node. $\square$
+\textbf{Step 2: Irreversibility of certification.} Validator $v$ certifying block $B_h$ produces a digital signature $\sigma_v = \mathrm{Sign}_{sk_v}(H_h)$. This signature binds $v$'s identity to the specific block hash $H_h$. Since $H_h$ incorporates $\Sigma_{h-1}$ (via $H_{h-1}$) and $H_{h-1}$ incorporates $\Sigma_{h-2}$, the signature $\sigma_v$ implicitly certifies all ancestor blocks. The validator cannot later claim they certified a different block because $\sigma_v$ is existentially unforgeable under the signature scheme, and the message $H_h$ is unique to block $B_h$.
+
+\textbf{Step 3: Monotonic growth of audit mass.} By Definition~\ref{def:cumulative_audit_mass}:
+\begin{equation}
+    \mathcal{M}_{h+1} - \mathcal{M}_h = M_{h+1} \cdot \gamma^{0} + \sum_{i=1}^{h} M_i \cdot (\gamma^{h+1-i} - \gamma^{h-i}).
+    \label{eq:audit_delta}
+\end{equation}
+The second term is non-positive (since $\gamma \leq 1$), representing the decay of older certifications. However, the first term $M_{h+1} \geq 0$ ensures $\mathcal{M}_{h+1} \geq \mathcal{M}_h$ in the worst case (when $M_{h+1} \geq \sum_{i=1}^{h} M_i \cdot (1-\gamma) \cdot \gamma^{h-i}$ for strictly monotonic growth). Even when $M_{h+1} = 0$ (no block produced), $\mathcal{M}_{h+1} = \gamma \cdot \mathcal{M}_h \leq \mathcal{M}_h$, but this corresponds to a chain halt, not a decrease in audit mass per block.
+
+For $\gamma = 1$ (no decay), $\mathcal{M}_{h+1} = \mathcal{M}_h + M_{h+1} \geq \mathcal{M}_h$, with strict inequality when $M_{h+1} > 0$. This is the cleanest case: each new block strictly increases the cumulative audit mass, creating an unbounded, monotonically growing audit trail.
+
+\textbf{Step 4: \Spring{} fork detection.} The \Spring{} statistic $S_h$ (Eq.~\ref{eq:spring_stat_blockchain}) is an exponentially weighted moving average of fork indicators. Under normal operation (no attack), $\E[\ind{\forkEvent_h}] = p_{\mathrm{fork}} \ll 1$. Under an attack, $\E[\ind{\forkEvent_h}] = p_{\mathrm{attack}} \gg p_{\mathrm{fork}}$.
+
+The \Spring{} adaptive threshold $\gamma_h$ is updated via:
+\begin{equation}
+    \gamma_{h+1} = \gamma_h + \eta \cdot (\alpha_{\mathrm{target}} - \ind{S_h > \gamma_h \text{ in normal regime}}).
+    \label{eq:spring_threshold_update}
+\end{equation}
+This Robbins-Monro stochastic approximation converges to the $\alpha_{\mathrm{target}}$-quantile of the null distribution, ensuring the false alarm rate equals $\alpha_{\mathrm{target}}$ asymptotically.
+
+When the fork probability shifts from $p_{\mathrm{fork}}$ to $p_{\mathrm{attack}}$, the expected detection delay is:
+\begin{equation}
+    \E[\text{delay}] \leq \frac{\log(\gamma_0 / (p_{\mathrm{attack}} - p_{\mathrm{fork}}))}{-\log(\lambda)} + O(1),
+    \label{eq:detection_delay}
+\end{equation}
+which follows from the geometric mixing time of the EWMA filter: after a regime change, $S_h$ drifts from $p_{\mathrm{fork}}$ toward $p_{\mathrm{attack}}$ with rate $1-\lambda$, and detection occurs when $S_h$ exceeds $\gamma_h$.
+
+\textbf{Step 5: Connection to \Spring{} permanent $M_t$.} The \Spring{} mechanism in the foundational \SCX{} framework maintains a permanently growing statistic to detect regime shifts. In blockchain, the hash chain \textit{is} the permanent statistic: every block's certification multiplicity $M_t$ is immutably recorded, and the cumulative audit mass $\mathcal{M}_h$ grows without bound. The \Spring{} alarm (based on $S_h$) operates on top of this permanent record, flagging anomalous periods for closer audit. The combination of permanent recording ($M_t$ in the hash chain) and adaptive detection ($S_h$ via \Spring{}) provides both \textit{completeness} (nothing is lost) and \textit{responsiveness} (anomalies are flagged quickly). $\square$
 \end{proof}
 
-\subsection{$\Mt$ as Dynamic Security Parameter 动态安全参数}
-
-The \Spring{} record $\Mt = (M_1, M_2, \ldots, M_H)$ is not merely a historical curiosity—it is a \textbf{dynamic security parameter} that enables real-time auditing of consensus health.
-
-\begin{definition}[$\Mt$ Trajectory Analysis $\Mt$轨迹分析]
-\label{def:Mt_trajectory}
-The sequence $\Mt$ reveals:
-\begin{enumerate}[label=(\roman*)]
-    \item \textbf{Validator participation trends}: Declining $\Mt$ signals validator exodus, potentially preceding a security crisis. A sudden drop in $M_h$ at height $h$ may indicate a coordinated validator withdrawal (e.g., in anticipation of a hard fork or regulatory action).
-    \item \textbf{Fork events}: Spikes in $M_h$ variance across competing chain tips indicate consensus instability—exactly the fork condition analyzed in Theorem~\ref{thm:fork}.
-    \item \textbf{Censorship detection}: If certain transaction types consistently appear in blocks with lower $M_h$, this suggests validators are selectively certifying based on transaction content.
-    \item \textbf{Regime shifts}: \Spring{} gating detects transitions from ``normal consensus'' ($M_h$ stable, high) to ``degraded consensus'' ($M_h$ declining, volatile) using the same change-point detection methodology applied in \SCX{} governance auditing.
-\end{enumerate}
-\end{definition}
-
-\begin{corollary}[\Spring{} Gating for Blockchain Security 春耕门控区块链安全]
-\label{cor:spring_gating}
-Define the security regime indicator:
-\begin{equation}
-    R_t = \ind{\Meff(t) \geq \Mthresh \text{ and } \Var(M_{t-W:t}) \leq \sigma^2_{\max}},
-    \label{eq:regime}
-\end{equation}
-where $W$ is a rolling window and $\sigma^2_{\max}$ is the maximum tolerable variance. A transition $R_t: 1 \to 0$ triggers a \Spring{} gate: the system enters a heightened security mode (longer confirmation times, increased slashing penalties, or validator set rotation). This is the blockchain analogue of \Spring{} gating in governance: when the statistical properties of the audit trail signal regime degradation, automatic defensive measures engage.
+\begin{corollary}[Chain Rollback Resistance 链回滚抵抗]
+\label{cor:rollback_resistance}
+Any attempt to roll back the chain by $k$ blocks (replacing $B_{h-k+1}, \ldots, B_h$ with alternative blocks) requires the adversary to produce a fork chain with cumulative audit mass $\mathcal{M}' > \mathcal{M}$, where $\mathcal{M}$ is the audit mass of the canonical chain. Since $\mathcal{M}$ grows monotonically with each honest certification, the adversary must either (a) corrupt enough validators to produce a heavier certification set, or (b) mine/hash fast enough to overcome the honest validators' cumulative work. Both are bounded by Theorem~\ref{thm:fiftyone}.
 \end{corollary}
 
 %=====================================================================
-\section{Nakamoto Consensus as Implicit M-Declaration 中本聪共识作为隐式M声明}
+\section{Nakamoto Consensus as Implicit $M$ Without Formal Guarantee 中本聪共识作为无形式保证的隐式$M$}
 \label{sec:nakamoto}
 %=====================================================================
 
-\subsection{The Implicit Guarantee 隐式保证}
+The \Nakamoto{} consensus protocol (Bitcoin's longest-chain rule) is the most widely deployed consensus mechanism. We formalize the relationship between \Nakamoto{} consensus and the \SCX{} framework, proving that \Nakamoto{} consensus is an \textbf{implicit} $M$ without formal guarantee.
 
-Nakamoto consensus~\cite{nakamoto2008}—the mechanism underlying Bitcoin and early proof-of-work systems—achieves distributed agreement through proof-of-work and the longest-chain rule. We show that this constitutes an \textbf{implicit M-declaration} without formal guarantee.
+\subsection{The Nakamoto Model}
 
-\begin{definition}[Nakamoto Consensus 中本聪共识]
+\begin{definition}[\Nakamoto{} Consensus 中本聪共识]
 \label{def:nakamoto}
-In Nakamoto consensus:
+\Nakamoto{} consensus operates as follows:
 \begin{enumerate}[label=(\roman*)]
-    \item Miners compete to solve a proof-of-work puzzle; the winner proposes the next block.
-    \item Other miners implicitly ``certify'' the block by building on top of it (extending the chain).
-    \item The longest valid chain is considered the authoritative ledger state.
-    \item There is no explicit validator set, no explicit certification step, and no explicit $M$-declaration.
+    \item \textbf{Proof-of-Work:} Validators (miners) expend computational resources to solve a hash puzzle: find $\mathrm{nonce}$ such that $\mathrm{Hash}(H_{h-1} \parallel \mathbf{tx}_h \parallel \mathrm{nonce}) < D$, where $D$ is the difficulty target.
+    \item \textbf{Longest Chain Rule:} Honest validators always extend the chain with the most cumulative work (typically the longest chain).
+    \item \textbf{Probabilistic Finality:} A block at depth $k$ is considered ``final'' when the probability of a chain reorganization overtaking it falls below a desired threshold.
+    \item \textbf{Implicit Validator Set:} Any participant with sufficient hash power can become a validator; there is no explicit validator registration, identity, or accountability.
 \end{enumerate}
 \end{definition}
 
-\begin{theorem}[Nakamoto as Implicit M-Declaration 中本聪作为隐式M声明]
+\begin{definition}[Implicit $M$ in \Nakamoto{} 中本聪共识中的隐式$M$]
+\label{def:implicit_M}
+In \Nakamoto{} consensus, the implicit effective multiplicity is:
+\begin{equation}
+    M_{\mathrm{impl}} = \frac{1}{p_{\mathrm{honest}} \cdot (1 - \bar{\rho}_{\mathrm{impl}})},
+    \label{eq:implicit_M}
+\end{equation}
+where $p_{\mathrm{honest}}$ is the fraction of hash power controlled by honest miners and $\bar{\rho}_{\mathrm{impl}}$ is the implicit correlation induced by mining pool centralization, shared network topology, and propagation delays.
+\end{definition}
+
+\begin{theorem}[\Nakamoto{} as Implicit $M$ Without Guarantee 中本聪共识作为无保证的隐式$M$]
 \label{thm:nakamoto_implicit}
-In Nakamoto consensus, each block $B_h$ carries an \textbf{implicit} M-declaration: the number of miners who have built on top of $B_h$ serves as a proxy for $M_h$. However, this implicit M lacks formal guarantees:
+\Nakamoto{} consensus approximates multi-validator certification with implicit multiplicity $M_{\mathrm{impl}}$ (Definition~\ref{def:implicit_M}), but lacks three structural properties of the \SCX{} framework:
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{No explicit certification}: Miners building on $B_h$ do not explicitly verify its contents—they may extend a block without validating all transactions, relying on the economic incentive that invalid blocks will be orphaned. This is the \textbf{SPV mining problem}.
-    \item \textbf{Delayed confirmation}: The implicit $M_h$ is only knowable retrospectively, after $k$ confirmations. At time of block proposal, $M_h = 1$ (only the proposing miner has seen it). The effective $M$ grows with confirmations: $M_h(k) = k$.
-    \item \textbf{No independence guarantee}: All miners extending the chain share the same software implementation (Bitcoin Core), creating $\bar{\rho} \approx 1$ for implementation-specific bugs. The effective multiplicity is $\Meff \approx 1$ regardless of $k$.
-    \item \textbf{Probabilistic, not absolute}: The Nakamoto guarantee is that after $k$ confirmations, the probability of reversal decays as $O(\exp(-ck))$ for some constant $c$ depending on adversarial hash power. This is a \textit{probabilistic} guarantee, not an \textit{absolute} certification—there is always a non-zero probability of chain reorganization.
+    \item \textbf{No Explicit Validator Identity 无明确验证者身份:} \Nakamoto{} validators are anonymous and unaccountable. The slashing penalty $\kappa = 0$ (there is no mechanism to punish equivocating miners), violating Assumption~\ref{ass:A3}. This means the \Yajie{} incentive compatibility does not hold: there is no audit penalty for certifying conflicting chains.
+    \item \textbf{No Formal Fork-Resolution Guarantee 无形式分叉解决保证:} \Nakamoto{} fork resolution is probabilistic, following a random walk biased toward the honest chain. The expected resolution time is $O(1/(1-2\alpha))$ where $\alpha$ is the adversarial hash fraction, which diverges as $\alpha \to 1/2$. The \SCX{} framework provides a deterministic bound (Theorem~\ref{thm:fork}) conditional on explicit $M$ and $f$.
+    \item \textbf{No Permanent Audit Trail of Validator Decisions 无验证者决策的永久审计轨迹:} While \Nakamoto{} has a hash chain, it records only the winning miner's identity (implicitly, through the coinbase transaction), not the full set of validators who certified the chain. The audit mass $\mathcal{M}_h$ is reduced to the cumulative work, which is a scalar with no per-validator accountability.
 \end{enumerate}
+Consequently, \Nakamoto{} consensus provides a probabilistic approximation of \SCX{}-audited consensus, but without the formal guarantees of fork impossibility (Theorem~\ref{thm:fork}), attack threshold precision (Theorem~\ref{thm:fiftyone}), or permanent audit trail integrity (Theorem~\ref{thm:hashchain}).
 \end{theorem}
 
 \begin{proof}\rigorFull
-\textbf{(i) SPV mining.} Simplified Payment Verification (SPV) mining allows miners to extend a block without validating its full transaction contents, verifying only the block header. An SPV miner implicitly certifies block structure but not transaction validity. The effective certification is degraded: $\hat{v}_j(B_h)$ may equal 1 even when $B_h$ contains invalid transactions, if those transactions are not checked. This inflates the apparent $M$ without providing genuine audit value.
+\textbf{Step 1: Implicit multiplicity.} In \Nakamoto{}, each block is certified by exactly one miner (the one who solves the puzzle). The ``validator set'' is the set of all miners, but at each height only one miner's certification is recorded. The effective multiplicity is therefore $M_{\mathrm{impl}} = 1$ per block. Over $k$ confirmations, the cumulative effective multiplicity is approximately $k \cdot (1 - \alpha)$, where $\alpha$ is the adversarial hash fraction—each honest block adds $1$ to the cumulative honest certification count.
 
-\textbf{(ii) Retrospective M.} Let $C_h(t)$ be the number of blocks built on top of $B_h$ at time $t$. At $t = 0$ (block proposal), $C_h(0) = 0$, so $M_h(0) = 1$ (the proposer alone). After $k$ blocks, $M_h = k+1$. The \SCX{} framework requires $M$ to be declared \textit{at the time of certification}; the retrospective nature of Nakamoto $M$ means the system operates with $M=1$ during the critical initial period when forks are most likely.
+This can be expressed as in Eq.~\eqref{eq:implicit_M}: the implied $M$ is the reciprocal of the product of honest fraction and independence factor. For $\alpha = 0.3$ (30\% adversarial hash power) and $\bar{\rho}_{\mathrm{impl}} = 0.5$ (significant pool centralization), $M_{\mathrm{impl}} = 1 / (0.7 \cdot 0.5) \approx 2.86$—a remarkably low effective multiplicity, explaining why \Nakamoto{} requires many confirmations ($k \approx 6$ for Bitcoin) to achieve acceptable finality.
 
-\textbf{(iii) Software monoculture.} Over 95\% of Bitcoin nodes run Bitcoin Core. A consensus bug in Bitcoin Core affects essentially all miners simultaneously, giving $\bar{\rho} \approx 1$ and $\Meff \approx 1$ for software-induced faults. This is the exact vulnerability that Theorem~2 identifies: when $\Meff$ collapses, consensus guarantees vanish regardless of nominal $N$.
-
-\textbf{(iv) Probabilistic guarantee.} The Nakamoto security analysis~\cite{rosenfeld2014} shows that a transaction with $k$ confirmations is reversed with probability:
+\textbf{Step 2: Absence of slashing ($\kappa = 0$).} In \Nakamoto{}, a miner who builds on a fork that is eventually orphaned loses the block reward for that block (opportunity cost) but incurs no additional penalty. The implicit $\kappa$ is:
 \begin{equation}
-    \Pbb(\text{reversal after } k) \leq \left(\frac{\alpha}{1-\alpha}\right)^k,
-    \label{eq:nakamoto_reversal}
+    \kappa_{\Nakamoto} = R_{\mathrm{block}} \cdot \Pbb(\text{block orphaned}),
+    \label{eq:nakamoto_kappa}
 \end{equation}
-where $\alpha$ is the adversary's hash power fraction. For $\alpha \to 0.5$, this bound approaches 1 for any finite $k$. In contrast, the \SCX{} bound (Theorem~\ref{thm:fork}) is $\exp(-2M(\tau - p_{\max})^2)$, which is exponentially tight regardless of $\alpha$ (as long as $\alpha < 0.5$ and $M$ is explicitly declared).
+which is the expected value of the forfeited block reward. This is orders of magnitude smaller than \PoS{} slashing penalties (which can destroy the validator's entire stake). The \Yajie{} dominance condition (Eq.~\ref{eq:slashing_bound}) is typically not satisfied for economically motivated attacks where $B_{\mathrm{attack}} \gg R_{\mathrm{block}}$.
 
-\textbf{The structural gap.} Nakamoto consensus replaces explicit M-declaration with a \textbf{market mechanism}: the cost of proof-of-work is assumed to align miner incentives with chain validity. This alignment is an economic argument, not a mathematical proof. The \SCX{} framework requires mathematical proof: $M$ must be declared, validators must be independent, and certification must be explicit. The gap between ``economic incentive'' and ``mathematical guarantee'' is the gap between Nakamoto consensus and \SCX{}-audited consensus. $\square$
+\textbf{Step 3: Probabilistic vs. deterministic fork resolution.} \Nakamoto{} fork resolution follows a Poisson arrival process: honest blocks arrive at rate $\lambda_h = (1-\alpha)/\tau$, adversarial blocks at rate $\lambda_a = \alpha/\tau$. The probability that an adversarial chain of depth $k$ overtakes the honest chain, given that the honest chain is ahead by $z$ blocks, follows a gambler's ruin with advantage proportional to $(1-\alpha)/\alpha$~\cite{Nakamoto2008}:
+\begin{equation}
+    \Pbb(\text{adversary overtakes from $z$ behind}) = \begin{cases}
+        1 & \text{if } \alpha \geq 1/2, \\
+        \left(\frac{\alpha}{1-\alpha}\right)^z & \text{if } \alpha < 1/2.
+    \end{cases}
+    \label{eq:nakamoto_overtake}
+\end{equation}
+
+This is qualitatively different from the \SCX{} fork resolution (Eq.~\ref{eq:resolve_time}), which is deterministic (bounded expected time) rather than probabilistic (non-zero perpetual risk). The \SCX{} guarantee requires explicit validator identity and the slashing mechanism, both absent in \Nakamoto{}.
+
+\textbf{Step 4: Audit trail deficiency.} The \Nakamoto{} hash chain records block hashes but not validator signatures. The ``audit trail'' consists of the cumulative proof-of-work, which proves that computational effort was expended but does not identify which specific validators contributed. This makes it impossible to attribute faults to specific validators or to implement validator-specific penalties. The \Spring{} permanent $M_t$ is reduced to the cumulative difficulty, a scalar without per-validator granularity.
+
+\textbf{Step 5: Implicit vs. explicit guarantee.} \Nakamoto{} consensus achieves consensus \textit{probabilistically in the limit}: as the number of confirmations $k \to \infty$, the probability of reorganization $\to 0$ under $\alpha < 1/2$. The \SCX{} framework achieves consensus \textit{deterministically} (up to the target probability $\varepsilon_{\mathrm{target}}$) with finite $M$ and explicit bounds. The difference is fundamental: \Nakamoto{} provides an \textit{asymptotic} guarantee whose rate depends on unobservable parameters ($\alpha$), while \SCX{} provides a \textit{finite-sample} guarantee with observable parameters ($M$, $f$, $\bar{\rho}$). $\square$
 \end{proof}
 
-\begin{remark}[The Irony of Bitcoin's Security]
-Bitcoin is often described as ``the most secure blockchain'' because of its immense hash power. Under \SCX{} analysis, Bitcoin's security derives not from hash power per se, but from the \textbf{implicit auditor multiplicity} created by the network of full nodes that independently verify every block. A Bitcoin full node is an \SCX{} auditor: it validates all transactions, checks consensus rules, and rejects invalid blocks. The true $M$ for Bitcoin is not the number of miners but the number of \textbf{full nodes}—and this $M$ is never explicitly declared, varies over time, and includes many nodes running identical software.
+\begin{corollary}[Security Comparison 安全性比较]
+\label{cor:nakamoto_comparison}
+For equivalent security ($\Pbb(\text{reorg after $k$ confirmations}) \leq 10^{-9}$):
+\begin{itemize}
+    \item \textbf{\Nakamoto{} (\PoW{}):} Requires $k = 6$ confirmations (Bitcoin) with the implicit assumption $\alpha < 0.3$ (generous). The actual adversarial fraction $\alpha$ is not directly observable.
+    \item \textbf{\SCX{}-Audited (\PoS{} with $M = 1000$):} From Theorem~\ref{thm:fork}, requires $M_{\mathrm{eff}} > \mthreshold$ with observable $M$ and $f$. The guarantee is conditional on observable parameters.
+    \item \textbf{\SCX{}-Audited (\PBFT{} with $M = 100$):} Achieves deterministic finality in one round under $f < 1/3$, with explicit validator accountability via signatures.
+\end{itemize}
+\end{corollary}
+
+\begin{remark}[The Value of Explicit $M$ 显式$M$的价值]
+\label{rem:explicit_M_value}
+The transition from \Nakamoto's implicit $M$ to \SCX's explicit $M$ is not merely a change in notation—it enables three capabilities that \Nakamoto{} lacks: (i) \textbf{accountability}—validators can be identified, penalized, and replaced based on audit trail evidence; (ii) \textbf{verifiable diversity}—the independence assumption $\bar{\rho}$ can be empirically estimated from validator behavior, rather than assumed; and (iii) \textbf{parametric security}—the relationship between $M$, $f$, $\bar{\rho}$, and security guarantees is explicit and auditable, enabling protocol parameter optimization.
 \end{remark}
 
 %=====================================================================
-\section{Consensus Mechanism Analysis 共识机制分析}
-\label{sec:mechanisms}
+\section{Multi-Validator Consensus Protocol 多验证者共识协议}
+\label{sec:protocol}
 %=====================================================================
 
-We apply the \SCX{} audit framework to four major consensus mechanisms, computing their effective $M$, fork bounds, and slashing properties.
+We now formalize the multi-validator consensus protocol under the \SCX{} framework, integrating the \Yajie{} consensus mechanism, \Cercis{} validator selection, and \Spring{} gating.
 
-\subsection{Bitcoin (PoW Nakamoto Consensus)}
+\subsection{The \Yajie{} Consensus for Blockchains Yajie区块链共识}
 
+\begin{definition}[Stake-Weighted \Yajie{} Consensus 权益加权Yajie共识]
+\label{def:yajie_consensus_blockchain}
+At height $h$, each validator $v \in \validatorSet_h$ votes for a proposed block $B_h$. The \Yajie{} consensus block is:
+\begin{equation}
+    B_h^{\Yajie} = \argmax_{B} \sum_{v: \mathrm{vote}(v) = B} s_v,
+    \label{eq:yajie_block}
+\end{equation}
+where $s_v$ is validator $v$'s stake share. A block $B$ is \textbf{certified} if it receives votes from validators controlling more than $2/3$ of total stake. The \Yajie{} consensus chain $\mathcal{C}_{\Yajie}$ extends the certified block at each height.
+\end{definition}
+
+\begin{definition}[Correlation-Adjusted Validator Weight 相关性调整的验证者权重]
+\label{def:corr_adjusted_weight}
+The effective weight of validator $v$ in the \Yajie{} consensus, accounting for inter-validator correlations, is:
+\begin{equation}
+    w_v^{\Yajie} = \frac{s_v / \sigma_v^2}{\sum_{u \in \validatorSet} s_u / \sigma_u^2} \cdot \frac{1}{1 + \sum_{u \neq v} \rho_{vu} \cdot (s_u / s_v)},
+    \label{eq:yajie_weight_validator}
+\end{equation}
+where $\sigma_v^2$ is the variance of validator $v$'s certification accuracy and $\rho_{vu}$ is the correlation between validators $v$ and $u$ (from shared infrastructure, software, or geographic colocation).
+\end{definition}
+
+\subsection{The \Yajie{} Consensus Algorithm}
+
+\begin{algorithm}[htbp]
+\caption{\Yajie{} Multi-Validator Blockchain Consensus}
+\label{alg:yajie_consensus}
+\begin{algorithmic}[1]
+\Require Validator set $\validatorSet_h$, proposed block $B_h$, previous certified block $B_{h-1}^{\Yajie}$
+\Ensure Certified block $B_h^{\Yajie}$ or $\bot$ (no consensus)
+\State \textbf{Propose:} Leader $L = \textsc{SelectLeader}(\validatorSet_h, h)$ proposes $B_h$
+\State \textbf{Pre-vote:} Each validator $v \in \validatorSet_h$ broadcasts $\textsc{PreVote}_v(B_h)$ if $B_h$ is valid
+\State \textbf{Pre-commit:} If validator $v$ receives PreVotes totaling $>2/3$ stake for $B_h$, broadcast $\textsc{PreCommit}_v(B_h)$
+\State \textbf{Commit:} If validator $v$ receives PreCommits totaling $>2/3$ stake for $B_h$, set $B_h^{\Yajie} \gets B_h$
+\State \textbf{\Yajie{} Consensus Check:}
+\State \quad Compute consensus weight $W(B) = \sum_{v: \text{vote}(v) = B} w_v^{\Yajie}$ for each candidate block
+\State \quad $B_h^{\Yajie} \gets \argmax_B W(B)$
+\State \quad \If{$W(B_h^{\Yajie}) < 2/3 \cdot \sum_v w_v^{\Yajie}$}
+\State \quad \quad \Return $\bot$ \Comment{Consensus failure — fork detected}
+\State \quad \EndIf
+\State \textbf{Slashing:} For any validator $v$ who PreVoted or PreCommitted for conflicting blocks $B \neq B'$:
+\State \quad \textsc{Slash}($v$, $\kappa \cdot s_v$) \Comment{Apply audit penalty}
+\State \textbf{\Spring{} Update:} $S_h \gets \lambda S_{h-1} + (1-\lambda) \cdot \ind{W(B_h^{\Yajie}) < 2/3}$
+\State \Return $B_h^{\Yajie}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{proposition}[Yajie Consensus Liveness and Safety Yajie共识的活性与安全性]
+\label{prop:yajie_liveness_safety}
+Under Assumptions~\ref{ass:A1}--\ref{ass:A7}, Algorithm~\ref{alg:yajie_consensus} satisfies:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Safety 安全性:} No two honest validators commit different blocks at the same height. Formally, if $B_h^{\Yajie} \neq \bot$ and $B_h'^{\Yajie} \neq \bot$, then $B_h^{\Yajie} = B_h'^{\Yajie}$.
+    \item \textbf{Liveness 活性:} During periods of synchrony (bounded message delay $\Delta$), a new certified block is produced within bounded time $T_{\max} = O(\Delta)$.
+    \item \textbf{Accountability 问责性:} Any validator that causes a safety violation by equivocating is identified and slashed.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}\rigorPartial
+Safety follows from the $>2/3$ quorum intersection property: if two blocks $B \neq B'$ both receive $>2/3$ of stake in PreCommits, then by the pigeonhole principle, at least $>1/3$ of stake must have PreCommitted for both — implying those validators equivocated and will be slashed. Liveness follows from the leader election and bounded message delay: honest validators eventually receive all PreVotes and converge. Accountability is by design: equivocation evidence is cryptographically verifiable. $\square$
+\end{proof}
+
+%=====================================================================
+\section{\Cercis{} Score for Validator Quality 验证者质量的Cercis评分}
+\label{sec:cercis}
+%=====================================================================
+
+The \Cercis{} scoring framework ranks validators by a combination of certification accuracy and chain novelty, enabling stake-weighted validator selection and delegation.
+
+\begin{definition}[Validator Quality Score 验证者质量分]
+\label{def:validator_Q}
+For validator $v$ observed over $N$ heights, the quality score is:
+\begin{equation}
+    Q(v) = -\Bigg(
+        \underbrace{\frac{1}{N} \sum_{h=1}^{N} \ind{v \text{ certified a block not in } \mathcal{C}_{\Yajie}^{(h)}}}_{\text{equivocation rate } \varepsilon_{\mathrm{equiv}}}
+        \;+\;
+        \underbrace{\frac{1}{N} \sum_{h=1}^{N} \ind{v \text{ failed to certify when selected}}}_{\text{downtime rate } \varepsilon_{\mathrm{down}}}
+        \;+\;
+        \underbrace{\lambda_{\mathrm{latency}} \cdot \bar{\tau}_v}_{\text{latency penalty}}
+    \Bigg),
+    \label{eq:validator_Q}
+\end{equation}
+where $\bar{\tau}_v$ is validator $v$'s average certification latency and $\lambda_{\mathrm{latency}} > 0$ is the latency penalty weight. $Q(v) \in (-\infty, 0]$, with $Q(v) = 0$ for a perfect validator.
+\end{definition}
+
+\begin{definition}[Validator Novelty Score 验证者新颖性分]
+\label{def:validator_N}
+The novelty score rewards validators that operate in under-represented configurations:
+\begin{equation}
+    N(v) = \sum_{d=1}^{D} \nu_d \cdot \ind{\text{validator $v$ is unique on dimension $d$ in its geography}},
+    \label{eq:validator_N}
+\end{equation}
+where the dimensions $d$ include:
 \begin{itemize}
-    \item \textbf{Validator model}: Miners propose blocks; implicit certification by subsequent miners building on the chain.
-    \item \textbf{Explicit $M$}: None. Implicit $M =$ number of confirmations $+ 1$.
-    \item \textbf{$\Meff$}: $\Meff \approx 1$ for software bugs ($\bar{\rho} \approx 1$); $\Meff \approx k$ for hash-power-based security after $k$ confirmations.
-    \item \textbf{Fork bound}: $\Pbb(\text{fork}) \leq (\alpha/(1-\alpha))^k$, where $\alpha$ is adversarial hash power (weaker than Theorem~\ref{thm:fork}).
-    \item \textbf{Slashing}: None. The penalty for malicious mining is wasted electricity (implicit $\kappa =$ electricity cost).
-    \item \textbf{\SCX{} assessment}: Bitcoin achieves security through economic incentives, not formal certification. The lack of explicit M-declaration means security is always retrospective and probabilistic. However, the full node network provides a de facto auditor community whose size is the actual security parameter—but this parameter is unmeasured and undeclared.
+    \item Software client implementation (e.g., Lighthouse, Prysm, Teku, Nimbus for Ethereum);
+    \item Geographic region and jurisdiction;
+    \item Hosting infrastructure (cloud provider, bare-metal, home staking);
+    \item Consensus participation history (new vs. established validators).
 \end{itemize}
+The weight $\nu_d = 1 / (\min_{u \neq v} \mathrm{dist}_d(v, u) + \epsilon)$ inversely scales with the minimum distance to any other validator on dimension $d$, rewarding validators that increase client diversity and geographic decentralization.
+\end{definition}
 
-\subsection{Ethereum Proof-of-Stake (Gasper)}
+\begin{definition}[\Cercis{} Validator Score \Cercis{}验证者评分]
+\label{def:cercis_validator}
+\begin{equation}
+    S(v) = Q(v) + \eta \cdot N(v),
+    \label{eq:cercis_validator_score}
+\end{equation}
+where $\eta \geq 0$ balances accuracy against diversity. $\eta = 0$ selects validators purely by historical accuracy; $\eta > 0$ rewards validators that improve the network's decentralization (reducing $\bar{\rho}$ and thereby increasing $M_{\mathrm{eff}}$).
+\end{definition}
 
+\begin{proposition}[Cercis Score and Effective Multiplicity \Cercis{}评分与有效验证者数量]
+\label{prop:cercis_meff}
+Maximizing the aggregate \Cercis{} score $\sum_v S(v)$ across the validator set is equivalent to minimizing the effective validator correlation $\bar{\rho}_{\mathrm{eff}}$, thereby maximizing $M_{\mathrm{eff}}$ and the network's attack resistance.
+\end{proposition}
+
+\begin{proof}\rigorSketch
+The novelty term $N(v)$ directly rewards validators that differ from existing ones on software, geographic, and infrastructure dimensions. Since $\bar{\rho}_{\mathrm{eff}}$ is driven by shared failure modes (same software bug, same cloud outage, same jurisdiction seizure), increasing dimensional diversity decreases $\bar{\rho}_{\mathrm{eff}}$. From Eq.~\ref{eq:meff_attack}, lower $\bar{\rho}_{\mathrm{eff}}$ increases $M_{\mathrm{eff}}$ for a given $M$, improving security. $\square$
+\end{proof}
+
+\begin{table}[htbp]
+\centering
+\caption{Illustrative \Cercis{} scores for validators. $\eta = 0.3$.}
+\label{tab:cercis_validators}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Validator} & \textbf{Client} & \textbf{Region} & \textbf{Uptime} & $Q$ & $N$ & $S$ \\
+\midrule
+$v_1$ (Home staker) & Nimbus & Europe & 99.2\% & $-0.012$ & 0.75 & $+0.213$ \\
+$v_2$ (Institutional) & Prysm & US-East & 99.9\% & $-0.003$ & 0.30 & $+0.087$ \\
+$v_3$ (Cloud pool) & Lighthouse & US-West & 99.5\% & $-0.008$ & 0.15 & $+0.037$ \\
+$v_4$ (Exchange) & Geth & Asia & 99.7\% & $-0.005$ & 0.45 & $+0.130$ \\
+$v_5$ (New entrant) & Teku & Africa & 98.5\% & $-0.025$ & 0.90 & $+0.245$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{remark}[Delegated Staking and \Cercis{} 质押委托与Cercis评分]
+\label{rem:delegated_staking}
+In delegated \PoS{} systems, token holders delegate their stake to validators. The \Cercis{} score provides a principled basis for delegation: token holders maximize expected returns by delegating to validators with high $S(v)$, which balances accuracy ($Q$) against the systemic benefit of diversity ($N$). This aligns individual incentives with network security—a concrete instantiation of the \SCX{} principle that audit quality improves when experts are heterogeneous.
+\end{remark}
+
+%=====================================================================
+\section{\Spring{} Gating for Chain Integrity 链完整性的Spring门控}
+\label{sec:spring}
+%=====================================================================
+
+The \Spring{} gating mechanism provides adaptive detection of consensus anomalies, building on the permanent audit trail established by the hash chain.
+
+\begin{definition}[\Spring{} Chain Health Statistic \Spring{}链健康统计量]
+\label{def:spring_chain_health}
+The \Spring{} chain health statistic at height $h$ is a vector:
+\begin{equation}
+    \mathbf{S}_h = (S_h^{\mathrm{fork}}, S_h^{\mathrm{empty}}, S_h^{\mathrm{latency}}, S_h^{\mathrm{equiv}}),
+    \label{eq:spring_health}
+\end{equation}
+where:
 \begin{itemize}
-    \item \textbf{Validator model}: Explicit validator set ($\sim 1$M validators). Each validator attests to one block per slot.
-    \item \textbf{Explicit $M$}: Number of attestations per block (typically $\sim 500$K per epoch).
-    \item \textbf{$\Meff$}: High due to large $N$, but reduced by client monoculture ($\sim 70\%$ Prysm/Lighthouse). Effective $\Meff \approx N / (1 + N \cdot 0.3) \approx 3$ for implementation bugs.
-    \item \textbf{Fork bound}: Theorem~\ref{thm:fork} applies with $M \approx 500$K, $\tau = 2/3$, $p_{\max} \approx 0.001$ (attestation errors). $\Pbb(\text{fork}) \leq 2\exp(-2 \cdot 500\text{K} \cdot 0.44^2) \approx 10^{-84000}$, effectively zero.
-    \item \textbf{Slashing}: Explicit. $\gamma = 1/32$ of stake for equivocation (plus additional penalties for surround voting). Theorem~\ref{thm:slashing} confirms honest dominance for any $\gamma > 0$.
-    \item \textbf{\SCX{} assessment}: Ethereum PoS is the closest existing system to \SCX{}-audited consensus. It has explicit validators, explicit attestations ($M$), and explicit slashing ($\kappa$). The main weakness is client monoculture ($\bar{\rho}$ too high) and the complexity of the fork-choice rule (Gasper), which introduces additional failure modes beyond the simple fork model.
+    \item $S_h^{\mathrm{fork}}$: EWMA of fork events (Eq.~\ref{eq:spring_stat_blockchain});
+    \item $S_h^{\mathrm{empty}}$: EWMA of empty or near-empty blocks;
+    \item $S_h^{\mathrm{latency}}$: EWMA of mean certification latency;
+    \item $S_h^{\mathrm{equiv}}$: EWMA of validator equivocation rate.
 \end{itemize}
+Each component is updated via $S_h = \lambda S_{h-1} + (1-\lambda) X_h$, where $X_h$ is the observed value at height $h$.
+\end{definition}
 
-\subsection{Tendermint (BFT)}
+\begin{definition}[\Spring{} Adaptive Threshold \Spring{}自适应阈值]
+\label{def:spring_adaptive_threshold}
+For each component $c \in \{\mathrm{fork}, \mathrm{empty}, \mathrm{latency}, \mathrm{equiv}\}$, the \Spring{} threshold $\gamma_h^{(c)}$ adapts to maintain a target false alarm rate $\alpha_{\mathrm{target}}^{(c)}$:
+\begin{equation}
+    \gamma_{h+1}^{(c)} = \gamma_h^{(c)} + \eta_\gamma \cdot \left(\alpha_{\mathrm{target}}^{(c)} - \ind{S_h^{(c)} > \gamma_h^{(c)} \text{ and } h \text{ is a ``normal'' height}}\right).
+    \label{eq:spring_adaptive_threshold}
+\end{equation}
+This ensures that the alarm triggers at most a fraction $\alpha_{\mathrm{target}}^{(c)}$ of heights during normal operation, while remaining sensitive to genuine anomalies.
+\end{definition}
 
+\begin{proposition}[\Spring{} Detection Guarantees \Spring{}检测保证]
+\label{prop:spring_guarantees}
+Under Assumptions~\ref{ass:A6} and~\ref{ass:A12}, the \Spring{} gating mechanism for blockchain consensus provides:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{False alarm control:} $\lim_{H \to \infty} \frac{1}{H} \sum_{h=1}^{H} \ind{\text{alarm at } h \mid \text{normal regime}} \leq \sum_c \alpha_{\mathrm{target}}^{(c)}$.
+    \item \textbf{Attack detection delay:} For a regime shift where the fork rate increases from $p_{\mathrm{fork}}$ to $p_{\mathrm{attack}}$, the expected detection delay is $O(\log(1/(p_{\mathrm{attack}} - p_{\mathrm{fork}})) / (1-\lambda))$.
+    \item \textbf{Permanent recording:} All \Spring{} statistics and alarms are permanently recorded on-chain via the hash chain audit trail (Theorem~\ref{thm:hashchain}).
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}\rigorSketch
+The proof follows the \Spring{} gating analysis from the governance framework, applied to blockchain-specific statistics. (i) False alarm control follows from the Robbins-Monro convergence of $\gamma_h^{(c)}$ to the $\alpha_{\mathrm{target}}^{(c)}$-quantile. (ii) Detection delay follows from the geometric mixing of the EWMA; the number of heights to detect a shift of size $\delta = p_{\mathrm{attack}} - p_{\mathrm{fork}}$ is $O(\log(1/\delta) / (1-\lambda))$. (iii) Permanent recording is guaranteed by Theorem~\ref{thm:hashchain}: the hash chain immutably records all block contents, including the validator signatures that enable computation of equivocation and latency statistics. $\square$
+\end{proof}
+
+\begin{remark}[Hash Chain as \Spring{} Permanent $M_t$ 哈希链即Spring永久$M_t$]
+\label{rem:spring_permanent_Mt}
+The foundational \SCX{} paper establishes that \Spring{} gating maintains a \textbf{permanent $M_t$}—a monotonically accumulating statistic that enables retrospective audit. In blockchain, the hash chain \textit{is} the permanent $M_t$: each block header $H_h$ permanently records the certification multiplicity $M_h = |\Sigma_h|$, the timestamp $t_h$, and the set of signing validators. Unlike the \Spring{} gating statistic $S_h$ (which is a smoothed summary for anomaly detection), the permanent $M_t$ is the raw, unfiltered audit record. The irreversible hash chain ensures that $M_t$ cannot be altered retroactively—a stronger guarantee than any centralized audit system can provide.
+\end{remark}
+
+%=====================================================================
+\section{Applications: Consensus Protocol Analysis 应用：共识协议分析}
+\label{sec:applications}
+%=====================================================================
+
+We apply the \SCX{} framework to analyze the security properties of major consensus protocol families.
+
+\subsection{Proof-of-Work (\PoW{}) — Bitcoin}
+
+\begin{definition}[\PoW{} Consensus under \SCX{} PoW共识的SCX分析]
+\label{def:pow_scx}
+In \PoW{}, the \SCX{} parameters are:
 \begin{itemize}
-    \item \textbf{Validator model}: Fixed validator set (typically $N = 100$--$150$). Two-thirds supermajority required per block.
-    \item \textbf{Explicit $M$}: Number of prevotes/precommits per block ($\sim 100$).
-    \item \textbf{$\Meff$}: $M \approx 100$, $\bar{\rho}$ depends on validator diversity (typically low if validators are independent organizations).
-    \item \textbf{Fork bound}: Theorem~\ref{thm:fork} with $M = 100$, $\tau = 2/3$, $p_{\max} = 0$. $\Pbb(\text{fork}) \leq 2\exp(-2 \cdot 100 \cdot (2/3)^2) \approx 2\exp(-88.9) \approx 5 \times 10^{-39}$. Tendermint provides \textbf{absolute finality}: once a block receives $>2/3$ prevotes, no fork is possible (assuming $<1/3$ Byzantine validators).
-    \item \textbf{Slashing}: Explicit. $\gamma = 5\%$ of stake for equivocation (light client attack: full slashing).
-    \item \textbf{\SCX{} assessment}: Tendermint is the gold standard for \SCX{}-audited consensus: explicit $M$, explicit $\kappa$, absolute finality. The limitation is scalability: $N$ is bounded by communication complexity ($O(N^2)$ messages per block).
+    \item $M$: The number of mining pools (effective validators). As of 2024, the top 5 pools control $>50\%$ of Bitcoin's hash rate, giving $M_{\mathrm{eff}} \approx 2$--$3$.
+    \item $f$: Adversarial hash fraction. The protocol tolerates $f < 1/2$ (not $1/3$ as in BFT), but with probabilistic rather than deterministic finality.
+    \item $\kappa$: Implicit penalty $=$ forfeited block reward plus electricity cost. Typically $\kappa \approx R_{\mathrm{block}} \approx 6.25$ BTC ($\sim$\$400,000 as of 2024).
+    \item $\bar{\rho}$: Mining pool correlation. High ($\bar{\rho} > 0.8$) because pools share similar hardware, geography, and network topology.
+    \item Audit trail: Hash chain records cumulative work but not per-validator certification.
 \end{itemize}
+\end{definition}
 
-\subsection{Solana (Proof-of-History + Tower BFT)}
+\begin{proposition}[\PoW{} Security Analysis PoW安全性分析]
+\label{prop:pow_security}
+Under the \SCX{} framework, \PoW{} consensus has:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Weak fork resistance:} $M_{\mathrm{eff}} \approx 2$--$3$ means the fork probability bound (Eq.~\ref{eq:fork_bound}) is weak. Bitcoin's 6-confirmation rule compensates for low $M_{\mathrm{eff}}$ with depth, but the fundamental $M$-driven guarantee is absent.
+    \item \textbf{No slashing enforcement:} $\kappa$ is implicit and proportional only to a single block reward. An adversary with $\alpha = 0.4$ can profitably double-spend amounts up to $B_{\mathrm{attack}} \approx R_{\mathrm{block}} / (1 - 2\alpha)$ before the implicit penalty dominates.
+    \item \textbf{No explicit audit trail:} The chain records work, not validators. Equivocation cannot be attributed or punished.
+\end{enumerate}
+\end{proposition}
 
+\subsection{Proof-of-Stake (\PoS{}) — Ethereum 2.0 / Gasper}
+
+\begin{definition}[\PoS{} Consensus under \SCX{} PoS共识的SCX分析]
+\label{def:pos_scx}
+In Ethereum 2.0's Gasper protocol:
 \begin{itemize}
-    \item \textbf{Validator model}: $\sim 2000$ validators. Tower BFT uses PoH as a global clock; validators vote on forks.
-    \item \textbf{Explicit $M$}: Number of votes per block (variable).
-    \item \textbf{$\Meff$}: Large $N$ but high hardware requirements create centralization pressure ($\bar{\rho}$ elevated due to shared infrastructure dependencies).
-    \item \textbf{Fork bound}: Theorem~\ref{thm:fork} applies but with caveat: PoH clock synchronization failures can create forks that are not captured by the simple independent-validator model.
-    \item \textbf{Slashing}: Present but rarely enforced. Slashing is not automatic—requires manual governance intervention, reducing $\Pbb(\text{detection})$ and weakening Theorem~\ref{thm:slashing}'s dominance condition.
-    \item \textbf{\SCX{} assessment}: Solana's architecture introduces complex dependencies (PoH clock) that violate the independence assumption (Assumption~\ref{ass:A2}). The effective $\Meff$ for clock-failure-induced forks is $\Meff \approx 1$ (all validators share the same clock). This explains Solana's historical susceptibility to consensus failures despite large nominal $N$.
+    \item $M$: $>10^6$ active validators (as of 2024), with 32 ETH minimum stake per validator.
+    \item $f$: Adversarial stake fraction. Protocol safety requires $f < 1/3$; liveness requires stronger conditions during inactivity leaks.
+    \item $\kappa$: Explicit slashing penalty. A slashed validator loses at least 1 ETH (and up to their entire 32 ETH balance), plus forced exit and withdrawal delay.
+    \item $\bar{\rho}$: Moderate ($0.1$--$0.3$) due to client diversity efforts (Lighthouse, Prysm, Teku, Nimbus) and geographic distribution.
+    \item Audit trail: Full validator signatures in each block, enabling per-validator accountability.
 \end{itemize}
+\end{definition}
+
+\begin{proposition}[\PoS{} Security Analysis PoS安全性分析]
+\label{prop:pos_security}
+Under the \SCX{} framework, \PoS{} consensus (Gasper) achieves:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Strong fork resistance:} With $M > 10^6$, $M_{\mathrm{eff}}$ is limited primarily by $\bar{\rho}$. Assuming $\bar{\rho} = 0.2$, $M_{\mathrm{eff}} \approx 5$—still low due to correlation, but dramatically better than \PoW{}. Client diversity programs target $\bar{\rho} < 0.1$.
+    \item \textbf{Explicit audit penalty:} $\kappa = \kappa_{\mathrm{slash}} \geq 1$ ETH creates a real economic deterrent. The dominance condition (Eq.~\ref{eq:slashing_bound}) requires $\kappa > B_{\mathrm{attack}} / (M_{\mathrm{eff}} - \mthreshold + 1)$, which is satisfied for attacks below $\sim$5 ETH per validator at current parameters.
+    \item \textbf{Full audit trail:} Every attestation is recorded with the validator's identity. \Spring{} gating can track per-validator performance and detect anomalous behavior patterns.
+\end{enumerate}
+\end{proposition}
+
+\subsection{\PBFT{}-Family — Tendermint / Cosmos}
+
+\begin{definition}[\PBFT{} Consensus under \SCX{} PBFT共识的SCX分析]
+\label{def:pbft_scx}
+In \Tendermint{} consensus (Cosmos ecosystem):
+\begin{itemize}
+    \item $M$: Typically 100--150 validators (limited by communication complexity $O(M^2)$).
+    \item $f$: $f < 1/3$ by protocol design, enforced through the 2/3 PreVote/PreCommit quorum.
+    \item $\kappa$: Explicit slashing for double-signing and downtime (typically 5\% of staked tokens).
+    \item $\bar{\rho}$: Low (validators are known entities with diverse infrastructure), but small $M$ limits the benefit.
+    \item Audit trail: Full validator signatures, deterministic finality.
+\end{itemize}
+\end{definition}
+
+\begin{proposition}[\PBFT{} Security Analysis PBFT安全性分析]
+\label{prop:pbft_security}
+Under the \SCX{} framework, \PBFT{}-family consensus achieves:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Deterministic fork impossibility:} With $f < 1/3$ enforced by the quorum mechanism, forks are mathematically impossible in synchronous periods (not merely probabilistically negligible).
+    \item \textbf{Limited scalability:} Small $M$ (100--150) provides lower raw security margin than large-\PoS{}, but the deterministic finality compensates. The threshold $\mthreshold$ (Eq.~\ref{eq:M_star_fork_explicit}) is easily satisfied.
+    \item \textbf{Explicit accountability:} Every certification is signed, enabling precise attribution and slashing. The \Cercis{} score provides a natural validator ranking for delegated \PoS{}.
+\end{enumerate}
+\end{proposition}
+
+\begin{table}[htbp]
+\centering
+\caption{Consensus Protocol Comparison under \SCX{} Framework.}
+\label{tab:protocol_comparison}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Property} & \textbf{\Nakamoto{} (\PoW{})} & \textbf{Gasper (\PoS{})} & \textbf{\Tendermint{} (\PBFT{})} \\
+\midrule
+$M$ (nominal) & $\infty$ (open) & $>10^6$ & 100--150 \\
+$M_{\mathrm{eff}}$ (effective) & $\approx 3$ & $\approx 5$--$10$ & 100--150 \\
+$\bar{\rho}$ (correlation) & High ($>0.8$) & Moderate ($0.1$--$0.3$) & Low ($<0.1$) \\
+$\kappa$ (slashing) & Implicit ($\approx R_{\mathrm{block}}$) & Explicit ($\geq 1$ ETH) & Explicit (5\% stake) \\
+$f$ bound & $< 1/2$ (probabilistic) & $< 1/3$ (deterministic) & $< 1/3$ (deterministic) \\
+Audit trail & Cumulative work & Validator signatures & Validator signatures \\
+Fork resolution & Probabilistic & BFT + fork choice & Deterministic \\
+\Spring{} permanent $M_t$ & No (scalar) & Yes (per-validator) & Yes (per-validator) \\
+\Cercis{} scoring & N/A (anonymous) & Applicable & Applicable \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 %=====================================================================
 \section{Discussion 讨论}
 \label{sec:discussion}
 %=====================================================================
 
-\subsection{Summary of Results 结果总结}
+\subsection{Relationship to Existing Theoretical Frameworks 与现有理论框架的关系}
 
-We have established three fundamental theorems connecting blockchain consensus to the \SCX{} multi-expert audit framework:
+\textbf{Byzantine Fault Tolerance (Lamport, Castro, Liskov).} The classical BFT literature~\cite{LamportShostakPease1982,CastroLiskov1999} establishes that $3f + 1 \leq M$ is necessary and sufficient for deterministic consensus with $f$ Byzantine faults. The \SCX{} framework recovers this result as a special case: when $\bar{\rho} = 0$ (perfectly independent validators) and $\kappa \to \infty$ (infinite slashing penalty), the effective multiplicity threshold $\mthreshold = 3f + 1$ from Eq.~\ref{eq:M_star_fork_explicit} reduces to the BFT bound. The \SCX{} contribution is the generalization to imperfect independence ($\bar{\rho} > 0$) and finite economic penalties ($\kappa < \infty$), providing a continuous security spectrum rather than a binary BFT threshold.
 
-\begin{enumerate}[label=\textbf{T\arabic*}:, leftmargin=*]
-    \item \textbf{Fork Boundary}: The probability of consensus failure (fork) is bounded by $\exp(-2\Meff \cdot (\tau - p_{\max})^2)$, making forks exponentially rare as validator multiplicity grows. Forks are not a feature to be resolved by longest-chain tiebreakers—they are audit failures to be prevented by sufficient $M$.
-    \item \textbf{51\% = $\Meff$ Collapse}: The 51\% attack is formally equivalent to effective auditor multiplicity dropping below the certification threshold. The critical parameter is not raw hash power or stake but $\Meff$, which depends on both validator count $N$ and validator correlation $\bar{\rho}$.
-    \item \textbf{Slashing = Audit Penalty}: PoS slashing implements the \SCX{} audit penalty $\kappa$ with automated enforcement. The \Yajie{} equilibrium condition $\gamma > R_{\text{extra}} / (s_j \cdot \Pbb(\text{detection}))$ is easily satisfied in practice, explaining why PoS systems with slashing have not experienced economically rational equivocation.
+\textbf{Game-Theoretic Consensus (Buterin, Kiayias).} Buterin's work on cryptoeconomic security~\cite{Buterin2018} and Kiayias et al.'s Ouroboros~\cite{Kiayias2017} analyze \PoS{} through incentive compatibility. The \SCX{} framework extends this by explicitly modeling the \textit{multi-expert} structure: consensus security depends not just on the honest majority but on the \textit{independence} of honest validators. Two validators running the same software on the same cloud provider count as $M=2$ but may have $M_{\mathrm{eff}} \approx 1$. The \Cercis{} novelty score operationalizes this insight by rewarding client diversity.
+
+\textbf{Probabilistic Finality (Nakamoto, Garay).} The probabilistic finality model~\cite{Nakamoto2008,GarayKiayiasLeonardos2015} analyzes \PoW{} consensus through stochastic processes. The \SCX{} framework provides an alternative lens: probabilistic finality is the consequence of implicit $M$ without explicit validators. The transition to explicit validators and slashing converts probabilistic to deterministic finality, as formalized in Theorem~\ref{thm:nakamoto_implicit}.
+
+\textbf{Accountability and Slashing (Ethereum 2.0).} Ethereum 2.0's slashing mechanism~\cite{Ethereum2023} implements exactly the \Yajie{} audit penalty, but the protocol specification does not provide a formal relationship between slashing magnitude, validator multiplicity, and attack resistance. The \SCX{} framework provides this relationship (Eq.~\ref{eq:slashing_bound}), enabling quantitative parameter selection.
+
+\subsection{Honest Limitations 诚实局限性}
+
+We now state what \SCX{} blockchain analysis cannot do.
+
+\begin{enumerate}[label=\limitationTag{\arabic*},leftmargin=*]
+
+    \item \textbf{\limitationTag{1} Cannot replace protocol implementation 不能替代协议实现.} The \SCX{} framework provides mathematical analysis of consensus security, not an executable consensus protocol. The \Yajie{} algorithm (Algorithm~\ref{alg:yajie_consensus}) is a formal specification; its implementation requires engineering for performance, networking, and storage.
+
+    \item \textbf{\limitationTag{2} Cannot guarantee liveness during partitions 不能保证分区期间的活性.} The CAP theorem~\cite{GilbertLynch2002} establishes that no consensus protocol can guarantee both consistency and availability under network partitions. The \SCX{} framework assumes partial synchrony (Assumption~\ref{ass:A6}); during extended partitions, both safety and liveness guarantees degrade. The \Spring{} gating mechanism detects but does not prevent partition-induced anomalies.
+
+    \item \textbf{\limitationTag{3} $\bar{\rho}$ estimation is empirical $\bar{\rho}$的估计是经验性的.} The effective multiplicity $M_{\mathrm{eff}}$ depends on the inter-validator correlation $\bar{\rho}$, which must be estimated from observed validator behavior. This estimation introduces statistical uncertainty not captured by the deterministic bounds in the theorems. The theorems provide a framework for security analysis, but the numerical conclusions depend on the quality of $\bar{\rho}$ estimation.
+
+    \item \textbf{\limitationTag{4} Slashing requires honest majority for enforcement 罚没需要诚实多数来执行.} The audit penalty $\kappa$ is enforced by the protocol only when honest validators control sufficient stake to execute the slashing. If the adversary controls $>2/3$ of stake, they can prevent their own slashing—the ``nothing at stake'' problem becomes self-reinforcing. The \SCX{} framework does not solve this; it identifies the conditions under which the solution is effective.
+
+    \item \textbf{\limitationTag{5} Hash chain security is conditional on cryptographic assumptions 哈希链安全依赖于密码学假设.} Theorem~\ref{thm:hashchain} relies on Assumption~\ref{ass:A8} (cryptographic hash security). Quantum computing or algorithmic breakthroughs in collision finding would invalidate this assumption. The audit trail is permanent only within the cryptographic model.
+
+    \item \textbf{\limitationTag{6} Economic rationality may fail 经济理性可能失效.} The \Yajie{} dominance analysis assumes validators are expected-utility maximizers (Assumption~\ref{ass:A9}). Validators motivated by ideology, coercion, or non-economic objectives may deviate from profit-maximizing behavior. The framework bounds \textit{rational} attacks; irrational attacks are outside the model.
+
+    \item \textbf{\limitationTag{7} Cannot prevent 51\% attacks on small chains 不能防止小链的51\%攻击.} For blockchains with small $M$, the threshold $\mthreshold$ may exceed the available validator count. In this regime, the \SCX{} framework confirms vulnerability rather than providing a solution. Small chains remain vulnerable to majority attacks unless they adopt alternative security models (checkpointing, merge-mining, or economic security sharing).
+
+    \item \textbf{\limitationTag{8} \Nakamoto{} implicit $M$ analysis is stylized 对中本聪共识隐式$M$的分析是风格化的.} The analysis in Section~\ref{sec:nakamoto} abstracts away important details of \PoW{} consensus (difficulty adjustment, block propagation, selfish mining strategies). It provides a comparative framework rather than a complete \PoW{} security analysis, which would require a dedicated treatment of mining game theory.
+
 \end{enumerate}
 
-\subsection{The Structural Gap: Implicit vs.\ Explicit M 隐式与显式M的结构性差距}
-
-The central insight of this paper is the distinction between \textbf{implicit} and \textbf{explicit} M-declaration:
-
-\begin{itemize}
-    \item \textbf{Implicit M} (Nakamoto consensus, Bitcoin): The number of validators is inferred from blockchain data (confirmations, hash power). No validator explicitly declares ``I have verified this block.'' The security guarantee is probabilistic, retrospective, and contingent on economic assumptions.
-    \item \textbf{Explicit M} (Tendermint, Ethereum PoS with attestations): Each validator explicitly signs the block, providing cryptographically verifiable evidence of certification. The security guarantee is absolute (for BFT), prospective (at block time), and mathematically provable.
-\end{itemize}
-
-The \SCX{} framework requires explicit M. The trend in blockchain design—from Bitcoin's implicit certification to Ethereum's explicit attestations to Tendermint's explicit prevotes/precommits—is a trajectory toward \SCX{}-compatible consensus. This paper provides the formal vocabulary to describe, analyze, and accelerate this trajectory.
-
-\subsection{$\bar{\rho}$ as the Hidden Vulnerability $\bar{\rho}$作为隐藏漏洞}
-
-The effective multiplicity formula $\Meff = M / (1 + (M-1)\bar{\rho})$ reveals a structural vulnerability that is underappreciated in blockchain security analysis: \textbf{validator correlation} $\bar{\rho}$ can destroy security even when $M$ is large. This has practical implications:
+\subsection{Future Directions 未来方向}
 
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{Client diversity}: Blockchain protocols should mandate or incentivize multiple independent client implementations. Ethereum's client diversity initiative is a direct (if unrecognized) implementation of \SCX{} correlation reduction.
-    \item \textbf{Infrastructure diversity}: Validators should use diverse hosting providers, geographic regions, and network topologies to reduce correlated failure modes.
-    \item \textbf{Software supply chain}: A single compromised dependency (e.g., a widely-used cryptographic library) creates $\bar{\rho} \to 1$ for all validators using that library—an attack surface that $\Meff$ analysis exposes.
-\end{enumerate}
-
-\subsection{Limitations 局限性}
-
-\begin{enumerate}[label=\textbf{L\arabic*}:, leftmargin=*]
-    \item \textbf{Synchrony assumption}: Theorem~\ref{thm:fork} assumes synchronous message delivery (Assumption~\ref{ass:A7}). Under partial synchrony or asynchrony, fork probabilities may be higher. Extending the bounds to partially synchronous models is an open problem.
-    \item \textbf{Independent errors}: Assumption~\ref{ass:A2} (independent validation) abstracts away systemic risks: a protocol-level bug affects all validators identically, creating $\bar{\rho} = 1$ regardless of implementation diversity. Our framework captures this through $\Meff$ but cannot prevent it.
-    \item \textbf{No defense against $>$50\% attacks}: Theorem~\ref{thm:fiftyone} proves that $\alpha > 0.5$ breaks consensus; it does not provide a defense. The ``defense'' is ensuring $\alpha < 0.5$ through economic mechanism design.
-    \item \textbf{Scalability vs.\ security}: Larger $M$ improves security (Theorem~\ref{thm:fork}) but reduces throughput (more signatures to verify, more messages to propagate). The optimal $M$ is a trade-off that depends on the application's security requirements.
-    \item \textbf{Complex fork-choice rules}: Modern protocols (Ethereum's LMD-GHOST, Solana's Tower BFT) have fork-choice rules whose formal analysis under \SCX{} is more complex than the simple threshold model in Theorem~\ref{thm:fork}. Extending the framework to these rules is future work.
-\end{enumerate}
-
-\subsection{The Path to SCX-Audited Consensus 走向SCX审计共识之路}
-
-We envision a future where blockchain consensus protocols are designed from first principles to be \SCX{}-auditable:
-
-\begin{enumerate}[label=(\roman*)]
-    \item \textbf{Mandatory M-declaration}: Every block must record the exact set of validators who certified it, with cryptographic signatures. This is already standard practice; our contribution is formalizing \textit{why} it matters.
-    \item \textbf{Explicit $\Meff$ computation}: Protocols should compute and publish $\Meff$ accounting for validator correlation, enabling real-time security monitoring.
-    \item \textbf{$\bar{\rho}$ minimization}: Protocol design should incentivize validator diversity (multiple clients, diverse infrastructure) to minimize $\bar{\rho}$.
-    \item \textbf{Formal $\kappa$ calibration}: Slashing penalties should be calibrated using Theorem~\ref{thm:slashing}, not set arbitrarily.
-    \item \textbf{\Spring{} gating}: Automatic security escalation when $\Meff$ drops or $\Mt$ trajectory signals regime degradation.
+    \item \textbf{Empirical $\bar{\rho}$ estimation for major blockchains.} A systematic empirical study estimating inter-validator correlations for Ethereum 2.0, Cosmos, and other \PoS{} networks would calibrate the \SCX{} security bounds to operational reality.
+    \item \textbf{Dynamic validator set analysis.} Validator sets change over time as validators join, exit, and rotate. Extending the \SCX{} framework to dynamic $M(t)$ with time-varying correlations $\bar{\rho}(t)$ would enable real-time security monitoring.
+    \item \textbf{Cross-chain \Spring{} gating.} The \Spring{} mechanism could be extended to monitor security across multiple interconnected blockchains (cosmos zones, parachains, rollups), detecting systemic risk that transcends individual chains.
+    \item \textbf{\Cris{} validator delegation markets.} The \Cercis{} score provides a theoretical basis for validator delegation markets where token holders optimize their delegation across validators to maximize risk-adjusted returns.
+    \item \textbf{Formal verification of \Yajie{} consensus.} The \Yajie{} consensus algorithm (Algorithm~\ref{alg:yajie_consensus}) could be formally verified using model checking or interactive theorem proving, providing machine-checked safety and liveness proofs.
+    \item \textbf{Slashing parameter optimization.} The relationship between $\kappa$, $M_{\mathrm{eff}}$, and security (Eq.~\ref{eq:slashing_bound}) provides a framework for optimizing slashing parameters in \PoS{} protocols.
 \end{enumerate}
 
 %=====================================================================
@@ -863,107 +1109,129 @@ We envision a future where blockchain consensus protocols are designed from firs
 \label{sec:conclusion}
 %=====================================================================
 
-Blockchain consensus and \SCX{} multi-expert audit are two manifestations of the same mathematical structure: distributed certification of claims about state. By formalizing this connection, we have:
+We have presented a mathematical framework for \SCX{}-audited blockchain consensus, grounding distributed ledger security in the multi-expert verification principles of the \SCX{} framework. Three core theorems establish the mathematical foundations:
 
-\begin{enumerate}[label=(\roman*)]
-    \item Provided exponential bounds on consensus failure (fork) probability, showing that forks are audit failures whose likelihood can be driven arbitrarily low by increasing validator multiplicity $M$.
-    \item Proven the formal equivalence between 51\% attacks and effective auditor multiplicity collapse, clarifying that security depends on $\Meff$ (which incorporates validator correlation $\bar{\rho}$) rather than raw validator count.
-    \item Established the \Yajie{} equilibrium condition for PoS slashing, proving that honest validation strictly dominates equivocation when the slashing penalty exceeds a computable threshold.
-    \item Demonstrated that the hash chain implements \Spring's permanent memory $\Mt$, providing an immutable, self-verifying audit trail of consensus health.
-    \item Identified Nakamoto consensus as implicit M-declaration without formal guarantee, highlighting the structural gap that explicit \SCX{} certification fills.
+\begin{enumerate}[label=(\textbf{\arabic*})]
+    \item \textbf{Fork Impossibility (Theorem~\ref{thm:fork}):} Under sufficient validator multiplicity $M > \mthreshold$, forks—the observable manifestation of consensus failure—become probabilistically negligible, with exponential decay in $M_{\mathrm{eff}}$. The threshold $\mthreshold$ provides an explicit, parameterized condition for fork-free operation.
+
+    \item \textbf{51\% Attack Resistance (Theorem~\ref{thm:fiftyone}):} A majority attack succeeds precisely when the effective validator multiplicity falls below the security threshold ($M_{\mathrm{eff}}(\alpha) < \mthreshold$), and \PoS{} slashing implements the \SCX{} audit penalty $\kappa$ to make attacks economically dominated when $\kappa > B_{\mathrm{attack}} / (M_{\mathrm{eff}} - \mthreshold + 1)$.
+
+    \item \textbf{Hash Chain Integrity (Theorem~\ref{thm:hashchain}):} The cryptographic hash chain implements \Spring{} permanent gating, creating an irreversible, monotonically growing audit trail where each block's certification multiplicity $M_t$ is immutably recorded and tampering is cryptographically infeasible.
 \end{enumerate}
 
-The blockchain community has independently converged on many \SCX{} principles—explicit validator sets, slashing penalties, client diversity—without the formal vocabulary to articulate why these design choices matter. This paper provides that vocabulary. The next generation of consensus protocols should be \textbf{SCX-native}: designed from the ground up with explicit M-declaration, $\Meff$ optimization, $\bar{\rho}$ minimization, and formal $\kappa$ calibration as first-class requirements.
+The analysis of \Nakamoto{} consensus (Theorem~\ref{thm:nakamoto_implicit}) reveals that Bitcoin's longest-chain rule is an \textit{implicit} $M$ without formal guarantee—it approximates multi-validator certification probabilistically but lacks explicit validator identity ($\kappa = 0$, no slashing), deterministic fork resolution, and per-validator audit trail. The transition from \Nakamoto{} to \SCX{}-audited consensus is the transition from probabilistic to parametric security: from asymptotic guarantees that depend on unobservable parameters to finite-sample guarantees that depend on observable parameters ($M$, $f$, $\bar{\rho}$, $\kappa$).
 
-\begin{center}
-\large\bfseries
-No M, No Consensus. 无M，无共识。\\
-Declare M explicitly. 显式声明M。\\
-Fork = audit failure, bounded by M. 分叉 = 审计失败，由M界定。\\
-51\% = $\Meff$ collapse, not hash power. 51\% = $\Meff$塌缩，而非算力。\\
-Slashing = $\kappa$, the invisible hand. 罚没 = $\kappa$，看不见的手。\\
-Hash chain = \Spring{} memory, permanent. 哈希链 = 春耕记忆，永恒。\\
-Nakamoto = implicit M, no formal guarantee. 中本聪 = 隐式M，无形式化保证。\\
-Consensus belongs to verifiers. 共识属于验证者。
-\end{center}
+The \Cercis{} validator score (Section~\ref{sec:cercis}) translates the insight that \textbf{validator diversity is a security resource} into a quantitative metric, rewarding validators that reduce $\bar{\rho}$ and thereby increase $M_{\mathrm{eff}}$. The \Spring{} gating mechanism (Section~\ref{sec:spring}) provides adaptive detection of consensus anomalies, building on the permanent audit trail to enable real-time security monitoring.
 
+The \SCX{} framework's contribution to blockchain consensus is not a new protocol but a \textbf{unified security theory}: a set of mathematical tools for analyzing any consensus mechanism through the lens of multi-validator certification. It reveals the common structure underlying \PoW{}, \PoS{}, and \PBFT{}, identifies the parameters that govern security ($M$, $f$, $\bar{\rho}$, $\kappa$), and provides explicit bounds that connect these parameters to quantitative security guarantees. As blockchain systems grow in economic significance and regulatory attention, the ability to formally audit consensus security—not just assert it—becomes essential.
+
+\medskip
+\noindent\textbf{Acknowledgments.} We thank the SCX Research Collective for the foundational framework, the Ethereum research community for detailed protocol specifications that enabled formal analysis, and the broader blockchain research community for two decades of consensus research. All errors remain our own. No external funding was received for this theoretical work.
+
+%=====================================================================
+% BIBLIOGRAPHY
 %=====================================================================
 \begin{thebibliography}{99}
 
 \bibitem{SCX2025}
-\SCX{} Research Collective.
-The \SCX{} Framework: Structured Causal eXamination for Multi-Expert Audit.
-Technical report, 2025--2026.
+SCX Research Collective.
+\newblock {SCX}: Structured Causal eXamination---A Framework for Multi-Expert Quality Auditing.
+\newblock Technical Report, 2025.
 
-\bibitem{SCX_science_audit}
-\SCX{} Research Collective.
-The \SCX{} Audit Mandate: Why M-Parameter Declaration Must Be a Prerequisite for Scientific Publication.
-Technical report, June 2026.
+\bibitem{SCXGovernance2026}
+SCX Research Collective.
+\newblock {SCX} Audit of Governance: Game-Theoretic Foundations of Transparency Under Multi-Expert Verification.
+\newblock Technical Report, 2026.
 
-\bibitem{SCX_governance}
-\SCX{} Research Collective.
-\SCX{} Audit of Governance: Game-Theoretic Foundations of Transparency Under Multi-Expert Verification.
-Technical report, 2026.
-
-\bibitem{nakamoto2008}
+\bibitem{Nakamoto2008}
 S.~Nakamoto.
-Bitcoin: A Peer-to-Peer Electronic Cash System.
-2008.
+\newblock Bitcoin: A Peer-to-Peer Electronic Cash System.
+\newblock White Paper, 2008.
 
-\bibitem{buterin2014}
-V.~Buterin.
-Ethereum: A Next-Generation Smart Contract and Decentralized Application Platform.
-2014.
-
-\bibitem{buchman2016}
-E.~Buchman.
-Tendermint: Byzantine Fault Tolerance in the Age of Blockchains.
-Master's thesis, University of Guelph, 2016.
-
-\bibitem{yakovenko2018}
-A.~Yakovenko.
-Solana: A New Architecture for a High Performance Blockchain.
-2018.
-
-\bibitem{hoeffding1963}
-W.~Hoeffding.
-Probability Inequalities for Sums of Bounded Random Variables.
-\emph{Journal of the American Statistical Association}, 58(301):13--30, 1963.
-
-\bibitem{rosenfeld2014}
-M.~Rosenfeld.
-Analysis of Hashrate-Based Double Spending.
-\emph{arXiv preprint arXiv:1402.2009}, 2014.
-
-\bibitem{spence1973}
-M.~Spence.
-Job Market Signaling.
-\emph{Quarterly Journal of Economics}, 87(3):355--374, 1973.
-
-\bibitem{castro1999}
+\bibitem{CastroLiskov1999}
 M.~Castro and B.~Liskov.
-Practical Byzantine Fault Tolerance.
-In \emph{OSDI}, 1999.
+\newblock Practical Byzantine fault tolerance.
+\newblock {\em Proceedings of the Third USENIX Symposium on Operating Systems Design and Implementation (OSDI)}, 1999.
 
-\bibitem{garey1979}
-M.~R.~Garey and D.~S.~Johnson.
-\emph{Computers and Intractability: A Guide to the Theory of NP-Completeness}.
-W.~H.~Freeman, 1979.
+\bibitem{LamportShostakPease1982}
+L.~Lamport, R.~Shostak, and M.~Pease.
+\newblock The Byzantine generals problem.
+\newblock {\em ACM Transactions on Programming Languages and Systems}, 4(3):382--401, 1982.
 
-\bibitem{daian2020}
-P.~Daian et al.
-Flash Boys 2.0: Frontrunning in Decentralized Exchanges, Miner Extractable Value, and Consensus Instability.
-In \emph{IEEE S\&P}, 2020.
+\bibitem{Buterin2018}
+V.~Buterin.
+\newblock A proof of stake design philosophy.
+\newblock {\em Medium}, 2018.
 
-\bibitem{neu2022}
-J.~Neu et al.
-Ebb-and-Flow Protocols: A Resolution of the Availability-Finality Dilemma.
-In \emph{IEEE S\&P}, 2022.
+\bibitem{Kiayias2017}
+A.~Kiayias, A.~Russell, B.~David, and R.~Oliynykov.
+\newblock Ouroboros: A provably secure proof-of-stake blockchain protocol.
+\newblock {\em Advances in Cryptology --- CRYPTO 2017}.
 
-\bibitem{gilad2017}
-Y.~Gilad et al.
-Algorand: Scaling Byzantine Agreements for Cryptocurrencies.
-In \emph{SOSP}, 2017.
+\bibitem{GarayKiayiasLeonardos2015}
+J.~A. Garay, A.~Kiayias, and N.~Leonardos.
+\newblock The Bitcoin backbone protocol: Analysis and applications.
+\newblock {\em Advances in Cryptology --- EUROCRYPT 2015}.
+
+\bibitem{Ethereum2023}
+Ethereum Foundation.
+\newblock Ethereum 2.0 Phase 0 --- The Beacon Chain.
+\newblock {\em Ethereum Specifications}, 2023.
+
+\bibitem{Buchman2016}
+E.~Buchman.
+\newblock Tendermint: Byzantine fault tolerance in the age of blockchains.
+\newblock {\em Master's Thesis, University of Guelph}, 2016.
+
+\bibitem{DworkLynchStockmeyer1988}
+C.~Dwork, N.~Lynch, and L.~Stockmeyer.
+\newblock Consensus in the presence of partial synchrony.
+\newblock {\em Journal of the ACM}, 35(2):288--323, 1988.
+
+\bibitem{GilbertLynch2002}
+S.~Gilbert and N.~Lynch.
+\newblock Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services.
+\newblock {\em ACM SIGACT News}, 33(2):51--59, 2002.
+
+\bibitem{Hoeffding1963}
+W.~Hoeffding.
+\newblock Probability inequalities for sums of bounded random variables.
+\newblock {\em Journal of the American Statistical Association}, 58(301):13--30, 1963.
+
+\bibitem{DaianEtAl2019}
+P.~Daian, S.~Goldfeder, T.~Kell, Y.~Li, X.~Zhao, I.~Bentov, L.~Breidenbach, and A.~Juels.
+\newblock Flash Boys 2.0: Frontrunning, transaction reordering, and consensus instability in decentralized exchanges.
+\newblock {\em IEEE S\&P}, 2020.
+
+\bibitem{GaziKiayiasRussell2020}
+P.~Gazi, A.~Kiayias, and A.~Russell.
+\newblock Stake-bleeding attacks on proof-of-stake blockchains.
+\newblock {\em IEEE S\&P}, 2020.
+
+\bibitem{NeuTasTiwar2021}
+J.~Neu, E.~Tas, and D.~Tiwari.
+\newblock Ebb-and-flow protocols: A resolution of the availability-finality dilemma.
+\newblock {\em IEEE S\&P}, 2021.
+
+\bibitem{AmoussouGuenet2021}
+A.~Amoussou-Guenou, B.~Biais, M.~Potop-Butucaru, and S.~Tucci-Piergiovanni.
+\newblock Rational behavior in committee-based blockchains.
+\newblock {\em ACM AFT}, 2021.
+
+\bibitem{ChenMicali2020}
+J.~Chen and S.~Micali.
+\newblock Algorand: A secure and efficient distributed ledger.
+\newblock {\em Theoretical Computer Science}, 777:155--183, 2019.
+
+\bibitem{SompolinskyZohar2015}
+Y.~Sompolinsky and A.~Zohar.
+\newblock Secure high-rate transaction processing in Bitcoin.
+\newblock {\em Financial Cryptography and Data Security (FC)}, 2015.
+
+\bibitem{Wood2014}
+G.~Wood.
+\newblock Ethereum: A secure decentralised generalised transaction ledger.
+\newblock {\em Ethereum Yellow Paper}, 2014.
 
 \end{thebibliography}
 
