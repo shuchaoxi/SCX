@@ -1,1027 +1,501 @@
-# The SCX Story: How a Gauge-Fixing Problem Became an Uncertainty Principle
-
-> A candid intellectual history of the State-Conditioned eXpertise framework.
-> Written from development logs, theorem drafts, adversarial audits, and git history.
-> No press release. No vision statement. Just what happened and what we learned.
-
----
-
-## Preface: On Telling the Truth About Research
-
-Most papers lie about how they were written. The introduction presents a clean logical arc
-from problem to solution, as if the author woke up one morning with the theorems fully
-formed. The real history—the dead ends, the bugs in the proofs, the concepts that took
-weeks to name, the theorems that turned out to be corollaries of theorems we hadn't
-proven yet—gets compressed into acknowledgments or erased entirely.
-
-This document is the opposite. It records what actually happened in the development of
-the SCX framework between May and June 2026: a period in which a practical problem in
-interatomic potential merging unfolded, over roughly five weeks, into a mathematical
-framework spanning four theorems, three core algorithms, a self-evolving gatekeeper with
-Lyapunov convergence guarantees, and—unexpectedly—an uncertainty principle for label
-noise detection.
-
-The author is a Ph.D. student at Wuhan University. All theoretical work was done on a
-personal computer at home, using Claude Code (Anthropic) and DeepSeek API as
-implementation tools. The Xiaogan Supercomputing Center was used exclusively for DFT
-calculations in the EGP project (Papers 1–3), not for SCX development.
-
-We tell this story not because it is exceptional, but because it is typical of how
-research actually works—and because the clean narratives we publish in journals train
-students to expect a linear path that does not exist.
-
----
-
-## Chapter 1: Origins — The EGP Gauge-Fixing Problem
-
-### 1.1 The Practical Problem
-
-In May 2026, the author was working on the EGP (Expert-Guided Potential) project:
-constructing machine-learned interatomic potentials (MLIPs) for III-nitride
-semiconductors (AlN, GaN, and eventually AlGaN) using the Atomic Cluster Expansion
-(ACE) framework. The practical task was straightforward: train separate ACE potentials
-on different chemical domains, then merge them into a single multi-element potential.
-
-The appeal of this modular approach is obvious. A community could build a library of
-specialized potentials—AlN trained by one group, GaN by another, InN by a third—and
-combine them as needed without costly joint retraining. The ACE framework's linear
-parameterization makes this particularly natural: coefficients are just vectors, and
-vectors can be averaged.
-
-### 1.2 Why Direct Merging Fails
-
-It doesn't work. The naive merge—averaging the coefficient vectors of independently
-trained experts—produces catastrophic errors: $C_{33}$ elastic constant deviations
-exceeding $50\%$, formation energy sign reversals, and force predictions worse than
-either expert individually.
-
-The failure is not a numerical accident. Four distinct sources of inconsistency block
-safe merging:
-
-**(I1) Energy reference ambiguity.** Forces determine the potential energy surface only
-up to an additive constant. Each expert's training loss ${\mathcal{L}}_F$ (force RMSE)
-is invariant under $E \to E + C$, so the absolute energy zero is unconstrained. Two
-experts trained on different domains end up with unrelated energy zeros, producing
-spurious energy differences upon merging.
-
-**(I2) Species-shift misalignment.** The per-species constant shifts $b_Z$ absorb a
-significant fraction of the energy reference ambiguity. When Expert A (AlN) assigns one
-shift to nitrogen and Expert G (GaN) assigns another, the merged model inherits
-inconsistent shifts that produce systematic formation energy errors.
-
-**(I3) Coefficient-level gauge freedom.** The shared-correction ACE parameterization
-$E = \sum_i [{\mathbf{c}}_0 + {\mathbf{c}}_{Z_i}] \cdot {\mathbf{B}}({\mathbf{q}}_i) + b_{Z_i}$
-admits an exact gauge transformation:
-$${\mathbf{c}}_0 \to {\mathbf{c}}_0 + {\mathbf{g}}, \quad {\mathbf{c}}_Z \to {\mathbf{c}}_Z - {\mathbf{g}}$$
-which leaves all physical predictions invariant for any vector ${\mathbf{g}}$.
-Different experts explore different regions of this gauge-equivalent space, making their
-coefficient vectors incompatible for direct combination. The gauge violation in
-unconstrained training—$\lVert\sum_Z \pi_Z {\mathbf{c}}_Z\rVert$—reaches $8.77$ in
-typical runs, confirming that the degeneracy is numerically active.
-
-**(I4) Residual meaning incompatibility.** Domain-specific corrections learned by each
-expert are meaningful only relative to their own data distribution. Naively combining
-them can cancel or amplify corrections in physically arbitrary ways.
-
-### 1.3 The Gauge-Fixing Solution
-
-The first contribution of the EGP paper was a post-hoc gauge-fixing procedure: after
-training each expert without constraints, apply the orthogonal projection
-$${\mathbf{g}} = \sum_Z \pi_Z {\mathbf{c}}_Z, \quad {\mathbf{c}}_Z' = {\mathbf{c}}_Z - {\mathbf{g}}, \quad {\mathbf{c}}_0' = {\mathbf{c}}_0 + {\mathbf{g}}.$$
-
-This achieves exact gauge cancellation (residual $4.6\times10^{-16}$, machine
-precision) with zero change to physical predictions. The key insight was *negative*: a
-soft penalty approach—adding $\lambda\lVert\sum_Z\pi_Z{\mathbf{c}}_Z\rVert^2$ to the
-training loss—fundamentally fails. A systematic $\lambda$-sweep over six orders of
-magnitude ($10^{-3}$ to $10^1$) revealed that no $\lambda$ simultaneously achieves
-gauge violation below $0.1$ and accuracy degradation under $20\%$. The gauge constraint
-subspace is nearly orthogonal to the physical loss landscape; gradient descent cannot
-simultaneously satisfy both.
-
-This negative result was more instructive than the positive one. It established a
-principle that would recur throughout SCX development: **consistency constraints must be
-applied post-hoc, not enforced during optimization, when the constraint subspace is
-orthogonal to the objective landscape.**
-
-### 1.4 The Observation That Started Everything
-
-During the EGP work, the author noticed a recurring phenomenon: the same expert
-potential's prediction reliability varied dramatically across different regions of
-configuration space. An AlN expert that achieved $0.047$ eV/Å force RMSE globally would
-show $0.012$ eV/Å on bulk equilibrium structures but $0.15$ eV/Å on defect
-configurations and $0.30$ eV/Å on thermal snapshots far from the training distribution.
-
-This observation—that **expert reliability is not a global constant but a
-state-conditioned quantity**—was the seed from which everything else grew. It was not a
-theoretical insight. It was an empirical nuisance that kept showing up in the data.
-
----
-
-## Chapter 2: State Crystallization — Naming the Third Core Algorithm
-
-### 2.1 From "PBE Operation" to a Concept
-
-For several weeks, a fundamental operation in the SCX pipeline existed without a name.
-It was referred to as "the PBE operation" or "Layer 2 discretization of the two-layer
-descriptor"—descriptions of implementation, not of concept. The operation itself was
-clear: use PBE (Perdew-Burke-Ernzerhof) DFT calculations to discover natural clustering
-boundaries in continuous physical quantities (bond angles, bond lengths, coordination
-numbers), producing discrete state atoms. But calling it "the PBE operation" was like
-calling a car "the internal combustion operation."
-
-On June 29, 2026, in a discussion with the Claude Code agent (designated "Hermes" in
-development logs), the concept was formally named **State Crystallization**.
-
-### 2.2 Why "Crystallization"
-
-The metaphor is precise. In physical crystallization, a continuous disordered phase
-(liquid/solution) spontaneously develops discrete ordered structure (crystal), with
-boundaries determined by intrinsic thermodynamic laws, not by human cutting. In State
-Crystallization, continuous physical quantities (bond angles 109.5°, bond lengths
-1.46 Å) spontaneously cluster into discrete state atoms, with boundaries determined by
-the PBE energy surface, not by statistical frequency or human naming conventions.
-
-The naming resolved a longstanding semantic confusion. "PBE operation" described the
-tool. "Two-layer descriptor Layer 2 discretization" described the mechanical step.
-Neither captured the ontological claim: **states are discovered, not defined.**
-
-### 2.3 State Crystallization ≠ BPE
-
-The natural LLM analogue is Byte Pair Encoding (BPE), which also produces discrete
-tokens from a less-structured input. But the analogy is instructive precisely because it
-breaks:
-
-| Dimension | State Crystallization | BPE |
-|-----------|----------------------|-----|
-| Input | Continuous physical quantities | Discrete symbol sequences |
-| Boundary criterion | Physical reality (PBE energy surface) | Statistical frequency |
-| Ontology | **Discovers** natural state boundaries | **Conventions** for cutting |
-| Mathematical form | $\mathcal{D}_{\text{phys}}$ | $\mathcal{D}_{\text{freq}}$ |
-| Anchor | Physical ground truth (verifiable) | None (statistical construct) |
-
-The formal relationship is inclusion: BPE is the degenerate limit of State
-Crystallization when physical coupling approximates frequency coupling. In this limit,
-$\mathcal{D}_{\text{freq}} \approx \mathcal{D}_{\text{phys}}$, but the converse is not
-true—State Crystallization can handle continuous physical quantities that BPE cannot
-even represent.
-
-This relationship is not merely taxonomic. It identifies what SCX does that LLMs cannot:
-anchor state definitions in physical reality rather than statistical convention. A bond
-angle of 109.5° is sp$^3$ hybridization regardless of how frequently it co-occurs with
-other features in a training corpus.
-
-### 2.4 Architectural Position
-
-State Crystallization was established as the **third core algorithm** of SCX,
-completing a layered architecture:
-
-| Layer | Algorithm | Function | LLM Analogue |
-|-------|-----------|----------|-------------|
-| State Ontology | **State Crystallization** | Continuous → discrete state atoms | BPE (but physics-driven) |
-| State Topology | **Situs** | Positional encoding of states in physical space | Positional Encoding |
-| State Evolution | **Spring** | Self-evolving gating, state-atom interactions | Transformer (Self-Attention) |
-| Audit Output | **Yajie** | Verification + audit + evidence chain | — (no LLM audit layer) |
-| Evaluation | **Cercis Score** | $S = Q + \eta N$ | — |
-
-The architecture reveals a structural gap in LLM design: LLMs have no state ontology
-layer. Their tokens are statistical constructs with no physical anchor. Yajie is more
-honest than an LLM not because its mathematics is better, but because it audits on a
-physically real state space, not a statistically constructed one.
-
----
-
-## Chapter 3: Yajie — Four Theorems on Label Noise
-
-### 3.1 The Core Insight
-
-Between June 23–27, 2026, the observation that "expert reliability varies by
-configurational region" was formalized into a mathematical framework. The central
-definition:
-
-$${\text{SCX}}_m(s) = P(\ell(f_m(x), y) < \tau \mid x \in s)$$
-
-Data value is not an intrinsic property of a sample. It is a conditional quantity
-determined by the state $s$, the expert's reliability ${\text{SCX}}_m(s)$, and the
-current model's deficiencies—jointly.
-
-This is the insight that separates SCX from all prior work on data valuation, active
-learning, and noise detection. Prior methods assign global scores to samples. SCX
-assigns state-conditioned scores to experts on samples. The distinction is not a
-refinement—it is a different category of question.
-
-### 3.2 Theorem 1: Consensus-Based Noise Detection
-
-**Statement (informal).** Let $M$ independently trained experts vote on the correctness
-of a label for a sample in state $s$. If the experts are conditionally independent given
-the true function, then the probability that a noisy label survives consensus screening
-decays exponentially in $M$:
-
-$$P(\text{noise survives} \mid {\text{consensus}}) \leq \exp(-2M\Delta_s^2)$$
-
-where $\Delta_s = {\text{SCX}}(s) - 0.5$ is the expert reliability advantage over random
-guessing in state $s$.
-
-**Tools.** Chernoff bound + Hoeffding inequality, under assumptions A1–A6 (conditional
-independence, bounded loss, state-conditional calibration).
-
-**What it means.** Even a modest number of independent experts ($M \sim 5$–$10$) can
-drive false-acceptance rates below practically meaningful thresholds. The guarantee is
-exponential, not asymptotic.
-
-**Bugs found and fixed.** Lemma 3 was restructured after an adversarial audit revealed
-a missing assumption (A6: expert errors are sub-Gaussian with state-conditional variance
-bound). The Chernoff KL direction was corrected (the original proof minimized the wrong
-divergence). These were not typographical errors—they were logical gaps that would have
-been caught in review, but the adversarial audit caught them first.
-
-### 3.3 Theorem 2: Weak Feature Failure Lower Bound
-
-**Statement (informal).** If every feature $X_j$ in state $s$ has mutual information
-with the label error below a threshold $\delta$, i.e., $I(X_j; L) < \delta$ for all
-$j$, then any noise detector—not just SCX—has AUC bounded by:
-
-$${\text{AUC}} \leq 0.5 + \epsilon(\delta, |s|)$$
-
-where $\epsilon \to 0$ as $\delta \to 0$.
-
-**Tools.** Fano inequality, information-theoretic lower bounds on detection.
-
-**What it means.** SCX does not work everywhere. When features are genuinely
-uninformative, no method works. This is not a weakness of SCX—it is a fundamental limit
-of information theory. Theorem 2 provides the diagnostic: compute $I(X_j; L)$ for each
-feature in each state; states where all features fall below $\delta$ are states where
-SCX should not be deployed.
-
-**Bugs found and fixed.** The original proof claimed optimality of $k$-means clustering,
-which is false (k-means is NP-hard; no polynomial algorithm can guarantee optimal
-clustering). This claim was removed. The AUC $\eta$-dependence was clarified: the bound
-depends on the gap between the null and alternative distributions, not on the absolute
-AUC level. A cluster balance qualifier was added (the bound degrades when state
-populations are highly imbalanced).
-
-### 3.4 Theorem 3: The Unidentifiability of Noise and Difficulty
-
-**Statement (informal).** There exist two worlds—World A (noisy labels) and World B
-(hard-but-clean labels)—that produce identical observable data distributions. No
-algorithm can distinguish them from observations alone.
-
-**Proof structure.** Constructive two-world proof. In both worlds, the joint
-distribution $P(X, Y)$ is identical. In World A, label noise generates the errors. In
-World B, genuine aleatoric uncertainty (inherently difficult samples) generates
-identical error patterns. The likelihood ratio is 1 for all possible observations, so no
-statistical test has power exceeding the test's significance level.
-
-**What it means.** There is a **hard boundary** on what data cleaning can achieve. Past
-this boundary, labeling errors and genuinely difficult cases are observationally
-equivalent. Any algorithm that claims to clean data beyond this boundary is either
-making unfalsifiable claims or silently degrading into a relabeling engine—replacing one
-set of labels with another that better matches its own inductive biases.
-
-This is SCX's uncertainty principle. Just as Heisenberg's principle is not a measurement
-deficiency but a statement about what can be known in principle, Theorem 3 is not an
-algorithmic limitation but a statement about what can be distinguished from data alone.
-
-**We discuss Theorem 3's independence and standalone significance in Chapter 8.**
-
-### 3.5 Theorem 4: Minimax Optimality
-
-**Statement (informal).** SCX's adaptive threshold achieves the exact minimax optimal
-rate for noise detection. No algorithm can achieve a better worst-case false-positive /
-false-negative tradeoff.
-
-**Tools.** Bahadur-Rao refinement of the Chernoff bound (exact exponential rate, not
-just asymptotic), combined with Chernoff-Stein lemma for the composite hypothesis
-testing problem.
-
-**What it means.** Theorem 1 says SCX works well. Theorem 4 says no algorithm can work
-better in the worst case. Together they establish SCX as the optimal solution to a
-well-defined problem, not merely one heuristic among many.
-
-### 3.6 The Cercis Score: $S = Q + \eta N$
-
-The Yajie audit engine evaluates every state-conditioned (configuration, label) pair
-using the Cercis Score:
-
-$$S(s) = Q(s) + \eta(t) \cdot N(s)$$
-
-where:
-- $Q(s)$ is the **quality** component: $1 - \overline{\text{residual}}$ across experts
-- $N(s)$ is the **noise** component: density-weighted + consistency-weighted residual
-- $\eta(t)$ is the **exploration schedule**: $\eta(0) \gg 1$, $\eta(t) \to 0$ as
-  $t \to \infty$
-
-The Cercis Score is named after *Cercis chinensis* (紫荆), a cauliflorous tree whose
-flowers bloom directly from old branches. The metaphor: knowledge flowers from
-accumulated experience (the memory bank), not from new data alone. The exploration term
-$\eta(t) N(s)$ ensures early-stage openness to discovery; its decay ensures
-late-stage convergence to a stable quality ranking.
-
-### 3.7 What Yajie Does Not Do
-
-The name "Yajie" (雅洁) means "elegant purification" in Chinese. But the algorithm does
-not purify data. It **audits** data—it identifies which samples are clean, which are
-noisy, and (critically) which are **ambiguous**: samples where Theorem 3's uncertainty
-principle applies and no determination is possible.
-
-The three-way classification—clean / noisy / ambiguous—is not a compromise. It is the
-mathematically honest output. Binary clean/noisy classifiers are lying about Theorem 3.
-
----
-
-## Chapter 4: Situs — From Audit to Independent Theory
-
-### 4.1 The Audit That Became a Theory
-
-On June 29, 2026, the author asked a practical question: could SCX be extended by
-incorporating LLM components—specifically, positional encoding and multi-head
-attention—to create a larger, more expressive model?
-
-A 50-turn, maximum-effort mathematical audit was conducted (Claude Code + DeepSeek v4)
-on two candidate components. The audit was intended as an engineering assessment. It
-became a theory paper.
-
-### 4.2 Physical Positional Encoding (PPE → Situs)
-
-The idea: encode physical position information (protein sequence position $i$, material
-3D coordinates $(x,y,z)$, total atom count $N$) as a vector and add it to the state
-atom representation:
-$${\mathbf{h}}_i = \phi(s_i) + {\text{PE}}({\mathbf{p}}_i).$$
-
-The audit produced four theorems:
-
-| Theorem | Finding | Impact |
-|---------|---------|--------|
-| Thm 1 (Chernoff) | $\Delta_s^{\text{PPE}} = \Delta_s + \delta_s^{\text{PE}}$, bound structure preserved | Improved if position is informative |
-| Thm 2 (Fano) | Imperfect encoding introduces $\varepsilon_{\text{PE}}$, upper bound loosens | Degraded if encoding is poor |
-| Thm 3 (Non-identifiability) | Fixed PE → Theorem 3 unchanged. **Learned PE → Theorem 3 broken** | Broken, but beneficially |
-| Thm 4 (Minimax) | $\Delta D_{\text{KL}}^{\text{PE}} \geq 0$ (data processing inequality), never degrades | Unchanged or improved |
-
-The key finding is Theorem 3: a fixed (non-learned) positional encoding preserves the
-uncertainty principle—noise and difficulty remain indistinguishable. But a **learned**
-positional encoding can break Theorem 3 by injecting additional information that
-distinguishes the two worlds. This is not a bug—it means learned position encodings
-expand the frontier of what can be audited.
-
-### 4.3 The Naming: Situs
-
-PPE was renamed **Situs** (Latin: "position, location, site") on June 29. The naming
-criteria:
-- **Precision**: situs = position, no more and no less
-- **Domain neutrality**: a protein residue's situs, a grain-boundary vacancy's situs, a
-  drug molecule's situs—same word, same concept
-- **Consistency**: Spring (春), Yajie (雅洁), Cercis (紫荆)—all are unique proper nouns
-  that must be defined once
-- **Parallelism**: State Crystallization answers "what is the state" (ontology); Situs
-  answers "where is the state" (topology)
-
-### 4.4 Physical Meaning Across Domains
-
-Situs is not a generic trick—it maps to different physical quantities in different
-domains:
-
-- **Proteins**: The same "Lys" residue at active site (position $i=37$) vs. surface loop
-  ($i=289$) has completely different functional significance. Situs lets Spring
-  distinguish them.
-- **Materials defects**: A $V_{\text{N}}$ vacancy at a grain boundary vs. bulk vs.
-  surface has different formation energies and migration barriers. Situs lets Yajie
-  output position-conditional reliability.
-- **System size effects**: 32-atom vs. 256-atom supercells exhibit different error
-  characteristics. Situs lets Spring learn that "small cell = high error risk."
-
-### 4.5 Honest Limitations
-
-The audit was explicit about limitations:
-- Situs is useful **only when** $I(Y; P \mid S) > 0$—position carries label information
-  beyond what the state atom already encodes
-- **Pure chemical composition classification** (no spatial structure) gains nothing
-- **Position independent of label** ($I(Y; P \mid X) = 0$) yields zero benefit
-- The **rotation equivariance** of 3D kernel encoding is only partially achieved
-  (SO(3) embeddings are approximate)
-- The **optimal frequency spectrum** derivation assumes a Laplace kernel—a specific
-  choice justified by smoothness but not uniquely determined
-
-### 4.6 Multi-Head Spring: The Negative Result
-
-The audit's second component, Multi-Head Spring, produced a starkly negative assessment:
-
-- Theorem 1 (Chernoff) was **severely weakened**: heads are not independent experts;
-  the i.i.d. assumption fails. A strict bound requires $\beta$-mixing conditions—an
-  **open problem**.
-- The Lyapunov step size shrinks as $O(1/\sqrt{K})$, and convergence is only to a
-  stationary point among $K!$ symmetric stationary points.
-- The critical capacity $K_{\text{crit}} = \lfloor(N \cdot T_{\text{eff}} / d_s^2 - 1)/3\rfloor$;
-  on the AlN dataset, $K_{\text{crit}} = 1$, meaning **any multi-head configuration
-  overfits**.
-- The martingale difference variance scales as $O(K)$, potentially breaking the
-  marginal martingale property.
-
-The Claude Code agent's final judgment: *"PPE is a relatively safe bet—mathematically,
-it's almost purely beneficial. Multi-Head Spring is a high-risk bet—it destroys the most
-elegant part of Theorem 1. If you can only add one: add PPE."*
-
-**This negative result was as valuable as any positive one.** It prevented months of
-wasted implementation effort and identified a genuine open problem (the $\beta$-mixing
-condition for physical attention heads).
-
-### 4.7 Three-Tier Architecture
-
-The audit results were formalized into a three-tier deployment architecture:
-
-| Tier | Components | Applicable Data | Compute |
-|------|-----------|----------------|---------|
-| **Core** | State Crystallization + Spring + Yajie | No spatial structure (tabular, text) | Low |
-| **Spatial** | Core + **Situs** | Spatial/sequential structure (proteins, materials, drug docking) | Medium |
-| **Extended** | Spatial + Multi-Head Spring | Large-scale spatial ($N > 10^4$, sufficient $K_{\text{crit}}$) | High |
-
-The design philosophy: the original Yajie + Spring was built for the low-resource,
-no-spatial-information scenario. Situs is an upgrade for data with natural spatial
-structure. Adding Situs to non-spatial data wastes parameters; omitting Situs from
-spatial data wastes information.
-
----
-
-## Chapter 5: Spring — Self-Evolving Gating with Lyapunov Convergence
-
-### 5.1 The Curation-Exploration Problem
-
-Static noise detection (Yajie) answers: given a fixed dataset, which samples are noisy?
-The dynamic problem is harder: given a stream of data and a model that improves over
-time, how should we gate which samples to train on?
-
-This is the **curation-exploration tradeoff**. Curate too aggressively early, and the
-model never sees diverse data; the gatekeeper's scores are based on an immature model
-and systematically exclude valuable outliers. Explore too broadly, and noisy samples
-degrade training; the model's own errors contaminate the gatekeeper's future judgments.
-
-The problem is circular: the gatekeeper $S_t$ determines what the student $f_{\theta_t}$
-learns from, but the student's errors inform how the gatekeeper updates. This is a
-coupled dynamical system with potential for vicious and virtuous cycles.
-
-### 5.2 The Spring Algorithm
-
-Spring (春季, "spring season") is named for resurrection: in nature, winter dormancy is
-not death—plants re-bloom when conditions improve. In Spring, structures that fall below
-the training threshold $\tau_{\text{keep}}$ are not deleted; they are stored dormant
-in the memory bank $M_t$. When the gatekeeper $S_t$ improves, dormant structures are
-re-scored, and those crossing the threshold are **resurrected** into training.
-
-The algorithm loop:
-
-1. **Judge**: $S_t$ scores incoming data $(x, y)$; all samples stored in $M_t$, never
-   deleted
-2. **Train**: Only samples with score $\geq \tau_{\text{keep}}$ train the NEP student
-   $f_{\theta_t}$
-3. **Update**: $\theta_{t+1}$ from student training; $S_{t+1}$ from gatekeeper update
-   (seeing through student's eyes)
-4. **Resurrect**: Re-score all dormant structures; those crossing $\tau_{\text{keep}}$
-   are resurrected into training
-
-The tagline captures the philosophy: *"Winter does not kill—it waits for spring. Every
-discarded structure carries the seed of its own resurrection."*
-
-### 5.3 The Mathematical Challenge
-
-The Spring paper's theoretical core—the Lyapunov convergence analysis—was developed on
-June 28, 2026, in a concentrated burst that produced 12 files, approximately 4,900 lines
-of mathematical derivation. The development was not linear:
-
-- **Files 01–05** (symbol system, dynamical system, online learning regret, Bayesian
-  update, stochastic approximation) were the standard machinery—necessary, but not the
-  contribution.
-- **File 06** (fixed-point convergence) contains the central result: **Theorem SE-1**.
-- **File 09** (verification report, 676 lines) is the most honest document in the
-  repository: it catalogs **10 proof gaps** and **5 open problems** without
-  minimization.
-- **Files 10–12** (Lyapunov analysis, convergence rate, edge cases) were written
-  *after* the verification report identified the gaps, closing the ones that could be
-  closed and honestly labeling those that could not.
-
-### 5.4 Theorem SE-1: Almost-Sure Convergence
-
-**Statement (informal).** Under conditions C1–C7 (finite structure space, Lipschitz
-continuity, Robbins-Monro learning rates, conditional i.i.d. sampling, sufficient
-annealing, bounded gatekeeper updates), the joint state $(S_t, \theta_t)$ converges
-almost surely to a joint fixed point $(S^*, \theta^*)$:
-$$(S_t, \theta_t) \xrightarrow{\text{a.s.}} (S^*, \theta^*) \quad \text{as} \quad t \to \infty.$$
-
-**Proof structure.** Define a Lyapunov function $\Psi(S_t, \theta_t)$ on a fixed
-reference set $M_0$. Show that $\Psi$ decreases monotonically in expectation:
-$$\mathbb{E}[\Psi(S_{t+1}, \theta_{t+1}) \mid \mathcal{F}_t] \leq \Psi(S_t, \theta_t) - \alpha_t \cdot \Delta_t + o(\alpha_t),$$
-where $\alpha_t$ is the learning rate and $\Delta_t > 0$ is the expected per-step
-improvement. Apply the Robbins-Monro / Borkar / Kushner-Yin ODE method to establish
-convergence to the stationary points of the limiting ODE. Show that all stationary
-points are fixed points of the coupled dynamics.
-
-### 5.5 The Critical Innovation: Reference Set Replay
-
-The deepest gap identified in File 09 was the **selection bias cycle**: $S_t$ selects
-which samples train $f_{\theta_t}$, and $f_{\theta_t}$'s errors inform $S_{t+1}$. If
-$S_t$ systematically excludes certain types of samples, the student never learns to
-handle them, and $S_{t+1}$ becomes even more confident in excluding them—a vicious cycle
-that can converge to a degenerate fixed point (everything excluded, or everything
-included regardless of quality).
-
-The solution—developed in File 10 and formalized in the Spring paper's §6—is the
-**reference set replay** mechanism (Conditions C10, C11):
-
-- **C10**: A fixed reference set $M_0$ of diverse structures is held out from gating.
-  The gatekeeper is evaluated on $M_0$, not on the gated training set.
-- **C11**: Importance sampling weights are applied to ensure that $M_0$'s loss landscape
-  is representative of the full data distribution.
-
-Theorem 4 in the Spring paper first proves that **without C10/C11, Lyapunov descent is
-impossible**—the selection bias cycle makes the descent direction undefined. Then it
-proves that **with C10/C11, strict descent is guaranteed**. The two-step structure is
-essential: it establishes that C10/C11 are not optional refinements but necessary
-conditions for convergence.
-
-### 5.6 Four Convergence Regimes and Six Failure Paths
-
-The theory identifies four distinct convergence regimes:
-
-| Regime | Description | Condition |
-|--------|-------------|-----------|
-| I | Classical convergence (monotonic improvement) | C1–C7, C10–C11 satisfied |
-| II | Limit cycle (insufficient annealing) | $\eta(t)$ decays too slowly |
-| III | Perpetual discovery (infinite exploration) | $\eta(t)$ bounded below |
-| IV | Divergent collapse ($\Delta_s \to 0$) | Gatekeeper degeneracy |
-
-The edge-case analysis (File 12, 488 lines) formalizes four failure modes:
-
-1. **Premature freezing**: $\tau_{\text{keep}}$ too high too early → valuable samples
-   permanently excluded
-2. **Backlog accumulation**: Memory bank grows without bound → computational cost
-   diverges
-3. **Calibration collapse**: Gatekeeper scores drift from physical ground truth →
-   self-reinforcing errors
-4. **Adversarial contamination**: Malicious samples exploit the gatekeeper's current
-   weaknesses → poisoning the student
-
-Each failure mode is accompanied by detection criteria and mitigation strategies. The
-document does not claim these failures are impossible—it specifies the conditions under
-which they occur and how to recognize them.
-
-### 5.7 Theorem SE-2: Finite-Time Termination
-
-**Statement (informal).** Under physical constraints (finite data, finite numerical
-precision, finite computational budget), there exists a finite time $T^*$ such that for
-all $t \geq T^*$, the system is within $\varepsilon$ of the fixed point.
-
-This is the "completeness" theorem: it guarantees that Spring is not merely
-asymptotically convergent but practically terminable. The gap between SE-1 (asymptotic)
-and SE-2 (finite-time) is the gap between a mathematical curiosity and an implementable
-algorithm. SE-2 bridges it.
-
-**Honest admission.** The $T^*$ bound from the current proof is impractically loose
-(exponential in state-space size). This is acknowledged in the verification report
-(GAP-6) and in the paper. A tighter bound under additional structural assumptions
-remains open.
-
-### 5.8 What Was Learned from the Verification Report
-
-File 09 (`09_verification_report.md`) is, in the author's view, the most important
-document in the Spring theory stack—not because it contains the strongest results, but
-because it contains the most honest assessment. Out of 10 proof gaps identified:
-
-- **GAP-1, GAP-2** (Lyapunov function not explicitly defined; descent not proven):
-  Resolved by the reference set replay mechanism.
-- **GAP-3** (distribution shift): Bounded by total variation distance, shown to be
-  $o(\alpha_t)$.
-- **GAP-4** (limit cycles): Characterized but not eliminated—limit cycles are possible
-  under insufficient annealing.
-- **GAP-6** ($T^*$ bound too loose): Acknowledged; tighter bounds require additional
-  structural assumptions.
-- **GAP-9** ($S_t$–$\theta_t$ coupling): Resolved; cross-term vanishes under the
-  reference set construction.
-
-The verification report was written before the Spring paper was drafted. Finding these
-gaps before writing the paper—rather than during peer review—was the single most
-important methodological decision in the project.
-
----
-
-## Chapter 6: Cercis Score — Deep Theory for the Noise Era
-
-### 6.1 The Formula
-
-$$S(s) = Q(s) + \eta(t) \cdot N(s)$$
-
-This appears simple. The depth is in what it encodes:
-
-- $Q(s)$ is the **quality component**: how well do experts agree on state $s$? High
-  consensus → high quality. But consensus alone is insufficient—experts can agree on
-  the wrong answer (shared inductive bias).
-- $N(s)$ is the **noise/novelty component**: how much does state $s$ deviate from
-  what experts expect? High deviation → either noise (bad) or genuine novelty (good).
-- $\eta(t)$ is the **exploration schedule**: at $t = 0$, $\eta \gg 1$, so novelty is
-  rewarded—the system explores. As $t \to \infty$, $\eta \to 0$, so only quality
-  matters—the system converges.
-
-The Cercis Score is a **dynamic valuation**. A sample that is "noise" at $t = 0$ may
-become "valuable novelty" at $t = 100$ when the experts have improved. The score itself
-evolves with the system.
-
-### 6.2 Why This Is Not Just Another Scoring Function
-
-Most scoring functions in ML are **static**: they assign a fixed value to each sample
-based on features of that sample alone (influence functions, Shapley values,
-uncertainty sampling). The Cercis Score is **dynamic** and **state-conditioned**: the
-same sample can have different scores at different times and in different states.
-
-The decomposition $Q + \eta N$ captures a fundamental tension that static scores
-conflate:
-- **"The model doesn't know"** (quality gap) → high $1-Q$
-- **"The model hasn't seen enough"** (exploration gap) → high $N$
-
-These are different failure modes requiring different responses. High quality gap calls
-for better models. High exploration gap calls for more data. Static scoring cannot
-distinguish them.
-
-### 6.3 Connection to Theorem 3
-
-The Cercis Score's most subtle property is its behavior at the Theorem 3 boundary. When
-$\eta(t)$ is large, the score can fluctuate for samples near the noise/difficulty
-ambiguity threshold—these samples sit exactly on the uncertainty principle's boundary.
-As $\eta(t) \to 0$, the score converges to the quality component $Q(s)$, and ambiguous
-samples settle into a stable intermediate score.
-
-This behavior is **correct**, not a bug. Theorem 3 says these samples cannot be
-classified. The Cercis Score assigns them an intermediate value that reflects this
-fundamental uncertainty. A binary classifier would force a decision; the Cercis Score
-preserves the ambiguity.
-
-### 6.4 Naming as Intellectual Discipline
-
-The Cercis Score is named after *Cercis chinensis* (紫荆), the Chinese redbud. The tree
-is **cauliflorous**: it flowers from old branches, not new growth. The metaphor:
-
-- **Old branches** = the memory bank $M_t$ (accumulated structures, never deleted)
-- **Flowers** = gatekeeper evaluations (new scores computed on old structures)
-- **Each spring** = each iteration ($S_t$ re-evaluates $M_t$)
-- **Cauliflory** = resurrection (dormant structures "bloom" when $S_t$ matures)
-- **Deep roots** = physical ground truth (DFT/experiment), preventing drift
-
-The naming was not decorative. It encodes the algorithm's core innovation—that knowledge
-comes from re-evaluating accumulated experience, not merely from new data—in a form that
-is harder to forget than an equation number.
-
----
-
-## Chapter 7: The Audit Sword — Game Theory, Mutual Deterrence, Business Model
-
-### 7.1 Why This Exists
-
-On June 28, 2026—the "theory explosion day"—the SCX framework expanded from a set of
-mathematical theorems into something that also included game-theoretic analysis, a
-non-proliferation treaty (modeled on the NPT), geopolitical scenario analysis, and a
-business model. This expansion was not planned. It emerged from asking a question that
-pure mathematics cannot answer:
-
-**If SCX works, who controls it? And what happens when they disagree about what
-"clean data" means?**
-
-The question is not academic. A tool that can systematically identify label noise in any
-dataset is also a tool that can systematically **define what counts as noise**. The
-auditor becomes the arbiter. The arbiter becomes the authority. The authority, if
-centralized, becomes a single point of failure for entire fields of science.
-
-### 7.2 The Non-Proliferation Equilibrium
-
-The central game-theoretic result is the **Non-Proliferation Equilibrium (NPE)**. The
-setup:
-
-- $K$ competing organizations (companies, nations) each have the capability to develop
-  proprietary data auditing standards.
-- Each organization faces a choice: develop a private audit standard (gain competitive
-  advantage but fragment the ecosystem) or adopt the open standard (lose competitive
-  advantage but gain interoperability).
-
-The equilibrium: rational competitors choose **not** to develop competing proprietary
-audit standards, because:
-1. The cost of developing and maintaining a private standard exceeds the expected
-   competitive advantage.
-2. The risk of being caught using a degraded standard (when the open standard is
-   available and auditable) creates a **mutual deterrence** dynamic.
-3. The **network effect** of shared audit standards (cross-organization data quality
-   comparisons) makes private standards less valuable over time.
-
-### 7.3 The Wall-Facer Analogy
-
-The analysis draws on the "Wall-Facer" (面壁者) concept from Liu Cixin's *Three-Body
-Problem* trilogy: *power without institution, deterrence without weapon, security
-through vulnerability.*
-
-Applied to SCX: the maintainer of the open audit standard has no enforcement power, no
-legal authority, and no monopoly on the mathematics (everything is published and open
-source). The maintainer's only power is **credibility**—the demonstrated willingness to
-audit anyone's data, including their own, against publicly verifiable standards.
-
-This is "security through vulnerability": the maintainer is protected precisely because
-attacking them would destroy the credibility of the standard, and a destroyed standard
-benefits no one. The protection equilibrium requires that all rational actors prefer the
-maintainer alive and the standard intact.
-
-### 7.4 The Business Model: Selling Rulers, Not Yourself
-
-The business analysis distinguishes sharply between:
-
-- **Service fees** (API subscription, $50K–$200K/year): selling access to the audit
-  tool. No equity, no board seats, no influence over audit direction.
-- **Investment** (equity, board seats): selling a piece of the auditor. This creates
-  conflicts of interest—the auditor's neutrality is compromised.
-
-The proposed model: **sell rulers, not yourself.** The auditor's independence is not an
-ethical preference—it is a game-theoretic requirement. An auditor who can be bought is
-not an auditor; they are a marketing department. The protection equilibrium collapses if
-the maintainer's neutrality is compromised.
-
-### 7.5 Open Source as Intelligence Filter
-
-All SCX mathematics is published. All code is open source (MIT or CC0). This is not
-ideological—it is strategic:
-
-> *Open source = IQ filter. Anyone smart enough to use the framework understands that
-> M_t (the memory bank of accumulated audit decisions) is not in the code—it's in the
-> maintainer's accumulated experience. Anyone who steals the code without understanding
-> this discovers they need the maintainer anyway.*
-
-The code is the recipe. The memory bank is the chef's experience. The recipe is public;
-the experience is non-transferable.
-
-### 7.6 The Six-Month Clock Experiment
-
-The protocol paper proposes a concrete empirical test. arXiv submission of Papers 1+2
-(Yajie theorems + Spring convergence) starts a clock. The prediction: if the protection
-equilibrium holds, no state security apparatus will attempt to capture the maintainer
-within six months, because doing so would destroy the standard's credibility and benefit
-no rational actor.
-
-The experiment is self-documenting: if no capture attempt occurs, the equilibrium is
-consistent with observation. If capture is attempted, it provides data about which
-actors are not rational in the game-theoretic sense. Either outcome advances knowledge.
-
-### 7.7 What This Chapter Is Not
-
-This chapter is not a business plan. It is not a political manifesto. It is a
-**strategic analysis** of the conditions under which a decentralized data auditing
-standard can exist, derived from the same mathematical framework that produced Theorems
-1–4. The core claim is that SCX's mathematical properties (exponential noise detection,
-Theorem 3's non-identifiability boundary, Spring's self-consistency guarantee) have
-game-theoretic consequences that the mathematics alone does not capture.
-
-Whether these consequences are correct predictions or merely consistent narratives is
-an empirical question. The six-month clock experiment is designed to test it.
-
----
-
-## Chapter 8: Theorem 3 as Uncertainty Principle
-
-### 8.1 The Argument for Independence
-
-Theorem 3 states: **noise and difficulty are observationally indistinguishable.** No
-algorithm, given only data, can tell whether a mislabeled sample is mislabeled due to
-noise or due to inherent ambiguity.
-
-This theorem does not depend on the SCX framework. It does not require expert
-ensembles, state crystallization, or Spring dynamics. It is a statement about
-**fundamental limits of empirical knowledge** that happens to have been discovered
-inside SCX but applies far beyond it.
-
-### 8.2 Why It Deserves Standalone Publication
-
-Theorem 3 is to data cleaning what:
-- The No Free Lunch theorem is to optimization: no algorithm universally dominates.
-- The Halting Problem is to computation: certain questions are undecidable in principle.
-- Heisenberg's uncertainty principle is to measurement: certain pairs of properties
-  cannot be simultaneously known.
-
-Each of these results is valuable not because it enables something new, but because it
-establishes a **hard boundary** that prevents wasted effort. Researchers who understand
-the No Free Lunch theorem stop searching for a universally optimal optimizer.
-Researchers who understand Theorem 3 should stop searching for an algorithm that
-perfectly separates noise from difficulty—it does not exist.
-
-### 8.3 The Constructive Two-World Proof
-
-The proof constructs two worlds that produce identical observable data:
-
-**World A (Noise).** Labels are generated by a clean process and then corrupted by a
-noise channel: $Y = f(X) + \varepsilon_{\text{clean}} + \varepsilon_{\text{noise}}$.
-The noise component produces some fraction of incorrect labels.
-
-**World B (Difficulty).** Labels are generated directly by a process with high aleatoric
-uncertainty: $Y = f(X) + \varepsilon_{\text{hard}}$. No label is "wrong" in the sense of
-being corrupted—the uncertainty is inherent to the data-generating process.
-
-Crucially, the two worlds produce **identical joint distributions** $P(X, Y)$. The
-likelihood ratio $\mathcal{L}(D \mid \text{World A}) / \mathcal{L}(D \mid \text{World
-B}) = 1$ for any dataset $D$. No hypothesis test can distinguish them.
-
-### 8.4 Corollaries
-
-1. **Any noise detection algorithm with false positive rate $\alpha$ has false negative
-   rate at least $\beta(\alpha)$**, where $\beta(\alpha) \to 1 - \alpha$ as the
-   noise/difficulty boundary is approached. (This is a direct consequence of the
-   likelihood ratio being 1.)
-
-2. **Data cleaning beyond a threshold is relabeling.** When an algorithm classifies
-   samples as "noisy" at a rate exceeding the identifiable noise fraction, it is not
-   detecting noise—it is substituting one label set for another based on its own
-   inductive biases.
-
-3. **"100% clean data" is an unfalsifiable claim.** Any dataset claimed to be perfectly
-   cleaned has either (a) retained all ambiguous samples (meaning it's not fully
-   cleaned, per Theorem 3's boundary), or (b) removed ambiguous samples that may have
-   been correct (meaning it's not provably clean).
-
-### 8.5 The Uncertainty Principle Framing
-
-We propose framing Theorem 3 as **SCX's Uncertainty Principle**:
-
-> *One cannot simultaneously determine whether a sample is mislabeled due to noise and
-> whether it is genuinely difficult—the act of distinguishing them requires knowledge
-> not present in the data.*
-
-This is structurally identical to Heisenberg's formulation: one cannot simultaneously
-determine position and momentum—the act of measuring one disturbs the other. In both
-cases, the limitation is not a measurement deficiency but a statement about what
-information exists in principle.
-
-The uncertainty principle framing serves two purposes:
-1. **Pedagogical**: it immediately communicates the nature of the result to audiences
-   who do not read constructive two-world proofs.
-2. **Strategic**: it positions Theorem 3 as a standalone contribution with relevance
-   beyond the SCX community, independent of whether the reader accepts SCX's other
-   claims.
-
-### 8.6 What the Paper Would Contain
-
-A standalone Theorem 3 paper would include:
-- The constructive two-world proof (formalized for a general statistical learning
-  setting, not tied to SCX-specific definitions)
-- Corollaries for any noise detection algorithm (not just Yajie)
-- A survey of implicit assumptions in published noise-detection benchmarks that silently
-  rule out World B (meaning their reported performance is conditional on an assumption
-  they do not state)
-- The "data cleaning is relabeling" argument, formalized
-- Discussion of what can still be done: Theorem 3 limits noise detection, but it does
-  not limit **expert-consensus auditing** (Theorem 1) or **self-consistent quality
-  ranking** (Spring)—these operate in a different epistemic register
-
-This paper would be short. The proof is constructive and self-contained. It does not
-require the SCX framework's definitions, notation, or assumptions. A reader who
-disagrees with everything else in SCX could still accept Theorem 3.
-
----
-
-## Epilogue: What SCX Is and Is Not
-
-### What SCX Is
-
-SCX is a mathematical framework for reasoning about **state-conditioned expertise**:
-the observation that any expert (ML model, DFT potential, human annotator) is reliable
-in some states and unreliable in others, and that this variation is exploitable.
-
-It provides:
-- **Theorem 1**: A method for detecting label noise through multi-expert consensus, with
-  exponential guarantees.
-- **Theorem 2**: An information-theoretic diagnostic for when no method can work.
-- **Theorem 3**: A fundamental limit on what data cleaning can achieve.
-- **Theorem 4**: A proof that the method is optimal in the minimax sense.
-- **Spring**: A self-evolving gating mechanism with Lyapunov convergence guarantees.
-- **Situs**: A physical positional encoding for spatial/sequential data.
-- **State Crystallization**: A physics-driven method for discovering discrete state
-  boundaries in continuous data.
-
-### What SCX Is Not
-
-SCX is not:
-- **A finished product.** The codebase (v0.4.0-pre, 445 tests passing) is a research
-  prototype. The Spring algorithm has 1,551 lines of Python but has been validated only
-  on synthetic data. Real-world deployment requires engineering work that has not been
-  done.
-- **A universal solution.** Theorem 2 explicitly identifies conditions under which SCX
-  provides no benefit. The three-tier architecture explicitly acknowledges that
-  different data types require different SCX configurations, and some data types
-  (position-independent, feature-poor) gain nothing.
-- **A replacement for domain expertise.** SCX audits labels using expert consensus. If
-  all experts share a systematic bias (e.g., all DFT functionals underestimate band
-  gaps), SCX cannot detect it. The framework is only as good as the diversity and
-  independence of its experts.
-- **A claim to have solved data quality.** Theorem 3 proves that data quality has a hard
-  boundary. SCX pushes the boundary outward (Theorem 1) but does not eliminate it.
-- **An LLM competitor.** SCX and LLMs operate on different ontological foundations. SCX
-  discovers states from physical reality; LLMs construct tokens from statistical
-  frequency. SCX provides audit capabilities that LLMs lack, but LLMs provide generative
-  capabilities that SCX does not attempt. They are complementary, not competing.
-
-### Open Problems
-
-The development log records 52 items marked CONJECTURE or OPEN. Among the most
-significant:
-
-1. **$\beta$-mixing condition for physical attention.** Does the dependency structure
-   among Multi-Head Spring's attention heads satisfy $\beta$-mixing, enabling a rigorous
-   Chernoff bound? (Chapter 4, open problem from the PPE/MH audit)
-
-2. **Tight $T^*$ bound for Spring convergence.** The current bound is exponential in
-   state-space size. Can a tighter bound be derived under structural assumptions (e.g.,
-   low effective dimension of the state space)?
-
-3. **Cross-architecture expert independence.** Theorem 1 assumes conditionally
-   independent experts. In practice, experts trained on similar architectures may share
-   inductive biases that violate this assumption. Quantifying and correcting for expert
-   dependence is an open problem.
-
-4. **Empirical validation at scale.** Every component of SCX has been validated on
-   synthetic or small-scale data. Full-scale validation—Materials Project, DrugBank,
-   ChestX-ray14—has not been performed.
-
-5. **The protection equilibrium in practice.** The game-theoretic analysis is a model.
-   Whether real-world actors behave according to the model's rationality assumptions is
-   an empirical question that the six-month clock experiment is designed to test.
-
-### A Note on Method
-
-This project was conducted by a single Ph.D. student working from home, using AI tools
-(Claude Code + DeepSeek API) for code generation and mathematical derivation. The
-division of labor was:
-- **Human**: mathematical framework design, theorem statements, proof strategies,
-  architectural decisions, naming, philosophical and strategic analysis
-- **AI**: Python implementation, LaTeX drafting, test generation, algebraic
-  verification of proof steps, literature formatting
-
-This division was intentional. The human focused on what humans do better (conceptual
-innovation, recognizing which problems are important, knowing what to name things). The
-AI focused on what AI does better (generating correct boilerplate, catching algebraic
-errors, running tests, formatting citations). The result is not "AI-generated
-research"—it is AI-accelerated research, where the ideas are human and the execution is
-assisted.
-
-The author is aware that this methodology is unconventional and may attract skepticism.
-The response is the work itself: the theorems are either correct or they are not; the
-code either passes its tests or it does not. The method of production is irrelevant to
-the truth of the product.
-
-### Acknowledgments
-
-The author thanks:
-- The academic advisor and research group at Wuhan University for the AlN DFT data and
-  EGP project context that sparked the initial observation
-- The Xiaogan Supercomputing Center for CPU computing resources (used exclusively for
-  EGP DFT calculations, not for SCX development)
-- Anthropic, for building Claude Code
-- DeepSeek, for providing the API that powered the implementation
-- The open-source scientific Python ecosystem (NumPy, SciPy, scikit-learn, ASE, PACE)
-
-### Intellectual Property Statement
-
-The SCX mathematical framework, software implementation, and all theorems described
-herein were developed independently by the author on personal equipment during personal
-time. The SCX codebase is released for research purposes. Commercial use is subject to
-separate licensing terms. The AlN interatomic potential data and associated DFT
-reference calculations remain the intellectual property of the research group that
-generated them.
-
----
-
-## Appendix: Timeline
-
-| Date | Event |
-|------|-------|
-| 2026-05 to 06-10 | EGP Paper 1: ACE/PACE expert gauge-fixing and merging framework developed |
-| 2026-06-15 to 06-22 | Paper 2 (residual-state error maps) and Paper 3 (expert compiler) drafted; "expert reliability varies by configurational region" observation formalized |
-| 2026-06-23 | SCX concept formally separated from EGP project; recognized as independent ML framework |
-| 2026-06-24 | Mathematical framework first draft: definitions, propositions, core proofs |
-| 2026-06-25 | SCX v0.1.0: 30 files, 6,269 lines, 259 tests passing |
-| 2026-06-26 | SCX v0.2.0: Compress Theorem, Governance Protocol; AlN two-layer analysis |
-| 2026-06-27 | SCX v0.4.0-pre: Theorem 1-3 + Proposition 1',3',4 proved; 427 tests; Yajie module created |
-| 2026-06-28 | **Theory explosion day.** Naming system (Yajie, Cercis, Spring). 71 theory files, 32,776 lines. Spring 12-file theory stack. Lyapunov gap closure. Protocol paper. Game theory. 35-defect registry. 9-paper matrix. |
-| 2026-06-28 (evening) | Paper line sweep: Paper 4 (review) rewritten with two-engine architecture; Paper 5 (curation-exploration) LaTeX draft; Paper 6 (EGP) polished; Paper 9 (SCX-LLM) polished |
-| 2026-06-29 (morning) | State Crystallization formal naming; Situs architecture; SCX five-layer architecture established |
-| 2026-06-29 (afternoon) | PPE/Multi-Head Spring audit (50-turn, max effort); Situs theory paper and applications paper planned |
-| 2026-06-29 (evening) | Yajie.fit() implementation (5-step pipeline); Spring validation script (4-panel diagnostic); Paper 9 LLM experiment script |
-| 2026-06-29 (night) | Drug database screening pipeline (12 databases, 1,906 + 1,657 lines); strategic discussion |
-| 2026-06-30 | Spring paper discovered to already exist (779 lines, compiled PDF); GAP-1 and GAP-2 confirmed resolved |
-
-## Appendix: The Nine Papers
-
-| # | Title | Core Content | Status | Target |
-|---|-------|-------------|--------|--------|
-| 1 | Yajie: State-Conditioned Label Noise Detection | Theorems 1–4, Cercis Score | Theorem-complete | JMLR/TMLR |
-| 2 | Situs: Physics-Anchored Positional Encoding | PPE theory, Theorems 1′–3′, Lipschitz constants | Drafting | JMLR/NeurIPS |
-| 3 | Spring: Self-Evolving Gatekeeper with Provable Convergence | Theorems SE-1/SE-2, Lyapunov proof | LaTeX ready | Nature Comp Sci |
-| 4 | SCX in Space: State-Conditioned eXpertise Across Scientific Domains | 12 application scenarios, three-tier roadmap | Drafting | Nature Comp Sci / Scientific Data |
-| 5 | The Curation-Exploration Tradeoff | Formal definition, four-domain evidence, boundary conditions | LaTeX ready | NeurIPS |
-| 6 | EGP: Consistency-Constrained Expert Merging for ACE MLIPs | Gauge fixing, alignment, merging protocol | LaTeX ready | PRB |
-| 7 | SCX Taxonomy: A Classification of Data Valuation Methods | Taxonomic theory | Planned | — |
-| 8 | Competitor Scan: 28+ Methods × 10 Dimensions | Internal reference | Internal | — |
-| 9 | SCX for LLM: State-Conditioned Auditing of Language Models | Yajie-hallucination connection, Cercis Score for LLM outputs | LaTeX ready | ACL/NeurIPS Position |
-| B (standalone) | Theorem 3: An Uncertainty Principle for Label Noise Detection | Constructive two-world proof, corollaries, implications | Planned | Short paper |
-
----
-
-*This history was compiled from the SCX DEVELOPMENT_LOG.md (864 lines), the EGP
-gauge-fixing paper (main.tex, 898 lines), the SCX architecture document
-(ARCHITECTURE.md), and the Spring/Cercis naming documents. It was written on
-2026-06-29 by Claude Code (DeepSeek v4) at the author's direction.*
+1|# The SCX Story: How a Gauge-Fixing Problem Became an Uncertainty Principle
+2|
+3|> A candid intellectual history of the State-Conditioned eXpertise framework.
+4|> Written from development logs, theorem drafts, adversarial audits, and git history.
+5|> No press release. No vision statement. Just what happened and what we learned.
+6|
+7|---
+8|
+9|## Preface: On Telling the Truth About Research
+10|
+11|Most papers lie about how they were written. The introduction presents a clean logical arc
+12|from problem to solution, as if the author woke up one morning with the theorems fully
+13|formed. The real history—the dead ends, the bugs in the proofs, the concepts that took
+14|weeks to name, the theorems that turned out to be corollaries of theorems we hadn't
+15|proven yet—gets compressed into acknowledgments or erased entirely.
+16|
+17|This document is the opposite. It records what actually happened in the development of
+18|the SCX framework between May and June 2026: a period in which a practical problem in
+19|interatomic potential merging unfolded, over roughly five weeks, into a mathematical
+20|framework spanning four theorems, three core algorithms, a self-evolving gatekeeper with
+21|Lyapunov convergence guarantees, and—unexpectedly—an uncertainty principle for label
+22|noise detection.
+23|
+24|The author is a Ph.D. student at Wuhan University. All theoretical work was done on a
+25|personal computer at home, using AI coding assistants and inference APIs as
+26|implementation tools. The Xiaogan Supercomputing Center was used exclusively for DFT
+27|calculations in the EGP project (Papers 1–3), not for SCX development.
+28|
+29|We tell this story not because it is exceptional, but because it is typical of how
+30|research actually works—and because the clean narratives we publish in journals train
+31|students to expect a linear path that does not exist.
+32|
+33|---
+34|
+35|## Chapter 1: Origins — The EGP Gauge-Fixing Problem
+36|
+37|### 1.1 The Practical Problem
+38|
+39|In May 2026, the author was working on the EGP (Expert-Guided Potential) project:
+40|constructing machine-learned interatomic potentials (MLIPs) for III-nitride
+41|semiconductors (AlN, GaN, and eventually AlGaN) using the Atomic Cluster Expansion
+42|(ACE) framework. The practical task was straightforward: train separate ACE potentials
+43|on different chemical domains, then merge them into a single multi-element potential.
+44|
+45|The appeal of this modular approach is obvious. A community could build a library of
+46|specialized potentials—AlN trained by one group, GaN by another, InN by a third—and
+47|combine them as needed without costly joint retraining. The ACE framework's linear
+48|parameterization makes this particularly natural: coefficients are just vectors, and
+49|vectors can be averaged.
+50|
+51|### 1.2 Why Direct Merging Fails
+52|
+53|It doesn't work. The naive merge—averaging the coefficient vectors of independently
+54|trained experts—produces catastrophic errors: $C_{33}$ elastic constant deviations
+55|exceeding $50\%$, formation energy sign reversals, and force predictions worse than
+56|either expert individually.
+57|
+58|The failure is not a numerical accident. Four distinct sources of inconsistency block
+59|safe merging:
+60|
+61|**(I1) Energy reference ambiguity.** Forces determine the potential energy surface only
+62|up to an additive constant. Each expert's training loss ${\mathcal{L}}_F$ (force RMSE)
+63|is invariant under $E \to E + C$, so the absolute energy zero is unconstrained. Two
+64|experts trained on different domains end up with unrelated energy zeros, producing
+65|spurious energy differences upon merging.
+66|
+67|**(I2) Species-shift misalignment.** The per-species constant shifts $b_Z$ absorb a
+68|significant fraction of the energy reference ambiguity. When Expert A (AlN) assigns one
+69|shift to nitrogen and Expert G (GaN) assigns another, the merged model inherits
+70|inconsistent shifts that produce systematic formation energy errors.
+71|
+72|**(I3) Coefficient-level gauge freedom.** The shared-correction ACE parameterization
+73|$E = \sum_i [{\mathbf{c}}_0 + {\mathbf{c}}_{Z_i}] \cdot {\mathbf{B}}({\mathbf{q}}_i) + b_{Z_i}$
+74|admits an exact gauge transformation:
+75|$${\mathbf{c}}_0 \to {\mathbf{c}}_0 + {\mathbf{g}}, \quad {\mathbf{c}}_Z \to {\mathbf{c}}_Z - {\mathbf{g}}$$
+76|which leaves all physical predictions invariant for any vector ${\mathbf{g}}$.
+77|Different experts explore different regions of this gauge-equivalent space, making their
+78|coefficient vectors incompatible for direct combination. The gauge violation in
+79|unconstrained training—$\lVert\sum_Z \pi_Z {\mathbf{c}}_Z\rVert$—reaches $8.77$ in
+80|typical runs, confirming that the degeneracy is numerically active.
+81|
+82|**(I4) Residual meaning incompatibility.** Domain-specific corrections learned by each
+83|expert are meaningful only relative to their own data distribution. Naively combining
+84|them can cancel or amplify corrections in physically arbitrary ways.
+85|
+86|### 1.3 The Gauge-Fixing Solution
+87|
+88|The first contribution of the EGP paper was a post-hoc gauge-fixing procedure: after
+89|training each expert without constraints, apply the orthogonal projection
+90|$${\mathbf{g}} = \sum_Z \pi_Z {\mathbf{c}}_Z, \quad {\mathbf{c}}_Z' = {\mathbf{c}}_Z - {\mathbf{g}}, \quad {\mathbf{c}}_0' = {\mathbf{c}}_0 + {\mathbf{g}}.$$
+91|
+92|This achieves exact gauge cancellation (residual $4.6\times10^{-16}$, machine
+93|precision) with zero change to physical predictions. The key insight was *negative*: a
+94|soft penalty approach—adding $\lambda\lVert\sum_Z\pi_Z{\mathbf{c}}_Z\rVert^2$ to the
+95|training loss—fundamentally fails. A systematic $\lambda$-sweep over six orders of
+96|magnitude ($10^{-3}$ to $10^1$) revealed that no $\lambda$ simultaneously achieves
+97|gauge violation below $0.1$ and accuracy degradation under $20\%$. The gauge constraint
+98|subspace is nearly orthogonal to the physical loss landscape; gradient descent cannot
+99|simultaneously satisfy both.
+100|
+101|This negative result was more instructive than the positive one. It established a
+102|principle that would recur throughout SCX development: **consistency constraints must be
+103|applied post-hoc, not enforced during optimization, when the constraint subspace is
+104|orthogonal to the objective landscape.**
+105|
+106|### 1.4 The Observation That Started Everything
+107|
+108|During the EGP work, the author noticed a recurring phenomenon: the same expert
+109|potential's prediction reliability varied dramatically across different regions of
+110|configuration space. An AlN expert that achieved $0.047$ eV/Å force RMSE globally would
+111|show $0.012$ eV/Å on bulk equilibrium structures but $0.15$ eV/Å on defect
+112|configurations and $0.30$ eV/Å on thermal snapshots far from the training distribution.
+113|
+114|This observation—that **expert reliability is not a global constant but a
+115|state-conditioned quantity**—was the seed from which everything else grew. It was not a
+116|theoretical insight. It was an empirical nuisance that kept showing up in the data.
+117|
+118|---
+119|
+120|## Chapter 2: State Crystallization — Naming the Third Core Algorithm
+121|
+122|### 2.1 From "PBE Operation" to a Concept
+123|
+124|For several weeks, a fundamental operation in the SCX pipeline existed without a name.
+125|It was referred to as "the PBE operation" or "Layer 2 discretization of the two-layer
+126|descriptor"—descriptions of implementation, not of concept. The operation itself was
+127|clear: use PBE (Perdew-Burke-Ernzerhof) DFT calculations to discover natural clustering
+128|boundaries in continuous physical quantities (bond angles, bond lengths, coordination
+129|numbers), producing discrete state atoms. But calling it "the PBE operation" was like
+130|calling a car "the internal combustion operation."
+131|
+132|On June 29, 2026, in a discussion with the AI coding agent (designated "Hermes" in
+133|development logs), the concept was formally named **State Crystallization**.
+134|
+135|### 2.2 Why "Crystallization"
+136|
+137|The metaphor is precise. In physical crystallization, a continuous disordered phase
+138|(liquid/solution) spontaneously develops discrete ordered structure (crystal), with
+139|boundaries determined by intrinsic thermodynamic laws, not by human cutting. In State
+140|Crystallization, continuous physical quantities (bond angles 109.5°, bond lengths
+141|1.46 Å) spontaneously cluster into discrete state atoms, with boundaries determined by
+142|the PBE energy surface, not by statistical frequency or human naming conventions.
+143|
+144|The naming resolved a longstanding semantic confusion. "PBE operation" described the
+145|tool. "Two-layer descriptor Layer 2 discretization" described the mechanical step.
+146|Neither captured the ontological claim: **states are discovered, not defined.**
+147|
+148|### 2.3 State Crystallization ≠ BPE
+149|
+150|The natural LLM analogue is Byte Pair Encoding (BPE), which also produces discrete
+151|tokens from a less-structured input. But the analogy is instructive precisely because it
+152|breaks:
+153|
+154|| Dimension | State Crystallization | BPE |
+155||-----------|----------------------|-----|
+156|| Input | Continuous physical quantities | Discrete symbol sequences |
+157|| Boundary criterion | Physical reality (PBE energy surface) | Statistical frequency |
+158|| Ontology | **Discovers** natural state boundaries | **Conventions** for cutting |
+159|| Mathematical form | $\mathcal{D}_{\text{phys}}$ | $\mathcal{D}_{\text{freq}}$ |
+160|| Anchor | Physical ground truth (verifiable) | None (statistical construct) |
+161|
+162|The formal relationship is inclusion: BPE is the degenerate limit of State
+163|Crystallization when physical coupling approximates frequency coupling. In this limit,
+164|$\mathcal{D}_{\text{freq}} \approx \mathcal{D}_{\text{phys}}$, but the converse is not
+165|true—State Crystallization can handle continuous physical quantities that BPE cannot
+166|even represent.
+167|
+168|This relationship is not merely taxonomic. It identifies what SCX does that LLMs cannot:
+169|anchor state definitions in physical reality rather than statistical convention. A bond
+170|angle of 109.5° is sp$^3$ hybridization regardless of how frequently it co-occurs with
+171|other features in a training corpus.
+172|
+173|### 2.4 Architectural Position
+174|
+175|State Crystallization was established as the **third core algorithm** of SCX,
+176|completing a layered architecture:
+177|
+178|| Layer | Algorithm | Function | LLM Analogue |
+179||-------|-----------|----------|-------------|
+180|| State Ontology | **State Crystallization** | Continuous → discrete state atoms | BPE (but physics-driven) |
+181|| State Topology | **Situs** | Positional encoding of states in physical space | Positional Encoding |
+182|| State Evolution | **Spring** | Self-evolving gating, state-atom interactions | Transformer (Self-Attention) |
+183|| Audit Output | **Yajie** | Verification + audit + evidence chain | — (no LLM audit layer) |
+184|| Evaluation | **Cercis Score** | $S = Q + \eta N$ | — |
+185|
+186|The architecture reveals a structural gap in LLM design: LLMs have no state ontology
+187|layer. Their tokens are statistical constructs with no physical anchor. Yajie is more
+188|honest than an LLM not because its mathematics is better, but because it audits on a
+189|physically real state space, not a statistically constructed one.
+190|
+191|---
+192|
+193|## Chapter 3: Yajie — Four Theorems on Label Noise
+194|
+195|### 3.1 The Core Insight
+196|
+197|Between June 23–27, 2026, the observation that "expert reliability varies by
+198|configurational region" was formalized into a mathematical framework. The central
+199|definition:
+200|
+201|$${\text{SCX}}_m(s) = P(\ell(f_m(x), y) < \tau \mid x \in s)$$
+202|
+203|Data value is not an intrinsic property of a sample. It is a conditional quantity
+204|determined by the state $s$, the expert's reliability ${\text{SCX}}_m(s)$, and the
+205|current model's deficiencies—jointly.
+206|
+207|This is the insight that separates SCX from all prior work on data valuation, active
+208|learning, and noise detection. Prior methods assign global scores to samples. SCX
+209|assigns state-conditioned scores to experts on samples. The distinction is not a
+210|refinement—it is a different category of question.
+211|
+212|### 3.2 Theorem 1: Consensus-Based Noise Detection
+213|
+214|**Statement (informal).** Let $M$ independently trained experts vote on the correctness
+215|of a label for a sample in state $s$. If the experts are conditionally independent given
+216|the true function, then the probability that a noisy label survives consensus screening
+217|decays exponentially in $M$:
+218|
+219|$$P(\text{noise survives} \mid {\text{consensus}}) \leq \exp(-2M\Delta_s^2)$$
+220|
+221|where $\Delta_s = {\text{SCX}}(s) - 0.5$ is the expert reliability advantage over random
+222|guessing in state $s$.
+223|
+224|**Tools.** Chernoff bound + Hoeffding inequality, under assumptions A1–A6 (conditional
+225|independence, bounded loss, state-conditional calibration).
+226|
+227|**What it means.** Even a modest number of independent experts ($M \sim 5$–$10$) can
+228|drive false-acceptance rates below practically meaningful thresholds. The guarantee is
+229|exponential, not asymptotic.
+230|
+231|**Bugs found and fixed.** Lemma 3 was restructured after an adversarial audit revealed
+232|a missing assumption (A6: expert errors are sub-Gaussian with state-conditional variance
+233|bound). The Chernoff KL direction was corrected (the original proof minimized the wrong
+234|divergence). These were not typographical errors—they were logical gaps that would have
+235|been caught in review, but the adversarial audit caught them first.
+236|
+237|### 3.3 Theorem 2: Weak Feature Failure Lower Bound
+238|
+239|**Statement (informal).** If every feature $X_j$ in state $s$ has mutual information
+240|with the label error below a threshold $\delta$, i.e., $I(X_j; L) < \delta$ for all
+241|$j$, then any noise detector—not just SCX—has AUC bounded by:
+242|
+243|$${\text{AUC}} \leq 0.5 + \epsilon(\delta, |s|)$$
+244|
+245|where $\epsilon \to 0$ as $\delta \to 0$.
+246|
+247|**Tools.** Fano inequality, information-theoretic lower bounds on detection.
+248|
+249|**What it means.** SCX does not work everywhere. When features are genuinely
+250|uninformative, no method works. This is not a weakness of SCX—it is a fundamental limit
+251|of information theory. Theorem 2 provides the diagnostic: compute $I(X_j; L)$ for each
+252|feature in each state; states where all features fall below $\delta$ are states where
+253|SCX should not be deployed.
+254|
+255|**Bugs found and fixed.** The original proof claimed optimality of $k$-means clustering,
+256|which is false (k-means is NP-hard; no polynomial algorithm can guarantee optimal
+257|clustering). This claim was removed. The AUC $\eta$-dependence was clarified: the bound
+258|depends on the gap between the null and alternative distributions, not on the absolute
+259|AUC level. A cluster balance qualifier was added (the bound degrades when state
+260|populations are highly imbalanced).
+261|
+262|### 3.4 Theorem 3: The Unidentifiability of Noise and Difficulty
+263|
+264|**Statement (informal).** There exist two worlds—World A (noisy labels) and World B
+265|(hard-but-clean labels)—that produce identical observable data distributions. No
+266|algorithm can distinguish them from observations alone.
+267|
+268|**Proof structure.** Constructive two-world proof. In both worlds, the joint
+269|distribution $P(X, Y)$ is identical. In World A, label noise generates the errors. In
+270|World B, genuine aleatoric uncertainty (inherently difficult samples) generates
+271|identical error patterns. The likelihood ratio is 1 for all possible observations, so no
+272|statistical test has power exceeding the test's significance level.
+273|
+274|**What it means.** There is a **hard boundary** on what data cleaning can achieve. Past
+275|this boundary, labeling errors and genuinely difficult cases are observationally
+276|equivalent. Any algorithm that claims to clean data beyond this boundary is either
+277|making unfalsifiable claims or silently degrading into a relabeling engine—replacing one
+278|set of labels with another that better matches its own inductive biases.
+279|
+280|This is SCX's uncertainty principle. Just as Heisenberg's principle is not a measurement
+281|deficiency but a statement about what can be known in principle, Theorem 3 is not an
+282|algorithmic limitation but a statement about what can be distinguished from data alone.
+283|
+284|**We discuss Theorem 3's independence and standalone significance in Chapter 8.**
+285|
+286|### 3.5 Theorem 4: Minimax Optimality
+287|
+288|**Statement (informal).** SCX's adaptive threshold achieves the exact minimax optimal
+289|rate for noise detection. No algorithm can achieve a better worst-case false-positive /
+290|false-negative tradeoff.
+291|
+292|**Tools.** Bahadur-Rao refinement of the Chernoff bound (exact exponential rate, not
+293|just asymptotic), combined with Chernoff-Stein lemma for the composite hypothesis
+294|testing problem.
+295|
+296|**What it means.** Theorem 1 says SCX works well. Theorem 4 says no algorithm can work
+297|better in the worst case. Together they establish SCX as the optimal solution to a
+298|well-defined problem, not merely one heuristic among many.
+299|
+300|### 3.6 The Cercis Score: $S = Q + \eta N$
+301|
+302|The Yajie audit engine evaluates every state-conditioned (configuration, label) pair
+303|using the Cercis Score:
+304|
+305|$$S(s) = Q(s) + \eta(t) \cdot N(s)$$
+306|
+307|where:
+308|- $Q(s)$ is the **quality** component: $1 - \overline{\text{residual}}$ across experts
+309|- $N(s)$ is the **noise** component: density-weighted + consistency-weighted residual
+310|- $\eta(t)$ is the **exploration schedule**: $\eta(0) \gg 1$, $\eta(t) \to 0$ as
+311|  $t \to \infty$
+312|
+313|The Cercis Score is named after *Cercis chinensis* (紫荆), a cauliflorous tree whose
+314|flowers bloom directly from old branches. The metaphor: knowledge flowers from
+315|accumulated experience (the memory bank), not from new data alone. The exploration term
+316|$\eta(t) N(s)$ ensures early-stage openness to discovery; its decay ensures
+317|late-stage convergence to a stable quality ranking.
+318|
+319|### 3.7 What Yajie Does Not Do
+320|
+321|The name "Yajie" (雅洁) means "elegant purification" in Chinese. But the algorithm does
+322|not purify data. It **audits** data—it identifies which samples are clean, which are
+323|noisy, and (critically) which are **ambiguous**: samples where Theorem 3's uncertainty
+324|principle applies and no determination is possible.
+325|
+326|The three-way classification—clean / noisy / ambiguous—is not a compromise. It is the
+327|mathematically honest output. Binary clean/noisy classifiers are lying about Theorem 3.
+328|
+329|---
+330|
+331|## Chapter 4: Situs — From Audit to Independent Theory
+332|
+333|### 4.1 The Audit That Became a Theory
+334|
+335|On June 29, 2026, the author asked a practical question: could SCX be extended by
+336|incorporating LLM components—specifically, positional encoding and multi-head
+337|attention—to create a larger, more expressive model?
+338|
+339|A 50-turn, maximum-effort mathematical audit was conducted (AI coding agent + inference API)
+340|on two candidate components. The audit was intended as an engineering assessment. It
+341|became a theory paper.
+342|
+343|### 4.2 Physical Positional Encoding (PPE → Situs)
+344|
+345|The idea: encode physical position information (protein sequence position $i$, material
+346|3D coordinates $(x,y,z)$, total atom count $N$) as a vector and add it to the state
+347|atom representation:
+348|$${\mathbf{h}}_i = \phi(s_i) + {\text{PE}}({\mathbf{p}}_i).$$
+349|
+350|The audit produced four theorems:
+351|
+352|| Theorem | Finding | Impact |
+353||---------|---------|--------|
+354|| Thm 1 (Chernoff) | $\Delta_s^{\text{PPE}} = \Delta_s + \delta_s^{\text{PE}}$, bound structure preserved | Improved if position is informative |
+355|| Thm 2 (Fano) | Imperfect encoding introduces $\varepsilon_{\text{PE}}$, upper bound loosens | Degraded if encoding is poor |
+356|| Thm 3 (Non-identifiability) | Fixed PE → Theorem 3 unchanged. **Learned PE → Theorem 3 broken** | Broken, but beneficially |
+357|| Thm 4 (Minimax) | $\Delta D_{\text{KL}}^{\text{PE}} \geq 0$ (data processing inequality), never degrades | Unchanged or improved |
+358|
+359|The key finding is Theorem 3: a fixed (non-learned) positional encoding preserves the
+360|uncertainty principle—noise and difficulty remain indistinguishable. But a **learned**
+361|positional encoding can break Theorem 3 by injecting additional information that
+362|distinguishes the two worlds. This is not a bug—it means learned position encodings
+363|expand the frontier of what can be audited.
+364|
+365|### 4.3 The Naming: Situs
+366|
+367|PPE was renamed **Situs** (Latin: "position, location, site") on June 29. The naming
+368|criteria:
+369|- **Precision**: situs = position, no more and no less
+370|- **Domain neutrality**: a protein residue's situs, a grain-boundary vacancy's situs, a
+371|  drug molecule's situs—same word, same concept
+372|- **Consistency**: Spring (春), Yajie (雅洁), Cercis (紫荆)—all are unique proper nouns
+373|  that must be defined once
+374|- **Parallelism**: State Crystallization answers "what is the state" (ontology); Situs
+375|  answers "where is the state" (topology)
+376|
+377|### 4.4 Physical Meaning Across Domains
+378|
+379|Situs is not a generic trick—it maps to different physical quantities in different
+380|domains:
+381|
+382|- **Proteins**: The same "Lys" residue at active site (position $i=37$) vs. surface loop
+383|  ($i=289$) has completely different functional significance. Situs lets Spring
+384|  distinguish them.
+385|- **Materials defects**: A $V_{\text{N}}$ vacancy at a grain boundary vs. bulk vs.
+386|  surface has different formation energies and migration barriers. Situs lets Yajie
+387|  output position-conditional reliability.
+388|- **System size effects**: 32-atom vs. 256-atom supercells exhibit different error
+389|  characteristics. Situs lets Spring learn that "small cell = high error risk."
+390|
+391|### 4.5 Honest Limitations
+392|
+393|The audit was explicit about limitations:
+394|- Situs is useful **only when** $I(Y; P \mid S) > 0$—position carries label information
+395|  beyond what the state atom already encodes
+396|- **Pure chemical composition classification** (no spatial structure) gains nothing
+397|- **Position independent of label** ($I(Y; P \mid X) = 0$) yields zero benefit
+398|- The **rotation equivariance** of 3D kernel encoding is only partially achieved
+399|  (SO(3) embeddings are approximate)
+400|- The **optimal frequency spectrum** derivation assumes a Laplace kernel—a specific
+401|  choice justified by smoothness but not uniquely determined
+402|
+403|### 4.6 Multi-Head Spring: The Negative Result
+404|
+405|The audit's second component, Multi-Head Spring, produced a starkly negative assessment:
+406|
+407|- Theorem 1 (Chernoff) was **severely weakened**: heads are not independent experts;
+408|  the i.i.d. assumption fails. A strict bound requires $\beta$-mixing conditions—an
+409|  **open problem**.
+410|- The Lyapunov step size shrinks as $O(1/\sqrt{K})$, and convergence is only to a
+411|  stationary point among $K!$ symmetric stationary points.
+412|- The critical capacity $K_{\text{crit}} = \lfloor(N \cdot T_{\text{eff}} / d_s^2 - 1)/3\rfloor$;
+413|  on the AlN dataset, $K_{\text{crit}} = 1$, meaning **any multi-head configuration
+414|  overfits**.
+415|- The martingale difference variance scales as $O(K)$, potentially breaking the
+416|  marginal martingale property.
+417|
+418|The AI agent's final judgment: *"PPE is a relatively safe bet—mathematically,
+419|it's almost purely beneficial. Multi-Head Spring is a high-risk bet—it destroys the most
+420|elegant part of Theorem 1. If you can only add one: add PPE."*
+421|
+422|**This negative result was as valuable as any positive one.** It prevented months of
+423|wasted implementation effort and identified a genuine open problem (the $\beta$-mixing
+424|condition for physical attention heads).
+425|
+426|### 4.7 Three-Tier Architecture
+427|
+428|The audit results were formalized into a three-tier deployment architecture:
+429|
+430|| Tier | Components | Applicable Data | Compute |
+431||------|-----------|----------------|---------|
+432|| **Core** | State Crystallization + Spring + Yajie | No spatial structure (tabular, text) | Low |
+433|| **Spatial** | Core + **Situs** | Spatial/sequential structure (proteins, materials, drug docking) | Medium |
+434|| **Extended** | Spatial + Multi-Head Spring | Large-scale spatial ($N > 10^4$, sufficient $K_{\text{crit}}$) | High |
+435|
+436|The design philosophy: the original Yajie + Spring was built for the low-resource,
+437|no-spatial-information scenario. Situs is an upgrade for data with natural spatial
+438|structure. Adding Situs to non-spatial data wastes parameters; omitting Situs from
+439|spatial data wastes information.
+440|
+441|---
+442|
+443|## Chapter 5: Spring — Self-Evolving Gating with Lyapunov Convergence
+444|
+445|### 5.1 The Curation-Exploration Problem
+446|
+447|Static noise detection (Yajie) answers: given a fixed dataset, which samples are noisy?
+448|The dynamic problem is harder: given a stream of data and a model that improves over
+449|time, how should we gate which samples to train on?
+450|
+451|This is the **curation-exploration tradeoff**. Curate too aggressively early, and the
+452|model never sees diverse data; the gatekeeper's scores are based on an immature model
+453|and systematically exclude valuable outliers. Explore too broadly, and noisy samples
+454|degrade training; the model's own errors contaminate the gatekeeper's future judgments.
+455|
+456|The problem is circular: the gatekeeper $S_t$ determines what the student $f_{\theta_t}$
+457|learns from, but the student's errors inform how the gatekeeper updates. This is a
+458|coupled dynamical system with potential for vicious and virtuous cycles.
+459|
+460|### 5.2 The Spring Algorithm
+461|
+462|Spring (春季, "spring season") is named for resurrection: in nature, winter dormancy is
+463|not death—plants re-bloom when conditions improve. In Spring, structures that fall below
+464|the training threshold $\tau_{\text{keep}}$ are not deleted; they are stored dormant
+465|in the memory bank $M_t$. When the gatekeeper $S_t$ improves, dormant structures are
+466|re-scored, and those crossing the threshold are **resurrected** into training.
+467|
+468|The algorithm loop:
+469|
+470|1. **Judge**: $S_t$ scores incoming data $(x, y)$; all samples stored in $M_t$, never
+471|   deleted
+472|2. **Train**: Only samples with score $\geq \tau_{\text{keep}}$ train the NEP student
+473|   $f_{\theta_t}$
+474|3. **Update**: $\theta_{t+1}$ from student training; $S_{t+1}$ from gatekeeper update
+475|   (seeing through student's eyes)
+476|4. **Resurrect**: Re-score all dormant structures; those crossing $\tau_{\text{keep}}$
+477|   are resurrected into training
+478|
+479|The tagline captures the philosophy: *"Winter does not kill—it waits for spring. Every
+480|discarded structure carries the seed of its own resurrection."*
+481|
+482|### 5.3 The Mathematical Challenge
+483|
+484|The Spring paper's theoretical core—the Lyapunov convergence analysis—was developed on
+485|June 28, 2026, in a concentrated burst that produced 12 files, approximately 4,900 lines
+486|of mathematical derivation. The development was not linear:
+487|
+488|- **Files 01–05** (symbol system, dynamical system, online learning regret, Bayesian
+489|  update, stochastic approximation) were the standard machinery—necessary, but not the
+490|  contribution.
+491|- **File 06** (fixed-point convergence) contains the central result: **Theorem SE-1**.
+492|- **File 09** (verification report, 676 lines) is the most honest document in the
+493|  repository: it catalogs **10 proof gaps** and **5 open problems** without
+494|  minimization.
+495|- **Files 10–12** (Lyapunov analysis, convergence rate, edge cases) were written
+496|  *after* the verification report identified the gaps, closing the ones that could be
+497|  closed and honestly labeling those that could not.
+498|
+499|### 5.4 Theorem SE-1: Almost-Sure Convergence
+500|
+501|
