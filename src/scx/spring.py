@@ -1150,9 +1150,11 @@ class Spring:
     # ------------------------------------------------------------------
 
     def lyapunov_estimate(self, reference_features: np.ndarray) -> float:
-        """Estimate the Lyapunov function Φ(S_t, θ_t) on a reference set.
+        """Estimate the Lyapunov function Phi(S_t, theta_t).
 
-        Φ(S_t, θ_t) = (1/|M_0|) Σ (S_t(x) - Ĉ(x))² + λ * (1/|V_0|) Σ ℓ(f_θ(x), y)
+        Phi(S_t, theta_t) = mean((S_t(x) - (1 - C_t(x)))^2)
+        + student_loss, where C_t(x) is the current consensus/quality
+        estimate on the fixed reference set.
 
         Uses the current gatekeeper and NEP student evaluated on the
         provided reference features.
@@ -1165,23 +1167,22 @@ class Spring:
         Returns
         -------
         float
-            Estimated Lyapunov value Φ ≥ 0.
+            Estimated Lyapunov value Phi >= 0.
         """
         reference_features = np.asarray(reference_features, dtype=float)
         if reference_features.ndim == 1:
             reference_features = reference_features.reshape(1, -1)
-        n_ref = reference_features.shape[0]
 
         state_labels = self._assign_states(reference_features)
         gk_scores = self.gatekeeper.score(state_labels)
+        current_consensus = self._compute_quality(reference_features)
 
-        # Gatekeeper term: squared deviation from "perfect" consensus (simplified)
-        # Using 0.5 as neutral consensus reference
-        gatekeeper_term = np.mean((gk_scores - 0.5) ** 2)
+        # Gatekeeper term: tracking error against the current consensus target.
+        gatekeeper_target = 1.0 - current_consensus
+        gatekeeper_term = np.mean((gk_scores - gatekeeper_target) ** 2)
 
         # Student term: quality score as proxy for 1 - loss
-        quality_scores = self._compute_quality(reference_features)
-        student_loss = np.mean(1.0 - quality_scores)
+        student_loss = np.mean(1.0 - current_consensus)
 
         return float(gatekeeper_term + student_loss)
 
