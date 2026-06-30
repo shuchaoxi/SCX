@@ -112,6 +112,6 @@ knowledge/      ← Obsidian 知识库
 
 ## 作者
 
-SCX Research Group. 2026.
+SCX. 2026.
 
-所有论文署名 SCX Research Group，不包含学校或个人信息。详见 `docs/AUDIT_SWORD.md`。
+所有论文署名 SCX，不包含学校或个人信息。详见 `docs/AUDIT_SWORD.md`。
