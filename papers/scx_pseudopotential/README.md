@@ -1,0 +1,3 @@
+# Neural Pseudopotentials via SCX-Audited Distillation
+
+A theoretical framework for distilling VASP PAW pseudopotentials into auditable neural network representations under the SCX paradigm. Proves (i) Hoeffding detection guarantee with effective multiplicity correction, (ii) unidentifiability of PAW vs. NN error sources, (iii) Cercis scoring for pseudopotential library ranking, and (iv) Yajie multi-architecture consensus for element-specific failure detection.
