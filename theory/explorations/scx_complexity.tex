@@ -1,0 +1,93 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=2.5cm]{geometry}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\NP}{\mathbf{NP}}
+\newcommand{\PP}{\mathbf{P}}
+
+\title{The SCX Complexity Conjecture: \
+P vs NP Through the Lens of Multi-Expert Audit}
+\author{SCX}
+\date{2026-06-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We observe a structural analogy between the P vs NP problem and SCX Theorem~3 (老实人定理). In complexity theory, $\PP \neq \NP$ is the conjecture that problems exist whose solutions can be verified efficiently but not found efficiently. In SCX, Theorem~3 proves that label noise (error) and intrinsic difficulty (ambiguity) produce observationally indistinguishable data. We propose that P vs NP is a special case of the SCX unidentifiability principle: a single polynomial-time solver ($M=1$) cannot distinguish between ``no solution exists'' and ``the solver failed to find one,'' just as a single expert cannot distinguish noisy labels from difficult samples. This paper states the \textbf{SCX Complexity Conjecture} — clearly labeled as conjecture, not theorem — and explores its implications.
+\end{abstract}
+
+\section{The Analogy}
+
+\begin{definition}[Solver as Expert]
+A polynomial-time algorithm $\mathcal{A}$ for a decision problem $L \in \NP$ is an \textbf{expert}. On input $x$, $\mathcal{A}$ either outputs a witness $w$ (claiming $x \in L$) or outputs $\bot$ (claiming $x \notin L$ or ``I cannot find a witness'').
+\end{definition}
+
+\begin{definition}[Verifier as Auditor]
+A polynomial-time verifier $V(x,w)$ is an \textbf{auditor}. It checks whether $w$ is a valid witness for $x \in L$. The verifier never errs: if $V(x,w)=1$, then $x \in L$ definitively.
+\end{definition}
+
+\section{The Unidentifiability}
+
+\begin{conjecture}[SCX Complexity Conjecture — 计算不可辨识猜想]
+\label{conj:complexity}
+For any $\NP$-complete problem $L$ and any single polynomial-time solver $\mathcal{A}$ ($M=1$), the two events:
+\begin{enumerate}
+    \item $\mathcal{A}(x) = \bot$ because $x \notin L$ (genuine negative), and
+    \item $\mathcal{A}(x) = \bot$ because $\mathcal{A}$ failed to find a witness for $x \in L$ (solver failure),
+\end{enumerate}
+are \textbf{observationally indistinguishable} from the solver's output alone. Formally, there is no polynomial-time procedure that, given only $\mathcal{A}(x)$, can distinguish these cases with probability bounded away from chance.
+\end{conjecture}
+
+\begin{remark}[Why This Matters]
+If Conjecture~\ref{conj:complexity} holds, then $\PP \neq \NP$ is a corollary: if $\PP = \NP$, a single polynomial-time solver could find witnesses for all $x \in L$, making case (2) impossible. The unidentifiability would collapse. Conversely, if the unidentifiability holds, $\PP \neq \NP$ follows.
+
+This does \textbf{not} prove $\PP \neq \NP$. It reframes the question: P vs NP is equivalent to asking whether a single computational expert can always distinguish its own failure from a genuine negative — a question SCX Theorem~3 answers negatively in the domain of data quality.
+\end{remark}
+
+\section{Multi-Solver Audit}
+
+\begin{conjecture}[Multi-Solver Detection Bound — 多求解器检测猜想]
+\label{conj:multi-solver}
+For $M$ independent solvers $\mathcal{A}_1,\ldots,\mathcal{A}_M$ (different heuristics, different random seeds, different algorithmic strategies) applied to the same $\NP$ instance $x$, if at least one solver finds a witness, the verifier confirms $x \in L$. The probability that all $M$ solvers fail on a \textbf{solvable} instance decays as:
+\[
+\Pbb(\text{all } M \text{ fail} \mid x \in L) \leq \exp(-2M \cdot p_{\min}^2)
+\]
+where $p_{\min}$ is the minimum success probability of any individual solver on instances of this class.
+\end{conjecture}
+
+\section{Connection to SCX Theorem~3}
+
+Theorem~3 (老实人定理) states: given $M$ expert predictions on sample $(x,y)$, the events ``label $y$ is noisy'' and ``sample $x$ is inherently difficult'' produce identical observable distributions. The complexity analogue is:
+
+\[
+\begin{array}{c|c}
+\text{SCX (Data Quality)} & \text{Complexity (P vs NP)} \
+\hline
+\text{Label noise} & \text{Solver failure} \
+\text{Intrinsic difficulty} & \text{Genuine negative} \
+\text{Multi-expert audit} & \text{Multi-solver portfolio} \
+\text{Hoeffding detection} & \text{Exponential failure decay} \
+\end{array}
+\]
+
+\section{Implications}
+
+If the SCX Complexity Conjecture holds:
+\begin{enumerate}
+    \item \textbf{Complexity classes are audit classes.} $\PP$ = problems where $M=1$ suffices. $\NP \setminus \PP$ = problems where $M>1$ is necessary.
+    \item \textbf{Algorithm portfolios are not heuristics — they are necessities.} SAT solvers already use portfolio approaches empirically. SCX provides the theoretical justification.
+    \item \textbf{Quantum computing does not escape.} A quantum solver is still $M=1$. Grover's algorithm provides quadratic speedup, not a structural escape from the unidentifiability.
+    \item \textbf{P vs NP is a special case of the general unidentifiability principle.} The question is not ``can we find solutions efficiently?'' but ``can a single solver distinguish its own failure from impossibility?''
+\end{enumerate}
+
+\begin{remark}[HONEST LIMITATION]
+This is a \textbf{conjecture}, not a theorem. We have not proven the SCX Complexity Conjecture, nor have we derived $\PP \neq \NP$ from SCX axioms. The contribution is the structural analogy and the reframing of the P vs NP question in audit-theoretic terms.
+\end{remark}
+
+\end{document}
