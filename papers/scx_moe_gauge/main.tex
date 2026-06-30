@@ -788,6 +788,94 @@ LayerNorm 的归一化操作 $\text{LN}(x) = \gamma \odot (x - \mu)/\sigma + \be
 
 \honestcrit{路二是务实的生产选择。它利用 MoE 作为高容量特征提取器和共识信号源，产出的是一个更小、更可控的密集模型。势能面不齐的问题被整条 pipeline 绕过去了，而不是被解决了——但在工程上没有区别。}
 
+\subsection{路二的盲区：共享幻觉与Yajie+SVD双重过滤}
+\label{sec:path2_blindspot}
+
+路二存在一个根本性盲区：\textbf{Yajie 无法检测所有专家一致同意的错误。} 这是共识方法的固有局限。
+
+\honestcrit{三年的大模型军备竞赛已经产生了大量\"共享幻觉\"——所有主流模型在相同互联网语料上训练，学会了相同的错误事实、相同的推理捷径、相同的偏见。这些错误在 Yajie 眼中是\"高度共识\"——因此被标记为 CLEAN。}
+
+\begin{definition}[共享幻觉 (Shared Hallucination)]\label{def:shared_hall}
+设 $\D_{\text{train}}$ 为所有专家的共同训练数据分布。一个错误输出 $\hat{y} \neq y^*$ 称为\textbf{共享幻觉}，如果存在系统性偏差 $b(x)$ 使得对所有专家 $m$，
+\begin{equation}
+    \Pbb_{x \sim \D_{\text{train}}}(E_m(x) = \hat{y} \mid \text{输入}x\text{属于幻觉易发域}) > 1 - \varepsilon.
+\end{equation}
+即所有专家在相同输入上犯同样的错误。
+\end{definition}
+
+共享幻觉是 Yajie 的检测边界：当 $M_{\text{eff}}$ 个专家都包含同一系统性偏差时，Yajie 共识分数 $s_i$ 趋近于 1——\textbf{误判为干净数据}。
+
+\begin{theorem}[Yajie对共享幻觉的盲区]\label{thm:yajie_blind}\rigorFull
+设存在共享幻觉偏差 $b(x)$ 使得 $\Pbb(E_m(x) = \hat{y}_{\text{hall}}) \geq 1 - \delta$ 对所有 $m$ 成立。则 Yajie 共识分数满足
+\begin{equation}
+    \Pbb(s_i > \theta_{\text{clean}} \mid \text{样本是共享幻觉}) \geq 1 - M_{\text{eff}} \cdot \exp(-2\delta^{-2}),
+\end{equation}
+即 Yajie 以指数接近 1 的概率将共享幻觉标记为 CLEAN——\textbf{这是漏检，不是误检}：所有专家确实\"同意\"了，只是同意的是一个错误。
+\end{theorem}
+
+\begin{proof}
+在共享幻觉条件下，每个专家的输出 $\hat{y}_{\text{hall}}$ 以概率 $\geq 1 - \delta$ 相同。$M_{\text{eff}}$ 个专家的共识比例为 $p_{\text{agree}} \geq (1 - \delta)^{M_{\text{eff}}}$。由 Chernoff 界，当 $\delta < 1/2$ 时，$p_{\text{agree}} \geq 1 - M_{\text{eff}} \delta$。Yajie 阈值 $\theta_{\text{clean}} \approx 0.8$ 在合理设定下被 $p_{\text{agree}}$ 超越——只要 $M_{\text{eff}} \delta < 0.2$。
+\end{proof}
+
+\textbf{但这正是 SVD 谱的用武之地。} 关键洞察：
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.9\textwidth}
+\centering
+\textbf{Yajie + SVD 互补定理（非正式）}
+
+\begin{tabular}{c|c|c}
+\toprule
+\textbf{幻觉类型} & \textbf{Yajie 检测} & \textbf{SVD 谱检测} \\
+\midrule
+\textbf{分歧性幻觉}（专家不一致） & ✅ 低共识分数 & 可能高或低 \\
+\textbf{共享幻觉}（专家一致错误） & ❌ 高共识→漏检 & ✅ 谱平坦→$\rho_k$ 低 \\
+\textbf{真知识}（专家一致正确） & ✅ 高共识 & ✅ 谱集中→$\rho_k$ 高 \\
+\bottomrule
+\end{tabular}
+
+\vspace{4pt}
+\textbf{两者互补覆盖了幻觉空间。} Yajie 抓分歧，SVD 抓\"表面一致但内部散乱\"。
+\end{minipage}%
+}
+\end{center}
+
+\begin{theorem}[共享幻觉的SVD检测]\label{thm:svd_shared_hall}\rigorFull
+设 $N$ 个规范对齐的专家对共享幻觉输入 $x_{\text{hall}}$ 的输出矩阵为 $\tilde{\mathbf{Y}}_{\text{hall}} \in \R^{N \times d}$，对真知识输入 $x_{\text{true}}$ 的输出矩阵为 $\tilde{\mathbf{Y}}_{\text{true}}$。则存在阈值 $\tau_\rho \in (0, 1)$ 使得
+\begin{equation}
+    \Pbb\left(\rho_k(\tilde{\mathbf{Y}}_{\text{hall}}) < \tau_\rho < \rho_k(\tilde{\mathbf{Y}}_{\text{true}})\right) \geq 1 - 2N\exp\left(-\frac{2 M_{\text{eff}} \Delta_\rho^2}{(1 + \gamma)^2}\right),
+\end{equation}
+其中 $\Delta_\rho$ 是共享幻觉与真知识在 SVD 集中度上的最小可分间隔，$\gamma$ 是规范固定残差。
+\end{theorem}
+
+\begin{proof}
+共享幻觉与真知识的本质差异在于\textbf{表示空间的几何结构}：
+
+\textbf{真知识：} 专家在处理已知事实时，其内部表示沿一个低维\"事实流形\"集中——不同专家的输出在规范对齐后高度共线，因为正确答案在表示空间中对应唯一的方向。形式上，$\tilde{\mathbf{Y}}_{\text{true}}$ 的有效秩 $r_{\text{eff}} \approx 1$（或很小的常数），$\rho_k \to 1$ 快速收敛。
+
+\textbf{共享幻觉：} 专家虽然输出了相同的 token 序列，但这个输出是通过\textbf{统计相关性}而非\textbf{因果理解}产生的——表面的 token 级一致性掩盖了内部表示的散乱。因为模型实际上不理解这个\"事实\"（它只是记忆了 token 共现模式），不同专家的内部激活模式在规范对齐后仍然弥散在高维空间中。形式上，$\tilde{\mathbf{Y}}_{\text{hall}}$ 的有效秩 $r_{\text{eff}} \gg 1$，$\rho_k$ 增长缓慢。
+
+定理~\ref{thm:aligned_svd} 的 Hoeffding 界在此适用：在真知识条件下，专家输出的\"共识分量\"以指数速度集中到低维子空间；在共享幻觉条件下，缺乏真正的因果约束，表示弥散到多个方向。两者的 $\rho_k$ 差距 $\Delta_\rho$ 由表示几何的维度差异决定。
+\end{proof}
+
+\begin{corollary}[双重过滤协议]\label{cor:dual_filter}
+在实际蒸馏 pipeline 中，对每个训练样本 $(x_i, y_i)$ 同时施加：
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Yajie 过滤：} $s_i < \theta_{\text{noisy}} \Rightarrow$ 丢弃（分歧性幻觉）
+    \item \textbf{SVD 过滤：} $\rho_{10}(\tilde{\mathbf{Y}}_i) < \tau_\rho \Rightarrow$ 丢弃（共享幻觉 — 被 Yajie 漏检的类型）
+    \item 双重通过 → CLEAN → 进入训练集
+\end{enumerate}
+双重过滤的漏检率满足：
+\begin{equation}
+    \Pbb(\text{漏检}) \leq \underbrace{\exp(-2 M_{\text{eff}} \Delta_{\text{yajie}}^2)}_{\text{Yajie 失误}} + \underbrace{2N\exp\left(-\frac{2 M_{\text{eff}} \Delta_\rho^2}{(1 + \gamma)^2}\right)}_{\text{SVD 失误}}.
+\end{equation}
+\end{corollary}
+
+\honestcrit{双重过滤的代价：SVD 过滤需要访问中间层表示（规范对齐后的专家输出）。这使路二丧失了\"不需要中间层访问\"的低成本优势——实际上把路二升级成了轻量版路三。如果中间层不可访问（API-only 模型），只有 Yajie 可用，你必须接受共享幻觉的漏检风险。}
+
+\textbf{数学题的天然优势。} 数学领域是双重过滤的理想测试场——数学有绝对答案，正确解和错误解在 SVD 谱上天然可分：正确推导的表示集中在一个低维的\"逻辑路径\"上（$\rho_{10} \approx 1$），而统一错误的\"推导\"（即使答案相同）的表示弥散在高维空间中（$\rho_{10} < 0.5$）。这解释了为什么数学是当前 LLM 基准中 Yajie 式方法最有效的领域。
+
 \subsection{路三：Gauge 对齐 + 表示级蒸馏}
 \label{sec:path3}
 
