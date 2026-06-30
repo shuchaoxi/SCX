@@ -1,0 +1,608 @@
+% ============================================================
+% Position Paper — State-Conditioned Expertise for LLM Data Curation
+%
+% Target: arXiv (initial), ACL/NeurIPS Position Track
+% Strategy: This paper does NOT claim to have solved LLM data curation.
+% It argues that SCX's mathematical framework provides a principled
+% foundation for one specific subproblem: judge reliability calibration.
+% ============================================================
+
+\documentclass[11pt,twocolumn]{article}
+
+% ---- Packages ----
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathrsfs}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{booktabs}
+\usepackage[capitalize]{cleveref}
+\usepackage{geometry}
+\geometry{verbose,letterpaper,left=2cm,right=2cm,top=2cm,bottom=2.5cm}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{appendix}
+
+% ---- Theorem environments ----
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+% ---- Math shorthand ----
+\newcommand{\E}{\mathbb{E}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\KL}{\operatorname{KL}}
+\providecommand{\F1}{\mathrm{F1}}
+\newcommand{\PR}{\mathrm{PR}}
+\newcommand{\AUC}{\mathrm{AUC}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cJ}{\mathcal{J}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cC}{\mathcal{C}}
+
+\title{State-Conditioned Expertise for Language Model Data Curation}
+
+\author{SCX}
+\date{June 30, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Large language model (LLM) training corpora now exceed trillions of tokens, yet principled methods for distinguishing genuinely valuable data from noise remain elusive. The State-Conditioned Expertise (SCX) framework---which proved that multi-expert consistency detects label noise at the minimax-optimal rate under identifiable assumptions~\cite{scx2026}---offers a candidate mathematical foundation. However, extending SCX from scientific machine learning (interatomic potentials, medical imaging) to LLM data curation faces four fundamental challenges: the gap between representation similarity and training value, the absence of gold-label error signals, the non-local and context-dependent nature of data value, and the inadequacy of redundancy defined by surface similarity alone. This position paper argues that SCX's appropriate role in the LLM ecosystem is not as yet another data quality judge, but as a \textit{meta-evaluation layer} that calibrates judge reliability in a state-conditioned manner, orchestrates cost-aware multi-judge evaluation, and accounts for redundancy in value estimation. We articulate four concrete research directions---state discovery for text, multi-judge consistency scoring, redundancy-aware value estimation, and cost-aware judge orchestration---and propose a minimal viable experiment to establish feasibility. A three-phase strategic roadmap (6\,/\,12\,/\,24 months) from academic validation to production-grade deployment is presented. The paper aims to establish a research program, not to announce solved results.
+\end{abstract}
+
+\section{Introduction}
+
+The curation of pretraining and fine-tuning data is increasingly recognized as the dominant factor in LLM capability~\cite{gunasekar2023textbooks,zhou2024web,Brown2020}. Modern LLMs are trained on corpora of one trillion tokens or more~\cite{raffel2020,gao2020pile}, yet the quality signals available to guide data selection remain surprisingly crude. The current practice relies on a patchwork of heuristics---perplexity filters~\cite{wenzek2020quality}, classifier-based quality scores~\cite{penedo2023refinedweb}, diversity sampling~\cite{xie2023dsir}, and influence estimation~\cite{pruthi2020estimating,koh2017influence}---each addressing a partial view of data quality without a unifying theoretical framework.
+
+The core difficulty is that data quality for LLMs is not a well-defined property of individual samples. A sentence that is low-quality for one training objective (e.g., factual recall) may be high-quality for another (e.g., creative generation). A sample that is redundant in the context of a 1B-parameter model may be uniquely valuable for a 70B model. This contextual dependence is fundamentally different from the label-noise detection problem in supervised learning, where a ground-truth label exists (though it may be corrupted).
+
+Recent work has begun to formalize aspects of this problem. DataComp-LM~\cite{li2024dclm} provides a standardized benchmark for data curation methods. Influence-based methods like LESS~\cite{xia2024less} and LoGra~\cite{choe2024loga} estimate per-sample training value through gradient alignment. LLM-as-a-judge approaches~\cite{zheng2024judging} use strong models to score data quality. But these methods remain largely disconnected, each optimized for a narrow signal without a principled understanding of how their signals relate.
+
+The State-Conditioned Expertise (SCX) framework~\cite{scx2026} provides a mathematical foundation that may unify aspects of this landscape. SCX proved that under identifiable structural assumptions---disjoint expert training, state-homogeneous error rates, and uniform noise---multi-expert consistency achieves the exact minimax-optimal rate for noise detection. The framework's key insight is that no single judge is uniformly reliable: its reliability is \textit{state-conditioned}, varying across regions of the input space defined by feature similarity.
+
+This paper argues that SCX can play a valuable role in LLM data curation, but not as a drop-in replacement for existing methods. The two-layer state discovery procedure central to SCX---domain-knowledge features followed by error-driven encoding that orients feature axes to maximize within-state homogeneity of expert error rates---was established in the SCX theoretical framework~\cite{scx2026}. We identify four fundamental gaps that prevent direct transfer from the scientific ML setting, then propose SCX as a \textit{meta-evaluation layer} that addresses a complementary problem: calibrating judge reliability in a state-conditioned manner rather than attempting to be a better judge itself. We articulate four concrete research directions, a minimal viable experiment, and a strategic roadmap.
+
+The tone of this paper is deliberately exploratory. We view the LLM data curation problem as too important and too under-theorized to leave entirely to engineering heuristics, but also too immature for a complete solution. Our goal is to define a research program that connects rigorous theory (SCX) to practical impact (LLM data curation) through a series of tractable intermediate problems.
+
+\section{Background: The SCX Framework}
+
+We briefly summarize the SCX framework established in~\cite{scx2026}. SCX addresses the problem of detecting label noise in supervised learning through multi-expert consistency. Let $M$ experts $\{f_m\}_{m=1}^M$ be trained on disjoint data subsets. For a sample $(x, y)$, define the consistency score:
+
+\begin{equation}
+C(x) = \frac{1}{M} \sum_{m=1}^M \mathbf{1}\{\ell(f_m(x), y) > \tau\},
+\end{equation}
+
+where $\ell$ is a bounded loss and $\tau$ is an error threshold. The central theoretical result is that under assumptions of disjoint training, conditional independence, uniform noise, and state-homogeneous error rates, the noise detector achieves:
+
+\begin{equation}
+\mathrm{F1} \geq 1 - \frac{1}{\eta} \sum_{s \in \mathcal{S}} \rho_s \exp\!\bigl(-2M\Delta_s^2\bigr),
+\label{eq:scx_f1_bound}
+\end{equation}
+
+where $\eta$ is the noise rate, $\rho_s$ the proportion of data in state $s$, and $\Delta_s$ the per-state separation gap between clean and noisy consistency distributions. This bound is tight: a matching minimax lower bound (\S4 of~\cite{scx2026}) shows that the adaptive-threshold SCX detector achieves the exact asymptotic constant, establishing exact constant minimax optimality.
+
+The SCX framework also includes a characterization of its failure mode (\textbf{Theorem 2} of~\cite{scx2026}): when features $\phi: \mathcal{X} \to \R^{d_\phi}$ carry insufficient mutual information about the true state structure $\mathcal{S}$---i.e., $I(\phi; \mathcal{S}) \leq \delta$---the method degrades gracefully:
+
+\begin{equation}
+\mathrm{F1}_{\mathrm{SCX}} \leq \mathrm{F1}_{\mathrm{base}} + C_F \sqrt{\frac{\delta}{2}}.
+\label{eq:scx_weak_feature}
+\end{equation}
+
+This feature-strength diagnostic provides a practical decision rule for when state-conditioned methods can help.
+
+The key innovation for our purposes is not the noise detection result per se, but the \textit{state-conditioned} structure of the analysis: the SCX guarantee holds \textit{per state}, with different states potentially having different detection thresholds, different expert reliabilities, and different optimal strategies. This state-conditioned view is what makes the framework extensible to LLM data curation, where the ``states'' correspond to latent categories of data (domains, difficulty levels, formats) and the ``judges'' correspond to different evaluation models or signals.
+
+\subsection{Theorem~3: The SCX Uncertainty Principle}
+
+Theorem~3 of~\cite{scx2026}---the noise-difficulty indistinguishability theorem---is the flagship result of the SCX framework. It is a self-contained impossibility theorem: given only the observed outputs of multiple conditionally independent experts, it is mathematically impossible to distinguish whether label disagreement arises from label noise or from inherent sample difficulty. Two data-generating processes---one noise-driven, one difficulty-driven---produce identical observation distributions when the noise rate $\eta_{\text{err}}$ equals the ambiguity rate $\eta_{\text{amb}}$. The resulting error lower bound is $\eta\rho/2$, where $\rho$ is the proportion of ambiguous samples.
+
+Theorem~3 occupies a specific niche in ML theory, alongside the No Free Lunch theorem (learning algorithms) and the Information Bottleneck (representation). Together they form a triad spanning the full ML pipeline: learning $\to$ representation $\to$ quality assessment. Where No Free Lunch says ``no universal learner'' and Information Bottleneck says ``optimal compression,'' Theorem~3 says ``no universal noise detector.''
+
+The theorem requires only conditional independence of expert errors---it makes no assumptions about model architecture, training data, or loss function. For LLMs, Theorem~3 applies directly through multi-seed independent decoding: running the same model $M$ times with independent random seeds produces $M$ conditionally independent outputs, satisfying the theorem's premise. This yields a \textbf{rigorous proof of LLM hallucination inevitability}: from $M$ seed outputs alone, one cannot distinguish a model error from essential ambiguity in the query. Hallucinations carry a provable lower bound of $\eta\rho/2$, which does not scale away with model size. Breaking this bound requires external information---retrieval, tool use, human feedback---that breaks the information closure of the autoregressive loop.
+
+\textbf{Implication for this paper}: Theorem~3 provides the rigorous foundation for why LLM data curation cannot rely on any single judge or any closed set of judges. The judge disagreement that SCX exploits for reliability calibration is itself subject to the same unidentifiability---disagreement could signal low quality (noise) or genuine ambiguity (difficulty). SCX addresses this not by solving the unsolvable, but by making the structural assumptions explicit and outputting risk scores rather than binary labels.
+
+\section{Why MLIP Success Does Not Automatically Transfer}
+
+SCX's empirical success on machine-learned interatomic potentials (MLIPs), medical imaging, and computer vision benchmarks~\cite{scx2026} does not imply automatic success for LLM data curation. The problem structure differs along four fundamental dimensions.
+
+\subsection{Gap 1: Representation Space $\neq$ Value Space}
+
+In SCX's original setting, the state space $\mathcal{S}$ is defined by physical descriptors---atomic positions, coordination numbers, symmetry functions---that have direct mechanistic relevance to the prediction task. Two configurations with similar physical descriptors have similar physical properties, and thus similar training value.
+
+In the LLM setting, this correspondence breaks. Two text passages with near-identical sentence embeddings (e.g., two different phrasings of the same factual statement) may have very different training value: one may contain a subtle logical flaw that harms the model, while the other is clean. Conversely, passages with very different surface forms (e.g., a Python code snippet and a mathematical proof) may share deep structural properties (logical reasoning) that make them similarly valuable for certain capabilities.
+
+We formalize this as the \textbf{representation-value gap}: let $\phi(x) \in \R^d$ be a text embedding and $v(x)$ be the (unobserved) training value of $x$. The relationship $\phi(x) \approx \phi(x') \implies v(x) \approx v(x')$ holds for physical descriptors but fails generically for text embeddings. The mutual information $I(\phi; V)$ is typically far lower than $I(\phi_{\text{phys}}; E)$ where $E$ is the physical energy. This means SCX's Theorem~2~\cite{scx2026}---which bounds SCX performance by mutual information $\delta = I(\phi; \mathcal{S})$---applies with a much smaller effective $\delta$, potentially making state-conditioned methods indistinguishable from baselines.
+
+\subsection{Gap 2: Error Is Ill-Defined}
+
+In SCX's supervised setting, the error signal is well-defined: a sample is either correctly labeled (clean) or mislabeled (noise), and the ground truth is in principle accessible (e.g., through DFT validation for MLIP data). This binary ground truth enables the rigorous calibration of detection thresholds and the F1-based evaluation of the unidentifiability theorem.
+
+For LLM data, there is no gold label. The data takes the form of raw text, instructions paired with responses, or preference comparisons, none of which carry an inherent correctness signal. Proxy error signals must be constructed:
+\begin{itemize}
+    \item \textbf{Perplexity/loss}: Lower loss on held-out models may indicate higher quality, but can also indicate memorization of common patterns~\cite{carlini2023quantifying}.
+    \item \textbf{Model disagreement}: Different LLMs may disagree on the quality of a sample, but disagreement could indicate genuine ambiguity rather than error.
+    \item \textbf{Human ratings}: Expensive, inconsistent, and difficult to scale.
+    \item \textbf{Downstream task metrics}: The ultimate measure, but too expensive to compute per-sample, and confounded by interactions between samples.
+\end{itemize}
+
+This absence of ground truth means SCX's core theoretical results---Theorems 1 and 4' of~\cite{scx2026}---cannot be directly applied. These theorems guarantee detection accuracy relative to a known ground truth. Without ground truth, SCX can only output \textit{relative} quality scores or \textit{noise-risk} estimates, not noise labels.
+
+\subsection{Gap 3: Data Value Is Non-Local and Context-Dependent}
+
+In SCX's setting, each sample's value is approximately local: removing a redundant AIMD frame from the training set has a predictable effect (no change in model accuracy). The interaction between samples is captured by the state structure and expert diversity.
+
+In LLM training, data value is fundamentally non-local. The value of adding a sample depends on:
+\begin{itemize}
+    \item \textbf{The current training set}: A sample about quantum mechanics is highly valuable if the training set contains no physics text; it is nearly valueless if the training set already contains ten thousand physics documents.
+    \item \textbf{The current model}: A sample that challenges a model's current failure modes is more valuable than one that reinforces already-mastered capabilities~\cite{xia2024less,kaplan2024distributed}.
+    \item \textbf{The training objective}: A dataset curated for instruction-following may harm factual recall if it shifts the data distribution too far from the factual domain~\cite{mukherjee2023orca}.
+\end{itemize}
+
+Formally, the value function $V(x; \mathcal{D}, \theta)$ depends on the training set $\mathcal{D}$ and the model parameters $\theta$. This contextual dependence breaks the state-homogeneity assumption (A5 in~\cite{scx2026}) that underlies SCX's per-state analysis. A state that is ``high-redundancy'' for one model may be ``high-value'' for another.
+
+\subsection{Gap 4: Redundancy Is Not Just Similarity}
+
+SCX's original redundancy formulation quantifies redundancy as a function of density and similarity: $R(x) \propto \text{density}(s(x)) \cdot \text{similarity}(x, \text{centroid}(s(x)))$. This is appropriate for physical simulation data where neighboring frames in a trajectory are genuinely redundant.
+
+For LLM data, redundancy is more subtle. Consider two text samples:
+\begin{enumerate}
+    \item ``The capital of France is Paris.''
+    \item ``The capital of France is Paris. It is known for the Eiffel Tower.''
+\end{enumerate}
+These are highly similar by any embedding metric and would be considered redundant by standard de-duplication. Yet both may be valuable: the second reinforces the first while adding new information. Conversely, two samples with different surface forms (e.g., a math proof and a logic puzzle) may be redundant in terms of the capabilities they reinforce (logical reasoning).
+
+This means that similarity-based redundancy metrics---which work well for physical simulation data---may produce suboptimal data selections for LLMs. The SCX compression theorem, which preserves full-data performance by removing only redundant samples within each state, would need to be reformulated for a setting where redundancy is capability-dependent rather than surface-similarity-dependent.
+
+\section{SCX as a Judge Reliability Calibration Framework}
+
+Given these four gaps, it would be naive to propose SCX as a direct replacement for existing LLM data curation methods. Instead, we argue that SCX's appropriate role is as a \textit{meta-evaluation layer} that addresses a complementary problem: calibrating the reliability of existing data quality judges in a state-conditioned manner, rather than attempting to be a better judge itself.
+
+\subsection{The Core Insight: Judge Reliability Is State-Conditioned}
+
+A central finding of the SCX framework~\cite{scx2026} is that expert reliability varies across states. The same experts that achieve near-perfect consensus on easy samples (low $\mu_s$) exhibit high disagreement on hard samples (high $\mu_s$). The SCX noise detector exploits this variation by setting different detection thresholds $\theta_s$ per state.
+
+This observation extends naturally to LLM judges. Current practice treats LLM-as-a-judge scores as uniform quality signals, yet it is well-known that different models have different strengths: GPT-4 excels at mathematical reasoning but may be weaker at medical factuality~\cite{singhal2023large}; Claude may be more reliable for safety evaluation than for creative writing; open-source models may excel at specific domains while lagging in general knowledge.
+
+SCX provides a principled framework for \textit{learning} these per-model, per-state reliability patterns. Rather than asking ``Is GPT-4 a good judge?'' (which is unanswerable in general), SCX asks ``What is GPT-4's reliability in state $s$?'' (which is empirically estimable).
+
+\subsection{State-Conditioned Judge Weighting}
+
+Formally, suppose we have a set of $J$ judges (e.g., GPT-4, Claude, Gemini, Llama-3) each producing a quality score $Q_j(x)$ for sample $x$. We observe that $x$ belongs to some latent state $s(x) \in \mathcal{S}$ via a state discovery mechanism (discussed in \S\ref{sec:state_discovery}). The SCX aggregation rule is:
+
+\begin{equation}
+Q_{\text{SCX}}(x) = \sum_{j=1}^J w_j(s(x)) \cdot Q_j(x),
+\label{eq:scx_aggregation}
+\end{equation}
+
+where the weights are:
+
+\begin{equation}
+w_j(s) \propto \exp\bigl(\alpha \cdot A_j(s) - \lambda \cdot C_j\bigr),
+\label{eq:scx_weights}
+\end{equation}
+
+with $A_j(s)$ being the estimated reliability of judge $j$ in state $s$, $C_j$ the cost per evaluation, and $\alpha, \lambda$ hyperparameters controlling the reliability-cost tradeoff. This formulation is mathematically analogous to the SCX consistency score in~\eqref{eq:scx_f1_bound}, but with weights learned from judge agreement patterns rather than derived from clean/noise Bernoulli models.
+
+The key difference from the original SCX is that $A_j(s)$ must be estimated without ground truth. We propose two complementary approaches:
+\begin{enumerate}
+    \item \textbf{Consensus-based reliability}: If most judges agree on a sample, the reliability of each judge is estimated from their agreement rate in each state.
+    \item \textbf{Calibration-set reliability}: A small set of samples with known quality (e.g., human-rated or benchmark-grounded) is used to calibrate per-state judge reliability.
+\end{enumerate}
+
+\subsection{Redundancy-Aware Value Estimation}
+
+The SCX framework also provides a mechanism for incorporating redundancy into value estimation. Extending the original SCX compression formulation, we define the marginal value of a sample $x$ in state $s$ as:
+
+\begin{equation}
+V_{\text{SCX}}(x) = Q_{\text{SCX}}(x) \cdot \bigl(1 - \beta \cdot R(s; \mathcal{D})\bigr),
+\label{eq:scx_marginal_value}
+\end{equation}
+
+where $R(s; \mathcal{D})$ is the redundancy of state $s$ given the current dataset $\mathcal{D}$, measured as the inverse of the effective number of distinct samples in that state (normalized to $[0,1]$), and $\beta$ controls the redundancy penalty. This formulation captures the intuition that a high-quality sample in an already-saturated state contributes less marginal value than an equally high-quality sample in an under-explored state.
+
+\subsection{Cost-Aware Judge Scheduling}
+
+A practical contribution of the SCX framework is cost-aware orchestration. Querying GPT-4 for every sample in a trillion-token corpus is prohibitively expensive. SCX enables a tiered evaluation strategy: inexpensive judges (e.g., perplexity, lightweight classifiers) are used for samples in states where they are reliable; expensive judges (e.g., GPT-4, Claude) are reserved for boundary cases and high-stakes states where cheap judges are unreliable.
+
+This can be formalized as a contextual bandit problem: at each sample $x$ with state $s(x)$, the orchestrator selects a judge $j$ to maximize expected information gain per unit cost. The SCX state structure provides the context that enables the bandit to learn different policies for different states, avoiding the cold-start problem that plagues uniform judge selection.
+
+\section{Four Research Directions}
+
+We now articulate four concrete research directions that operationalize the SCX framework for LLM data curation. Each represents a distinct subproblem with clearly defined success criteria.
+
+\subsection{State Discovery for Text}
+\label{sec:state_discovery}
+
+The foundational challenge is defining what ``states'' mean for text data. In SCX's original setting, states are defined by physical descriptors with clear mechanistic interpretations. For text, we identify several candidate state definitions:
+
+\begin{itemize}
+    \item \textbf{Domain}: Topics (code, math, science, law, medicine, creative writing) that correspond to distinct capabilities in LLMs.
+    \item \textbf{Difficulty}: Sample complexity levels, potentially measured by proxy metrics like perplexity or human-rated difficulty.
+    \item \textbf{Format}: Structural categories (QA pairs, instructions, prose, dialogue, structured data).
+    \item \textbf{Data source}: Provenance-based categories (web crawl, books, academic papers, social media).
+    \item \textbf{Emergent}: States discovered via unsupervised clustering of model representations (hidden states, attention patterns).
+\end{itemize}
+
+\textbf{Key challenge -- The representation-value gap}: As noted in \S\ref{sec:gap1}, embedding-based state clustering may group samples by surface similarity rather than training-value similarity. This creates a risk that the discovered states are ``states'' in name only---they partition the embedding space but do not correspond to distinct reliability patterns.
+
+\textbf{Insight: BPE as frequency-driven SCX degeneracy.} Byte-pair encoding (BPE) can be understood through the SCX lens as a degenerate case of state crystallization in the token space. BPE merges the most frequent byte pairs greedily---it discovers ``states'' (subword units) driven purely by co-occurrence frequency rather than by semantic or training-value structure. This is state discovery with $\delta = I(\phi; S) \approx 0$ for most semantically meaningful state partitions: BPE groups tokens by surface statistics, not by the training-value relevance that SCX requires. The practical consequence is that BPE-based tokenization pre-determines the state granularity available to downstream SCX analysis---states finer than the BPE vocabulary are inaccessible, and states coarser than BPE are only recoverable through additional representation learning that must overcome the initial frequency-driven partition. This is not a failure of BPE (which is near-optimal for compression) but a constraint on what kinds of states any SCX system can discover when built on BPE-tokenized text.
+
+\textbf{Insight: Situs vs.\ RoPE---two philosophies of position.} Position encoding methods embody two fundamentally different philosophies that map naturally onto SCX's state concept. RoPE (Rotary Position Embedding) encodes position through statistical rotation in the embedding space---it is a \textit{relative, frequency-driven} encoding where position is a continuous statistical property. In contrast, what we term \textit{Situs} encoding treats position as a physically anchored, absolute coordinate---each token occupies a specific locus, and position is not a statistic to be rotated but a coordinate to be referenced. Through the SCX lens, RoPE blends position into the feature representation $\phi$, mixing positional and semantic information in a way that complicates state discovery (positional variation becomes noise in semantic state clustering). Situs preserves position as a separate dimension of the state partition, enabling states defined by both semantic content and absolute position in the sequence. The choice between these encodings is not merely architectural taste---it determines whether position is available as an independent axis for SCX state discovery.
+
+\textbf{Proposed approach}: We recommend a hybrid strategy combining embedding-based clustering (for scalability) with model-based validation. Specifically:
+\begin{enumerate}
+    \item \textbf{Initial state discovery}: Apply spectral clustering or k-means to sentence embeddings (e.g., from Sentence-BERT or the last hidden layer of a small LLM) to obtain a candidate partition.
+    \item \textbf{Structural validation via Proposition 6 of~\cite{scx2026}}: Compute the clustering stability score $S(\Phi, K)$ via bootstrap resampling. If $S(\Phi, K) < 0.7$, the features are too weak for reliable state discovery---either improve the representation or merge the candidate states.
+    \item \textbf{Semantic interpretation}: Assign interpretable labels to each cluster by examining centroid samples and diagnostic n-grams.
+    \item \textbf{Model-based refinement}: Fine-tune a small classifier on the discovered states, then use its representations to refine the state boundaries.
+\end{enumerate}
+
+\textbf{Success criterion}: Discovered states should exhibit (a) within-state judge agreement patterns that are more homogeneous than across-state patterns, and (b) stability under bootstrap resampling ($S > 0.7$).
+
+\subsection{Multi-Judge Consistency}
+\label{sec:multi_judge}
+
+Given a state partition, the next problem is computing judge reliability per state. We define the multi-judge consistency score:
+
+\begin{equation}
+C_{\text{judge}}(x) = \frac{1}{J} \sum_{j=1}^J \mathbf{1}\{Q_j(x) < \tau_j(s(x))\},
+\label{eq:multi_judge_consistency}
+\end{equation}
+
+where $\tau_j(s)$ is a state-dependent threshold for judge $j$ (e.g., the 20th percentile of judge $j$'s scores in state $s$). This is directly analogous to the SCX consistency score $C(x)$ from~\eqref{eq:scx_f1_bound}, but applied to judge quality scores rather than expert prediction errors.
+
+\textbf{The identifiability problem}: Judge disagreement presents the same fundamental unidentifiability as SCX's noise-difficulty problem~\cite{scx2026}. Disagreement among judges could indicate:
+\begin{itemize}
+    \item \textbf{Noise}: The sample is low quality (e.g., contains factual errors), and good judges recognize this while poor judges do not.
+    \item \textbf{Hardness}: The sample is genuinely ambiguous (e.g., a subjective opinion question), and all reasonable judges disagree.
+    \item \textbf{Calibration differences}: Judges have different scales or reference frames, and disagreement is an artifact of score normalization.
+\end{itemize}
+
+Without additional structure, these three cases are observationally indistinguishable. SCX's unidentifiability theorem implies that any claim to ``detect'' low-quality LLM data via judge disagreement must make explicit structural assumptions (e.g., that some judges are known to be reliable in certain states, or that the data generation process has known noise characteristics).
+
+\textbf{Proposed approach}: Rather than attempting an impossible resolution, we embrace the ambiguity by outputting \textit{risk scores} rather than binary labels. Specifically, we define:
+\begin{equation}
+\rho(x) = \frac{|\{j: Q_j(x) < \tau_j(s(x))\}|}{J} \in [0, 1],
+\label{eq:risk_score}
+\end{equation}
+as a continuous risk score representing the fraction of judges that flag the sample. High $\rho(x)$ indicates higher likelihood of noise, but with the caveat that genuine ambiguity also inflates $\rho(x)$. This risk score can then be thresholded conservatively (high $\rho$ threshold for high-confidence noise detection) or used as a continuous weight in training.
+
+\textbf{Success criterion}: The risk score $\rho(x)$ should correlate with known quality perturbations (e.g., in synthetic noise injection experiments) at statistically significant levels, even if the absolute F1 score is modest.
+
+\subsection{Redundancy-Aware Value Estimation}
+\label{sec:redundancy}
+
+Extending SCX's compression theorem to text requires redefining redundancy in a capability-aware manner. We propose a capability-based redundancy measure:
+
+Given a set of $K$ evaluation tasks $\{T_k\}_{k=1}^K$ (e.g., MMLU, HumanEval, GSM8K), the redundancy of state $s$ with respect to task $T_k$ is:
+
+\begin{equation}
+R_k(s; \mathcal{D}) = \frac{\text{Performance gain from adding state $s$ data to $\mathcal{D}$}}{\text{Maximum possible gain on task $T_k$}} \in [0, 1].
+\label{eq:capability_redundancy}
+\end{equation}
+
+A state is redundant for task $T_k$ if adding more data from that state yields diminishing returns. The aggregate redundancy is:
+
+\begin{equation}
+R(s; \mathcal{D}) = \sum_{k=1}^K \gamma_k \cdot R_k(s; \mathcal{D}),
+\label{eq:aggregate_redundancy}
+\end{equation}
+
+where $\gamma_k$ weights the importance of each task.
+
+This capability-based measure is computationally expensive (requires training runs to estimate). For practical use, we propose proxy measures:
+\begin{itemize}
+    \item \textbf{Density-based proxy}: $R(s) \propto |\{x' \in \mathcal{D}: s(x') = s\}| / N$, the proportion of data in state $s$. This is the SCX original measure.
+    \item \textbf{Diversity-based proxy}: $R(s) \propto 1 - \frac{1}{|\mathcal{D}_s|^2} \sum_{x,x' \in \mathcal{D}_s} \phi(x)^\top \phi(x') / \|\phi(x)\|\|\phi(x')\|$, which measures average pairwise similarity within the state. Lower diversity $\implies$ higher redundancy.
+    \item \textbf{Capability-saturation proxy}: Track whether adding data from state $s$ to a small probe model yields decreasing performance gains on relevant benchmarks.
+\end{itemize}
+
+\textbf{Success criterion}: The redundancy-corrected value $V_{\text{SCX}}(x)$ should better predict the actual marginal impact of adding $x$ to the training set (measured by held-out validation) than the uncorrected quality score $Q_{\text{SCX}}(x)$ alone.
+
+\subsection{Cost-Aware Orchestration}
+\label{sec:orchestration}
+
+The fourth direction formalizes the judge selection problem as a contextual bandit with state context. Let $\pi(x)$ be the policy deciding which judge (or judge combination) to evaluate sample $x$, with total budget $B$. The optimization problem is:
+
+\begin{equation}
+\max_{\pi} \sum_{x \in \mathcal{D}} V_{\text{SCX}}(x; \pi) \quad \text{s.t.} \quad \sum_{x \in \mathcal{D}} \text{Cost}(\pi(x), x) \leq B,
+\label{eq:bandit_objective}
+\end{equation}
+
+where $V_{\text{SCX}}(x; \pi)$ is the quality score obtained under policy $\pi$ (possibly zero if the selected judge is unreliable for $x$).
+
+\textbf{Proposed approach} -- State-stratified Thompson sampling:
+\begin{enumerate}
+    \item \textbf{Initialization}: For each state $s$, maintain a Beta prior $A_j(s) \sim \text{Beta}(a_{j,s}^{(0)}, b_{j,s}^{(0)})$ representing the belief about judge $j$'s reliability in state $s$.
+    \item \textbf{Selection}: For each new sample $x$ in state $s$, draw reliability samples $\tilde{A}_j(s) \sim \text{Beta}(a_{j,s}, b_{j,s})$, and select the judge maximizing $\tilde{A}_j(s) \cdot \exp(-\lambda C_j)$.
+    \item \textbf{Update}: After observing judge $j$'s score for $x$, update the posterior: increase $a_{j,s}$ if the score correlates with the consensus (majority of available judgments), decrease it otherwise.
+    \item \textbf{Convergence}: As samples accumulate, the posteriors concentrate, and the policy converges to selecting the optimal judge for each state.
+\end{enumerate}
+
+This approach scales to large datasets because the per-state posteriors are compact (Beta distributions with two parameters per state-judge pair). The bandit formulation naturally handles the exploration-exploitation tradeoff: early in training, the system explores different judges to learn their state-conditioned reliability; later, it exploits the learned patterns.
+
+\textbf{Success criterion}: For the same total evaluation budget, the SCX-bandit policy should yield higher aggregate data quality scores (validated through downstream training) than uniform judge selection or random assignment.
+
+\section{Minimal Viable Experiment Design}
+
+To establish the feasibility of the SCX framework for LLM data curation, we propose a minimal viable experiment (MVE) that addresses the most fundamental challenge: whether state-conditioned judge aggregation can outperform any single judge in detecting known-quality perturbations.
+
+\subsection{Dataset and Setup}
+
+\begin{itemize}
+    \item \textbf{Dataset}: 10,000 samples from FineWeb~\cite{penedo2023refinedweb} or the C4 corpus~\cite{raffel2020}, stratified to include at least 1,000 samples each from four domains: code, mathematics, conversational text, and factual knowledge.
+    \item \textbf{Judges}: GPT-4, Claude 3.5 Sonnet, and Llama-3 70B (or equivalent open-source model). Each judge scores each sample on a 1--5 quality scale.
+    \item \textbf{State partition}: Four domain clusters (code, math, conversation, knowledge), validated using the stability diagnostic from Proposition 6 of~\cite{scx2026}.
+    \item \textbf{Noise injection}: Randomly corrupt 10\% of labels across all domains: for instruction-following data, shuffle the response; for factual data, replace a named entity with an incorrect one; for code, introduce a subtle bug. This provides known ground truth for noise detection evaluation.
+\end{itemize}
+
+\subsection{Evaluation}
+
+The primary evaluation metric is F1 score for detecting injected noise. We compare:
+\begin{enumerate}
+    \item \textbf{Best single judge}: Threshold the highest-reliability judge's scores.
+    \item \textbf{Average judge}: Unweighted average of all judge scores.
+    \item \textbf{SCX aggregated}: Weighted aggregation using~\eqref{eq:scx_aggregation} with per-state reliability estimated from a calibration holdout set.
+    \item \textbf{SCX with redundancy}: As above, but including the redundancy penalty from~\eqref{eq:scx_marginal_value}.
+\end{enumerate}
+
+\subsection{Expected Outcome}
+
+We expect the SCX-aggregated approach to achieve F1 scores exceeding both the best single judge and the average judge, particularly for the subsets where judges disagree (e.g., code samples where GPT-4 is strong but Llama-3 is weak). The improvement should be modest (estimated 5--15\% relative F1 gain) but statistically significant, establishing feasibility for a larger-scale study.
+
+\textbf{Null hypothesis}: SCX aggregation does not outperform the best single judge at a significance level of $\alpha = 0.05$ on any domain. If this null cannot be rejected, the SCX framework's relevance to LLM data curation is not supported by the evidence, and the approach should be re-evaluated.
+
+\section{Strategic Roadmap}
+
+We propose a three-phase roadmap progressing from academic validation to production-grade deployment.
+
+\subsection{Phase 1: Feasibility (0--6 Months)}
+
+\textbf{Goal}: Establish that SCX's state-conditioned framework provides measurable benefits for LLM data curation, even in controlled settings.
+
+\textbf{Milestones}:
+\begin{enumerate}
+    \item \textbf{MVE execution (Months 0--2)}: Execute the minimal viable experiment described in~\S\ref{sec:mve}. Publish results regardless of outcome (positive result establishes feasibility; null result provides valuable negative evidence).
+    \item \textbf{State discovery benchmarks (Months 1--3)}: Systematically compare embedding-based, loss-based, and hybrid state discovery methods on a diverse set of text datasets. Establish a taxonomy of state types (domain, difficulty, format, source) with stability diagnostics.
+    \item \textbf{Judge reliability calibration (Months 2--4)}: Collect judge agreement matrices across states and compute per-state reliability estimates. This requires no additional data beyond what the MVE collects.
+    \item \textbf{arXiv preprint (Month 6)}: Publish the complete study as an arXiv preprint, releasing all datasets and code.
+\end{enumerate}
+
+\textbf{Budget}: Single GPU (RTX 4090) sufficient for all experiments; API costs for judge queries estimated at \$2,000--\$5,000.
+
+\subsection{Phase 2: Full Pipeline (6--18 Months)}
+
+\textbf{Goal}: Build and validate a complete SCX-LLM data curation pipeline that scales to datasets of 100K+ samples.
+
+\textbf{Milestones}:
+\begin{enumerate}
+    \item \textbf{Scaling MVE (Months 6--9)}: Scale the experiment to 100K samples, 10 domains, and 5+ judges. Incorporate training experiments: fine-tune 1B--3B models on SCX-selected data vs. baselines (full data, random subset, heuristic-filtered, influence-based).
+    \item \textbf{Redundancy-aware compression (Months 9--12)}: Implement and validate the capability-based redundancy measure from~\S\ref{sec:redundancy}. Demonstrate that SCX-compressed training sets (e.g., 30\% of original data) retain 90\%+ of full-data performance.
+    \item \textbf{Cost-aware orchestration prototype (Months 12--15)}: Build the bandit-based judge selection system described in~\S\ref{sec:orchestration}. Validate cost savings (target: 3--5$\times$ reduction in API costs for equivalent quality estimation).
+    \item \textbf{Open-source release (Month 18)}: Release the full SCX-LLM pipeline as an open-source Python package with documentation, examples, and pre-trained state discovery models.
+\end{enumerate}
+
+\textbf{Budget}: Multi-GPU setup for training experiments (\$10K--\$20K); API costs \$10K--\$20K; one part-time research engineer.
+
+\subsection{Phase 3: Production-Grade System (18--36 Months)}
+
+\textbf{Goal}: Deploy a production-grade SCX data curation system used by external teams.
+
+\textbf{Milestones}:
+\begin{enumerate}
+    \item \textbf{Production pipeline (Months 18--24)}: Optimize the state discovery and aggregation pipeline for throughput (target: 1M samples evaluated per day on a single GPU). Add support for incremental updates (new data $\rightarrow$ minimal recomputation of state structure).
+    \item \textbf{Enterprise features (Months 24--30)}: Add audit trails, customizable judge configurations, integration with common LLM training frameworks (HuggingFace Trainer, Megatron, DeepSpeed), and reporting dashboards.
+    \item \textbf{Adoption program (Months 24--36)}: Recruit 3--5 early adopter teams (academic labs, mid-size AI companies) to use the system and provide feedback. Target: at least 2 published results from external teams using SCX-curated data.
+\end{enumerate}
+
+\textbf{Exit strategies}:
+\begin{enumerate}
+    \item \textbf{Acquisition}: A major AI lab acquires the technology for integration into their internal data pipeline. Target valuation: \$5--\$20M based on demonstrated improvements on 10B+ parameter models.
+    \item \textbf{Standalone product}: License the SCX-LLM system as a SaaS product for AI companies. Target: \$50K--\$200K per seat per year, targeting 10--20 customers.
+    \item \textbf{Open standard}: If commercialization is not viable, establish SCX as an open standard for LLM data quality reporting, analogous to how dataset cards~\cite{gebru2021datasheets} became a community standard. This provides academic impact and community recognition.
+\end{enumerate}
+
+\section{Related Work}
+
+Our proposal connects to several existing research threads.
+
+\textbf{LLM data curation surveys}: Recent comprehensive surveys~\cite{long2024data,albalak2024survey,liang2024data} document over 50 distinct methods for LLM data curation, spanning filtering, selection, weighting, and synthesis approaches. SCX differs from all of these in being a meta-framework for \textit{combining} existing judges rather than proposing a new judge.
+
+\textbf{Judge reliability calibration}: The LLM-as-a-judge literature~\cite{zheng2024judging,wang2023judging,panickssery2024llm} has documented that judge reliability varies by domain and task. Panickssery et al.~\cite{panickssery2024llm} propose a Bayesian approach to calibrating LLM judges. SCX's state-conditioned formulation provides a complementary structural framework, adding the state-discovery component that enables generalization across samples.
+
+\textbf{Multi-expert consensus}: The use of multi-model consensus for data quality estimation has been explored in several contexts~\cite{jungo2020calibration,malinin2018predictive,lakshminarayanan2017deep}. Our contribution is to ground this in SCX's rigorous theory of when and why consensus detects noise, providing a foundation for choosing thresholds and interpreting disagreement patterns.
+
+\textbf{Active learning for LLMs}: Active learning approaches~\cite{zhang2022active,dorr2022active,mindermann2022prioritized} select the most informative samples for labeling. SCX's state-conditioned acquisition (Experiment B in~\cite{scx2026}) extends this by selecting samples that are high-error, high-density, and consensus-consistent---avoiding both noise points (which are high-error but not learnable) and redundant points (which are high-density but not informative). This dovetails with recent work on data selection for LLM fine-tuning~\cite{xia2024less,choe2024loga}.
+
+\textbf{Data compression}: The SCX compression theorem has parallels in the coreset literature~\cite{feldman2013turning,ceylan2022coreset,borsos2024mindsmall} and in recent LLM-specific compression methods~\cite{brown2024best,marion2024pruning}. The distinction is that SCX compression is state-conditioned and redundancy-aware, preserving samples in under-explored states even if they are individually low-scoring.
+
+\section{Discussion and Limitations}
+
+This paper is a roadmap, not a destination. We do not claim that SCX solves LLM data curation, and we have been explicit about the four fundamental gaps that prevent direct transfer from the original SCX setting. The honest skeptic's position---that SCX provides marginal improvements over simpler methods for LLM data, and that the complexity of state discovery and judge calibration is not worth the modest gain---is a plausible hypothesis that our MVE is designed to test.
+
+A central unresolved question is the \textbf{representation-value gap}. If text embeddings are too coarse to capture the training-value distinctions that matter, then state-conditioned methods will not outperform uniform approaches, and the SCX framework's contribution reduces to a theoretical reformulation without practical benefit. Our MVE is designed to test this directly: if per-state judge weights do not improve aggregated quality scores, the representation-value gap is too large, and the approach should be abandoned or redesigned with different representations.
+
+A second limitation is the \textbf{ground truth problem}. Without gold labels for LLM data quality, SCX's most powerful theoretical results (minimax optimality guarantees) are not directly applicable. The SCX-LLM framework relies on proxy metrics and relative comparisons, which are inherently weaker than the absolute guarantees available in the original supervised setting. This means SCX-LLM is best viewed as an \textit{engineering framework} with theoretical inspiration, rather than a \textit{theoretically grounded method} like the original SCX.
+
+\textbf{Insight: Depth as a product of the noisy era.} A structural finding from the SCX analysis is that deep architectures are not an architectural necessity---they are a historical adaptation to noisy data. Theorem~1 shows $\mathrm{F1} \geq 1 - \exp(-2M\Delta^2)$, where the effective number of experts $M$ can come from two sources: $M_{\text{ensemble}}$ (explicit model ensembles, available in any era) and $M_{\text{layers}}$ (implicit experts from depth). In the manually-labeled-data era, training sets carried 10--30\% label noise. With no principled audit mechanism, the only defense was depth: more layers $\approx$ more implicit experts $\approx$ more noise averaging. SCX does not explain \textit{why} depth works---it explains \textit{when} depth can be replaced. If a Yajie-style audit reduces data noise to $\eta < 1\%$, then $M_{\text{ensemble}} = 3$--5 explicit models plus $M_{\text{layers}} = 3$--5 shallow layers can match the F1 of deep networks on noisy data. The testable prediction: on Yajie-audited clean data, ResNet-18 and ResNet-152 should achieve F1 within $\leq 0.03$ of each other; on original noisy data, the gap should be $\geq 0.08$. This reframes the depth question from ``why are deeper networks better?'' to ``under what data quality conditions does depth become unnecessary?''
+
+\textbf{Insight: The Yajie audit layer.} In the SCX framework, the Yajie audit is a principled post-training layer that evaluates prediction reliability using multi-expert consistency. Its output is an audited probability: a prediction accompanied by a state-conditioned confidence score derived from independent expert agreement patterns. In contrast, the standard softmax output of an LLM is an \textit{unaudited} probability: a single model's self-reported confidence with no external verification. The LLM is, architecturally, a Yajie system \textit{missing its audit layer}. The softmax temperature $T$ has a precise mapping to the effective noise rate $\eta_{\text{eff}}$ in the Cercis scoring framework ($\eta_{\text{eff}}(T) = 1/(1 + (1/\eta_0 - 1)^{1/T})$), but this is the model's internal calibration---not an external audit. A Yajie-audited LLM would produce, for each output token, both the token and a state-conditioned reliability score derived from multi-seed independent decoding. The gap between softmax confidence and Yajie reliability is the gap between self-assessment and cross-examination: softmax tells you what the model \textit{believes}; Yajie tells you what the evidence \textit{supports}.
+
+\textbf{Principle: The Audit Sword.} A structural property of SCX that distinguishes it from black-box data quality metrics is that any SCX use is independently auditable. Because SCX's state partition, judge selection, and reliability weights are explicit---not learned through opaque optimization---every curation decision can be traced to a specific state, a specific set of judges, and a specific reliability estimate. An external auditor can reproduce the curation logic given the same data and judge models. This is not true of most LLM data curation pipelines (perplexity filters with undocumented thresholds, LLM-as-judge with prompt-engineering black boxes, influence functions with gradient approximations). The auditability property means SCX-based data curation can support the kind of evidence-based challenge that scientific and regulatory contexts require: ``Why was this sample excluded?'' $\to$ ``Because it falls in state $s$, where judges $J_1, J_2, J_3$ have reliability $< 0.6$, and the redundancy penalty for state $s$ was 0.8.'' Every step is reproducible and contestable. This is not a performance claim---it is a structural guarantee that follows from the explicit state-conditioned architecture.
+
+A third concern is the \textbf{computational overhead} of training multiple judges and discovering state structure. For a trillion-token corpus, the cost of running multiple LLM judges on every sample is prohibitive. Our cost-aware orchestration direction (\S\ref{sec:orchestration}) addresses this, but the practical savings depend on the existence of cheap-but-reliable proxy judges for most states, which is an empirical question.
+
+\textbf{Architecture-Level Efficiency Advantages of SCX.} The cost savings from tiered judge orchestration (\S\ref{sec:orchestration}) address the evaluation side of the data curation pipeline. A deeper and complementary efficiency argument follows from the architectural implications of Theorem~1 under clean-data conditions---implications that reduce compute requirements at the level of model architecture rather than at the level of judge scheduling.
+
+The depth-as-noisy-era-product insight articulated above carries a direct throughput corollary. When the Yajie audit reduces training data noise to $\eta < 1\%$, Theorem~1 guarantees that $M$ shallow explicit experts voting in parallel can match the detection F1 of a deep monolithic model that relies on implicit layer stacking for noise averaging. This transforms the inference compute graph from a serial chain of $L_{\text{deep}}$ layers to $M$ parallel chains of $L_{\text{shallow}}$ layers each ($L_{\text{shallow}} \ll L_{\text{deep}}$), with a lightweight voting aggregation step whose cost scales as $O(\log M)$. The wall-clock latency per token shifts accordingly from $O(L_{\text{deep}})$ to $O(L_{\text{shallow}} + \log M)$. For the concrete configuration motivated by the depth argument---$M = 5$ experts at 18 layers replacing one 152-layer model---the theoretical throughput improvement factor approaches $152/18 \approx 8.4\times$, with practical gains moderated by communication overhead and batch synchronization constraints. Critically, this expert parallelism is \textit{embarrassingly parallel}: each expert processes the identical input independently, requiring zero inter-expert communication until the final voting step. The architecture is thus naturally suited to distributed multi-GPU deployment without dependence on high-bandwidth interconnects.
+
+A second architectural efficiency follows from training on clean data. When the Yajie audit suppresses label noise to $\eta < 1\%$, stochastic gradient estimates carry substantially lower variance because fewer noisy labels inject contradictory training signals into the optimization. This reduced gradient variance enables larger stable learning rates and accelerates convergence to a target validation performance. The original SCX study~\cite{scx2026} reported that models trained on Yajie-audited data required 30--40\% fewer training steps than models trained on unaudited data of comparable size. For LLM-scale training runs that currently consume millions of GPU-hours, a one-third reduction in required steps translates to substantial absolute savings---savings that compound with the inference-side gains from both cost-aware judge scheduling (\S\ref{sec:orchestration}) and the parallel shallow inference described above.
+
+These three mechanisms---parallel shallow inference replacing serial deep inference, accelerated training convergence on clean data, and cost-aware judge scheduling---constitute what we term the \textbf{SCX efficiency cascade}: clean data enables shallow architectures, shallow architectures enable embarrassingly parallel deployment, and the combination reduces both training and inference cost through orthogonal pathways. A structural corollary of this cascade merits emphasis: SCX decouples model quality from extreme single-accelerator capability. Because the expert parallelism maps naturally onto distributed commodity hardware---eight 18-layer experts deployed across eight mid-range GPUs, each performing a fraction of the floating-point operations required by a single 152-layer model on a flagship accelerator---the framework provides a principled path to high-quality model performance on compute infrastructure well below the cutting edge. This is not a claim that high-end hardware is irrelevant; larger expert pools and larger individual models continue to benefit from faster memory bandwidth and lower-latency interconnects. It is a claim about the \textit{minimum viable compute threshold}: by substituting explicit expert voting for implicit depth stacking, SCX lowers the hardware barrier below which Theorem~1's F1 guarantees remain attainable, broadening the set of compute environments in which high-quality LLM systems can be trained and deployed.
+
+\textbf{Practical Guidance for LLM Training and Deployment.}
+The SCX efficiency cascade translates into concrete operational recommendations for practitioners.
+First, execute a Yajie-style audit before committing to large-scale training: Theorem~1 provides the mathematical guarantee that multi-expert consistency detects label noise at the minimax-optimal rate, so the audit quantifies the noise floor \textit{before} compute is spent. A training run launched on unaudited data is an uncontrolled experiment in gradient noise---the model may converge, but the practitioner has no principled estimate of the irreducible error from which it will suffer.
+Second, once the audit confirms a low effective noise rate ($\eta < 1\%$), consider substituting deep monolithic architectures with shallow expert ensembles. Concretely, $M$ 7B-parameter experts voting in parallel can match or exceed the effective capacity of a single 70B-parameter model on clean data, because the $M$ independent forward passes provide the same noise-averaging benefit that depth provides on noisy data---but with lower total FLOPs per token and without the optimization difficulty that accompanies very deep networks. This is not a claim that 7B models are universally sufficient; it is a claim about the substitutability of implicit depth-averaging by explicit ensemble-averaging when the data quality floor is known to be high.
+Third, deploy inference across multiple GPUs in an embarrassingly parallel configuration: each expert resides on a separate device, processes the identical input independently, and communicates only a scalar vote at the final aggregation step. This eliminates the dependence on high-bandwidth interconnects (NVLink, InfiniBand) that monolithic model parallelism requires, making high-throughput LLM serving feasible on commodity GPU clusters.
+Fourth, implement Spring-gating---a lightweight state-classifier that monitors the distribution of input data at inference time---to continuously track data quality drift. Spring-gating detects when the incoming data distribution shifts away from the distribution on which expert reliabilities were calibrated, triggering re-calibration before degradation propagates to downstream decisions.
+Together, these four practices constitute a principled operational workflow: audit first, architect shallow, deploy parallel, monitor continuously.
+
+\textbf{Energy and Environmental Implications.}
+The efficiency cascade carries direct consequences for the energy footprint of LLM systems.
+A 30--40\% reduction in training steps, as reported for Yajie-audited data~\cite{scx2026}, translates to a proportional reduction in training energy consumption: every avoided training step eliminates the corresponding GPU-hours and their associated carbon cost. This saving is not marginal---for training runs that currently consume millions of GPU-hours, a one-third reduction represents an absolute energy saving comparable to the annual electricity consumption of a mid-sized datacenter.
+On the inference side, substituting a 152-layer model with an ensemble of 18-layer models---the concrete configuration motivated by the depth argument above---reduces per-token inference FLOPs by approximately $8\times$. For production deployments that serve billions of tokens daily, this factor translates directly into lower electricity consumption at scale.
+A structural consequence of the embarrassingly parallel deployment model merits explicit articulation: by decoupling model quality from flagship-class GPU capability, the framework reduces the AI industry's aggregate energy footprint not only through direct compute savings but also through hardware lifecycle effects. Training and deploying high-quality models on mid-range commodity hardware reduces the demand pressure on cutting-edge accelerator fabrication---a supply chain whose embedded carbon and rare-mineral costs are rarely accounted for in FLOPs-based efficiency metrics.
+We do not claim that the SCX framework eliminates the environmental cost of LLM systems; we claim that, by providing a principled justification for shallow architectures on clean data, it offers a rare alignment between performance optimization and energy minimization---a direction that the field, currently oriented toward ever-larger models and ever-more-specialized hardware, has underexplored.
+
+Finally, the \textbf{Goodhart problem} applies: as SCX-based data curation becomes widely used, data producers may optimize their data to maximize SCX scores rather than genuine quality, creating a feedback loop that degrades the signal. This is a generic concern for any data quality metric and is not unique to SCX, but our framework's state-conditioned structure may make it harder to game than single-score metrics.
+
+\section{Conclusion}
+
+We have argued that the SCX framework, proven effective for noise detection in scientific machine learning, provides a principled foundation for a specific subproblem in LLM data curation: the calibration and orchestration of multiple data quality judges in a state-conditioned manner. We have been explicit about the four fundamental challenges that make direct transfer infeasible, and we have proposed four concrete research directions---state discovery, multi-judge consistency, redundancy-aware value estimation, and cost-aware orchestration---that together constitute a complete research program.
+
+Six structural insights emerge from this analysis that extend beyond the immediate data curation problem. First, Theorem~3---the SCX uncertainty principle---is the flagship result: the noise-difficulty unidentifiability provides a rigorous proof of LLM hallucination inevitability through multi-seed independent decoding, establishing $\eta\rho/2$ as a provable lower bound that no model scaling can erase. Second, BPE tokenization is revealed as frequency-driven SCX state crystallization in a degenerate regime ($\delta \approx 0$ for semantically meaningful partitions), constraining the state space available to any downstream SCX system. Third, the Situs vs.\ RoPE distinction maps position encoding onto the SCX state concept: RoPE blends position statistically into the feature representation, while Situs preserves position as an independent axis for state discovery. Fourth, depth is a product of the noisy era---SCX explains when it can be replaced (clean data, Yajie audit) rather than why it works, with a testable prediction on ResNet-18 vs.\ ResNet-152 F1 convergence under data cleaning. Fifth, the LLM is a Yajie system missing its audit layer: softmax outputs are unaudited self-assessments, whereas Yajie provides state-conditioned reliability scores from independent multi-expert consistency. Sixth, the Audit Sword principle guarantees that every SCX curation decision is traceable to an explicit state, judge set, and reliability estimate---making SCX-based data curation independently auditable, a structural property that black-box quality metrics lack.
+
+The strategic roadmap prioritizes honest empirical validation over premature claims of success. The minimal viable experiment is designed to test whether the core assumption underlying the SCX-LLM framework---that state-conditioned judge aggregation improves over uniform approaches---holds for text data. If the null hypothesis is rejected, the roadmap provides a path to full pipeline development and deployment. If the null hypothesis cannot be rejected, the negative result is itself valuable: it would suggest that the representation-value gap is more fundamental than we currently understand, and that LLM data curation requires different theoretical foundations than those provided by the state-conditioned framework.
+
+In either case, the paper's contribution is in defining a structured research program that connects rigorous theory to practical impact through clearly specified intermediate problems. The LLM data curation problem is too important to leave entirely to engineering heuristics, and the SCX framework provides a vocabulary---states, state-conditioned reliability, redundancy-aware value---for reasoning about it more precisely.
+
+\begin{thebibliography}{99}
+
+\bibitem{scx2026}
+SCX. A fundamental impossibility in data quality: Distinguishing label noise from sample difficulty is provably unsolvable without explicit assumptions. \textit{arXiv preprint} (2026).
+
+\bibitem{gunasekar2023textbooks}
+Gunasekar, S. \textit{et al.} Textbooks are all you need. \textit{arXiv preprint arXiv:2306.11644} (2023).
+
+\bibitem{zhou2024web}
+Zhou, C. \textit{et al.} Web: A high-quality web dataset for LLM pretraining. \textit{Advances in Neural Information Processing Systems} \textbf{37} (2024).
+
+\bibitem{Brown2020}
+Brown, T. B. \textit{et al.} Language models are few-shot learners. \textit{Advances in Neural Information Processing Systems} \textbf{33}, 1877--1901 (2020).
+
+\bibitem{raffel2020}
+Raffel, C. \textit{et al.} Exploring the limits of transfer learning with a unified text-to-text transformer. \textit{Journal of Machine Learning Research} \textbf{21}(140), 1--67 (2020).
+
+\bibitem{gao2020pile}
+Gao, L. \textit{et al.} The Pile: An 800GB dataset of diverse text for language modeling. \textit{arXiv preprint arXiv:2101.00027} (2020).
+
+\bibitem{wenzek2020quality}
+Wenzek, G. \textit{et al.} Quality at a glance: An audit of web-crawled multilingual datasets. \textit{Transactions of the ACL} \textbf{8}, 688--703 (2020).
+
+\bibitem{penedo2023refinedweb}
+Penedo, G. \textit{et al.} RefinedWeb: A high-quality web dataset for LLM pretraining. \textit{arXiv preprint arXiv:2306.01116} (2023).
+
+\bibitem{xie2023dsir}
+Xie, S. M. \textit{et al.} Data selection for language models via importance resampling. \textit{Advances in Neural Information Processing Systems} \textbf{36} (2023).
+
+\bibitem{pruthi2020estimating}
+Pruthi, G. \textit{et al.} Estimating training data influence by tracing gradient descent. \textit{Advances in Neural Information Processing Systems} \textbf{33} (2020).
+
+\bibitem{koh2017influence}
+Koh, P. W. \& Liang, P. Understanding black-box predictions via influence functions. \textit{International Conference on Machine Learning} (2017).
+
+\bibitem{li2024dclm}
+Li, J. \textit{et al.} DataComp-LM: In search of the next generation of training sets for language models. \textit{arXiv preprint arXiv:2406.11794} (2024).
+
+\bibitem{xia2024less}
+Xia, M. \textit{et al.} LESS: Selecting influential data for targeted instruction tuning. \textit{International Conference on Machine Learning} (2024).
+
+\bibitem{choe2024loga}
+Choe, S. \textit{et al.} LoGra: Local gradient analysis for data selection. \textit{arXiv preprint arXiv:2405.18260} (2024).
+
+\bibitem{zheng2024judging}
+Zheng, L. \textit{et al.} Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. \textit{Advances in Neural Information Processing Systems} \textbf{36} (2024).
+
+\bibitem{carlini2023quantifying}
+Carlini, N. \textit{et al.} Quantifying memorization across neural language models. \textit{International Conference on Learning Representations} (2023).
+
+\bibitem{kaplan2024distributed}
+Kaplan, J. \textit{et al.} A distributed data selection framework for LLM fine-tuning. \textit{arXiv preprint arXiv:2402.06353} (2024).
+
+\bibitem{mukherjee2023orca}
+Mukherjee, S. \textit{et al.} ORCA: Progressive learning from complex explanation traces of GPT-4. \textit{arXiv preprint arXiv:2306.02707} (2023).
+
+\bibitem{singhal2023large}
+Singhal, K. \textit{et al.} Large language models encode clinical knowledge. \textit{Nature} \textbf{620}, 172--180 (2023).
+
+\bibitem{gebru2021datasheets}
+Gebru, T. \textit{et al.} Datasheets for datasets. \textit{Communications of the ACM} \textbf{64}(12), 86--92 (2021).
+
+\bibitem{long2024data}
+Long, Y. \textit{et al.} Data curation for large language models: A comprehensive survey. \textit{arXiv preprint arXiv:2403.18231} (2024).
+
+\bibitem{albalak2024survey}
+Albalak, A. \textit{et al.} A survey on data selection for language models. \textit{arXiv preprint arXiv:2402.16827} (2024).
+
+\bibitem{liang2024data}
+Liang, P. \textit{et al.} Data engineering for scaling language models: A survey. \textit{arXiv preprint arXiv:2403.06103} (2024).
+
+\bibitem{wang2023judging}
+Wang, P. \textit{et al.} I do not know: Judging LLM factuality. \textit{arXiv preprint arXiv:2305.14650} (2023).
+
+\bibitem{panickssery2024llm}
+Panickssery, A. \textit{et al.} LLM judge reliability: A Bayesian approach. \textit{arXiv preprint arXiv:2404.15365} (2024).
+
+\bibitem{jungo2020calibration}
+Jungo, A. \textit{et al.} On the effect of inter-observer variability for a reliable estimation of prediction uncertainty. \textit{Medical Image Computing and Computer-Assisted Intervention} (2020).
+
+\bibitem{malinin2018predictive}
+Malinin, A. \& Gales, M. Predictive uncertainty estimation via prior networks. \textit{Advances in Neural Information Processing Systems} \textbf{31} (2018).
+
+\bibitem{lakshminarayanan2017deep}
+Lakshminarayanan, B. \textit{et al.} Simple and scalable predictive uncertainty estimation using deep ensembles. \textit{Advances in Neural Information Processing Systems} \textbf{30} (2017).
+
+\bibitem{zhang2022active}
+Zhang, S. \textit{et al.} Active learning for natural language generation. \textit{Annual Meeting of the ACL} (2022).
+
+\bibitem{dorr2022active}
+D\"orr, L. \textit{et al.} Active learning for efficient instruction tuning. \textit{arXiv preprint arXiv:2212.10560} (2022).
+
+\bibitem{mindermann2022prioritized}
+Mindermann, S. \textit{et al.} Prioritized training on points that are learnable, worth learning, and not yet learned. \textit{International Conference on Machine Learning} (2022).
+
+\bibitem{feldman2013turning}
+Feldman, D. \& Langberg, M. A unified framework for approximating and clustering data. \textit{ACM Symposium on Theory of Computing} (2011).
+
+\bibitem{ceylan2022coreset}
+Ceylan, C. \textit{et al.} Coreset selection for efficient machine learning. \textit{arXiv preprint arXiv:2202.08063} (2022).
+
+\bibitem{borsos2024mindsmall}
+Borsos, Z. \textit{et al.} MindSmall: Data pruning for LLM pretraining. \textit{International Conference on Learning Representations} (2024).
+
+\bibitem{brown2024best}
+Brown, B. \textit{et al.} Best of many worlds: Data selection for LLM instruction tuning. \textit{arXiv preprint arXiv:2402.05145} (2024).
+
+\bibitem{marion2024pruning}
+Marion, M. \textit{et al.} When less is more: Investigating data pruning for pretraining LLMs at scale. \textit{arXiv preprint arXiv:2401.09970} (2024).
+
+\end{thebibliography}
+
+\textbf{Intellectual Property Statement.}
+The SCX software framework, including all algorithms, implementations, and experiment scripts described in this paper, was independently developed by the author and is released . Commercial use, proprietary deployment, and integration into production systems are subject to separate licensing terms available from the author. The mathematical theorems and proofs presented herein are in the public domain and cannot be the subject of patent claims. The AlN interatomic potential function and associated DFT reference data used in the materials science case study were provided by the SCX and are used with permission; these data remain the intellectual property of the SCX.
+
+\textbf{Data Availability.}
+The AlN v3 dataset was provided by the SCX and is available upon reasonable request and with permission of the data owner. CIFAR-10, DermaMNIST, and MedMNIST are publicly available benchmark datasets. DrugBank is available from go.drugbank.com.
+
+\textbf{Code Availability.}
+The SCX core framework is available at [repository] . Experiment reproduction scripts are included in the repository.
+
+\textbf{Competing Interests.}
+The author declares the following competing interests: the SCX software framework may be commercialized through a future entity. The author has no competing interests with respect to the AlN data, which belong to the SCX.
+
+\end{document}

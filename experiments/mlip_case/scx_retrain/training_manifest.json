@@ -1,0 +1,63 @@
+{
+  "experiment": "SCX-ACE retraining comparison",
+  "date": "2026-06-26",
+  "base_data": "AlN v3 rich_physics bulk_core (534 DFT frames)",
+  "comparisons": [
+    {
+      "name": "baseline_full",
+      "description": "Original full dataset (534 frames) \u2014 Single ACE baseline",
+      "extxyz": "labels_bulk_core.extxyz",
+      "n_frames": 534,
+      "expected_force_rmse": "0.045 eV/A"
+    },
+    {
+      "name": "scx_conservative",
+      "description": "SCX-conservative: remove 14 extreme (fmax>10)",
+      "extxyz": "G:\\Xiaogan_Supercomputing_data\\SCX\\experiments\\mlip_case\\scx_retrain\\labels_scx_conservative.extxyz",
+      "n_frames": 520,
+      "expected_force_rmse": "0.038 eV/A (est. -15%)"
+    },
+    {
+      "name": "scx_moderate",
+      "description": "SCX-moderate: remove 14 extreme + downweight 60 (fmax>5)",
+      "extxyz": "G:\\Xiaogan_Supercomputing_data\\SCX\\experiments\\mlip_case\\scx_retrain\\labels_scx_moderate.extxyz",
+      "n_frames": 520,
+      "expected_force_rmse": "0.032 eV/A (est. -29%)",
+      "notes": "60 frames downweighted"
+    },
+    {
+      "name": "scx_strict",
+      "description": "SCX-strict: remove all 74 fmax>5 frames",
+      "extxyz": "G:\\Xiaogan_Supercomputing_data\\SCX\\experiments\\mlip_case\\scx_retrain\\labels_scx_strict.extxyz",
+      "n_frames": 460,
+      "expected_force_rmse": "0.023 eV/A (est. -48%)"
+    }
+  ],
+  "training_config": {
+    "preset": "LINEAR",
+    "elements": [
+      "Al",
+      "N"
+    ],
+    "lmax": 3,
+    "n_rad_max": 14,
+    "n_rad_base": 8,
+    "max_order": 3,
+    "embedding_size": 24,
+    "cutoff": 6.0,
+    "target_updates": 2000,
+    "energy_weight": 1.0,
+    "force_weight": 50.0,
+    "stress_weight": 10.0,
+    "lr": 0.005,
+    "batch_size": 8
+  },
+  "validation": [
+    "Same test set (103 frames) across all comparisons",
+    "Per-batch force/energy/stress RMSE",
+    "EOS B0, V0 comparison",
+    "Elastic constants C11-C66",
+    "Phonon force RMSE"
+  ],
+  "expected_outcome": "SCX cleaning should improve force RMSE on thermal/MLMD batches without degrading performance on clean batches (EOS/elastic/cross/phonon). The conservative approach (removing only fmax>10) is the safest first step."
+}

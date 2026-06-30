@@ -1,0 +1,198 @@
+# Proposition 2: High-Error Sampling Suboptimality under Noise
+
+> 在噪声存在时，单纯基于残差（max-residual sampling）的主动采样策略不是最优的。高误差可能来自可学习的困难状态（应补充样本）或固有噪声（应丢弃）。
+
+---
+
+## 1 Statement
+
+### 1.1 正式陈述
+
+令 $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^N$ 为当前标注数据集，未标注池为 $\mathcal{U}$。对于 $x \in \mathcal{U}$，定义残差：
+
+$$r(x) = \ell(f_{\text{current}}(x), \hat{y}(x))$$
+
+其中 $\hat{y}(x)$ 是当前最佳预测。
+
+定义：
+
+- **可学习集** $H_{\text{learnable}} = \{x: \mathbb{E}[\ell(f(x), y) \mid x] \text{ 可通过更多采样降低}\}$
+- **噪声集** $H_{\text{noise}} = \{x: \mathbb{E}[\ell(f(x), y) \mid x] \text{ 不可降低（固有噪声）}\}$
+
+**max-residual 采样**：$x^* = \arg\max_{x \in \mathcal{U}} r(x)$
+
+若 $P(H_{\text{noise}}) > 0$，则纯 residual-based 采样策略 $\pi_{\text{res}}(x) \propto r_i = \ell(f(x_i), y_i)$ 的期望预算浪费存在严格正下界。
+
+### 1.2 假设
+
+1. **噪声存在的假设**：存在某个状态 $s_0$，使得 $\mathbb{E}[\varepsilon^2 | x \in s_0] \geq \sigma_0^2 > 0$
+2. **有限采样预算**：总标注预算为 $B \ll |\mathcal{U}|$
+3. **样本间独立性**：标注噪声在不同样本间独立（给定 $x$）
+
+---
+
+## 2 Formal Proof
+
+### 2.1 风险最小化框架
+
+定义采样策略 $\pi$ 的收益为：
+
+$$J(\pi) = \mathbb{E}_{(x_1^*, \ldots, x_B^*) \sim \pi}\left[\sum_{t=1}^B \Delta R(f_t | x_t^*)\right]$$
+
+其中 $\Delta R(f_t | x) = R(f_{t-1}) - R(f_t)$ 是标注 $x$ 后模型的期望风险降低。
+
+记 $r_i = r(x_i)$，$\hat{r}_i = \tilde{r}(x_i) - \varepsilon_i$ 为真实残差（不可观测）。
+
+**引理 1**：max-residual 策略 $\pi_{\text{MR}}$ 在 $B=1$ 时选择：
+
+$$x_{\text{MR}}^* = \arg\max_{i \in \mathcal{U}} \hat{r}_i + \varepsilon_i$$
+
+**引理 2**：最优策略 $\pi^*$ 在 $B=1$ 时选择：
+
+$$x_{\pi^*}^* = \arg\max_{i \in \mathcal{U}} \mathbb{E}[\Delta R(f | x_i)] = \arg\max_{i \in \mathcal{U}} \int \Delta R(f | x_i) dP_{\varepsilon_i}(\varepsilon_i)$$
+
+**定理**：若存在至少一个 pair $(i,j)$ 使得 $\hat{r}_i > \hat{r}_j$ 但 $\mathbb{E}[\Delta R(f|x_i)] < \mathbb{E}[\Delta R(f|x_j)]$，则 $\pi_{\text{MR}} \neq \pi^*$。
+
+### 2.2 证明
+
+**步骤 1：建立 $\Delta R$ 与 $r$ 的关系**
+
+对平滑损失 $L(f(x), y)$ 在 $f_{\text{current}}$ 处做 Taylor 展开：
+
+$$\Delta R(f|x) \approx r(x)^2 \cdot \frac{\partial^2 \mathbb{E}[L]}{\partial f^2}\bigg|_{f_{\text{current}}} + \sigma_y^2(x)$$
+
+其中 $\sigma_y^2(x)$ 是标签噪声方差。
+
+**步骤 2：噪声 $\varepsilon$ 引入偏差**
+
+观察到的残差平方 $[\tilde{r}(x)]^2 = [r_{\text{true}}(x) + \varepsilon]^2$ 满足：
+
+$$\mathbb{E}[[\tilde{r}(x)]^2 | x] = r_{\text{true}}(x)^2 + \sigma_\varepsilon^2(x)$$
+
+当 $\sigma_\varepsilon^2(x)$ 大时，max-residual 倾向于选择**噪声大的样本而非信息量大的样本**。
+
+**步骤 3：构造反例**
+
+考虑两个状态 $s_1, s_2$，各含 $n$ 个点。
+
+状态 $s_1$（可学习）：
+- $y_i = f^*(x_i) + \epsilon_i$，其中 $\epsilon_i \sim N(0, \sigma^2_{\text{low}})$
+- 当前模型 $f$ 在 $s_1$ 上有系统偏差：$\mathbb{E}[f(x) \mid x \in s_1] = f^*(x) + \mu$，其中 $\mu \gg 0$
+
+状态 $s_2$（噪声）：
+- $y_i = \text{常数} + \eta_i$，其中 $\eta_i \sim N(0, \sigma^2_{\text{high}})$，$\sigma^2_{\text{high}} \gg \sigma^2_{\text{low}}$
+- 当前模型 $f$ 在 $s_2$ 上已最优：$\mathbb{E}[f(x) \mid x \in s_2] = \text{常数}$
+
+**残差分析**：
+
+在 $s_1$ 中：$$r_i^{(1)} = (f(x_i) - y_i)^2 = (\mu - \epsilon_i)^2 = \mu^2 - 2\mu\epsilon_i + \epsilon_i^2$$
+$$\mathbb{E}[r^{(1)}] = \mu^2 + \sigma^2_{\text{low}}$$
+
+在 $s_2$ 中：$$r_i^{(2)} = (f(x_i) - y_i)^2 = \eta_i^2$$
+$$\mathbb{E}[r^{(2)}] = \sigma^2_{\text{high}}$$
+
+**参数条件**：令 $\mu^2 + \sigma^2_{\text{low}} < \sigma^2_{\text{high}}$。那么 $s_2$ 中的平均残差大于 $s_1$ 中的平均残差。
+
+**Max-Residual Sampling 行为**：选取全局残差最大的 $B$ 个点。由于 $\sigma^2_{\text{high}} \gg \mu^2 + \sigma^2_{\text{low}}$，几乎所有被选中的点都来自 $s_2$（噪声状态）。
+
+**增益分析**：在 $s_2$ 中采样额外的点无助于减少预测误差——模型已经最优。在 $s_1$ 中每采样一个点，可将偏差从 $\mu^2$ 降低到 $O(\sigma^2_{\text{low}} / n_{s_1})$。
+
+**期望增益下界**：若 Max-Residual 采了 $B$ 个 $s_2$ 中的点：
+
+$$\mathbb{E}[\text{增益}_{\text{res}}] = O\left(\frac{\sigma^2_{\text{low}}}{n_{s_1}}\right) \cdot \left(\frac{n_{s_1}}{n_{s_1} + n_{s_2}}\right)^B \to 0 \quad \text{as } B \to \infty$$
+
+**差异分析**：设 $B_{\text{res}}$ 为 Max-Residual 分配在 $s_1$ 的预算，$B_{\text{state}}$ 为 State-Level Sampling 分配在 $s_1$ 的预算。由于 Max-Residual 偏向 $s_2$，$B_{\text{res}} \ll B_{\text{state}}$。
+
+更新后的期望损失：
+- Max-Residual: $\mathbb{E}[\mathcal{L}_{\text{res}}] \approx \frac{\sigma^2_{\text{low}}}{n_{s_1} + B_{\text{res}}} + \sigma^2_{\text{high}}$
+- State-Level: $\mathbb{E}[\mathcal{L}_{\text{state}}] \approx \frac{\sigma^2_{\text{low}}}{n_{s_1} + B_{\text{state}}} + \sigma^2_{\text{high}}$
+
+差值：$\mathbb{E}[\mathcal{L}_{\text{res}}] - \mathbb{E}[\mathcal{L}_{\text{state}}] \approx \sigma^2_{\text{low}}\left(\frac{1}{n_{s_1} + B_{\text{res}}} - \frac{1}{n_{s_1} + B_{\text{state}}}\right) > 0$。
+
+因此 $\mathbb{E}[\text{增益}_{\text{state}}] - \mathbb{E}[\text{增益}_{\text{res}}] > 0$。$\square$
+
+### 2.3 信息论视角的补充证明
+
+令 $I(X; Y | f)$ 为在给定当前模型时，未标注样本 $X$ 和真实标签 $Y$ 之间的条件互信息。max-residual 采样最大化的是 $H[\hat{Y} | f, X] = \mathbb{E}[\ell(\hat{Y}, Y)]$，而非 $I(X; Y|f)$。
+
+由数据处理不等式：
+
+$$I(X; Y | f) \leq H[\hat{Y}|f] - H[\hat{Y}|f, X, Y] + H[Y|f] - H[Y|f, X]$$
+
+高噪声下，$H[Y|f, X]$ 增大，而 $I(X; Y|f)$ 减小。max-residual 无法区分"高不确定性源于信息缺失"与"高不确定性源于固有噪声"。
+
+---
+
+## 3 Noise Score Derivation
+
+SCX 中的噪声分数定义为：
+
+$$\text{NoiseScore}(x_i) = r_i \cdot \frac{1}{\rho(s_i) + \varepsilon} \cdot [1 - C(s_i)]$$
+
+其中：
+
+- $r_i = \ell(f(x_i), y_i)$：点态残差
+- $\rho(s_i)$：状态 $s_i$ 的出现概率（稀有状态降权）
+- $C(s_i)$：状态 $s_i$ 的内部一致性
+
+该噪声分数可以理解为一个多因子校正的残差：
+
+1. **残差因子 $r_i$**：基础误差信号
+2. **稀有性校正 $1/(\rho(s_i)+\varepsilon)$**：稀有状态的残差天然不可靠，需降权
+3. **一致性校正 $[1 - C(s_i)]$**：状态内部一致时，残差更可能是 learnable；不一致时更可能是 noise
+
+噪声分数与 Tsybakov 噪声条件的联系：$C(s) \approx 1 - 2 \cdot \mathbb{E}_{x \in s}[|\eta(x) - 1/2|]$，其中 $\eta(x) = P(Y=1|X=x)$。当 $C(s) \to 1$ 时，状态内部近似为贝叶斯最优决策（$\alpha \to \infty$）；当 $C(s) \to 0$ 时，状态内标签接近随机（$\alpha \to 0$）。
+
+---
+
+## 4 State-Level Alternative
+
+### 4.1 状态级采样准则
+
+SCX 的状态级主动采样选择：
+
+$$s^* = \arg\max_s \bar{r}(s) \cdot \rho(s) \cdot C(s)$$
+
+其中：
+- $\bar{r}(s)$：状态 $s$ 的平均残差（代表改善潜力）
+- $\rho(s)$：状态 $s$ 的出现概率（代表覆盖范围）
+- $C(s)$：状态 $s$ 的内部一致性（代表可学习性）
+
+### 4.2 改进上界
+
+若 SCX 的状态获取函数 $V(s)$ 能够正确区分可学习状态和噪声状态（即 $L(s)$ 是 $s$ 的可学习性的精确度量），则 SCX 采样的期望预算浪费至多为：
+
+$$\mathbb{E}[\text{浪费}_{\text{SCX}}] \leq B \cdot \epsilon_{\text{est}}$$
+
+其中 $\epsilon_{\text{est}} = P(L(s) \text{ 估计错误})$。相比之下，Max-Residual 的期望浪费下界为：
+
+$$\mathbb{E}[\text{浪费}_{\text{res}}] \geq B \cdot P(x \in H_{\text{noise}} \mid \text{残差最高})$$
+
+当 $P(x \in H_{\text{noise}} \mid \text{残差最高}) \gg \epsilon_{\text{est}}$ 时，SCX 显著优于 Max-Residual。
+
+---
+
+## 5 Implications for SCX
+
+1. **解释了为什么 data poisoning 能被 SCX 检测**：
+   - 高误差 + 孤立（低 $\rho$）+ 状态不一致（低 $C$）→ noise / poison
+   - 高误差 + 密集（高 $\rho$）+ 状态一致（高 $C$）→ learnable hard state
+
+2. **预算分配策略**：标注预算应优先分配给 $\bar{r}(s) \cdot \rho(s) \cdot C(s)$ 高的状态，而非残差最高的样本。
+
+3. **与 Huber 污染模型的关系**：噪声分数 $\text{NoiseScore}(x_i)$ 对应状态 $s_i$ 中识别污染点的依据：
+   $$P_{X|s} = (1 - N(s)) \cdot P_{X|s}^0 + N(s) \cdot P_{X|s}^{\text{noise}}$$
+   其中 $N(s)$ 为噪声比例。
+
+4. **与 UCB bandit 的联系**：$V(s)$ 可以理解为状态臂 bandit 的 UCB 获取函数的推广：
+   $$V(s) = \underbrace{\bar{r}(s) \cdot \rho(s)}_{\text{exploitation}} \cdot \underbrace{L(s) \cdot [1-D(s)]}_{\text{exploration}} \cdot \underbrace{\max_m SCX_m(s)}_{\text{expertise}}$$
+
+---
+
+## 参考文献
+
+1. SCX 核心框架数学分析. `01_SCX_核心框架_数学分析.md` Section 2.2
+2. SCX 数学基础与证明建构. `05_数学根源与证明.md` Proposition 2
+3. Tsybakov, A. B. (2004). Optimal aggregation of classifiers in statistical learning. *Annals of Statistics*.
+4. Huber, P. J. (1964). Robust estimation of a location parameter. *Annals of Mathematical Statistics*.
+5. MacKay, D. J. C. (1992). Information-based objective functions for active data selection. *Neural Computation*.

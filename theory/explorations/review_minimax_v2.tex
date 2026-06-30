@@ -1,0 +1,702 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{ctexart}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{SCX}
+\date{2026}
+
+\begin{document}
+
+\section{Review: Minimax Lower Bound v2 (Hellinger Distance
+Proof)}\label{review-minimax-lower-bound-v2-hellinger-distance-proof}
+
+\begin{quote}
+\textbf{File reviewed}:
+\texttt{G:\textbackslash{}Xiaogan\_Supercomputing\_data\textbackslash{}SCX\textbackslash{}theory\textbackslash{}explorations\textbackslash{}minimax\_lower\_bound\_v2.md}
+
+\textbf{Review date}: 2026-06-27
+
+\textbf{Scope}: Full mathematical verification of all inequalities,
+formulas, and derivations. Numerical cross-checking of all claimed
+relationships.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1. Overall Verdict}\label{overall-verdict}
+
+The proof correctly fixes the three fatal issues from v1 (Slud's
+inequality, chi-squared direction, F1 algebra), and the core Hellinger
+tensorization approach is sound. \textbf{However, two new fatal errors
+have been introduced in the F1 conversion section} (Section 7), and a
+significant formula error appears in the K \textgreater{} 2 section
+(Section 8.3).
+
+\textbf{Bottom line}: The testing error lower bound (Part a) is correct.
+The F1 lower bound (Part b) has two algebraic errors that invalidate its
+stated constant. The rate optimality claim (Part c) remains correct
+because the exponential rate \texttt{exp(-2MDelta\^{}2)} is preserved
+under the corrected analysis.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2. Issues Found}\label{issues-found}
+
+\subsubsection{Issue 1 {[}FATAL{]}: Section 7.3 -- Backwards inequality
+in F1
+simplification}\label{issue-1-fatal-section-7.3-backwards-inequality-in-f1-simplification}
+
+\textbf{Location}: Lines 423-427
+
+\textbf{Claim}:
+
+\begin{verbatim}
+(1-eta)*(rho^M/4)/(2eta+(1-eta)*(rho^M/4)) >= (1-eta)*rho^M/(8eta)
+\end{verbatim}
+
+\textbf{What is wrong}: The inequality is backwards. Since
+\texttt{2eta\ +\ (1-eta)*(rho\^{}M/4)\ \textgreater{}\ 2eta} for any
+positive \texttt{rho\^{}M}, the left-hand side has a larger denominator
+with the same numerator, making it strictly smaller. The correct
+inequality is \texttt{\textless{}=}, not \texttt{\textgreater{}=}.
+
+\textbf{Verification} (eta = 0.3, rho\^{}M = 0.1):
+
+\begin{verbatim}
+LHS = 0.7*0.025/(0.6+0.7*0.025) = 0.02834
+RHS = 0.7*0.1/(8*0.3) = 0.02917
+LHS < RHS, so LHS >= RHS is FALSE.
+\end{verbatim}
+
+\textbf{Consequence}: The simplified bound
+\texttt{1-F1\ \textgreater{}=\ rho\^{}M/(16eta)} is not validly derived.
+The correct inequality direction gives an upper bound
+\texttt{LHS\ \textless{}=\ RHS}, which is useless for lower-bounding
+1-F1.
+
+\textbf{How to fix}: The exact bound must be kept in its unsimplified
+form:
+
+\begin{verbatim}
+1-F1 >= (1-eta)(rho^M/4)/(2eta+(1-eta)(rho^M/4))
+\end{verbatim}
+
+Or a correct simplification with a multiplicative correction:
+
+\begin{verbatim}
+1-F1 >= (1-eta)*rho^M/(8eta) * (1 - (1-eta)*rho^M/(4eta))
+\end{verbatim}
+
+(using \texttt{1/(1+x)\ \textgreater{}=\ 1-x} for
+\texttt{x\ \textgreater{}=\ 0})
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Issue 2 {[}FATAL{]}: Section 7.5 -- Wrong case selected
+as tighter
+bound}\label{issue-2-fatal-section-7.5-wrong-case-selected-as-tighter-bound}
+
+\textbf{Location}: Lines 439-467
+
+\textbf{Claim}:
+
+\begin{verbatim}
+eps/2 >= (1-eta)*eps/(2eta+(1-eta)*eps) for eta <= 1/2
+\end{verbatim}
+
+And consequently:
+
+\begin{verbatim}
+min(eps/(2-eps), (1-eta)*eps/(2eta+(1-eta)*eps)) = (1-eta)*eps/(2eta+(1-eta)*eps)
+\end{verbatim}
+
+\textbf{What is wrong}: The inequality direction is reversed for
+\texttt{eta\ \textless{}\ 1/2} and small \texttt{eps} (the regime of
+interest). The proof attempts to verify this by cross-multiplication,
+claiming:
+
+\texttt{2eta\ +\ (1-eta)*eps\ \textgreater{}=\ 2*(1-eta)} follows from
+\texttt{eps\ \textgreater{}=\ 0,\ eta\ \textgreater{}=\ 0}.
+
+But the correct cross-multiplication is:
+
+\begin{verbatim}
+eps/2 >= (1-eta)*eps/(2eta+(1-eta)*eps)
+=> 2eta + (1-eta)*eps >= 2*(1-eta)
+=> (1-eta)*eps >= 2 - 4eta
+\end{verbatim}
+
+For \texttt{eta\ =\ 0.3}: requires
+\texttt{eps\ \textgreater{}=\ 0.8/0.7\ ≈\ 1.14}. Impossible since
+\texttt{eps\ \textless{}=\ 1} (and typically
+\texttt{eps\ \textless{}\textless{}\ 1}). For \texttt{eta\ =\ 0.4}:
+requires \texttt{eps\ \textgreater{}=\ 0.4/0.6\ ≈\ 0.667}. Possible but
+atypical -- rho\^{}M would need to be \textgreater= 2.67, impossible
+since rho \textless= 1. For \texttt{eta\ =\ 0.49}: requires
+\texttt{eps\ \textgreater{}=\ 0.04/0.51\ ≈\ 0.078}. Possible for some
+parameters. For \texttt{eta\ =\ 0.5}: requires
+\texttt{eps\ \textgreater{}=\ 0}. True.
+
+So the claim only holds when
+\texttt{(1-eta)*eps\ \textgreater{}=\ 2-4eta}, i.e., when
+\texttt{eta\ \textgreater{}=\ 1/(2-eps/(1-eps))} approximately. For most
+of the parameter space (especially small \texttt{eps} and
+small-to-moderate \texttt{eta}), the claim is FALSE.
+
+\textbf{Verification} (eta = 0.3, eps = 0.1):
+
+\begin{verbatim}
+eps/2 = 0.05
+(1-eta)*eps/(2eta+(1-eta)*eps) = 0.7*0.1/0.67 ≈ 0.104
+So eps/2 < case2_bound, not >=.
+\end{verbatim}
+
+The correct minimum is:
+\texttt{min(eps/(2-eps),\ (1-eta)*eps/(2eta+(1-eta)*eps))\ =\ eps/(2-eps)}
+(Case 1)
+
+for all \texttt{eta\ \textless{}\ 1/2} and small \texttt{eps}.
+
+\textbf{Consequence}: The claimed universal bound
+\texttt{1-F1\ \textgreater{}=\ (1-eta)*eps/(2eta+(1-eta)*eps)} is
+invalid. The correct universal bound uses Case 1:
+
+\begin{verbatim}
+1-F1 >= eps/(2-eps) = rho^M/(8-rho^M)
+\end{verbatim}
+
+which is approximately \texttt{rho\^{}M/8} (not
+\texttt{rho\^{}M/(16eta)}).
+
+\textbf{Comparison of bounds}:
+
+\begin{verbatim}
+eta=0.1: correct=rho^M/8, claimed=rho^M/1.6  (claimed 5x too large)
+eta=0.3: correct=rho^M/8, claimed=rho^M/4.8  (claimed 1.67x too large)
+eta=0.5: correct=rho^M/8, claimed=rho^M/8    (match at eta=0.5)
+\end{verbatim}
+
+\textbf{How to fix}: Use the Case 1 bound:
+
+\begin{verbatim}
+1-F1 >= eps/(2-eps) = (rho^M/4)/(2-rho^M/4) = rho^M/(8-rho^M)
+\end{verbatim}
+
+For the simplified form (small rho\^{}M):
+
+\begin{verbatim}
+1-F1 >= rho^M/8
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Issue 3 {[}MAJOR{]}: Section 8.3 -- Incorrect Hellinger
+affinity formula for K \textgreater{}
+2}\label{issue-3-major-section-8.3-incorrect-hellinger-affinity-formula-for-k-2}
+
+\textbf{Location}: Line 511
+
+\textbf{Claim}:
+
+\begin{verbatim}
+rho_K = 2*sqrt(mu_s * (1 - mu_s/(K-1)))
+\end{verbatim}
+
+\textbf{What is wrong}: This formula is only correct for K=2. The
+general Hellinger affinity for \texttt{Bernoulli(p)} vs
+\texttt{Bernoulli(q)} is:
+
+\begin{verbatim}
+rho = sqrt(p*q) + sqrt((1-p)*(1-q))
+\end{verbatim}
+
+The proof's formula \texttt{2*sqrt(p*q)} only matches the general
+formula when \texttt{q\ =\ 1-p}, i.e., when \texttt{K=2} (since
+\texttt{1\ -\ mu\_s/(K-1)\ =\ 1\ -\ mu\_s\ =\ 1\ -\ p} only when
+\texttt{K=2}).
+
+For K \textgreater{} 2, the correct formula is:
+
+\begin{verbatim}
+rho_K = sqrt(mu_s * (1 - mu_s/(K-1))) + sqrt((1-mu_s) * (mu_s/(K-1)))
+\end{verbatim}
+
+\textbf{Verification} (mu\_s = 0.3, K = 3):
+
+\begin{verbatim}
+correct: sqrt(0.3*0.85) + sqrt(0.7*0.15) = 0.505 + 0.324 = 0.829
+wrong:   2*sqrt(0.3*0.85) = 2*0.505 = 1.010
+\end{verbatim}
+
+The wrong formula gives \texttt{rho\ \textgreater{}\ 1} for many
+parameter values (e.g., mu=0.3, K=3: rho=1.010; mu=0.2, K=5: rho=0.872).
+While \texttt{rho\ \textless{}=\ 1} should always hold for Hellinger
+affinity. The correct formula always satisfies
+\texttt{rho\ \textless{}=\ 1}.
+
+\textbf{Consequence}: The numerical values and asymptotic expressions
+for K \textgreater{} 2 are wrong. However, the \textbf{conclusion} that
+K=2 is the hardest case is still correct (verified with the correct
+formula -- rho\_K \textless{} rho\_2 for K \textgreater{} 2, giving a
+weaker bound, so K=2 gives the strongest valid lower bound for all K
+\textgreater= 2).
+
+\textbf{How to fix}: Replace the formula with the correct expression:
+
+\begin{verbatim}
+rho_K = sqrt(mu_s * (1 - mu_s/(K-1))) + sqrt((1-mu_s) * (mu_s/(K-1)))
+\end{verbatim}
+
+And note that
+\texttt{rho\_K\ \textless{}\ rho\_2\ =\ 2*sqrt(mu\_s*(1-mu\_s))} for all
+K \textgreater{} 2, which can be verified by squaring both sides.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Issue 4 {[}MAJOR{]}: Section 11 -- Chernoff exactness
+claim fails for K \textgreater{}
+2}\label{issue-4-major-section-11-chernoff-exactness-claim-fails-for-k-2}
+
+\textbf{Location}: Lines 676-681
+
+\textbf{Claim}:
+
+\begin{verbatim}
+-log(rho) = KL(1/2 || mu_s) = Chernoff exponent
+\end{verbatim}
+
+\textbf{What is wrong}: This holds for K=2 because the likelihood ratio
+\texttt{dP1/dP0} is symmetric on the log scale (values are reciprocals).
+For K \textgreater{} 2, the optimal Chernoff exponent generally uses a
+tilting parameter \texttt{t\ !=\ 1/2}, so
+\texttt{-log(rho\_K)\ \textgreater{}\ KL(1/2\ \textbar{}\textbar{}\ mu\_s)}.
+The Hellinger exponent \texttt{-log(rho\_K)} is still a valid lower
+bound on the Chernoff exponent, but it is \textbf{not exact}.
+
+\textbf{Verification} (mu=0.3, K=3):
+
+\begin{verbatim}
+-log(rho_K) = -log(0.829) = 0.188
+KL(1/2||0.3) = 0.087
+-0.188 != 0.087.
+\end{verbatim}
+
+\textbf{Consequence}: The claim that the Hellinger approach gives
+``exact Chernoff exponent'' is true only for K=2 (or more generally,
+when the two distributions are symmetric on the log-odds scale). For K
+\textgreater{} 2, the Hellinger exponent is a valid but non-exact lower
+bound.
+
+\textbf{How to fix}: Clarify that the Chernoff exactness holds for K=2
+and provide the general expression for K \textgreater{} 2, or simply
+note that the Hellinger bound is always valid and the exponent is
+bounded below by the K=2 exponent.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Issue 5 {[}MAJOR{]}: Section 9 -- C\_bal \textgreater{} 1
+extension is
+incomplete}\label{issue-5-major-section-9-c_bal-1-extension-is-incomplete}
+
+\textbf{Location}: Lines 536-619
+
+\textbf{What is wrong}: The section is a sketch, not a rigorous proof.
+There are several gaps:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  The convexity bound via \texttt{sqrt} concavity gives
+  \texttt{H\^{}2(P0,\ P1)\ \textless{}=\ avg\ H\^{}2(P0,\ Q\_ell)},
+  which is correct. But the translation to a lower bound on the testing
+  error uses \texttt{TV\ \textless{}=\ H}, which yields
+  \texttt{R\ \textgreater{}=\ (1-TV)/2\ \textgreater{}=\ (1-sqrt(avg\ H\^{}2))/2}.
+  This is a valid bound but may be very weak.
+\item
+  The analysis switches between using \texttt{max\ H} and
+  \texttt{min\ H} inconsistently. Line 605 says ``the worst (largest)
+  Hellinger distance among the mixture components gives the tightest
+  upper bound on TV'', but line 610 then says ``the component with the
+  smallest\ldots{} gives the smallest Hellinger distance, and hence the
+  weakest lower bound.'' These are different criteria and the
+  presentation is confusing.
+\item
+  The claim ``the exponent 2MDelta\^{}2 is preserved'' (line 618) is
+  asserted without proof. While it's plausibly true (each component's
+  gap is at least \texttt{Delta} times some C\_bal-dependent factor), no
+  rigorous derivation is given.
+\end{enumerate}
+
+\textbf{Consequence}: The Theorem 4 statement claims to hold under
+(A1)-(A6) without requiring C\_bal = 1, but the proof only fully handles
+C\_bal = 1. The C\_bal \textgreater{} 1 case is not rigorously proven.
+
+\textbf{How to fix}: Either (a) add C\_bal = 1 as an explicit condition
+in the theorem statement, or (b) provide a complete derivation for
+C\_bal \textgreater{} 1. Option (b) would involve bounding the average
+Hellinger affinity:
+
+\begin{verbatim}
+(1/L) sum_ell rho_ell^M >= min_ell rho_ell^M
+\end{verbatim}
+
+where
+\texttt{rho\_ell\ =\ sqrt(mu\_s\ *\ p\_ell)\ +\ sqrt((1-mu\_s)\ *\ (1-p\_ell))}
+and \texttt{p\_ell\ =\ 1\ -\ C\_ell*mu\_s/(K-1)} for some
+\texttt{C\_ell\ \textgreater{}=\ 1}. The smallest \texttt{rho\_ell}
+(closest to 1) gives the weakest bound, and this is attained at
+\texttt{C\_ell\ =\ C\_bal} (or similar).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Issue 6 {[}MINOR{]}: Section 6.4 -- Wrong Taylor
+coefficient for
+Delta\^{}4}\label{issue-6-minor-section-6.4-wrong-taylor-coefficient-for-delta4}
+
+\textbf{Location}: Lines 340-344
+
+\textbf{Claim}:
+
+\begin{verbatim}
+log(1-4Delta^2) = -4Delta^2 - 8Delta^4/3 - O(Delta^6)
+\end{verbatim}
+
+\textbf{What is wrong}: The Taylor expansion of
+\texttt{log(1-x)\ =\ -x\ -\ x\^{}2/2\ -\ x\^{}3/3\ -\ ...} with
+\texttt{x\ =\ 4Delta\^{}2} gives:
+
+\begin{verbatim}
+log(1-4Delta^2) = -4Delta^2 - (4Delta^2)^2/2 - (4Delta^2)^3/3 - ...
+               = -4Delta^2 - 16Delta^4/2 - 64Delta^6/3 - ...
+               = -4Delta^2 - 8Delta^4 - O(Delta^6)
+\end{verbatim}
+
+The coefficient of \texttt{Delta\^{}4} is \texttt{-8}, not
+\texttt{-8/3}.
+
+Then
+\texttt{(M/2)*log(1-4Delta\^{}2)\ =\ -2M*Delta\^{}2\ -\ 4M*Delta\^{}4\ -\ O(M*Delta\^{}6)},
+not \texttt{-2M*Delta\^{}2\ -\ (4/3)M*Delta\^{}4\ -\ O(M*Delta\^{}6)}.
+
+\textbf{Consequence}: The specific coefficient in the
+\texttt{O(M*Delta\^{}4)} term is wrong, but this term is absorbed into
+the \texttt{O(M*Delta\^{}4)} notation anyway. No substantive claim is
+affected.
+
+\textbf{How to fix}: Correct the coefficient.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3. Algebraic Verification of F1
+Conversion}\label{algebraic-verification-of-f1-conversion}
+
+This is the most critical section. Below is a complete, corrected
+derivation of the F1 lower bound.
+
+\subsubsection{Setup}\label{setup}
+
+\begin{itemize}
+\tightlist
+\item
+  Testing error: \texttt{R(psi)\ =\ max(alpha,\ beta)} where
+  \texttt{alpha\ =\ P0(psi=1)}, \texttt{beta\ =\ P1(psi=0)}
+\item
+  Le Cam bound:
+  \texttt{R(psi)\ \textgreater{}=\ (1-TV)/2\ \textgreater{}=\ rho\^{}M/4\ =:\ epsilon}
+\item
+  So \texttt{max(alpha,\ beta)\ \textgreater{}=\ epsilon}
+\end{itemize}
+
+\subsubsection{F1 in terms of alpha,
+beta}\label{f1-in-terms-of-alpha-beta}
+
+\begin{verbatim}
+F1 = 2*TP/(2*TP + FP + FN)
+   = 2*eta*(1-beta) / (2*eta*(1-beta) + (1-eta)*alpha + eta*beta)
+\end{verbatim}
+
+\subsubsection{Case analysis}\label{case-analysis}
+
+\textbf{Case 1}: \texttt{beta\ \textgreater{}=\ epsilon} (false negative
+rate is high)
+
+Using \texttt{FP\ \textgreater{}=\ 0}:
+
+\begin{verbatim}
+F1 <= 2*eta*(1-beta) / (2*eta*(1-beta) + eta*beta)
+    = 2*(1-beta)/(2-beta)
+\end{verbatim}
+
+Since \texttt{beta\ \textgreater{}=\ epsilon} and the function is
+decreasing in \texttt{beta}:
+
+\begin{verbatim}
+F1 <= 2*(1-epsilon)/(2-epsilon)
+1-F1 >= epsilon/(2-epsilon)
+\end{verbatim}
+
+\textbf{Case 2}: \texttt{alpha\ \textgreater{}=\ epsilon} (false
+positive rate is high)
+
+Using \texttt{FN\ \textgreater{}=\ 0}:
+
+\begin{verbatim}
+F1 <= 2*eta*(1-beta) / (2*eta*(1-beta) + (1-eta)*alpha)
+\end{verbatim}
+
+Since \texttt{beta\ \textgreater{}=\ 0} (maximizes F1 at
+\texttt{beta\ =\ 0}) and \texttt{alpha\ \textgreater{}=\ epsilon}:
+
+\begin{verbatim}
+F1 <= 2*eta / (2*eta + (1-eta)*epsilon)
+1-F1 >= (1-eta)*epsilon / (2*eta + (1-eta)*epsilon)
+\end{verbatim}
+
+\subsubsection{Universal bound}\label{universal-bound}
+
+Since \texttt{max(alpha,\ beta)\ \textgreater{}=\ epsilon}, either Case
+1 or Case 2 must hold. Therefore:
+
+\begin{verbatim}
+1-F1 >= min(epsilon/(2-epsilon), (1-eta)*epsilon/(2*eta+(1-eta)*epsilon))
+\end{verbatim}
+
+\subsubsection{Which case is tighter?}\label{which-case-is-tighter}
+
+For \texttt{eta\ \textless{}\ 1/2} and small \texttt{epsilon} (the
+typical regime):
+
+\begin{verbatim}
+epsilon/(2-epsilon) ≈ epsilon/2
+(1-eta)*epsilon/(2*eta+(1-eta)*epsilon) ≈ (1-eta)*epsilon/(2*eta)
+\end{verbatim}
+
+Ratio:
+\texttt{(epsilon/2)\ /\ ((1-eta)*epsilon/(2*eta))\ =\ eta/(1-eta)\ \textless{}\ 1}
+for \texttt{eta\ \textless{}\ 1/2}.
+
+So Case 1 gives the smaller bound (tighter). \textbf{This contradicts
+the proof's claim.}
+
+\subsubsection{Correct F1 lower bound}\label{correct-f1-lower-bound}
+
+\begin{verbatim}
+1-F1 >= epsilon/(2-epsilon) = (rho^M/4)/(2 - rho^M/4) = rho^M/(8 - rho^M)
+\end{verbatim}
+
+For small \texttt{rho\^{}M}:
+
+\begin{verbatim}
+1-F1 >= rho^M/8   (conservative simplification)
+\end{verbatim}
+
+Compare with the claimed bound \texttt{rho\^{}M/(16*eta)}:
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+eta & Correct bound & Claimed bound & Ratio \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.1 & \texttt{rho\^{}M/8} & \texttt{rho\^{}M/1.6} & 5x too large \\
+0.3 & \texttt{rho\^{}M/8} & \texttt{rho\^{}M/4.8} & 1.67x too large \\
+0.5 & \texttt{rho\^{}M/8} & \texttt{rho\^{}M/8} & Match \\
+\end{longtable}
+
+The claimed bound is \textbf{stronger than justified} for all
+\texttt{eta\ \textless{}\ 1/2}, with the discrepancy growing as
+\texttt{eta} decreases.
+
+\subsubsection{Rate optimality
+preserved}\label{rate-optimality-preserved}
+
+Both the correct bound \texttt{rho\^{}M/8} and the claimed bound
+\texttt{rho\^{}M/(16*eta)} have leading term \texttt{rho\^{}M} =
+\texttt{(2*sqrt(mu\_s(1-mu\_s)))\^{}M} =
+\texttt{exp(-2M*Delta\^{}2\ +\ O(M*Delta\^{}4))}. The rate is preserved,
+confirming that Part (c) is unaffected.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{4. Summary of Correct vs.~Claimed
+Results}\label{summary-of-correct-vs.-claimed-results}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Quantity
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Claimed in v2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Correct value
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Severity
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Testing bound & \texttt{rho\^{}M/4} & \texttt{rho\^{}M/4} &
+\textbf{OK} \\
+F1 bound (const) & \texttt{rho\^{}M/(16*eta)} &
+\texttt{rho\^{}M/(8-rho\^{}M)} & \textbf{FATAL (const wrong)} \\
+F1 bound (rate) & \texttt{exp(-2M*Delta\^{}2)} &
+\texttt{exp(-2M*Delta\^{}2)} & \textbf{OK} \\
+K\textgreater2 affinity & \texttt{2*sqrt(mu*(1-mu/(K-1)))} &
+\texttt{sqrt(mu*(1-mu/(K-1)))\ +\ sqrt((1-mu)*mu/(K-1))} & \textbf{MAJOR
+(formula wrong)} \\
+Chernoff exactness & Holds for all K & Holds for K=2 only &
+\textbf{MAJOR (overclaimed)} \\
+C\_bal \textgreater{} 1 & Claimed but not proven & Needs rigorous
+treatment & \textbf{MAJOR (gap)} \\
+Taylor coeff & \texttt{-8/3*Delta\^{}4} & \texttt{-8*Delta\^{}4} &
+\textbf{MINOR} \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{5. Comparison to v1: What is Fixed, What
+Remains}\label{comparison-to-v1-what-is-fixed-what-remains}
+
+\subsubsection{Fixed from v1}\label{fixed-from-v1}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3043}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1739}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1739}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3478}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Issue
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+v1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+v2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Status
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Slud's inequality & Fatal error (false bound) & Hellinger tensorization
+& \textbf{Fixed} \\
+Chi-squared direction & Used wrong direction for K\textgreater2 &
+Product reduction with correct direction & \textbf{Fixed} \\
+F1 algebra & Algebraic error in Lemma 8 & Case analysis (new errors
+introduced) & \textbf{Partially fixed, new errors} \\
+Odd M ceiling & Unaddressed & Works for all M & \textbf{Fixed} \\
+\end{longtable}
+
+\subsubsection{Remaining issues (this
+review)}\label{remaining-issues-this-review}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{F1 constant is wrong} (Section 7.3, 7.5) -- The simplification
+  uses backwards inequality directions. The correct bound is
+  \texttt{1-F1\ \textgreater{}=\ rho\^{}M/(8-rho\^{}M)}, which is
+  approximately \texttt{rho\^{}M/8}, not \texttt{rho\^{}M/(16*eta)}.
+\item
+  \textbf{K \textgreater{} 2 affinity formula is wrong} (Section 8.3) --
+  The formula \texttt{2*sqrt(mu*(1-mu/(K-1)))} is incorrect and can give
+  values \textgreater{} 1. The correct formula is a sum of two square
+  roots.
+\item
+  \textbf{Chernoff exactness overclaimed} (Section 11) -- True for K=2
+  but not K\textgreater2.
+\item
+  \textbf{C\_bal \textgreater{} 1 is a sketch} (Section 9) -- Not a
+  complete proof.
+\end{enumerate}
+
+\subsubsection{Recommendations}\label{recommendations}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Correct the F1 bound to
+  \texttt{1-F1\ \textgreater{}=\ rho\^{}M/(8-rho\^{}M)} (or the
+  conservative \texttt{rho\^{}M/8}).
+\item
+  Correct the K\textgreater2 affinity formula.
+\item
+  Move the Chernoff exactness claim to the K=2 section only.
+\item
+  Either require C\_bal = 1 explicitly in the theorem statement, or
+  provide a complete C\_bal \textgreater{} 1 proof.
+\item
+  Verify the corrected F1 bound still matches the numerical examples (it
+  does: \texttt{1-F1\ \textgreater{}=\ rho\^{}M/8} gives
+  \texttt{0.8\^{}10/8\ ≈\ 0.013}, which is \texttt{\textless{}=} the
+  direct bound \texttt{0.027} from the full expression -- this is
+  conservative but valid).
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{End of review.}
+
+\end{document}

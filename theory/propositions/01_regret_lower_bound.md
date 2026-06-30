@@ -1,0 +1,208 @@
+# Proposition 1: Regret Lower Bound for Global Expert Selection
+
+> 2026-06-27: Reconstructed proof replacing the original weak version.
+
+## 1 Overview
+
+The original Proposition 1 (全局专家排序不足) established the trivial fact that no single expert is simultaneously optimal across all states when risk functions cross. This observation is necessary for SCX but not sufficient as a theoretical foundation. We replace it with a **regret lower bound** theorem: any fixed global expert incurs a quantifiable penalty relative to the state-conditional optimal choice, and this penalty is bounded from below by a linear function of the number of states and the minimum risk gap between competing experts.
+
+---
+
+## 2 Notation and Setup
+
+| Symbol | Meaning |
+|--------|---------|
+| $\mathcal{S} = \{s_1,\dots,s_K\}$ | State partition of the input space |
+| $P(s) > 0$ | Probability mass of state $s$, $\sum_{s \in \mathcal{S}} P(s) = 1$ |
+| $\mathcal{M} = \{1,\dots,M\}$ | Expert indices |
+| $R_m(s)$ | Expected risk of expert $m$ in state $s$ |
+| $\ell: \mathcal{Y} \times \mathcal{Y} \to \mathbb{R}^+$ | Loss function, assumed bounded: $\ell \in [0, L_{\max}]$ |
+
+**Assumption 1 (State partition).** The state space $\mathcal{S}$ is a finite measurable partition of the input space $\mathcal{X}$ induced by a map $\Pi: \mathcal{X} \to \mathcal{S}$. Within each state $s$, the conditional distribution $P_{X|s}$ governs the input-output relationship.
+
+**Assumption 2 (Risk identifiability).** For each state $s$ and each expert $m$, the risk $R_m(s) = \mathbb{E}_{x \sim P_{X|s}}[\ell(f_m(x), f^*(x))]$ exists and is finite. Without loss of generality, all risks are bounded to $[0, L_{\max}]$.
+
+---
+
+## 3 Definitions
+
+**Definition 1 (Per-state expert ordering).** For state $s$, order the experts by increasing risk:
+
+$$R_{(1)}(s) \leq R_{(2)}(s) \leq \cdots \leq R_{(M)}(s)$$
+
+where $R_{(1)}(s) = \min_{m} R_m(s)$ is the best achievable risk in state $s$ and $R_{(2)}(s)$ is the second-best.
+
+**Definition 2 (State gap).** The gap in state $s$ is:
+
+$$\delta(s) = R_{(2)}(s) - R_{(1)}(s) \geq 0$$
+
+The minimum gap across all states is:
+
+$$\delta_{\min} = \min_{s \in \mathcal{S}} \delta(s)$$
+
+**Definition 3 (Global expert regret).** For a fixed global expert $m^*$, its regret relative to the state-conditional optimal choice is:
+
+$$\text{Regret}(m^*) = \sum_{s \in \mathcal{S}} P(s) \cdot \bigl[R_{m^*}(s) - \min_{m \in \mathcal{M}} R_m(s)\bigr]$$
+
+This measures the excess risk incurred by committing to a single expert across all states, compared to the oracle that selects the best expert per state.
+
+---
+
+## 4 Theorem 1: Regret Lower Bound
+
+### 4.1 Statement
+
+Let $\mathcal{S}$ be a state partition with $K$ states, and let $\delta_{\min}$ be the minimum gap as defined above. For any fixed global expert $m^* \in \mathcal{M}$, define its suboptimal state set:
+
+$$\mathcal{S}_{\text{bad}}(m^*) = \bigl\{s \in \mathcal{S} : m^* \notin \arg\min_{m} R_m(s)\bigr\}$$
+
+Then:
+
+$$\text{Regret}(m^*) \geq \sum_{s \in \mathcal{S}_{\text{bad}}(m^*)} P(s) \cdot \delta(s) \geq P(\mathcal{S}_{\text{bad}}(m^*)) \cdot \delta_{\min}$$
+
+where $P(\mathcal{S}_{\text{bad}}(m^*)) = \sum_{s \in \mathcal{S}_{\text{bad}}(m^*)} P(s)$ is the total probability mass of the states where $m^*$ is suboptimal.
+
+### 4.2 Proof
+
+**Step 1.** Fix $m^*$ and consider any state $s$. If $s \in \mathcal{S}_{\text{bad}}(m^*)$, then $m^*$ is not the optimal expert in state $s$. Therefore:
+
+$$R_{m^*}(s) \geq R_{(2)}(s)$$
+
+since the best possible risk in state $s$ is $R_{(1)}(s)$ and the next best is $R_{(2)}(s)$, and $m^*$ is worse than at least the best expert.
+
+**Step 2.** The per-state regret contribution for $s \in \mathcal{S}_{\text{bad}}(m^*)$ is:
+
+$$R_{m^*}(s) - \min_{m} R_m(s) = R_{m^*}(s) - R_{(1)}(s) \geq R_{(2)}(s) - R_{(1)}(s) = \delta(s)$$
+
+The inequality follows from Step 1: $R_{m^*}(s) \geq R_{(2)}(s)$, and $\min_m R_m(s) = R_{(1)}(s)$.
+
+**Step 3.** For $s \notin \mathcal{S}_{\text{bad}}(m^*)$, the regret contribution is zero by definition since $m^*$ is optimal in that state. Summing over all states:
+
+$$\begin{aligned}
+\text{Regret}(m^*) &= \sum_{s \in \mathcal{S}} P(s) \cdot \bigl[R_{m^*}(s) - \min_m R_m(s)\bigr] \\
+&= \sum_{s \in \mathcal{S}_{\text{bad}}(m^*)} P(s) \cdot \bigl[R_{m^*}(s) - \min_m R_m(s)\bigr] \quad (\text{zero contribution elsewhere}) \\
+&\geq \sum_{s \in \mathcal{S}_{\text{bad}}(m^*)} P(s) \cdot \delta(s) \quad (\text{by Step 2}) \\
+&\geq \delta_{\min} \cdot \sum_{s \in \mathcal{S}_{\text{bad}}(m^*)} P(s) \quad (\text{since } \delta(s) \geq \delta_{\min}) \\
+&= P(\mathcal{S}_{\text{bad}}(m^*)) \cdot \delta_{\min}
+\end{aligned}$$
+
+This completes the proof. $\square$
+
+### 4.3 Tightness
+
+The bound is tight. Consider a two-state, two-expert system with $P(s_1) = P(s_2) = 0.5$, $R_1(s_1) = 0$, $R_2(s_1) = \delta$, $R_1(s_2) = \delta$, $R_2(s_2) = 0$. Then $\delta_{\min} = \delta$, and for $m^* = 1$:
+
+$$\text{Regret}(1) = P(s_2) \cdot \delta = 0.5\delta = P(\mathcal{S}_{\text{bad}}(1)) \cdot \delta_{\min}$$
+
+The bound is attained exactly. For $m^* = 2$, symmetry gives the same value.
+
+---
+
+## 5 Corollary: Risk Crossing Implies Positive Regret
+
+### 5.1 Statement
+
+If there exist two states $s_1, s_2 \in \mathcal{S}$ and two experts $a, b \in \mathcal{M}$ such that:
+
+$$R_a(s_1) < R_b(s_1) \quad \text{and} \quad R_a(s_2) > R_b(s_2)$$
+
+(i.e., the expert risk functions **cross**), then for any global expert $m^*$:
+
+$$\text{Regret}(m^*) \geq \delta_{\min} \cdot \min\{P(s_1), P(s_2)\} > 0$$
+
+In particular, when the crossing involves the optimal experts (i.e., $a$ is optimal in $s_1$ and $b$ is optimal in $s_2$), no single expert can achieve zero regret.
+
+### 5.2 Proof
+
+Under the crossing condition, in state $s_1$ the best expert is at least as good as $a$ (since $R_a(s_1) < R_b(s_1)$), and in state $s_2$ the best expert is at least as good as $b$. No single expert $m^*$ can be simultaneously equal to both $a$ and $b$ (since $a \neq b$ by the crossing condition), so at least one of $s_1$ or $s_2$ is in $\mathcal{S}_{\text{bad}}(m^*)$. Therefore $P(\mathcal{S}_{\text{bad}}(m^*)) \geq \min\{P(s_1), P(s_2)\}$, and applying Theorem 1 gives:
+
+$$\text{Regret}(m^*) \geq \delta_{\min} \cdot \min\{P(s_1), P(s_2)\} > 0$$
+
+The strict positivity follows because $P(s_1), P(s_2) > 0$ (states are assumed to have positive probability) and $\delta_{\min} > 0$ when crossing involves the optimal experts (since $\delta(s) > 0$ if the optimal expert in state $s$ is strictly better than all others). $\square$
+
+---
+
+## 6 Corollary: Co-monotonicity and Zero Regret
+
+### 6.1 Definition (Co-monotonicity)
+
+A family of risk functions $\{R_m\}_{m=1}^M$ is **co-monotonic** across states if for any two states $s_1, s_2 \in \mathcal{S}$ and any two experts $a, b \in \mathcal{M}$:
+
+$$\bigl(R_a(s_1) - R_b(s_1)\bigr) \cdot \bigl(R_a(s_2) - R_b(s_2)\bigr) \geq 0$$
+
+Equivalently, the ordering of experts by risk is invariant across states: there exists a total order $\preceq$ on $\mathcal{M}$ such that $R_a(s) \leq R_b(s)$ for all $s \in \mathcal{S}$ whenever $a \preceq b$.
+
+### 6.2 Statement
+
+Let $m_{\text{opt}}$ be the best global expert:
+
+$$m_{\text{opt}} = \arg\min_{m} \text{Regret}(m)$$
+
+Then $\text{Regret}(m_{\text{opt}}) = 0$ **if and only if** there exists an expert $m^*$ that is simultaneously optimal in every state:
+
+$$\forall s \in \mathcal{S} : R_{m^*}(s) = \min_{m} R_m(s)$$
+
+A **sufficient condition** for this is pairwise co-monotonicity of all expert risk functions: when experts are co-monotonic, the globally minimum-risk expert under the total order is uniformly optimal across all states, giving zero regret.
+
+### 6.3 Proof
+
+**($\Leftarrow$).** If an expert $m^*$ is optimal in every state, then $\mathcal{S}_{\text{bad}}(m^*) = \varnothing$ and Theorem 1 gives $\text{Regret}(m^*) \geq 0$. Direct calculation gives $\text{Regret}(m^*) = 0$ since each term $R_{m^*}(s) - \min_m R_m(s) = 0$.
+
+**($\Rightarrow$).** Suppose $\text{Regret}(m_{\text{opt}}) = 0$. Then for every state $s$, $P(s) \cdot [R_{m_{\text{opt}}}(s) - \min_m R_m(s)] = 0$. Since $P(s) > 0$, we must have $R_{m_{\text{opt}}}(s) = \min_m R_m(s)$ for all $s$, establishing that $m_{\text{opt}}$ is simultaneously optimal everywhere.
+
+**Co-monotonicity as sufficient condition.** Under co-monotonicity, the experts are totally ordered by risk. Let $m^*$ be the minimal expert under this order (i.e., $R_{m^*}(s) \leq R_m(s)$ for all $m$ and all $s$). Then $m^*$ is optimal in every state, and by the ($\Leftarrow$) direction, $\text{Regret}(m^*) = 0$. $\square$
+
+### 6.4 Testable Condition for Co-monotonicity
+
+Given empirical risk estimates $\hat{R}_m(s)$ computed from data, co-monotonicity can be tested pairwise:
+
+1. **Pairwise sign test.** For each pair $(a, b)$, compute the sign vector:
+   $$\sigma_{a,b}(s) = \operatorname{sgn}\bigl(\hat{R}_a(s) - \hat{R}_b(s)\bigr)$$
+   for all $s \in \mathcal{S}$. If for every pair $\sigma_{a,b}(s)$ is constant across $s$ (all entries are $+1$, all $-1$, or all $0$), then the data are consistent with co-monotonicity.
+
+2. **Rank correlation test.** For each pair $(a, b)$, compute Kendall's $\tau$ or Spearman's $\rho$ of the risk vectors $(\hat{R}_a(s))_{s \in \mathcal{S}}$ and $(\hat{R}_b(s))_{s \in \mathcal{S}}$. Under co-monotonicity, all pairwise rank correlations equal $+1$. Deviations indicate risk crossing.
+
+3. **Global crossing count.** The number of crossing pairs:
+   $$C = \bigl|\{(a, b, s_1, s_2) : (R_a(s_1) - R_b(s_1))(R_a(s_2) - R_b(s_2)) < 0\}\bigr|$$
+   quantifies the departure from co-monotonicity. When $C > 0$, regret must be positive for any global expert, and the lower bound of Theorem 1 applies.
+
+---
+
+## 7 Empirical Regret Bound
+
+In practice, risks are estimated from finite data. Let $\hat{R}_m(s)$ be the empirical risk estimate based on $n_s$ samples in state $s$.
+
+### 7.1 Statement
+
+With probability at least $1 - \eta$, for every expert $m$, the regret satisfies:
+
+$$\text{Regret}(m) \geq \sum_{s \in \mathcal{S}} P(s) \cdot \bigl[\hat{R}_m(s) - \min_{m'} \hat{R}_{m'}(s)\bigr] - L_{\max} \sum_{s \in \mathcal{S}} P(s) \cdot \sqrt{\frac{2\log(2M/\eta)}{n_s}}$$
+
+### 7.2 Proof Sketch
+
+By the Hoeffding inequality, for each state $s$ and expert $m$:
+
+$$|\hat{R}_m(s) - R_m(s)| \leq L_{\max} \sqrt{\frac{2\log(2M/\eta)}{n_s}}$$
+
+with probability $1 - \eta/M$. A union bound over $M$ experts and $K$ states, combined with the decomposition of regret, yields the result. This bound allows practitioners to compute a **high-probability lower bound** on regret from finite-sample risk estimates. $\square$
+
+---
+
+## 8 Implications for SCX
+
+1. **Regret as a design principle.** Theorem 1 quantifies the penalty for ignoring state structure. The lower bound $P(\mathcal{S}_{\text{bad}}(m^*)) \cdot \delta_{\min}$ shows that regret grows linearly with both the mass of suboptimal states and the minimum risk gap.
+
+2. **State discovery drives regret reduction.** SCX's state discovery directly reduces $P(\mathcal{S}_{\text{bad}}(m^*))$ by identifying regions where different experts excel. A perfect state partition (where each state has a single optimal expert) drives regret to zero for the state-conditioned system.
+
+3. **Co-monotonicity as a diagnostic.** The co-monotonicity test of Section 6.4 provides a data-driven criterion for whether a global expert is sufficient. When the test fails, SCX's state-conditioned approach is guaranteed to improve over any fixed expert.
+
+4. **Sample-efficient testing.** The empirical bound of Section 7 enables practitioners to compute statistically valid lower bounds on regret with finite data, guarding against false conclusions due to estimation noise.
+
+---
+
+## References
+
+1. SCX theoretical framework. `01_SCX_核心框架_数学分析.md` Section 2.1
+2. SCX mathematical foundations. `05_数学根源与证明.md` Proposition 1
+3. Tsybakov, A. B. (2004). Optimal aggregation of classifiers in statistical learning. *Annals of Statistics*, 32(1), 135-166. [Related: minimax lower bounds for aggregation]
+4. Hoeffding, W. (1963). Probability inequalities for sums of bounded random variables. *Journal of the American Statistical Association*.

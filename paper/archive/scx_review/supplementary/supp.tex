@@ -1,0 +1,391 @@
+% ======================================================================
+% Supplementary Information for:
+% State-Conditioned Expertise: A Unified Framework for Data Quality
+% Across Scientific and Engineering Domains
+%
+% Contains:
+%   S1. Domain-Specific Algorithm Adaptations Table
+%   S2. Complete Mathematical Reference (cross-reference to Paper I)
+%   S3. Glossary of SCX Terminology
+% ======================================================================
+
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{fullpage}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+
+\title{Supplementary Information: \\ Domain-Specific Adaptations, Mathematical Reference, and Glossary}
+
+\author{SCX\ }
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+% ======================================================================
+\section{Domain-Specific Algorithm Adaptations}
+\label{sec:adaptations}
+% ======================================================================
+
+Table~\ref{tab:adaptations} summarizes the SCX algorithm configuration for each of the six domains surveyed in the main text. The columns correspond to the SCX protocol steps: feature representation $\phi(x)$, state discovery method, number of states $K_{\mathcal{S}}$, number of experts $M$, consensus metric, threshold strategy (Tier), and validation status.
+
+\begin{table}[ht]
+\caption{\textbf{SCX domain-specific algorithm adaptations}. Validation status: ``Validated'' = experimental results available on real or benchmark data; ``Proposed'' = theoretical framework outlined but systematic validation pending; ``Theoretical'' = analysis only, no empirical data.}
+\label{tab:adaptations}
+\centering
+\small
+\begin{tabular}{llllllll}
+\toprule
+\textbf{Domain} & \textbf{Subdomain} & \textbf{Feature $\phi(x)$} & \textbf{State Method} & $K_{\mathcal{S}}$ & $M$ & \textbf{Threshold} & \textbf{Status} \\
+\midrule
+\textbf{Life Sciences} & Drug Discovery & ECFP4/MACCS/RDKit & k-means on mol. features & 5--10 & 4 & Tier 2 (KB as expert) & Validated \\
+ & Medical Imaging & CNN penultimate layer & k-means on features & 5--10 & 5--8 & Tier 2 (per-state) & Validated \\
+ & Genomics (proposed) & Protein LM embeddings & k-means / spectral & 4--8 & 4--8 & Tier 2 & Proposed \\
+\midrule
+\textbf{Adv. Manufacturing} & MLIP & SOAP/ACE descriptors & k-means on descriptors & 4--8 & 8--12 & Tier 3 (adaptive) & Validated \\
+ & Quality control (prop.) & Sensor TCN embeddings & k-means / HMM & 4--8 & 5--10 & Tier 1/2 & Proposed \\
+ & Process optimization & Process params + PCA & k-means & 4--8 & 4--8 & Tier 1 & Theoretical \\
+\midrule
+\textbf{Embodied Intell.} & Robot learning (prop.) & Trajectory autoencoders & k-means on traj. emb. & 4--8 & 5--8 & Tier 2 & Proposed \\
+ & Sim-to-real (prop.) & Domain-randomized feats. & k-means & 4--8 & 5--10 & Tier 2 & Theoretical \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{llllllll}
+\toprule
+\textbf{Domain} & \textbf{Subdomain} & \textbf{Feature $\phi(x)$} & \textbf{State Method} & $K_{\mathcal{S}}$ & $M$ & \textbf{Threshold} & \textbf{Status} \\
+\midrule
+\textbf{AI} & Computer Vision & ResNet/SiCNN features & k-means on features & 8--10 & 5--20 & Tier 2/3 & Validated \\
+ & NLP (proposed) & BERT/T5 embeddings & k-means & 4--8 & 5--10 & Tier 2/3 & Proposed \\
+ & RL (theoretical) & State-action embeddings & k-means & 4--8 & 3--5 & Tier 1 & Theoretical \\
+\midrule
+\textbf{Autonomous Driv.} & Perception (prop.) & LiDAR+camera features & k-means / spectral & 4--8 & 5--10 & Tier 2/3 & Proposed \\
+ & Behavior pred. (prop.) & Agent-history embeddings & k-means & 4--8 & 5--8 & Tier 2 & Proposed \\
+ & Safety (prop.) & Multi-modal fusion & k-means & 4--8 & 10--20 & Tier 3 & Theoretical \\
+\midrule
+\textbf{Natural Sciences} & Physics (DFT) & Functional labels + features & KB-defined & 3--5 & 3--5 & Tier 1 & Theoretical \\
+ & Chemistry (prop.) & Molecular graphs & k-means & 4--8 & 5--8 & Tier 2 & Proposed \\
+ & Cryo-EM (prop.) & Micrograph patch features & k-means / spectral & 4--8 & 3--5 & Tier 1 & Theoretical \\
+ & Earth science (prop.) & Spatial-temporal features & k-means / geo-clust. & 4--8 & 5--20 & Tier 2 & Theoretical \\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\end{table}
+
+% ======================================================================
+\subsection{SCX Tier Selection Guide}
+\label{sec:tier-guide}
+% ======================================================================
+
+The appropriate SCX tier depends on computational budget, available domain knowledge, and noise characteristics:
+
+\begin{itemize}[nosep]
+  \item \textbf{Tier 0 (Loss Baseline)}: One model, no SCX. Use when $\varepsilon_\phi > 0.5$, or when compute is insufficient for even $M=5$ experts.
+  \item \textbf{Tier 1 (SCX + Hoeffding)}: $M+1$ models + k-means. Use for prototyping; simplest implementation. F1 guarantee from Theorem~1.
+  \item \textbf{Tier 2 (SCX + Chernoff/KL)}: Same compute as Tier~1; tighter bound via Chernoff information $\kappa$. Use when Tier~1's $M$ requirement seems too large.
+  \item \textbf{Tier 3 (SCX + Adaptive $\theta_{\text{opt}}$)}: Same as Tier~1/2 plus $\eta$ estimation. Use for best F1; critical when $\eta$ is extreme ($<0.05$ or $>0.5$).
+  \item \textbf{Tier 4 (SCX + Bootstrap)}: Adds $B$ bootstrap resamples. Use when $\eta$ and $\Delta$ are unknown; provides diagnostic before full SCX commitment.
+\end{itemize}
+
+Minimum expert count: $M_{\min} = \max(5, \lceil \ln(1/(\eta \varepsilon_{\text{target}}))/(2\Delta^2) \rceil)$ for Tier~1, or $\max(5, \lceil \ln(1/(\eta \varepsilon_{\text{target}}))/\kappa \rceil)$ for Tiers~2--3.
+
+% ======================================================================
+\section{Complete Mathematical Reference}
+\label{sec:math-ref}
+% ======================================================================
+
+This section summarizes the SCX mathematical theory, cross-referencing Paper~I (``A Fundamental Impossibility in Data Quality'') for complete proofs. All theorems are stated without proof here; the unified theorem document \cite{theorems_unified} serves as the single source of truth.
+
+% ----------------------------------------------------------------------
+\subsection{Assumption Catalog (A1--A6)}
+\label{sec:assumptions}
+% ----------------------------------------------------------------------
+
+All SCX theorems build on subsets of these six assumptions:
+
+\begin{enumerate}
+\item[A1] \textbf{Disjoint Training Sets}: Expert models are trained on disjoint data subsets $D_m \sim \mathcal{D}^{n_m}$, $D_m \cap D_{m'} = \varnothing$, $D_m \perp D_{m'}$.
+\item[A2] \textbf{Conditional Independence (Clean)}: Expert errors $\{e_m(x,y)\}_{m=1}^M$ are conditionally independent given $x$ for clean samples.
+\item[A3] \textbf{Bounded Loss}: The loss function $\ell(a,b) \in [0, B]$, $B < \infty$.
+\item[A4] \textbf{Uniform Independent Noise}: Noise events are independent of $x$ and $D_m$; noise labels are uniform over $\mathcal{Y}\setminus\{y^*\}$.
+\item[A5] \textbf{State Homogeneity}: $\sup_{x\in s} \mathbb{E}[C \mid \text{clean}, X=x] \leq \mu_s$ per state $s$.
+\item[A6] \textbf{Balanced Error Distribution}: $\max_{c\neq y^*} \mu_c(x) \leq C_{\text{bal}} \cdot \mu_s/(K_{\mathcal{Y}}-1)$.
+\end{enumerate}
+
+Minimal subsets that break Theorem~3's unidentifiability: $\{A1, A4, A5\}$, $\{A1, A4, A6\}$, or $\{A5, A6\}$ with $|\mathcal{S}| \geq 2$.
+
+% ----------------------------------------------------------------------
+\subsection{Theorem Statements}
+\label{sec:theorems}
+% ----------------------------------------------------------------------
+
+\subsubsection*{Theorem 1: Noise Detection Guarantee}
+Under A1--A6, the SCX noise detector with state-dependent threshold $\theta$ satisfying $\mu_s < \theta < 1 - C_{\text{bal}}\cdot\mu_s/(K_{\mathcal{Y}}-1)$ achieves:
+\begin{equation}
+\text{F1} \geq 1 - \frac{1}{\eta}\sum_{s\in\mathcal{S}} \rho_s \cdot \exp\bigl(-2M\Delta_s^2\bigr),
+\end{equation}
+where $\Delta_s = \min(\theta - \mu_s,\; 1 - C_{\text{bal}}\cdot\mu_s/(K_{\mathcal{Y}}-1) - \theta) > 0$ is the state-level separation gap.
+
+\textbf{Key corollary}: As $M \to \infty$, $\text{F1} = 1 - O_P(\frac{1}{\eta} e^{-2M\Delta_{\min}^2})$.
+
+\textbf{Reference}: Paper~I, Section~1; \cite{theorems_unified}, Section~1.
+
+\subsubsection*{Theorem 2: Weak Feature Failure Lower Bound}
+Let $\phi: \mathcal{X} \to \mathbb{R}^{d_\phi}$ satisfy $I(\phi(X); S) \leq \delta$ (in nats). Then:
+\begin{align}
+\text{F1}_{\text{SCX}} &\leq \text{F1}_{\text{base}} + C_F\sqrt{\delta/2}, \\
+\text{AUC}_{\text{SCX}} &\leq \text{AUC}_{\text{base}} + \sqrt{\delta/2}(1/\eta + 1/(1-\eta)).
+\end{align}
+
+\textbf{Key corollary}: When $\delta / \log K_{\mathcal{S}} > 0.5$, SCX cannot outperform the loss baseline.
+
+\textbf{Reference}: Paper~I, Section~2; \cite{theorems_unified}, Section~2.
+
+\subsubsection*{Theorem 3: Noise-Difficulty Unidentifiability}
+For any $K \geq 2$, $M \geq 1$, and finite $\mathcal{S}$, there exist $\mathcal{P}_{\text{noise}}$ and $\mathcal{P}_{\text{hard}}$ with identical observable joint distributions such that any algorithm has minimax error $\geq \eta\rho/2$ on the ambiguous subset.
+
+\textbf{Reference}: Paper~I, Section~3; \cite{theorems_unified}, Section~3.
+
+\subsubsection*{Theorem 4': Exact Constant Minimax Optimality}
+Let $p_0 = \mu_s$, $p_1 = 1 - C_{\text{bal}}\cdot\mu_s/(K_{\mathcal{Y}}-1)$, with Chernoff information $\kappa = C(\text{Bern}(p_0), \text{Bern}(p_1))$ and Chernoff point $\theta^*$. The SCX detector with adaptive threshold $\theta^\dagger = \theta^* + \frac{1}{M}\frac{\log((1-\eta)/\eta)}{D^*} + O(1/M^2)$ achieves:
+\begin{equation}
+\lim_{M\to\infty} e^{M\kappa}\sqrt{2\pi M}\cdot(1-\text{F1}_{\text{SCX}}) = \frac{C_{\min}}{\eta},
+\end{equation}
+where $C_{\min} = \frac{\eta}{2}(\frac{1-\eta}{\eta})^s \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{\sqrt{\theta^*(1-\theta^*)}}$, $s = |\lambda_1^*|/D^*$, and $D^* = \log\frac{p_1(1-p_0)}{p_0(1-p_1)}$.
+
+\textbf{Matching lower bound}: For any algorithm $\mathcal{A}$, $\liminf e^{M\kappa}\sqrt{2\pi M}\cdot(1-\text{F1}_{\mathcal{A}}) \geq C_{\min}/\eta$.
+
+\textbf{Reference}: Paper~I, Section~4; \cite{theorems_unified}, Section~4.
+
+\subsubsection*{Theorem 5: Fixed-K State Discovery Consistency}
+Under sub-Gaussian noise with variance proxy $\sigma^2$ and strong separation $\Delta_{\min} = \min_{i\neq j} \|\mu_i - \mu_j\|_2 > 0$, Lloyd's k-means with $R = C_R \log n$ initializations recovers the true partition with probability:
+\begin{equation}
+P(\hat{\mathcal{C}}^{(n)} \neq \mathcal{C}^* \text{ up to permutation}) \leq K_{\mathcal{S}} \cdot \exp\!\left(-c_1 \frac{n_{\min} \Delta_{\min}^2}{\sigma^2 d_\phi}\right) + o(1).
+\end{equation}
+
+\textbf{Reference}: Paper~I, Section~5; \cite{theorems_unified}, Section~5.
+
+\subsubsection*{Proposition 6: Bootstrap Stability Diagnostic}
+For feature vectors $\{\phi(x_i)\}_{i=1}^N$ and $K_{\mathcal{S}}$ states, let $S(\Phi, K)$ be the mean ARI between full-data and bootstrap clusterings. Then:
+\begin{itemize}
+\item Strong features $\Rightarrow$ high stability: $S(\Phi, K) > 1 - \varepsilon$.
+\item No state structure $\Rightarrow$ low stability: $\mathbb{E}[S(\Phi, K)] = O(K/\sqrt{N})$.
+\item Diagnostic: $S(\Phi, K) < 0.7$ suggests features too weak for SCX to outperform baseline.
+\end{itemize}
+
+\textbf{Reference}: Paper~I, Section~6; \cite{theorems_unified}, Section~6.
+
+% ----------------------------------------------------------------------
+\subsection{Theorem Dependency Graph}
+\label{sec:dependency}
+% ----------------------------------------------------------------------
+
+\begin{verbatim}
+Theorem 3 (Unidentifiability) ──── provides necessity for ────→ A1-A6
+                                                                   │
+                                                                   ▼
+Theorem 1 (Noise Detection) ──── positive result under A1-A6 ──→ F1 ≥ 1 - O(e^{-2MΔ²})
+        │
+        │ provides error model (Bernoulli(p₀), Bern(p₁))
+        ▼
+Theorem 4' (Exact Constant) ──── refines Thm 1's rate ────────→ exact constant κ
+        │
+        │ provides expert error model
+        ▼
+Theorem 2 (Weak Feature) ──── limits when features δ-weak ──→ F1_SCX ≤ F1_base + O(√δ)
+        │
+        │ positive counterpart: strong features ⇒ state discovery succeeds
+        ▼
+Theorem 5 (Cluster Consistency) ──── recovery of true partition ─→ exp(-c·n_min·Δ²_min)
+        │
+        │ practical diagnostic for Thm 2's δ
+        ▼
+Proposition 6 (Stability Diag.) ──── bootstrap stability test ──→ S(Φ,K) > 0.7
+\end{verbatim}
+
+% ======================================================================
+\section{Glossary of SCX Terminology}
+\label{sec:glossary}
+% ======================================================================
+
+\begin{longtable}{p{0.25\textwidth} p{0.70\textwidth}}
+\toprule
+\textbf{Term} & \textbf{Definition} \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+\textbf{State} ($s$) & A partition of the input space $\mathcal{X}$ such that samples within a state have homogeneous expert error characteristics. Discovered via k-means on feature representation $\phi(X)$. States are the fundamental unit of SCX analysis: all statistical guarantees are per-state. Denoted $s \in \mathcal{S}$, with $K_{\mathcal{S}} = |\mathcal{S}|$. \\
+
+\textbf{Consensus score} ($C(x)$) & The fraction of $M$ experts that fail to predict the given label for sample $x$: $C(x) = \frac{1}{M}\sum_{m=1}^M \mathbf{1}\{\ell(f_m(x), y) > \tau\}$. Expected value on clean samples is $\mu_s$ (low); on noisy samples is $\approx 1 - \mu_s/(K-1)$ (high). \\
+
+\textbf{Separation gap} ($\Delta_s$) & For state $s$, the minimum distance from threshold $\theta$ to the expected consensus scores of clean and noisy samples: $\Delta_s = \min(\theta - \mu_s,\; 1 - C_{\text{bal}}\mu_s/(K-1) - \theta)$. Controls the exponential rate of F1 convergence. \\
+
+\textbf{Noise rate} ($\eta$) & The global proportion of label noise in the dataset: $\eta = \mathbb{P}(\text{label flipped})$. Critical parameter for adaptive thresholding and bound validity. Typical range: 0.05--0.30. \\
+
+\textbf{Feature weakness} ($\delta$) & The mutual information between feature representation $\phi(X)$ and true state $S$: $\delta = I(\phi(X); S)$. Normalized form: $\varepsilon_\phi = \delta / \log K_{\mathcal{S}}$. Governs whether SCX can outperform the loss baseline. \\
+
+\textbf{Chernoff information} ($\kappa$) & The asymptotic exponential rate of best achievable error probability for distinguishing $\text{Bern}(p_0)$ from $\text{Bern}(p_1)$: $\kappa = C(\text{Bern}(p_0), \text{Bern}(p_1)) = \min_{t\in[0,1]} \log \sum p_0^t p_1^{1-t}$. Always smaller than $2\Delta^2$. \\
+
+\textbf{Adaptive threshold} ($\theta^\dagger$) & The noise-rate-aware threshold $\theta^\dagger = \theta^* + \frac{1}{M}\frac{\log((1-\eta)/\eta)}{D^*} + O(1/M^2)$, where $\theta^*$ is the Chernoff point and $D^*$ is the total log-odds. Achieves minimax optimal constant. \\
+
+\textbf{Curation-Exploration Tradeoff} & The principle that premature data cleaning (curation before exploration) destroys the signal needed to distinguish noise from hardness. Formalized as $\text{Curation}(t) = f(\text{Exploration}(t))$, with exploration rate $\eta(t)$ governing the tradeoff. \\
+
+\textbf{State-conditioned expertise} & The property whereby different expert models develop distinct specializations across data states due to training on different subsets or with different seeds. The foundation for the SCX routing and noise detection mechanisms. \\
+
+\textbf{Minimax optimality} (exact constant) & An algorithm is exact constant minimax optimal if it achieves the lower bound $\liminf e^{M\kappa}\sqrt{2\pi M}(1-\text{F1}) \geq C_{\min}/\eta$ with equality---i.e., no other algorithm can achieve a smaller error constant, even asymptotically. SCX with $\theta^\dagger$ is exact constant minimax optimal. \\
+
+\textbf{Bootstrap ARI} ($S(\Phi, K)$) & Mean adjusted Rand Index (ARI) between k-means clusterings on the full data and on bootstrap resamples. Values $>0.7$ indicate strong feature structure (SCX likely beneficial); values $<0.3$ indicate weak structure (SCX likely futile). \\
+
+\textbf{Chernoff point} ($\theta^*$) & The unique threshold that equalizes the KL divergences of clean and noisy error distributions: $\text{KL}(\theta^*\|p_0) = \text{KL}(\theta^*\|p_1)$. Also called the ``minimax threshold.'' Closed form: $\theta^* = \frac{\log((1-p_0)/(1-p_1))}{\log(p_1(1-p_0)/(p_0(1-p_1)))}$. \\
+
+\textbf{Consistency score} (state) ($C(s)$) & For a state $s$, the consistency score measures label purity within the cluster. High $C(s)$ indicates that samples within a state share the same label, suggesting the state captures a meaningful data partition. \\
+
+\textbf{Noise score} ($\text{NS}(x)$) & Per-sample noise score combining residual and state-level metrics: $\text{NS}(x_i) = r_i / (\rho(s) + \varepsilon) \cdot (1 - C(s))$, where $r_i$ is the residual (loss), $\rho(s)$ is the state proportion, and $C(s)$ is the state consistency. \\
+
+\textbf{Expert noise error rate} ($p_1$) & The expected consensus score on noisy samples within a state. Under uniform noise (A4): $p_1 = 1 - C_{\text{bal}}\cdot \mu_s/(K_{\mathcal{Y}}-1)$. \\
+
+\textbf{Expert clean error rate} ($p_0$) & The expected consensus score on clean samples within a state. Equal to $\mu_s$, the state-level clean error rate upper bound (A5). \\
+
+\textbf{Chernoff constant} ($C_{\min}$) & The multiplicative factor in the exact minimax F1 lower bound: $C_{\min} = \frac{\eta}{2}(\frac{1-\eta}{\eta})^s \frac{1/\lambda_0^* + 1/|\lambda_1^*|}{\sqrt{\theta^*(1-\theta^*)}}$. Aggregates over multiple bottleneck states via $C_{\text{global}} = \sum_{s: \kappa_s = \kappa_{\text{global}}} \rho_s C_s$. \\
+
+\textbf{Total log-odds} ($D^*$) & The sum of log-odds at the Chernoff point: $D^* = \lambda_0^* + |\lambda_1^*| = \log\frac{p_1(1-p_0)}{p_0(1-p_1)}$. Controls the $O(1/M)$ threshold shift. \\
+
+\textbf{Exponent fraction} ($s$) & $s = |\lambda_1^*|/D^* \in (0,1)$. Governs how the noise prior $((1-\eta)/\eta)^s$ factors into the minimax constant. When $\eta = 1/2$, $s$ determines the symmetry of the threshold adaptation. \\
+
+\end{longtable}
+
+% ======================================================================
+\subsection{Notation Quick Reference}
+% ======================================================================
+
+\begin{longtable}{p{0.12\textwidth} p{0.30\textwidth} p{0.50\textwidth}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} & \textbf{Context} \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+$\mathcal{X}$ & Input space & Domain of data samples \\
+$\mathcal{Y}$ & Label space & $|\mathcal{Y}| = K_{\mathcal{Y}}$ classes \\
+$\mathcal{S}$ & State space & $|\mathcal{S}| = K_{\mathcal{S}}$ states \\
+$s(x)$ & True state assignment & Unobserved, estimated via clustering \\
+$\phi(x)$ & Feature representation & Input to state discovery \\
+$C(x)$ & Consensus score & Fraction of experts that err on $x$ \\
+$\eta$ & Noise rate & Proportion of mislabeled samples \\
+$\mu_s$ & State clean error bound & Expected consensus on clean samples \\
+$\theta$ & Detection threshold & State-dependent decision boundary \\
+$\Delta_s$ & Separation gap & Signal-to-noise ratio in state $s$ \\
+$\kappa$ & Chernoff information & Asymptotic error exponent \\
+$M$ & Number of experts & Ensemble size \\
+$\rho_s$ & State proportion & $\mathbb{P}(X \in s)$ \\
+$C_{\text{bal}}$ & Error balance constant & Controls error concentration ($\geq 1$) \\
+$\varepsilon_\phi$ & Normalized feature weakness & $\delta / \log K_{\mathcal{S}}$ \\
+$\delta$ & Feature-state mutual info & $I(\phi(X); S)$ in nats \\
+$\theta^*$ & Chernoff point & Minimax threshold \\
+$\theta^\dagger$ & Adaptive threshold & $\eta$-aware optimal threshold \\
+$\lambda_0^*, \lambda_1^*$ & Saddlepoints & At Chernoff point \\
+$D^*$ & Total log-odds & $D^* = \lambda_0^* + |\lambda_1^*|$ \\
+$s$ & Exponent fraction & $|\lambda_1^*|/D^*$ \\
+$C_{\min}$ & Minimax constant & Exact constant in F1 lower bound \\
+$\eta(t)$ & Exploration rate & Time-dependent curation aggressiveness \\
+$S(\Phi, K)$ & Bootstrap ARI & Clustering stability score \\
+$\tau$ & Stability threshold & Heuristic $= 0.7$ for SCX reliability \\
+$\Delta_{\min}$ & Min cluster separation & Theorem 5's separation condition \\
+$n_{\min}$ & Min per-state samples & Theorem 5's sample condition \\
+$\sigma^2$ & Variance proxy & Sub-Gaussian noise parameter \\
+\end{longtable}
+
+% ======================================================================
+\subsection{Typical Parameter Values}
+% ======================================================================
+
+\begin{longtable}{p{0.30\textwidth} p{0.15\textwidth} p{0.15\textwidth} p{0.30\textwidth}}
+\toprule
+\textbf{Scenario} & $\eta$ & $\Delta$ & \textbf{Recommended $M$} \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+MLIP (ACE, 500 frames) & 0.10--0.20 & 0.25--0.50 & 8--12 \\
+Medical imaging (50K images) & 0.05--0.10 & 0.30--0.50 & 10--15 \\
+CIFAR-10 (ResNet, 50K images) & 0.08--0.10 & 0.35--0.50 & 8--10 \\
+Drug targetome (15K molecules) & 0.05--0.15 & 0.30--0.60 & 4--8 (pipeline layers) \\
+Large-scale web dataset (10M) & 0.01--0.05 & 0.40--0.60 & 20--24 \\
+Small dataset ($N < 500$) & Unknown & Unknown & 5--8 (bootstrap) \\
+\end{longtable}
+
+% ======================================================================
+\subsection{Cross-Reference to Paper~I Supplementary Information}
+% =====================================================================%
+
+The full theoretical development with complete proofs is organized in Paper~I's Supplementary Information as follows:
+
+\begin{longtable}{p{0.12\textwidth} p{0.40\textwidth} p{0.40\textwidth}}
+\toprule
+\textbf{SI Section} & \textbf{Content} & \textbf{Pages (est.)} \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+A.1 & Notation and Assumptions & 2 \\
+A.2 & Theorem 1: Noise Detection (Lemmas 1--3) & 6 \\
+A.3 & Theorem 2: Weak Feature Failure (Pinsker-TV chain) & 5 \\
+A.4 & Theorem 3: Unidentifiability (K=2 and K$>$2 constructions) & 4 \\
+A.5 & Theorem 4': Exact Constant (Lemmas A--F, Bahadur-Rao, Chernoff) & 12 \\
+A.6 & Theorem 5: Cluster Consistency (Lemmas 1--4) & 8 \\
+A.7 & Proposition 6: Bootstrap Stability & 3 \\
+A.8 & Numerical Verification Tables & 1 \\
+\end{longtable}
+
+\vfill
+
+\begin{center}
+\rule{0.5\textwidth}{0.5pt}
+\end{center}
+
+\noindent\textbf{References}
+
+\bibliographystyle{plain}
+\begin{thebibliography}{5}
+
+\bibitem{theorems_unified}
+SCX Mathematical Theory: Unified Theorem Document. \emph{Technical report} (2026). Available at: \url{[repository]-theory}.
+
+\bibitem{engineering_guide}
+SCX Engineering Practice Guide. \emph{Technical report} (2026).
+
+\bibitem{paperI}
+SCX. A Fundamental Impossibility in Data Quality. \emph{arXiv preprint} (2026).
+
+\bibitem{paperII}
+SCX. The Curation-Exploration Tradeoff. \emph{In preparation} (2026).
+
+\bibitem{paperIII}
+SCX. Training Data Quality Dominates Model Architecture. \emph{In preparation} (2026).
+
+\end{thebibliography}
+
+\end{document}

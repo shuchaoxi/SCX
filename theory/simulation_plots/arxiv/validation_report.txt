@@ -1,0 +1,159 @@
+========================================================================
+SCX SPRING SELF-EVOLUTION THEORY: NUMERICAL VALIDATION REPORT
+========================================================================
+Date: 2026-06-28 14:51:06
+Configuration: N=200, M_experts=5, eta=0.25, T=20, trials=10
+Schedules: alpha_t = t^-0.6, beta_t = t^-0.8
+
+------------------------------------------------------------------------
+Claim 1: M_t monotonic growth (size never decreases)
+------------------------------------------------------------------------
+  Verdict: PASS
+  Trials passing: 10/10
+  Initial |M|: 135.8 +/- 5.2
+  Final   |M|: 143.1 +/- 5.4
+  Growth: 7.3 +/- 3.6
+
+------------------------------------------------------------------------
+Claim 2: eta_eff(t) decay (effective noise rate among accepted samples)
+------------------------------------------------------------------------
+  Verdict: FAIL
+  Trials passing: 0/10
+  Initial eta_eff: 0.0442 +/- 0.0188
+  Final   eta_eff: 0.0447 +/- 0.0195
+  Relative reduction: -0.8% +/- 10.8%
+  Assessment: No decay or eta_eff increased
+
+------------------------------------------------------------------------
+Claim 3: S_t convergence (||S_{t+1} - S_t|| -> 0)
+------------------------------------------------------------------------
+  Verdict: PASS
+  Trials passing: 10/10
+  Initial ||dS||: 0.012549 +/- 0.001405
+  Final   ||dS||: 0.000302 +/- 0.000325
+  Ratio (final/initial): 0.0258 +/- 0.0299
+
+------------------------------------------------------------------------
+Claim 4: F1 score improvement over baseline
+------------------------------------------------------------------------
+  Verdict: PASS
+  Trials passing: 10/10
+  Baseline F1: 0.8096 +/- 0.0645
+  Final   F1: 0.8410 +/- 0.0631
+  Improvement: 0.0315 +/- 0.0213
+  Theorem 1 bound: 0.0000 +/- 0.0000
+
+------------------------------------------------------------------------
+Claim 5: Lyapunov function Phi_t behavior (MSE to consensus reference)
+------------------------------------------------------------------------
+  Verdict: FAIL
+  Trials passing: 0/10
+  Initial Phi: 0.534720 +/- 0.083754
+  Final   Phi: 0.552240 +/- 0.079864
+  Ratio: 1.0350 +/- 0.0159
+  Assessment: Phi INCREASED (confirms DEFECT-03/04 - S_t follows improved consensus, not static reference)
+
+------------------------------------------------------------------------
+Claim 6: Resurrection rate > 0 (fraction of initially-rejected later accepted)
+------------------------------------------------------------------------
+  Verdict: PASS
+  Trials passing: 10/10
+  Mean resurrected: 7.3 +/- 3.6
+
+------------------------------------------------------------------------
+Claim 7: Convergence rate O(t^-a) with a=0.6
+------------------------------------------------------------------------
+  Verdict: FAIL
+  Empirical slope: -0.0568 +/- 0.0425
+  Theoretical slope: -0.6000
+  Gap to theory: 0.5432
+  Assessment: Negative slope (converging) but rate differs from theory
+
+========================================================================
+EDGE CASES
+========================================================================
+
+  Edge case: eta->0 (no noise)
+    M_monotonic: PASS (5/5)
+    eta_eff_decay: FAIL (0/5)
+    S_convergence: PASS (3/5)
+    F1_improvement: PASS (4/5)
+    Lyapunov_descent: FAIL (0/5)
+    resurrection: PASS (5/5)
+
+  Edge case: eta->0.5 (max noise)
+    M_monotonic: PASS (5/5)
+    eta_eff_decay: FAIL (0/5)
+    S_convergence: PASS (5/5)
+    F1_improvement: FAIL (2/5)
+    Lyapunov_descent: FAIL (0/5)
+    resurrection: PASS (5/5)
+
+  Edge case: perfect correlation
+    M_monotonic: PASS (5/5)
+    eta_eff_decay: FAIL (0/5)
+    S_convergence: FAIL (0/5)
+    F1_improvement: FAIL (0/5)
+    Lyapunov_descent: FAIL (0/5)
+    resurrection: FAIL (0/5)
+
+  Edge case: anti-correlation
+    M_monotonic: PASS (5/5)
+    eta_eff_decay: PASS (5/5)
+    S_convergence: PASS (5/5)
+    F1_improvement: PASS (5/5)
+    Lyapunov_descent: FAIL (0/5)
+    resurrection: PASS (5/5)
+
+========================================================================
+FINAL VERDICT
+========================================================================
+  Claim 1: M_t monotonic growth -> [PASS]
+  Claim 2: eta_eff(t) decay -> [FAIL]
+  Claim 3: S_t convergence -> [PASS]
+  Claim 4: F1 improvement -> [PASS]
+  Claim 5: Lyapunov Phi_t descent -> [FAIL]
+  Claim 6: Resurrection rate > 0 -> [PASS]
+  Claim 7: Convergence rate O(t^-a) -> [WEAK]
+
+  Edge Cases:
+    eta->0 (no noise) -> [PASS]
+    eta->0.5 (max noise) -> [FAIL]
+    perfect correlation -> [FAIL]
+    anti-correlation -> [PASS]
+
+========================================================================
+FAILURE ANALYSIS
+========================================================================
+
+Claim 5 (Lyapunov Phi_t descent) failure analysis:
+  The Lyapunov function Phi_t = MSE(S_t, C_ref) does not decrease because
+  S_t moves toward the IMPROVED consensus target, not the fixed reference.
+  This confirms DEFECT-03/04 from the verification report:
+  - The student improves (F1 rises), which changes the optimal consensus target
+  - S_t correctly follows the improved target, increasing MSE to the OLD reference
+  - This is NOT a bug in the theory — it shows the Lyapunov candidate needs
+    a UPDATING reference (importance-weighted) as per Theorem 12.5
+  - Or equivalently: the reference-set replay mechanism (C10) is needed
+  Theory impact: The Lyapunov descent property IS conditional (conjecture).
+
+Claim 2 (eta_eff decay) failure analysis:
+  eta_eff may not decay significantly because:
+  - Memory grows monotonically: once a sample enters M_t, it stays forever
+  - Early clean samples remain, but early noise also persists
+  - With declining threshold, new samples are added but the old ones stay
+  - Stronger decay would require a removal mechanism (not in current theory)
+  - The fraction of new samples is small relative to total memory size
+
+Claim 7 (Convergence rate) failure analysis:
+  Empirical slope (-0.0568) differs from theory (-0.6):
+  - The theory rate O(t^{-a}) is asymptotic (t -> inf)
+  - At T=20, we are in the transient regime, not asymptotic
+  - The exponential bound from Theorem 1 may dominate at small t
+  - More iterations (> 100) needed to verify asymptotic rate
+  - The beta_t = t^{-0.8} schedule does NOT satisfy Sum(beta_t) < inf
+    (theory requires b > 1 for this condition)
+
+========================================================================
+End of Report
+========================================================================
