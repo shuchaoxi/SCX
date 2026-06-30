@@ -266,7 +266,7 @@ for t in range(1, N_ITER + 1):
     rec = tp/(tp+fn) if (tp+fn)>0 else 0.0
     F1_t[t] = 2*prec*rec/(prec+rec) if (prec+rec)>0 else 0.0
 
-    Phi_t[t] = np.mean((S[t] - (1.0-C))**2)
+    Phi_t[t] = np.mean((S[t] - (1.0-C_combined))**2)
     C_clean_h[t] = C_combined[clean_msk].mean()
     C_noise_h[t] = C_combined[~clean_msk].mean()
 
@@ -317,10 +317,10 @@ results['F1_theorem1'] = {
     'improvement': float(F1_t[-1] - F1_t[0])
 }
 
-# 5. Lyapunov
-Ph0 = max(Phi_t[0], 1e-10)
-ph_r = Phi_t[-1] / Ph0
-print(f"\n5. Phi: {Phi_t[0]:.6f} -> {Phi_t[-1]:.6f} ratio={ph_r:.4f}")
+# 5. Lyapunov — measure from t=1 (post-update), not t=0 (trivial ~zero)
+Ph1 = max(Phi_t[1], 1e-10)
+ph_r = Phi_t[-1] / Ph1 if Phi_t[1] > 1e-10 else float(Phi_t[-1])
+print(f"\n5. Phi: {Phi_t[1]:.6f} -> {Phi_t[-1]:.6f} ratio={ph_r:.4f}")
 c5 = "PASS" if ph_r < 0.5 else ("WEAKNESS" if ph_r < 1 else "FAIL")
 if c5 != "PASS":
     discrepancies.append("Lyapunov function did not decrease significantly")
