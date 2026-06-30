@@ -27,8 +27,12 @@ alone.  Theorem~3 formalizes this impossibility.
       \textbf{difficult}---expert errors arise from label ambiguity, not from
       label errors.
     \item The two processes produce identical observable joint distributions
-      \textbf{if and only if} the noise rate $\eta_{\text{err}}$ in $\mathcal{P}_{\text{noise}}$
+      \textbf{if} the noise rate $\eta_{\text{err}}$ in $\mathcal{P}_{\text{noise}}$
       equals the ambiguity rate $\eta_{\text{amb}}$ in $\mathcal{P}_{\text{hard}}$.
+      (Note: only the sufficiency direction is proved---the constructed worlds
+      are observationally equivalent when $\eta_{\text{err}}=\eta_{\text{amb}}$;
+      necessity, i.e.\ whether observational equivalence forces equality of the
+      two rates for \emph{all possible} world pairs, is \textbf{not established}.)
       Under this symmetry condition $\eta_{\text{err}} = \eta_{\text{amb}} = \eta$:
       \[
       \mathcal{P}_{\text{noise}}\bigl(x,\,y,\,\{f_m(x)\}\bigr)
@@ -468,11 +472,11 @@ commitment to epistemic equality.
 \end{remark}
 
 % ===================================================================
-\subsection{Metatheorem: 好人收敛定理 (Good Person Convergence)}
+\subsection{Conjecture: 好人收敛定理 (Good Person Convergence)}
 \label{sec:good-convergence}
 
-\begin{theorem}[好人收敛定理 (Good Person Convergence Theorem)]
-\label{thm:good-convergence}
+\begin{conjecture}[好人收敛定理 (Good Person Convergence Conjecture)]
+\label{conj:good-convergence}
 Consider a community of $N$ agents interacting under the SCX framework:
 each agent may produce data, claim data quality, or audit others' claims.
 Let the following conditions hold:
@@ -496,26 +500,29 @@ Then, as $t\to\infty$:
     simultaneously satisfies the three conditions, and no agent can improve
     their position by deviating.
 \end{enumerate}
-\end{theorem}
+\end{conjecture}
 
-\begin{proof}[Proof sketch]
-By Theorem~3 (老实人定理), any claim lacking stated assumptions is
-mathematically empty and is rejected by the community without further
-argument. By Corollary~\ref{cor:everyone-equal} (人人平等定理), no agent
-can claim epistemic privilege---the audit procedure is identical for all.
-By Theorem~NPE (禁止装逼定理 / 雅洁不扩散定理), the equilibrium in which
-all agents adopt the audit protocol and none develop competing standards
-is the unique Nash equilibrium under fragmentation costs. Agents who
-persist in unverifiable claims face escalating detection risk without
-offsetting benefit; agents who adopt honest practices gain verifiability
-without sacrificing competitive position. The community converges to the
-all-honest equilibrium determined by these three conditions. $\square$
-\end{proof}
-
-\begin{remark}[命名]
-``好人收敛'' (Good Person Convergence): 数学结构本身使诚实成为占优策略。
-不是道德说教，不是制度强制——是博弈均衡的自然结果。所有人变老实、变平等、
-变好人，不需要一个更强大的人来执行——定理替你执行。
+\begin{remark}[Status of this claim]
+\label{remark:good-convergence-status}
+\textbf{This is a conjecture, not a theorem.} The original manuscript
+presented a 13-line ``proof sketch'' that merely cited Theorems~3, NPE,
+and Corollary~\ref{cor:everyone-equal} without establishing a formal
+logical chain from premises to conclusion. A rigorous proof would require:
+\begin{enumerate}[label=(\alph*)]
+  \item A formal agent model (type space, strategy space, payoff functions);
+  \item A dynamic process description (discrete/continuous time, update rules);
+  \item A rigorous definition of convergence (topological space, convergence mode);
+  \item A Lyapunov or potential function establishing the stability of the
+    all-honest equilibrium;
+  \item Verification that the three conditions (C1--C3) are not circular---each
+    is itself a consequence of other SCX theorems, so their joint satisfaction
+    must be proved consistent.
+\end{enumerate}
+Until such a proof is provided, the ``Good Person Convergence'' claim remains
+a compelling research programme rather than an established result. The
+intuition---that SCX's mathematical structure makes honesty strategically
+dominant---is provocative and merits further investigation, but it has not
+been formally demonstrated.
 \end{remark}
 
 % ===================================================================
@@ -578,16 +585,30 @@ the \textbf{verification score}:
 V_M(\mathcal{S}, s) = \frac{1}{M}\sum_{m=1}^{M} J_m(\mathcal{S}; s)
 \]
 where $J_m(\mathcal{S}; s)$ is verifier $m$'s judgment on samples in
-state $s$. Define the \textbf{decision threshold} $\theta_s \in (0,1)$
-and the \textbf{SCX-knowledge operator}:
+state $s$. Define the \textbf{decision threshold} $\theta_s \in (0,1)$.
+
+A \textbf{counterexample} is a triple $(x, y, \{f_m(x)\})$ such that
+$\mathcal{A}_{\mathcal{S}}$ holds but $V_M(\mathcal{S}, s(x)) < \theta_{s(x)}$.
+Let $\mathcal{E}_t$ be the set of counterexamples accumulated up to time $t$.
+A counterexample $e \in \mathcal{E}_t$ is \textbf{resolved} if either (a) it
+has been adjudicated and found consistent with $\mathcal{A}_{\mathcal{S}}$
+under additional scrutiny, or (b) the claim is amended to accommodate it.
+Otherwise it is \textbf{unresolved}.
+
+The \textbf{SCX-knowledge operator} is defined per-state:
 \[
-\mathbf{K}_{t}(\mathcal{S}, \mathcal{C}) =
+\mathbf{K}_{t}(\mathcal{S}, \mathcal{C}, s) =
 \begin{cases}
-1 & \text{if } V_M(\mathcal{S}, s) \geq \theta_s \text{ for all } s
-      \text{ and no unresolved counterexample in } \mathcal{E}_t,\\
+1 & \text{if } V_M(\mathcal{S}, s) \geq \theta_s
+      \text{ and no unresolved counterexample in } \mathcal{E}_t
+      \text{ involves state } s,\\[4pt]
 0 & \text{otherwise.}
 \end{cases}
 \]
+The claim-level knowledge operator aggregates state-level judgments:
+$\mathbf{K}_{t}(\mathcal{S}, \mathcal{C}) = \mathbf{1}\{\mathbf{K}_t(\mathcal{S},
+\mathcal{C}, s) = 1 \text{ for all } s \in \supp(
+ho)\}$.
 \end{definition}
 
 % -------------------------------------------------------------------
@@ -660,12 +681,15 @@ The SCX-knowledge operator $\mathbf{K}$ satisfies:
   \item \textbf{Monotonicity under audit:} if $\mathbf{K}_t(\mathcal{S})=1$,
     then $\mathbf{K}_{t+1}(\mathcal{S})=1$ unless a counterexample emerges
     (E5), in which case $\mathbf{K}$ flips to $0$ and stays there;
-  \item \textbf{Gettier immunity:} Gettier (1963) cases arise when a claim
+  \item \textbf{Gettier immunity (operational):} Gettier (1963) cases arise when a claim
     is justified but true only accidentally---the justification chain
     contains an unstated contingency. Under E1, any such contingency must
     appear in $\mathcal{A}_{\mathcal{S}}$, where it becomes either (a)
     verified (the claim holds under it) or (b) falsified (the claim
-    fails). Either way, the Gettier gap is closed;
+    fails). This addresses the \emph{operational} Gettier problem---cases
+    where the contingency is expressible as a verifiable condition. It does
+    \emph{not} claim to resolve \emph{all metaphysical} Gettier cases
+    (e.g., those involving non-verifiable possible-worlds semantics);
   \item \textbf{人人平等 (Epistemic equality):} $\mathbf{K}$ depends only
     on $\mathcal{A}_{\mathcal{S}}$ and $\{J_m\}$, never on the identity,
     credentials, or institutional affiliation of the verifiers
