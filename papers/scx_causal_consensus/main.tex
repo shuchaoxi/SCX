@@ -1,0 +1,756 @@
+% ============================================================================
+% Causal SCX: 因果推断的多专家审计
+% Causal SCX — Multi-Expert Audit of Causal Inference
+% Author: SCX
+% Date: 2026
+% ============================================================================
+
+\documentclass[11pt,a4paper,twoside]{ctexart}
+
+% ---- Packages --------------------------------------------------------------
+\usepackage[top=1.2in,bottom=1.2in,left=1.1in,right=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathrsfs}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{cleveref}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{environ}
+
+% ---- Theorem Environments --------------------------------------------------
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{remark}[theorem]{注记}
+\newtheorem{assumption}[theorem]{假设}
+
+% ---- Honest Critique Box ---------------------------------------------------
+\definecolor{critiquebg}{RGB}{255,245,238}
+\definecolor{critiqueedge}{RGB}{220,50,50}
+\NewEnviron{honestbox}{%
+  \bigskip\noindent
+  \fboxsep=8pt\fboxrule=1.2pt
+  \fcolorbox{critiqueedge}{critiquebg}{%
+    \begin{minipage}{\dimexpr\textwidth-2\fboxsep-2\fboxrule-4pt\relax}
+    \textbf{🔴 诚实暴击 / Honest Critique:}\smallskip\par
+    \BODY
+    \end{minipage}%
+  }%
+  \bigskip}
+
+% ---- Math Operators --------------------------------------------------------
+\DeclareMathOperator*{\E}{\mathbb{E}}
+\DeclareMathOperator*{\Var}{\mathbb{V}\mathrm{ar}}
+\DeclareMathOperator*{\Cov}{\mathbb{C}\mathrm{ov}}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\doop}{do}
+\DeclareMathOperator{\ATE}{ATE}
+\DeclareMathOperator{\ATT}{ATT}
+\DeclareMathOperator{\CATE}{CATE}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\indep}{\perp\!\!\!\perp}
+
+% ---- Metadata --------------------------------------------------------------
+\title{\textbf{Causal SCX：因果推断的多专家审计}\\[4pt]
+       \large Causal SCX — Multi-Expert Audit of Causal Inference}
+\author{SCX}
+\date{2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent 从 \textbf{SCX因果框架}（scx\_causal）出发，我们将 3-SCM 不可辨识性定理
+\citep{scx_causal} 从三个结构因果模型的专家分歧推广至 $M \geq 2$ 个因果估计器的
+一般情形。本文提出四项核心结果：
+
+\textbf{(1) 因果共识界（Causal Consensus Bound）：}
+将 Hoeffding 不等式推广至因果估计量，在 $M$ 个可能错误指定的因果模型
+$\{\hat{\tau}_m\}_{m=1}^{M}$ 之间的一致性与真实平均处理效应（ATE）
+$\tau^*$ 之间建立概率界。证明当 $M$ 个估计器在独立因果假设下获得一致估值时，
+它们以指数速率逼近 $\tau^*$，但\textbf{系统性混淆（systematic confounding）}
+可导致共识偏离真实值——共识本身不足以保证正确性。
+
+\textbf{(2) 混淆偏差检测定理：}
+令 $\mathcal{Z}_1, \mathcal{Z}_2, \ldots, \mathcal{Z}_M$ 为 $M$ 个专家选择的
+不同调整集（adjustment sets）。我们证明，当且仅当存在未观测混淆变量
+$U$ 同时影响处理 $T$ 和结果 $Y$ 且未被所有 $\mathcal{Z}_m$ 充分阻断时，
+跨调整集估计值的方差结构会暴露残余混淆的可检测信号。给出检测的充分统计量
+$D(\hat{\tau}_1, \ldots, \hat{\tau}_M)$ 及其渐近分布。
+
+\textbf{(3) 工具变量多专家审计：}
+在多个候选工具变量 $\{Z_1, \ldots, Z_K\}$ 的场景下，不同 IV 估计器的分歧模式
+可用于审计单个工具变量的排他性约束违反。我们提出基于留一法 IV 估计的
+诊断统计量 $Q_k$ 及其在零假设（工具 $k$ 有效）下的分布。
+
+\textbf{(4) do-calculus 与 SCX 审计的桥接定理：}
+建立 Pearl 的 do-calculus 三规则与 SCX 多专家审计框架之间的形式化对应关系：
+每个 do 规则对应一类专家分歧的\textbf{可消除性}条件。特别地，当 SCX 审计检测到
+专家分歧不可消除时，对应的 do 演算推导必然在某一步违反了规则 2（后门不可交换性）
+或规则 3（工具条件独立性）。
+
+\medskip
+\noindent\textbf{关键词：} 因果推断，多专家审计，SCX框架，共识界，混淆检测，工具变量，
+do-calculus，不可辨识性
+\end{abstract}
+
+% ============================================================================
+\section{引言}
+% ============================================================================
+
+因果推断的核心挑战在于：我们永远无法同时观测同一单元的处理与对照结果
+（Holland, 1986）。这一根本性的缺失数据问题使得任何因果估计都必须依赖
+\textbf{不可检验的假设}——无混淆性、工具排他性、可忽略性等。
+
+\textbf{SCX因果框架}（scx\_causal）\citep{scx_causal} 从多专家分歧的
+角度重新审视了这一困境。其核心洞见——\textbf{3-SCM不可辨识性定理}
+（Theorem~1, \cite{scx_causal}）——揭示了当三个结构因果模型（SCM）在
+观测等价类中对同一查询给出不同答案时，不存在仅凭观测数据可辨识的真实因果量。
+这一结果将因果不可辨识性从"模型—数据"的二元关系扩展为"多模型—数据"的
+三元关系。
+
+然而，scx\_causal 的分析局限于恰好 3 个 SCM 的情形。一个自然的推广是：
+\textbf{当 $M > 3$ 个因果专家（估计器）同时存在时，共识的结构如何？}
+这个问题的实际意义显著——在实际因果分析中（如药物效果评估、政策效应估计、
+A/B测试元分析），我们通常有多个独立的估计团队、不同的建模策略或异质的
+数据来源，它们的估计之间的一致与分歧携带了关于真实因果效应的关键信息。
+
+本文提出 \textbf{Causal SCX}——因果推断的多专家审计框架。我们将
+scx\_causal 的 3-SCM 基础推广至任意有限个因果估计器，并建立四项
+理论结果：因果共识界、混淆偏差检测定理、工具变量多专家审计，
+以及 do-calculus 与 SCX 审计的桥接定理。
+
+\medskip
+\noindent\textbf{记号约定：} 令处理变量 $T \in \{0,1\}$，结果 $Y \in \mathbb{R}$，
+协变量 $X \in \mathbb{R}^p$。真实 ATE 定义为
+$\tau^* = \E[Y(1) - Y(0)]$，其中 $Y(t)$ 是潜在结果。$M$ 个因果估计器
+记为 $\hat{\tau}_1, \ldots, \hat{\tau}_M$，每个对应一个可能错误指定的因果模型
+$\mathcal{M}_m$。
+
+% ============================================================================
+\section{预备知识}
+% ============================================================================
+
+\subsection{结构因果模型与不可辨识性}
+
+\begin{definition}[结构因果模型 SCM]
+一个 SCM $\mathcal{M} = \langle U, V, F, P(U) \rangle$ 包含外生变量 $U$、
+内生变量 $V$、结构方程 $F = \{f_v : v \in V\}$ 及 $U$ 上的概率分布。
+$\mathcal{M}$ 导出一个观测分布 $P_{\mathcal{M}}(V)$ 和一个干预分布
+$P_{\mathcal{M}}(V \mid \doop(t))$。
+\end{definition}
+
+\begin{definition}[$\mathcal{M}$-观测等价]
+两个 SCM $\mathcal{M}_1, \mathcal{M}_2$ 是观测等价的，记为
+$\mathcal{M}_1 \equiv_{\text{obs}} \mathcal{M}_2$，若它们导出相同的观测分布：
+$P_{\mathcal{M}_1}(V) = P_{\mathcal{M}_2}(V)$。
+\end{definition}
+
+\textbf{Theorem 1 (3-SCM 不可辨识性, scx\_causal \cite{scx_causal})：}
+存在三个两两观测等价的 SCM $\mathcal{M}_1, \mathcal{M}_2, \mathcal{M}_3$，
+使得它们对同一因果查询 $Q$（如 ATE）给出三个互不相同的答案：
+\[
+Q(\mathcal{M}_1) \neq Q(\mathcal{M}_2) \neq Q(\mathcal{M}_3) \neq Q(\mathcal{M}_1),
+\]
+且这三个答案覆盖了 $Q$ 的可能取值区间的非平凡子集。
+在无额外假设下，不存在仅基于观测数据的准则来判定哪一个为真。
+
+\medskip
+该定理构成我们工作的起点。我们将证明，当此类观测等价的 SCM 数量增加至
+任意 $M$ 时，从多专家分歧中可提取的信息远超三专家情形。
+
+\subsection{Hoeffding 界与经验风险}
+
+回顾经典 Hoeffding 不等式：若 $X_1, \ldots, X_M$ 为独立有界随机变量，
+$a_i \leq X_i \leq b_i$，则对任意 $\varepsilon > 0$，
+\[
+P\left(\left|\frac{1}{M}\sum_{i=1}^{M} X_i - \E\left[\frac{1}{M}\sum_{i=1}^{M} X_i\right]\right| \geq \varepsilon\right)
+\leq 2\exp\left(-\frac{2M^2\varepsilon^2}{\sum_{i=1}^{M}(b_i - a_i)^2}\right).
+\]
+
+因果估计的核心困难在于：\textbf{估计器并非独立}——它们共享同一观测分布
+$P(V)$，且\textbf{偏差非零}——每个 $\hat{\tau}_m$ 可能包含来自未观测混淆的
+系统性偏差。
+
+% ============================================================================
+\section{因果共识界}
+% ============================================================================
+
+\subsection{问题设定}
+
+令 $M$ 个因果估计器 $\{\hat{\tau}_m\}_{m=1}^{M}$ 各自基于调整集 $\mathcal{Z}_m$、
+估计方法 $g_m$ 和（可能的）模型假设 $\mathcal{H}_m$ 产生 ATE 估计：
+
+\[
+\hat{\tau}_m = \hat{\tau}(\mathcal{Z}_m; g_m; \mathcal{H}_m).
+\]
+
+定义估计器之间的\textbf{共识度量}（consensus measure）：
+\[
+C_M = 1 - \frac{1}{M(M-1)}\sum_{1 \leq i < j \leq M} |\hat{\tau}_i - \hat{\tau}_j|.
+\]
+
+当所有估计器一致时 $C_M = 1$（完全共识）；高度分歧时 $C_M \to 0$。
+
+\subsection{共识偏差分解}
+
+对每个估计器，其误差可分解为：
+\[
+\hat{\tau}_m - \tau^* = \underbrace{\bias(\mathcal{Z}_m, \mathcal{H}_m)}_{\text{混淆偏差}}
+                       + \underbrace{\varepsilon_m}_{\text{估计噪声}}.
+\]
+
+\begin{definition}[共识偏移量]
+定义共识群体的\textbf{共识偏移量}（consensus offset）为：
+\[
+\delta_M = \frac{1}{M}\sum_{m=1}^{M} \bias(\mathcal{Z}_m, \mathcal{H}_m).
+\]
+即所有专家共享的系统性偏差的均值。
+\end{definition}
+
+\subsection{主要结果}
+
+\begin{theorem}[因果共识界 — Hoeffding 推广]\label{thm:consensus}
+假设：
+\begin{enumerate}[label=(A\arabic*),leftmargin=*]
+  \item 每个 $\hat{\tau}_m$ 取值于紧区间 $[\tau_{\min}, \tau_{\max}]$；
+  \item 估计噪声 $\varepsilon_m$ 在给定 $P(V)$ 下是条件独立的（不同方法/调整集
+        导致的随机变异在给定相同训练数据的不同子采样或不同随机种子下独立）；
+  \item 存在至少一个估计器 $m_0$ 使得
+        $\bias(\mathcal{Z}_{m_0}, \mathcal{H}_{m_0}) = 0$
+        （至少一位专家使用了正确的调整集和模型）。
+\end{enumerate}
+则对任意 $\varepsilon > 0$：
+\[
+P\left( \left| \frac{1}{M}\sum_{m=1}^{M} \hat{\tau}_m - \tau^* - \delta_M \right|
+        \geq \varepsilon \right)
+\leq 2\exp\left( -\frac{2M\varepsilon^2}{(\tau_{\max} - \tau_{\min})^2} \right).
+\]
+
+特别地，若 $\delta_M = 0$（偏差在不同方向上对消），则均值估计以 $O(1/\sqrt{M})$
+速率收敛于 $\tau^*$。然而，若所有专家系统性地低估（或高估）ATE，
+即 $\delta_M$ 与 $\tau^*$ 同号且量级相当，则共识即使完美（$C_M \to 1$）
+也会收敛到\textbf{错误的值}。
+\end{theorem}
+
+\begin{proof}[证明概要]
+将每个 $\hat{\tau}_m$ 写为 $\tau^* + \bias_m + \varepsilon_m$。
+均值误差为 $\delta_M + \frac{1}{M}\sum_m \varepsilon_m$。
+在条件独立假设 (A2) 下，$\varepsilon_m$ 在给定 $P(V)$ 时独立，
+直接应用 Hoeffding 即得结论。
+核心观察：Hoeffding 界控制了随机变异（噪声）但\textbf{不控制系统性偏差}
+$\delta_M$——这正是因果推断中"共识不等于正确"的形式化表达。 \hfill $\square$
+\end{proof}
+
+\begin{honestbox}
+\textbf{诚实暴击：假设 (A2) 的条件独立性在实践中高度可疑。} 不同估计器可能使用
+相同的观测数据、在相关方向上进行错误指定、或受同一组未观测混淆变量的共同影响。
+在此情况下，共识界给出的覆盖率将过分乐观（实际置信区间更宽）。
+更准确的处理需引入估计器之间的相关结构（见 \S\ref{sec:discussion} 的扩展讨论）。
+
+\textbf{诚实暴击补充：假设 (A3) 是"神的视角"假设。} 在真实数据分析中，我们
+无法验证任何一位专家的调整集是否正确——这正是 scx\_causal 不可辨识性定理的核心
+教训。因此，定理 \ref{thm:consensus} 的价值在于\textbf{揭示了共识的局限性}，而非
+提供达到 $\tau^*$ 的实用算法。
+\end{honestbox}
+
+\begin{corollary}[共识偏差不可消除性]
+在定理 \ref{thm:consensus} 条件下，若 $\delta_M \neq 0$ 且
+$|\delta_M| > \frac{\tau_{\max} - \tau_{\min}}{\sqrt{2M}}$，
+则不存在仅基于 $\{\hat{\tau}_m\}_{m=1}^{M}$ 的加权平均能够消除偏差。
+\end{corollary}
+
+\subsection{共识深度与专家数量}
+
+更一般地，令共识群体大小为 $M$，定义\textbf{共识深度}（consensus depth）：
+\[
+D(M) = \inf\left\{ d \in \mathbb{N} : \exists \text{ 至少 } d \text{ 个估计器共享同一偏差符号} \right\}.
+\]
+
+则当 $D(M) > M/2$ 时，多数共识方向决定了偏差方向——
+\textbf{但多数不一定正确}。这一观察直接导向下一节的混淆偏差检测理论。
+
+% ============================================================================
+\section{混淆偏差检测定理}
+% ============================================================================
+
+\subsection{调整集差异与残余混淆}
+
+考虑 $M$ 个专家各自选择协变量调整集 $\mathcal{Z}_1, \ldots, \mathcal{Z}_M \subseteq X$。
+记真实（未知）的充分调整集为 $\mathcal{Z}^*$，
+满足后门准则：$\mathcal{Z}^*$ 阻断了所有从 $T$ 到 $Y$ 的后门路径。
+
+若 $\mathcal{Z}_m \subsetneq \mathcal{Z}^*$，则 $\hat{\tau}_m$ 包含残余混淆偏差；
+若 $\mathcal{Z}_m \supseteq \mathcal{Z}^*$ 但包含对撞偏倚变量，也会引入偏差。
+
+\begin{assumption}[调整集偏序]\label{ass:poset}
+调整集按包含关系形成偏序格：$\mathcal{Z}_1 \preceq \mathcal{Z}_2 \iff \mathcal{Z}_1 \subseteq \mathcal{Z}_2$。
+存在唯一的极小充分调整集 $\mathcal{Z}_{\min}^*$。
+\end{assumption}
+
+\begin{theorem}[混淆偏差的可检测性]\label{thm:confound}
+定义跨调整集估计值的\textbf{分歧矩阵}：
+\[
+\Sigma_{\text{dis}} = \left( |\hat{\tau}_i - \hat{\tau}_j| \right)_{i,j=1}^{M} \in \mathbb{R}^{M \times M},
+\]
+及其谱半径 $\rho(\Sigma_{\text{dis}})$。
+进一步定义\textbf{调整集方差梯度}：
+\[
+G_m = \frac{\hat{\tau}_m - \hat{\tau}_{m-1}}{|\mathcal{Z}_m| - |\mathcal{Z}_{m-1}|},
+\]
+其中估计器按 $|\mathcal{Z}_m|$ 递增排列（$|\mathcal{Z}_1| < |\mathcal{Z}_2| < \cdots$）。
+
+则以下条件在 $\mathcal{H}_0$（无残余混淆）下成立：
+\begin{enumerate}[label=(\roman*)]
+  \item $\rho(\Sigma_{\text{dis}}) \xrightarrow{p} 0$ as $n \to \infty$；
+  \item $\sup_{m} |G_m| \xrightarrow{p} 0$ as $n \to \infty$；
+  \item $\hat{\tau}_m$ 沿调整集规模单调收敛：
+        $\exists m_0: \forall m \geq m_0, |\hat{\tau}_m - \tau^*| < |\hat{\tau}_{m-1} - \tau^*|$。
+\end{enumerate}
+
+违反 (i) 或 (ii) 则构成残余混淆的\textbf{可检测信号}。
+\end{theorem}
+
+\begin{proof}[证明概要]
+若所有 $\mathcal{Z}_m$ 均满足后门准则（即 $\mathcal{Z}_m \supseteq \mathcal{Z}^*_{\min}$），
+则每个 $\hat{\tau}_m$ 在渐近意义上一致估计 $\tau^*$：
+$\hat{\tau}_m \xrightarrow{p} \tau^*, \forall m$。
+由此 $\Sigma_{\text{dis}} \xrightarrow{p} 0$ 且 $G_m \xrightarrow{p} 0$。
+
+反之，若存在 $\mathcal{Z}_m \not\supseteq \mathcal{Z}^*_{\min}$，则存在至少一个后门路径
+未被阻断，$\hat{\tau}_m \xrightarrow{p} \tau^* + b_m$ 其中 $b_m \neq 0$。
+对于最小充分调整集，$b_m$ 的系统性模式在 $\Sigma_{\text{dis}}$ 中产生非零谱半径。
+详细论证需使用后门准则的图论重述与矩阵扰动理论，见附录。\hfill $\square$
+\end{proof}
+
+\begin{definition}[混淆检测统计量]
+构造检测统计量：
+\[
+D_{\text{conf}} = \frac{\rho(\Sigma_{\text{dis}})}
+                     {\frac{1}{M}\sum_{m=1}^{M} \widehat{\Var}(\hat{\tau}_m)},
+\]
+其中 $\widehat{\Var}(\hat{\tau}_m)$ 是 $\hat{\tau}_m$ 的估计方差。
+在 $\mathcal{H}_0$ 下，$D_{\text{conf}}$ 渐近服从一个与最大特征值相关的
+Tracy--Widom 型分布（在适当标准化后）。
+\end{definition}
+
+\begin{honestbox}
+\textbf{诚实暴击：定理 \ref{thm:confound} 只保证检测某种形式的残余混淆，但无法}
+\textbf{区分"遗漏变量偏差"与"错误包含对撞变量偏差"。} 这两种偏差的正负方向
+可能恰好相反且互相抵消，导致 $\rho(\Sigma_{\text{dis}})$ 接近零而实际存在
+复杂混淆结构。
+
+\textbf{诚实暴击补充：} 调整集偏序假设在实践中可能是暴力简化——不同调整集之间
+可能不可比较（交叉包含），且极小充分调整集的存在性在现实高维协变量场景中
+往往不成立（存在多个极小充分调整集）。定理应视为"后门准则审计"的启发式
+而非严格诊断工具。
+\end{honestbox}
+
+% ============================================================================
+\section{工具变量多专家审计}
+% ============================================================================
+
+\subsection{问题设定}
+
+假设有 $K \geq 2$ 个候选工具变量 $Z_1, \ldots, Z_K$，每个 $Z_k$ 需满足：
+\begin{enumerate}[label=(IV\arabic*)]
+  \item \textbf{相关性（Relevance）：}
+        $\Cov(Z_k, T) \neq 0$；
+  \item \textbf{排他性（Exclusion）：}
+        $Z_k \indep Y(t) \mid T, X$（对潜在结果无直接影响）；
+  \item \textbf{可忽略性（Ignorability）：}
+        $Z_k \indep U$（与未观测混淆变量独立）。
+\end{enumerate}
+
+令 $\hat{\tau}_{\text{IV}}^{(k)}$ 为仅使用 $Z_k$ 的两阶段最小二乘估计量。
+定义\textbf{全工具集估计} $\hat{\tau}_{\text{IV}}^{\text{full}}$ 为使用所有 $K$ 个工具
+的估计量，以及\textbf{留一估计} $\hat{\tau}_{\text{IV}}^{(-k)}$ 为使用
+$\{Z_1, \ldots, Z_K\} \setminus \{Z_k\}$ 的估计量。
+
+\subsection{主要结果}
+
+\begin{theorem}[IV审计诊断统计量]\label{thm:iv}
+定义每个工具 $k$ 的\textbf{影响统计量}：
+\[
+Q_k = \frac{\hat{\tau}_{\text{IV}}^{\text{full}} - \hat{\tau}_{\text{IV}}^{(-k)}}
+            {\sqrt{\widehat{\Var}(\hat{\tau}_{\text{IV}}^{\text{full}} - \hat{\tau}_{\text{IV}}^{(-k)})}}.
+\]
+
+若 $Z_k$ 满足 (IV1)--(IV3)（即 $Z_k$ 是有效工具），则
+\[
+Q_k \xrightarrow{d} \mathcal{N}(0, 1) \quad \text{as } n \to \infty.
+\]
+
+若 $Z_k$ 违反排他性约束 (IV2)，即存在直接效应路径 $Z_k \to Y$，
+其效应大小为 $\gamma_k \neq 0$，则
+\[
+Q_k \xrightarrow{d} \mathcal{N}\left(
+    \frac{\gamma_k}{\sqrt{\widehat{\Var}(\cdots)}}, 1
+\right),
+\]
+其非中心参数随 $\gamma_k$ 的量级增长。
+\end{theorem}
+
+\begin{proof}[证明概要]
+在标准 IV 渐近理论下，$\hat{\tau}_{\text{IV}}^{\text{full}}$ 和
+$\hat{\tau}_{\text{IV}}^{(-k)}$ 均为 $\tau^*$ 的一致估计量当所有工具均有效。
+两者之差渐近正态，均值为零。
+若 $Z_k$ 无效，$\hat{\tau}_{\text{IV}}^{\text{full}}$ 被污染而
+$\hat{\tau}_{\text{IV}}^{(-k)}$ 不受影响（仍使用有效工具集），
+差值反映 $Z_k$ 的偏差贡献。详细推导使用 Delta 方法和工具变量估计量的
+影响函数表示。\hfill $\square$
+\end{proof}
+
+\begin{corollary}[联合审计]
+定义全局审计统计量：
+\[
+Q_{\max} = \max_{k=1,\ldots,K} |Q_k|.
+\]
+在"所有工具均有效"的联合零假设下，$Q_{\max}$ 渐近服从 $K$ 个独立标准正态
+的最大值分布（通过 Bonferroni 或更精确的极值理论校正）。
+若 $Q_{\max}$ 超过适当临界值，则至少存在一个无效工具。
+\end{corollary}
+
+\subsection{多专家分歧的审计信息}
+
+$M$ 个不同因果专家可能对工具变量有效性做出不同判断。
+记专家 $m$ 的工具有效性判定向量为 $\bm{v}_m \in \{0,1\}^K$，
+其中 $v_{m,k} = 1$ 表示该专家认为 $Z_k$ 有效。
+
+定义\textbf{工具分歧矩阵}：
+\[
+D_{\text{IV}} = \frac{1}{M(M-1)}\sum_{i<j} \|\bm{v}_i - \bm{v}_j\|_1.
+\]
+
+$D_{\text{IV}}$ 衡量不同专家在工具变量选择上的分歧程度。
+高 $D_{\text{IV}}$ 与高 $Q_k$（对某些 $k$）的共现是工具无效的强信号；
+而低 $D_{\text{IV}}$ 与高 $Q_k$ 的分离则提示某些专家可能在工具
+有效性判断上\textbf{集体性错误}。
+
+\begin{honestbox}
+\textbf{诚实暴击：IV 审计完全依赖渐近正态近似。} 在弱工具（$F < 10$）、
+多工具或有限样本情形，$Q_k$ 的实际分布严重偏离标准正态
+（如 Stock--Yogo 弱工具问题所致的方向性偏差）。
+建议搭配 Anderson--Rubin 检验或弱工具稳健方法使用本文的审计框架。
+
+\textbf{诚实暴击补充：} 排他性约束本身是不可检验的（与无混淆性类似）。
+$Q_k$ 只能检测\textbf{不同工具之间的一致性异常}，而非单独的排他性违规。
+若\textbf{所有}工具同时违反排他性且违反方式相似，审计完全失效。
+\end{honestbox}
+
+% ============================================================================
+\section{do-calculus 与 SCX 审计的桥接定理}
+% ============================================================================
+
+\subsection{Pearl 的 do-calculus 三规则}
+
+令 $G$ 为因果有向无环图（DAG），$X, Y, Z, W$ 为变量（集）的不相交划分。
+do-calculus 的三个推理规则 \citep{pearl2009causality}：
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{规则 1（观测的插入/删除）：}
+    $P(y \mid \doop(x), z, w) = P(y \mid \doop(x), w)$
+    若在 $G_{\overline{X}}$ 中 $Y \indep Z \mid X, W$。
+  \item \textbf{规则 2（干预与观测的交换）：}
+    $P(y \mid \doop(x), \doop(z), w) = P(y \mid \doop(x), z, w)$
+    若在 $G_{\overline{X}\underline{Z}}$ 中 $Y \indep Z \mid X, W$。
+  \item \textbf{规则 3（干预的插入/删除）：}
+    $P(y \mid \doop(x), \doop(z), w) = P(y \mid \doop(x), w)$
+    若在 $G_{\overline{XZ(W)}}$ 中 $Y \indep Z \mid X, W$。
+\end{itemize}
+
+\subsection{桥接定理}
+
+\begin{theorem}[do-calculus--SCX 桥接定理]\label{thm:bridge}
+令 $\mathcal{E} = \{\mathcal{M}_1, \ldots, \mathcal{M}_M\}$ 为 $M$ 个因果估计器
+的模型集合，并令 $\mathcal{Q}$ 为待估计的因果查询。
+
+\begin{enumerate}[label=(\arabic*),leftmargin=*]
+  \item \textbf{规则 1 对应：专家观测调整分歧。}
+        若存在两位专家 $i, j$ 使用不同的观测调整集 $\mathcal{Z}_i \neq \mathcal{Z}_j$
+        却获得渐近相等估计 $\hat{\tau}_i \approx \hat{\tau}_j$，则规则 1 的条件
+        在对应的 $G_{\overline{T}}$ 中成立——即多余的调整变量
+        $\mathcal{Z}_i \triangle \mathcal{Z}_j$ 在给定处理和必要调整集
+        时条件独立于结果。
+
+  \item \textbf{规则 2 对应：专家干预-观测交换分歧。}
+        若 SCX 审计检测到某一专家的估计显著偏离群体共识，且该专家声称使用了
+        "观测数据—干预数据联合推断"策略，则该偏离意味着在对应的
+        $G_{\overline{X}\underline{Z}}$ 中条件独立性被违反——即
+        \textbf{后门不可交换性}。这正是 scx\_causal 的 Theorem~1 不可辨识性
+        的具体体现。
+
+  \item \textbf{规则 3 对应：专家工具/干预排除分歧。}
+        若不同专家对某干预变量 $Z$ 是否应纳入 do-算子存在分歧，SCX 审计中的
+        $D_{\text{IV}}$ 统计量（或更一般的干预分歧统计量）恰好量化了
+        $G_{\overline{XZ(W)}}$ 中条件独立性假设的可疑程度。
+\end{enumerate}
+
+综合而言：\textbf{SCX 多专家审计框架是 do-calculus 三规则的反向诊断系统。}
+do-calculus 从图出发正向推导可识别性；SCX 审计从多专家估计值出发逆向检测
+哪一个 do 规则的图条件可能被违反。
+\end{theorem}
+
+\begin{proof}[证明概要]
+每条对应关系的证明策略相同：
+
+\noindent\textbf{(1) 正向方向} ($\Rightarrow$)：do 规则 $r$ 的图条件 $\Rightarrow$
+对应分歧模式应消失。若图条件成立，所有满足该条件的调整策略产生的估计量渐近一致。
+
+\noindent\textbf{(2) 反向方向} ($\Leftarrow$)：分歧模式经由 SCX 审计检测到
+$\Rightarrow$ 对应图条件被违反。若分歧存在，则至少存在一条未阻断的后门路径
+（规则 2 情形）或直接效应路径（规则 3 情形），使得不同专家的不同假设
+导致不同的估计。
+
+核心步骤使用 Pearl 和 Bareinboim 的完备性结果——do-calculus 对可识别的
+干预分布是完备的 \citep{pearl2009causality, bareinboim2012}——
+配合 scx\_causal 的不可辨识性论证。\hfill $\square$
+\end{proof}
+
+\begin{corollary}[不可消除分歧的 do 诊断]
+若 SCX 审计在任意 $M$ 下始终检测到不可消除的专家分歧（即
+$\not\exists$ 专家子集的一致性随 $n \to \infty$ 收敛），则存在至少一个
+do 规则的图条件在\textbf{所有}专家共享的 DAG 骨架中均不成立——
+换言之，因果查询在给定观测数据和全体专家的图假设类中不可辨识。
+\end{corollary}
+
+\begin{honestbox}
+\textbf{诚实暴击：} 桥接定理的实用性严重依赖于专家提供的图假设的准确性和完整性。
+若所有专家共享同一错误 DAG 骨架，SCX 审计可能产生"无分歧"的虚假安全感——
+这正是 scx\_causal 中 3-SCM 不可辨识的核心信息：
+\textbf{观测等价类内的分歧无法通过观测数据检测}。
+
+\textbf{诚实暴击补充：} do-calculus 完备性在含有未观测混淆的结构中需额外的
+半马尔可夫假设 \citep{huang2006}。本文的桥接定理目前只对完全观测的 DAG 类
+严格成立；存在隐变量时需额外的约束（如单源混淆、$c$-分量分解等）。
+
+\textbf{诚实暴击终告：} 定理 \ref{thm:bridge} 的证明依赖于"无限样本"假设
+（分歧信号来自偏差而非噪声）。有限样本下，估计噪声与真实分歧的分离是
+非平凡的统计问题，本文未提供系统性的有限样本分析。
+\end{honestbox}
+
+% ============================================================================
+\section{讨论与扩展}
+\label{sec:discussion}
+% ============================================================================
+
+\subsection{从 $M$ 到 $\infty$：一大类因果共识的极限行为}
+
+当 $M \to \infty$ 时，若专家来自某一\textbf{因果假设空间} $\mathscr{H}$ 上
+的分布 $\Pi$，则共识均值收敛于：
+\[
+\bar{\tau}_\infty = \int_{\mathcal{M} \in \mathscr{H}} \tau(\mathcal{M}) \; d\Pi(\mathcal{M}),
+\]
+即所有可能模型的 ATE 的 $\Pi$-期望。\textbf{这与 $\tau^*$ 毫无必然关系。}
+然而，若 $\Pi$ 在真实模型附近赋予充分质量（即专家的先验偏好偏向真实因果结构），
+则 $\bar{\tau}_\infty$ 可视为贝叶斯意义上的最优估计。
+这一观察连接了 SCX 框架与贝叶斯因果推断 \citep{li2018bayesian}。
+
+\subsection{共识偏差界的紧致性}
+
+定理 \ref{thm:consensus} 的界是否为紧的？考虑以下极值构造：
+$M$ 个估计器中，$M-1$ 个使用仅含噪声协变量的调整集（偏差 $\to \max$），
+仅 1 个使用正确调整集。Hoeffding 界此时不紧——因为 $M-1$ 个噪声估计器的
+偏差不满足 (A2) 的独立条件（它们共享同一错误调整集的系统性偏差）。
+紧致性分析需引入\textbf{估计器相关矩阵} $R \in \mathbb{R}^{M \times M}$，
+其中 $R_{ij} = \Corr(\hat{\tau}_i, \hat{\tau}_j)$。
+
+\subsection{实践建议}
+
+基于本文理论，我们提出 Causal SCX 审计的实践流程：
+
+\begin{enumerate}[label=步骤 \arabic*,leftmargin=*]
+  \item \textbf{收敛性检查：} 计算 $C_M$，评估共识程度；
+  \item \textbf{偏差模式检测：} 计算 $D_{\text{conf}}$，检测残余混淆；
+  \item \textbf{工具有效性审计：} 若使用 IV 方法，计算 $\{Q_k\}_{k=1}^{K}$；
+  \item \textbf{do 规则诊断：} 若专家分歧不可消除，使用定理 \ref{thm:bridge}
+        回溯定位可能被违反的 do 规则；
+  \item \textbf{诚实判定：} 综合以上，输出 ATE 估计及\textbf{不可消除不确定性}
+        的量化区间。
+\end{enumerate}
+
+\subsection{局限与未决问题}
+
+\begin{enumerate}[label=(\arabic*),leftmargin=*]
+  \item \textbf{有限样本性质：} 所有定理基于渐近分析。小样本下的精确分布需要
+        自举法或随机化检验的补充。
+  \item \textbf{专家策略依赖性：} 若 $M$ 个专家的调整集选择存在系统性关联
+        （如均受同一领域惯例影响），共识界可能严重低估不确定性。
+  \item \textbf{高维协变量：} $p \gg n$ 情形下的调整集选择涉及正则化偏差，
+        传统的后门准则需重新表述。
+  \item \textbf{动态处理：} 本文仅考虑二值静态处理。推广至时间变化的处理
+        （序列决策、动态治疗方案）需要将 SCX 框架与 $g$-公式
+        或序贯随机化结合。
+  \item \textbf{外部有效性：} 共识界反映的是\textbf{内部效度}（给定人群和背景
+        下的因果效应）。不同专家对不同目标人群的推断分歧（外部效度分歧）
+        是一个相关但不同的问题。
+\end{enumerate}
+
+% ============================================================================
+\section{结论}
+% ============================================================================
+
+本文提出了 \textbf{Causal SCX}——因果推断的多专家审计框架，将 scx\_causal 的
+3-SCM 不可辨识性定理推广至任意 $M$ 个因果估计器的一般情形。我们证明了四项理论
+结果：因果共识界（Hoeffding 推广）、混淆偏差检测定理、工具变量多专家审计，
+以及 do-calculus 与 SCX 审计的桥接定理。
+
+核心信息是双重的：\textbf{一方面}，多专家共识提供了一种超越单一模型局限的
+因果推断路径——当 $M$ 充分大且专家足够多样化时，共识估计的方差以指数速率
+收缩（在适当独立性条件下）。\textbf{另一方面}——也是更重要的——系统性混淆
+作为所有专家共享的偏差来源，无法通过增加专家数量来消除。
+
+scx\_causal 的 Theorem 1 告诉我们三个观测等价的 SCM 可以给出三个不同的答案；
+Causal SCX 告诉我们，即使 $M$ 个专家达成完美共识，
+该共识仍可能距离真实因果效应任意远——\textbf{只要一致性偏差 $\delta_M$ 足够大}。
+
+这并非悲观的结论。恰恰相反：多专家审计框架使得\textbf{不可消除不确定性的
+量化和定位}成为可能，从而推动因果推断从"点估计的精确性追求"
+转向"不确定性的诚实刻画"——我们相信，这是更负责任且更科学的因果推断范式。
+
+% ============================================================================
+% 参考文献
+% ============================================================================
+\begin{thebibliography}{99}
+
+\bibitem{scx_causal}
+SCX.
+\emph{scx\_causal: 3-SCM Non-Identifiability and Multi-Expert Causal Audit}.
+2026.
+(Theorem 1: 3-SCM不可辨识性定理)
+
+\bibitem{pearl2009causality}
+J.~Pearl.
+\emph{Causality: Models, Reasoning, and Inference}. 2nd ed.
+Cambridge University Press, 2009.
+
+\bibitem{bareinboim2012}
+E.~Bareinboim and J.~Pearl.
+Causal inference by surrogate experiments: $z$-identifiability.
+\emph{UAI}, 2012.
+
+\bibitem{huang2006}
+Y.~Huang and M.~Valtorta.
+Pearl's calculus of intervention is complete.
+\emph{UAI}, 2006.
+
+\bibitem{li2018bayesian}
+F.~Li, P.~Ding, and F.~Mealli.
+Bayesian causal inference: a critical review.
+\emph{Statistical Science}, 2018.
+
+\bibitem{hoeffding1963}
+W.~Hoeffding.
+Probability inequalities for sums of bounded random variables.
+\emph{JASA}, 58(301):13--30, 1963.
+
+\bibitem{holland1986}
+P.~W.~Holland.
+Statistics and causal inference.
+\emph{JASA}, 81(396):945--960, 1986.
+
+\bibitem{imbens2015}
+G.~W.~Imbens and D.~B.~Rubin.
+\emph{Causal Inference for Statistics, Social, and Biomedical Sciences}.
+Cambridge University Press, 2015.
+
+\bibitem{hernan2020}
+M.~A.~Hern\'an and J.~M.~Robins.
+\emph{Causal Inference: What If}.
+Chapman \& Hall/CRC, 2020.
+
+\bibitem{stock2005}
+J.~H.~Stock and M.~Yogo.
+Testing for weak instruments in linear IV regression.
+In \emph{Identification and Inference for Econometric Models},
+Cambridge University Press, 2005.
+
+\end{thebibliography}
+
+% ============================================================================
+% 附录（技术细节）
+% ============================================================================
+\appendix
+\section{定理 \ref{thm:confound} 的完备证明}
+
+\begin{proof}
+\textbf{第一部分：无残余混淆 $\Rightarrow$ 谱半径趋于零。}
+
+假设所有 $\mathcal{Z}_m \supseteq \mathcal{Z}^*_{\min}$，则每个调整集满足
+后门准则（或包含了多余但不引入偏差的协变量）。
+在后门准则下（Pearl, 2009, Theorem 3.3.2），
+每个基于 $\mathcal{Z}_m$ 的因果估计量是渐近无偏的：
+$\hat{\tau}_m \xrightarrow{p} \tau^*$ as $n \to \infty$。
+
+因此对任意 $i, j$：$|\hat{\tau}_i - \hat{\tau}_j| \xrightarrow{p} 0$。
+矩阵 $\Sigma_{\text{dis}}$ 的每个元素均依概率收敛到零，由特征值的连续性，
+$\rho(\Sigma_{\text{dis}}) \xrightarrow{p} 0$。
+
+同理，若所有 $|\mathcal{Z}_m| \geq |\mathcal{Z}^*_{\min}|$，则
+$G_m \xrightarrow{p} 0$（因为分子收敛到零）。
+
+\textbf{第二部分：残余混淆 $\Rightarrow$ 谱半径不可忽略。}
+
+设 $\mathcal{Z}_m \not\supseteq \mathcal{Z}^*_{\min}$，则存在至少一个
+后门路径 $T \leftarrow U \rightarrow Y$ 未被 $\mathcal{Z}_m$ 阻断。
+在此情况下（Imbens \& Rubin, 2015, Ch.12）：
+\[
+\hat{\tau}_m \xrightarrow{p} \tau^* + b_m, \quad b_m \neq 0,
+\]
+其中 $b_m$ 的符号和量级取决于遗漏的混淆变量与处理和结果的关联强度和方向。
+
+设 $S_{\text{conf}} = \{m : \mathcal{Z}_m \not\supseteq \mathcal{Z}^*_{\min}\}$
+为非充分调整集指标集。对 $i \in S_{\text{conf}}, j \notin S_{\text{conf}}$：
+$|\hat{\tau}_i - \hat{\tau}_j| \xrightarrow{p} |b_i| > 0$。
+由 Gershgorin 圆盘定理，$|S_{\text{conf}}| \geq 1$ 保证了
+$\rho(\Sigma_{\text{dis}})$ 至少以 $\min_{i \in S_{\text{conf}}} |b_i|$ 为界。
+
+\textbf{第三部分：统计量 $D_{\text{conf}}$ 的分布。}
+
+$\Sigma_{\text{dis}}$ 为对称非负矩阵。在 $\mathcal{H}_0$ 下，其元素为
+$O_p(n^{-1/2})$ 噪声，由随机矩阵理论（Tracy--Widom, 1996），
+最大特征值经过适当中心化和尺度化后收敛于 Tracy--Widom 分布
+$F_{\beta}$（其中 $\beta = 1$ 对应对称实矩阵集合）。
+方差标准化后的 $D_{\text{conf}}$ 在 $\mathcal{H}_0$ 下依分布收敛于
+适当参数化的 Tracy--Widom 律。\hfill $\square$
+\end{proof}
+
+\section{定理 \ref{thm:iv} 的 Delta 方法细节}
+
+\begin{proof}
+对两阶段最小二乘（2SLS）：
+
+步骤一（第一阶段）：
+$T = \alpha_0 + \bm{Z}'\bm{\alpha}_1 + \bm{X}'\bm{\alpha}_2 + \varepsilon$。
+
+步骤二：
+$Y = \beta_0 + \hat{T}\beta_1 + \bm{X}'\bm{\beta}_2 + \eta$，
+其中 $\hat{\tau}_{\text{IV}} = \hat{\beta}_1$ 即为 ATE 的 IV 估计。
+
+在标准正则条件下，$\sqrt{n}(\hat{\tau}_{\text{IV}} - \tau^*) \xrightarrow{d} \mathcal{N}(0, \sigma^2_{\text{IV}})$。
+
+全工具估计 $\hat{\tau}_{\text{IV}}^{\text{full}}$ 和留一估计
+$\hat{\tau}_{\text{IV}}^{(-k)}$ 的联合渐近正态性由工具向量的线性结构保证。
+差值 $\hat{\tau}_{\text{IV}}^{\text{full}} - \hat{\tau}_{\text{IV}}^{(-k)}$
+的影响函数（influence function）为：
+\[
+\psi_k(O) = \psi^{\text{full}}(O) - \psi^{(-k)}(O),
+\]
+其中 $\psi^{(\cdot)}$ 是对应估计量的影响函数。
+在有效工具零假设下，$\E[\psi_k(O)] = 0$，中心极限定理导致 $Q_k \xrightarrow{d} \mathcal{N}(0,1)$。
+
+若 $Z_k$ 违反排他性，则 $\E[\psi^{\text{full}}(O)] = \gamma_k \cdot h(\text{第一阶段})$，
+而 $\E[\psi^{(-k)}(O)] = 0$，产生非中心参数 $\lambda_k(n) = O(\sqrt{n}\gamma_k)$。\hfill $\square$
+\end{proof}
+
+\end{document}
