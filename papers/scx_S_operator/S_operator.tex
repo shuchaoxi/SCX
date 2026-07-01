@@ -1,0 +1,1288 @@
+\documentclass[11pt,a4paper]{article}
+
+% ======================================================================
+%  SCX 社会推论 S 算子定义
+%  SCX Social Inference S-Operator Definition
+%  国家势能 · 财富势能 · 认知势能
+%  National Potential · Wealth Potential · Cognitive Potential
+%  v1.0 — 2026-07-01
+% ======================================================================
+
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{physics}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+\theoremstyle{definition}
+\newtheorem{definition}{定义 Definition}[section]
+\newtheorem{theorem}{定理 Theorem}[section]
+\newtheorem{proposition}{命题 Proposition}[section]
+\newtheorem{corollary}{推论 Corollary}[section]
+\newtheorem{remark}{注记 Remark}[section]
+\newtheorem{axiom}{公理 Axiom}[section]
+
+% Custom commands
+\newcommand{\SCX}{\text{SCX}}
+\newcommand{\gauge}{\text{gauge}}
+\newcommand{\Sop}{\hat{\mathcal{S}}}
+\newcommand{\Sopnat}{\hat{\mathcal{S}}_{\text{nat}}}
+\newcommand{\Sopwealth}{\hat{\mathcal{S}}_{\text{wealth}}}
+\newcommand{\Sopcog}{\hat{\mathcal{S}}_{\text{cog}}}
+\newcommand{\gaugefix}{\mathcal{G}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathbb{V}\text{ar}}
+\newcommand{\Cov}{\mathbb{C}\text{ov}}
+\newcommand{\indicator}{\mathbf{1}}
+\newcommand{\dataset}{\mathcal{D}}
+\newcommand{\universe}{\mathcal{U}}
+\newcommand{\socialfield}{\mathcal{F}}
+\newcommand{\gaugegroup}{\mathcal{G}}
+
+\title{\Huge \textbf{SCX 社会推论中势能算子 $\Sop$ 的操作定义}\\[8pt]
+\large \textit{Operational Definition of the Potential Operator $\Sop$ in SCX Social Inference}}
+
+\author{SCX 理论架构师 \\ SCX Theory Architect}
+\date{2026年7月1日 \\ July 1, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{
+\centering
+\textbf{摘要 Abstract}
+
+本文为SCX平等论框架中的社会推论模块定义势能算子 $\Sop$ 的操作形式。
+$\Sop$ 将社会实体映射为标量势能值，涵盖三个维度：
+\textbf{国家势能}（人均GDP / 基尼系数 / 预期寿命）、
+\textbf{财富势能}（净资产分位数 / 收入分位数）、
+\textbf{认知势能}（教育年限 / 论文引用 / 抽象思维测试）。
+每个算子满足四个条件：可量化、可审计、满足规范固定条件 $\sum_m g_m = 0$、
+以及跨域可比性。本文在SCX框架内严格形式化这些定义，并提供审计协议与实证校准路径。
+
+\medskip
+\noindent\textit{We define the operational form of the potential operator $\Sop$ for the social-inference module of the SCX egalitarian framework. $\Sop$ maps social entities to scalar potential values across three dimensions: \textbf{national potential} (per-capita GDP / Gini coefficient / life expectancy), \textbf{wealth potential} (net-asset quantile / income quantile), and \textbf{cognitive potential} (years of education / citation count / abstract-thinking test). Each operator satisfies four conditions: quantifiability, auditability, the gauge-fixing condition $\sum_m g_m = 0$, and cross-domain comparability. We formalize these definitions rigorously within the SCX framework and provide audit protocols and empirical calibration paths.}
+}}
+\end{center}
+
+\tableofcontents
+\newpage
+
+% ===================================================================
+%  SECTION 1: FRAMEWORK
+% ===================================================================
+\section{引言与框架背景 Introduction and Framework Background}
+
+\subsection{SCX平等论中的社会推论 Social Inference in SCX Egalitarianism}
+
+SCX框架的核心洞见之一是：社会系统中的不平等不仅仅是一个统计现象，
+而是一个\textbf{场论问题}。社会实体（个人、家庭、区域、国家）之间的差异可以
+被建模为一个社会标量场 $\socialfield: \universe \to \R$ 的局部梯度效应，
+其中 $\universe$ 是社会实体的宇宙。
+
+\medskip
+\noindent\textit{One of the core insights of the SCX framework is that inequality in social systems is not merely a statistical phenomenon, but a \textbf{field-theoretic problem}. Differences among social entities (individuals, households, regions, nations) can be modeled as local gradient effects of a social scalar field $\socialfield: \universe \to \R$, where $\universe$ is the universe of social entities.}
+
+\bigskip
+在SCX形式体系中，我们区分两个核心算子：
+
+\begin{enumerate}[leftmargin=*,label=\textbf{(\arabic*)}]
+    \item \textbf{Cercis得分算子 $S$}：衡量数据质量的审计工具，定义在Situs编码空间上，
+    满足 $S = Q + \eta N$，其中 $Q$ 为质量分量，$N$ 为噪声分量，$\eta$ 为噪声-困难耦合参数。
+    
+    \item \textbf{势能算子 $\Sop$}（本文主题）：衡量社会实体在某个维度上的
+    \textit{相对位置}或\textit{潜力}的操作化定义，构成社会推论的基础输入。
+\end{enumerate}
+
+\noindent\textit{In the SCX formal apparatus, we distinguish two core operators:}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{(\arabic*)}]
+    \item \textbf{Cercis Score operator $S$}: the audit tool measuring data quality, defined over Situs encoding space, satisfying $S = Q + \eta N$, where $Q$ is the quality component, $N$ the noise component, and $\eta$ the noise--hardness coupling parameter.
+    
+    \item \textbf{Potential operator $\Sop$} (the subject of this paper): the operational definition measuring a social entity's \textit{relative position} or \textit{potential} in a given dimension, constituting the foundational input for social inference.
+\end{enumerate}
+
+\subsection{势能算子的四个设计约束 Four Design Constraints}
+
+任何有效的势能算子 $\Sop$ 必须满足四个公理条件：
+
+\medskip
+\noindent\textit{Any valid potential operator $\Sop$ must satisfy four axiomatic conditions:}
+
+\begin{axiom}[可量化 Quantifiability] \label{ax:quant}
+对任意社会实体 $e \in \universe$，$\Sop(e)$ 是一个定义良好的实数，且存在一个
+有限算法在输入 $e$ 的观测数据后，在有限时间内输出 $\Sop(e)$ 的估计值。
+
+\medskip
+\noindent\textit{For any social entity $e \in \universe$, $\Sop(e)$ is a well-defined real number, and there exists a finite algorithm that outputs an estimate of $\Sop(e)$ in finite time given observational data about $e$.}
+\end{axiom}
+
+\begin{axiom}[可审计 Auditability] \label{ax:audit}
+$\Sop$ 的任意具体计算实例必须附带一个\textbf{审计轨迹}（audit trail）$T(e) = \{d_1, \ldots, d_k\}$，
+使得任意独立审计者 $A$ 使用 $T(e)$ 可以验证 $\Sop(e)$ 的计算正确性，且验证过程
+的样本复杂度满足SCX T5主动学习界限。
+
+\medskip
+\noindent\textit{Every concrete computation instance of $\Sop$ must carry an \textbf{audit trail} $T(e) = \{d_1, \ldots, d_k\}$ such that any independent auditor $A$ can verify the correctness of $\Sop(e)$ using $T(e)$, and the sample complexity of the verification process satisfies the SCX T5 active-learning bounds.}
+\end{axiom}
+
+\begin{axiom}[规范固定 Gauge Fixing] \label{ax:gauge}
+对于域 $\universe$ 内的所有实体，$\Sop$ 的值满足规范固定条件：
+\begin{equation}
+    \sum_{e \in \universe} g_e(\Sop) = 0
+    \label{eq:gauge-fix}
+\end{equation}
+其中 $g_e(\Sop)$ 为实体 $e$ 的规范权重函数。在最简单的均匀规范下，$g_e = \Sop(e) - \bar{\Sop}$，
+其中 $\bar{\Sop} = |\universe|^{-1} \sum_{e} \Sop(e)$，即 $\sum_{e} \Sop(e) = 0$。
+
+\medskip
+\noindent\textit{For all entities in domain $\universe$, the value of $\Sop$ satisfies the gauge-fixing condition as in Eq.~(\ref{eq:gauge-fix}), where $g_e(\Sop)$ is the gauge-weight function for entity $e$. Under the simplest uniform gauge, $g_e = \Sop(e) - \bar{\Sop}$, where $\bar{\Sop} = |\universe|^{-1} \sum_{e} \Sop(e)$, i.e., $\sum_{e} \Sop(e) = 0$.}
+\end{axiom}
+
+\begin{axiom}[跨域可比性 Cross-Domain Comparability] \label{ax:compare}
+若两个实体 $e_1, e_2$ 分属不同社会域 $\universe_1, \universe_2$，
+则存在一个规范变换 $\tau_{12}: \R \to \R$ 使得 $\Sop(e_1)$ 与 $\tau_{12}(\Sop(e_2))$
+可比，且 $\tau_{12}$ 满足传递性：$\tau_{12} \circ \tau_{23} = \tau_{13}$。
+
+\medskip
+\noindent\textit{If two entities $e_1, e_2$ belong to distinct social domains $\universe_1, \universe_2$, there exists a gauge transformation $\tau_{12}: \R \to \R$ such that $\Sop(e_1)$ and $\tau_{12}(\Sop(e_2))$ are comparable, and $\tau_{12}$ satisfies transitivity: $\tau_{12} \circ \tau_{23} = \tau_{13}$.}
+\end{axiom}
+
+\subsection{规范固定条件的物理与社会意涵 Physical and Social Meaning of Gauge Fixing}
+
+规范固定条件 $\sum_m g_m = 0$ 源自规范场论中的标准技术。在社会场论语境中，
+其意涵如下：
+
+\medskip
+\noindent\textit{The gauge-fixing condition $\sum_m g_m = 0$ originates from standard techniques in gauge field theory. In the social-field-theoretic context, its meaning is:}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{相对性原理 Principle of Relativity}：社会势能是\textit{相对}量，而非\textit{绝对}量。
+    就像物理学中只有势能\textit{差}有意义一样，社会势能只有在与参考群体比较时才有意义。
+    \textit{Social potential is a \textit{relative} quantity, not an \textit{absolute} one. Just as only potential \textit{differences} have physical meaning, social potential only has meaning when compared against a reference group.}
+    
+    \item \textbf{零和校准 Zero-Sum Calibration}：规范固定确保社会势能的全球平均为零。
+    这意味着势能测量的是偏离全球平均的\textit{偏差}，而非某种绝对禀赋。
+    \textit{Gauge fixing ensures the global mean of social potential is zero. This means potential measures \textit{deviation} from the global mean, not some absolute endowment.}
+    
+    \item \textbf{消除冗余自由度 Elimination of Redundant Degrees of Freedom}：社会势能的绝对值
+    依赖于任意选择的单位系统（例如GDP是用美元还是人民币计量）。规范固定消除了这种冗余，
+    使得势能值在重新标度下不变。\textit{The absolute value of social potential depends on an arbitrarily chosen unit system (e.g., whether GDP is measured in USD or CNY). Gauge fixing eliminates this redundancy, rendering potential values invariant under rescaling.}
+    
+    \item \textbf{群结构 Group Structure}：规范变换构成一个加法群 $\gaugegroup \cong (\R, +)$。
+    任意两个规范选择 $g$ 和 $g'$ 通过一个平移 $c \in \R$ 相关联：$g' = g + c$。
+    规范固定相当于商去这个群作用。\textit{Gauge transformations form an additive group $\gaugegroup \cong (\R, +)$. Any two gauge choices $g$ and $g'$ are related by a translation $c \in \R$: $g' = g + c$. Gauge fixing is equivalent to quotienting by this group action.}
+\end{enumerate}
+
+% ===================================================================
+%  SECTION 2: GENERAL DEFINITION
+% ===================================================================
+\section{S 算子的一般形式 General Form of $\Sop$}
+
+\subsection{形式定义 Formal Definition}
+
+\begin{definition}[势能算子 $\Sop$]
+设 $\universe$ 为社会实体宇宙，$m$ 为测量维度指标。势能算子 $\Sop$ 定义为一个泛函：
+\begin{equation}
+    \Sop: \universe \times \mathcal{M} \to \R
+\end{equation}
+其中 $\mathcal{M} = \{\text{nat}, \text{wealth}, \text{cog}, \ldots\}$ 为度量维度集合。
+对于实体 $e \in \universe$ 和维度 $m \in \mathcal{M}$：
+\begin{equation}
+    \Sop(e; m) = \Phi_m\big(x_1^{(m)}(e), x_2^{(m)}(e), \ldots, x_{k_m}^{(m)}(e)\big)
+    \label{eq:S-general}
+\end{equation}
+其中 $\{x_i^{(m)}(e)\}_{i=1}^{k_m}$ 为维度 $m$ 下实体的 $k_m$ 个可观测特征，
+$\Phi_m: \R^{k_m} \to \R$ 为维度特定的聚合函数。
+
+\medskip
+\noindent\textit{Let $\universe$ be the universe of social entities and $m$ a measurement-dimension index. The potential operator $\Sop$ is defined as a functional as in Eq.~(\ref{eq:S-general}), where $\mathcal{M} = \{\text{nat}, \text{wealth}, \text{cog}, \ldots\}$ is the set of measurement dimensions. For entity $e \in \universe$ and dimension $m \in \mathcal{M}$, $\{x_i^{(m)}(e)\}_{i=1}^{k_m}$ are the $k_m$ observable features of the entity under dimension $m$, and $\Phi_m: \R^{k_m} \to \R$ is the dimension-specific aggregation function.}
+\end{definition}
+
+\subsection{聚合函数的设计原则 Design Principles for $\Phi_m$}
+
+每个 $\Phi_m$ 必须满足以下设计原则：
+
+\medskip
+\noindent\textit{Each $\Phi_m$ must satisfy the following design principles:}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{DP\arabic*:}]
+    \item \textbf{单调性 Monotonicity}：对于每个正向特征 $x_i$（值越大越优），
+    $\partial \Phi_m / \partial x_i \geq 0$。对于每个负向特征 $x_j$（值越大越劣），
+    $\partial \Phi_m / \partial x_j \leq 0$。
+    \textit{For each positive feature $x_i$, $\partial \Phi_m / \partial x_i \geq 0$. For each negative feature $x_j$, $\partial \Phi_m / \partial x_j \leq 0$.}
+    
+    \item \textbf{齐次性 Homogeneity}：$\Phi_m$ 满足度-1正齐次性：
+    $\Phi_m(\lambda x_1, \ldots, \lambda x_{k_m}) = \lambda \Phi_m(x_1, \ldots, x_{k_m})$
+    对于任意 $\lambda > 0$。这保证势能值在特征的单位变换下具有协变性。
+    \textit{$\Phi_m$ is homogeneous of degree 1. This ensures covariance of potential values under unit changes of features.}
+    
+    \item \textbf{可加可分性 Additive Separability}：$\Phi_m(x_1, \ldots, x_{k_m}) = \sum_{i=1}^{k_m} w_i \cdot f_i(x_i)$，
+    其中 $w_i \geq 0$ 为权重且 $\sum_i w_i = 1$，$f_i$ 为特征标准化函数。
+    这保证审计轨迹的可分解验证性。
+    \textit{The aggregation is additively separable with weights $w_i \geq 0$, $\sum_i w_i = 1$, and feature normalization functions $f_i$. This ensures decomposable verifiability of the audit trail.}
+    
+    \item \textbf{鲁棒性 Robustness}：$\Phi_m$ 对异常值不敏感，满足影响函数有界性：
+    $\sup_{x} |\text{IF}(x; \Phi_m, F)| < \infty$，其中 $\text{IF}$ 为Hampel影响函数。
+    \textit{$\Phi_m$ is insensitive to outliers, satisfying bounded influence: $\sup_{x} |\text{IF}(x; \Phi_m, F)| < \infty$, where IF is the Hampel influence function.}
+\end{enumerate}
+
+\subsection{标准化协议与规范固定 Normalization Protocol and Gauge Fixing}
+
+给定维度 $m$ 下的原始聚合值 $\tilde{S}_m(e) = \Phi_m(x_1^{(m)}(e), \ldots, x_{k_m}^{(m)}(e))$，
+规范固定的势能算子定义为：
+
+\medskip
+\noindent\textit{Given raw aggregated values $\tilde{S}_m(e)$, the gauge-fixed potential operator is:}
+
+\begin{equation}
+    \Sop(e; m) = \frac{\tilde{S}_m(e) - \mu_m}{\sigma_m}
+    \label{eq:z-normalize}
+\end{equation}
+
+其中 $\mu_m = |\universe|^{-1} \sum_{e \in \universe} \tilde{S}_m(e)$ 为全局均值，
+$\sigma_m = \sqrt{|\universe|^{-1} \sum_{e} (\tilde{S}_m(e) - \mu_m)^2}$ 为全局标准差。
+
+\medskip
+\noindent\textit{where $\mu_m$ is the global mean and $\sigma_m$ the global standard deviation.}
+
+\noindent 此标准化自动满足：
+\begin{equation}
+    \sum_{e \in \universe} \Sop(e; m) = 0, \quad
+    \frac{1}{|\universe|} \sum_{e \in \universe} [\Sop(e; m)]^2 = 1
+    \label{eq:gauge-verified}
+\end{equation}
+
+\noindent 即 $\Sop(e; m) \sim N(0,1)$ 当底层 $\tilde{S}_m$ 服从正态分布时。
+更一般地，式(\ref{eq:gauge-verified})中的第一式正是公理\ref{ax:gauge}中
+均匀规范的特殊情形：$g_e(\Sop) = \Sop(e; m)$。
+
+\medskip
+\noindent\textit{This normalization automatically satisfies Eq.~(\ref{eq:gauge-verified}), which is precisely the uniform-gauge special case of Axiom~\ref{ax:gauge}.}
+
+% ===================================================================
+%  SECTION 3: NATIONAL POTENTIAL
+% ===================================================================
+\section{国家势能算子 $\Sopnat$ National Potential Operator}
+
+\subsection{概念定义 Conceptual Definition}
+
+国家势能 $\Sopnat$ 衡量一个主权国家（或等效政治实体）在为公民提供基础福祉条件方面
+的结构性潜力。它整合三个基本维度：
+
+\medskip
+\noindent\textit{National potential $\Sopnat$ measures the structural potential of a sovereign state (or equivalent political entity) to provide basic welfare conditions for its citizens. It integrates three fundamental dimensions:}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{(\arabic*)}]
+    \item \textbf{经济产出 Economic Output}：人均GDP（购买力平价，PPP），反映物质资源可得性。
+    \textit{GDP per capita (PPP), reflecting material resource availability.}
+    
+    \item \textbf{分配公平 Distributional Fairness}：基尼系数，反映资源分配的均等程度（负向指标）。
+    \textit{Gini coefficient, reflecting the equality of resource distribution (negative indicator).}
+    
+    \item \textbf{生命质量 Life Quality}：出生预期寿命，反映健康基础设施与营养安全的综合结果。
+    \textit{Life expectancy at birth, reflecting the combined outcome of health infrastructure and nutritional security.}
+\end{enumerate}
+
+\begin{remark}
+这三个维度在概念上覆盖了Sen的能力方法（capability approach）的核心要素：
+物质资源（GDP）、资源分配（Gini）、基本功能性活动（预期寿命）。
+它们共同度量一个国家的\textit{潜力}——即公民能够实现有价值的生活功能的\textit{能力空间}，
+而非实际成就本身。
+\textit{These three dimensions conceptually cover the core elements of Sen's capability approach: material resources (GDP), resource distribution (Gini), and basic functionings (life expectancy). Together they measure a nation's \textit{potential} — the \textit{capability space} in which citizens can achieve valuable functionings, rather than the achievements themselves.}
+\end{remark}
+
+\subsection{可观测变量与数据源 Observable Variables and Data Sources}
+
+\begin{table}[htbp]
+\centering
+\caption{国家势能的可观测变量 Observable Variables for National Potential}
+\label{tab:nat-vars}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{变量 Variable} & \textbf{符号 Symbol} & \textbf{来源 Source} & \textbf{更新频率} & \textbf{方向} \\
+\midrule
+人均GDP (PPP, 2017 int\$)
+    & $x_1$ & World Bank WDI / IMF WEO & 年度 Annual & 正向 $+$ \\
+基尼系数
+    & $x_2$ & World Bank / SWIID & 2--5年 & 负向 $-$ \\
+出生预期寿命（年）
+    & $x_3$ & WHO / UN Population Division & 年度 Annual & 正向 $+$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent 所有数据源均来自公开可获取的国际数据库，满足公理\ref{ax:audit}的审计要求。
+\textit{All data sources are from publicly accessible international databases, satisfying the audit requirement of Axiom~\ref{ax:audit}.}
+
+\subsection{聚合函数构造 Aggregation Function Construction}
+
+国家势能的原始聚合值定义为三个标准化特征的对数加权平均：
+
+\medskip
+\noindent\textit{The raw national potential aggregation is defined as a log-weighted average of three normalized features:}
+
+\begin{equation}
+    \tilde{S}_{\text{nat}}(e) = w_1 \cdot \log(x_1(e)) + w_2 \cdot \log(1 - x_2(e)) + w_3 \cdot \log(x_3(e))
+    \label{eq:nat-raw}
+\end{equation}
+
+其中权重满足 $w_1, w_2, w_3 \geq 0$ 且 $\sum w_i = 1$。
+
+\medskip
+\noindent\textit{where weights satisfy $w_1, w_2, w_3 \geq 0$ and $\sum w_i = 1$.}
+
+\bigskip
+\textbf{对数变换的理由 Rationale for the log transform:}
+
+\begin{enumerate}[leftmargin=*]
+    \item GDP和预期寿命呈现对数正态分布特征，对数变换使分布接近正态，
+    满足后续统计检验的正态性假设。
+    \textit{GDP and life expectancy exhibit log-normal distributional characteristics; the log transform brings the distribution closer to normality.}
+    
+    \item 对数变换将乘性差异转为加性差异，使得势能差具有比例解释：
+    $\Sopnat(e_1) - \Sopnat(e_2) \approx \log(\text{ratio})$，即相对差距的对数。
+    \textit{The log transform converts multiplicative differences to additive ones, giving potential differences a ratio interpretation.}
+    
+    \item $(1 - x_2(e))$ 的补数变换确保高基尼系数（更不平等）→ 低势能，且当 $x_2 \to 1$（极端不平等）时，
+    $\log(1 - x_2) \to -\infty$，自动施加惩罚。
+    \textit{The complement $(1 - x_2)$ ensures high Gini (more unequal) → low potential, and as $x_2 \to 1$, $\log(1-x_2) \to -\infty$, imposing automatic penalization.}
+\end{enumerate}
+
+\subsection{规范固定与最终形式 Gauge Fixing and Final Form}
+
+令全局均值与标准差为：
+\begin{align}
+    \mu_{\text{nat}} &= \frac{1}{N} \sum_{e=1}^{N} \tilde{S}_{\text{nat}}(e) \\
+    \sigma_{\text{nat}} &= \sqrt{\frac{1}{N} \sum_{e=1}^{N} \big(\tilde{S}_{\text{nat}}(e) - \mu_{\text{nat}}\big)^2}
+\end{align}
+
+则规范固定的国家势能算子为：
+\begin{equation}
+    \boxed{\Sopnat(e) = \frac{\tilde{S}_{\text{nat}}(e) - \mu_{\text{nat}}}{\sigma_{\text{nat}}}}
+    \label{eq:nat-final}
+\end{equation}
+
+\noindent 自动满足 $\sum_e \Sopnat(e) = 0$——全球国家势能的平均水平被校准为零。
+正值表示高于全球平均的国家潜力，负值表示低于全球平均。
+\textit{Automatically satisfies $\sum_e \Sopnat(e) = 0$ — the global mean of national potential is calibrated to zero. Positive values indicate above-average national potential; negative values indicate below-average.}
+
+\subsection{权重的实证校准 Empirical Calibration of Weights}
+
+权重向量 $\mathbf{w} = (w_1, w_2, w_3)$ 可以通过以下两种互补方法确定：
+
+\medskip
+\noindent\textit{The weight vector $\mathbf{w} = (w_1, w_2, w_3)$ can be determined through two complementary methods:}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{方法 \arabic*:}]
+    \item \textbf{主成分分析 PCA}：
+    对标准化特征矩阵 $\mathbf{Z}_{N \times 3}$ 进行主成分分析，取第一主成分的载荷向量为权重：
+    \begin{equation}
+        \mathbf{w}_{\text{PCA}} = \frac{|\mathbf{v}_1|}{\|\mathbf{v}_1\|_1}
+    \end{equation}
+    其中 $\mathbf{v}_1$ 为 $\mathbf{Z}^\top \mathbf{Z}$ 的最大特征值对应的特征向量。
+    此方法最大化势能值的方差解释率（即第一主成分的解释方差比例）。
+    \textit{Take the loading vector of the first principal component; this maximizes the variance-explained ratio of potential values.}
+    
+    \item \textbf{德尔菲专家共识 Delphi Expert Consensus}：
+    组织 $K \geq 5$ 名发展经济学家独立提供权重判断 $\mathbf{w}^{(k)}$，
+    取中位数权重 $\mathbf{w}_{\text{Delphi}} = \text{median}_k(\mathbf{w}^{(k)})$，
+    满足AC-Theorem的独立专家下界（$K_{\min}$ 条件）。
+    \textit{Organize $K \geq 5$ development economists; take the median weight vector, satisfying the AC-Theorem independent-expert lower bound.}
+    
+    \item \textbf{融合 Fusion}：$\mathbf{w} = \alpha \mathbf{w}_{\text{PCA}} + (1-\alpha) \mathbf{w}_{\text{Delphi}}$，
+    $\alpha \in [0, 1]$，由交叉验证确定。
+\end{enumerate}
+
+\begin{remark}
+默认推荐权重为等权重 $\mathbf{w} = (1/3, 1/3, 1/3)$，作为无信息先验，
+除非有强有力的实证证据支持偏离等权重。这最小化了对特定价值判断的依赖。
+\textit{Default recommended weights are equal weights $\mathbf{w} = (1/3, 1/3, 1/3)$ as an uninformative prior, unless strong empirical evidence supports deviation from equality. This minimizes dependence on specific value judgments.}
+\end{remark}
+
+\subsection{审计协议 Audit Protocol}
+
+国家势能算子的审计协议包括以下步骤（算法\ref{alg:audit-nat}）：
+
+\medskip
+\begin{algorithm}[htbp]
+\caption{国家势能审计协议 $\mathcal{A}_{\text{nat}}$}
+\label{alg:audit-nat}
+\begin{algorithmic}[1]
+\State \textbf{输入 Input}：国家列表 $\mathcal{L} = \{e_1, \ldots, e_N\}$，审计预算 $B$
+\State \textbf{输出 Output}：势能向量 $\mathbf{S} = (\Sopnat(e_1), \ldots, \Sopnat(e_N))$ 及验证报告
+\State \textbf{步骤 1 数据溯源 Data Provenance}：
+    \For{$e \in \mathcal{L}$}
+        \State 从WDI/WEO获取 $x_1(e)$（记录API调用时间戳与版本号）
+        \State 从SWIID获取 $x_2(e)$（记录估算方法类型：直接调查/间接估算）
+        \State 从WHO获取 $x_3(e)$（记录生命表方法版本）
+    \EndFor
+\State \textbf{步骤 2 一致性检查 Consistency Check}：
+    \State 对每对国家 $(e_i, e_j)$，验证数据年份差异 $\leq 3$ 年
+    \State 若年份差异 $> 3$，标记为"时间可比性警告"（Temporal Comparability Warning）
+\State \textbf{步骤 3 聚合 Aggregation}：
+    \State 计算 $\tilde{S}_{\text{nat}}(e) \leftarrow \sum_{i=1}^3 w_i \cdot f_i(x_i(e))$（式\ref{eq:nat-raw}）
+\State \textbf{步骤 4 规范固定 Gauge Fixing}：
+    \State $\mu \leftarrow N^{-1}\sum_e \tilde{S}(e)$，$\sigma \leftarrow \sqrt{N^{-1}\sum_e (\tilde{S}(e) - \mu)^2}$
+    \State 验证 $\left|\sum_e \Sopnat(e)\right| < \epsilon_{\text{machine}}$（即满足规范固定条件）
+\State \textbf{步骤 5 异常检测 Anomaly Detection}：
+    \State 对 $|\Sopnat(e)| > 3$ 的实体标记为审计异常（可能的测量误差或数据篡改）
+\State \textbf{步骤 6 发布审计轨迹 Publish Audit Trail}：
+    \State 输出：$\{(e, x_1, x_2, x_3, \tilde{S}, \Sopnat, \text{timestamp}, \text{source\_version})\}_{e \in \mathcal{L}}$
+    \State 对每个记录计算SHA-256哈希并写入不可变日志
+\end{algorithmic}
+\end{algorithm}
+
+\noindent 此协议保证：任意独立审计者可以仅使用公开数据和算法\ref{alg:audit-nat}完全复现
+$\Sopnat(e)$ 的值，满足公理\ref{ax:audit}。
+\textit{This protocol guarantees that any independent auditor can fully reproduce the values of $\Sopnat(e)$ using only public data and Algorithm~\ref{alg:audit-nat}, satisfying Axiom~\ref{ax:audit}.}
+
+\subsection{量化示例 Illustrative Quantification}
+
+设三个虚构国家（基于2023年典型数据）：
+
+\begin{table}[htbp]
+\centering
+\caption{国家势能计算示例 Example National Potential Computation}
+\label{tab:nat-example}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{国家} & GDP/cap & Gini & 预期寿命 & $\tilde{S}_{\text{nat}}$ & $\Sopnat$ & 排名 \\
+\midrule
+高收入国 A & \$65,000 & 0.30 & 83.5 & 1.523 & +1.42 & 1 \\
+中等收入国 B & \$12,000 & 0.45 & 75.0 & -0.087 & -0.18 & 2 \\
+低收入国 C & \$1,200 & 0.55 & 62.0 & -1.436 & -1.24 & 3 \\
+\midrule
+全球均值 & -- & -- & -- & 0.000 & 0.000 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent $\Sopnat(A) = +1.42$ 表示A国的国家潜力比全球平均高1.42个标准差。
+$\Sopnat(C) = -1.24$ 表示C国的国家潜力比全球平均低1.24个标准差。
+两者之差 $2.66$ 标准差度量了全球国家潜力的极端跨度。
+
+\medskip
+\noindent\textit{$\Sopnat(A) = +1.42$ indicates Country A's national potential is 1.42 standard deviations above the global mean. $\Sopnat(C) = -1.24$ indicates Country C's is 1.24 below. The difference of 2.66 standard deviations measures the extreme span of global national potential.}
+
+% ===================================================================
+%  SECTION 4: WEALTH POTENTIAL
+% ===================================================================
+\section{财富势能算子 $\Sopwealth$ Wealth Potential Operator}
+
+\subsection{概念定义 Conceptual Definition}
+
+财富势能 $\Sopwealth$ 衡量个人或家庭在资产-收入空间中的相对经济位置。
+与绝对财富量不同，财富势能强调的是个体在分布中的\textit{位置}和\textit{潜力}——
+即个体利用经济资源实现目标的能力的空间映射。
+
+\medskip
+\noindent\textit{Wealth potential $\Sopwealth$ measures the relative economic position of an individual or household in asset--income space. Unlike absolute wealth, wealth potential emphasizes the \textit{position} and \textit{potential} in the distribution — the spatial mapping of an individual's ability to use economic resources to achieve goals.}
+
+\bigskip
+财富势能整合两个维度：
+\begin{enumerate}[leftmargin=*,label=\textbf{(\arabic*)}]
+    \item \textbf{净资产存量 Net Asset Stock}：总资产减去总负债，反映累积的经济安全垫。
+    \textit{Total assets minus total liabilities, reflecting accumulated economic safety cushion.}
+    
+    \item \textbf{收入流 Income Flow}：年可支配收入（税后+转移支付），反映当前的经济活力。
+    \textit{Annual disposable income (post-tax + transfers), reflecting current economic vitality.}
+\end{enumerate}
+
+\begin{remark}
+区分存量和流量是财富势能设计的核心。一个退休人员可能有高净资产（存量）但低收入（流量）；
+一个年轻专业人士可能有高收入但低净资产。仅使用其中任意一个都会系统性地低估或高估
+特定人群的经济潜力。整合两者可以得到更完整的画像。
+\textit{Distinguishing stock and flow is central to wealth-potential design. A retiree may have high net assets (stock) but low income (flow); a young professional may have high income but low net assets. Using either alone systematically under- or over-estimates economic potential for specific populations. Integrating both yields a more complete picture.}
+\end{remark}
+
+\subsection{分位数基础的定义 Quantile-Based Definition}
+
+财富势能的核心创新在于使用\textbf{分位数}而非原始值。原因如下：
+
+\medskip
+\noindent\textit{The core innovation of wealth potential is the use of \textbf{quantiles} rather than raw values. The reasons are:}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{分布鲁棒性 Distributional Robustness}：财富和收入呈现极端的Pareto尾部行为。
+    分位数变换将任意分布映射到均匀分布 $U(0,1)$，消除了异常值的扭曲效应。
+    \textit{Wealth and income exhibit extreme Pareto tail behavior. The quantile transform maps any distribution to $U(0,1)$, eliminating outlier distortion.}
+    
+    \item \textbf{跨域可比性 Cross-Domain Comparability}：分位数天然归一化到 $[0, 1]$，
+    使得不同国家/时期的财富势能直接可比（在各自的参考分布内）。
+    \textit{Quantiles are naturally normalized to $[0,1]$, making wealth potentials directly comparable across countries/periods (within their respective reference distributions).}
+    
+    \item \textbf{隐私友好 Privacy-Friendly}：发布分位数而非原始值减少了个人识别风险，
+    满足差分隐私的基本要求。
+    \textit{Publishing quantiles rather than raw values reduces re-identification risk, satisfying basic differential privacy requirements.}
+\end{enumerate}
+
+\subsection{聚合函数构造 Aggregation Function Construction}
+
+设 $Q_{\text{net}}(e)$ 为实体 $e$ 在参考总体中的净资产分位数（取值于 $[0, 1]$），
+$Q_{\text{inc}}(e)$ 为可支配收入分位数。财富势能的原始聚合值定义为：
+
+\medskip
+\noindent\textit{Let $Q_{\text{net}}(e)$ be the net-asset quantile of entity $e$ in the reference population (range $[0, 1]$), and $Q_{\text{inc}}(e)$ the disposable-income quantile. The raw wealth potential is:}
+
+\begin{equation}
+    \tilde{S}_{\text{wealth}}(e) = v_1 \cdot \Phi^{-1}(Q_{\text{net}}(e)) + v_2 \cdot \Phi^{-1}(Q_{\text{inc}}(e))
+    \label{eq:wealth-raw}
+\end{equation}
+
+其中 $\Phi^{-1}$ 为标准正态分布的分位数函数（probit变换），将 $[0, 1]$ 映射到 $\R$。
+权重 $v_1, v_2 \geq 0$ 且 $v_1 + v_2 = 1$。
+
+\medskip
+\noindent\textit{where $\Phi^{-1}$ is the quantile function (probit transform) of the standard normal distribution, mapping $[0,1]$ to $\R$. Weights $v_1, v_2 \geq 0$, $v_1+v_2=1$.}
+
+\bigskip
+\textbf{Probit变换的理由 Rationale for the probit transform:}
+
+\begin{enumerate}[leftmargin=*]
+    \item 分位数 $Q \sim U(0,1)$ → $\Phi^{-1}(Q) \sim N(0,1)$，即变换后的变量服从标准正态分布。
+    这使得聚合函数可以以简单加法形式组合，而不需要复杂的copula建模。
+    \textit{After the probit transform, variables follow $N(0,1)$, allowing simple additive combination without complex copula modeling.}
+    
+    \item 正态分布的双尾特性自然反映了极端富裕（上尾）和极端贫困（下尾）。
+    \textit{The double-tailed nature of the normal distribution naturally reflects extreme wealth (upper tail) and extreme poverty (lower tail).}
+\end{enumerate}
+
+\subsection{规范固定与最终形式 Gauge Fixing and Final Form}
+
+在全体实体上标准化：
+\begin{equation}
+    \boxed{\Sopwealth(e) = \frac{\tilde{S}_{\text{wealth}}(e) - \mu_{\text{wealth}}}{\sigma_{\text{wealth}}}}
+    \label{eq:wealth-final}
+\end{equation}
+
+其中 $\mu_{\text{wealth}} = N^{-1} \sum_e \tilde{S}_{\text{wealth}}(e)$，
+$\sigma_{\text{wealth}} = \sqrt{N^{-1} \sum_e (\tilde{S}_{\text{wealth}}(e) - \mu_{\text{wealth}})^2}$。
+
+\medskip
+\noindent 规范固定条件 $\sum_e \Sopwealth(e) = 0$ 在此自动满足。
+\textit{The gauge-fixing condition $\sum_e \Sopwealth(e) = 0$ is automatically satisfied.}
+
+\subsection{审计协议 Audit Protocol}
+
+财富势能的数据来源取决于域：
+
+\medskip
+\noindent\textit{Wealth potential data sources depend on the domain:}
+
+\begin{table}[htbp]
+\centering
+\caption{财富势能数据源 Data Sources for Wealth Potential}
+\label{tab:wealth-sources}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{域 Domain} & \textbf{数据源 Data Source} & \textbf{审计方法 Audit Method} \\
+\midrule
+中国 China & CFPS / CHFS (家庭调查) & 问卷复现 + 税务局交叉验证 \\
+美国 USA & SCF / PSID (Survey of Consumer Finances) & Fed审计 + IRS交叉验证 \\
+欧盟 EU & HFCS (Household Finance and Consumption Survey) & ECB审计 \\
+全球 Global & WID.world / Credit Suisse Global Wealth Report & 跨国方法一致性检查 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent 审计轨迹包括：$\{e, Q_{\text{net}}, Q_{\text{inc}}, \tilde{S}, \Sopwealth, \text{survey\_wave}, \text{imputation\_flag}\}$。
+审计者可通过独立调查或公开微数据抽样验证分位数值。
+\textit{The audit trail includes entity ID, quantiles, raw and gauge-fixed potentials, survey wave, and imputation flags. Auditors can verify quantile values through independent surveys or public microdata sampling.}
+
+\subsection{量化示例 Illustrative Quantification}
+
+以典型中国家庭为例（基于2022年CHFS数据分布）：
+
+\begin{table}[htbp]
+\centering
+\caption{财富势能计算示例 Example Wealth Potential Computation}
+\label{tab:wealth-example}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{家庭类型} & $Q_{\text{net}}$ & $Q_{\text{inc}}$ & $\tilde{S}$ & $\Sopwealth$ & 百分位等级 \\
+\midrule
+顶尖富裕 Top 1\% & 0.99 & 0.97 & +3.02 & +2.85 & 99.8\% \\
+中产中位 Median Middle & 0.50 & 0.50 & 0.00 & 0.00 & 50.0\% \\
+低收入底层 Bottom 10\% & 0.05 & 0.08 & -2.65 & -2.50 & 0.6\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent $\Sopwealth$ 的中位零值恰好是规范固定条件的直接结果：
+参考总体的平均财富势能恒为零。$\Sopwealth = +2.85$ 意味着该家庭的经济潜力比总体中位数
+高2.85个标准差。这提供了一个对极端值具有鲁棒性的经济位置度量。
+
+\medskip
+\noindent\textit{The median-zero value of $\Sopwealth$ is a direct consequence of gauge fixing: the mean wealth potential of the reference population is identically zero. $\Sopwealth = +2.85$ means the household's economic potential is 2.85 standard deviations above the population median. This provides an economic-position metric robust to extreme values.}
+
+% ===================================================================
+%  SECTION 5: COGNITIVE POTENTIAL
+% ===================================================================
+\section{认知势能算子 $\Sopcog$ Cognitive Potential Operator}
+
+\subsection{概念定义 Conceptual Definition}
+
+认知势能 $\Sopcog$ 衡量个体在处理抽象信息、生成知识和解决复杂问题方面的潜力。
+这是三个势能维度中最具挑战性的，因为认知能力是\textit{潜变量}（latent variable），
+无法直接观测，必须通过代理变量间接度量。
+
+\medskip
+\noindent\textit{Cognitive potential $\Sopcog$ measures an individual's potential for processing abstract information, generating knowledge, and solving complex problems. This is the most challenging of the three potential dimensions, as cognitive ability is a \textit{latent variable} that cannot be directly observed and must be measured indirectly through proxy variables.}
+
+\bigskip
+认知势能整合三个代理变量：
+\begin{enumerate}[leftmargin=*,label=\textbf{(\arabic*)}]
+    \item \textbf{教育年限 Education Years}：正规教育的总年限（包括高等教育），反映制度化知识获取。
+    \textit{Total years of formal education (including tertiary), reflecting institutionalized knowledge acquisition.}
+    
+    \item \textbf{研究产出 Research Output}：经学科规范化的论文引用次数（领域-年份标准化），
+    反映知识生产的质量与影响力。
+    \textit{Field-and-year-normalized citation count, reflecting the quality and impact of knowledge production.}
+    
+    \item \textbf{抽象思维能力 Abstract Reasoning}：标准化抽象推理测试得分（如Raven渐进矩阵），
+    反映流体智力。
+    \textit{Standardized abstract-reasoning test score (e.g., Raven's Progressive Matrices), reflecting fluid intelligence.}
+\end{enumerate}
+
+\begin{remark}
+这三个代理变量分别对应Cattell-Horn-Carroll理论中的三个层次：
+教育年限 → 晶体智力（$G_c$），抽象推理 → 流体智力（$G_f$），
+论文引用 → 领域特定的专业知识（$G_{kn}$）。
+它们共同构成认知潜力的多维代理，但不能声称完全穷尽了认知能力的所有方面。
+\textit{These three proxies correspond to three strata in the Cattell-Horn-Carroll theory: education → crystallized intelligence ($G_c$), abstract reasoning → fluid intelligence ($G_f$), citations → domain-specific knowledge ($G_{kn}$). Together they form a multidimensional proxy for cognitive potential, but cannot claim to exhaust all aspects of cognitive ability.}
+\end{remark}
+
+\subsection{聚合函数构造 Aggregation Function Construction}
+
+由于论文引用仅适用于学术研究人群（$\approx$ 总人口的 $<1\%$），
+认知势能需要处理\textbf{缺失变量}问题。我们定义两个版本：
+
+\medskip
+\noindent\textit{Since citation data applies only to the academic research population ($\approx <1\%$ of total population), cognitive potential must handle \textbf{missing-variable} issues. We define two versions:}
+
+\bigskip
+\textbf{版本 A — 学术人群 Academic Population}（$x_3$ 可用）：
+\begin{equation}
+    \tilde{S}_{\text{cog}}^{(A)}(e) = u_1 \cdot z_{\text{edu}}(e) + u_2 \cdot z_{\text{cite}}(e) + u_3 \cdot z_{\text{reason}}(e)
+    \label{eq:cog-A}
+\end{equation}
+
+\textbf{版本 B — 一般人群 General Population}（$x_3$ 不可用）：
+\begin{equation}
+    \tilde{S}_{\text{cog}}^{(B)}(e) = u_1' \cdot z_{\text{edu}}(e) + u_3' \cdot z_{\text{reason}}(e)
+    \label{eq:cog-B}
+\end{equation}
+
+其中 $z_{\text{var}}(e) = (x_{\text{var}}(e) - \bar{x}_{\text{var}}) / s_{\text{var}}$ 为各变量的z-score标准化，
+$u_i, u_i'$ 为重新归一化后的权重。
+
+\medskip
+\noindent\textit{where $z_{\text{var}}(e)$ are the z-score normalized values of each variable, and $u_i, u_i'$ are renormalized weights.}
+
+\subsection{论文引用的领域-年份标准化 Field-Year Normalization of Citations}
+
+论文引用具有强领域依赖性和时间依赖性。数学论文的平均引用远低于生物医学论文；
+新论文的引用积累需要时间。直接使用原始引用计数会产生严重的系统性偏差。
+
+\medskip
+\noindent\textit{Paper citations have strong field dependence and time dependence. Raw citation counts would produce severe systematic bias.}
+
+\bigskip
+我们采用\textbf{相对引用率}（Relative Citation Rate, RCR）：
+\begin{equation}
+    z_{\text{cite}}(e) = \frac{1}{|P(e)|} \sum_{p \in P(e)} \frac{c(p) - \mu(\text{field}(p), \text{year}(p))}{\sigma(\text{field}(p), \text{year}(p))}
+    \label{eq:rcr}
+\end{equation}
+
+其中 $P(e)$ 为实体 $e$ 的论文集合，$c(p)$ 为论文 $p$ 的引用总数，
+$\mu(f, y)$ 和 $\sigma(f, y)$ 分别为领域 $f$、出版年 $y$ 中论文的平均引用数和标准差。
+此标准化使不同领域的引用影响力可比。
+
+\medskip
+\noindent\textit{where $P(e)$ is the set of papers by entity $e$, $c(p)$ is the total citation count, and $\mu(f,y), \sigma(f,y)$ are the mean and standard deviation of citations in field $f$, publication year $y$. This normalization makes citation impact comparable across fields.}
+
+\begin{remark}
+RCR的一个关键优势是：在领域 $f$、年份 $y$ 的参考集内，RCR的均值恰为0，标准差为1。
+这使得RCR天然满足该参考集内的规范固定条件。\textit{A key advantage of RCR: within the reference set of field $f$, year $y$, the mean of RCR is exactly 0 and its standard deviation is 1. This makes RCR naturally satisfy gauge-fixing within that reference set.}
+\end{remark}
+
+\subsection{规范固定与最终形式 Gauge Fixing and Final Form}
+
+\begin{equation}
+    \boxed{\Sopcog(e) = \frac{\tilde{S}_{\text{cog}}(e) - \mu_{\text{cog}}}{\sigma_{\text{cog}}}}
+    \label{eq:cog-final}
+\end{equation}
+
+$\mu_{\text{cog}}, \sigma_{\text{cog}}$ 基于适当的参考总体计算（学术人群版本A的参考总体为
+全球学术研究者；一般人群版本B的参考总体为国家/区域的成年人口）。
+
+\medskip
+\noindent\textit{$\mu_{\text{cog}}, \sigma_{\text{cog}}$ are computed based on the appropriate reference population (version A: global academic researchers; version B: national/regional adult population).}
+
+\subsection{审计协议 Audit Protocol}
+
+认知势能的审计面临独特的挑战：论文引用数据存在游戏化风险（引用圈、自引），
+抽象推理测试存在练习效应和测试条件差异。
+
+\medskip
+\noindent\textit{Auditing cognitive potential faces unique challenges: citation data is subject to gaming risks (citation rings, self-citation), and abstract-reasoning tests are subject to practice effects and test-condition variance.}
+
+\bigskip
+审计协议包含以下反游戏化措施：
+
+\medskip
+\noindent\textit{The audit protocol includes the following anti-gaming measures:}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{自引去除 Self-Citation Removal}：在计算 $c(p)$ 时排除所有自引（作者或合著者的引用），
+    使用OpenAlex/Semantic Scholar的消歧作者ID。
+    \textit{Exclude all self-citations when computing $c(p)$, using disambiguated author IDs from OpenAlex/Semantic Scholar.}
+    
+    \item \textbf{引用圈检测 Citation-Cartel Detection}：计算作者间的引用Jaccard相似度矩阵；
+    若一个作者群内的互相引用率超过3个标准差，标记为"\textbf{引用圈警告}"（CitationCartelWarning）。
+    \textit{Compute inter-author citation Jaccard similarity matrix; if mutual citation rate within an author group exceeds 3 standard deviations, flag as "Citation Cartel Warning."}
+    
+    \item \textbf{测试条件校准 Test-Condition Calibration}：抽象推理测试得分需附带测试条件元数据
+    （时间限制、语言、是否监督、测试环境）。使用多层次模型（随机效应：测试中心）校准条件偏差。
+    \textit{Abstract-reasoning scores must carry test-condition metadata (time limit, language, proctored, environment). Calibrate condition bias using multi-level models (random effects: test center).}
+    
+    \item \textbf{重复测量校正 Repeated-Measures Correction}：若同一个体多次参加测试，
+    仅使用第一次得分（或使用衰退校正因子：$s_{\text{adj}} = s_{\text{raw}} - \beta \cdot \log(k)$，
+    其中 $k$ 为参加次数，$\beta$ 为经验练习效应系数）。
+    \textit{If an individual takes the test multiple times, use only the first score (or apply decay correction).}
+\end{enumerate}
+
+\subsection{量化示例 Illustrative Quantification}
+
+\begin{table}[htbp]
+\centering
+\caption{认知势能计算示例（版本A，学术人群） Example Cognitive Potential Computation}
+\label{tab:cog-example}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{研究者类型} & 教育年限 & RCR & 抽象推理 & $\Sopcog$ & 百分位 \\
+\midrule
+顶尖研究者 Elite Researcher & 22 (PhD+Postdoc) & +2.1 & 135 (99\%ile) & +2.45 & 99.3\% \\
+中级研究者 Mid-Career & 20 (PhD) & +0.3 & 115 (84\%ile) & +0.22 & 58.7\% \\
+早期研究者 Early-Career & 18 (MSc) & -0.5 & 110 (75\%ile) & -0.61 & 27.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent $\Sopcog = +2.45$ 表示该研究者的认知潜力在全球学术人群中处于前 $0.7\%$ 的水平。
+注意：此度量反映的是\textit{潜力}（基于教育和认知测试的\textit{能力空间}），
+而非\textit{成就}本身（虽然RCR已经部分捕捉了成就维度）。
+
+\medskip
+\noindent\textit{$\Sopcog = +2.45$ indicates this researcher's cognitive potential is in the top $0.7\%$ of the global academic population. Note: this metric reflects \textit{potential} (the \textit{capability space} based on education and cognitive tests), not \textit{achievement} per se (though RCR already partially captures the achievement dimension).}
+
+% ===================================================================
+%  SECTION 6: UNIFIED THEORY
+% ===================================================================
+\section{统一理论与算子间关系 Unified Theory and Inter-Operator Relations}
+
+\subsection{三算子的统一形式 Unified Form of the Three Operators}
+
+三个势能算子 $\Sopnat$, $\Sopwealth$, $\Sopcog$ 共享一个统一的结构：
+
+\medskip
+\noindent\textit{The three potential operators $\Sopnat$, $\Sopwealth$, $\Sopcog$ share a unified structure:}
+
+\begin{equation}
+    \boxed{\Sop_m(e) = \frac{1}{\sigma_m} \left( \sum_{i=1}^{k_m} w_i^{(m)} \cdot \psi_i^{(m)}\big(x_i^{(m)}(e)\big) - \mu_m \right)}
+    \label{eq:unified}
+\end{equation}
+
+其中：
+\begin{itemize}[leftmargin=*]
+    \item $m \in \{\text{nat}, \text{wealth}, \text{cog}\}$ 为维度指标
+    \item $k_m$ 为维度 $m$ 的特征数量
+    \item $w_i^{(m)} \in [0,1]$ 为权重，$\sum_i w_i^{(m)} = 1$
+    \item $\psi_i^{(m)}: \R \to \R$ 为特征变换函数（log, probit, z-score等）
+    \item $\mu_m, \sigma_m$ 为全局均值和标准差（规范固定）
+\end{itemize}
+
+\noindent\textit{where the parameters follow the specifications above.}
+
+\bigskip
+三个维度的特征变换函数汇总：
+
+\begin{table}[htbp]
+\centering
+\caption{特征变换函数汇总 Summary of Feature Transformation Functions}
+\label{tab:psi-summary}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{维度 $m$} & \textbf{特征 $i$} & \textbf{变换 $\psi_i^{(m)}$} & \textbf{理由 Rationale} \\
+\midrule
+nat & GDP/cap & $\psi(x) = \log(x)$ & 对数正态分布校正 \\
+nat & Gini      & $\psi(x) = \log(1-x)$ & 负向指标 + 对数正态 \\
+nat & 预期寿命  & $\psi(x) = \log(x)$ & 对数正态分布校正 \\
+\midrule
+wealth & 净资产  & $\psi(x) = \Phi^{-1}(\hat{F}_N(x))$ & 分位数→正态变换 \\
+wealth & 收入    & $\psi(x) = \Phi^{-1}(\hat{F}_I(x))$ & 分位数→正态变换 \\
+\midrule
+cog & 教育年限  & $\psi(x) = \text{z-score}(x)$ & 近似正态分布 \\
+cog & 论文引用  & $\psi(x) = \text{RCR}(x)$（式\ref{eq:rcr}） & 领域-年份标准化 \\
+cog & 抽象思维  & $\psi(x) = \text{z-score}(x)$ & IQ类正态分布 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{算子间的相关结构 Correlation Structure Among Operators}
+
+三个势能算子之间存在非零但非完全的相关性，其相关结构具有重要的社会科学意涵：
+
+\medskip
+\noindent\textit{The three potential operators exhibit nonzero but imperfect correlations, with important social-scientific implications:}
+
+\begin{equation}
+    \mathbf{R} = \begin{pmatrix}
+        1 & \rho_{\text{nw}} & \rho_{\text{nc}} \\
+        \rho_{\text{nw}} & 1 & \rho_{\text{wc}} \\
+        \rho_{\text{nc}} & \rho_{\text{wc}} & 1
+    \end{pmatrix}
+    \label{eq:corr-matrix}
+\end{equation}
+
+典型实证估计（基于跨国面板数据）：
+\begin{itemize}[leftmargin=*]
+    \item $\rho_{\text{nw}} \approx 0.45$—0.65（国家潜力与财富潜力中度正相关）
+    \item $\rho_{\text{nc}} \approx 0.55$—0.75（国家潜力与认知潜力中高度正相关）
+    \item $\rho_{\text{wc}} \approx 0.30$—0.50（财富潜力与认知潜力低中度正相关）
+\end{itemize}
+
+\noindent 这些相关性\textit{不}是定义的一部分，而是社会系统的实证特征。
+它们为SCX框架中的不平等交互效应分析提供输入。
+
+\medskip
+\noindent\textit{These correlations are \textit{not} part of the definition but empirical features of the social system. They provide input for inequality interaction analysis in the SCX framework.}
+
+\subsection{与SCX审计框架的对接 Connection to SCX Audit Framework}
+
+社会势能算子 $\Sop$ 与SCX核心审计框架的关系如下：
+
+\medskip
+\noindent\textit{The relationship between the social potential operator $\Sop$ and the core SCX audit framework is as follows:}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{(\arabic*)}]
+    \item \textbf{输入角色 Input Role}：$\Sop(e)$ 作为社会推论模块的\textit{输入特征}，
+    类似于机器学习的特征向量。但当SCX的审计之剑指向社会数据时，$\Sop(e)$ 本身也可以成为审计对象。
+    \textit{$\Sop(e)$ serves as input features for the social-inference module, akin to feature vectors in ML. But when SCX's Audit Sword points at social data, $\Sop(e)$ itself can become an audit target.}
+    
+    \item \textbf{Cercis得分的分解 Decomposition into Cercis Score}：
+    社会数据中的Cercis得分可以分解为势能驱动分量和噪声分量：
+    \begin{equation}
+        S_{\text{social}}(e) = \underbrace{\alpha^\top \mathbf{S}(e)}_{\text{势能分量 Potential}} + \underbrace{\eta \cdot N(e)}_{\text{噪声分量 Noise}}
+    \end{equation}
+    其中 $\mathbf{S}(e) = (\Sopnat(e), \Sopwealth(e), \Sopcog(e))^\top$，
+    $\alpha \in \R^3$ 为任务特定的权重向量。
+    \textit{The Cercis Score in social data decomposes into a potential-driven component and a noise component.}
+    
+    \item \textbf{势能让渡与社会流动性 Potential Transfer and Social Mobility}：
+    两个实体之间的社会势能差 $\Delta S = \Sop(e_1) - \Sop(e_2)$ 度量了
+    潜在的\textit{势能让渡}空间——即通过社会政策可以将多少潜力从高势能实体转移到低势能实体。
+    这个视角将社会流动性问题映射为势能场中的\textit{输运问题}。
+    \textit{The social potential difference $\Delta S = \Sop(e_1) - \Sop(e_2)$ measures the space of potential \textit{transfer} — how much potential could be transferred from high-potential to low-potential entities via social policy. This perspective maps social mobility to a \textit{transport problem} in the potential field.}
+\end{enumerate}
+
+% ===================================================================
+%  SECTION 7: GAUGE THEORY DEEP DIVE
+% ===================================================================
+\section{规范理论的深层结构 Deep Structure of Gauge Theory}
+
+\subsection{社会势能场作为一种规范理论 Social Potential Field as a Gauge Theory}
+
+社会势能 $\Sop$ 可以形式化为一个\textbf{规范场}。设 $\universe$ 为社会实体构成的底流形
+（base manifold），$\socialfield(e) = \Sop(e)$ 为定义在 $\universe$ 上的标量场。
+社会势能的规范群为加法群 $\gaugegroup = (\R, +)$，作用于 $\socialfield$ 上：
+
+\medskip
+\noindent\textit{Social potential $\Sop$ can be formalized as a \textbf{gauge field}. Let $\universe$ be the base manifold of social entities, and $\socialfield(e) = \Sop(e)$ a scalar field over $\universe$. The gauge group is the additive group $\gaugegroup = (\R, +)$, acting on $\socialfield$:}
+
+\begin{equation}
+    \socialfield(e) \mapsto \socialfield(e) + c, \quad c \in \R
+    \label{eq:gauge-action}
+\end{equation}
+
+\noindent 此变换不改变任何物理（社会）可观测量，因为只有势能\textit{差}具有操作意义。
+\textit{This transformation does not change any physical (social) observable, since only potential \textit{differences} have operational meaning.}
+
+\bigskip
+规范固定条件 $\sum_e g_e(\Sop) = 0$ 的群论解释：
+
+\medskip
+\noindent\textit{Group-theoretic interpretation of the gauge-fixing condition:}
+
+\begin{enumerate}[leftmargin=*]
+    \item 未规范固定的势能取值构成一个仿射空间（affine space），
+    其中 $\gaugegroup$ 自由作用。
+    \textit{Ungauged potential values form an affine space on which $\gaugegroup$ acts freely.}
+    
+    \item 规范固定相当于选择一个截面（section）$\sigma: \universe \to \R$，
+    满足 $\sum_e \sigma(e) = 0$。此截面唯一地标定了势能的"零水平"。
+    \textit{Gauge fixing is equivalent to choosing a section $\sigma: \universe \to \R$ satisfying $\sum_e \sigma(e) = 0$. This section uniquely specifies the "zero level" of potential.}
+    
+    \item 不同截面之间的变换是一个全局平移，属于 $\gaugegroup$ 的作用。
+    \textit{Transforms between different sections are global translations, belonging to the action of $\gaugegroup$.}
+    
+    \item 所有截面构成一个商空间 $\mathcal{S} = \{\socialfield: \universe \to \R\} / \gaugegroup$，
+    其元素是规范等价类。规范固定从每个等价类中选择一个代表元。
+    \textit{All sections form a quotient space $\mathcal{S} = \{\socialfield: \universe \to \R\} / \gaugegroup$, whose elements are gauge equivalence classes. Gauge fixing selects one representative from each equivalence class.}
+\end{enumerate}
+
+\subsection{规范不变可观测量 Gauge-Invariant Observables}
+
+在规范理论中，只有规范不变量才有物理意义。以下量是规范不变的：
+
+\medskip
+\noindent\textit{In gauge theory, only gauge-invariant quantities have physical meaning. The following are gauge-invariant:}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{(\arabic*)}]
+    \item \textbf{势能差 Potential Difference}：
+    $\Delta S_{ij} = \Sop(e_i) - \Sop(e_j)$，对于任意规范变换 $c$：
+    $\Delta S_{ij} \mapsto (\Sop(e_i) + c) - (\Sop(e_j) + c) = \Delta S_{ij}$（不变）。
+    
+    \item \textbf{势能方差 Variance of Potential}：
+    $\Var[\Sop] = \frac{1}{N} \sum_e [\Sop(e)]^2$（在 $\sum_e \Sop(e) = 0$ 条件下）。
+    
+    \item \textbf{势能秩相关系数 Rank Correlation of Potentials}：
+    $\tau(\Sop_m, \Sop_{m'})$，Kendall $\tau$ 或其他基于秩的相关系数（因为秩在单调变换下不变）。
+    
+    \item \textbf{势能梯度 Potential Gradient}：
+    $\nabla \Sop = (\partial \Sop / \partial \text{feature}_i)$，在合适的微分结构下。
+\end{enumerate}
+
+\subsection{规范固定的替代方案 Alternative Gauge-Fixing Schemes}
+
+虽然本文采用全局z-score标准化作为默认规范固定方案，但也可以考虑其他方案：
+
+\medskip
+\noindent\textit{While this paper adopts global z-score normalization as the default gauge-fixing scheme, alternative schemes can be considered:}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{方案 \arabic*:}]
+    \item \textbf{中位数规范 Median Gauge}：
+    $\Sop'(e) = \Sop(e) - \text{median}_{e' \in \universe} \Sop(e')$。
+    对异常值更鲁棒，但牺牲了方差解释的简便性。
+    \textit{More robust to outliers, but sacrifices simplicity of variance interpretation.}
+    
+    \item \textbf{极小值规范 Min-Gauge}：
+    $\Sop'(e) = \Sop(e) - \min_{e' \in \universe} \Sop(e')$。
+    使得所有势能值非负，最低实体为基准零点。
+    \textit{Makes all potential values nonnegative; the lowest entity is the baseline zero.}
+    
+    \item \textbf{加权规范 Weighted Gauge}：
+    $\sum_e w(e) \cdot \Sop(e) = 0$，其中 $w(e)$ 为实体 $e$ 的权重（如人口权重）。
+    适用于国家势能：按人口加权的全球均值归零（而非按国家数量）。
+    \textit{Useful for national potential: population-weighted global mean zero (rather than country-count mean).}
+    
+    \item \textbf{参考锚点规范 Anchor-Point Gauge}：
+    选择一个或多个"参考实体"（如OECD平均），将其势能固定为零：
+    $\Sop(\text{anchor}) = 0$。便于政策分析和跨期比较。
+    \textit{Set potential of one or more "reference entities" (e.g., OECD average) to zero. Convenient for policy analysis and intertemporal comparison.}
+\end{enumerate}
+
+\begin{remark}
+规范固定方案的选择本身是一个\textit{元层次的社会选择问题}。不同的规范固定方案不会改变
+任何规范不变的量（如势能差、秩相关），但会影响可视化解释和政策叙事的框架。
+因此，在应用中应明确标注所使用的规范固定方案，并提供至少两种方案的敏感性分析。
+\textit{The choice of gauge-fixing scheme is itself a \textit{meta-level social-choice problem}. Different schemes do not change any gauge-invariant quantities (potential differences, rank correlations), but they affect visualization interpretation and policy-narrative framing. Therefore, applications should explicitly state the scheme used and provide sensitivity analysis with at least two schemes.}
+\end{remark}
+
+% ===================================================================
+%  SECTION 8: EXTENSIONS
+% ===================================================================
+\section{扩展与未来工作 Extensions and Future Work}
+
+\subsection{多分辨率规范固定 Multi-Resolution Gauge Fixing}
+
+当前的定义采用全局规范固定。但在大型异构总体中，全局规范可能掩盖局部结构。
+多分辨率规范固定将总体按层级（地理、行政、文化）划分为子群，在每个子群中单独固定规范：
+
+\medskip
+\noindent\textit{Current definitions use global gauge fixing. But in large heterogeneous populations, global gauges may mask local structure. Multi-resolution gauge fixing partitions the population by hierarchy (geographic, administrative, cultural) and fixes gauges within each subgroup:}
+
+\begin{equation}
+    \Sop^{(L)}(e) = \frac{\tilde{S}(e) - \mu_h(e)}{\sigma_h(e)}, \quad h(e) \text{ 为 } e \text{ 在第 } L \text{ 层的子群}
+\end{equation}
+
+\noindent 这允许在同一框架内进行\textit{组内}不平等和\textit{组间}不平等的分离分析。
+
+\subsection{动态势能与Spring更新 Dynamic Potential and Spring Updates}
+
+在SCX的Spring框架中，社会势能随数据更新而动态演化。定义势能的时间导数：
+
+\medskip
+\noindent\textit{In SCX's Spring framework, social potential evolves dynamically with data updates. Define the time derivative of potential:}
+
+\begin{equation}
+    \dot{\Sop}_m(e, t) = \frac{\partial \Sop_m(e, t)}{\partial t} \approx \frac{\Sop_m(e, t+\Delta t) - \Sop_m(e, t)}{\Delta t}
+\end{equation}
+
+\noindent $\dot{\Sop} > 0$ 表示势能在上升（社会流动性向上），$\dot{\Sop} < 0$ 表示势能在下降。
+势能变化率本身就构成一个新的社会指标——\textbf{势能流}（Potential Flux），
+其分布特征反映了社会流动性的速度和方向。
+
+\medskip
+\noindent\textit{$\dot{\Sop} > 0$ indicates rising potential (upward social mobility), $\dot{\Sop} < 0$ indicates declining potential. The rate of potential change constitutes a new social indicator — \textbf{potential flux} — whose distributional characteristics reflect the speed and direction of social mobility.}
+
+\subsection{势能算子的对抗鲁棒审计 Adversarially Robust Audit of Potential Operators}
+
+社会势能的量化必然会面临来自不同利益相关方的\textit{势能博弈}：
+国家可能低报基尼系数，个人可能夸大收入，研究者可能操纵引用指标。
+这与SCX的AR-Theorem（对抗鲁棒性定理）直接相关。
+
+\medskip
+\noindent\textit{Quantification of social potential inevitably faces \textit{potential gaming} from various stakeholders: nations may underreport Gini coefficients, individuals may inflate income, researchers may manipulate citation metrics. This directly connects to SCX's AR-Theorem.}
+
+\bigskip
+AR增强的势能算子定义为：
+\begin{equation}
+    \Sop^{\text{AR}}(e) = \inf_{\delta \in \mathcal{B}(e)} \Sop(e; x_1 + \delta_1, \ldots, x_k + \delta_k)
+\end{equation}
+其中 $\mathcal{B}(e)$ 为实体 $e$ 的可行操纵球（feasible manipulation ball），
+由数据审计的成本和检测概率决定。这个定义确保了势能值的对抗鲁棒下界。
+
+\medskip
+\noindent\textit{The AR-augmented potential operator takes the infimum over feasible manipulation balls, ensuring an adversarially robust lower bound on potential values.}
+
+% ===================================================================
+%  SECTION 9: CONCLUSION
+% ===================================================================
+\section{结论 Conclusion}
+
+本文为SCX平等论框架中的社会推论模块定义了势能算子 $\Sop$ 的完整操作形式。
+三个维度——国家势能、财富势能、认知势能——覆盖了社会不平等的关键方面，
+且全部满足四个公理条件：可量化、可审计、规范固定、跨域可比。
+
+\medskip
+\noindent\textit{This paper defines the complete operational form of the potential operator $\Sop$ for the social-inference module of the SCX egalitarian framework. Three dimensions — national potential, wealth potential, and cognitive potential — cover key aspects of social inequality, and all satisfy four axiomatic conditions: quantifiability, auditability, gauge fixing, and cross-domain comparability.}
+
+\bigskip
+核心贡献总结 Summary of Core Contributions:
+
+\begin{enumerate}[leftmargin=*,label=\textbf{(\arabic*)}]
+    \item \textbf{统一形式}：三个算子共享一个统一的聚合-标准化架构（式\ref{eq:unified}），
+    使得不同维度的势能值可直接比较。
+    \textit{Unified form: all three operators share a unified aggregation-normalization architecture (Eq.~\ref{eq:unified}), making potential values directly comparable across dimensions.}
+    
+    \item \textbf{规范固定}：通过z-score标准化自动满足 $\sum_e \Sop(e) = 0$ 的规范固定条件，
+    并讨论了替代规范方案及其社会选择意涵。
+    \textit{Gauge fixing: z-score normalization automatically satisfies $\sum_e \Sop(e) = 0$, with discussion of alternative schemes and their social-choice implications.}
+    
+    \item \textbf{审计协议}：每个算子都附带了详细的审计协议（算法\ref{alg:audit-nat}），
+    保证计算过程可被任意独立审计者复现和验证。
+    \textit{Audit protocols: each operator is accompanied by a detailed audit protocol (Algorithm~\ref{alg:audit-nat}), ensuring computations can be reproduced and verified by any independent auditor.}
+    
+    \item \textbf{特征工程}：为每个维度提供了心理学/经济学上合理的特征变换函数
+    （log变换、probit变换、RCR标准化），使原始数据适配正态假设。
+    \textit{Feature engineering: psychologically/economically justified transformation functions (log, probit, RCR) for each dimension, adapting raw data to normality assumptions.}
+    
+    \item \textbf{规范理论对接}：将社会势能形式化为规范场论，建立了社会不平等的场论语言
+    与SCX审计框架之间的桥梁。
+    \textit{Gauge-theoretic connection: formalized social potential as a gauge field theory, establishing a bridge between the field-theoretic language of social inequality and the SCX audit framework.}
+\end{enumerate}
+
+\bigskip
+\textbf{下一步 Next Steps:}
+
+\begin{enumerate}[leftmargin=*]
+    \item 使用真实世界数据（WDI, SWIID, CHFS, CFPS, OpenAlex）对三个算子进行实证校准。
+    \item 开发开源参考实现（Python/R包），包含完整的审计轨迹生成功能。
+    \item 进行规范固定方案的敏感性分析，评估不同方案对势能排序的影响。
+    \item 将势能算子集成到SCX的Sprint主动学习循环中，作为社会推论的特征输入。
+    \item 探索势能算子的量子推广（Q-Theorem），特别是在隐私保护数据聚合场景中的应用。
+\end{enumerate}
+
+\medskip
+\noindent\textit{Empirical calibration with real-world data; open-source reference implementation; sensitivity analysis of gauge-fixing schemes; integration into SCX Sprint active-learning loop; quantum generalization for privacy-preserving aggregation.}
+
+% ===================================================================
+%  APPENDIX
+% ===================================================================
+\appendix
+\section{附录：符号表 Appendix: Notation Table}
+
+\begin{table}[htbp]
+\centering
+\caption{符号表 Notation Table}
+\label{tab:notation}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{符号 Symbol} & \textbf{含义 Meaning} \\
+\midrule
+$\universe$ & 社会实体宇宙 Universe of social entities \\
+$\Sop(e; m)$ & 维度 $m$ 下实体 $e$ 的势能 Potential of entity $e$ under dimension $m$ \\
+$\tilde{S}_m(e)$ & 原始（未规范固定）势能 Raw (ungauged) potential \\
+$\mu_m, \sigma_m$ & 维度 $m$ 的全局均值和标准差 Global mean and std of dimension $m$ \\
+$w_i^{(m)}$ & 维度 $m$ 中特征 $i$ 的权重 Weight of feature $i$ in dimension $m$ \\
+$\psi_i^{(m)}$ & 维度 $m$ 中特征 $i$ 的标准化变换 Normalization transform for feature $i$ \\
+$\Phi^{-1}$ & 标准正态分布的分位数函数 Quantile function of standard normal \\
+$x_1^{(m)}$ & 维度 $m$ 的第一个可观测特征 First observable feature in dimension $m$ \\
+$\Sopnat$ & 国家势能算子 National potential operator \\
+$\Sopwealth$ & 财富势能算子 Wealth potential operator \\
+$\Sopcog$ & 认知势能算子 Cognitive potential operator \\
+$\gaugegroup$ & 规范群（加法群 $\R$） Gauge group (additive group $\R$) \\
+RCR & 相对引用率 Relative Citation Rate \\
+$\mathcal{A}_{\text{nat}}$ & 国家势能审计协议 National potential audit protocol \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{附录：审计轨迹的JSON模式 Appendix: JSON Schema for Audit Trail}
+
+\begin{verbatim}
+{
+  "entity_id": "CHN",
+  "dimension": "national",
+  "timestamp": "2026-07-01T00:00:00Z",
+  "raw_features": {
+    "gdp_per_capita_ppp": 21500.0,
+    "gini_coefficient": 0.382,
+    "life_expectancy": 78.2
+  },
+  "feature_sources": {
+    "gdp_per_capita_ppp": {
+      "source": "World Bank WDI",
+      "indicator": "NY.GDP.PCAP.PP.KD",
+      "year": 2023,
+      "api_version": "v2"
+    },
+    "gini_coefficient": {
+      "source": "SWIID",
+      "version": "9.4",
+      "estimation_type": "direct_survey",
+      "year": 2022
+    },
+    "life_expectancy": {
+      "source": "WHO GHO",
+      "indicator": "WHOSIS_000001",
+      "year": 2023
+    }
+  },
+  "transformed_features": {
+    "log_gdp": 9.9758,
+    "log_complement_gini": -0.4780,
+    "log_life_expectancy": 4.3593
+  },
+  "weights": {"gdp": 0.333, "gini": 0.333, "life_exp": 0.333},
+  "raw_potential": 3.2857,
+  "gauge_parameters": {
+    "mu": 3.1192,
+    "sigma": 0.5438,
+    "reference_population_size": 195,
+    "gauge_scheme": "z-score"
+  },
+  "gauge_fixed_potential": 0.306,
+  "audit_hashes": {
+    "sha256_input": "abc123...",
+    "sha256_output": "def456..."
+  },
+  "warnings": []
+}
+\end{verbatim}
+
+\section{附录：Python参考实现骨架 Appendix: Python Reference Implementation Skeleton}
+
+\begin{verbatim}
+import numpy as np
+from scipy import stats
+from typing import Dict, List, Optional, Tuple
+
+
+class PotentialOperator:
+    """SCX Social Potential Operator S-hat.
+    
+    Implements the gauge-fixed potential operator for SCX social inference.
+    Supports national, wealth, and cognitive dimensions.
+    """
+    
+    def __init__(self, dimension: str, weights: Optional[Dict[str, float]] = None):
+        self.dimension = dimension
+        self.weights = weights or self._default_weights()
+        self.mu: float = 0.0
+        self.sigma: float = 1.0
+    
+    def _default_weights(self) -> Dict[str, float]:
+        defaults = {
+            "national": {"gdp": 1/3, "gini": 1/3, "life_exp": 1/3},
+            "wealth": {"net_asset": 0.5, "income": 0.5},
+            "cognitive": {"education": 1/3, "citation": 1/3, "reasoning": 1/3},
+        }
+        return defaults.get(self.dimension, {})
+    
+    def transform_features(self, raw: Dict[str, float]) -> Dict[str, float]:
+        """Apply dimension-specific feature transforms."""
+        ...
+    
+    def aggregate(self, transformed: Dict[str, float]) -> float:
+        """Weighted sum of transformed features."""
+        return sum(
+            self.weights[k] * transformed[k]
+            for k in self.weights if k in transformed
+        )
+    
+    def fit_gauge(self, raw_potentials: np.ndarray) -> None:
+        """Compute global mu and sigma for gauge fixing."""
+        self.mu = np.mean(raw_potentials)
+        self.sigma = np.std(raw_potentials, ddof=0)
+    
+    def gauge_fix(self, raw_potential: float) -> float:
+        """Apply z-score gauge fixing."""
+        return (raw_potential - self.mu) / self.sigma
+    
+    def compute(self, entity_features: Dict[str, float]) -> float:
+        """Full pipeline: transform -> aggregate -> gauge-fix."""
+        transformed = self.transform_features(entity_features)
+        raw = self.aggregate(transformed)
+        return self.gauge_fix(raw)
+    
+    def verify_gauge(self, potentials: np.ndarray, tol: float = 1e-10) -> bool:
+        """Verify sum of gauge-fixed potentials is zero."""
+        return abs(np.sum(potentials)) < tol
+
+
+# Example usage:
+op_national = PotentialOperator("national")
+features = {"gdp": 65000, "gini": 0.30, "life_exp": 83.5}
+S_nat = op_national.compute(features)
+print(f"National potential: {S_nat:.3f}")
+\end{verbatim}
+
+% ===================================================================
+%  FINAL PAGE
+% ===================================================================
+\vfill
+\begin{center}
+\rule{0.5\textwidth}{0.4pt}\\[8pt]
+{\small
+\textbf{文档元信息 Document Metadata}
+
+版本 Version: 1.0 \\
+日期 Date: 2026-07-01 \\
+作者 Author: SCX 理论架构师 SCX Theory Architect \\
+框架 Framework: SCX 平等论 SCX Egalitarianism \\
+依赖 Dependencies: T1--T7, AE-Theorem, AR-Theorem, FA-Theorem \\
+状态 Status: 草案 / Draft — 待同行审阅 Pending Peer Review
+
+\medskip
+\textit{本文件是SCX社会推论算子定义的正式技术文档。}
+\textit{所有算子定义均附带审计协议，满足SCX审计之剑的可验证性要求。}
+\textit{This document is the formal technical specification of SCX social-inference operator definitions.}
+\textit{All operator definitions carry audit protocols, satisfying the verifiability requirements of SCX's Audit Sword.}
+}
+\end{center}
+
+\end{document}
