@@ -175,6 +175,43 @@ class NoveltyNoiseScore(NoiseScore):
         nn_dists = np.mean(np.partition(dists, k_eff - 1, axis=1)[:, :k_eff], axis=1)
         return np.minimum(1.0, nn_dists / self.length_scale)
 
+    # ------------------------------------------------------------------
+    # Yajie-compatible compute interface
+    # ------------------------------------------------------------------
+
+    def compute(
+        self,
+        residuals: np.ndarray,
+        state_proportion: float,
+        consistency: float,
+    ) -> np.ndarray:
+        """Compute noise scores from residuals, state proportion, and expert consistency.
+
+        Used by Yajie.scan() and Yajie.fit() to produce per-sample or
+        per-state noise scores N ∈ [0, 1].
+
+        Parameters
+        ----------
+        residuals : np.ndarray
+            Per-sample residual values (prediction error magnitude).
+        state_proportion : float
+            Proportion ρ of the dataset represented by this state/sample.
+        consistency : float
+            Expert consistency score ∈ [0, 1].
+
+        Returns
+        -------
+        np.ndarray
+            Noise scores ∈ [0, 1], same length as ``residuals``.
+        """
+        residuals = np.asarray(residuals, dtype=np.float64).ravel()
+        # Noise combines residual magnitude with inconsistency weighting
+        # and rarity (low proportion → higher novelty).
+        w_consistency = np.float64(np.clip(1.0 - consistency, 0.0, 1.0))
+        w_proportion = np.float64(np.clip(1.0 - state_proportion, 0.0, 1.0))
+        noise = residuals * (0.5 + 0.5 * w_consistency) * (0.5 + 0.5 * w_proportion)
+        return np.clip(noise, 0.0, 1.0)
+
 
 # ---------------------------------------------------------------------------
 # Uncertainty via expert vote variance

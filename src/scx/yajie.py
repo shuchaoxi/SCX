@@ -34,7 +34,7 @@ import numpy as np
 import pandas as pd
 
 from scx.valuation.state_value import StateValue, hoeffding_bound, chernoff_bound
-from scx.valuation.noise_score import NoiseScore
+from scx.valuation.noise_score import NoiseScore, NoveltyNoiseScore
 from scx.valuation.redundancy import RedundancyScore
 from scx.valuation.classifier import DataClassifier
 from scx.state.discovery import StateDiscovery
@@ -82,7 +82,7 @@ class Yajie:
 
         self.grace = grace
         self.purity_threshold = purity_threshold
-        self._noise_scorer = NoiseScore()
+        self._noise_scorer = NoveltyNoiseScore()
         self._redundancy_scorer = RedundancyScore()
         self._classifier = DataClassifier()
         self._state_value = StateValue()
