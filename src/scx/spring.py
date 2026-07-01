@@ -65,7 +65,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from scx.valuation.noise_score import NoiseScore
+from scx.valuation.noise_score import NoiseScore, NoveltyNoiseScore
 from scx.valuation.state_value import StateValue
 from scx.state.discovery import StateDiscovery
 
@@ -768,7 +768,7 @@ class Spring:
         )
 
         # External scorers (from scx.valuation)
-        self._noise_scorer = NoiseScore()
+        self._noise_scorer = NoveltyNoiseScore()
         self._state_value = StateValue()
 
         # NEP student
