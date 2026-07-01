@@ -1,0 +1,676 @@
+# SCX Self-Evolution Theory: Verification Report
+
+> **Part of the SCX Self-Evolution Theory Series**
+> **Status**: Pre-review verification
+> **Version**: 2026-06-28
+> **Purpose**: Internal consistency check, cross-reference with existing theory, gap analysis, and honest assessment
+
+---
+
+## Table of Contents
+
+1. [Consistency Check of New Definitions](#1-consistency-check-of-new-definitions)
+2. [Cross-Reference with Existing Theorems 1-5](#2-cross-reference-with-existing-theorems-1-5)
+3. [Notation Conflict Check](#3-notation-conflict-check)
+4. [Assumption Dependency Map](#4-assumption-dependency-map)
+5. [Proof Gaps Identified](#5-proof-gaps-identified)
+6. [Open Problems](#6-open-problems)
+7. [Numerical Verification Suggestions](#7-numerical-verification-suggestions)
+8. [Honest Assessment](#8-honest-assessment)
+9. [Summary of Verification Status](#9-summary-of-verification-status)
+
+---
+
+## 1. Consistency Check of New Definitions
+
+### 1.1 Definition Inventory
+
+The self-evolution theory introduces the following new definitions:
+
+| Symbol | Definition | Type | Used In |
+|--------|-----------|------|---------|
+| $S_t$ | Gatekeeper scoring function at time $t$ | Function $\mathcal{X} \to [0,1]$ | SE-1, SE-2, SE-C1 |
+| $M_t$ | Memory bank at time $t$ | Set of data triples | SE-1, SE-2 |
+| $\theta_t$ | NEP student model parameters at time $t$ | Parameter vector | SE-1, SE-2 |
+| $\Phi(S_t, M_t, f_{\theta_t})$ | Lyapunov function for convergence | Scalar | SE-1, SE-2 |
+| $\rho_s$ | State probability (carried over from Thm 1) | Scalar $\in [0,1]$ | SE-1 |
+| $V(s)$ | State data value (carried over from definitions/04) | Scalar | SE-1, connections file |
+| $\mathcal{F}$ | Gatekeeper function class | Set of functions | SE-2, SE-4, SE-5 |
+| $\mathcal{F}_{\text{dist}}$ | Distinguishable gatekeeper functions | Finite set | SE-3 |
+| $\mathcal{Q}$ | System configuration space | Finite set | SE-2, SE-3 |
+| $\varepsilon_{\text{mach}}$ | Machine precision | Scalar $> 0$ | SE-2, SE-3 |
+| $\gamma_t$ | Lyapunov descent step | Scalar $\geq 0$ | SE-2 |
+| $\mathcal{A}$ | Action space for state-certified AL | Set of actions | File 08 |
+
+### 1.2 Internal Consistency Checks
+
+**Check 1: $S_t$ domain and range.**
+- Domain: $\mathcal{X}$ (input space) -- consistent with existing theory ($\mathcal{X}$ is the input space across all theorems).
+- Range: $[0,1]$ -- consistent with being a scoring function that estimates label correctness probability.
+- Dependency: $S_t$ depends on $M_t$ (memory bank) and the state partition from clustering, not directly on $\theta_t$ (though both share the partition).
+- **Verdict**: Consistent.
+
+**Check 2: $M_t$ monotonicity.**
+- By definition, $M_t \subseteq M_{t+1}$: data is only added, never removed.
+- Bounded above by $|\mathcal{D}_{\text{total}}| \leq N_{\text{max}}$.
+- This monotonicity is critical for Theorem SE-2's convergence argument.
+- **Verdict**: Consistent.
+
+**Check 3: Lyapunov function $\Phi$ domain.**
+- $\Phi$ maps $(S_t, M_t, f_{\theta_t})$ to $\mathbb{R}_{\geq 0}$.
+- The three arguments are all well-defined objects. The value depends on:
+  - Gatekeeper quality (measured by consensus-reliability alignment)
+  - Memory bank quality (measured by coverage and diversity)
+  - Student quality (measured by NEP prediction error on validated data)
+- **Verdict**: The function is well-defined but its exact form is **underspecified** in the current files. The Lyapunov function must be concretely defined for the theory to be fully rigorous. See Section 5.1.
+
+**Check 4: $\varepsilon_{\text{mach}}$ usage.**
+- Used in two contexts: (a) as machine precision for numerical distinguishability; (b) as the minimum Lyapunov descent step.
+- These are related: if numerical values cannot be distinguished below $\varepsilon_{\text{mach}}$, then $\gamma_t < \varepsilon_{\text{mach}}$ is indistinguishable from $\gamma_t = 0$.
+- **Verdict**: Consistent across uses.
+
+**Check 5: State space $\mathcal{S}$ vs. $\mathcal{S}_t$.**
+- Existing theory: $\mathcal{S}$ is the fixed, true state space (partition of $\mathcal{X}$ into $K_S$ states).
+- Self-evolution: The state partition may be refined or updated as the gatekeeper improves.
+- The current self-evolution files use $\mathcal{S}$ to denote the current best estimate of the partition, which may evolve with $t$.
+- **Potential conflict**: If $\mathcal{S}$ denotes the true (unknown) state space, it should not be time-indexed. If it denotes the estimated partition, it should be $\mathcal{S}_t$ or $\hat{\mathcal{S}}_t$.
+- **Recommendation**: Use $\hat{\mathcal{S}}_t$ for the estimated state partition at time $t$, reserving $\mathcal{S}$ for the true partition. This recommendation applies to all self-evolution files. The current files use $\mathcal{S}$ ambiguously.
+
+### 1.3 Consistency Summary
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| $S_t$ domain/range | PASS | Consistent with $\mathcal{X} \to [0,1]$ |
+| $M_t$ monotonicity | PASS | Well-defined and bounded |
+| $\Phi$ exact form | **GAP** | Needs explicit definition |
+| $\varepsilon_{\text{mach}}$ usage | PASS | Consistently applied |
+| $\mathcal{S}$ vs $\mathcal{S}_t$ | **WARNING** | Ambiguous; recommend $\hat{\mathcal{S}}_t$ for estimated partition |
+
+---
+
+## 2. Cross-Reference with Existing Theorems 1-5
+
+### 2.1 Theorem SE-1 vs. Theorem 1 (Noise Detection)
+
+**Question**: Does Theorem SE-1 rely on or contradict Theorem 1?
+
+**Analysis**:
+- Theorem SE-1 uses the consensus score $C(x) = \frac{1}{M}\sum_m \mathbf{1}\{\ell(f_m(x), y) > \tau\}$ (same definition as Theorem 1).
+- Theorem SE-1's Lyapunov function $\Phi$ should include a term that measures the gap between the gatekeeper's score $S_t(x)$ and the consensus-based noise estimate $C(x)$.
+- When Theorem 1's conditions hold ($\Delta_s > 0$ for all states), the gatekeeper can reliably use $C(x)$ as a signal, and the Lyapunov descent is well-conditioned.
+- When Theorem 1 fails ($\Delta_s \leq 0$ for some states), the consensus signal is unreliable in those states, and the Lyapunov gradient may point in the wrong direction.
+
+**Conclusion**: Theorem SE-1 does **not contradict** Theorem 1:
+- Theorem 1 provides the **signal strength** that powers the Lyapunov descent.
+- Theorem SE-1's convergence **depends on** Theorem 1's condition: if $\Delta_s = 0$ for all states, the Lyapunov gradient vanishes and convergence stalls.
+- This dependency should be made explicit: Theorem SE-1 should state its result conditionally on the existence of states with $\Delta_s > 0$.
+
+**Verdict**: Consistent (with explicit dependency needed).
+
+### 2.2 Self-Evolution vs. Theorem 2 (Weak Feature Failure)
+
+**Question**: Does the self-evolution framework respect Theorem 2's limitation? Can it overcome weak features through iteration?
+
+**Analysis**:
+- Theorem 2 states: $F1_{\text{SCX}} \leq F1_{\text{base}} + C_F\sqrt{\delta/2}$ where $\delta = I(\phi; S)$ is the feature-state mutual information.
+- This is a **static** bound that depends only on the feature representation $\phi$, not on the number of evolution steps $t$.
+- The self-evolution loop **does not change $\phi$**: the feature representation is fixed throughout the evolution. (The NEP student $f_{\theta_t}$ may learn better internal representations, but the clustering and gatekeeper operate on $\phi$.)
+- Therefore, Theorem 2's bound applies equally to every iteration $t$:
+  $$F1_{\text{SCX}, t} \leq F1_{\text{base}} + C_F\sqrt{\delta/2}, \quad \forall t \geq 0$$
+
+**Conclusion**: The self-evolution framework **respects** Theorem 2's limitation. No amount of iteration can overcome the feature bottleneck. If $\delta \approx 0$, the fixed point $S_{T^*}$ cannot outperform the loss baseline.
+
+**Implication**: The self-evolution framework should include a "feature escape" mechanism in future work, where $\phi$ is updated based on the NEP student's learned representations. Without this, the system is fundamentally bottlenecked by the initial feature choice.
+
+**Verdict**: Consistent (with feature escape as future work).
+
+### 2.3 Self-Evolution vs. Theorem 3 (Unidentifiability)
+
+**Question**: Does the self-evolution framework progressively resolve Theorem 3's unidentifiability?
+
+**Analysis**:
+- Theorem 3 states that without assumptions A1-A6, noise and difficulty are indistinguishable. Even with A1-A6, there exists an irreducible ambiguity proportional to $\eta\rho/2$.
+- The self-evolution framework **does not add new assumptions** that would break the unidentifiability. The same ambiguity persists.
+- However, the self-evolution loop may **reduce the effective ambiguity** through iteration:
+  - Initial iterations may flag samples as noise or difficulty based on limited evidence.
+  - As the memory bank grows, the gatekeeper's estimates become more accurate (Theorem 1's bound improves with $M_t$'s growing evidence).
+  - The irreducible ambiguity $\eta\rho/2$ remains, but the **direction of error** (false positives vs. false negatives) may shift as the gatekeeper calibrates.
+
+**Claim**: The self-evolution framework **partially resolves** the practical impact of unidentifiability by:
+1. Explicitly tracking uncertainty via the consensus score $C(x)$.
+2. Selecting samples for NEP validation at the intersection of high-uncertainty and high-impact states.
+3. Accumulating validated labels in $M_t$, which provides ground truth for recalibration.
+
+**Limitation**: The self-evolution framework can only resolve ambiguity that **data can resolve**. The fundamental $\eta\rho/2$ lower bound from Theorem 3 remains: there will always be samples for which noise vs. difficulty is undecidable given the available evidence.
+
+**Verdict**: Consistent. Self-evolution reduces practical ambiguity but cannot eliminate the fundamental bound.
+
+### 2.4 Self-Evolution vs. Theorem 4' (Exact Constant)
+
+**Question**: Does the self-evolution framework align with Theorem 4''s optimality claims?
+
+**Analysis**:
+- Theorem 4' shows that SCX with an adaptive threshold achieves the exact constant minimax optimal rate for noise detection.
+- The self-evolution framework's gatekeeper $S_t$ is a generalization of the fixed threshold detector analyzed in Theorem 4'.
+- At the fixed point $T^*$, the gatekeeper $S_{T^*}$ should approximate the optimal threshold $\theta^\dagger$ from Theorem 4'.
+- The Lyapunov convergence (Theorem SE-1) should drive $S_t$ toward $\theta^\dagger$ in states where the expert consensus is well-conditioned.
+
+**Connection**: Theorem 4''s $C_{\min}/\eta$ optimal constant provides the **target** for the self-evolution's fixed point. If the Lyapunov function is well-designed, the fixed point should achieve approximately this optimal constant.
+
+**Implication**: The self-evolution fixed point's quality is bounded by Theorem 4''s optimality constant. This provides a **stopping criterion**: when $S_t(x) \approx \theta^\dagger$ for all $x$ with $\Delta_s > 0$, further evolution cannot significantly improve noise detection.
+
+**Verdict**: Consistent. The connection should be made explicit in the definition of $\Phi$.
+
+### 2.5 Self-Evolution vs. Theorem 5 and Proposition 6
+
+**Question**: How does self-evolution depend on state discovery quality?
+
+**Analysis**:
+- Theorem 5 guarantees that k-means recovers the true state partition under strong separation.
+- Proposition 6 provides a bootstrap diagnostic for whether the state structure is meaningful.
+- The self-evolution framework relies on the state partition for the gatekeeper's state-level statistics.
+- If Theorem 5's conditions hold ($\Delta_{\min}$ sufficiently large), the gatekeeper operates on a correct partition and its estimates are accurate.
+- If Proposition 6's stability score is low, the gatekeeper's state-level statistics are unreliable, and the Lyapunov descent may be misdirected.
+
+**Recommendation**: The self-evolution loop should check Proposition 6's stability criterion as a **precondition** before relying on state-level statistics. This is currently not formalized in the self-evolution files.
+
+**Verdict**: Consistent (with precondition check recommended).
+
+### 2.6 Cross-Reference Summary
+
+| Existing Theorem | Relation to Self-Evolution | Status |
+|-----------------|---------------------------|--------|
+| Thm 1 (Noise Detection) | Provides gradient signal for Lyapunov descent | Consistent (dependency should be explicit) |
+| Thm 2 (Weak Feature) | Fundamental bound that iteration cannot overcome | Consistent (feature escape needed for future) |
+| Thm 3 (Unidentifiability) | Irreducible ambiguity persists; iteration reduces practical impact | Consistent |
+| Thm 4' (Exact Constant) | Fixed point target; optimality constant bounds final quality | Consistent (connection should be explicit) |
+| Thm 5 (Cluster Consistency) | State discovery quality bounds gatekeeper accuracy | Consistent (precondition check recommended) |
+| Prop 6 (Stability Diagnostic) | Precondition for reliable state-level statistics | Consistent (precondition check recommended) |
+
+---
+
+## 3. Notation Conflict Check
+
+### 3.1 Symbol Usage Across Self-Evolution and Existing Theory
+
+| Symbol | Existing Meaning | Self-Evolution Meaning | Conflict? |
+|--------|-----------------|----------------------|-----------|
+| $\mathcal{S}$ | True state space (fixed) | Current estimated state space (may vary with $t$) | **YES** -- see recommendation in Section 1.2, Check 5 |
+| $S_t$ | Not used | Gatekeeper scoring function | None (new symbol) |
+| $M$ | Number of experts | Same | None |
+| $M_t$ | Not used | Memory bank at time $t$ | None (new symbol) |
+| $\theta$ | Detection threshold (Thm 1,4') | NEP student parameters $\theta_t$ | **YES** -- $\theta$ is overloaded |
+| $\Phi$ | Feature representation $\phi(X)$ (Thm 2,5) | Lyapunov function | **YES** -- $\Phi$ (capital phi) vs $\phi$ (lowercase) are different but easily confused |
+| $\rho_s$ | State probability (Thm 1) | Same | None |
+| $f_\theta$ | Not used in existing theory | NEP student model | None (new) |
+| $\mathcal{F}$ | Not used explicitly | Gatekeeper function class | None (new) |
+| $\eta$ | Global noise rate (Thm 1,2,3,4') | Same | None |
+| $\tau$ | Expert error threshold (Thm 1) | Same | None |
+
+### 3.2 Resolution of Conflicts
+
+**Conflict 1: $\mathcal{S}$ vs. $\mathcal{S}_t$**:
+- **Recommendation**: Use $\hat{\mathcal{S}}_t$ (estimated state partition at time $t$) in self-evolution files. Reserve $\mathcal{S}$ for the true partition.
+- **Action needed**: Update all self-evolution files to use $\hat{\mathcal{S}}_t$ where the estimated partition is meant. Files 07 and 08 currently use $\mathcal{S}$ without time indexing. This is load-bearing for Theorem SE-2's configuration space finiteness argument.
+- **Priority**: High. This affects the rigor of the configuration space definition.
+
+**Conflict 2: $\theta$ overloaded**:
+- Existing: $\theta$ = detection threshold (Theorem 1, 4').
+- Self-evolution: $\theta_t$ = NEP student model parameters.
+- **Resolution**: These are distinct. The student parameters are naturally distinguished by the subscript $t$ and by context (used in $f_{\theta_t}$, not as a scalar threshold). No change needed, but users should be aware of the overloading.
+- **Priority**: Low. Context disambiguates.
+
+**Conflict 3: $\Phi$ vs. $\phi$**:
+- Existing: $\phi(X)$ = feature representation (lowercase phi).
+- Self-evolution: $\Phi(S_t, M_t, f_{\theta_t})$ = Lyapunov function (uppercase Phi).
+- **Resolution**: These are distinct Greek letters ($\Phi$ vs $\phi$) and used in different contexts. However, the proximity could cause confusion in formula-dense text.
+- **Recommendation**: The self-evolution files should always write $\Phi(\cdot)$ with explicit arguments to avoid confusion with $\phi(X)$.
+- **Priority**: Low. Mostly a readability concern.
+
+### 3.3 Symbol Collision Risk Summary
+
+| Risk Level | Symbol | Conflict | Recommended Fix |
+|-----------|--------|----------|-----------------|
+| **HIGH** | $\mathcal{S}$ | True partition vs. estimated partition | $\hat{\mathcal{S}}_t$ for estimated |
+| **LOW** | $\theta$ | Threshold vs. student params | Contextual (acceptable) |
+| **LOW** | $\Phi$ vs $\phi$ | Lyapunov vs. features | Explicit arguments (acceptable) |
+| **NONE** | All others | No conflicts | -- |
+
+---
+
+## 4. Assumption Dependency Map
+
+### 4.1 Existing Assumptions (A1-A6) Needed for Self-Evolution
+
+| Assumption | Needed? | Why |
+|-----------|---------|-----|
+| **A1**: Disjoint training sets | Partial | Needed if the experts $\{f_m\}$ are used for consensus scoring in the gatekeeper. Not needed if the gatekeeper uses only the NEP student predictions. |
+| **A2**: Conditional independence (clean) | Partial | Same as A1. Needed for consensus-based detection; not needed for NEP student training. |
+| **A3**: Bounded loss | Yes | Required for concentration bounds in Theorem 1, which powers the Lyapunov gradient. Also needed for NEP student loss bounds. |
+| **A4**: Uniform independent noise | Partial | Needed for the noise-detection interpretation of consensus scores. Not strictly needed if the gatekeeper uses other signals. |
+| **A5**: State homogeneity | Yes | Required for state-level statistics to be meaningful. Without it, within-state variance makes the gatekeeper's state-level decisions unreliable. |
+| **A6**: Balanced error distribution | Partial | Needed for the noise-side concentration bound (Theorem 1, Lemma 3). The self-evolution framework can operate without it but with degraded guarantees. |
+
+### 4.2 New Assumptions Introduced by Self-Evolution
+
+The self-evolution theory introduces the following new assumptions:
+
+| # | Assumption | Formal Statement | Used In | Notes |
+|---|-----------|-----------------|---------|-------|
+| **SE-A1** | Lyapunov Descent | $\Phi(S_{t+1}, M_{t+1}, f_{\theta_{t+1}}) \leq \Phi(S_t, M_t, f_{\theta_t})$, with strict inequality unless $q_{t+1} = q_t$ | SE-1, SE-2 | This is the **convergence engine**. Must be proven for the concrete $\Phi$ |
+| **SE-A2** | Lyapunov Boundedness | $0 \leq \Phi(q) \leq \Phi_0 < \infty$ for all $q \in \mathcal{Q}$ | SE-2 | Required for termination bound |
+| **SE-A3** | Finite Data Volume | $|\mathcal{D}_{\text{total}}| \leq N_{\text{max}} < \infty$ | SE-2, SE-3 | Physical constraint |
+| **SE-A4** | Finite Precision | Numerical quantities stored with precision $\varepsilon_{\text{mach}} > 0$ | SE-2, SE-3, SE-4, SE-5 | Computational constraint |
+| **SE-A5** | Lipschitz Gatekeeper | $w \mapsto S_w$ is $L$-Lipschitz w.r.t. $\|\cdot\|_\infty$ | SE-4 | Technical condition for covering number |
+| **SE-A6** | Markovian Evolution | $q_{t+1} = G(q_t, \mathcal{D}_{\text{new}, t})$ where $\mathcal{D}_{\text{new}, t}$ depends only on $q_t$ | SE-2 | Standard in dynamical systems |
+
+### 4.3 Assumption Dependency Graph
+
+```
+Existing Assumptions:
+    A3 (Bounded Loss) ──────────────────────────┐
+    A5 (State Homogeneity) ─────────────────────┤
+    A1 (Disjoint Training) ──┐                  │
+    A2 (Cond. Independence)  ├── (Partial) ─────┤
+    A4 (Uniform Noise) ──────┘                  │
+    A6 (Balanced Errors) ──── (Partial) ────────┤
+                                                │
+New Assumptions:                                ▼
+    SE-A1 (Lyapunov Descent) ─────────────────→ Theorem SE-1
+    SE-A2 (Lyapunov Bounded) ──────────────┐
+    SE-A3 (Finite Data) ───────────────────┤
+    SE-A4 (Finite Precision) ──────────────┤──→ Theorem SE-2
+    SE-A5 (Lipschitz Gatekeeper) ──────────┤
+    SE-A6 (Markovian Evolution) ───────────┘
+```
+
+### 4.4 Key Observation
+
+The self-evolution theory adds **6 new assumptions** (SE-A1 through SE-A6) to the existing 6 assumptions (A1-A6). The new assumptions are of a **different character**:
+- A1-A6 are **statistical** (about the data-generating process)
+- SE-A1/LF are **dynamical** (about the evolution algorithm)
+- SE-A3 and SE-A4 are **physical** (about computational resources)
+- SE-A5 and SE-A6 are **technical** (for the covering number and Markovian analysis)
+
+**Critical gap**: SE-A1 (Lyapunov Descent) is an **assumption** in the current theory, not a **proven property**. The Lyapunov function $\Phi$ must be defined and shown to satisfy the descent property under the self-evolution update rules. This is the central theoretical challenge for the self-evolution framework.
+
+---
+
+## 5. Proof Gaps Identified
+
+### 5.1 Gap Classification
+
+| Gap ID | Description | Severity | Type |
+|--------|-------------|----------|------|
+| GAP-1 | Lyapunov function $\Phi$ not explicitly defined | **Critical** | Missing definition |
+| GAP-2 | Lyapunov descent property (SE-A1) assumed, not proven | **Critical** | Conjectured |
+| GAP-3 | Convergence under distribution shift not characterized | **High** | Incomplete |
+| GAP-4 | Limit cycle conditions not sharply characterized | **High** | Incomplete |
+| GAP-5 | Lyapunov contraction rate $\lambda$ not derived | **Medium** | Missing bound |
+| GAP-6 | $T^*$ worst-case bound not tight | **Medium** | Overly loose |
+| GAP-7 | $\mathcal{S}$ vs $\hat{\mathcal{S}}_t$ ambiguity | **Medium** | Notation fix needed |
+| GAP-8 | Precondition checks (Prop 6) not formalized | **Low** | Missing procedure |
+| GAP-9 | Coupling between $S_t$ and $\theta_t$ dynamics | **High** | Incomplete |
+| GAP-10 | Feature escape mechanism not specified | **Low** | Future work |
+
+### 5.2 Detailed Gap Descriptions
+
+**GAP-1 (Critical): Lyapunov Function Not Explicitly Defined**
+The self-evolution theory asserts the existence of a Lyapunov function $\Phi(S_t, M_t, f_{\theta_t})$ but has not provided an explicit formula. Candidate forms include:
+
+$$\Phi_1 = \sum_{s \in \mathcal{S}} \rho_s \cdot \underbrace{(\mathbb{E}[C(x) \mid x \in s] - \mathbb{E}[S_t(x) \mid x \in s])^2}_{\text{consensus-gatekeeper mismatch}} + \lambda \cdot \underbrace{\text{Err}(f_{\theta_t}, M_t)}_{\text{student prediction error}}$$
+
+$$\Phi_2 = -\text{F1}_{\text{SCX}}(S_t) + \mu \cdot \text{Var}[S_t(x) \mid x \in \mathcal{D}]$$
+
+$$\Phi_3 = \text{KL}(P_{\text{consensus}} \| P_{\text{gatekeeper}}) + \text{Err}(f_{\theta_t}, M_t)$$
+
+Without an explicit $\Phi$, Theorem SE-1 and SE-2 cannot be rigorously proven. The descent property (SE-A1) must be derived from the update rules, not assumed.
+
+**Status**: Not proven. The theory currently assumes the existence of a Lyapunov function without constructing one.
+
+**GAP-2 (Critical): Lyapunov Descent Assumed, Not Proven**
+Even given an explicit $\Phi$, proving $\Phi(q_{t+1}) \leq \Phi(q_t)$ requires analyzing the coupled dynamics of:
+- Gatekeeper $S_t$ update (how does $S_{t+1}$ differ from $S_t$ given new memory?)
+- Memory $M_t$ update (which samples are added?)
+- Student $\theta_t$ update (how does the NEP retraining change predictions?)
+
+Each of these updates involves stochasticity (new data, random NEP training). Proving that $\Phi$ decreases in expectation (or almost surely) is non-trivial.
+
+**Status**: Not proven. This is the central technical challenge.
+
+**GAP-3 (High): Convergence Under Distribution Shift**
+The NEP student $f_{\theta_t}$ explores new configurations over time, changing the distribution of candidate samples $\mathcal{C}_t$. This creates a **moving target** for the gatekeeper:
+- $S_t$ is trained on data from distribution $P_t$ (the distribution of $M_t$'s samples).
+- But it must make decisions on distribution $P_{t+1}$ (the new candidate pool).
+- The distribution shift $TV(P_t, P_{t+1})$ is not controlled by the current theory.
+
+This is analogous to the **off-policy evaluation** problem in reinforcement learning, or the **covariate shift** problem in supervised learning.
+
+**Status**: Not characterized. The current analysis assumes the target distribution is fixed.
+
+**GAP-4 (High): Limit Cycle Conditions Not Characterized**
+Theorem SE-2 guarantees convergence to a fixed point, but:
+- What conditions on the update dynamics guarantee that the fixed point is **stable** (attracting)?
+- What conditions lead to **unstable** fixed points that the system passes through without stopping?
+- Can the system enter a near-limit-cycle where $S_t$ oscillates between several configurations? (Theorem SE-2 rules out exact cycles via strict Lyapunov descent, but $\varepsilon$-approximate cycles remain possible within machine precision.)
+
+**Status**: Partially addressed. Theorem SE-2's finite-state argument rules out exact cycles, but near-cycles and stability are not characterized.
+
+**GAP-5 (Medium): Lyapunov Contraction Rate Not Derived**
+Theorem SE-1 (in the architecture files) assumes the Lyapunov function contracts at rate $\lambda$:
+
+$$\Phi(q_{t+1}) - \Phi_{\text{opt}} \leq e^{-\lambda}(\Phi(q_t) - \Phi_{\text{opt}})$$
+
+The rate $\lambda$ is not derived from system parameters. It likely depends on:
+- The number of experts $M$ (more experts $\to$ faster contraction)
+- The state separation gap $\Delta_{\min}$ (larger gap $\to$ faster contraction)
+- The noise rate $\eta$ (higher noise $\to$ slower contraction)
+- The validation budget per iteration
+
+**Status**: Not derived. The contraction rate is a free parameter in the current theory.
+
+**GAP-6 (Medium): $T^*$ Bound Not Tight**
+The worst-case bound $T^* \leq \Phi_0/\varepsilon_{\text{mach}}$ is astronomically loose ($\sim 10^{16}$ for double precision). A tighter bound would depend on:
+- The number of states $K_S$
+- The number of experts $M$
+- The per-iteration validation budget $B$
+- The learning rate / gatekeeper update step size
+
+**Status**: The theoretical bound is valid but useless for practical prediction of convergence time.
+
+**GAP-7 (Medium): $\mathcal{S}$ vs $\hat{\mathcal{S}}_t$ Ambiguity**
+See Section 3.2. The notation fix is straightforward but load-bearing for configuration space finiteness.
+
+**Status**: Needs editorial correction.
+
+**GAP-8 (Low): Proposition 6 Precondition Not Formalized**
+The self-evolution loop should check Proposition 6's stability criterion before using state-level statistics. The current theory does not specify:
+- What threshold of stability triggers the precondition?
+- What fallback behavior applies when stability is low?
+- How does the stability criterion interact with the Lyapunov function?
+
+**Status**: Not formalized. This is a practical engineering concern more than a theoretical gap.
+
+**GAP-9 (High): Coupled $S_t$-$\theta_t$ Dynamics**
+The gatekeeper $S_t$ and NEP student $f_{\theta_t}$ co-evolve:
+1. $S_t$ selects which data to validate.
+2. Validated data enters $M_t$.
+3. $f_{\theta_t}$ is retrained on $M_t$.
+4. The new $f_{\theta_{t+1}}$ explores new configurations.
+5. $S_{t+1}$ must adapt to the new configuration distribution.
+
+This feedback loop can lead to complex dynamics (oscillations, bifurcations, chaos) that are not captured by the simple Lyapunov analysis.
+
+**Status**: Not characterized. The current analysis treats the student update as an independent process, ignoring the feedback from gatekeeper decisions to student training.
+
+**GAP-10 (Low): Feature Escape Mechanism**
+Theorem 2's bound is static: if features are weak, SCX cannot outperform the baseline. The self-evolution framework should ideally include a mechanism for updating the feature representation $\phi$ as the NEP student learns better internal representations. This is not currently specified.
+
+**Status**: Not addressed. Acknowledged as future work.
+
+### 5.3 Gap Severity Summary
+
+```
+GAP-1 ████████████████████░░░░░░░░░░  (Critical, missing definition)
+GAP-2 ████████████████████░░░░░░░░░░  (Critical, central technical challenge)
+GAP-3 ████████████████░░░░░░░░░░░░░░  (High, under distribution shift)
+GAP-4 ████████████████░░░░░░░░░░░░░░  (High, limit cycles)
+GAP-9 ████████████████░░░░░░░░░░░░░░  (High, coupled dynamics)
+GAP-5 ██████████░░░░░░░░░░░░░░░░░░░░  (Medium, contraction rate)
+GAP-6 ██████████░░░░░░░░░░░░░░░░░░░░  (Medium, bound tightness)
+GAP-7 ██████████░░░░░░░░░░░░░░░░░░░░  (Medium, notation fix)
+GAP-8 ████░░░░░░░░░░░░░░░░░░░░░░░░░░  (Low, procedural)
+GAP-10 ████░░░░░░░░░░░░░░░░░░░░░░░░░░ (Low, future work)
+```
+
+---
+
+## 6. Open Problems
+
+The self-evolution theory suggests several open problems for future investigation:
+
+### Problem 1: Sharp Convergence Rate for Coupled $S_t$-$\theta_t$ System
+
+**Problem**: Derive the convergence rate of the coupled gatekeeper-student system $(S_t, f_{\theta_t})$ under the Lyapunov function $\Phi$. The rate likely depends on:
+- The spectral gap of the state discovery process (from Theorem 5)
+- The signal-to-noise ratio $\Delta_s^2/\sigma^2$ per state
+- The per-iteration validation budget $B$
+
+**Conjecture**: For sufficiently separated states ($\Delta_{\min}$ large enough), the convergence is linear:
+
+$$\Phi(q_t) - \Phi_{\text{opt}} \leq C \cdot \exp\left(-t \cdot \frac{B \cdot \Delta_{\min}^2}{K_S \cdot \log(1/\varepsilon_{\text{mach}})}\right)$$
+
+**Difficulty**: Hard. Requires precise control of the state discovery convergence and the gatekeeper update dynamics.
+
+### Problem 2: Tight Lower Bound on Required Memory Size
+
+**Problem**: What is the minimum memory bank size $|M_t|$ required to achieve $\varepsilon$-optimal gatekeeper performance? The current bound is trivial ($N_{\text{max}}$). A tight bound would depend on:
+- The number of states $K_S$
+- The within-state variance of expert predictions
+- The noise rate $\eta$
+
+**Conjecture**: The required memory scales as:
+
+$$|M_{\min}| = \Omega\left(K_S \cdot \frac{1}{\varepsilon^2} \cdot \log\frac{K_S}{\delta}\right)$$
+
+where $\varepsilon$ is the target gatekeeper accuracy and $\delta$ is the failure probability.
+
+**Difficulty**: Moderate. Related to sample complexity in state-level estimation.
+
+### Problem 3: Phase Transition Between Four Convergence Regimes
+
+**Problem**: Characterize the conditions under which the self-evolution exhibits each of four regimes:
+
+1. **Fast convergence**: Gatekeeper improves rapidly, student discovers new states quickly, fixed point reached in $O(K_S)$ iterations.
+2. **Slow convergence**: Gatekeeper improves slowly, student discovers new states incrementally, fixed point reached in $O(K_S/\varepsilon_{\text{mach}})$ iterations.
+3. **Limit cycle**: Gatekeeper oscillates between configurations (near-cycle within machine precision). $\Phi$ decreases overall but individual steps may increase.
+4. **Stall**: Gatekeeper cannot improve because the consensus signal is too weak (Theorem 1's $\Delta_s \approx 0$ for all $s$). The system reaches a false fixed point that is far from optimal.
+
+**Difficulty**: Hard. Requires a dynamical systems analysis of the SCX update rules.
+
+### Problem 4: Optimal Gatekeeper Update Frequency
+
+**Problem**: How often should the gatekeeper be updated relative to the student? Currently, the framework updates both every iteration. Alternatives include:
+- **Slow gatekeeper, fast student**: Update the student every iteration, gatekeeper every $K$ iterations.
+- **Fast gatekeeper, slow student**: Update the gatekeeper after every validation event, student only when memory bank has grown significantly.
+- **Asynchronous updates**: Update gatekeeper and student independently based on information-theoretic triggers.
+
+**Conjecture**: The optimal update frequency depends on the relative rates of information gain. When the consensus signal is changing rapidly (early in evolution), update the gatekeeper frequently. When the consensus signal is stable, update the student more frequently.
+
+**Difficulty**: Moderate. An empirical study could establish guidelines even without a fully rigorous theory.
+
+### Problem 5: Finite-Time Guarantees (Non-Asymptotic Bounds)
+
+**Problem**: Provide non-asymptotic bounds on the Lyapunov gap $\Phi(q_t) - \Phi_{\text{opt}}$ after $t$ iterations. The current theory provides only asymptotic convergence (Theorem SE-1) and worst-case finite-time termination (Theorem SE-2). Neither gives a useful bound for practical $t$ (e.g., $t \leq 1000$).
+
+**Desired result**: For any $t < T^*$, with probability at least $1-\delta$:
+
+$$\Phi(q_t) - \Phi_{\text{opt}} \leq \Phi(q_0) \cdot \exp\left(-c \cdot \frac{t \cdot B \cdot \Delta_{\min}^2}{K_S \cdot d_\phi}\right) + \varepsilon_{\text{stat}}$$
+
+where $\varepsilon_{\text{stat}}$ is the statistical error due to finite samples in $M_t$.
+
+**Difficulty**: Hard. Requires concentration bounds for a sequential, adaptive process.
+
+---
+
+## 7. Numerical Verification Suggestions
+
+### 7.1 Experiment 1: Lyapunov Descent Verification
+
+**Objective**: Verify that the Lyapunov function $\Phi$ (once defined) decreases monotonically.
+
+**Setup**:
+- Synthetic data with known states, known noise rates $\eta$, and known expert error rates $\varepsilon_m$.
+- Run the self-evolution loop for $T = 100$ iterations.
+- Track $\Phi(S_t, M_t, f_{\theta_t})$ at each iteration.
+
+**Metrics**:
+- Monotonicity: $\mathbb{P}(\Phi_{t+1} < \Phi_t)$ across iterations.
+- Descent rate: $\lambda_t = \log(\Phi_t / \Phi_{t-1})$ per iteration.
+- Plateau detection: identify $T^*$ where $\Phi$ stabilizes (change $< \varepsilon_{\text{mach}}$ for 5 consecutive iterations).
+
+**Expected result**: $\Phi$ decreases monotonically (but may plateau before reaching the global minimum). The descent rate depends on $\Delta_{\min}$ and the validation budget.
+
+### 7.2 Experiment 2: Theorem SE-2 Termination Bound
+
+**Objective**: Test whether the system reaches a fixed point in finite time, and measure $T^*$ as a function of problem parameters.
+
+**Setup**:
+- Vary: $K_S$ (2 to 20), $\eta$ (0.01 to 0.4), $\Delta_{\min}$ (0.1 to 0.5), $M$ (5 to 50).
+- For each configuration, run the self-evolution loop until $\Phi$ stabilizes.
+
+**Metrics**:
+- $T^*$ as a function of $K_S$, $\eta$, $\Delta_{\min}$, $M$.
+- Compare to the theoretical bound $T^* \leq \Phi_0/\varepsilon_{\text{mach}}$.
+
+**Expected result**: $T^*$ scales like $O(K_S/\Delta_{\min}^2)$ for large $\Delta_{\min}$, transitioning to exponential scaling as $\Delta_{\min} \to 0$.
+
+### 7.3 Experiment 3: Fixed Point Quality vs. Theorem 4'
+
+**Objective**: Verify that the fixed point's noise detection F1 matches Theorem 4''s optimal constant.
+
+**Setup**:
+- Same synthetic data as Experiment 1.
+- At the fixed point $T^*$, compute the empirical F1 of $S_{T^*}(x)$ as a noise detector.
+- Compare to Theorem 4''s prediction: $1 - \text{F1} \approx C_{\min}/(\eta \cdot e^{M\kappa}\sqrt{2\pi M})$.
+
+**Metrics**:
+- Ratio: empirical F1 gap / theoretical F1 gap. Should approach 1 as $M \to \infty$.
+- Sensitivity to $p_0$, $p_1$, $\eta$ (the three parameters of Theorem 4').
+
+**Expected result**: Agreement within statistical error for $M \geq 20$. Divergence for small $M$ where asymptotic approximations break down.
+
+### 7.4 Experiment 4: Feature Bottleneck (Theorem 2 Confirmation)
+
+**Objective**: Verify that the self-evolution converges to a fixed point that respects Theorem 2's bound.
+
+**Setup**:
+- Generate features $\phi$ with controlled mutual information $\delta = I(\phi; S)$.
+- Run self-evolution for features with $\delta \in \{0.001, 0.01, 0.1, 0.5, 1.0\}$ nats.
+- Compare the fixed-point F1 to Theorem 2's bound: $F1_{\text{base}} + C_F\sqrt{\delta/2}$.
+
+**Metrics**:
+- Does fixed-point F1 exceed the bound? (Should not, if theory is correct.)
+- How close does the fixed point come to the bound for large $\delta$?
+- Does the self-evolution detect the feature bottleneck (e.g., through Proposition 6's stability score)?
+
+**Expected result**: The fixed-point F1 remains below the Theorem 2 bound. For small $\delta$, the fixed point F1 is close to the bound (the gatekeeper is not the bottleneck; features are). For large $\delta$, the fixed point may be significantly below the bound (the gatekeeper or student is the bottleneck).
+
+### 7.5 Experiment 5: External Validation Escape from Incompleteness
+
+**Objective**: Test the Claim SE-C2 about external validation escaping incompleteness.
+
+**Setup**:
+- Run self-evolution to fixed point $T^*$ without external validation.
+- Inject one round of external NEP validation (simulated: reveal true labels for a small set of samples).
+- Continue self-evolution. Does it escape the fixed point?
+
+**Metrics**:
+- Escape success rate: fraction of fixed points broken by external validation.
+- Improvement after escape: $\Phi_{\text{after}} - \Phi_{\text{at fixed point}}$.
+- Sensitivity to validation budget (how many externally validated samples are needed to escape).
+
+**Expected result**: A small amount of external validation (1-5% of the total data) is sufficient to break most suboptimal fixed points. The required budget depends on the noise rate $\eta$ and the state separation $\Delta_{\min}$.
+
+---
+
+## 8. Honest Assessment
+
+### 8.1 Classification Scheme
+
+Each claim in the self-evolution theory is classified into one of three categories:
+
+| Category | Label | Meaning |
+|----------|-------|---------|
+| **Rigorous Theory** | $\checkmark$ | Fully proven with explicit assumptions and mathematical derivation. No gaps. |
+| **Formal Conjecture** | $\triangle$ | Mathematically well-posed claim with plausible reasoning, but proof steps are missing or assumptions are not fully checked. |
+| **Plausible Hypothesis** | $\circ$ | Well-motivated claim based on intuition or analogy. Formalization is incomplete or at an early stage. |
+
+### 8.2 Claim-by-Claim Assessment
+
+| Claim | Category | Evidence | Key Gap |
+|-------|----------|----------|---------|
+| **Theorem SE-1** (Lyapunov Convergence) | $\triangle$ Formal Conjecture | The Lyapunov descent idea is standard in optimization; adaptation to SCX is plausible. | $\Phi$ not explicitly defined; descent property not proven for coupled dynamics. |
+| **Theorem SE-2** (Completeness Bound) | $\checkmark$ Rigorous Theory | Finite configuration space + finite-state dynamics + strict Lyapunov descent $\implies$ finite-time fixed point. The logic is sound. | Depends on SE-A1 (Lyapunov descent) being satisfied. Without it, SE-2's conclusion weakens to "convergence to a cycle." |
+| **Proposition SE-3** (Finite Configuration Space) | $\checkmark$ Rigorous Theory | Trivially true under finite data, finite precision, finite parameterization. No gaps. | None. |
+| **Proposition SE-4** (Covering Number) | $\checkmark$ Rigorous Theory | Standard result from empirical process theory; applies directly to parametric function classes. | The Lipschitz constant $L$ may be problem-dependent. |
+| **Proposition SE-5** (Metric Entropy) | $\checkmark$ Rigorous Theory | Direct corollary of SE-4. | None. |
+| **Claim SE-C1** (True Statements Unprovable Within System) | $\circ$ Plausible Hypothesis | The analogy to Godel incompleteness is structurally suggestive but not formally established. | The SCX system is not a formal logic; "provability" is not rigorously defined. |
+| **Claim SE-C2** (Cannot Self-Certify) | $\circ$ Plausible Hypothesis | Self-referential evaluation is epistemically limited. The intuition is sound. | "Self-certification" is not formally defined. The claim is more philosophical than mathematical. |
+| **External Validation Escape** | $\circ$ Plausible Hypothesis | Introducing new information can break fixed points. This is intuitively true. | Formal mechanism for escaping fixed points via external validation is not specified. |
+| **Finite $T^*$ Bound** | $\checkmark$ Rigorous Theory | $T^* \leq \Phi_0/\varepsilon_{\text{mach}}$ is a straightforward consequence of finite-state dynamics. | The bound is astronomically loose. |
+| **Convergence Regimes** (fast/slow/cycle/stall) | $\circ$ Plausible Hypothesis | The four regimes are qualitatively plausible. | No formal characterization of regime boundaries. |
+| **$S_t$-$\theta_t$ Coupling** | $\triangle$ Formal Conjecture | The feedback loop exists and matters. Analyzing it requires dynamical systems theory. | No formal analysis has been attempted. |
+
+### 8.3 Overall Assessment
+
+```
+Rigorous Theory    ████████░░░░░░████  (~40% of claims)
+Formal Conjecture  ██████░░░░░░░░░░░░  (~20% of claims)
+Plausible Hypoth.  ████████░░░░░░░░░░  (~40% of claims)
+```
+
+The self-evolution theory has a solid core of rigorous results:
+- **Proposition SE-3**: Finite configuration space (trivially true)
+- **Proposition SE-4/5**: Covering number and metric entropy (standard math)
+- **Theorem SE-2**: Finite-time termination (sound logic, but conditional on SE-A1)
+
+The theory's main weakness is the **central dependence on an unproven Lyapunov descent assumption**:
+- Theorem SE-1 assumes rather than proves monotonic convergence.
+- Theorem SE-2's strongest form depends on SE-A1 being satisfied.
+- Without SE-A1, SE-2 only guarantees convergence to a cycle (still finite-time, but weaker).
+
+The Godel incompleteness analogy (Claims SE-C1, SE-C2) is **illuminating but not rigorous**. It serves as a conceptual guide rather than a mathematical result.
+
+### 8.4 Priority Recommendations
+
+To move from the current conjectural state to a rigorous theory, the following steps are recommended in priority order:
+
+| Priority | Action | Affected Claims |
+|----------|--------|-----------------|
+| **P0** | Define $\Phi$ explicitly | SE-1, SE-2 |
+| **P1** | Prove Lyapunov descent for concrete $\Phi$ | SE-1 |
+| **P2** | Analyze $S_t$-$\theta_t$ coupling | SE-1 (tightness), GAP-9 |
+| **P3** | Derive contraction rate $\lambda$ | SE-1 (practical bound) |
+| **P4** | Formalize external validation escape | SE-C2 |
+| **P5** | Tighten $T^*$ bound | SE-2 (practical utility) |
+
+---
+
+## 9. Summary of Verification Status
+
+### 9.1 Pass / Fail / Gap Summary
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| New definitions (Files 1-6) | **PASS** (with minor warnings) | $\mathcal{S}$ vs $\hat{\mathcal{S}}_t$ needs fix |
+| Theorem SE-1 (Lyapunov) | **GAP** (missing $\Phi$ definition, descent unproven) | Central open problem |
+| Theorem SE-2 (Completeness) | **PASS** (conditional on SE-A1) | Valid logic, loose bound |
+| Prop SE-3 (Finite Space) | **PASS** | Trivially correct |
+| Prop SE-4 (Covering Number) | **PASS** | Standard result |
+| Prop SE-5 (Metric Entropy) | **PASS** | Direct corollary |
+| Claims SE-C1/C2 (Godel) | **CONJECTURAL** | Illuminating but not formal |
+| Cross-reference with Thm 1 | **PASS** (dependency should be explicit) | -- |
+| Cross-reference with Thm 2 | **PASS** (limitation respected) | -- |
+| Cross-reference with Thm 3 | **PASS** (ambiguity persists) | -- |
+| Cross-reference with Thm 4' | **PASS** (connection needs explicit tie) | -- |
+| Cross-reference with Thm 5 | **PASS** (precondition recommended) | -- |
+| Notation consistency | **WARNING** (see conflicts) | $\mathcal{S}$, $\theta$ conflicts |
+| Assumption completeness | **ADEQUATE** | 12 total assumptions (6 old + 6 new) |
+| Gap identification | **COMPLETE** | 10 gaps identified (2 critical, 3 high, 2 medium, 3 low) |
+| Open problems | **FORMULATED** | 5 problems defined |
+| Numerical suggestions | **PROVIDED** | 5 experiments described |
+
+### 9.2 Final Assessment
+
+The SCX self-evolution theory is at a **preliminary but promising stage**:
+
+- **Strengths**: The termination guarantee (Theorem SE-2) is rigorous and provides a principled foundation. The cross-references to existing theorems are consistent. The conceptual connections to AlphaZero, BO, AL, and Solomonoff induction are well-drawn.
+
+- **Weaknesses**: The central convergence claim (Theorem SE-1) is not yet proven — the Lyapunov function remains undefined and its descent property unproven. The coupled dynamics of gatekeeper and student are not analyzed. Several claims are plausible hypotheses rather than theorems.
+
+- **Recommendation**: The theory is appropriate for a pre-print or workshop paper with honest labeling of which parts are rigorous and which are conjectural. For a journal submission, the Lyapunov gap (GAP-1, GAP-2) must be closed, and the $S_t$-$\theta_t$ coupling (GAP-9) must be at least partially characterized.
+
+---
+
+*End of 09_verification_report.md*

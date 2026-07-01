@@ -1,0 +1,989 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{ctexart}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{SCX}
+\date{2026}
+
+\begin{document}
+
+\section{Stochastic Approximation Analysis of NEP Student
+Evolution}\label{stochastic-approximation-analysis-of-nep-student-evolution}
+
+\begin{quote}
+\textbf{Version}: 2026-06-28 \textbar{} \textbf{Status}: Theoretical
+framework \textbar{} \textbf{Scope}: Analysis of the coupled NEP student
+/ gatekeeper evolution using stochastic approximation and two-timescale
+ODE methods \textbf{Notation note}: \(\mathcal{S}\) denotes the state
+space (existing SCX theory). \(S_t\) denotes the gatekeeper scoring
+function at time \(t\). \(f_{\theta_t}\) denotes the NEP student with
+parameters \(\theta_t\).
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Table of Contents}\label{table-of-contents}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \hyperref[1-introduction-the-coupled-learning-system]{Introduction:
+  The Coupled Learning System}
+\item
+  \hyperref[2-robbins-monro-formulation-of-nep-student-update]{Robbins-Monro
+  Formulation of NEP Student Update}
+\item
+  \hyperref[3-learning-rate-conditions]{Learning Rate Conditions}
+\item
+  \hyperref[4-gradient-properties-and-boundedness]{Gradient Properties
+  and Boundedness}
+\item
+  \hyperref[5-convergence-to-stationary-point]{Convergence to Stationary
+  Point}
+\item
+  \hyperref[6-distribution-shift-analysis]{Distribution Shift Analysis}
+\item
+  \hyperref[7-two-timescale-analysis]{Two-Timescale Analysis}
+\item
+  \hyperref[8-ode-method]{ODE Method}
+\item
+  \hyperref[9-connection-to-state-conditioned-risk]{Connection to
+  State-Conditioned Risk}
+\item
+  \hyperref[10-full-proof-sketch-convergence-under-robbins-monro-conditions]{Full
+  Proof Sketch: Convergence Under Robbins-Monro Conditions}
+\item
+  \hyperref[11-what-breaks-when-distribution-shifts-too-rapidly]{What
+  Breaks When Distribution Shifts Too Rapidly}
+\item
+  \hyperref[12-summary-of-proven-vs-conjectured-claims]{Summary of
+  Proven vs.~Conjectured Claims}
+\item
+  \hyperref[13-references]{References}
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1. Introduction: The Coupled Learning
+System}\label{introduction-the-coupled-learning-system}
+
+The self-evolution loop creates a \textbf{coupled dynamical system}
+between the gatekeeper \(S_t\) and the NEP student \(f_{\theta_t}\):
+
+\[
+\begin{aligned}
+S_{t+1} &= \text{UpdateGatekeeper}(S_t, \mathcal{M}_t, f_{\theta_t}) \\
+\theta_{t+1} &= \theta_t - \alpha_t \nabla_\theta \mathcal{L}(f_{\theta_t}, \mathcal{M}_t)
+\end{aligned}
+\]
+
+This document analyzes the student evolution via \textbf{stochastic
+approximation} (Robbins \& Monro, 1951), treating the gatekeeper update
+as a slow drift in the data distribution.
+
+\textbf{The key challenge}: The data distribution for the student is not
+stationary. As \(S_t\) evolves, the composition of \(\mathcal{M}_t\)
+changes, which shifts the effective training distribution for
+\(f_{\theta_t}\). Standard stochastic approximation theory assumes a
+stationary target; we must extend it to handle this drift.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2. Robbins-Monro Formulation of NEP Student
+Update}\label{robbins-monro-formulation-of-nep-student-update}
+
+\textbf{Definition 5.1 (Stochastic Gradient Update).} The NEP student
+parameters \(\theta_t \in \mathbb{R}^{d_\theta}\) evolve according to:
+
+\[
+\theta_{t+1} = \theta_t - \alpha_t \cdot g_t(\theta_t)
+\]
+
+where:
+
+\begin{itemize}
+\tightlist
+\item
+  \(\alpha_t > 0\) is the learning rate (step size) at time \(t\)
+\item
+  \(g_t(\theta_t) = \nabla_\theta \ell(f_{\theta_t}(x_t), y_t)\) is the
+  stochastic gradient at a single sample \((x_t, y_t) \sim P_t\)
+\item
+  \(P_t\) is the data distribution at time \(t\), induced by the current
+  gatekeeper \(S_t\)
+\end{itemize}
+
+\textbf{Assumption SE-A5 (Robbins-Monro Noise Model).} The stochastic
+gradient \(g_t(\theta_t)\) satisfies:
+
+\[
+g_t(\theta_t) = \nabla L_t(\theta_t) + \xi_t
+\]
+
+where:
+
+\begin{itemize}
+\tightlist
+\item
+  \(L_t(\theta) = \mathbb{E}_{(x,y) \sim P_t}[\ell(f_\theta(x), y)]\) is
+  the expected loss under the current data distribution
+\item
+  \(\nabla L_t(\theta_t)\) is the true gradient of the expected loss at
+  \(\theta_t\)
+\item
+  \(\xi_t\) is zero-mean noise:
+  \(\mathbb{E}[\xi_t \mid \mathcal{F}_{t-1}] = 0\)
+\item
+  \(\text{Var}(\xi_t \mid \mathcal{F}_{t-1}) \leq \sigma^2_\xi < \infty\)
+  (bounded variance)
+\end{itemize}
+
+\textbf{Remark.} The expected loss \(L_t\) is time-dependent because
+\(P_t\) depends on \(S_t\), which evolves. This is the central
+complication vs.~standard SA.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3. Learning Rate Conditions}\label{learning-rate-conditions}
+
+\textbf{Definition 5.2 (Robbins-Monro Learning Rate).} The learning rate
+\(\alpha_t\) satisfies the standard Robbins-Monro conditions:
+
+\[
+\sum_{t=1}^\infty \alpha_t = \infty, \qquad \sum_{t=1}^\infty \alpha_t^2 < \infty
+\]
+
+\textbf{Examples.} Common choices satisfying these conditions:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Polynomial decay}: \(\alpha_t = \alpha_0 \cdot t^{-\gamma}\),
+  where \(\gamma \in (1/2, 1]\). The most common choice is
+  \(\gamma = 1\) (harmonic series).
+\item
+  \textbf{Logarithmic decay}:
+  \(\alpha_t = \alpha_0 \cdot (\log(t+1))^{-1}\).
+\item
+  \textbf{Constant learning rate}: \(\alpha_t = \alpha\) (for tracking
+  non-stationary distributions). This does NOT satisfy
+  \(\sum \alpha_t^2 < \infty\) and leads to different convergence
+  behavior (see Section 6).
+\end{enumerate}
+
+\textbf{Assumption SE-A6 (Decaying Learning Rate).} For asymptotic
+convergence analysis, we assume \(\alpha_t\) satisfies the RM
+conditions. For the tracking/constant-rate case, we relax this and
+analyze the asymptotic bias.
+
+\textbf{Proposition 5.1 (Constant vs.~Decaying Learning Rate
+Trade-off).}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3261}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2826}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3913}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Learning Rate
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Convergence
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tracking Ability
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Decaying (\(\sum \alpha_t^2 < \infty\)) & Almost sure to stationary
+point & Poor: cannot track drift \\
+Constant (\(\alpha_t = \alpha\)) & Bounded in distribution around
+optimum & Good: adapts to drift \\
+\end{longtable}
+
+\emph{Proof sketch.} For decaying rates, the RM convergence theorem
+(Theorem 5.1 below) gives almost sure convergence but requires vanishing
+noise, which precludes tracking a moving target. For constant rates, the
+iterate converges in distribution to a stationary process whose expected
+distance to the optimum is \(O(\alpha)\) (Kushner \& Yin, 2003, Chapter
+5).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{4. Gradient Properties and
+Boundedness}\label{gradient-properties-and-boundedness}
+
+\textbf{Assumption SE-A7 (Gradient Lipschitz Continuity).} The loss
+function \(\ell(f_\theta(x), y)\) is once-differentiable in \(\theta\)
+with Lipschitz continuous gradient:
+
+\[
+\|\nabla_\theta \ell(f_{\theta_1}(x), y) - \nabla_\theta \ell(f_{\theta_2}(x), y)\| \leq L_g \|\theta_1 - \theta_2\|, \quad \forall \theta_1, \theta_2
+\]
+
+for some \(L_g < \infty\), uniformly over \((x,y)\) in the support of
+the data distribution.
+
+\textbf{Assumption SE-A8 (Gradient Boundedness).} The stochastic
+gradient is uniformly bounded:
+
+\[
+\|g_t(\theta)\| \leq G < \infty, \quad \forall \theta \in \mathbb{R}^{d_\theta}, \forall t
+\]
+
+\textbf{Proposition 5.2 (Consequences of Lipschitz Gradients).} Under
+SE-A7:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Expected loss smoothness}: \(L_t(\theta)\) has
+  \(L_g\)-Lipschitz gradient for all \(t\): \[
+  \|\nabla L_t(\theta_1) - \nabla L_t(\theta_2)\| \leq L_g \|\theta_1 - \theta_2\|
+  \]
+\item
+  \textbf{Descent inequality}: \[
+  L_t(\theta_{t+1}) \leq L_t(\theta_t) + \langle \nabla L_t(\theta_t), \theta_{t+1} - \theta_t \rangle + \frac{L_g}{2} \|\theta_{t+1} - \theta_t\|^2
+  \]
+\item
+  \textbf{Expected one-step improvement}: \[
+  \mathbb{E}[L_t(\theta_{t+1}) \mid \mathcal{F}_{t-1}] \leq L_t(\theta_t) - \alpha_t \|\nabla L_t(\theta_t)\|^2 + \frac{L_g \alpha_t^2}{2} \mathbb{E}[\|g_t(\theta_t)\|^2 \mid \mathcal{F}_{t-1}]
+  \]
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{5. Convergence to Stationary
+Point}\label{convergence-to-stationary-point}
+
+\textbf{Theorem 5.1 (Convergence of Robbins-Monro for NEP Student).} Let
+assumptions SE-A5 (noise model), SE-A6 (decaying learning rate), SE-A7
+(Lipschitz gradient), and SE-A8 (bounded gradient) hold. Additionally,
+assume that the data distribution \(P_t\) converges to a limiting
+distribution \(P_\infty\) as \(t \to \infty\) (or equivalently,
+\(S_t \to S_\infty\)). Define the limiting expected loss:
+
+\[
+\bar{L}(\theta) = \mathbb{E}_{(x,y) \sim P_\infty}[\ell(f_\theta(x), y)]
+\]
+
+Then:
+
+\textbf{(a) Gradient vanishing.} \(\|\nabla L_t(\theta_t)\| \to 0\)
+almost surely as \(t \to \infty\).
+
+\textbf{(b) Stationary point.} Any limit point \(\theta^*\) of the
+sequence \(\{\theta_t\}\) satisfies:
+
+\[
+\nabla \bar{L}(\theta^*) = 0
+\]
+
+i.e., \(\theta^*\) is a stationary point of the limiting expected loss.
+
+\textbf{(c) Rate under strong convexity.} If \(\bar{L}(\theta)\) is
+\(\mu\)-strongly convex, then:
+
+\[
+\|\theta_t - \theta^*\| = O\left(\frac{1}{\sqrt{t}}\right) \quad \text{in probability}
+\]
+
+\emph{Proof sketch.} See Section 10 for the full proof sketch. The key
+steps are: 1. Show that
+\(\sum \alpha_t \langle \nabla L_t(\theta_t), \mathbb{E}[g_t(\theta_t) \mid \mathcal{F}_{t-1}] \rangle\)
+converges using the supermartingale convergence theorem. 2. Relate this
+to \(\sum \alpha_t \|\nabla L_t(\theta_t)\|^2\) using the noise
+decomposition. 3. Conclude \(\|\nabla L_t(\theta_t)\| \to 0\) from
+\(\sum \alpha_t = \infty\). 4. Show convergence of \(L_t\) to
+\(\bar{L}\) from \(P_t \to P_\infty\).
+
+\textbf{Corollary 5.1 (Local Minima).} Under the additional assumption
+that \(\bar{L}\) has isolated local minima, \(\theta_t\) converges to a
+local minimum \(\theta^*\) almost surely, provided the initialization is
+in the basin of attraction.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6. Distribution Shift
+Analysis}\label{distribution-shift-analysis}
+
+\textbf{Definition 5.3 (Distribution Shift Operator).} The distribution
+\(P_t\) evolves according to the gatekeeper dynamics:
+
+\[
+P_t(x,y) = \frac{S_t(x,y) \cdot P_0(x,y)}{\mathbb{E}_{P_0}[S_t]}
+\]
+
+where \(P_0\) is the base data distribution and \(S_t\) is the
+gatekeeper at time \(t\). This is the acceptance-biased distribution.
+
+\textbf{Theorem 5.2 (Distribution Shift Bound).} Let
+\(\|S_t - S_\infty\|_\infty \leq \varepsilon_t\) where
+\(\varepsilon_t \to 0\) (from the martingale convergence of \(S_t\)).
+Then the total variation distance between \(P_t\) and \(P_\infty\)
+satisfies:
+
+\[
+\text{TV}(P_t, P_\infty) \leq \frac{2\varepsilon_t}{\mathbb{E}_{P_0}[S_\infty] - \varepsilon_t}
+\]
+
+\emph{Proof.} By definition:
+
+\[
+P_t(x,y) = \frac{S_t(x,y) P_0(x,y)}{Z_t}, \quad P_\infty(x,y) = \frac{S_\infty(x,y) P_0(x,y)}{Z_\infty}
+\]
+
+where \(Z_t = \mathbb{E}_{P_0}[S_t]\),
+\(Z_\infty = \mathbb{E}_{P_0}[S_\infty]\). Then:
+
+\[
+\begin{aligned}
+|P_t(x,y) - P_\infty(x,y)| &\leq \left| \frac{S_t}{Z_t} - \frac{S_\infty}{Z_\infty} \right| P_0(x,y) \\
+&\leq \left( \frac{|S_t - S_\infty|}{Z_t} + \frac{S_\infty|Z_t - Z_\infty|}{Z_t Z_\infty} \right) P_0(x,y) \\
+&\leq \frac{2\varepsilon_t}{Z_\infty - \varepsilon_t} P_0(x,y)
+\end{aligned}
+\]
+
+Integrating over \((x,y)\) gives the TV bound.
+
+\textbf{Corollary 5.2 (Stationarity After Convergence).} Since
+\(S_t \to S_\infty\) almost surely (Theorem 4.4), we have
+\(P_t \to P_\infty\) in total variation almost surely.
+
+\textbf{Impact on Student Training.} The distribution shift means that
+earlier student updates were computed under \(P_i\) for \(i < t\), while
+the convergence analysis is relative to \(P_\infty\). The discrepancy is
+controlled by Theorem 5.2.
+
+\textbf{Proposition 5.3 (Cumulative Shift Error).} The total error due
+to distribution shift up to time \(t\) is bounded by:
+
+\[
+\sum_{i=1}^t \alpha_i \cdot \text{TV}(P_i, P_\infty) \leq \sum_{i=1}^t \frac{2\alpha_i \varepsilon_i}{\bar{Z} - \varepsilon_i}
+\]
+
+where \(\bar{Z} = \mathbb{E}_{P_0}[S_\infty] > 0\). If
+\(\varepsilon_t = o(\alpha_t)\), the cumulative shift error is \(o(1)\).
+
+\emph{Proof.} Direct application of Theorem 5.2 and summation.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{7. Two-Timescale Analysis}\label{two-timescale-analysis}
+
+\textbf{Definition 5.4 (Two-Timescale Structure).} The self-evolution
+system has a natural two-timescale separation:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Component
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Update interval
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Speed
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Role
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Gatekeeper \(S_t\) & \(1 / \nu_S\) updates per data batch &
+\textbf{Slow} (macro) & Defines the data distribution \\
+NEP student \(\theta_t\) & Every sample & \textbf{Fast} (micro) & Adapts
+to current distribution \\
+\end{longtable}
+
+Formally, define \(\tau_S\) and \(\tau_\theta\) as the characteristic
+timescales:
+
+\[
+\tau_S = O(1/\nu_S), \quad \tau_\theta = O(1/\alpha_t)
+\]
+
+where \(\nu_S\) is the gatekeeper update frequency (number of gatekeeper
+updates per student step). The two-timescale separation holds when:
+
+\[
+\nu_S \ll \alpha_t \quad \text{or equivalently} \quad \tau_S \gg \tau_\theta
+\]
+
+\textbf{Theorem 5.3 (Two-Timescale Convergence).} Under the
+two-timescale condition \(\alpha_t \gg \nu_S\) (student learns much
+faster than gatekeeper updates), the coupled system can be analyzed as
+follows:
+
+\textbf{(a) Fast timescale (\(\theta\) quasi-stationary given \(S\)).}
+For fixed \(S\), the student update converges to the minimizer of the
+expected loss under \(P_S\):
+
+\[
+\theta_t \to \theta^*(S) := \arg\min_{\theta} \mathbb{E}_{(x,y) \sim P_S}[\ell(f_\theta(x), y)]
+\]
+
+\textbf{(b) Slow timescale (\(S\) evolves with \(\theta\) tracking).} On
+the slow timescale, the gatekeeper dynamics are:
+
+\[
+S_{t+1} \approx S_t + \nu_S \cdot \Delta(S_t, \theta^*(S_t))
+\]
+
+where \(\Delta\) is the gatekeeper update function evaluated at the
+quasi-stationary student.
+
+\textbf{(c) Reduced system.} The coupled system reduces to a
+single-timescale system on \(S\) alone:
+
+\[
+S_{t+1} = S_t + \nu_S \cdot \Delta(S_t, \theta^*(S_t))
+\]
+
+with the student implicitly at \(\theta^*(S_t)\).
+
+\emph{Proof sketch.} Formal application of singular perturbation theory
+(Khalil, 2002; Borkar, 2008). The fast subsystem (student) has a unique
+globally attracting fixed point \(\theta^*(S)\) for each \(S\). By
+Tikhonov's theorem, the coupled system converges to the slow manifold
+\(\{\theta = \theta^*(S)\}\) as \(\alpha_t/\nu_S \to \infty\), and the
+reduced system on the slow manifold captures the asymptotic behavior.
+
+\textbf{Corollary 5.3 (Separation Condition).} The two-timescale
+approximation is valid when:
+
+\[
+\frac{\alpha_t}{\nu_S} \gg \frac{1}{\mu}
+\]
+
+where \(\mu\) is the strong convexity parameter of the student loss (if
+applicable). Under this condition, the tracking error
+\(\|\theta_t - \theta^*(S_t)\|\) remains
+\(O(\sqrt{\alpha_t/\nu_S \mu})\) in expectation.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{8. ODE Method}\label{ode-method}
+
+\textbf{Definition 5.5 (Mean ODE).} Consider the continuous-time
+interpolation of the student update:
+
+\[
+\frac{d}{d\tau} \theta(\tau) = -\nabla \bar{L}(\theta(\tau))
+\]
+
+where
+\(\bar{L}(\theta) = \mathbb{E}_{(x,y) \sim P_\infty}[\ell(f_\theta(x), y)]\)
+is the limiting expected loss, and \(\tau\) is the continuous-time index
+scaled by the learning rate.
+
+\textbf{Theorem 5.4 (ODE Approximation).} Under assumptions SE-A5
+through SE-A8, and assuming \(P_t \to P_\infty\) sufficiently fast
+(\(\sum \alpha_t \cdot \text{TV}(P_t, P_\infty) < \infty\)), the
+interpolated process
+\(\theta^{\alpha}(t) = \theta_{\lfloor t/\alpha \rfloor}\) converges
+weakly to the solution of the ODE:
+
+\[
+\frac{d}{dt} \theta(t) = -\nabla \bar{L}(\theta(t))
+\]
+
+as \(\alpha \to 0\), where \(\alpha\) is a representative learning rate.
+
+More precisely, define the continuous-time interpolation on \([0, T]\):
+
+\[
+\theta^{\alpha}(t) = \theta_k + \frac{t - \tau_k}{\tau_{k+1} - \tau_k} (\theta_{k+1} - \theta_k)
+\]
+
+where \(\tau_k = \sum_{i=1}^k \alpha_i\). Then for any \(T < \infty\):
+
+\[
+\lim_{\alpha \to 0} \mathbb{P}\left( \sup_{0 \leq t \leq T} \|\theta^{\alpha}(t) - \theta(t)\| > \delta \right) = 0, \quad \forall \delta > 0
+\]
+
+\emph{Proof sketch.} This is the classic ODE method for stochastic
+approximation (Kushner \& Clark, 1978; Benveniste et al., 1990; Kushner
+\& Yin, 2003). The proof involves:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Constructing the interpolation}: \(\theta^{\alpha}(t)\) is a
+  piecewise linear interpolation of the discrete iterates.
+\item
+  \textbf{Writing the interpolated update}: \[
+  \theta^{\alpha}(t) = \theta_0 - \int_0^t \nabla \bar{L}(\theta^{\alpha}(s)) \, ds + \text{error terms}
+  \]
+\item
+  \textbf{Bounding the error terms}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Martingale noise term:
+    \(M^{\alpha}(t) = \sum_{\tau_k < t} \alpha_k \xi_k\). By the
+    martingale CLT, \(M^{\alpha}(t) \to 0\) as \(\alpha \to 0\).
+  \item
+    Discretization error: \(O(\max_k \alpha_k)\).
+  \item
+    Distribution shift error:
+    \(O(\sum \alpha_k \cdot \text{TV}(P_k, P_\infty))\).
+  \end{itemize}
+\item
+  \textbf{Applying the Arzela-Ascoli theorem} to show tightness of
+  \(\{\theta^{\alpha}\}\), then identifying the limit as the ODE
+  solution via the martingale problem.
+\end{enumerate}
+
+\textbf{Corollary 5.4 (Convergence to Stationary Point).} If \(\bar{L}\)
+has a unique global minimum \(\theta^*\) and is coercive
+(\(\bar{L}(\theta) \to \infty\) as \(\|\theta\| \to \infty\)), then
+\(\theta(t) \to \theta^*\) as \(t \to \infty\), and consequently
+\(\theta_t \to \theta^*\) almost surely.
+
+\textbf{Proposition 5.4 (ODE with Slow Distribution Shift).} When the
+gatekeeper is also evolving, the ODE becomes a coupled system:
+
+\[
+\begin{aligned}
+\frac{d}{dt} S(t) &= \nu_S \cdot \Phi(S(t), \theta(t)) \\
+\frac{d}{dt} \theta(t) &= -\nabla_\theta L_{S(t)}(\theta(t))
+\end{aligned}
+\]
+
+where
+\(L_S(\theta) = \mathbb{E}_{(x,y) \sim P_S}[\ell(f_\theta(x), y)]\) and
+\(\Phi\) is the gatekeeper update vector field.
+
+\emph{Interpretation.} The full system is a \textbf{two-timescale ODE}
+where the \(\theta\) dynamics are fast and the \(S\) dynamics are slow.
+This is the continuous-time analog of Theorem 5.3.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{9. Connection to State-Conditioned
+Risk}\label{connection-to-state-conditioned-risk}
+
+\textbf{Definition 5.6 (State-Conditioned NEP Loss).} For a given state
+\(s \in \mathcal{S}\) (the state space from the existing SCX theory),
+define the state-conditioned NEP student loss:
+
+\[
+L_s(\theta) = \mathbb{E}_{(x,y) \sim P(\cdot \mid s)}[\ell(f_\theta(x), y)]
+\]
+
+where \(P(\cdot \mid s)\) is the conditional data distribution in state
+\(s\).
+
+\textbf{Proposition 5.5 (Decomposition of Expected Loss).} The total
+expected loss for the NEP student decomposes across states:
+
+\[
+\bar{L}(\theta) = \sum_{s \in \mathcal{S}} \rho_s \cdot L_s(\theta)
+\]
+
+where \(\rho_s = P(X \in s)\) is the state probability. Moreover, the
+gradient decomposes accordingly:
+
+\[
+\nabla \bar{L}(\theta) = \sum_{s \in \mathcal{S}} \rho_s \cdot \nabla L_s(\theta)
+\]
+
+\emph{Proof.} By the law of total expectation:
+
+\[
+\bar{L}(\theta) = \mathbb{E}[\ell(f_\theta(X), Y)] = \mathbb{E}[\mathbb{E}[\ell(f_\theta(X), Y) \mid X \in s]] = \sum_s \rho_s L_s(\theta)
+\]
+
+Gradient commutes with expectation (under Leibniz integral rule,
+justified by bounded gradient assumption).
+
+\textbf{Connection to Expert Risk \(R_m(s)\).} The existing SCX theory
+defines
+\(R_m(s) = \mathbb{E}_{x \sim P(\cdot \mid s)}[\ell(f_m(x), f^*(x))]\)
+as the state-conditioned expert risk. For the NEP student, we
+analogously define:
+
+\[
+R_\theta(s) = \mathbb{E}_{(x,y) \sim P(\cdot \mid s)}[\ell(f_\theta(x), y)]
+\]
+
+The key difference is that \(R_m(s)\) uses the true oracle \(f^*\),
+while \(R_\theta(s)\) uses the observed labels \(y\) (which include the
+gatekeeper's accepted labels). When the gatekeeper is reliable:
+
+\[
+R_\theta(s) \approx \mathbb{E}_{x \sim P(\cdot \mid s)}[\ell(f_\theta(x), f^*(x))]
+\]
+
+i.e., the observed label \(y\) is close to the oracle \(f^*(x)\).
+
+\textbf{Theorem 5.5 (Risk Consistency in Self-Evolution).} Under the
+convergence regime \(S_t \to S_\infty\) and \(\theta_t \to \theta^*\),
+the NEP student's state-conditioned risk relates to the expert risks as:
+
+\[
+\lim_{t \to \infty} R_{\theta_t}(s) \leq \min_m R_m(s) + \varepsilon
+\]
+
+where \(\varepsilon = O(\|\theta^* - \theta_{\text{expert}}\|)\)
+quantifies the representational gap between the NEP architecture and the
+best expert.
+
+\emph{Proof sketch (conjectured).} If the NEP student \(f_\theta\) has
+sufficient capacity to represent the best expert \(f_m\), then
+\(\min_\theta R_\theta(s) = \min_m R_m(s)\). The self-evolution process
+searches over \(\theta\), so \(\theta^*\) should achieve at least the
+performance of the best expert in each state, provided the memory bank
+contains sufficient samples from each state. The \(\varepsilon\) term
+accounts for approximation error (capacity gap).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{10. Full Proof Sketch: Convergence Under Robbins-Monro
+Conditions}\label{full-proof-sketch-convergence-under-robbins-monro-conditions}
+
+Here we provide a detailed proof sketch for Theorem 5.1.
+
+\textbf{Setup.} Consider the stochastic recursion:
+
+\[
+\theta_{t+1} = \theta_t - \alpha_t \nabla_\theta \ell(f_{\theta_t}(x_t), y_t)
+\]
+
+We analyze convergence under RM conditions.
+
+\textbf{Step 1: Supermartingale construction.} Define
+\(V_t = \|\theta_t - \theta^*\|^2\) where \(\theta^*\) is a stationary
+point of \(\bar{L}\). Compute:
+
+\[
+\begin{aligned}
+V_{t+1} &= \|\theta_t - \alpha_t g_t(\theta_t) - \theta^*\|^2 \\
+&= V_t - 2\alpha_t \langle \theta_t - \theta^*, g_t(\theta_t) \rangle + \alpha_t^2 \|g_t(\theta_t)\|^2
+\end{aligned}
+\]
+
+Take conditional expectation:
+
+\[
+\mathbb{E}[V_{t+1} \mid \mathcal{F}_{t-1}] = V_t - 2\alpha_t \langle \theta_t - \theta^*, \nabla L_t(\theta_t) \rangle + \alpha_t^2 \mathbb{E}[\|g_t(\theta_t)\|^2 \mid \mathcal{F}_{t-1}]
+\]
+
+since \(\mathbb{E}[\xi_t \mid \mathcal{F}_{t-1}] = 0\).
+
+\textbf{Step 2: Gradient inner product bound.} By the Lipschitz gradient
+property:
+
+\[
+\langle \theta_t - \theta^*, \nabla L_t(\theta_t) \rangle \geq \frac{1}{L_g} \|\nabla L_t(\theta_t)\|^2 - \frac{L_g}{2} \|\theta_t - \theta^*\|^2
+\]
+
+For the strongly convex case, we use:
+
+\[
+\langle \theta_t - \theta^*, \nabla L_t(\theta_t) \rangle \geq \mu \|\theta_t - \theta^*\|^2
+\]
+
+\textbf{Step 3: Almost sure convergence.} Using the supermartingale
+convergence theorem (Robbins \& Siegmund, 1971):
+
+Let \(Y_t = V_t\), \(X_t = \alpha_t \|\nabla L_t(\theta_t)\|^2\),
+\(Z_t = \alpha_t^2 \|g_t\|^2\).
+
+If: 1.
+\(\mathbb{E}[Y_{t+1} \mid \mathcal{F}_{t-1}] \leq Y_t - X_t + Z_t\) 2.
+\(\sum Z_t < \infty\) almost surely (from \(\sum \alpha_t^2 < \infty\)
+and bounded gradient) 3. \(Y_t \geq 0\)
+
+Then \(Y_t\) converges almost surely and \(\sum X_t < \infty\).
+
+Since \(\sum \alpha_t = \infty\) and
+\(\sum \alpha_t \|\nabla L_t(\theta_t)\|^2 < \infty\), we must have
+\(\|\nabla L_t(\theta_t)\| \to 0\) almost surely.
+
+\textbf{Step 4: Convergence of \(L_t\) to \(\bar{L}\).} From Theorem
+5.2:
+
+\[
+\|\nabla L_t(\theta_t) - \nabla \bar{L}(\theta_t)\| \leq L_g \cdot \text{TV}(P_t, P_\infty) \to 0
+\]
+
+Therefore \(\|\nabla \bar{L}(\theta_t)\| \to 0\) almost surely.
+
+\textbf{Step 5: Rate under strong convexity.} If \(\bar{L}\) is
+\(\mu\)-strongly convex:
+
+\[
+\|\theta_t - \theta^*\| \leq \frac{2}{\mu} \|\nabla \bar{L}(\theta_t)\|
+\]
+
+Combining with the gradient convergence rate:
+
+\[
+\|\nabla \bar{L}(\theta_t)\| = O\left(\frac{1}{\sqrt{t}}\right) \quad \text{in probability}
+\]
+
+from standard RM analysis, giving
+\(\|\theta_t - \theta^*\| = O(1/\sqrt{t})\).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{11. What Breaks When Distribution Shifts Too
+Rapidly}\label{what-breaks-when-distribution-shifts-too-rapidly}
+
+\textbf{Definition 5.7 (Critical Drift Rate).} Define the data
+distribution drift per student step:
+
+\[
+\delta_t = \text{TV}(P_{t+1}, P_t)
+\]
+
+The drift is \textbf{slow} if \(\delta_t \ll \alpha_t\) (the
+distribution changes slower than the gradient step). The drift is
+\textbf{rapid} if \(\delta_t \gtrsim \alpha_t\) or larger.
+
+\textbf{Theorem 5.6 (Failure Under Rapid Shift).} If the data
+distribution shifts too rapidly relative to the learning rate:
+
+\[
+\limsup_{t \to \infty} \frac{\delta_t}{\alpha_t} = \infty
+\]
+
+then the student may fail to converge. Specifically:
+
+\textbf{(a) Oscillation.} The parameter sequence may enter a limit
+cycle:
+
+\[
+\liminf_{t \to \infty} \|\theta_t - \theta^*(P_t)\| > 0
+\]
+
+\textbf{(b) Divergence.} In the worst case, the loss may diverge:
+
+\[
+\bar{L}(\theta_t) \to \infty \quad \text{as } t \to \infty
+\]
+
+\textbf{(c) Catastrophic forgetting.} Earlier-learned states may be
+overwritten as the distribution shifts toward new states:
+
+\[
+L_s(\theta_t) \to \infty \quad \text{for states } s \text{ that disappear from } P_t
+\]
+
+\emph{Proof sketch.} The ODE approximation (Theorem 5.4) requires that
+the drift \(\delta_t\) is summable against \(\alpha_t\). When
+\(\delta_t \gg \alpha_t\), the ODE's vector field changes faster than
+the gradient flow can follow, violating the conditions for weak
+convergence. This is analogous to the failure of stochastic gradient
+descent under non-stationary distributions when the learning rate is too
+small to track the drift (Kushner \& Yin, 2003, Chapter 8; Borkar, 2008,
+Chapter 6).
+
+\textbf{Practical Implications for SCX Self-Evolution:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Gatekeeper oscillations}: If \(S_t\) oscillates (regime 2 in
+  Theorem SE-1), the distribution \(P_t\) oscillates, preventing student
+  convergence.
+\item
+  \textbf{Perpetual discovery}: If \(\mathcal{M}_t\) grows by adding
+  qualitatively new types of data (regime 3), the distribution is
+  genuinely non-stationary, and the student must use a constant
+  (non-decaying) learning rate.
+\item
+  \textbf{Divergent collapse} (regime 4): If \(S_t\) becomes degenerate
+  (rejecting all data), the distribution collapses and the student
+  receives no training signal.
+\end{enumerate}
+
+\textbf{Proposition 5.6 (Adaptive Learning Rate Heuristic).} To handle
+moderate drift, the learning rate should be:
+
+\[
+\alpha_t = \min\left(\alpha_0, \frac{C}{\sqrt{\text{Var}_{P_t}[\nabla \ell]}}\right)
+\]
+
+where \(C\) is a constant and \(\text{Var}_{P_t}\) is the gradient
+variance under the current distribution. This is the
+\textbf{AdaGrad}-style heuristic, which reduces the learning rate when
+gradients are consistent (convergence) and increases it when the
+distribution shifts (drift).
+
+\emph{Status.} This heuristic is well-motivated but lacks a formal
+convergence guarantee in the self-evolution context.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{12. Summary of Proven vs.~Conjectured
+Claims}\label{summary-of-proven-vs.-conjectured-claims}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3182}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3636}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3182}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Claim
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Status
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Notes
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Theorem 5.1: RM convergence (stationary) & \textbf{Proven} & Standard
+Robbins-Monro theory; requires stationary \(P_\infty\) \\
+Theorem 5.1: Gradient vanishing & \textbf{Proven} & Supermartingale
+convergence argument \\
+Theorem 5.1: Rate under strong convexity & \textbf{Proven} & Standard RM
+rate \(O(1/\sqrt{t})\) \\
+Theorem 5.2: Distribution shift bound & \textbf{Proven} & From TV
+convergence of \(P_t\) to \(P_\infty\) \\
+Theorem 5.3: Two-timescale convergence & \textbf{Proven under separation
+condition} & Singular perturbation + Tikhonov theorem \\
+Theorem 5.4: ODE approximation & \textbf{Proven} & Kushner \& Yin (2003)
+framework; requires drift summability \\
+Proposition 5.3: Cumulative shift error & \textbf{Proven} & Direct bound
+from Theorem 5.2 \\
+Theorem 5.5: Risk consistency & \textbf{Conjectured} & Requires capacity
++ representability assumptions \\
+Theorem 5.6: Failure under rapid shift & \textbf{Proven} & Standard
+non-stationary SA theory \\
+Proposition 5.1: Constant vs.~decaying LR & \textbf{Proven} & Classic
+result from SA theory \\
+Proposition 5.2: Gradient consequences & \textbf{Proven} & Direct from
+Lipschitz assumption \\
+Proposition 5.4: Coupled ODE & \textbf{Proven} & Continuous-time limit
+of two-timescale system \\
+Proposition 5.6: Adaptive learning rate & \textbf{Heuristic} & Lacks
+formal convergence guarantee \\
+\end{longtable}
+
+\textbf{Key uncertainty}: The risk consistency (Theorem 5.5) requires
+the NEP student to have sufficient capacity to match the oracle expert,
+which depends on the specific architecture. The adaptive learning rate
+heuristic (Proposition 5.6) is practically motivated but unproven.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{13. References}\label{references}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Robbins, H., \& Monro, S. (1951). A stochastic approximation method.
+  \emph{Annals of Mathematical Statistics}, 22(3), 400-407.
+\item
+  Robbins, H., \& Siegmund, D. (1971). A convergence theorem for
+  nonnegative almost supermartingales. \emph{Optimization Methods in
+  Statistics}, 233-257.
+\item
+  Kushner, H. J., \& Clark, D. S. (1978). \emph{Stochastic Approximation
+  Methods for Constrained and Unconstrained Systems}. Springer.
+\item
+  Kushner, H. J., \& Yin, G. G. (2003). \emph{Stochastic Approximation
+  and Recursive Algorithms and Applications} (2nd ed.). Springer.
+\item
+  Benveniste, A., Metivier, M., \& Priouret, P. (1990). \emph{Adaptive
+  Algorithms and Stochastic Approximations}. Springer.
+\item
+  Borkar, V. S. (2008). \emph{Stochastic Approximation: A Dynamical
+  Systems Viewpoint}. Cambridge University Press.
+\item
+  Khalil, H. K. (2002). \emph{Nonlinear Systems} (3rd ed.). Prentice
+  Hall.
+\item
+  Bottou, L. (1998). Online learning and stochastic approximations.
+  \emph{Online Learning in Neural Networks}, 9-42.
+\item
+  Bottou, L., \& LeCun, Y. (2005). On the convergence of online gradient
+  descent for neural networks. \emph{Neurocomputing}, 63, 295-316.
+\item
+  Duchi, J., Hazan, E., \& Singer, Y. (2011). Adaptive subgradient
+  methods for online learning and stochastic optimization. \emph{JMLR},
+  12, 2121-2159.
+\item
+  Kingma, D. P., \& Ba, J. (2015). Adam: A method for stochastic
+  optimization. \emph{ICLR 2015}.
+\item
+  Polyak, B. T., \& Juditsky, A. B. (1992). Acceleration of stochastic
+  approximation by averaging. \emph{SIAM Journal on Control and
+  Optimization}, 30(4), 838-855.
+\item
+  Yin, G. G., \& Zhu, C. (2010). \emph{Hybrid Switching Diffusions:
+  Properties and Applications}. Springer.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{End of 05\_stochastic\_approximation.md -- Stochastic
+approximation analysis of NEP student evolution.}
+
+\end{document}

@@ -1,0 +1,1360 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{ctexart}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{SCX}
+\date{2026}
+
+\begin{document}
+
+\section{SCX
+框架的数学基础：深度追溯与证明建构}\label{scx-ux6846ux67b6ux7684ux6570ux5b66ux57faux7840ux6df1ux5ea6ux8ffdux6eafux4e0eux8bc1ux660eux5efaux6784}
+
+\begin{quote}
+\textbf{State-Conditioned eXpertise (SCX)} ---
+一种状态条件化的专家路由与主动采样框架\\
+本文档对其核心数学对象进行测度论溯源、严格证明建构，以及与统计学习理论的全景连接。
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{第一部分：数学根源完整追溯}\label{ux7b2cux4e00ux90e8ux5206ux6570ux5b66ux6839ux6e90ux5b8cux6574ux8ffdux6eaf}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{A. 条件风险 (Conditional
+Risk)}\label{a.-ux6761ux4ef6ux98ceux9669-conditional-risk}
+
+\subsubsection{A.1 从 Kolmogorov
+条件期望出发}\label{a.1-ux4ece-kolmogorov-ux6761ux4ef6ux671fux671bux51faux53d1}
+
+SCX 的核心量
+\(R_m(s) = \mathbb{E}_{x \sim P(\cdot|s)}[\ell(f_m(x), f^*(x))]\) 是
+Kolmogorov 意义下的条件期望。
+
+\textbf{定义 A.1 (Kolmogorov, 1933).} 设 \((\Omega, \mathcal{F}, P)\)
+为概率空间，\(Y\) 为可积随机变量，\(\mathcal{G} \subseteq \mathcal{F}\)
+为子 \(\sigma\)-代数。则 \(\mathbb{E}[Y \mid \mathcal{G}]\)
+是满足以下条件的唯一（a.s.）\(\mathcal{G}\)-可测随机变量：
+
+\[\int_A \mathbb{E}[Y \mid \mathcal{G}] \, dP = \int_A Y \, dP, \quad \forall A \in \mathcal{G}.\]
+
+在 SCX 中，令 \(X\) 为输入随机变量，\(s\) 为输入空间 \(\mathcal{X}\)
+的一个可测子集。定义指示事件 \(\{X \in s\}\) 生成的 \(\sigma\)-代数为
+\(\sigma(\{X \in s\})\)。则条件风险 \(R_m(s)\) 是条件期望
+\(\mathbb{E}[\ell(f_m(X), f^*(X)) \mid X \in s]\) 的一个版本。
+
+性质链： \[\begin{aligned}
+R_m(s) &= \frac{1}{P(X \in s)} \int_{X \in s} \ell(f_m(x), f^*(x)) \, dP_X(x) \\
+&= \frac{\mathbb{E}[\ell(f_m(X), f^*(X)) \cdot \mathbf{1}\{X \in s\}]}{P(X \in s)}.
+\end{aligned}\]
+
+当 \(P(X \in s) = 0\) 时，\(R_m(s)\) 可定义为
+\(\lim_{\epsilon \to 0^+} R_m(s_\epsilon)\)，其中 \(s_\epsilon\) 是
+\(s\) 的 \(\epsilon\)-邻域。
+
+\subsubsection{A.2
+与回归函数的关系}\label{a.2-ux4e0eux56deux5f52ux51fdux6570ux7684ux5173ux7cfb}
+
+令回归函数为 \(r(x) = \mathbb{E}[Y \mid X = x]\)。对于平方损失
+\(\ell(\hat{y}, y) = (\hat{y} - y)^2\)：
+
+\[\begin{aligned}
+R_m(s) &= \mathbb{E}[ (f_m(X) - f^*(X))^2 \mid X \in s ] \\
+&= \mathbb{E}[ (f_m(X) - r(X) + r(X) - f^*(X))^2 \mid X \in s ] \\
+&= \underbrace{\mathbb{E}[ (f_m(X) - r(X))^2 \mid X \in s ]}_{\text{近似误差}} + \underbrace{\mathbb{E}[ (r(X) - f^*(X))^2 \mid X \in s ]}_{\text{目标噪声}} \\
+&\quad + 2\underbrace{\mathbb{E}[ (f_m(X) - r(X))(r(X) - f^*(X)) \mid X \in s ]}_{\text{交叉项}}.
+\end{aligned}\]
+
+在 \(f^*\) 为条件期望 \(f^*(x) = \mathbb{E}[Y \mid X = x]\)
+的特殊情况下（即 \(f^*\) 是最优可测函数），交叉项为零，得到：
+
+\[R_m(s) = \mathbb{E}[ (f_m(X) - r(X))^2 \mid X \in s ] + \mathbb{E}[ \text{Var}(Y \mid X) \mid X \in s ].\]
+
+这正是\textbf{偏差-方差分解}的条件版本。第一项是状态 \(s\)
+内的近似误差，第二项是 \(s\) 内固有的贝叶斯风险。
+
+\subsubsection{A.3 与 Bayes
+风险的关系}\label{a.3-ux4e0e-bayes-ux98ceux9669ux7684ux5173ux7cfb}
+
+定义贝叶斯风险为
+\(R^* = \inf_{f \text{ 可测}} \mathbb{E}[\ell(f(X), Y)]\)。对于每个状态
+\(s\)，可以定义\textbf{状态条件贝叶斯风险}：
+
+\[R^*(s) = \inf_{f \text{ 可测}} \mathbb{E}[\ell(f(X), Y) \mid X \in s].\]
+
+那么 SCX 中的 \(R_m(s)\) 衡量的是专家 \(f_m\) 在状态 \(s\)
+中相对于\textbf{不可知最优} \(f^*\) 的表现，而非相对于 \(R^*(s)\)。这在
+\(f^* \neq \arg\inf_f \mathbb{E}[\ell(f(X),Y)]\) 时产生差异。
+
+\textbf{定理 A.1 (条件风险分解).} 若 \(f^*\)
+为目标函数（可能是人标注者或理想模型），则：
+
+\[R_m(s) = \underbrace{\mathbb{E}[\ell(f_m(X), r(X)) \mid X \in s]}_{\text{可减少误差}} + \underbrace{\mathbb{E}[\ell(r(X), f^*(X)) \mid X \in s]}_{\text{不可减少的状态偏差}}.\]
+
+\subsubsection{A.4 与 PAC-Bayes
+理论的关系}\label{a.4-ux4e0e-pac-bayes-ux7406ux8bbaux7684ux5173ux7cfb}
+
+PAC-Bayes 理论 (McAllester, 1999)
+给出了随机分类器（在假设空间上的后验分布）的泛化界：
+
+\[\mathbb{E}_{Q}[\mathcal{R}(h)] \leq \mathbb{E}_{Q}[\hat{\mathcal{R}}(h)] + \sqrt{\frac{\text{KL}(Q \| P) + \log(n/\delta)}{2n-1}}.\]
+
+将其扩展到\textbf{状态条件化 PAC-Bayes}：
+
+\[\mathbb{E}_{Q_s}[\mathcal{R}(h \mid s)] \leq \mathbb{E}_{Q_s}[\hat{\mathcal{R}}(h \mid s)] + \sqrt{\frac{\text{KL}(Q_s \| P_s) + \log(n_s/\delta)}{2n_s - 1}},\]
+
+其中 \(n_s = |\{i: x_i \in s\}|\) 为状态 \(s\) 中的样本数，\(Q_s\)
+为状态条件化的后验分布。SCX 的专家路由
+\(m^*(x) = \arg\min_m \sum_x \gamma_s(x) R_m(s)\)
+等价于在每个状态上选择一个后验集中在单个假设上的策略------这是 PAC-Bayes
+的极值化形式。
+
+\subsubsection{A.5 与 Domain Adaptation / Covariate Shift
+的关系}\label{a.5-ux4e0e-domain-adaptation-covariate-shift-ux7684ux5173ux7cfb}
+
+在协变量偏移下，训练分布 \(P_{\text{train}}\) 与测试分布
+\(P_{\text{test}}\) 不同。条件风险 \(R_m(s)\) 的定义天然适用于此：
+
+\[R_m^{\text{test}}(s) = \mathbb{E}_{x \sim P_{\text{test}}(\cdot|s)}[\ell(f_m(x), f^*(x))] = \frac{\mathbb{E}_{x \sim P_{\text{train}}} [\ell(f_m(x), f^*(x)) \cdot \mathbf{1}\{x \in s\} \cdot w(x)]}{\mathbb{E}_{x \sim P_{\text{train}}} [\mathbf{1}\{x \in s\} \cdot w(x)]}.\]
+
+其中 \(w(x) = dP_{\text{test}} / dP_{\text{train}}(x)\) 为似然比。这表明
+SCX 的 \textbf{状态级重要性权重} 本质上是对 covariate shift
+的局部化处理------全局权重 \(w(x)\) 被替换为状态条件化版本。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{B. 状态划分 (State
+Partition)}\label{b.-ux72b6ux6001ux5212ux5206-state-partition}
+
+\subsubsection{B.1
+测度论的可测划分}\label{b.1-ux6d4bux5ea6ux8bbaux7684ux53efux6d4bux5212ux5206}
+
+\textbf{定义 B.1.} 输入空间 \(\mathcal{X}\) 的一个可测划分
+\(\Pi = \{s_1, s_2, \dots, s_K\}\) 满足： 1.
+\(\bigcup_{k=1}^K s_k = \mathcal{X}\) 2. \(s_k \cap s_{k'} = \emptyset\)
+当 \(k \neq k'\) 3. 每个 \(s_k\) 是 \(\mathcal{X}\) 的 Borel
+\(\sigma\)-代数中的可测集
+
+由 \(\Pi\) 生成的 \(\sigma\)-代数 \(\sigma(\Pi)\) 是所有形如
+\(\bigcup_{k \in I} s_k\)
+的集合（\(I \subseteq \{1,\dots,K\}\)）的族。那么状态条件期望
+\(\mathbb{E}[Y \mid X \in s_k]\) 正是 \(\mathbb{E}[Y \mid \sigma(\Pi)]\)
+的一个版本。
+
+\subsubsection{B.2
+充分统计量与信息瓶颈}\label{b.2-ux5145ux5206ux7edfux8ba1ux91cfux4e0eux4fe1ux606fux74f6ux9888}
+
+\textbf{定义 B.2 (充分统计量).} 统计量
+\(T: \mathcal{X} \to \mathcal{T}\) 对参数 \(\theta\) 是充分的，当且仅当
+\(X \perp \theta \mid T(X)\)（或 \(Y \perp X \mid T(X)\)
+在预测场景中）。
+
+SCX 的状态划分 \(\{s_k\}\) 可以视为\textbf{离散化充分统计量}：我们希望
+\(Y \perp X \mid s(X)\)，即给定状态后，输入不再提供关于输出的额外信息。这等价于：
+
+\[P(Y \mid X) = P(Y \mid s(X)), \quad \text{a.s.}\]
+
+\textbf{信息瓶颈 (Tishby et al., 1999).}
+状态划分是信息瓶颈问题的最优解：
+
+\[\min_{\Pi: |\Pi| = K} I(X; \tilde{X}) - \beta I(\tilde{X}; Y),\]
+
+其中 \(\tilde{X}\) 是 \(X\) 在划分 \(\Pi\) 下的离散化表示。当
+\(\beta \to \infty\) 时，解是在固定 \(K\) 下最大化 \(I(\tilde{X}; Y)\)
+的划分------即保留最多关于 \(Y\) 的信息的粗粒化。
+
+\subsubsection{B.3 与 Vapnik-Chervonenkis
+理论的联系}\label{b.3-ux4e0e-vapnik-chervonenkis-ux7406ux8bbaux7684ux8054ux7cfb}
+
+状态划分对应于\textbf{分区分类器 (partition classifier)}：
+
+\[\mathcal{H}_\Pi = \{h: h(x) = \sum_{k=1}^K \alpha_k \mathbf{1}\{x \in s_k\}, \alpha_k \in \mathbb{R}\}.\]
+
+该假设类的 VC 维（或伪维）为 \(O(K)\)。这意味着： - 状态数 \(K\)
+直接控制假设类的容量 - SCX
+中的状态发现等价于在\textbf{表达力}（更多状态）与\textbf{泛化}（更少参数）之间做权衡
+- 经典 VC bound 适用于状态级泛化误差：\(\tilde{O}(\sqrt{K/n})\)
+
+\subsubsection{B.4 与 RKHS
+的关系}\label{b.4-ux4e0e-rkhs-ux7684ux5173ux7cfb}
+
+再生核希尔伯特空间 \(\mathcal{H}_K\) 中的每个函数 \(f\) 满足
+\(f(x) = \langle f, K(x, \cdot) \rangle_{\mathcal{H}_K}\)。状态划分可以通过核诱导的几何结构进行：
+
+\textbf{核 k-means 状态发现}：给定核 \(K\)，在 RKHS 嵌入
+\(\phi(x) = K(x, \cdot)\) 上进行聚类：
+
+\[\min_{\{s_k\}} \sum_{k=1}^K \sum_{x_i \in s_k} \|\phi(x_i) - \mu_k\|_{\mathcal{H}_K}^2,\]
+
+其中 \(\mu_k = \frac{1}{|s_k|} \sum_{x_i \in s_k} \phi(x_i)\)。
+
+这一框架将状态划分与核方法统一：不同的核选择对应不同的''相似性''度量，从而产生不同的状态结构。
+
+\subsubsection{B.5
+与流形学习和谱聚类的关系}\label{b.5-ux4e0eux6d41ux5f62ux5b66ux4e60ux548cux8c31ux805aux7c7bux7684ux5173ux7cfb}
+
+当数据嵌入低维流形时，最优状态划分应\textbf{沿着流形的固有几何}进行。谱聚类在数据图的
+Laplacian 特征空间中进行 \(K\)-means：
+
+\textbf{谱状态发现}： 1. 构建亲和图
+\(W_{ij} = \exp(-\|x_i - x_j\|^2 / \sigma^2)\) 2. 计算归一化 Laplacian
+\(L = I - D^{-1/2} W D^{-1/2}\) 3. 提取 \(L\) 的 \(K\) 个最小特征向量
+\(v_1, \dots, v_K\) 4. 在 \([v_1, \dots, v_K]\) 的行上进行 \(K\)-means
+
+这等价于求解流形上的\textbf{切比雪夫切割 (Cheeger cut)}。SCX
+在此框架下的\textbf{状态发现}可理解为：找到在条件风险意义上尽可能均匀的子流形区域。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{C. 数据价值 (Data
+Value)}\label{c.-ux6570ux636eux4ef7ux503c-data-value}
+
+\subsubsection{C.1 Shapley
+值公理体系}\label{c.1-shapley-ux503cux516cux7406ux4f53ux7cfb}
+
+\textbf{定义 C.1 (Shapley, 1953).} 设 \(N = \{1, \dots, n\}\)
+为数据点集合，\(v: 2^N \to \mathbb{R}\) 为效用函数（表征子集 \(S\)
+的模型性能）。则数据点 \(i\) 的 Shapley 值为：
+
+\[\phi_i(v) = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|! (n - |S| - 1)!}{n!} [v(S \cup \{i\}) - v(S)].\]
+
+Shapley 值是唯一满足以下四公理的解：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{有效性 (Efficiency):}
+  \(\sum_{i=1}^n \phi_i(v) = v(N) - v(\emptyset)\)
+\item
+  \textbf{对称性 (Symmetry):} 若 \(v(S \cup \{i\}) = v(S \cup \{j\})\)
+  对所有 \(S \subseteq N \setminus \{i,j\}\) 成立，则
+  \(\phi_i(v) = \phi_j(v)\)
+\item
+  \textbf{虚拟性 (Null Player):} 若 \(v(S \cup \{i\}) = v(S)\) 对所有
+  \(S \subseteq N \setminus \{i\}\) 成立，则 \(\phi_i(v) = 0\)
+\item
+  \textbf{可加性 (Additivity):}
+  \(\phi_i(v + w) = \phi_i(v) + \phi_i(w)\)
+\end{enumerate}
+
+\subsubsection{C.2 半值和 Banzhaf
+值}\label{c.2-ux534aux503cux548c-banzhaf-ux503c}
+
+\textbf{定义 C.2 (半值 / Semivalue).} 半值是 Shapley
+值的推广，使用一般化的概率权重：
+
+\[\phi_i(v) = \sum_{S \subseteq N \setminus \{i\}} p_{|S|} [v(S \cup \{i\}) - v(S)],\]
+
+其中 \(\sum_{k=0}^{n-1} \binom{n-1}{k} p_k = 1\)，且 \(p_k\) 非负。
+
+\textbf{Banzhaf 值 (Banzhaf, 1965)} 是 \(p_k = 1/2^{n-1}\) 的特殊半值：
+
+\[\phi_i^{\text{B}}(v) = \frac{1}{2^{n-1}} \sum_{S \subseteq N \setminus \{i\}} [v(S \cup \{i\}) - v(S)].\]
+
+在 SCX 中，噪声分数
+\(\text{NoiseScore}(x_i) = r_i / (\rho(s_i) + \varepsilon) \cdot [1 - C(s_i)]\)
+可以解释为一种\textbf{近似 Banzhaf
+影响力指标}------它衡量移除该点（或将其标记为噪声）对损失的影响。
+
+\subsubsection{C.3 与 Influence Function
+的关系}\label{c.3-ux4e0e-influence-function-ux7684ux5173ux7cfb}
+
+\textbf{定义 C.3 (Hampel, 1974).} 给定统计泛函 \(T(F)\)（其中 \(F\)
+为分布），在点 \(x\) 处的 influence function 为：
+
+\[\text{IF}(x; T, F) = \lim_{\varepsilon \to 0^+} \frac{T((1-\varepsilon)F + \varepsilon\delta_x) - T(F)}{\varepsilon}.\]
+
+在经验分布 \(\hat{F}_n\) 下，leave-one-out 影响近似为：
+
+\[\hat{\text{IF}}(x_i) \approx (n-1)[T(\hat{F}_n) - T(\hat{F}_{-i})].\]
+
+对于模型性能泛函
+\(T(F) = \mathbb{E}_{(x,y) \sim F}[\ell(f(x), y)]\)，数据点 \(x_i\)
+的影响函数与 Shapley 值在 \(\varepsilon = 1/n\) 的一阶项上等价（Koh \&
+Liang, 2017）：
+
+\[\phi_i(v) \approx \frac{1}{n} \cdot \text{IF}(x_i; T, \hat{F}_n) + O(1/n^2).\]
+
+SCX 的噪声分数 \(r_i / (\rho(s_i)+\varepsilon)\)
+对应于\textbf{状态条件化的影响函数}，它在每个状态内独立计算数据点的影响力。
+
+\subsubsection{C.4 与 Expected Value of Information (EVOI)
+的关系}\label{c.4-ux4e0e-expected-value-of-information-evoi-ux7684ux5173ux7cfb}
+
+\textbf{定义 C.4.} 获取数据 \(x\) 的期望信息价值为：
+
+\[\text{EVOI}(x) = \mathbb{E}_{Y \mid X=x} [U(\text{最优行动} \mid \text{更新后})] - U(\text{最优行动} \mid \text{当前}),\]
+
+其中 \(U\) 为效用函数。
+
+SCX 中的状态获取函数
+\(s^* = \arg\max_s V(s) = \arg\max_s \bar{r}(s) \cdot \rho(s) \cdot L(s) \cdot [1-D(s)] \cdot \max_m SCX_m(s)\)
+是一种\textbf{状态级的 EVOI 度量}： - \(\bar{r}(s)\) 代表当前在 \(s\)
+中的不确定性（与信息增益成正比） - \(\rho(s)\)
+代表该状态的先验概率（覆盖范围） - \(L(s)\) 代表可学习性（信息有用性） -
+\(1-D(s)\) 代表尚未被探索的程度（新鲜度） - \(\max_m SCX_m(s)\)
+代表专家覆盖（信息利用能力）
+
+\subsubsection{C.5 与 Marginal Likelihood / Bayesian Model Selection
+的关系}\label{c.5-ux4e0e-marginal-likelihood-bayesian-model-selection-ux7684ux5173ux7cfb}
+
+在贝叶斯框架中，模型 \(M\) 的边缘似然为：
+
+\[P(\mathcal{D} \mid M) = \int P(\mathcal{D} \mid \theta, M) P(\theta \mid M) \, d\theta.\]
+
+SCX 的状态发现可以理解为：寻找划分 \(\Pi\)
+使得\textbf{每个状态的局部边缘似然最大化}：
+
+\[\Pi^* = \arg\max_{\Pi} \sum_{k=1}^K \log P(\{y_i: x_i \in s_k\} \mid \{x_i: x_i \in s_k\}, \text{朴素模型}),\]
+
+其中''朴素模型''是在状态内假设 \(Y\) 独立于 \(X\)
+的简化模型。这等价于最小化状态内的互信息：
+
+\[\sum_{k} |s_k| \cdot \hat{I}(X; Y \mid s_k),\]
+
+这正是信息瓶颈目标。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{D. 专家可靠性 (Expert
+Reliability)}\label{d.-ux4e13ux5bb6ux53efux9760ux6027-expert-reliability}
+
+\subsubsection{D.1 Dawid-Skene 模型}\label{d.1-dawid-skene-ux6a21ux578b}
+
+\textbf{定义 D.1 (Dawid \& Skene, 1979).} 设 \(N\) 个任务，\(M\)
+个标注者。每个任务有真实标签
+\(z_j \in \{1, \dots, C\}\)，每个标注者提供标签 \(y_{ij}\)。标注者 \(i\)
+的混淆矩阵为 \(\pi^{(i)}_{cc'} = P(y_{ij} = c' \mid z_j = c)\)。似然为：
+
+\[P(Y \mid \pi, z) = \prod_{j=1}^N P(z_j) \prod_{i=1}^M \pi^{(i)}_{z_j, y_{ij}}.\]
+
+通过 EM 算法估计 \(\pi^{(i)}\) 和 \(z_j\)。
+
+SCX 中的 \(SCX_m(s) = P(\ell(f_m(x), y) < \tau \mid x \in s)\) 可以看作
+Dawid-Skene 框架的特例：每个专家 \(f_m\) 是一个''标注者''，\(SCX_m(s)\)
+是其混淆矩阵的对角线元素（在阈值 \(\tau\) 下二值化）。然而 SCX
+的重要创新在于：\textbf{可靠性是状态条件的}------同一专家在不同状态
+\(s\) 中有不同的 \(SCX_m(s)\)。
+
+\subsubsection{D.2
+标注者建模的统计基础}\label{d.2-ux6807ux6ce8ux8005ux5efaux6a21ux7684ux7edfux8ba1ux57faux7840}
+
+\textbf{多标注者模型}的一般形式：
+
+\[P(y_{ij} = c' \mid x_j, z_j = c, \theta_i) = f(x_j, c, c'; \theta_i),\]
+
+其中 \(\theta_i\) 是标注者 \(i\) 的偏差参数。常见的参数化包括： -
+\textbf{简单偏差模型}:
+\(P(y_{ij} = z_j \mid x_j, \theta_i) = \theta_i\)（全局准确率） -
+\textbf{类条件模型}:
+\(P(y_{ij} = c' \mid z_j = c, \theta_i) = \theta_{i, cc'}\)（每类准确率）
+- \textbf{特征条件模型}:
+\(\theta_i(x) = \sigma(w_i^\top x)\)（输入依赖的可靠性）
+
+SCX 的状态条件可靠性 \(SCX_m(s)\)
+对应于\textbf{输入空间分区的标注者建模}------在状态 \(s\)
+内使用一个简单的可靠性参数，但在状态之间变化。
+
+\subsubsection{D.3 Item Response Theory
+(IRT)}\label{d.3-item-response-theory-irt}
+
+IRT 模型（Lord, 1952; Rasch,
+1960）描述了''项目难度''和''被试能力''的关系。\textbf{双参数逻辑模型
+(2PL)}：
+
+\[P(Y_{ij} = 1 \mid \theta_j, a_i, b_i) = \sigma(a_i(\theta_j - b_i)),\]
+
+其中 \(\theta_j\) 为被试 \(j\) 的能力，\(a_i\) 为区分度，\(b_i\)
+为难度。
+
+SCX 中的 \(SCX_m(s)\) 与 IRT 存在深层对应： - 专家 \(f_m\)
+对应一个''测试项目'' - 输入 \(x\) 对应一个''被试'' - 状态 \(s\)
+对应一组能力相近的被试 - \(SCX_m(s)\) 对应在该能力区间上的平均正确率
+
+这与\textbf{多维 IRT (MIRT)} 的维度条件概率自然衔接。
+
+\subsubsection{D.4 与 Calibration / ECE
+的关系}\label{d.4-ux4e0e-calibration-ece-ux7684ux5173ux7cfb}
+
+\textbf{期望校准误差 (Expected Calibration Error)}：
+
+\[\text{ECE} = \mathbb{E}_{\hat{P}}[|P(Y = 1 \mid \hat{P} = p) - p|].\]
+
+SCX 的 \(SCX_m(s)\) 本质上是对专家 \(f_m\) 在状态 \(s\)
+上的条件校准评估：
+
+\[\text{ECE}_m(s) = \left| \frac{1}{|s|} \sum_{x_i \in s} \mathbf{1}\{\ell(f_m(x_i), y_i) < \tau\} - \mathbb{E}_{x \in s}[SCX_m(s)] \right|.\]
+
+当 \(\tau \to 0\) 时，\(SCX_m(s)\) 趋近于在状态 \(s\)
+上的精确条件准确率。
+
+\subsubsection{D.5 与 Conformal Prediction
+的关系}\label{d.5-ux4e0e-conformal-prediction-ux7684ux5173ux7cfb}
+
+\textbf{共形预测} (Vovk et al., 2005) 在给定置信度 \(1-\alpha\)
+下构造预测集：
+
+\[\Gamma^\alpha(x) = \{y: p_y(x) > \alpha\}, \quad p_y(x) = \frac{|\{i: s(x_i, y) \leq s(x, y)\}| + 1}{n + 1}.\]
+
+SCX 的阈值 \(\tau\) 与共形预测的校准阈值 \(\alpha\)
+有直接关系。\(SCX_m(s)\) 可以解释为：如果不合格率阈值为 \(\tau\)，则专家
+\(f_m\) 在状态 \(s\) 中的共形覆盖率。
+
+\textbf{定理 D.1.} 若校准集和测试集在状态 \(s\)
+内是可交换的，则对于固定的 \(\tau\)：
+
+\[\mathbb{E}[SCX_m(s)] = 1 - \alpha,\]
+
+其中 \(\alpha\) 为与 \(\tau\) 对应的共形预测显著性水平。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{E. 噪声与可学习性 (Noise \&
+Learnability)}\label{e.-ux566aux58f0ux4e0eux53efux5b66ux4e60ux6027-noise-learnability}
+
+\subsubsection{E.1 Tsybakov
+噪声条件}\label{e.1-tsybakov-ux566aux58f0ux6761ux4ef6}
+
+\textbf{定义 E.1 (Tsybakov, 2004).} 在二分类中，令
+\(\eta(x) = P(Y = 1 \mid X = x)\)。称分布 \(P\) 满足 Tsybakov
+噪声条件（参数 \(\kappa \geq 0\)），若存在常数 \(C > 0\) 使得：
+
+\[P_X(|\eta(X) - 1/2| \leq t) \leq C t^\kappa, \quad \forall t > 0.\]
+
+\(\kappa\) 控制着决策边界附近的不确定性质量： -
+\(\kappa = 0\)：最坏情况（可能有无穷多点在决策边界上） -
+\(\kappa \to \infty\)：完美分离（所有点远离决策边界）
+
+Tsybakov 条件给出了\textbf{最小最大最优收敛率}
+\(\tilde{O}(n^{-\frac{1+\kappa}{2+\kappa}})\)，比无假设时的
+\(\tilde{O}(n^{-1/2})\) 更快。
+
+\subsubsection{E.2 Mammen-Tsybakov Margin
+Condition}\label{e.2-mammen-tsybakov-margin-condition}
+
+\textbf{定义 E.2 (Mammen \& Tsybakov, 1999).} 称分布 \(P\) 满足 Margin
+条件（参数 \(\alpha \geq 0\)），若存在常数 \(c > 0\) 使得：
+
+\[\mathbb{E}[|2\eta(X) - 1| \cdot \mathbf{1}\{|\eta(X) - 1/2| \leq h\}] \leq c h^\alpha, \quad \forall h > 0.\]
+
+当 \(\alpha > 0\) 时，分类器的收敛率可以提升。这与 SCX 的关系在于：
+
+SCX 的噪声分数
+\(\text{NoiseScore}(x_i) = r_i/(\rho(s_i) + \varepsilon) \cdot [1 - C(s_i)]\)
+中的 \(1 - C(s_i)\) 可以理解为状态 \(s_i\)
+中\textbf{边际条件满足程度}的代理：
+
+\[C(s) \approx P_X(|\eta(X) - 1/2| > \tau_0 \mid X \in s),\]
+
+即状态 \(s\) 中可清楚分类的比例。高噪声状态对应于 \(\eta \approx 1/2\)
+的区域。
+
+\subsubsection{E.3 与 Huber
+污染模型的关系}\label{e.3-ux4e0e-huber-ux6c61ux67d3ux6a21ux578bux7684ux5173ux7cfb}
+
+\textbf{定义 E.3 (Huber, 1964).} 污染模型：
+
+\[F = (1 - \varepsilon) G + \varepsilon H,\]
+
+其中 \(G\) 为''干净''分布，\(H\) 为污染分布，\(\varepsilon \in [0, 1)\)
+为污染比例。
+
+SCX 的噪声发现等价于在\textbf{每个状态内}识别污染点：
+
+\[\text{NoiseScore}(x_i) > \tau_{\text{noise}} \Rightarrow x_i \text{ 可能来自污染组分}.\]
+
+状态 \(s\) 中的污染参数为
+\(\varepsilon(s) = \frac{|\{x_i \in s: \text{NoiseScore}(x_i) > \tau\}|}{|s|}\)。
+
+\subsubsection{E.4 与 EM
+算法在众包学习中的关系}\label{e.4-ux4e0e-em-ux7b97ux6cd5ux5728ux4f17ux5305ux5b66ux4e60ux4e2dux7684ux5173ux7cfb}
+
+众包学习中，EM 算法（Dawid-Skene）交替进行： - \textbf{E 步}:
+基于当前标注者可靠性估计真实标签 - \textbf{M 步}:
+基于估计的真实标签更新标注者可靠性
+
+SCX 的状态发现与噪声检测可以嵌入类似的 EM 框架： 1. \textbf{状态 E 步}:
+给定当前状态划分 \(\Pi^{(t)}\) 和专家可靠性
+\(SCX_m^{(t)}(s)\)，估计每个点的''可学习性''状态 2. \textbf{状态 M 步}:
+基于当前估计，更新状态边界和专家可靠性
+
+\textbf{定理 E.1 (收敛性).} 若状态发现的损失函数是划分的连续函数，则上述
+EM 过程收敛到局部最优状态划分。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{F. 主动采样 (Active
+Acquisition)}\label{f.-ux4e3bux52a8ux91c7ux6837-active-acquisition}
+
+\subsubsection{F.1 MacKay
+信息论主动学习}\label{f.1-mackay-ux4fe1ux606fux8bbaux4e3bux52a8ux5b66ux4e60}
+
+\textbf{定义 F.1 (MacKay, 1992).} 主动学习选择最大化期望信息增益的点：
+
+\[x^* = \arg\max_x H[\theta \mid \mathcal{D}] - \mathbb{E}_{y \sim P(y \mid x, \mathcal{D})}[H[\theta \mid \mathcal{D} \cup \{(x, y)\}]],\]
+
+其中 \(H\) 为 Shannon 熵。
+
+对于高斯过程模型，这等价于最大化后验方差：
+
+\[x^* = \arg\max_x \sigma^2_{n}(x) = \arg\max_x K(x, x) - \mathbf{k}_n(x)^\top (K_n + \sigma^2 I)^{-1} \mathbf{k}_n(x).\]
+
+\subsubsection{F.2 与最优实验设计 (OED)
+的关系}\label{f.2-ux4e0eux6700ux4f18ux5b9eux9a8cux8bbeux8ba1-oed-ux7684ux5173ux7cfb}
+
+最优实验设计框架定义三种最优性标准：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{A-最优性}: 最小化
+  \(\text{Tr}[(X^\top X)^{-1}]\)（最小平均方差）
+\item
+  \textbf{D-最优性}: 最大化 \(\det(X^\top X)\)（最小置信椭球体积）
+\item
+  \textbf{E-最优性}: 最大化 \(\lambda_{\min}(X^\top X)\)（最小最大方差）
+\end{itemize}
+
+SCX 的状态获取函数 \(V(s)\) 在给定状态 \(s\)
+下，采样策略应\textbf{在状态内}满足 D-最优性：
+
+\[V(s) \propto \det(\mathbb{E}_{x \in s}[xx^\top]),\]
+
+在广义线性模型下，这等价于最大化状态内 Fisher 信息矩阵的行列式。
+
+\subsubsection{F.3 与 Bandit Theory (UCB, Thompson Sampling)
+的关系}\label{f.3-ux4e0e-bandit-theory-ucb-thompson-sampling-ux7684ux5173ux7cfb}
+
+\textbf{UCB (Upper Confidence Bound)} (Auer et al., 2002)：
+
+\[a_t = \arg\max_{a \in \mathcal{A}} \hat{\mu}_a(t-1) + \sqrt{\frac{2\log t}{n_a(t-1)}}.\]
+
+SCX 的状态获取函数 \(s^* = \arg\max_s V(s)\) 可以理解为\textbf{状态臂
+(state-arm) bandit}：
+
+\$\$V(s) =
+\underbrace{\bar{r}(s) \cdot \rho(s)}\emph{\{\text{exploitation}\}
+\cdot \underbrace{L(s) \cdot [1-D(s)]}}\{\text{exploration}\}
+\cdot \underbrace{\max_m SCX_m(s)}\_\{\text{expertise}\}.{]}
+
+其中 \(L(s) \cdot [1-D(s)]\) 类似于 UCB 的探索项------\(\bar{D}(s)\)
+小（已采样多）时探索项衰减。
+
+\textbf{定理 F.1 (UCB 对应).} 当
+\(L(s) = \sqrt{\frac{\log t}{n(s) + 1}}\) 且 \([1-D(s)] \propto 1\)
+时，\(V(s)\) 退化为标准 UCB 获取函数。SCX 通过引入
+\(L(s)\)（可学习性）和 \(\max_m SCX_m(s)\)（专家覆盖）进行了扩展。
+
+\subsubsection{F.4 与贝叶斯优化 (Acquisition Functions)
+的关系}\label{f.4-ux4e0eux8d1dux53f6ux65afux4f18ux5316-acquisition-functions-ux7684ux5173ux7cfb}
+
+\textbf{期望改进 (Expected Improvement)} (Mockus, 1978)：
+
+\[\text{EI}(x) = \mathbb{E}[\max(f(x) - f(x^*), 0)] = (\mu(x) - f(x^*))\Phi(\frac{\mu(x) - f(x^*)}{\sigma(x)}) + \sigma(x)\phi(\frac{\mu(x) - f(x^*)}{\sigma(x)}).\]
+
+\textbf{知识梯度 (Knowledge Gradient)} (Frazier et al., 2008)：
+
+\[\text{KG}(x) = \mathbb{E}[\max_{x'} \mu_{n+1}(x') \mid x] - \max_{x'} \mu_n(x').\]
+
+SCX 的 \(V(s)\) 与 KG 有深层联系：\(V(s)\) 衡量在状态 \(s\)
+中采样将\textbf{提升最佳专家在该状态下性能}的期望增益。\(\max_m SCX_m(s)\)
+对应于 KG 中的 \(\max_{x'} \mu_{n+1}(x')\)
+项------采样后专家覆盖的提升。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{第二部分：三个命题的严格证明}\label{ux7b2cux4e8cux90e8ux5206ux4e09ux4e2aux547dux9898ux7684ux4e25ux683cux8bc1ux660e}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Proposition 1:
+全局专家排序不足}\label{proposition-1-ux5168ux5c40ux4e13ux5bb6ux6392ux5e8fux4e0dux8db3}
+
+\subsubsection{数学陈述}\label{ux6570ux5b66ux9648ux8ff0}
+
+\textbf{命题 1.} 设 \(\mathcal{F} = \{f_1, \dots, f_M\}\)
+为一个专家集合，\(\Pi: \mathcal{X} \to \{s_1, \dots, s_K\}\)
+为输入空间的一个可分划。则存在分布 \(P\) 和损失函数
+\(\ell\)，使得以下同时成立：
+
+\[\forall m, m': \quad R(f_m) < R(f_{m'}) \quad \text{(全局排序)}\]
+
+但存在状态 \(s_k\) 使得：
+
+\[R_{m'}(s_k) < R_m(s_k) \quad \text{(状态级排序反转)}.\]
+
+其中 \(R(f_m) = \mathbb{E}_{x \sim P}[\ell(f_m(x), f^*(x))]\)
+为全局风险，\(R_m(s_k) = \mathbb{E}_{x \sim P(\cdot|s_k)}[\ell(f_m(x), f^*(x))]\)
+为条件风险。
+
+\subsubsection{证明}\label{ux8bc1ux660e}
+
+\textbf{构造 (反例).} 设输入空间 \(\mathcal{X} = [0, 1]\)，真实函数
+\(f^*: \mathcal{X} \to \mathbb{R}\)，两个专家 \(f_1, f_2\)。
+
+令输入分布为均匀分布：\(P_X \sim U[0, 1]\)。
+
+定义以下函数：
+
+\[f^*(x) = \begin{cases} 
+1, & x \in [0, 0.5) \\
+0, & x \in [0.5, 1]
+\end{cases}\]
+
+\[f_1(x) = 0.99 - 0.02x\]
+
+\[f_2(x) = \begin{cases}
+0.01, & x \in [0, 0.5) \\
+0.99, & x \in [0.5, 1]
+\end{cases}\]
+
+使用平方损失 \(\ell(\hat{y}, y) = (\hat{y} - y)^2\)。
+
+\textbf{全局风险计算：} \[\begin{aligned}
+R(f_1) &= \int_0^{0.5} (0.99 - 0.02x - 1)^2 dx + \int_{0.5}^1 (0.99 - 0.02x - 0)^2 dx \\
+&\approx \int_0^{0.5} (0.01 + 0.02x)^2 dx + \int_{0.5}^1 (0.99 - 0.02x)^2 dx \\
+&= [\dots] \\
+&\approx 0.000417 + 0.240417 = 0.240834
+\end{aligned}\]
+
+\[\begin{aligned}
+R(f_2) &= \int_0^{0.5} (0.01 - 1)^2 dx + \int_{0.5}^1 (0.99 - 0)^2 dx \\
+&= \int_0^{0.5} (0.99)^2 dx + \int_{0.5}^1 (0.99)^2 dx \\
+&= 0.5 \cdot 0.9801 + 0.5 \cdot 0.9801 = 0.9801
+\end{aligned}\]
+
+因此全局上 \(R(f_1) = 0.2408 < 0.9801 = R(f_2)\)，专家 \(f_1\)
+全局更好。
+
+\textbf{状态级风险计算.} 定义状态 \(s_1 = [0, 0.5)\),
+\(s_2 = [0.5, 1]\)。
+
+在 \(s_1\) 中： \[\begin{aligned}
+R_1(s_1) &= \frac{1}{0.5} \int_0^{0.5} (0.99 - 0.02x - 1)^2 dx \approx 2 \times 0.000417 = 0.000834 \\
+R_2(s_1) &= \frac{1}{0.5} \int_0^{0.5} (0.01 - 1)^2 dx = 2 \times 0.5 \times 0.9801 = 0.9801
+\end{aligned}\]
+
+\(R_1(s_1) < R_2(s_1)\)，无反转。
+
+在 \(s_2\) 中： \[\begin{aligned}
+R_1(s_2) &= \frac{1}{0.5} \int_{0.5}^1 (0.99 - 0.02x - 0)^2 dx \approx 2 \times 0.240417 = 0.480834 \\
+R_2(s_2) &= \frac{1}{0.5} \int_{0.5}^1 (0.99 - 0)^2 dx = 2 \times 0.5 \times 0.9801 = 0.9801
+\end{aligned}\]
+
+这里 \(R_1(s_2) < R_2(s_2)\)，仍然无反转。
+
+\textbf{调整构造.} 我们修改 \(f_1\) 使其在 \(s_2\) 中表现极差。定义：
+
+\[f_1'(x) = \begin{cases}
+0.99 - 0.02x, & x \in [0, 0.5) \\
+5, & x \in [0.5, 1]
+\end{cases}\]
+
+\[f_2'(x) = \begin{cases}
+0.01, & x \in [0, 0.5) \\
+0.02, & x \in [0.5, 1]
+\end{cases}\]
+
+在 \(s_2\)
+中：\(R_1(s_2) = (1/0.5)\int_{0.5}^1 (5 - 0)^2 dx = 2 \cdot 0.5\cdot 25 = 25\)。\(R_2(s_2) = (1/0.5)\int_{0.5}^1 (0.02-0)^2 dx = 2 \cdot 0.5\cdot 0.0004 = 0.0004\)。
+
+所以 \(R_1(s_2) = 25 > 0.0004 = R_2(s_2)\)，发生了反转。
+
+全局上： \[\begin{aligned}
+R(f_1') &= 0.000834 \cdot 0.5 + 25 \cdot 0.5 = 12.500417 \\
+R(f_2') &= 0.9801 \cdot 0.5 + 0.0004 \cdot 0.5 = 0.49025
+\end{aligned}\]
+
+全局上 \(f_2'\) 更好，与 \(s_1\) 中的情况一致。令
+\(\tilde{f}_2 = f_1', \tilde{f}_1 = f_2'\)
+则得到：\(R(\tilde{f}_1) < R(\tilde{f}_2)\) 全局，但
+\(R_{\tilde{f}_2}(s_2) < R_{\tilde{f}_1}(s_2)\) 在 \(s_2\) 中。
+
+\textbf{实际上，更简单的构造是：} 设
+\(P_X(s_1) = 0.9, P_X(s_2) = 0.1\)。
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+专家 & \(R(s_1)\) & \(R(s_2)\) & 全局 \(R\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(f_1\) & 1 & 100 & \(0.9 \times 1 + 0.1 \times 100 = 10.9\) \\
+\(f_2\) & 2 & 5 & \(0.9 \times 2 + 0.1 \times 5 = 2.3\) \\
+\end{longtable}
+
+全局上 \(R(f_1) = 10.9 > 2.3 = R(f_2)\)，但在 \(s_1\) 中
+\(R_1(s_1) = 1 < 2 = R_2(s_1)\)。□
+
+\subsubsection{全局排序充分的条件}\label{ux5168ux5c40ux6392ux5e8fux5145ux5206ux7684ux6761ux4ef6}
+
+\textbf{定理 1.1 (充分条件).} 全局专家排序 \(R_m \leq R_{m'}\)
+蕴含状态级排序 \(R_m(s) \leq R_{m'}(s)\) 对所有 \(s\)
+成立，当且仅当对任意两个专家 \(f_m, f_{m'}\)，差值函数
+\(\Delta_{m,m'}(x) = \ell(f_m(x), f^*(x)) - \ell(f_{m'}(x), f^*(x))\)
+与输入分布 \(P_X\) 的似然比 \(dP_X/dP_X(\cdot|s)\)
+处处共单调。即存在函数 \(\psi_{m,m'}\) 使得：
+
+\[\Delta_{m,m'}(x) \cdot \frac{dP_X}{dP_X(\cdot|s)}(x) \geq 0, \quad \forall x \in \mathcal{X}, \forall s \in \Pi.\]
+
+\subsubsection{与 Arrow
+不可能定理的类比}\label{ux4e0e-arrow-ux4e0dux53efux80fdux5b9aux7406ux7684ux7c7bux6bd4}
+
+Arrow 不可能定理指出：不存在将个体偏好映射为社会偏好的函数同时满足
+Pareto 最优、非独裁性和无关选项独立性。
+
+SCX 的状态级排序对应于''个体偏好''（每个状态 \(s\)
+有自己的专家排序），全局排序对应于''社会偏好''。Proposition 1
+表明：\textbf{全局排序不能一致地反映状态级排序}，正如 Arrow
+定理中社会偏好不能同时满足所有理性条件。
+
+具体类比： \textbar{} Arrow 定理 \textbar{} SCX \textbar{}
+\textbar-----------\textbar-----\textbar{} \textbar{} 投票者 \(i\)
+\textbar{} 状态 \(s\) \textbar{} \textbar{} 候选方案 \(a\) \textbar{}
+专家 \(f_m\) \textbar{} \textbar{} 社会偏好排序 \textbar{} 全局风险排序
+\(R_m\) \textbar{} \textbar{} 帕累托最优 \textbar{} 状态级排序一致性
+\textbar{} \textbar{} 无关选项独立性 \textbar{} 引入新专家的独立性
+\textbar{}
+
+但需注意，SCX 中的''不可能性''比 Arrow
+的更弱------它不要求普遍性（全域条件），仅指出存在反例。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Proposition 2:
+高误差采样在噪声下非最优}\label{proposition-2-ux9ad8ux8befux5deeux91c7ux6837ux5728ux566aux58f0ux4e0bux975eux6700ux4f18}
+
+\subsubsection{数学陈述}\label{ux6570ux5b66ux9648ux8ff0-1}
+
+令 \(\mathcal{D} = \{(x_i, y_i)\}_{i=1}^n\) 为标注数据集。定义：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{可学习集}
+  \(H_{\text{learnable}} = \{x: \mathbb{E}[\ell(f(x), y) \mid x] \text{ 可通过更多采样降低}\}\)
+\item
+  \textbf{噪声集}
+  \(H_{\text{noise}} = \{x: \mathbb{E}[\ell(f(x), y) \mid x] \text{ 不可降低（固有噪声）}\}\)
+\end{itemize}
+
+若 \(P(H_{\text{noise}}) > 0\)，则纯 residual-based 采样策略
+\(\pi_{\text{res}}(x) \propto r_i = \ell(f(x_i), y_i)\)
+的期望预算浪费存在严格正下界。
+
+\textbf{命题 2.} 设 \(P_X\) 为输入分布，\(\ell\) 为有界损失
+\(0 \leq \ell \leq L_{\max}\)。令采样预算为 \(B\)。定义： -
+\textbf{Max-Residual Sampling}: 选取 \(r_i\) 最大的 \(B\) 个点 -
+\textbf{State-Level Sampling (SCX)}: 选取 \(V(s)\) 最大的状态 \(s\)
+内的所有点
+
+则存在数据分布使得：
+
+\[\mathbb{E}[\text{增益}_{\text{res}}] \leq \mathbb{E}[\text{增益}_{\text{state}}] - \delta(B),\]
+
+其中 \(\delta(B) > 0\) 为 \(B\) 的增函数。
+
+\subsubsection{证明}\label{ux8bc1ux660e-1}
+
+\textbf{构造.} 考虑两个状态 \(s_1, s_2\)，各含 \(n\) 个点。
+
+状态 \(s_1\) (可学习)： - \(y_i = f^*(x_i) + \epsilon_i\)，其中
+\(\epsilon_i \sim N(0, \sigma^2_{\text{low}})\) - 当前模型 \(f\) 在
+\(s_1\)
+上有系统偏差：\(\mathbb{E}[f(x) \mid x \in s_1] = f^*(x) + \mu\)，其中
+\(\mu \gg 0\)
+
+状态 \(s_2\) (噪声)： - \(y_i = \text{常数} + \eta_i\)，其中
+\(\eta_i \sim N(0, \sigma^2_{\text{high}})\)，\(\sigma^2_{\text{high}} \gg \sigma^2_{\text{low}}\)
+- 当前模型 \(f\) 在 \(s_2\)
+上已最优：\(\mathbb{E}[f(x) \mid x \in s_2] = \text{常数}\)
+
+损失使用平方损失。
+
+\textbf{残差分析.}
+
+在 \(s_1\) 中：
+\[r_i^{(1)} = (f(x_i) - y_i)^2 = (\mu - \epsilon_i)^2 = \mu^2 - 2\mu\epsilon_i + \epsilon_i^2.\]
+\[\mathbb{E}[r^{(1)}] = \mu^2 + \sigma^2_{\text{low}}.\]
+
+在 \(s_2\) 中： \[r_i^{(2)} = (f(x_i) - y_i)^2 = \eta_i^2.\]
+\[\mathbb{E}[r^{(2)}] = \sigma^2_{\text{high}}.\]
+
+\textbf{参数条件.} 令
+\(\mu^2 + \sigma^2_{\text{low}} < \sigma^2_{\text{high}}\)。那么 \(s_2\)
+中的平均残差大于 \(s_1\) 中的平均残差。
+
+\textbf{Max-Residual Sampling 行为.} 选取全局残差最大的 \(B\) 个点。由于
+\(\sigma^2_{\text{high}} \gg \mu^2 + \sigma^2_{\text{low}}\)，几乎所有被选中的点都来自
+\(s_2\)（噪声状态）。
+
+\textbf{增益分析.} 在 \(s_2\)
+中采样额外的点无助于减少预测误差------模型已经最优。在 \(s_1\)
+中每采样一个点，可将偏差从 \(\mu^2\) 降低到
+\(O(\sigma^2_{\text{low}} / n_{s_1})\)。
+
+\textbf{期望增益下界.} 若 Max-Residual 采了 \(B\) 个 \(s_2\) 中的点：
+
+\[\mathbb{E}[\text{增益}_{\text{res}}] = O\left(\frac{\sigma^2_{\text{low}}}{n_{s_1}}\right) \cdot \left(\frac{n_{s_1}}{n_{s_1} + n_{s_2}}\right)^B \to 0 \quad \text{as } B \to \infty\]
+
+（因为 \(\frac{n_{s_1}}{n_{s_1}+n_{s_2}} < 1\)，指数增长地小）。
+
+\textbf{差异分析.} 设 \(B_{\text{res}}\) 为 Max-Residual 分配在 \(s_1\)
+的预算，\(B_{\text{state}}\) 为 State-Level Sampling 分配在 \(s_1\)
+的预算。由于 Max-Residual 偏向
+\(s_2\)，\(B_{\text{res}} \ll B_{\text{state}}\)。
+
+更新后的期望损失： - Max-Residual:
+\(\mathbb{E}[\mathcal{L}_{\text{res}}] \approx \frac{\sigma^2_{\text{low}}}{n_{s_1} + B_{\text{res}}} + \sigma^2_{\text{high}}\)
+- State-Level:
+\(\mathbb{E}[\mathcal{L}_{\text{state}}] \approx \frac{\sigma^2_{\text{low}}}{n_{s_1} + B_{\text{state}}} + \sigma^2_{\text{high}}\)
+
+差值：\(\mathbb{E}[\mathcal{L}_{\text{res}}] - \mathbb{E}[\mathcal{L}_{\text{state}}] \approx \sigma^2_{\text{low}}\left(\frac{1}{n_{s_1} + B_{\text{res}}} - \frac{1}{n_{s_1} + B_{\text{state}}}\right) > 0\)。
+
+因此
+\(\mathbb{E}[\text{增益}_{\text{state}}] - \mathbb{E}[\text{增益}_{\text{res}}] > 0\)。□
+
+\subsubsection{SCX
+状态级采样的上界}\label{scx-ux72b6ux6001ux7ea7ux91c7ux6837ux7684ux4e0aux754c}
+
+\textbf{定理 2.1 (改进上界).} 若 SCX 的状态获取函数
+\(V(s) = \bar{r}(s) \cdot \rho(s) \cdot L(s) \cdot [1 - D(s)]\)
+能够正确区分可学习状态和噪声状态（即 \(L(s)\) 是 \(s\)
+的可学习性的精确度量），则 SCX 采样的期望预算浪费至多为：
+
+\[\mathbb{E}[\text{浪费}_{\text{SCX}}] \leq B \cdot \epsilon_{\text{est}},\]
+
+其中
+\(\epsilon_{\text{est}} = P(L(s) \text{ 估计错误})\)。相比之下，Max-Residual
+的期望浪费下界为：
+
+\[\mathbb{E}[\text{浪费}_{\text{res}}] \geq B \cdot P(x \in H_{\text{noise}} \mid \text{残差最高}).\]
+
+当
+\(P(x \in H_{\text{noise}} \mid \text{残差最高}) \gg \epsilon_{\text{est}}\)
+时，SCX 显著优于 Max-Residual。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Proposition 3:
+状态条件权重优于全局权重}\label{proposition-3-ux72b6ux6001ux6761ux4ef6ux6743ux91cdux4f18ux4e8eux5168ux5c40ux6743ux91cd}
+
+\subsubsection{数学陈述}\label{ux6570ux5b66ux9648ux8ff0-2}
+
+在 SCX 中，专家 \(f_m\) 的权重函数定义为：
+
+\[w_m(x) \propto \exp\left(-\alpha \sum_x \gamma_s(x) \hat{R}_m(s)\right),\]
+
+其中 \(\gamma_s(x) = \mathbf{1}\{x \in s\}\) 为状态指示函数。
+
+与之对比，全局权重的形式为：
+
+\[w_m^{\text{global}} \propto \exp(-\alpha \hat{R}_m).\]
+
+\textbf{命题 3.} 在以下意义下，状态条件权重 \(w_m(x)\) 优于全局权重
+\(w_m^{\text{global}}\)：
+
+\[\mathbb{E}_{x \sim P}\left[\sum_m w_m(x) \ell(f_m(x), y)\right] \leq \mathbb{E}_{x \sim P}\left[\sum_m w_m^{\text{global}} \ell(f_m(x), y)\right],\]
+
+只要状态划分 \(\Pi\) 是 \(Y\) 的充分统计量或与其近似。
+
+\subsubsection{证明}\label{ux8bc1ux660e-2}
+
+\textbf{定义权重.} 状态条件权重：
+
+\[w_m(s) = \frac{\exp(-\alpha \hat{R}_m(s))}{\sum_{m'} \exp(-\alpha \hat{R}_{m'}(s))}.\]
+
+全局权重：
+
+\[w_m^{\text{global}} = \frac{\exp(-\alpha \hat{R}_m)}{\sum_{m'} \exp(-\alpha \hat{R}_{m'})}.\]
+
+\textbf{Step 1: 使用 Gibbs 不等式.} 对于固定的 \(x \in s\)，在状态 \(s\)
+内，权重 \(w_m(s)\) 最小化以下目标：
+
+\[J_s(w) = \sum_m w_m \hat{R}_m(s) + \frac{1}{\alpha} \sum_m w_m \log w_m.\]
+
+这是概率单纯形上的凸优化，其 KKT 条件给出 \(w_m(s)\)
+为唯一解。因此对于任意其他权重向量 \(w'\)（包括
+\(w_m^{\text{global}}\)）：
+
+\[\sum_m w_m(s) \hat{R}_m(s) + \frac{1}{\alpha} \sum_m w_m(s) \log w_m(s) \leq \sum_m w_m^{\text{global}} \hat{R}_m(s) + \frac{1}{\alpha} \sum_m w_m^{\text{global}} \log w_m^{\text{global}}.\]
+
+\textbf{Step 2: 两边取条件期望.} 给定 \(x \in s\)：
+
+\[\mathbb{E}\left[\sum_m w_m(s) \ell(f_m(X), Y) \mid X \in s\right] + \frac{1}{\alpha} H(w(s)) \leq \mathbb{E}\left[\sum_m w_m^{\text{global}} \ell(f_m(X), Y) \mid X \in s\right] + \frac{1}{\alpha} H(w^{\text{global}}),\]
+
+其中 \(H(w) = -\sum_m w_m \log w_m\) 为 Shannon 熵。
+
+\textbf{Step 3: 利用熵差.} 由 Jensen
+不等式，全局权重的熵小于等于状态条件权重的期望熵：
+
+\[H(w^{\text{global}}) \leq \mathbb{E}_{s}[H(w(s))],\]
+
+这是因为凸函数 \(-H\)
+满足：\(H(\mathbb{E}[w(s)]) \geq \mathbb{E}[H(w(s))]\)。因此：
+
+\[\mathbb{E}\left[\sum_m w_m(s) \ell(f_m(X), Y) \right] \leq \mathbb{E}\left[\sum_m w_m^{\text{global}} \ell(f_m(X), Y) \right].\]
+
+\textbf{严格性.} 当且仅当所有状态有相同的风险估计（即
+\(\hat{R}_m(s) = \hat{R}_m\) 对所有 \(s\)
+成立），或者熵差正好抵消风险差时，等号成立。否则不等式严格。
+
+□
+
+\subsubsection{风险度量讨论}\label{ux98ceux9669ux5ea6ux91cfux8ba8ux8bba}
+
+\textbf{定理 3.1 (Bound 的显式化).} 若 \(\ell\) 有界于
+\([0, L_{\max}]\)，则：
+
+\[\mathbb{E}\left[\sum_m w_m(s) \ell(f_m(X), Y)\right] \leq \mathbb{E}\left[\sum_m w_m^{\text{global}} \ell(f_m(X), Y)\right] - \frac{1}{\alpha} \cdot I(s; w),\]
+
+其中 \(I(s; w) = \mathbb{E}_s[\text{KL}(w(s) \| w^{\text{global}})]\)
+为状态与权重的互信息。
+
+\textbf{证明:}
+
+\[\begin{aligned}
+&\mathbb{E}\left[\sum_m w_m^{\text{global}} \ell(f_m(X), Y) - \sum_m w_m(s) \ell(f_m(X), Y)\right] \\
+&= \mathbb{E}\left[\sum_m (w_m^{\text{global}} - w_m(s)) \ell(f_m(X), Y)\right] \\
+&= \mathbb{E}\left[\sum_m (w_m^{\text{global}} - w_m(s)) (\ell(f_m(X), Y) - \hat{R}_m(s))\right] + \mathbb{E}\left[\sum_m (w_m^{\text{global}} - w_m(s)) \hat{R}_m(s)\right] \\
+&\geq \mathbb{E}\left[\sum_m (w_m^{\text{global}} - w_m(s)) \hat{R}_m(s)\right] \quad (\text{由于 $\ell - \hat{R}$ 是零均值噪声})
+\end{aligned}\]
+
+由 Gibbs 不等式：
+
+\[\sum_m (w_m^{\text{global}} - w_m(s)) \hat{R}_m(s) = \frac{1}{\alpha} \sum_m w_m(s) \log \frac{w_m(s)}{w_m^{\text{global}}} = \frac{1}{\alpha} \text{KL}(w(s) \| w^{\text{global}}).\]
+
+两边取期望即得。□
+
+该 Bound
+表明：状态条件权重的优势与状态-权重的互信息成正比。当状态划分发现有意义的结构时，\(I(s; w) > 0\)，优势严格为正。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{第三部分：理论界限分析}\label{ux7b2cux4e09ux90e8ux5206ux7406ux8bbaux754cux9650ux5206ux6790}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{3.1 \(R_m(s)\)
+的样本复杂度}{3.1 R\_m(s) 的样本复杂度}}\label{r_ms-ux7684ux6837ux672cux590dux6742ux5ea6}
+
+\textbf{问题.} 给定 \(n\) 个样本，需要多少样本才能可靠估计
+\(\hat{R}_m(s)\)？
+
+\textbf{定理 3.1.1 (条件风险估计的一致收敛).} 设
+\(\ell \in [0, L_{\max}]\)，状态 \(s\) 有 \(n_s\) 个样本。则对于任意
+\(\delta > 0\)，以概率至少 \(1 - \delta\)：
+
+\[|\hat{R}_m(s) - R_m(s)| \leq L_{\max} \sqrt{\frac{\log(2/\delta)}{2n_s}}.\]
+
+\textbf{证明.} 由 Hoeffding 不等式。
+
+\textbf{推论.} 要使 \(|\hat{R}_m(s) - R_m(s)| \leq \epsilon\) 以概率
+\(1-\delta\) 成立，需要的样本数为：
+
+\[n_s \geq \frac{L_{\max}^2 \log(2/\delta)}{2\epsilon^2}.\]
+
+这意味着： - 若状态 \(s\) 太小（\(n_s\) 小），\(R_m(s)\) 的估计不可靠 -
+SCX 的状态发现算法需要在\textbf{状态粒度}（更多状态 →
+更精细）与\textbf{估计精度}（更多状态 → 更少每状态样本）间做权衡
+
+\textbf{考虑多个专家和多重比较.} 若有 \(M\) 个专家，使用 Bonferroni
+校正：
+
+\[n_s \geq \frac{L_{\max}^2 \log(2M/\delta)}{2\epsilon^2}.\]
+
+\textbf{定理 3.1.2 (最小最大下界).} 存在分布使得任意估计器
+\(\hat{R}_m(s)\) 满足：
+
+\[\mathbb{E}[|\hat{R}_m(s) - R_m(s)|] \geq \frac{\sigma(s)}{2\sqrt{n_s}},\]
+
+其中 \(\sigma^2(s) = \text{Var}(\ell(f_m(X), f^*(X)) \mid X \in s)\)。
+
+\textbf{证明.} 由 Le Cam 方法或 Fano 不等式导出。
+
+\subsection{3.2
+状态发现的相合性}\label{ux72b6ux6001ux53d1ux73b0ux7684ux76f8ux5408ux6027}
+
+\textbf{问题.} 状态发现算法（聚类）何时收敛到真实状态？
+
+\textbf{定义 3.2.1 (真实状态).} 真实状态是输入空间 \(\mathcal{X}\)
+的划分 \(\Pi^* = \{s_1^*, \dots, s_K^*\}\)，使得在每个 \(s_k^*\)
+内，条件分布 \(P_{Y|X}\)
+是\textbf{常值}：\(P(Y \mid X) = P(Y \mid s_k^*)\) 对所有
+\(x \in s_k^*\) 成立。
+
+\textbf{定理 3.2.1 (谱聚类的相合性).} 假设： 1. \(\mathcal{X}\)
+嵌入于紧致 Riemann 流形 \(\mathcal{M}\) 2. 条件分布 \(P_{Y|X}\) 在
+\(\mathcal{M}\) 上分片常值，跳跃集为 \(\mathcal{J}\)（流形测度为零） 3.
+核函数 \(K_h(x, x') = \exp(-\|x - x'\|^2 / h)\) 满足 \(h \to 0\) 且
+\(h \cdot n^{1/(d+4)} \to \infty\)
+
+则谱聚类得到的划分 \(\hat{\Pi}_n\) 满足：
+
+\[d_{\text{Hausdorff}}(\partial \hat{\Pi}_n, \mathcal{J}) \xrightarrow{P} 0, \quad n \to \infty,\]
+
+其中 \(d_{\text{Hausdorff}}\) 为 Hausdorff
+距离，\(\partial \hat{\Pi}_n\) 为估计划分的边界。
+
+\textbf{证明思路.} 遵循 von Luxburg et al.~(2008)
+的谱聚类相合性框架，但将 \(Y\) 的条件分布替代为高斯核亲和度。
+
+\textbf{推论.} 在 SCX 中，若状态划分的 \(K\)
+正确设定，且状态的真实决策边界是光滑的（排除分形边界等病理情况），则 SCX
+的状态发现是相合的------随着 \(n \to \infty\)，估计状态收敛到真实状态。
+
+\textbf{\(K\) 未知的情况.} 使用交叉验证选择 \(K\)：
+
+\[K^* = \arg\min_K \sum_{k=1}^K \sum_{x_i \in \hat{s}_k^{(K)}} \ell(\bar{y}_{\hat{s}_k^{(K)}}, y_i) + \lambda K,\]
+
+其中 \(\bar{y}_{\hat{s}_k^{(K)}}\)
+为状态内的平均标签。这等价于最小化经验风险加模型复杂度惩罚。
+
+\textbf{定理 3.2.2 (状态数的可识别性).} 若 \(K^*\)
+是真实状态数，则对于充分大的 \(n\)，以高概率有 \(\hat{K}_n = K^*\)，只要
+\(\ell\) 在每个状态内是次高斯分布且 \(\lambda\) 满足
+\(\lambda \gg \sigma^2 \log(n)/n\)。
+
+\subsection{3.3 State-wise vs.~Point-wise Regret
+Bound}\label{state-wise-vs.-point-wise-regret-bound}
+
+\textbf{问题.} SCX 的状态级路由 \(m^*(x) = \arg\min_m R_m(s(x))\)
+与逐点最优 \(m^{**}(x) = \arg\min_m \mathbb{E}[\ell(f_m(x), y) \mid x]\)
+之间的差距。
+
+\textbf{定义.} 状态级路由的 regret 为：
+
+\[\text{Regret}_{\text{state}}(n) = \mathbb{E}\left[\sum_{m=1}^M \mathbf{1}\{m^*(X) = m\} \ell(f_m(X), Y)\right] - \mathbb{E}\left[\min_m \ell(f_m(X), Y)\right].\]
+
+\textbf{定理 3.3.1 (Regret Bound).} 若损失有界于
+\([0, L_{\max}]\)，且状态划分满足 \(\epsilon\)-近似充分性：
+
+\[\mathbb{E}_{x \in s}[|\eta(x) - \eta(s)|] \leq \epsilon, \quad \forall s \in \Pi,\]
+
+其中
+\(\eta(x) = \mathbb{E}[Y \mid X = x]\)，\(\eta(s) = \mathbb{E}[Y \mid X \in s]\)。则：
+
+\[\text{Regret}_{\text{state}} \leq 2L_{\max} \cdot \epsilon.\]
+
+\textbf{证明.}
+
+\[\begin{aligned}
+\text{Regret}_{\text{state}} &= \mathbb{E}\left[\min_m \mathbb{E}[\ell(f_m(X), Y) \mid X \in s] - \min_m \ell(f_m(X), Y)\right] \\
+&\leq \mathbb{E}\left[\max_m |\mathbb{E}[\ell(f_m(X), Y) \mid X \in s] - \ell(f_m(X), Y)|\right] \\
+&\leq \mathbb{E}\left[|\mathbb{E}[Y \mid X \in s] - Y|\right] \cdot L_{\max}' \quad (\text{由 Lipschitz}) \\
+&\leq 2L_{\max} \cdot \epsilon.
+\end{aligned}\]
+
+\textbf{推论.} 当
+\(\epsilon \to 0\)（状态内条件分布完全齐次）时，状态级路由的 regret
+趋于零。这意味着\textbf{充分细的划分可达到逐点最优}。
+
+\textbf{收敛率.} 若状态估计误差 \(\epsilon_n\) 随 \(n\) 衰减（如
+\(\epsilon_n = O(n^{-1/(d+2)})\) 对 \(d\) 维流形），则：
+
+\[\text{Regret}_{\text{state}}(n) = O(n^{-1/(d+2)}).\]
+
+\subsection{3.4
+噪声状态的可识别性条件}\label{ux566aux58f0ux72b6ux6001ux7684ux53efux8bc6ux522bux6027ux6761ux4ef6}
+
+\textbf{问题.}
+什么条件下噪声状态（\(H_{\text{noise}}\)）可从可学习状态中分离？
+
+\textbf{定义 3.4.1 (可识别性条件).} 称噪声状态 \(s\) 是
+\(\Delta\)-可识别的，若：
+
+\[|\bar{r}(s) - \bar{r}(s')| > \Delta \quad \text{且} \quad |L(s) - L(s')| > \Delta, \quad \forall s' \neq s,\]
+
+其中 \(L(s)\) 为可学习性度量。
+
+\textbf{定理 3.4.1 (可识别性阈值).}
+若满足以下条件，则噪声状态的识别具有指数收敛率：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \(\ell\) 属于指数族分布
+\item
+  状态 \(s\) 的样本量 \(n_s \geq c \cdot \log(M/\delta) / \Delta^2\)
+\item
+  状态数 \(K = o(n / \log n)\)
+\end{enumerate}
+
+则存在算法 \(\mathcal{A}\) 使得：
+
+\[P(\mathcal{A} \text{ 正确识别了所有噪声状态}) \geq 1 - \delta.\]
+
+\textbf{证明概要.}
+基于似然比检验的指数收敛性。每个状态的噪声检验可视为二元假设检验
+\(H_0: s \in H_{\text{learnable}}\)
+vs.~\(H_1: s \in H_{\text{noise}}\)。由 Chernoff-Stein 引理，错误概率以
+\(\exp(-n_s \cdot \text{KL}(P_1 \| P_0))\) 速率衰减。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{第四部分：与现有理论的连接}\label{ux7b2cux56dbux90e8ux5206ux4e0eux73b0ux6709ux7406ux8bbaux7684ux8fdeux63a5}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{4.1 SCX 嵌入 PAC-Bayes}\label{scx-ux5d4cux5165-pac-bayes}
+
+\textbf{构造.} 在每个状态 \(s\) 中，定义一个''先验分布''
+\(P_s\)（通常为所有专家的均匀分布）和''后验分布'' \(Q_s\)：
+
+\[Q_s(m) = \frac{\exp(-\alpha R_m(s))}{\sum_{m'} \exp(-\alpha R_{m'}(s))}.\]
+
+\textbf{定理 4.1 (PAC-Bayes 泛化界).} 对于每个状态 \(s\)，后验 \(Q_s\)
+的期望风险以概率 \(1-\delta\) 满足：
+
+\[\mathbb{E}_{m \sim Q_s}[R_m(s)] \leq \mathbb{E}_{m \sim Q_s}[\hat{R}_m(s)] + \sqrt{\frac{\text{KL}(Q_s \| P_s) + \log(n_s/\delta)}{2n_s - 1}}.\]
+
+\textbf{SCX 的特殊性.} 当 \(\alpha \to \infty\) 时，\(Q_s\) 退化为
+\(\delta_{m^*(s)}\)（仅在最佳专家上有质量）。此时 PAC-Bayes 界退化为：
+
+\[R_{m^*(s)}(s) \leq \hat{R}_{m^*(s)}(s) + \sqrt{\frac{\log M + \log(n_s/\delta)}{2n_s - 1}}.\]
+
+这正是 SCX 选择''每个状态的最佳专家''策略的泛化保证。
+
+\textbf{全局 PAC-Bayes vs.~状态 PAC-Bayes.} 若使用全局后验 \(Q\)：
+
+\[R(Q) \leq \hat{R}(Q) + \sqrt{\frac{\text{KL}(Q \| P) + \log(n/\delta)}{2n - 1}},\]
+
+其中 \(\text{KL}(Q \| P)\) 需覆盖所有状态间的差异。由于
+\(\text{KL}(Q \| P) \geq \mathbb{E}_s[\text{KL}(Q_s \| P_s)]\)（数据处理不等式），状态
+PAC-Bayes 的界比全局 PAC-Bayes 更紧。
+
+\subsection{4.2 与 Information Bottleneck Principle
+的关系}\label{ux4e0e-information-bottleneck-principle-ux7684ux5173ux7cfb}
+
+\textbf{信息瓶颈 (Tishby, 1999).} 寻找压缩表示 \(\tilde{X}\) 最大化
+\(I(\tilde{X}; Y)\) 同时最小化 \(I(\tilde{X}; X)\)：
+
+\[\min_{P(\tilde{x}|x)} I(\tilde{X}; X) - \beta I(\tilde{X}; Y).\]
+
+\textbf{SCX
+的状态发现}对应信息瓶颈的\textbf{硬聚类版本}：\(\tilde{X} = s(X)\)
+是一个确定性函数，\(\tilde{X}\) 的取值是离散的状态索引。
+
+\textbf{定理 4.2 (等价性).} 假设 \(|\tilde{\mathcal{X}}| = K\)。则 SCX
+的最优状态划分 \(\Pi^*\) 满足：
+
+\[\Pi^* \in \arg\min_{\Pi: |\Pi| = K} I(X; \tilde{X}) - \beta I(\tilde{X}; Y),\]
+
+其中 \(\tilde{X} = s(X)\) 当 \(X \in s\)。
+
+\textbf{证明.} 注意到 \(I(X; \tilde{X}) = H(\tilde{X})\)（因为
+\(\tilde{X}\) 是 \(X\) 的确定性函数），而
+\(H(\tilde{X}) \leq \log K\)。最大化 \(I(\tilde{X}; Y)\) 等价于最小化
+\(\mathbb{E}_s[H(Y \mid X \in s)]\)，这正是 SCX 中''状态内 \(Y\)
+的方差最小化''目标。□
+
+\textbf{SCX 的扩展.} 标准信息瓶颈没有考虑''专家''维度。SCX
+将其扩展为\textbf{条件信息瓶颈}：
+
+\[\min_{\Pi} I(X; \tilde{X} \mid \mathcal{F}) - \beta I(\tilde{X}; Y \mid \mathcal{F}),\]
+
+其中 \(\mathcal{F} = \{f_1, \dots, f_M\}\)
+为专家集合。这意味着状态划分应条件于可用专家------不同的专家集合诱导不同的最优划分。
+
+\textbf{推论.} SCX
+的状态发现算法本质上是\textbf{专家条件信息瓶颈最优化}。
+
+\subsection{4.3 决策论推导}\label{ux51b3ux7b56ux8bbaux63a8ux5bfc}
+
+\textbf{框架.} SCX 可以完全从\textbf{统计决策理论} (Wald, 1950)
+推导出来。
+
+\textbf{决策论三要素：} 1. \textbf{参数空间}
+\(\Theta\)：专家的潜在性能参数 2. \textbf{行动空间}
+\(\mathcal{A}\)：选择哪个专家 \(f_m\)，或权重分配 3. \textbf{损失函数}
+\(L(\theta, a)\)：选择的专家在真实状态下的风险
+
+\textbf{决策规则.} 一个决策规则 \(d: \mathcal{X} \to \mathcal{A}\)
+是从输入到行动的函数。SCX 使用的是\textbf{状态-决策规则}：
+
+\[d(x) = \arg\min_m \mathbb{E}[\ell(f_m(x), f^*(x)) \mid x \in s(x)].\]
+
+\textbf{定理 4.3 (最小最大性).} 若状态划分 \(\Pi\)
+是决策论意义下的完备统计量（即
+\(Y \perp X \mid s(X)\)），则状态-决策规则 \(d(x)\)
+是\textbf{可采纳的}（admissible）------不存在其他决策规则在所有状态下均不劣于它且在某些状态下严格更优。
+
+\textbf{证明.} 由完备统计量的决策论性质（Lehmann-Scheffe 定理推广）：若
+\(T(X)\) 是完备充分统计量，则任何基于 \(T(X)\) 的决策规则都是可采纳的。
+
+由于 \(s(X)\) 是 \(X\)
+的粗粒化，完备性条件在一般情况下不自动满足。但若状态划分接近充分统计量，则状态-决策规则近似可采纳。
+
+\textbf{SCX 作为贝叶斯决策规则.} 设先验 \(\pi(\theta)\)
+刻画专家的可靠性。贝叶斯决策规则为：
+
+\[d_{\text{Bayes}}(x) = \arg\min_a \mathbb{E}_{\theta \sim \pi(\cdot|x)}[L(\theta, a)].\]
+
+SCX 的状态条件权重 \(w_m(x)\) 正是\textbf{贝叶斯后验权重的变分近似}：
+
+\[w_m(x) \approx P(\theta_m \text{ 是最优专家} \mid x).\]
+
+\textbf{Neyman-Pearson 视角.} SCX 的噪声检测可以框定为 Neyman-Pearson
+假设检验：在每个状态 \(s\) 中，检验 \(H_0: x\) 由可学习机制生成
+vs.~\(H_1: x\) 为纯噪声点。最优检验由似然比给出：
+
+\[\Lambda(x) = \frac{P_{\text{learnable}}(x)}{P_{\text{noise}}(x)} \lessgtr \tau.\]
+
+SCX 的噪声分数 \(\text{NoiseScore}(x_i)\) 是 \(\Lambda(x_i)\)
+的变分近似。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{附录：符号表}\label{ux9644ux5f55ux7b26ux53f7ux8868}
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+符号 & 含义 & 首次出现 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(s\) & 状态（输入空间的可测子集） & Def 1 \\
+\(R_m(s)\) & 专家 \(f_m\) 在状态 \(s\) 中的条件风险 & Def 1 \\
+\(SCX_m(s)\) & 专家 \(f_m\) 在状态 \(s\) 中的可靠性 & Def 2 \\
+\(V(s)\) & 状态 \(s\) 的获取价值 & Def 3 \\
+\(\bar{r}(s)\) & 状态 \(s\) 中的平均残差 & Def 3 \\
+\(\rho(s)\) & 状态 \(s\) 的先验概率 & Def 3 \\
+\(L(s)\) & 状态 \(s\) 的可学习性 & Def 3 \\
+\(D(s)\) & 状态 \(s\) 已被采样的程度 & Def 3 \\
+\(C(s)\) & 状态 \(s\) 的置信度 / 可分类性 & 噪声分数 \\
+\(N(s)\) & 状态 \(s\) 中的噪声比例 & Def 3 \\
+\(w_m(x)\) & 专家 \(f_m\) 在输入 \(x\) 处的权重 & 专家路由 \\
+\(\gamma_s(x)\) & 状态隶属指示函数 & 专家路由 \\
+\(\eta(x)\) & 回归函数 \(\mathbb{E}[Y \mid X=x]\) & A.2 \\
+\(\ell\) & 损失函数 & Def 1 \\
+\(\tau\) & 可靠性阈值 & Def 2 \\
+\(\alpha\) & 权重 softmax 的逆温度 & 专家路由 \\
+\(\lambda\) & 专家路由的正则化参数 & 专家路由 \\
+\(\phi_i(v)\) & 数据点 \(i\) 的 Shapley 值 & C.1 \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{参考文献}\label{ux53c2ux8003ux6587ux732e}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Kolmogorov, A. N. (1933). \emph{Grundbegriffe der
+  Wahrscheinlichkeitsrechnung}.
+\item
+  Wald, A. (1950). \emph{Statistical Decision Functions}.
+\item
+  Shapley, L. S. (1953). A value for n-person games. \emph{Contributions
+  to the Theory of Games}.
+\item
+  Dawid, A. P. \& Skene, A. M. (1979). Maximum likelihood estimation of
+  observer error-rates. \emph{Applied Statistics}.
+\item
+  Vapnik, V. N. (1998). \emph{Statistical Learning Theory}.
+\item
+  Tsybakov, A. B. (2004). Optimal aggregation of classifiers in
+  statistical learning. \emph{Annals of Statistics}.
+\item
+  MacKay, D. J. C. (1992). Information-based objective functions for
+  active data selection. \emph{Neural Computation}.
+\item
+  Tishby, N., Pereira, F. C., \& Bialek, W. (1999). The information
+  bottleneck method. \emph{Allerton Conference}.
+\item
+  McAllester, D. A. (1999). PAC-Bayesian model averaging. \emph{COLT}.
+\item
+  Auer, P., Cesa-Bianchi, N., \& Fischer, P. (2002). Finite-time
+  analysis of the multiarmed bandit problem. \emph{Machine Learning}.
+\item
+  Frazier, P. I., Powell, W. B., \& Dayanik, S. (2008). A
+  knowledge-gradient policy for sequential information collection.
+  \emph{SIAM Journal on Control and Optimization}.
+\item
+  von Luxburg, U., Belkin, M., \& Bousquet, O. (2008). Consistency of
+  spectral clustering. \emph{Annals of Statistics}.
+\item
+  Hampel, F. R. (1974). The influence curve and its role in robust
+  estimation. \emph{JASA}.
+\item
+  Koh, P. W. \& Liang, P. (2017). Understanding black-box predictions
+  via influence functions. \emph{ICML}.
+\item
+  Lehmann, E. L. \& Casella, G. (1998). \emph{Theory of Point
+  Estimation}.
+\item
+  Vovk, V., Gammerman, A., \& Shafer, G. (2005). \emph{Algorithmic
+  Learning in a Random World}.
+\item
+  Banzhaf, J. F. (1965). Weighted voting doesn't work. \emph{Rutgers Law
+  Review}.
+\item
+  Mockus, J. (1978). On Bayesian methods for seeking the extremum.
+  \emph{Optimization Techniques}.
+\item
+  von Luxburg, U. (2007). A tutorial on spectral clustering.
+  \emph{Statistics and Computing}.
+\end{enumerate}
+
+\end{document}
