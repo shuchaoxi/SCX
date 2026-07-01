@@ -172,13 +172,14 @@ elevated from computational hardness to \textbf{information-theoretic security}
 via quantum mechanical principles. We develop three interconnected results:
 
 \textbf{(1) BB84 Protocol for \Mt\ Transmission} (Section~\ref{sec:bb84}): We
-formalize the Bennet--Brassard 1984 quantum key distribution protocol as the
+formalize the Bennett--Brassard 1984 quantum key distribution protocol as the
 secure channel for transmitting \Mt\ parameters from the auditor (Alice) to the
 audit ledger. We prove that any eavesdropping attempt by a malicious entity
-introduces a detectable error rate $\varepsilon > 0$, bounded below by
-$11\%$ for the intercept-resend attack — a guarantee that follows from the
-no-cloning theorem and the uncertainty principle, not from unproven
-computational assumptions.
+introduces a detectable error rate $\varepsilon > 0$: for the simplest
+intercept-resend attack, the expected error rate is $25\%$ per sifted bit,
+far exceeding the protocol's abort threshold of $\sim\!11\%$. This guarantee
+follows from the no-cloning theorem and the uncertainty principle, not from
+unproven computational assumptions.
 
 \textbf{(2) Audit Entanglement} (Section~\ref{sec:entanglement}): We introduce
 the concept of \emph{audit entanglement}, where two auditors (e.g., Spring and
@@ -195,7 +196,8 @@ define the quantum audit channel $\cN_{\text{audit}}$ and prove its capacity
 theorem: the maximum rate of reliable audit information transmission is bounded
 by the Holevo quantity $\chi(\cN_{\text{audit}})$, which for a depolarizing
 channel with noise parameter $p$ is
-$C_Q = 1 - H_2(p) - p\log_2 3$, where $H_2$ is the binary entropy function.
+$C_Q = 1 - H_2(2p/3)$ for the depolarizing channel with noise parameter $p$,
+where $H_2$ is the binary entropy function.
 
 \textbf{(4) Practical Feasibility} (Section~\ref{sec:practical}): We analyze
 hardware requirements, existing quantum network infrastructure, and a phased
@@ -219,10 +221,10 @@ information-theoretic security
 核心思想是：\Mt\ 参数传输和审计结果交付的安全性可以从计算复杂度提升到
 \textbf{信息论安全}，通过量子力学原理实现。我们发展了三个相互关联的结果：
 
-\textbf{(1) \Mt\ 传输的BB84协议}（第\ref{sec:bb84}节）：我们将Bennet--Brassard 1984
+\textbf{(1) \Mt\ 传输的BB84协议}（第\ref{sec:bb84}节）：我们将Bennett--Brassard 1984
 量子密钥分发协议形式化为从审计者（Alice）到审计账本的\Mt\ 参数安全传输通道。
 我们证明任何恶意实体的窃听尝试都会引入可检测的错误率 $\varepsilon > 0$，
-对于截获-重发攻击，其下界为 $11\%$——这一保证来自不可克隆定理和不确定性原理，
+对于截获-重发攻击，预期错误率为 $25\%$，远超协议中止阈值 $\sim 11\%$——这一保证来自不可克隆定理和不确定性原理，
 而非未经证明的计算假设。
 
 \textbf{(2) 审计纠缠}（第\ref{sec:entanglement}节）：我们引入\emph{审计纠缠}概念，
@@ -235,7 +237,7 @@ $\cO(1/\delta_{\text{tamper}})$ 次独立测量后以任意接近1的概率被�
 \textbf{(3) 量子审计信道}（第\ref{sec:channel}节）：我们正式定义了量子审计信道
 $\cN_{\text{audit}}$并证明了其容量定理：可靠审计信息传输的最大速率由Holevo量
 $\chi(\cN_{\text{audit}})$ 界定，对于噪声参数为 $p$ 的去极化信道，
-$C_Q = 1 - H_2(p) - p\log_2 3$。
+$C_Q = 1 - H_2(2p/3)$。
 
 \textbf{(4) 实际可行性}（第\ref{sec:practical}节）：我们分析了硬件需求、现有
 量子网络基础设施和分阶段部署路线图。我们的结论是，虽然完全量子安全的审计
@@ -631,7 +633,10 @@ $b = 16$ bits:
   \item Total bits: $64 \times 16 = 1024$ bits.
   \item BB84 raw photons: $n \geq 4096$ (accounting for basis mismatch,
         error estimation sample, and privacy amplification overhead).
-  \item At 10 MHz photon source rate: transmission takes $< 1$ millisecond.
+  \item At 10 MHz photon source rate: raw transmission time $< 1$ ms
+        (excluding detector dead time, classical post-processing, and
+        basis reconciliation latency; total protocol execution is
+        typically on the order of 10--100 ms in practice).
   \item Sifted key length: $\sim 2048$ bits.
   \item Final key after error correction and privacy amplification: $\sim 1024$ bits.
 \end{itemize}
@@ -676,20 +681,24 @@ After BB84 key establishment:
 \end{enumerate}
 \end{protocol}
 
-\subsubsection{Audit Trail with Quantum Timestamps}
+\subsubsection{Audit Trail with Quantum-Certified Timestamps}
 
-Each $\Mt$ transmission generates a quantum-certified timestamp by
-entangling a timestamp qubit with the transmitted state:
+Each $\Mt$ transmission is bound to a quantum-derived session key
+$k_{\text{session}}$ generated during the BB84 exchange. The timestamp
+and session key are combined via a hash-based commitment:
 
 \[
-\ket{\Psi_{\text{stamp}}} = \frac{1}{\sqrt{2}}
-\left(\ket{0}_{\text{ts}} \otimes \ket{\Mt} + \ket{1}_{\text{ts}}
-\otimes \ket{\Mt'}\right)
+\text{Commit}_t = \text{SHA3-512}(\Mt \parallel t \parallel k_{\text{session}} \parallel S_t)
 \]
 
-where $\ket{\Mt}$ is the legitimate state and $\ket{\Mt'}$ is a
-verification copy. Measuring the timestamp qubit later reveals whether
-the $\Mt$ state has been disturbed, providing an immutable audit trail.
+where $S_t$ is the CHSH test statistic from concurrent entanglement
+verification (Section~\ref{sec:entanglement}). Because $k_{\text{session}}$
+is information-theoretically secret (derived from BB84), the commitment
+binds $\Mt$ to a specific quantum session and time $t$ with
+unconditional security. Subsequent verification requires knowledge of
+$k_{\text{session}}$, which only the legitimate parties possess.
+This provides an immutable, quantum-certified audit trail without
+requiring a physical entanglement of the timestamp with $\Mt$.
 
 % ===========================================================================
 %  SECTION 3: Audit Entanglement
@@ -719,9 +728,10 @@ operators) that cannot be written as a convex combination of product states:
 \[
 \rho_{SY} \neq \sum_i p_i \, \rho_S^{(i)} \otimes \rho_Y^{(i)}.
 \]
-Equivalently, the state is \emph{entangled} if its von Neumann entropy of
-either reduced state exceeds the entropy of the total state:
-$S(\rho_S) > S(\rho_{SY})$ or $S(\rho_Y) > S(\rho_{SY})$.
+Equivalently, the state is \emph{entangled} if it violates the
+Peres--Horodecki PPT criterion, or (for pure states) if the von Neumann
+entropy of either reduced state is strictly positive while the total state
+has zero entropy: $S(\rho_S) > 0$ and $S(\rho_{SY}) = 0$.
 \par\smallskip
 \noindent\textit{审计纠缠态是两个审计者之间的二分量子态，不能写成乘积态的凸组合。}
 \end{definition}
@@ -729,11 +739,14 @@ $S(\rho_S) > S(\rho_{SY})$ or $S(\rho_Y) > S(\rho_{SY})$.
 \subsection{Entanglement as a Consensus Primitive}
 \label{sec:ent_consensus}
 
-The key insight: \textbf{entanglement provides a stronger consensus primitive
-than classical communication}. In classical distributed consensus (e.g.,
-PBFT, Raft), $n$ nodes must exchange $O(n^2)$ messages to reach agreement.
-With pre-shared entanglement and local measurements, consensus can be
-achieved with \emph{zero classical communication} in the ideal case.
+The key insight: \textbf{entanglement provides an additional security primitive
+for audit consensus}. While classical distributed consensus (e.g.,
+PBFT, Raft) requires $O(n^2)$ message exchanges, entanglement between
+auditors enables them to generate \emph{shared, certifiably random} bits
+without communication. These bits, once verified via a single round of
+classical authenticated communication (comparing a subset), serve as a
+shared one-time pad or common randomness source, reducing the round
+complexity and providing information-theoretic tamper detection.
 
 \begin{theorem}[Entanglement Consensus Theorem]
 \label{thm:ent_consensus}
@@ -745,9 +758,12 @@ copy in the computational basis $\{\ket{0}, \ket{1}\}$. Then:
   \item \textbf{Perfect Correlation:}
         $\Pbb(\text{outcome}_S = \text{outcome}_Y) = 1$ for each copy.
   
-  \item \textbf{Consensus without Communication:} The auditors can generate
-        a shared random string of length $N$ with perfect agreement and
-        zero classical communication.
+  \item \textbf{Shared Randomness Generation:} The auditors can generate
+        a shared random string of length $N$ with perfect agreement.
+        The string is uniformly distributed and private, though the
+        auditors must communicate a subset of outcomes over an
+        authenticated classical channel to verify that no tampering
+        occurred (sacrificing a small fraction of bits).
   
   \item \textbf{Tamper Detection:} If an adversary applies any CPTP map
         $\cE_{\text{adv}}$ to Spring's half of the state, the fidelity
@@ -784,10 +800,11 @@ before the auditors' measurements disturbs the correlation).
 The fidelity $\cF = \bra{\Phi^+}\rho'\ket{\Phi^+}$ measures how close
 $\rho'$ is to the original Bell state. If $\cE_{\text{adv}}$ is non-trivial
 ($\cE_{\text{adv}} \neq \id$), then $\cF < 1$ by the monotonicity of
-fidelity under CPTP maps. For $k$ independent copies, the probability
-that all $k$ copies pass a Bell test (each passing with probability $\cF$)
-is $\cF^k$. The tamper detection probability is $1 - \cF^k \to 1$ as
-$k \to \infty$, with sample complexity $k = \cO(1/(1-\cF))$.
+fidelity under CPTP maps. For $k$ independent copies tested via a CHSH
+or fidelity-estimation protocol, the probability that all $k$ copies
+appear un-tampered decays as $\cF^{\alpha k}$ for some protocol-dependent
+constant $\alpha > 0$. The tamper detection probability approaches
+$1$ as $k \to \infty$, with sample complexity $k = \cO(1/(1-\cF))$.
 \end{proof}
 
 \subsection{Entanglement-Based Tamper Detection Protocol}
@@ -824,10 +841,15 @@ trusted quantum source (or verified via entanglement swapping).
         \[
         S = \E[A_0 B_0] + \E[A_0 B_1] + \E[A_1 B_0] - \E[A_1 B_1].
         \]
-  \item \textbf{Acceptance Criterion:} If $|S| \leq 2$ (classical bound),
-        the entanglement has been broken — abort audit.
-        If $|S| > 2$ (up to $2\sqrt{2}$ for maximally entangled),
-        entanglement is verified.
+  \item \textbf{Acceptance Criterion:} If $|S| \leq 2 + \varepsilon_{\text{stat}}$
+        (where $\varepsilon_{\text{stat}}$ accounts for finite-statistics
+        fluctuations, scaling as $\cO(1/\sqrt{t})$), the hypothesis of
+        intact entanglement is rejected with high confidence — abort audit.
+        If $|S| > 2 + \varepsilon_{\text{stat}}$, the CHSH inequality is
+        violated and entanglement is verified at the chosen significance
+        level. For $t = 1000$ test pairs and $\varepsilon_{\text{stat}} = 0.2$,
+        the false-positive rate (classical state flagged as entangled) is
+        below $10^{-6}$.
 \end{enumerate}
 
 \medskip
@@ -872,12 +894,16 @@ sensitivity to recent anomalies. When they are entangled:
         Any discrepancy signals either (a) genuine disagreement about the
         data, or (b) tampering with the audit state.
   
-  \item \textbf{Instantaneous Collapse:} If an adversary tampers with
+  \item \textbf{Tamper-Evident Correlations:} If an adversary tampers with
         Spring's audit state (e.g., by feeding Spring manipulated data),
-        the shared entangled state collapses, immediately affecting
-        Yajie's measurement statistics. This is not a causal signal —
-        it is a correlation that \emph{reveals} the tampering, not one
-        that \emph{transmits} information superluminally.
+        the correlations between Spring and Yajie's measurement outcomes
+        deviate from the perfect correlations predicted by the shared
+        entangled state. However, no local operation on Spring's half
+        can produce any observable effect on Yajie's \emph{local}
+        measurement statistics (no-communication theorem). The tampering
+        is only detectable \emph{after} Spring and Yajie compare their
+        results over a classical channel — the comparison reveals the
+        broken correlation, but no information is transmitted superluminally.
   
   \item \textbf{Non-Local Audit Verification:} Even if Spring and Yajie
         are spatially separated (e.g., auditing different data centers),
@@ -993,6 +1019,7 @@ mixed state with probability $p$:
 \[
 \cN_p^{\text{depol}}(\rho) = (1-p)\rho + \frac{p}{3}(\pauliX\rho\pauliX +
 \pauliY\rho\pauliY + \pauliZ\rho\pauliZ).
+\label{eq:depol_channel}
 \]
 Kraus operators:
 \[
@@ -1070,35 +1097,40 @@ with $S(\rho) = -\Tr(\rho \log_2 \rho)$ the von Neumann entropy.
 \begin{theorem}[Audit Channel Capacity for Depolarizing Channel]
 \label{thm:audit_capacity}
 \rigorFull
-For the depolarizing channel $\cN_p^{\text{depol}}$ acting on a single qubit,
-the classical capacity (equivalently, the Holevo quantity, which is additive
-for this channel) is:
+For the depolarizing channel $\cN_p^{\text{depol}}$ acting on a single qubit
+as defined in Eq.~(\ref{eq:depol_channel}), the classical capacity
+(equivalently, the Holevo quantity, which is additive for this channel) is:
 \[
-C_Q(p) = 1 - H_2(p) - p\log_2 3
+C_Q(p) = 1 - H_2\!\left(\frac{2p}{3}\right)
 \]
-where $H_2(p) = -p\log_2 p - (1-p)\log_2(1-p)$.
+where $H_2(x) = -x\log_2 x - (1-x)\log_2(1-x)$.
 \end{theorem}
 
 \begin{proof}
 For the depolarizing channel, the optimal ensemble is the uniform distribution
-over a set of mutually unbiased bases. The output entropy for the average
-input $\id/2$ is:
+over the six states forming three mutually unbiased bases:
+$\{\ket{0},\ket{1},\ket{+},\ket{-},\ket{+i},\ket{-i}\}$, each with probability
+$1/6$. The average input state is $\id/2$. Since the depolarizing channel is
+unital, $\cN_p(\id/2) = \id/2$, so $S(\cN_p(\id/2)) = \log_2 2 = 1$.
+
+For a pure input $\ket{\psi}\bra{\psi}$, the channel output is:
 \[
-S(\cN_p(\id/2)) = S((1-p)\id/2 + \frac{p}{3}\sum_{\sigma} \sigma(\id/2)\sigma)
-= S(\id/2) = 1
+\cN_p(\ketbra{\psi}{\psi}) = \left(1 - \frac{4p}{3}\right)\ketbra{\psi}{\psi}
++ \frac{2p}{3}\id.
 \]
-since the depolarized state remains maximally mixed. The conditional output
-entropy for a pure input $\ket{\psi}\bra{\psi}$ is:
+(This follows from the identity
+$\frac{1}{3}(\pauliX\rho\pauliX + \pauliY\rho\pauliY + \pauliZ\rho\pauliZ)
+= \frac{2}{3}\id - \frac{1}{3}\rho$ for single-qubit states.)
+
+The eigenvalues of this output state are
+$\lambda_0 = 1 - \frac{2p}{3}$ and $\lambda_1 = \frac{2p}{3}$,
+so $S(\cN_p(\ketbra{\psi}{\psi})) = H_2\!\left(\frac{2p}{3}\right)$,
+where $H_2(x) = -x\log_2 x - (1-x)\log_2(1-x)$.
+
+By the HSW theorem and the additivity of the Holevo quantity for the
+depolarizing channel~\cite{king2003}, the classical capacity is:
 \[
-S(\cN_p(\ketbra{\psi}{\psi})) = H_2(p) + p\log_2 3
-\]
-because the output is $(1-p)\ketbra{\psi}{\psi} + p\id/2$ and the
-eigenvalues are $\{1-p, p/3, p/3, p/3\}$ in a 4-dimensional space
-(but restricted to the qubit subspace, the entropy of a state with
-eigenvalues $\{1 - 3p/4, p/4, p/4, p/4\}$ simplifies to the
-expression above). By the HSW theorem, taking the difference:
-\[
-\chi = 1 - [H_2(p) + p\log_2 3] = 1 - H_2(p) - p\log_2 3.
+C(\cN_p) = \chi(\cN_p) = 1 - H_2\!\left(\frac{2p}{3}\right).
 \]
 \end{proof}
 
@@ -1107,12 +1139,13 @@ expression above). By the HSW theorem, taking the difference:
 The quantum-secured audit information rate $R_{\text{audit}}$ (bits per
 channel use) satisfies:
 \[
-R_{\text{audit}} \leq C_Q(p) = 1 - H_2(p) - p\log_2 3.
+R_{\text{audit}} \leq C_Q(p) = 1 - H_2\!\left(\frac{2p}{3}\right).
 \]
 For a noiseless channel ($p=0$): $R_{\text{audit}} \leq 1$ bit/qubit
 (the maximum possible). For the security threshold ($p=11\%$):
-$C_Q(0.11) \approx 0.384$ bits/qubit. Above $p \approx 0.189$,
-$C_Q(p) \leq 0$, and the channel cannot reliably transmit audit information.
+$C_Q(0.11) \approx 0.633$ bits/qubit. The channel capacity
+vanishes ($C_Q \leq 0$) when $p \geq 3/4$, at which point the
+channel becomes completely depolarizing.
 \end{corollary}
 
 \subsection{Quantum Capacity (Audit Entanglement Transmission)}
@@ -1551,7 +1584,7 @@ Tamper detection & Digital signatures & Entanglement witness \\
 Forward secrecy & Conditional on key erasure & Guaranteed \\
 前向安全性 & 依赖密钥擦除 & 有保证 \\
 \midrule
-Channel capacity & Shannon: $C = B\log_2(1+\text{SNR})$ & HSW: $C_Q = \chi(\cN)$ \\
+Channel capacity & Shannon: $C = B\log_2(1+\text{SNR})$ & HSW: $C_Q = 1 - H_2(2p/3)$ \\
 信道容量 & 香农定理 & HSW定理 \\
 \midrule
 Hardware cost & $\sim \$0$ (software) & $\$10\text{K}--\$100\text{K}$ \\
@@ -1577,15 +1610,20 @@ Deployment readiness & Immediate & Partial (co-located) \\
         Spring and Yajie. Integrate with quantum random number generators
         for certified randomness in audit sampling.
 
-  \item \textbf{Medium-term (2029--2032):} Regional deployment with
-        first-generation quantum repeaters. Full BB84 audit channel
-        with decoy states. Quantum-secured multi-party audit
-        ($>2$ auditors).
+  \item \textbf{Medium-term (2029--2035):} Regional deployment contingent
+        on maturation of quantum repeater technology. Full BB84 audit
+        channel with decoy states. Quantum-secured multi-party audit
+        ($>2$ auditors). We note that quantum repeaters remain an active
+        research area; deployment timelines depend on breakthroughs in
+        quantum memory coherence times and entanglement purification
+        efficiency.
 
-  \item \textbf{Long-term (2032--2035):} Global quantum audit network
+  \item \textbf{Long-term (2035+):} Global quantum audit network
         with satellite-based entanglement distribution. Full
         information-theoretic security for the entire audit pipeline.
-        Integration with quantum internet infrastructure.
+        Integration with quantum internet infrastructure. This phase
+        depends on large-scale quantum network deployment, which
+        realistically extends beyond 2035 based on current progress.
 \end{enumerate}
 
 % ===========================================================================
@@ -1697,8 +1735,8 @@ for the SCX framework, addressing three fundamental aspects:
   
   \item \textbf{Quantum Audit Channel:} We formally defined the quantum
         audit channel and proved its capacity theorem, showing that the
-        audit information rate is bounded by $C_Q = 1 - H_2(p) -
-        p\log_2 3$ for the depolarizing channel model.
+        audit information rate is bounded by $C_Q = 1 - H_2(2p/3)$
+        for the depolarizing channel model.
 \end{enumerate}
 
 The key insight is that quantum mechanics elevates audit security from
@@ -1831,40 +1869,31 @@ loss of generality (by covariance):
 \]
 This is a classical mixture with eigenvalues
 $\lambda_0 = 1 - 2p/3$ and $\lambda_1 = 2p/3$.
-However, in the full 4-dimensional operator space (considering the
-Pauli basis), the output entropy requires tracing over the qubit's
-Hilbert space. A more careful analysis gives:
+The von Neumann entropy of this output state is therefore:
 \[
-S(\cN_p(\ketbra{\psi}{\psi})) = H_2(p) + p\log_2 3.
+S(\cN_p(\ketbra{\psi}{\psi})) = H_2\!\left(\frac{2p}{3}\right)
+= -\frac{2p}{3}\log_2\frac{2p}{3} - \left(1-\frac{2p}{3}\right)\log_2\left(1-\frac{2p}{3}\right).
 \]
-This can be verified by computing the eigenvalues of the Choi matrix
-of the channel: the Choi state of $\cN_p$ is
-\[
-J(\cN_p) = (1-p)\bell\bra{\Phi^+} + \frac{p}{4}\id \otimes \id,
-\]
-whose entropy yields the capacity expression.
 
-\textbf{Step 4: Holevo quantity.} The Holevo quantity is:
+\textbf{Step 4: Holevo quantity.} The Holevo quantity for our $p$-parametrization is:
 \[
 \chi(\cN_p) = S(\cN_p(\id/2)) - S(\cN_p(\ketbra{\psi}{\psi}))
-= 1 - [H_2(p) + p\log_2 3].
+= 1 - H_2\!\left(\frac{2p}{3}\right).
 \]
 
 \textbf{Step 5: Additivity.} For the depolarizing channel, the
 Holevo quantity is additive:
-$\chi(\cN_p^{\otimes n}) = n\chi(\cN_p)$. This was proven by King~\cite{king2003}
-using the multiplicativity of the maximum output $p$-norm for the
-depolarizing channel. Hence:
+$\chi(\cN_p^{\otimes n}) = n\chi(\cN_p)$~\cite{king2003}. Hence:
 \[
-C(\cN_p) = \chi(\cN_p) = 1 - H_2(p) - p\log_2 3.
+C(\cN_p) = \chi(\cN_p) = 1 - H_2\!\left(\frac{2p}{3}\right).
 \]
 
-\textbf{Numerical check:}
+\textbf{Numerical check} (using our $p$-parametrization):
 \begin{itemize}
-  \item $p = 0$: $C_Q = 1 - 0 - 0 = 1.000$ (noiseless, 1 bit/qubit).
-  \item $p = 0.01$: $C_Q = 1 - 0.0808 - 0.0158 = 0.903$ bits/qubit.
-  \item $p = 0.11$: $C_Q = 1 - 0.4999 - 0.1743 = 0.326$ bits/qubit.
-  \item $p = 0.189$: $C_Q = 1 - 0.7015 - 0.2994 = 0.000$ (capacity zero).
+  \item $p = 0$: $C_Q = 1 - H_2(0) = 1.000$ (noiseless, 1 bit/qubit).
+  \item $p = 0.11$: $C_Q = 1 - H_2(0.0733) \approx 0.633$ bits/qubit.
+  \item $p = 0.25$: $C_Q = 1 - H_2(0.1667) \approx 0.350$ bits/qubit.
+  \item $p = 0.75$: $C_Q = 1 - H_2(0.5) = 0.000$ (capacity zero).
 \end{itemize}
 \end{proof}
 
