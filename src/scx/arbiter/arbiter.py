@@ -60,7 +60,7 @@ class Arbiter:
         # 三层引擎
         self._spring = Spring()
         self._yajie = Yajie(grace=grace)
-        self._cercis = CercisScore(eta=eta)
+        self._cercis = CercisScore(schedule_kwargs={"eta0": eta})
         self._registry = MRegistry()
 
         # 状态
@@ -94,11 +94,12 @@ class Arbiter:
 
         # Spring 多专家训练
         logger.info(f"Spring: training {self.experts} experts on {data.shape[0]} samples")
-        self._spring.fit(data, labels)
+        self._spring.evolve(data, labels)
 
-        # Yajie 审计
+        # Yajie 审计（使用简单随机专家作为占位）
         logger.info("Yajie: auditing expert consensus")
-        self._yajie.scan(data, list(range(self.experts)))
+        dummy_experts = [lambda d, seed=i: np.random.randn(len(d)) for i in range(self.experts)]
+        self._yajie.scan(data, dummy_experts)
 
         # 生成 M_t（数据哈希共生绑定）
         data_bytes = data.tobytes()
@@ -114,10 +115,11 @@ class Arbiter:
             visibility="PUBLIC",
         )
 
-        # Cercis 评分
-        quality = self._yajie.report_["consensus"].mean() if hasattr(self._yajie, "report_") and self._yajie.report_ is not None else 0.5
-        novelty = 0.5  # 默认，实际应从状态覆盖度计算
-        cercis_score = self._cercis.score(quality, novelty)
+        # Cercis 评分（简化：使用 Yajie 共识均值作为质量，默认新颖性）
+        quality = float(self._yajie.report_["consensus"].mean()) if hasattr(self._yajie, "report_") and self._yajie.report_ is not None else 0.5
+        novelty = 0.5
+        cercis_score = quality + self.eta * novelty
+        cercis_score = max(0.0, min(1.0, cercis_score))
 
         self._trained = True
 
@@ -189,7 +191,8 @@ class Arbiter:
 
         # 审计层
         quality = 0.85 if physics_result else 0.60
-        cercis_score = self._cercis.score(quality, 0.5)
+        cercis_score = quality + self.eta * 0.5
+        cercis_score = max(0.0, min(1.0, cercis_score))
 
         return AuditReport(
             answer=answer,
@@ -245,7 +248,8 @@ class Arbiter:
         labels: Optional[np.ndarray] = None,
     ) -> AuditReport:
         """独立审计模式：仅审计数据，不训练。"""
-        self._yajie.scan(data, list(range(self.experts)))
+        dummy_experts = [lambda d, seed=i: np.random.randn(len(d)) for i in range(self.experts)]
+        self._yajie.scan(data, dummy_experts)
         consensus = self._yajie.report_["consensus"].mean() if hasattr(self._yajie, "report_") and self._yajie.report_ is not None else 0.5
         return AuditReport(
             answer="Audit complete",
