@@ -25,8 +25,8 @@ from scx.m_registry import (
 
 def test_symbiotic_derivation_is_deterministic():
     dh = hashlib.sha256(b"training-data-v1").hexdigest()
-    m1 = derive_M_from_data_hash(dh, epsilon=0.05, delta=0.5)
-    m2 = derive_M_from_data_hash(dh, epsilon=0.05, delta=0.5)
+    m1 = derive_M_from_data_hash(dh)
+    m2 = derive_M_from_data_hash(dh)
     assert m1 == m2
     assert m1 > 0
 
@@ -34,17 +34,17 @@ def test_symbiotic_derivation_is_deterministic():
 def test_different_data_yields_different_M():
     dh1 = hashlib.sha256(b"high-quality-data").hexdigest()
     dh2 = hashlib.sha256(b"low-quality-data").hexdigest()
-    m1 = derive_M_from_data_hash(dh1, epsilon=0.05, delta=0.5)
-    m2 = derive_M_from_data_hash(dh2, epsilon=0.05, delta=0.5)
+    m1 = derive_M_from_data_hash(dh1)
+    m2 = derive_M_from_data_hash(dh2)
     # Different data should produce different M
     assert m1 != m2
 
 
 def test_verify_symbiotic_binding():
     dh = hashlib.sha256(b"real-data").hexdigest()
-    M = derive_M_from_data_hash(dh, epsilon=0.05, delta=0.5)
-    assert verify_symbiotic_binding(dh, M, epsilon=0.05, delta=0.5)
-    assert not verify_symbiotic_binding(dh, M + 1, epsilon=0.05, delta=0.5)
+    M = derive_M_from_data_hash(dh)
+    assert verify_symbiotic_binding(dh, M)
+    assert not verify_symbiotic_binding(dh, M + 1)
 
 
 def test_data_substitution_detected():
@@ -53,8 +53,8 @@ def test_data_substitution_detected():
     dh_declared = hashlib.sha256(b"high-quality-data").hexdigest()
     dh_actual = hashlib.sha256(b"low-quality-substitute").hexdigest()
 
-    registry.register_symbiotic(
-        "company-a", dh_declared, epsilon=0.05, delta=0.5,
+    registry.register(
+        "company-a", dh_declared,
         domain="llm-training", code_hash="code-sha",
     )
 
@@ -68,12 +68,12 @@ def test_data_substitution_detected():
 def test_register_symbiotic_derives_M_from_data():
     registry = MRegistry()
     dh = hashlib.sha256(b"training-data").hexdigest()
-    entry = registry.register_symbiotic(
-        "paper-1", dh, epsilon=0.05, delta=0.5,
+    entry = registry.register(
+        "paper-1", dh,
         domain="benchmark", code_hash="code-hash",
     )
     # M should be derived, not supplied
-    expected_M = derive_M_from_data_hash(dh, epsilon=0.05, delta=0.5)
+    expected_M = derive_M_from_data_hash(dh)
     assert entry.M == expected_M
     assert entry.symbiotic is True
     assert entry.verify_binding()
@@ -84,11 +84,11 @@ def test_public_private_visibility():
     dh1 = hashlib.sha256(b"data-1").hexdigest()
     dh2 = hashlib.sha256(b"data-2").hexdigest()
 
-    registry.register_symbiotic(
-        "public-entity", dh1, 0.05, 0.5, "test", "code", visibility="PUBLIC",
+    registry.register(
+        "public-entity", dh1, "test", "code", visibility="PUBLIC",
     )
-    registry.register_symbiotic(
-        "private-entity", dh2, 0.05, 0.5, "test", "code", visibility="PRIVATE",
+    registry.register(
+        "private-entity", dh2, "test", "code", visibility="PRIVATE",
     )
     pub = registry.get_public_registry()
     assert len(pub) == 1
@@ -101,8 +101,8 @@ def test_complicity_index():
 
     # All VERIFIED -> complicity 0
     for i in range(3):
-        registry.register_symbiotic(
-            "good-reviewer", dh, 0.05, 0.5, "test",
+        registry.register(
+            "good-reviewer", dh, "test",
             f"code-{i}", visibility="PUBLIC",
         )
     assert registry.complicity_index("good-reviewer") == 0.0

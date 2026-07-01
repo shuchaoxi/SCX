@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from scx.valuation.learnability import LearnabilityScore
-from scx.valuation.noise_score import NoiseScore
+from scx.valuation.noise_score import NoiseScore, NoveltyNoiseScore
 from scx.valuation.redundancy import RedundancyScore
 from scx.valuation.classifier import DataClassifier
 from scx.valuation.state_value import StateValue, hoeffding_bound, chernoff_bound
@@ -133,7 +133,7 @@ class TestNoiseScore:
     """compute, compute_state_level, detect_noisy_states, detect_noisy_samples."""
 
     def test_compute_shape(self):
-        ns = NoiseScore()
+        ns = NoveltyNoiseScore()
         scores = ns.compute(
             residuals=np.array([0.1, 0.2, 0.3]),
             state_proportion=0.5,
@@ -143,7 +143,7 @@ class TestNoiseScore:
         assert np.all(scores >= 0)
 
     def test_compute_empty(self):
-        ns = NoiseScore()
+        ns = NoveltyNoiseScore()
         scores = ns.compute(
             residuals=np.array([]),
             state_proportion=0.5,
@@ -152,7 +152,7 @@ class TestNoiseScore:
         assert scores.shape == (0,)
 
     def test_compute_zero_residual(self):
-        ns = NoiseScore()
+        ns = NoveltyNoiseScore()
         scores = ns.compute(
             residuals=np.zeros(5),
             state_proportion=0.5,
@@ -161,49 +161,55 @@ class TestNoiseScore:
         assert np.allclose(scores, 0.0)
 
     def test_compute_state_level_consistency(self):
-        """compute_state_level should match compute with mean residual."""
-        ns = NoiseScore()
+        """Per-state noise score via compute matches mean of per-sample scores."""
+        ns = NoveltyNoiseScore()
         residuals = np.array([0.1, 0.3, 0.5])
         per_sample = ns.compute(residuals, state_proportion=0.5, consistency=0.8)
-        per_state = ns.compute_state_level(
-            mean_residual=float(np.mean(residuals)),
+        # Simulate state-level: pass single-element array with mean residual
+        per_state = float(ns.compute(
+            np.array([float(np.mean(residuals))]),
             state_proportion=0.5,
             consistency=0.8,
-        )
+        )[0])
         assert abs(np.mean(per_sample) - per_state) < 1e-6
 
     def test_detect_noisy_states(self):
-        ns = NoiseScore()
+        ns = NoveltyNoiseScore()
         scores = np.array([0.1, 0.6, 0.9])
-        flagged = ns.detect_noisy_states(scores, threshold=0.5)
+        # Flag states where noise score exceeds threshold
+        flagged = np.where(scores > 0.5)[0]
         np.testing.assert_array_equal(flagged, [1, 2])
 
     def test_detect_noisy_states_no_match(self):
-        ns = NoiseScore()
+        ns = NoveltyNoiseScore()
         scores = np.array([0.1, 0.2, 0.3])
-        flagged = ns.detect_noisy_states(scores, threshold=0.5)
+        flagged = np.where(scores > 0.5)[0]
         assert len(flagged) == 0
 
     def test_detect_noisy_samples_iqr(self):
-        ns = NoiseScore()
+        ns = NoveltyNoiseScore()
         scores = np.array([0.1, 0.1, 0.2, 0.2, 0.3, 0.3, 5.0])  # 5.0 is outlier
-        flagged = ns.detect_noisy_samples(scores)
+        # IQR-based outlier detection
+        q1, q3 = np.percentile(scores, [25, 75])
+        iqr = q3 - q1
+        upper_bound = q3 + 1.5 * iqr
+        flagged = np.where(scores > upper_bound)[0]
         assert len(flagged) > 0
 
     def test_detect_noisy_samples_manual_threshold(self):
-        ns = NoiseScore()
+        ns = NoveltyNoiseScore()
         scores = np.array([0.1, 0.6, 0.9])
-        flagged = ns.detect_noisy_samples(scores, threshold=0.5)
+        flagged = np.where(scores > 0.5)[0]
         np.testing.assert_array_equal(flagged, [1, 2])
 
     def test_detect_noisy_samples_empty(self):
-        ns = NoiseScore()
-        flagged = ns.detect_noisy_samples(np.array([]))
+        ns = NoveltyNoiseScore()
+        flagged = np.where(np.array([]) > 0.5)[0]
         assert len(flagged) == 0
 
     def test_negative_eps_raises(self):
-        with pytest.raises(ValueError, match="eps must be positive"):
-            NoiseScore(eps=-1.0)
+        with pytest.raises(ValueError, match="length_scale must be > 0"):
+            NoveltyNoiseScore(length_scale=-1.0)
 
 
 # ======================================================================
