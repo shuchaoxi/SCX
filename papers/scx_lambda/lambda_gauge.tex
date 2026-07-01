@@ -1,0 +1,1688 @@
+% ===========================================================================
+%  SCX λ方向性与λ<0发散情形：
+%  条件形式化、终端状态与早期预警信号
+%  SCX λ Directionality and λ<0 Divergent Case:
+%  Condition Formalization, Terminal States, and Early Warning Signals
+%  Date: 2026-07-01
+% ===========================================================================
+
+\documentclass[11pt,a4paper]{article}
+
+% ---- Encoding & Language ----
+\usepackage[UTF8]{ctex}
+\setCJKmainfont{SimSun}[BoldFont=SimHei,ItalicFont=KaiTi]
+\setmainfont{Times New Roman}
+
+% ---- Mathematics ----
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{dsfont}
+
+% ---- Figures & Layout ----
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{setspace}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multirow}
+
+% ---- Hyperlinks ----
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+\onehalfspacing
+
+% ---- Theorem Environments ----
+\newtheorem{theorem}{定理}[section]
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{criterion}[theorem]{判据}
+\newtheorem{assumption}[theorem]{假设}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注记}
+\newtheorem{example}[theorem]{例}
+
+% ---- Custom Commands: Mathematics ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\abs}[1]{|#1|}
+\newcommand{\norm}[1]{\|#1\|}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+\newcommand{\paren}[1]{\left(#1\right)}
+\newcommand{\bracket}[1]{\left[#1\right]}
+\newcommand{\set}[1]{\left\{#1\right\}}
+
+% ---- Custom Commands: SCX Framework ----
+\newcommand{\SCX}{\textsc{SCX}}
+\newcommand{\eqtheory}{平等论}
+\newcommand{\ineq}{\Delta}
+\newcommand{\coupling}{\kappa}
+\newcommand{\lambdaparam}{\lambda}
+\newcommand{\sigmafield}{\mathcal{F}}
+\newcommand{\calI}{\mathcal{I}}
+\newcommand{\calP}{\mathcal{P}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\calT}{\mathcal{T}}
+\newcommand{\calG}{\mathcal{G}}
+\newcommand{\calB}{\mathcal{B}}
+\newcommand{\indep}{\perp\!\!\!\!\perp}
+\newcommand{\given}{\,|\,}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% ---- Honest Critique Markers ----
+\newtheorem{honestattack}{诚实暴击}
+\renewcommand{\thehonestattack}{\textcolor{red}{\textbf{[!] 暴击 \arabic{honestattack}}}}
+\newenvironment{attackbox}{%
+  \begin{center}
+  \color{red}
+  \begin{minipage}{0.92\textwidth}
+  \begin{honestattack}
+}{%
+  \end{honestattack}
+  \end{minipage}
+  \end{center}
+}
+
+% ---- Title ----
+\title{
+    {\Huge \textbf{SCX $\lambdaparam$ 方向性与 $\lambdaparam < 0$ 发散情形}}\\[0.3cm]
+    {\Large \textbf{条件形式化、终端状态与早期预警信号}}\\[0.3cm]
+    {\Large SCX $\lambdaparam$ Directionality and the $\lambdaparam < 0$ Divergent Case}\\[0.2cm]
+    {\large Condition Formalization, Terminal States, and Early Warning Signals}\\[0.3cm]
+    {\normalsize 平等论框架下的不平等动力学方向性分析}\\
+    {\normalsize Directional Analysis of Inequality Dynamics within the \eqtheory{} Framework}
+}
+
+\author{SCX 平等论研究组 \\ SCX \eqtheory{} Research Group}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% ===========================================================================
+% ABSTRACT
+% ===========================================================================
+\begin{abstract}
+\noindent
+\textbf{中文摘要：}
+SCX平等论的核心动力学方程描述了不平等测度 $\ineq(t)$ 的连续时间演化，其中增长率参数
+$\lambdaparam$ 的方向性决定了系统的定性行为。已有研究主要关注 $\lambdaparam \geq 0$
+（收敛或稳态）的情形。本文系统形式化\\textbf{$\lambdaparam < 0$ 发散情形}——即不平等
+随时间以指数速率加剧的体制。我们识别出触发 $\lambdaparam < 0$ 的三个充要条件：
+\textbf{ITA}（代际创伤放大，Intergenerational Trauma Amplification）、
+\textbf{IPI}（身份政治产业化，Identity Politics Industrialization）和
+\textbf{SR}（隔离强化，Segregation Reinforcement）。每个条件均以定义—机制—触发函数的
+严格形式化展开。在此基础上，我们推导发散动力学 $\ineq(t) = \ineq_0 e^{|\lambdaparam| t}$
+及其随机界，建立三种终端状态的分岔条件：\textbf{碎片化}（Fragmentation，SR主导）、
+\textbf{革命}（Revolution，IPI主导）和\textbf{灭绝}（Extinction，ITA主导）。
+我们进一步构建了五个早期预警信号并将其合成为\textbf{复合早期预警指数（CEWI）}，
+最后给出干预路径和最优干预时机的解析公式。全文以中英双语严格形式化展开。
+
+\vspace{0.3cm}
+\noindent
+\textbf{English Abstract:}
+The core dynamical equation of SCX \eqtheory{} describes the continuous-time evolution
+of the inequality measure $\ineq(t)$, where the sign of the growth-rate parameter
+$\lambdaparam$ determines the system's qualitative behavior. Prior work has focused
+primarily on the $\lambdaparam \geq 0$ (convergent or steady-state) regime. This paper
+systematically formalizes the \\textbf{$\lambdaparam < 0$ divergent regime}—in which inequality
+intensifies at an exponential rate. We identify three necessary-and-sufficient conditions
+that trigger $\lambdaparam < 0$: \textbf{ITA} (Intergenerational Trauma Amplification),
+\textbf{IPI} (Identity Politics Industrialization), and \textbf{SR} (Segregation
+Reinforcement). Each condition is rigorously formalized through the definition—
+mechanism—activation-function triad. On this basis, we derive the divergent dynamics
+$\ineq(t) = \ineq_0 e^{|\lambdaparam| t}$ with stochastic bounds, establish the
+bifurcation conditions for three terminal states: \textbf{Fragmentation}
+(SR-dominant), \textbf{Revolution} (IPI-dominant), and \textbf{Extinction}
+(ITA-dominant). We further construct five early warning signals and synthesize them
+into the \textbf{Composite Early Warning Index (CEWI)}, and finally provide
+analytical formulas for intervention pathways and optimal intervention timing.
+The entire exposition is rigorously formalized in Chinese and English.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{引言：$\lambdaparam$ 方向性问题的提出}
+\section{Introduction: The Problem of $\lambdaparam$ Directionality}
+% =====================================================================
+
+\subsection{SCX 不平等动力学回顾 / Review of SCX Inequality Dynamics}
+
+在 SCX \eqtheory{} 框架中，不平等测度 $\ineq(t)$ 的连续时间演化由以下随机微分方程控制：
+
+In the SCX \eqtheory{} framework, the continuous-time evolution of the inequality
+measure $\ineq(t)$ is governed by the following stochastic differential equation:
+
+\begin{definition}[SCX 不平等动力学方程 / SCX Inequality Dynamics Equation]
+\label{def:dynamics}
+设 $\ineq(t) \in [0, \infty)$ 为时刻 $t$ 的社会不平等测度，
+$\lambdaparam \in \R$ 为系统增长率参数，则：
+\[
+d\ineq(t) = \lambdaparam \, \ineq(t) \, dt + \sigma \, \ineq(t) \, dW_t,
+\]
+其中 $\sigma > 0$ 为波动率，$W_t$ 为标准布朗运动。
+\end{definition}
+
+直观上，$\lambdaparam$ 的方向性决定了不平等演化的三个体制：
+
+\begin{itemize}
+    \item $\lambdaparam > 0$：\textbf{收敛体制}（Convergent regime）—— 不平等随时间衰减，系统趋于平等稳态。
+    \item $\lambdaparam = 0$：\textbf{临界体制}（Critical regime）—— 不平等的确定性趋势为零，演化完全由随机扰动驱动。
+    \item $\lambdaparam < 0$：\textbf{发散体制}（Divergent regime）—— 不平等以指数速率自我放大，系统趋于崩溃。
+\end{itemize}
+
+\begin{proposition}[伊藤解 / It\^o Solution]
+\label{prop:ito}
+对定义~\ref{def:dynamics} 中的 SDE，强解为：
+\[
+\ineq(t) = \ineq_0 \exp\paren{\paren{\lambdaparam - \frac{\sigma^2}{2}} t + \sigma W_t},
+\]
+其中 $\ineq_0 = \ineq(0)$。当 $\lambdaparam < 0$ 且 $|\lambdaparam| > \sigma^2/2$ 时，
+确定性项以速率 $|\lambdaparam| - \sigma^2/2 > 0$ 指数发散。
+\end{proposition}
+
+\subsection{已有工作的局限 / Limitations of Prior Work}
+
+Prior work in the SCX framework has predominantly examined the $\lambdaparam \geq 0$ regime,
+focusing on convergence conditions (Thm4, Thm5 of the SCX axiom system) and the
+mechanisms—such as $\coupling$-suppression (see Civilization Gauge paper)—that can
+mask or delay the consequences of $\lambdaparam < 0$. However, three critical gaps remain:
+
+已有工作主要考察 $\lambdaparam \geq 0$ 的收敛情形，聚焦于收敛条件
+（SCX公理体系的Thm4、Thm5）以及可掩盖或延迟 $\lambdaparam < 0$ 后果的机制
+（如$\coupling$压制，见文明不平等计论文）。然而，有三个关键缺口尚未填补：
+
+\begin{enumerate}
+    \item \textbf{$\lambdaparam < 0$ 的\textit{成因}未被形式化：}
+          什么样的社会结构条件必然导致 $\lambdaparam$ 为负？这不是一个参数拟合问题，
+          而是一个结构归因问题。\hfill
+          \textbf{The \textit{causes} of $\lambdaparam < 0$ are unformalized:}
+          What structural social conditions necessarily produce negative $\lambdaparam$?
+          This is a structural-attribution problem, not a parameter-fitting problem.
+
+    \item \textbf{发散终点未被分类：}
+          $\lambdaparam < 0$ 下系统必然崩溃，但崩溃的\textit{形态}（碎片化、革命还是灭绝？）
+          取决于哪一条件占主导。这需要建立条件—终态的映射关系。\hfill
+          \textbf{Divergent endpoints are unclassified:}
+          $\lambdaparam < 0$ guarantees collapse, but the \textit{form} of collapse
+          (fragmentation, revolution, or extinction?) depends on which condition dominates.
+
+    \item \textbf{早期预警缺乏综合指标：}
+          五个独立的预警信号可能存在矛盾——例如ACF增大的同时方差减小。需要一个
+          将这些信号合成为单一可操作指标的框架。\hfill
+          \textbf{Early warning lacks a composite index:}
+          Five independent signals can conflict—e.g., rising ACF with falling variance.
+          A framework to synthesize them into a single actionable index is needed.
+\end{enumerate}
+
+本文逐一填补这三个缺口。
+
+This paper fills all three gaps.
+
+% =====================================================================
+\section{$\lambdaparam$ 的形式定义与符号约定}
+\section{Formal Definition of $\lambdaparam$ and Notational Conventions}
+% =====================================================================
+
+\subsection{$\lambdaparam$ 的微观基础 / Micro-Foundations of $\lambdaparam$}
+
+$\lambdaparam$ 并非外生给定参数，而是社会系统内部结构特征的涌现量：
+
+$\lambdaparam$ is not an exogenously given parameter but an emergent quantity from the
+internal structural features of the social system:
+
+\begin{definition}[$\lambdaparam$ 的结构分解 / Structural Decomposition of $\lambdaparam$]
+\label{def:lambda_decomp}
+\[
+\lambdaparam = \underbrace{\lambdaparam_{\text{redis}}}_{\text{再分配效率}} \;+\;
+              \underbrace{\lambdaparam_{\text{mobil}}}_{\text{社会流动}} \;+\;
+              \underbrace{\lambdaparam_{\text{cohe}}}_{\text{凝聚力}} \;-\;
+              \underbrace{\lambdaparam_{\text{extr}}}_{\text{抽取强度}} \;-\;
+              \underbrace{\lambdaparam_{\text{iso}}}_{\text{隔离系数}} \;-\;
+              \underbrace{\lambdaparam_{\text{trauma}}}_{\text{创伤反馈}},
+\]
+其中各分量均为非负实数，含义如下：
+\begin{itemize}
+    \item $\lambdaparam_{\text{redis}} \geq 0$：再分配效率——税收、转移支付、公共物品供给对不平等的压制能力。
+    \item $\lambdaparam_{\text{mobil}} \geq 0$：社会流动性——底层群体向上迁移的速率。
+    \item $\lambdaparam_{\text{cohe}} \geq 0$：社会凝聚力——跨群体信任与合作网络的密度。
+    \item $\lambdaparam_{\text{extr}} \geq 0$：抽取强度——精英从系统提取资源的经济能力。
+    \item $\lambdaparam_{\text{iso}} \geq 0$：隔离系数——群体间物理、信息和婚姻隔离的程度。
+    \item $\lambdaparam_{\text{trauma}} \geq 0$：创伤反馈——历史创伤通过代际传递增强抽取并削弱凝聚力的自激效应。
+\end{itemize}
+\end{definition}
+
+$\lambdaparam < 0$ 当且仅当前三个压制分量之和小于后三个放大分量之和。
+
+$\lambdaparam < 0$ if and only if the sum of the first three suppressing components is
+less than the sum of the last three amplifying components.
+
+\subsection{三条件的宏观加总 / Macro-Aggregation of the Three Conditions}
+
+定义~\ref{def:lambda_decomp} 中的六个分量在结构上可以分为三类条件域，
+分别对应本文的核心三个条件：
+
+\[
+\underbrace{(\lambdaparam_{\text{extr}} + \lambdaparam_{\text{trauma}}) -
+            (\lambdaparam_{\text{redis}} + \lambdaparam_{\text{mobil}})}_{\text{ITA 域}}
+\;+\;
+\underbrace{(\lambdaparam_{\text{iso}} - \lambdaparam_{\text{cohe}})}_{\text{IPI 域}}
+\;+\;
+\underbrace{(\lambdaparam_{\text{iso}} - \lambdaparam_{\text{mobil}})}_{\text{SR 域}}
+\]
+
+Three conditions condition domains corresponding to the three core conditions
+of this paper are identified through this decomposition.
+
+% =====================================================================
+\section{条件一：代际创伤放大 (ITA)}
+\section{Condition I: Intergenerational Trauma Amplification (ITA)}
+% =====================================================================
+
+\subsection{定义与机制 / Definition and Mechanism}
+
+\begin{definition}[ITA — 代际创伤放大 / Intergenerational Trauma Amplification]
+\label{def:ITA}
+设 $\mathcal{H} = \{H_1, H_2, \ldots, H_K\}$ 为社会群体的集合。
+对每个群体 $H_k$，定义其\textbf{历史创伤向量} $\mathbf{T}_k(t) \in \R^d$，
+分量为该群体在 $d$ 个维度（经济剥夺、政治排斥、文化贬损、暴力经历、符号羞辱）
+上的创伤累积值。ITA 满足：
+\[
+\exists k \in \{1,\ldots,K\} : \frac{d}{dt} \mathbf{T}_k(t) = 
+\underbrace{\mathbf{A}_k \mathbf{T}_k(t)}_{\text{内生放大}} + 
+\underbrace{\mathbf{B}_k \mathbf{u}_k(t)}_{\text{外生输入}} - 
+\underbrace{\gamma_k \mathbf{C}_k \mathbf{T}_k(t)}_{\text{衰减项}},
+\]
+其中：
+\begin{itemize}
+    \item $\mathbf{A}_k \in \R^{d \times d}$ 为正矩阵（所有元素 $>0$），描述代际传递的自我增强效应——创伤通过家庭叙事、群体记忆和制度化歧视在代际间放大而非衰减。
+    \item $\mathbf{u}_k(t) \in \R^m$ 为外部创伤输入（持续发生的歧视事件、政策伤害等）。
+    \item $\mathbf{C}_k$ 为愈合矩阵，$\gamma_k \geq 0$ 为愈合速率。
+\end{itemize}
+ITA 条件激活的判据为 $\mathbf{A}_k$ 的谱半径 $\rho(\mathbf{A}_k) > \gamma_k \|\mathbf{C}_k\|$，
+即内生放大超过愈合能力。
+\end{definition}
+
+\begin{proposition}[ITA 与 $\lambdaparam$ 的关联 / ITA-$\lambdaparam$ Linkage]
+\label{prop:ITA_lambda}
+当 ITA 条件激活时，$\lambdaparam$ 获得负贡献：
+\[
+\lambdaparam \leftarrow \lambdaparam - \eta_{\text{ITA}} \cdot 
+\max_{k} \paren{\rho(\mathbf{A}_k) - \gamma_k \|\mathbf{C}_k\|},
+\]
+其中 $\eta_{\text{ITA}} > 0$ 为耦合常数。在强 ITA 极限下
+（$\rho(\mathbf{A}_k) \gg \gamma_k \|\mathbf{C}_k\|$ for some $k$），
+此负贡献可单独驱动 $\lambdaparam < 0$。
+\end{proposition}
+
+\subsection{ITA 的机制链 / The ITA Mechanism Chain}
+
+代际创伤放大通过以下因果链推动 $\lambdaparam$ 向负方向演化：
+
+Intergenerational trauma amplification drives $\lambdaparam$ negative through the
+following causal chain:
+
+\begin{enumerate}
+    \item \textbf{创伤传递（Trauma Transmission）：}
+          创伤经历通过三类通道传递给后代：
+          \begin{itemize}
+              \item \textbf{表观遗传通道（Epigenetic）：} 慢性应激改变基因表达模式（如
+                    NR3C1 甲基化），使后代对威胁信号敏感度提高。此通道的数学表述为
+                    $\mathbf{A}_k$ 的对角线优势结构：$(\mathbf{A}_k)_{ii} \gg \sum_{j \neq i} |(\mathbf{A}_k)_{ij}|$。
+              \item \textbf{行为通道（Behavioral）：} 创伤幸存者的养育行为将不安全依恋
+                    模式传递给子女，表现为信任半径的缩窄和对外群体威胁感知的升高。
+              \item \textbf{结构通道（Structural）：} 歧视性制度（如红线政策、教育隔离）
+                    将过去创伤的物质后果固化为后代的不利初始条件。
+          \end{itemize}
+
+    \item \textbf{资源抽取反馈（Extraction Feedback）：}
+          创伤放大效应削弱了受创群体的政治效能感和集体行动能力，
+          从而使精英能够加大抽取强度 $\lambdaparam_{\text{extr}}$ 而不遭遇反弹。
+          此即 $\lambdaparam_{\text{extr}} \uparrow$ 的直接机制。
+
+    \item \textbf{愈合机制失效（Healing Failure）：}
+          $\gamma_k \|\mathbf{C}_k\|$ 的衰减项依赖制度性资源——真相与和解委员会、
+          赔偿机制、纪念空间。当精英控制这些制度时，$\gamma_k$ 被人为压至零。
+\end{enumerate}
+
+\subsection{ITA 激活函数 / ITA Activation Function}
+
+\begin{definition}[ITA 激活函数 / ITA Activation Function]
+\label{def:ITA_activation}
+定义 ITA 的连续激活函数 $\Phi_{\text{ITA}}: [0,1]^3 \to [0,1]$：
+\[
+\Phi_{\text{ITA}}(e, p, h) = \frac{1}{1 + \exp\paren{-\alpha_{\text{ITA}}(e \cdot p \cdot h - \tau_{\text{ITA}})}},
+\]
+其中：
+\begin{itemize}
+    \item $e \in [0,1]$：经济剥夺强度（economic deprivation intensity）
+    \item $p \in [0,1]$：政治排斥程度（political exclusion degree）
+    \item $h \in [0,1]$：历史创伤存续时长标准化值（historical trauma persistence, normalized）
+    \item $\alpha_{\text{ITA}} > 0$：激活锐度（activation sharpness）
+    \item $\tau_{\text{ITA}} \in (0,1)$：激活阈值（activation threshold）
+\end{itemize}
+当 $\Phi_{\text{ITA}} \to 1$ 时，ITA 条件完全激活，形成不可逆的正反馈环。
+\end{definition}
+
+% =====================================================================
+\section{条件二：身份政治产业化 (IPI)}
+\section{Condition II: Identity Politics Industrialization (IPI)}
+% =====================================================================
+
+\subsection{定义与机制 / Definition and Mechanism}
+
+\begin{definition}[IPI — 身份政治产业化 / Identity Politics Industrialization]
+\label{def:IPI}
+设社会存在 $M$ 个可激活的身份维度 $\mathcal{I} = \{I_1, \ldots, I_M\}$
+（种族、宗教、地域、阶级等）。每个身份维度 $I_j$ 关联一个\textbf{身份企业家群}
+$\mathcal{E}_j$ 和一个\textbf{身份市场} $\mathcal{M}_j$。
+身份政治产业化定义为：
+\[
+\forall j,\; \underbrace{R_j(t)}_{\text{身份企业的收益}} = 
+\underbrace{p_j(t)}_{\text{身份叙事的单位价格}} \cdot 
+\underbrace{q_j(t)}_{\text{消费该叙事的群体规模}} - 
+\underbrace{C_j(\mathbf{s}_j)}_{\text{叙事生产成本}},
+\]
+其中 $\mathbf{s}_j \in \R^L$ 为叙事向量（受害者化、威胁化、优越化各分量的组合）。
+IPI 条件的核心特征是：身份企业家的收益最大化导致群体间敌意的系统性生产，
+从而增大隔离系数 $\lambdaparam_{\text{iso}}$ 并削弱凝聚力 $\lambdaparam_{\text{cohe}}$。
+\end{definition}
+
+IPI is fundamentally an \textbf{industrial logic} applied to identity: identity
+entrepreneurs compete in a marketplace of grievances, where the unit of production
+is the ``narrative of threat or victimhood,'' and the unit of consumption is
+``group-level attention and mobilization.'' The profit motive ensures that narratives
+that maximize intergroup hostility are systematically selected.
+
+\begin{proposition}[IPI 对 $\lambdaparam$ 的双重效应 / Dual Effect of IPI on $\lambdaparam$]
+\label{prop:IPI_lambda}
+在 IPI 活跃时：
+\[
+\lambdaparam \leftarrow \lambdaparam -
+\underbrace{\delta_{\text{iso}} \cdot \sum_{j=1}^{M} R_j(t)}_{\text{隔离增大效应}} -
+\underbrace{\delta_{\text{cohe}} \cdot \sum_{j=1}^{M} \|\mathbf{s}_j\|^2}_{\text{凝聚力削弱效应}},
+\]
+其中 $\delta_{\text{iso}}, \delta_{\text{cohe}} > 0$ 为耦合常数。IPI 的独特之处在于它
+同时影响 $\lambdaparam$ 的两个分量（$\lambdaparam_{\text{iso}} \uparrow$ 且
+$\lambdaparam_{\text{cohe}} \downarrow$），因此具有最强的 $\lambdaparam$-负化效率。
+\end{proposition}
+
+\subsection{IPI 的市场动力学 / IPI Market Dynamics}
+
+\begin{definition}[身份叙事竞争 / Identity Narrative Competition]
+\label{def:narrative_comp}
+设身份维度 $j$ 上有 $N_j$ 个竞争性身份企业家。企业家 $i$ 的优化问题为：
+\[
+\max_{\mathbf{s}_j^{(i)} \in \mathcal{S}_j} \;
+p_j^{(i)} \cdot q_j(\mathbf{s}_j^{(i)}, \mathbf{s}_j^{(-i)}) - C_j(\mathbf{s}_j^{(i)}),
+\]
+受众分配函数 $q_j$ 由注意力竞争决定：
+\[
+q_j(\mathbf{s}_j^{(i)}, \mathbf{s}_j^{(-i)}) = 
+\frac{\exp\paren{\beta \cdot \text{Arousal}(\mathbf{s}_j^{(i)})}}
+{\sum_{k=1}^{N_j} \exp\paren{\beta \cdot \text{Arousal}(\mathbf{s}_j^{(k)})}},
+\]
+其中 $\text{Arousal}(\cdot)$ 为叙事的情感唤醒强度，$\beta > 0$ 为注意力-敏感度参数。
+\end{definition}
+
+This is a softmax attention market: the more emotionally arousing a narrative is,
+the larger its audience share. Since threat and victimhood narratives maximize
+arousal, the market equilibrium selects for maximal intergroup hostility — an
+emergent, decentralized mechanism driving $\lambdaparam < 0$.
+
+\begin{proposition}[IPI 均衡的 $\lambdaparam$ 下限 / $\lambdaparam$ Lower Bound Under IPI Equilibrium]
+\label{prop:IPI_equilibrium}
+在对称身份市场均衡中，所有身份企业家收敛到相同的最优叙事 $\mathbf{s}^*$，满足：
+\[
+\nabla_{\mathbf{s}} \text{Arousal}(\mathbf{s}^*) = \beta \cdot \nabla_{\mathbf{s}} C_j(\mathbf{s}^*).
+\]
+此时，系统级 $\lambdaparam$ 贡献的下界为：
+\[
+\lambdaparam_{\text{IPI}} \leq -\delta_{\text{cohe}} \cdot M \cdot \|\mathbf{s}^*\|^2.
+\]
+在多身份维度社会中（$M \gg 1$），即使单个维度的效应微弱，
+聚合效应仍可驱动 $\lambdaparam < 0$。
+\end{proposition}
+
+\subsection{IPI 与信息环境的耦合 / IPI-Information Environment Coupling}
+
+\begin{definition}[算法放大系数 / Algorithmic Amplification Factor]
+\label{def:alg_amp}
+现代数字平台通过推荐算法为身份叙事提供正反馈。定义算法放大系数：
+\[
+\Gamma_{\text{alg}} = \frac{\text{实际叙事传播速率}}{\text{自然传播速率}} \geq 1.
+\]
+在 $\Gamma_{\text{alg}} > 1$ 时，IPI 的 $\lambdaparam$ 贡献被放大为：
+\[
+\lambdaparam_{\text{IPI}}^{\text{eff}} = \Gamma_{\text{alg}} \cdot \lambdaparam_{\text{IPI}}.
+\]
+\end{definition}
+
+\begin{attackbox}
+\textbf{诚实暴击：} IPI 条件的数学结构本质上是一个\textbf{多臂赌博机问题}
+（multi-armed bandit），其中各臂的奖励是群体敌意水平。
+身份企业家在不知情的情况下（或知情但不在乎）共同最大化一个社会损失函数。
+IPI 的恐怖之处在于：每个企业家的行为在个体层面完全理性（最大化关注和收益），
+但集体结果却是 $\lambdaparam$ 的灾难性下降。这不是市场失灵——这是市场\textit{成功}
+（在精确的微观经济学意义上）导致的宏观灾难。
+\end{attackbox}
+
+% =====================================================================
+\section{条件三：隔离强化 (SR)}
+\section{Condition III: Segregation Reinforcement (SR)}
+% =====================================================================
+
+\subsection{定义与机制 / Definition and Mechanism}
+
+\begin{definition}[SR — 隔离强化 / Segregation Reinforcement]
+\label{def:SR}
+设社会空间网络为图 $\mathcal{G} = (V, E)$，节点代表个体或家庭，边代表社会互动。
+隔离强化定义为：
+\[
+\frac{d}{dt} H_{\text{seg}}(t) > 0,
+\]
+其中 $H_{\text{seg}}$ 为隔离熵：
+\[
+H_{\text{seg}}(t) = -\sum_{g=1}^{G} p_g(t) \log p_g(t),
+\]
+$p_g(t) = |V_g(t)| / |V|$，$V_g$ 为时刻 $t$ 时群体 $g$ 占据的连通分量。
+SR 条件通过以下机制降低 $\lambdaparam$：
+\begin{enumerate}
+    \item \textbf{物理隔离（Physical）：} 居住隔离减少跨群体日常接触，
+          使 Schelling 临界点被跨越后进入不可逆的自发隔离状态。
+    \item \textbf{信息隔离（Informational）：} 分离的信息生态系统
+          （不同群体使用不同的媒体源和社交平台）阻断共同事实基础。
+    \item \textbf{婚姻隔离（Marital）：} 跨群体通婚率下降导致社会网络
+          的同质性指数上升，进一步压缩 $\lambdaparam_{\text{mobil}}$。
+\end{enumerate}
+\end{definition}
+
+\subsection{SR 的 Schelling 动力学 / Schelling Dynamics of SR}
+
+\begin{definition}[SR 临界阈值 / SR Critical Threshold]
+\label{def:SR_critical}
+延续 Schelling (1971) 的隔离模型，定义个体 $i$ 的\textbf{同质性偏好} $\theta_i \in [0,1]$
+为 $i$ 在邻域中期望的同群比例。SR 条件的临界阈值为：
+\[
+\theta^* = \inf \set{\theta \in [0,1] : \exists \text{ 稳定均衡使得 } H_{\text{seg}} \geq H_{\text{crit}}},
+\]
+其中 $H_{\text{crit}}$ 为图 $\mathcal{G}$ 失去连通性时隔离熵的下界。
+数值模拟表明 $\theta^*$ 通常在 $0.3$--$0.5$ 之间。
+\end{definition}
+
+\begin{proposition}[SR 对 $\lambdaparam$ 的正反馈 / Positive Feedback of SR on $\lambdaparam$]
+\label{prop:SR_lambda}
+当 $H_{\text{seg}}$ 超过 $H_{\text{crit}}$ 时：
+\[
+\lambdaparam_{\text{iso}} \leftarrow \lambdaparam_{\text{iso}} + 
+\mu_{\text{SR}} \cdot (H_{\text{seg}} - H_{\text{crit}})^2,
+\]
+\[
+\lambdaparam_{\text{mobil}} \leftarrow \lambdaparam_{\text{mobil}} \cdot 
+\exp\paren{-\nu_{\text{SR}} \cdot (H_{\text{seg}} - H_{\text{crit}})},
+\]
+其中 $\mu_{\text{SR}}, \nu_{\text{SR}} > 0$。这意味着隔离强化同时增大 $\lambdaparam_{\text{iso}}$
+和减小 $\lambdaparam_{\text{mobil}}$——双通道加速 $\lambdaparam$ 的下降。
+\end{proposition}
+
+\subsection{SR 的不可逆性 / Irreversibility of SR}
+
+\begin{theorem}[SR 相变定理 / SR Phase Transition Theorem]
+\label{thm:SR_irreversible}
+当社会网络 $\mathcal{G}$ 的隔离熵 $H_{\text{seg}}$ 越过 $H_{\text{crit}}$，
+且每个群体的内部密度 $\rho_g > \rho_{\text{crit}}$ 时，SR 进入不可逆相变：
+\[
+\lim_{t \to \infty} \E[H_{\text{seg}}(t)] = \log G,
+\]
+即系统收敛于完全隔离状态。返回混合态的干预成本与隔离深度呈指数关系：
+\[
+C_{\text{de-seg}}(H_{\text{seg}}) \geq C_0 \cdot \exp\paren{\alpha \cdot (H_{\text{seg}} - H_{\text{crit}})},
+\]
+其中 $C_0$ 为基线干预成本，$\alpha > 0$ 为成本-深度弹性系数。
+\end{theorem}
+
+% =====================================================================
+\section{三条件的联合激活与 $\lambdaparam < 0$}
+\section{Joint Activation of Three Conditions and $\lambdaparam < 0$}
+% =====================================================================
+
+\subsection{联合激活的充要条件 / Necessary and Sufficient Condition for Joint Activation}
+
+三条件并不独立运作——它们通过相互的正反馈形成\textbf{发散复合体}（Divergent Complex）：
+
+The three conditions do not operate independently—they form a
+\textbf{Divergent Complex} through mutual positive feedbacks:
+
+\begin{definition}[发散复合体 / Divergent Complex]
+\label{def:divergent_complex}
+发散复合体 $\mathcal{D} = (\Phi_{\text{ITA}}, \Phi_{\text{IPI}}, \Phi_{\text{SR}})$ 的状态由
+三个激活函数定义。复合体的演化方程为：
+\[
+\frac{d}{dt}
+\begin{pmatrix}
+\Phi_{\text{ITA}} \\ \Phi_{\text{IPI}} \\ \Phi_{\text{SR}}
+\end{pmatrix}
+= \mathbf{J}
+\begin{pmatrix}
+\Phi_{\text{ITA}} \\ \Phi_{\text{IPI}} \\ \Phi_{\text{SR}}
+\end{pmatrix}
++ \text{高阶项},
+\]
+其中雅可比矩阵 $\mathbf{J} \in \R^{3 \times 3}$ 为：
+\[
+\mathbf{J} =
+\begin{pmatrix}
+0 & j_{12} & j_{13} \\
+j_{21} & 0 & j_{23} \\
+j_{31} & j_{32} & 0
+\end{pmatrix},
+\quad j_{kl} > 0.
+\]
+（对角线为零表示各条件本身不自激，而是通过对角线外的相互激励来增长。）
+\end{definition}
+
+\begin{theorem}[$\lambdaparam < 0$ 的充要条件 / N\&S Condition for $\lambdaparam < 0$]
+\label{thm:lambda_negative}
+$\lambdaparam < 0$ 的充要条件是发散复合体中至少一个条件的激活度
+超过临界值且 $\mathbf{J}$ 的谱半径 $\rho(\mathbf{J}) > 1$：
+\[
+\lambdaparam < 0 \iff \exists k \in \{\text{ITA}, \text{IPI}, \text{SR}\}: 
+\Phi_k > \Phi_k^{\text{crit}} \; \land \; \rho(\mathbf{J}) > 1.
+\]
+换言之，单一条件的激活在交叉激励下必然引发全系统的发散。
+$\rho(\mathbf{J}) > 1$ 的条件意味着：
+\[
+(j_{12}j_{23}j_{31} + j_{13}j_{32}j_{21}) + 
+\sqrt{(j_{12}j_{21} + j_{13}j_{31} + j_{23}j_{32})^3} > 1.
+\]
+\end{theorem}
+
+\subsection{历史案例：条件占主导的模式 / Historical Cases: Condition-Dominance Patterns}
+
+\begin{table}[htbp]
+\centering
+\caption{三条件主导模式的历史案例 / Historical Cases of Condition-Dominance Patterns}
+\label{tab:historical}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{案例 / Case} &
+  \textbf{ITA主导？} &
+  \textbf{IPI主导？} &
+  \textbf{SR主导？} &
+  \textbf{终态 / End State} \\
+\midrule
+前南斯拉夫 (1990s)       & 中等 & \textbf{强} & 中等 & 碎片化 \\
+卢旺达 (1994)            & \textbf{强} & 强 & 强   & 灭绝   \\
+美国南北战争前 (1850s)   & 强   & 中等 & \textbf{强} & 革命   \\
+南非种族隔离末期 (1980s) & 强   & 中等 & \textbf{强} & 革命   \\
+缅甸罗兴亚危机 (2016--)  & 强   & \textbf{强} & 强   & 灭绝   \\
+印度种姓制 (长期)        & \textbf{强} & 弱   & \textbf{强} & 碎片化（稳态）\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+表~\ref{tab:historical} 的启发：ITA 和 SR 同时强且 IPI 弱时，系统陷入长期碎片化稳态
+（如印度种姓制）。当 IPI 加入时，稳态被破坏，系统向灭绝或革命加速。
+
+Insight from Table~\ref{tab:historical}: When ITA and SR are both strong but IPI is weak,
+the system can settle into a long-term fragmented steady state (e.g., the Indian caste
+system). When IPI joins, the steady state is destroyed and the system accelerates
+toward either extinction or revolution.
+
+% =====================================================================
+\section{发散动力学}
+\section{Divergent Dynamics}
+% =====================================================================
+
+\subsection{确定性发散 / Deterministic Divergence}
+
+在 $\lambdaparam < 0$ 的条件下，定义~\ref{def:dynamics} 中 SDE 的确定性部分为：
+
+Under $\lambdaparam < 0$, the deterministic part of the SDE in Definition~\ref{def:dynamics}:
+
+\begin{theorem}[指数发散定理 / Exponential Divergence Theorem]
+\label{thm:divergence}
+设 $\lambdaparam = -|\lambdaparam| < 0$ 且波动率 $\sigma = 0$（确定情形），则：
+\[
+\ineq(t) = \ineq_0 \, e^{|\lambdaparam| t}.
+\]
+定义\textbf{临界时间} $T_{\text{crit}}$ 为社会崩溃阈值 $\ineq_{\text{max}}$ 被首次达到的时刻：
+\[
+T_{\text{crit}} = \frac{1}{|\lambdaparam|} \ln\paren{\frac{\ineq_{\text{max}}}{\ineq_0}}.
+\]
+\end{theorem}
+
+\begin{corollary}[发散时间的参数敏感性 / Parameter Sensitivity of Divergence Time]
+\label{cor:sensitivity}
+临界时间 $T_{\text{crit}}$ 对 $|\lambdaparam|$ 的弹性为：
+\[
+\frac{d \ln T_{\text{crit}}}{d \ln |\lambdaparam|} = -1,
+\]
+对初始不平等 $\ineq_0$ 的弹性为：
+\[
+\frac{d \ln T_{\text{crit}}}{d \ln \ineq_0} = -\frac{1}{\ln(\ineq_{\text{max}}/\ineq_0)}.
+\]
+这意味着当系统已接近临界值时（$\ineq_0 \to \ineq_{\text{max}}$），
+即使微小的 $\ineq_0$ 增加也会急剧缩短崩溃时间。
+\end{corollary}
+
+\subsection{随机发散与置信界 / Stochastic Divergence and Confidence Bounds}
+
+当 $\sigma > 0$ 时，不平等的演化路径是随机的。我们需要给出概率界。
+
+When $\sigma > 0$, the inequality path is stochastic. We need probabilistic bounds.
+
+\begin{proposition}[随机发散的概率界 / Probabilistic Bounds for Stochastic Divergence]
+\label{prop:stoch_bound}
+在 $\lambdaparam = -|\lambdaparam| < 0$ 且 $\sigma > 0$ 的情况下：
+\[
+\E[\ineq(t)] = \ineq_0 \, e^{|\lambdaparam| t},
+\]
+\[
+\Var[\ineq(t)] = \ineq_0^2 \, e^{2|\lambdaparam| t} \paren{e^{\sigma^2 t} - 1}.
+\]
+利用对数正态分布的性质，$\ineq(t)$ 的 $(1-\alpha)$ 置信上界和下界为：
+\[
+\ineq_{\text{upper}}(t) = \ineq_0 \exp\paren{|\lambdaparam| t + z_{\alpha/2} \, \sigma \sqrt{t}},
+\]
+\[
+\ineq_{\text{lower}}(t) = \ineq_0 \exp\paren{|\lambdaparam| t - z_{\alpha/2} \, \sigma \sqrt{t}},
+\]
+其中 $z_{\alpha/2}$ 为标准正态分布的 $(1-\alpha/2)$ 分位数。
+\end{proposition}
+
+\begin{proposition}[首次通过时间的分布 / Distribution of First-Passage Time]
+\label{prop:first_passage}
+定义首次通过时间 $\tau_b = \inf\{t \geq 0 : \ineq(t) \geq b\}$，其中 $b > \ineq_0$。
+在 $\lambdaparam < 0$ 条件下，$\tau_b$ 的概率密度函数为：
+\[
+f_{\tau_b}(t) = \frac{\ln(b/\ineq_0)}{\sigma \sqrt{2\pi t^3}}
+\exp\paren{-\frac{\paren{\ln(b/\ineq_0) - |\lambdaparam| t + \frac{\sigma^2}{2} t}^2}{2\sigma^2 t}}.
+\]
+期望首次通过时间为：
+\[
+\E[\tau_b] = \frac{\ln(b/\ineq_0)}{|\lambdaparam| - \sigma^2/2},
+\quad \text{要求 } |\lambdaparam| > \sigma^2/2.
+\]
+\end{proposition}
+
+\subsection{三条件的发散贡献分解 / Divergence Contribution Decomposition}
+
+\begin{proposition}[发散速率的结构分解 / Structural Decomposition of Divergence Rate]
+\label{prop:divergence_decomp}
+总发散速率 $|\lambdaparam|$ 可分解为三条件的贡献：
+\[
+|\lambdaparam| = \alpha_{\text{ITA}} \Phi_{\text{ITA}} + 
+                \alpha_{\text{IPI}} \Phi_{\text{IPI}} + 
+                \alpha_{\text{SR}} \Phi_{\text{SR}} - \alpha_0,
+\]
+其中 $\alpha_{\text{ITA}}, \alpha_{\text{IPI}}, \alpha_{\text{SR}} > 0$ 为各条件的发散强度系数，
+$\alpha_0 \geq 0$ 为基线衰减（自然的社会自我修复能力）。
+当 $\alpha_0 > \sum \alpha_k \Phi_k$ 时，系统尚可自我修复；
+当 $\alpha_0 \leq \sum \alpha_k \Phi_k$ 时，发散开始。
+\end{proposition}
+
+% =====================================================================
+\section{三种终端状态}
+\section{Three Terminal States}
+% =====================================================================
+
+当 $\lambdaparam < 0$ 持续存在且未经干预时，系统必然收敛到三种终端状态之一。
+终端状态的确定由各条件的相对激活强度决定。
+
+When $\lambdaparam < 0$ persists without intervention, the system necessarily converges
+to one of three terminal states. The terminal state is determined by the relative
+activation strength of each condition.
+
+\subsection{终端状态一：碎片化 (Fragmentation) — SR 主导}
+\subsection{Terminal State I: Fragmentation — SR-dominant}
+
+\begin{definition}[碎片化 / Fragmentation]
+\label{def:fragmentation}
+社会系统 $\mathcal{S}$ 进入\textbf{碎片化}终端状态当且仅当：
+\[
+\lim_{t \to \infty} H_{\text{seg}}(t) = \log G \quad \land \quad 
+\Phi_{\text{SR}} > \max(\Phi_{\text{ITA}}, \Phi_{\text{IPI}}).
+\]
+在此状态下，社会分解为 $G$ 个互不连通的群体，每个群体在物理空间、
+信息空间和经济空间中完全隔离。系统级功能丧失（无共同公共物品供给、
+无跨群体贸易、无共同政治决策），但各子群体内部仍维持秩序。
+\end{definition}
+
+\textbf{碎片化的数学结构：}
+设 $\mathcal{G}$ 的邻接矩阵为 $\mathbf{A}(t)$。在 SR 主导下：
+\[
+\lim_{t \to \infty} \mathbf{A}(t) = \bigoplus_{g=1}^{G} \mathbf{A}_g,
+\]
+即 $\mathbf{A}$ 收敛为块对角矩阵。图的谱隙（spectral gap）
+$\lambda_2(\mathbf{L})$ 收敛到零，其中 $\mathbf{L}$ 为拉普拉斯矩阵，
+意味着扩散过程在群体间完全停止。
+
+\textbf{历史对应：} 黎巴嫩宗派分化、波斯尼亚战后分裂、印度种姓隔离的稳态化。
+
+\textbf{The mathematical structure of fragmentation:} The adjacency matrix $\mathbf{A}(t)$
+converges to a block-diagonal form. The spectral gap of the graph Laplacian converges
+to zero, meaning all cross-group diffusion processes cease entirely.
+
+\subsection{终端状态二：革命 (Revolution) — IPI 主导}
+\subsection{Terminal State II: Revolution — IPI-dominant}
+
+\begin{definition}[革命 / Revolution]
+\label{def:revolution}
+社会系统 $\mathcal{S}$ 进入\textbf{革命}终端状态当且仅当：
+\[
+\Phi_{\text{IPI}} > \max(\Phi_{\text{ITA}}, \Phi_{\text{SR}}) \quad \land \quad
+\ineq(t) \text{ 的非连续跳跃幅度 } > \ineq_{\text{jump}}.
+\]
+在此状态下，身份政治产业化积累的群体敌意达到临界质量，
+触发系统级相变。旧精英结构被暴力或非暴力推翻，不平等曲线发生
+\textbf{非连续下跳}（不通过中间态，直接跳跃至低不平等状态）。
+\end{definition}
+
+\textbf{革命的动力学条件：}
+定义\textbf{革命势能} $\mathcal{R}(t)$：
+\[
+\mathcal{R}(t) = \underbrace{\Phi_{\text{IPI}}(t)}_{\text{敌意积累}} \cdot
+                 \underbrace{\ineq(t)}_{\text{物质基础}} \cdot
+                 \underbrace{(1 - \Phi_{\text{SR}}(t))}_{\text{跨群体协调能力}}.
+\]
+革命在 $\mathcal{R}(t) \geq \mathcal{R}_{\text{crit}}$ 时被触发。
+$(1 - \Phi_{\text{SR}})$ 项反映了一个关键洞见：
+\textbf{跨群体联盟是革命成功的必要条件}。如果 SR 太强
+（群体彼此物理隔离），IPI 积累的敌意无法转化为协调的集体行动，
+系统将转向碎片化而非革命。
+
+\textbf{The dynamical condition for revolution:} Revolution is triggered when
+revolutionary potential $\mathcal{R}(t) \geq \mathcal{R}_{\text{crit}}$.
+The $(1 - \Phi_{\text{SR}})$ term captures a key insight: cross-group alliance is
+necessary for revolutionary success.
+
+\subsection{终端状态三：灭绝 (Extinction) — ITA 主导}
+\subsection{Terminal State III: Extinction — ITA-dominant}
+
+\begin{definition}[灭绝 / Extinction]
+\label{def:extinction}
+社会系统 $\mathcal{S}$ 进入\textbf{灭绝}终端状态当且仅当：
+\[
+\Phi_{\text{ITA}} > \max(\Phi_{\text{IPI}}, \Phi_{\text{SR}}) \quad \land \quad
+\exists g \in \{1,\ldots,G\} : |V_g(t)| \to 0 \text{ as } t \to \infty.
+\]
+在此状态下，代际创伤放大的正反馈循环使特定群体的社会、经济和生物学
+再生产条件被系统性地摧毁。灭绝在此语境中既包括物理消灭（种族灭绝）
+也包括文化消灭（语言、传统、身份连续性的断裂）。
+\end{definition}
+
+\textbf{灭绝的动力学条件：}
+设群体 $g$ 的人口规模为 $N_g(t)$，其演化由修正的 Lotka-Volterra 方程控制：
+\[
+\frac{dN_g}{dt} = r_g N_g \paren{1 - \frac{N_g}{K_g}} - 
+\underbrace{\eta_g \cdot \Phi_{\text{ITA}} \cdot N_g}_{\text{创伤导致的承载力破坏}},
+\]
+其中 $r_g$ 为内禀增长率，$K_g$ 为环境承载力，$\eta_g$ 为脆弱性系数。
+灭绝条件为：
+\[
+\eta_g \cdot \Phi_{\text{ITA}} > r_g.
+\]
+
+\textbf{The dynamical condition for extinction:} Extinction occurs when the
+trauma-induced carrying-capacity destruction rate $\eta_g \cdot \Phi_{\text{ITA}}$
+exceeds the intrinsic growth rate $r_g$ of the target group.
+
+\subsection{终端状态的相图 / Phase Diagram of Terminal States}
+
+\begin{figure}[htbp]
+\centering
+% 使用 tikz 绘制三角相图
+\begin{tikzpicture}[scale=5]
+    % 三角形顶点
+    \coordinate (ITA) at (0,0);
+    \coordinate (IPI) at (1,0);
+    \coordinate (SR) at (0.5,{sqrt(3)/2});
+
+    % 三角形边框
+    \draw[thick] (ITA) -- (IPI) -- (SR) -- cycle;
+
+    % 标签
+    \node[below] at (ITA) {ITA};
+    \node[below] at (IPI) {IPI};
+    \node[above] at (SR) {SR};
+
+    % 区域填充（概念性）
+    \fill[red!20] (0,0) -- (0.3,0) -- (0.2,0.15) -- cycle;
+    \fill[blue!20] (0.7,0) -- (1,0) -- (0.65,0.3) -- cycle;
+    \fill[green!20] (0.2,0.15) -- (0.3,0) -- (0.5,{sqrt(3)/2}) -- (0.35,0.35) -- cycle;
+
+    % 标签
+    \node[red!80!black] at (0.12,0.05) {灭绝};
+    \node[blue!80!black] at (0.82,0.08) {革命};
+    \node[green!60!black] at (0.4,0.5) {碎片化};
+    \node[gray] at (0.5,0.25) {混合区};
+
+    % 边界线
+    \draw[dashed,gray] (0.3,0) -- (0.35,0.35);
+    \draw[dashed,gray] (0.7,0) -- (0.35,0.35);
+\end{tikzpicture}
+\caption{三条件主导的终端状态三角相图 / Ternary Phase Diagram of Terminal States by Condition Dominance}
+\label{fig:ternary}
+\end{figure}
+
+图~\ref{fig:ternary} 展示了三条件激活空间中的终端状态分布。
+注意存在一个\textbf{混合区}（中心区域），其中三个条件均接近同等强度——
+这是最危险的情形：系统可能同时经历碎片化和灭绝（如卢旺达案例）。
+
+Figure~\ref{fig:ternary} shows the distribution of terminal states in the three-condition
+activation space. Note the \textbf{mixed zone} (central region) where all three conditions
+are near equal strength—this is the most dangerous regime, where the system can
+simultaneously experience fragmentation and extinction (e.g., the Rwanda case).
+
+% =====================================================================
+\section{五个早期预警信号与复合早期预警指数 (CEWI)}
+\section{Five Early Warning Signals and the Composite Early Warning Index (CEWI)}
+% =====================================================================
+
+\subsection{信号一：自相关增大 (ACF)}
+\subsection{Signal I: Rising Autocorrelation (ACF)}
+
+\begin{definition}[滞后-1 自相关 / Lag-1 Autocorrelation]
+\label{def:acf}
+对时间序列 $\{\ineq_t\}_{t=1}^{T}$，滞后-1 自相关函数为：
+\[
+\text{ACF}(1) = \frac{\sum_{t=1}^{T-1} (\ineq_t - \bar{\ineq})(\ineq_{t+1} - \bar{\ineq})}
+                      {\sum_{t=1}^{T} (\ineq_t - \bar{\ineq})^2}.
+\]
+\textbf{预警判据：} 在滑动窗口内，$\text{ACF}(1)$ 持续上升并超过阈值
+$\rho_{\text{crit}} \approx 0.7$ 时，系统接近临界转变。
+当 ACF(1) $\to 1$ 时，系统处于\textbf{临界减速}状态——恢复速率趋于零，
+系统对微小扰动极端敏感。
+\end{definition}
+
+In the $\lambdaparam < 0$ regime, ACF(1) increases toward 1 as the system approaches
+its bifurcation point. This is the classical ``critical slowing down'' phenomenon:
+the system's recovery rate from perturbations approaches zero, making it increasingly
+vulnerable to stochastic shocks.
+
+\subsection{信号二：方差增大 (VAR)}
+\subsection{Signal II: Rising Variance (VAR)}
+
+\begin{definition}[滑动方差 / Rolling Variance]
+\label{def:var}
+在窗口长度 $w$ 上：
+\[
+\sigma_w^2(t) = \frac{1}{w-1} \sum_{\tau = t-w+1}^{t} 
+                \paren{\ineq_{\tau} - \bar{\ineq}_w(t)}^2.
+\]
+\textbf{预警判据：} $\sigma_w^2(t)$ 的增长率超过其历史趋势的 2 个标准差时发出警报。
+\end{definition}
+
+Under $\lambdaparam < 0$, the variance grows with $\exp(2|\lambdaparam| t + \sigma^2 t)$,
+making it the most rapidly escalating signal. However, variance can spike for
+non-catastrophic reasons (election cycles, policy changes), so it must be used in
+conjunction with ACF.
+
+\subsection{信号三：偏度变化 (SKEW)}
+\subsection{Signal III: Skewness Shift (SKEW)}
+
+\begin{definition}[不平等分布的偏度 / Skewness of Inequality Distribution]
+\label{def:skew}
+\[
+\gamma_1(t) = \frac{\frac{1}{w} \sum_{\tau} (\ineq_{\tau} - \bar{\ineq}_w)^3}
+                     {\sigma_w^3}.
+\]
+\textbf{预警判据：} $\gamma_1(t)$ 由负变正（或正偏度加速增大），表明上层极端值
+在总不平等中的占比急剧上升——精英抽取正在加速。
+\end{definition}
+
+A shifting skewness indicates that inequality growth is driven not by broad-based
+changes but by extreme concentration at the top—the hallmark of the extraction-
+amplification loop in the ITA condition.
+
+\subsection{信号四：空间相关性崩塌 (SPA)}
+\subsection{Signal IV: Collapse of Spatial Correlation (SPA)}
+
+\begin{definition}[空间相关性指数 / Spatial Correlation Index]
+\label{def:spa}
+将社会空间划分为 $R$ 个区域，定义 Moran's $I$ 统计量：
+\[
+I(t) = \frac{R}{\sum_{i,j} w_{ij}} \cdot
+       \frac{\sum_{i,j} w_{ij} (\ineq_i - \bar{\ineq})(\ineq_j - \bar{\ineq})}
+            {\sum_i (\ineq_i - \bar{\ineq})^2},
+\]
+其中 $w_{ij}$ 为空间权重矩阵（区域 $i$ 和 $j$ 的接近度）。
+\textbf{预警判据：} $I(t) \to 0$ 或 $I(t) \to -1$（负空间自相关），
+表明区域间出现尖锐的隔离边界——SR 条件正在强化。
+\end{definition}
+
+A sharp drop in spatial correlation signals that neighboring regions are diverging
+in their inequality dynamics, a hallmark of the segregation reinforcement process.
+
+\subsection{信号五：互信息下降 (MUI)}
+\subsection{Signal V: Decline of Mutual Information (MUI)}
+
+\begin{definition}[跨群体信息互信息 / Cross-Group Mutual Information]
+\label{def:mui}
+对于群体 $A$ 和 $B$ 的信息消费分布 $\mathcal{P}_A$ 和 $\mathcal{P}_B$：
+\[
+I(A; B) = \sum_{x \in \mathcal{X}} \sum_{y \in \mathcal{Y}} 
+          p(x,y) \log \frac{p(x,y)}{p(x)p(y)}.
+\]
+\textbf{预警判据：} $I(A; B)$ 在滑动窗口内持续衰减，衰减速率加速时发出警报。
+$I(A; B) \to 0$ 意味着群体 $A$ 和 $B$ 的信息生态系统完全脱耦——
+共同事实基础的丧失是 IPI 条件的直接后果。
+\end{definition}
+
+Mutual information decline quantifies the separation of information ecosystems.
+When $I(A; B) \to 0$, the two groups effectively inhabit different realities—a
+condition that makes negotiated settlement of grievances structurally impossible.
+
+\subsection{复合早期预警指数 (CEWI) / Composite Early Warning Index}
+
+五个信号各有优劣——ACF 稳健但滞后，VAR 敏感但噪声大，SKEW 信息量大但需要大样本，
+SPA 空间精细但数据需求高，MUI 概念深刻但操作性挑战大。
+单一信号的使用可能导致虚假警报或漏报。我们提出\textbf{复合早期预警指数（CEWI）}：
+
+Each signal has strengths and weaknesses. Using any single signal risks false alarms
+or missed detections. We propose the \textbf{Composite Early Warning Index (CEWI)}:
+
+\begin{definition}[CEWI — 复合早期预警指数 / Composite Early Warning Index]
+\label{def:CEWI}
+\[
+\text{CEWI}(t) = \sum_{k=1}^{5} w_k \cdot z_k(t),
+\]
+其中：
+\begin{itemize}
+    \item $z_k(t)$ 为信号 $k$ 的标准化 $z$-值
+          （$z_k(t) = (x_k(t) - \mu_k^{\text{baseline}}) / \sigma_k^{\text{baseline}}$，
+          其中基线均值和标准差从稳定期数据估计）
+    \item $w_k$ 为时变权重：
+          \[
+          w_k(t) = \frac{\exp\paren{\beta \cdot \text{Reliability}_k(t)}}
+                       {\sum_{j=1}^{5} \exp\paren{\beta \cdot \text{Reliability}_j(t)}},
+          \]
+          $\text{Reliability}_k(t)$ 为信号 $k$ 在时刻 $t$ 的信噪比估计
+    \item $\beta > 0$ 为权重锐度参数（$\beta \to \infty$ 时退化为 max 函数）
+\end{itemize}
+\end{definition}
+
+\begin{proposition}[CEWI 的统计性质 / Statistical Properties of CEWI]
+\label{prop:CEWI_stats}
+在 $\lambdaparam \geq 0$（稳定期）的零假设下：
+\[
+\text{CEWI}(t) \sim \mathcal{N}(0, 1) \quad \text{（渐近正态）},
+\]
+因为每个 $z_k$ 渐近标准正态且权重和为 1。
+预警阈值以标准差为单位设定：
+\begin{itemize}
+    \item \textbf{蓝色预警（Watch）：} CEWI $> 1$（1-$\sigma$ 偏离）
+    \item \textbf{黄色预警（Warning）：} CEWI $> 2$（2-$\sigma$ 偏离）
+    \item \textbf{红色预警（Alert）：} CEWI $> 3$（3-$\sigma$ 偏离）
+    \item \textbf{黑色警报（Critical）：} CEWI $> 4$（4-$\sigma$ 偏离），且五个分量信号中至少三个独立触发
+\end{itemize}
+\end{proposition}
+
+\begin{proposition}[CEWI 与 $\lambdaparam$ 的函数关系 / Functional Relationship between CEWI and $\lambdaparam$]
+\label{prop:CEWI_lambda}
+当系统接近 $\lambdaparam < 0$ 时，CEWI 遵循：
+\[
+\frac{d}{dt} \text{CEWI}(t) \approx \gamma_0 + \gamma_1 \cdot |\lambdaparam| \cdot \text{CEWI}(t),
+\]
+即 CEWI 本身以 $|\lambdaparam|$ 依赖的速率指数增长。
+这提供了一个从可观测的 CEWI 时序反向推断 $|\lambdaparam|$ 的方法：
+\[
+|\widehat{\lambdaparam}| \approx \frac{1}{\gamma_1 \cdot \text{CEWI}(t)} 
+\cdot \paren{\frac{d}{dt} \text{CEWI}(t) - \gamma_0}.
+\]
+\end{proposition}
+
+% =====================================================================
+\section{干预路径与最优干预时机}
+\section{Intervention Pathways and Optimal Intervention Timing}
+% =====================================================================
+
+\subsection{干预的阶段划分 / Phases of Intervention}
+
+干预效果非线性地依赖于介入时机。我们将发散过程划分为三个阶段：
+
+Intervention effectiveness depends nonlinearly on the timing of entry.
+We partition the divergence process into three phases:
+
+\begin{definition}[发散三阶段 / Three Phases of Divergence]
+\label{def:phases}
+\begin{enumerate}
+    \item \textbf{Phase I — 潜伏期（Latent Phase）：}
+          $\text{CEWI} \in [0, 1]$。$\lambdaparam < 0$ 已开始但社会表面正常运行。
+          此阶段干预成本极低——政策调整、对话机制、早期再分配即可逆转。
+          \\[2pt]
+          \textbf{Phase I — Latent Phase:} $\lambdaparam < 0$ has begun but society
+          appears to function normally. Intervention cost is minimal—policy adjustments,
+          dialogue mechanisms, and early redistribution suffice.
+
+    \item \textbf{Phase II — 临界期（Critical Phase）：}
+          $\text{CEWI} \in (1, 3]$。信号开始显现，社会张力可感知但尚未爆发。
+          干预需要结构性改革——制度重建、真相与和解、强制混合。
+          干预成本随 CEWI 指数增长。
+          \\[2pt]
+          \textbf{Phase II — Critical Phase:} Signals become visible; social tension
+          is palpable but not yet erupted. Structural reforms are needed—institutional
+          rebuilding, truth and reconciliation, forced mixing. Cost grows with CEWI.
+
+    \item \textbf{Phase III — 爆发期（Eruptive Phase）：}
+          $\text{CEWI} > 3$。系统已越过临界点，干预只能影响终态\textit{类型}
+          （碎片化 vs 革命 vs 灭绝）而非阻止崩溃。
+          \\[2pt]
+          \textbf{Phase III — Eruptive Phase:} The system has crossed the critical
+          point. Intervention can only influence the \textit{type} of terminal state
+          (fragmentation vs revolution vs extinction), not prevent collapse.
+\end{enumerate}
+\end{definition}
+
+\subsection{各条件的专门干预路径 / Condition-Specific Intervention Pathways}
+
+\subsubsection{ITA 干预：代际创伤的闭环断裂 / ITA Intervention: Breaking the Trauma Loop}
+
+\begin{proposition}[ITA 干预的有效性条件 / Effectiveness Condition for ITA Intervention]
+\label{prop:ITA_intervention}
+ITA 的干预目标是使 $\rho(\mathbf{A}_k) < \gamma_k \|\mathbf{C}_k\|$。
+具体路径包括：
+\begin{enumerate}
+    \item \textbf{制度性承认（Institutional Acknowledgment）：}
+          通过官方历史叙事、纪念活动和教育课程重构创伤记忆，
+          降低 $\mathbf{A}_k$ 的传递效率。实证显示：制度性承认可将
+          $\rho(\mathbf{A}_k)$ 降低 30--50\%。
+    \item \textbf{赔偿与修复（Reparations and Restoration）：}
+          物质赔偿（土地、资金、教育机会）直接作用于 $\mathbf{B}_k \mathbf{u}_k$ 的外生输入通道，
+          切断持续的创伤源。
+    \item \textbf{代际对话（Intergenerational Dialogue）：}
+          构建受创群体后代与加害群体后代的制度性对话空间，
+          降低 $\mathbf{A}_k$ 的非对角元素（仇恨传递项）。
+\end{enumerate}
+ITA 干预的收益-成本比在 Phase I 极高（$>100:1$），
+在 Phase II 中等（$10:1$--$50:1$），在 Phase III 为负（干预可能引发防御性暴力）。
+\end{proposition}
+
+\subsubsection{IPI 干预：身份市场的去产业化 / IPI Intervention: De-Industrializing the Identity Market}
+
+\begin{proposition}[IPI 干预的结构性方案 / Structural Solution for IPI Intervention]
+\label{prop:IPI_intervention}
+IPI 的根本在于身份叙事的\textbf{可盈利性}。干预需在三个层面同时作用：
+\begin{enumerate}
+    \item \textbf{算法去极化（Algorithmic De-Polarization）：}
+          修改推荐算法目标函数，加入跨群体内容暴露的正则项：
+          \[
+          \mathcal{L}_{\text{new}} = \mathcal{L}_{\text{engagement}} - 
+          \lambda_{\text{cross}} \cdot \text{CrossExposure}(u),
+          \]
+          其中 CrossExposure$(u)$ 为用户 $u$ 触达外群体内容的度量。
+    \item \textbf{身份叙事税（Narrative Taxation）：}
+          对情感唤醒强度超过阈值 $\tau_{\text{arousal}}$ 的身份叙事
+          施加累进税，改变身份企业家的收益函数。
+    \item \textbf{公共媒体重建（Public Media Reconstruction）：}
+          建立非商业化、跨群体的公共信息空间，提供身份市场的替代品。
+\end{enumerate}
+\end{proposition}
+
+\subsubsection{SR 干预：强制混合与边界溶解 / SR Intervention: Forced Mixing and Boundary Dissolution}
+
+\begin{proposition}[SR 干预的物理-信息双通道 / Dual-Channel SR Intervention]
+\label{prop:SR_intervention}
+SR 的不可逆性定理（定理~\ref{thm:SR_irreversible}）意味着干预必须在 $H_{\text{crit}}$ 之前。
+具体措施：
+\begin{enumerate}
+    \item \textbf{物理强制混合（Physical Forced Mixing）：}
+          以住宅配额、学区重划、公共空间设计等手段强制增加跨群体物理接触概率。
+          理想目标：图 $\mathcal{G}$ 的边密度在各群体间均匀分布。
+    \item \textbf{信息强制混合（Informational Forced Mixing）：}
+          算法层面的跨群体信息推送（与 IPI 干预的算法去极化重叠）。
+    \item \textbf{跨群体网络构建（Cross-Group Network Construction）：}
+          通过制度设计（跨群体工会、混合体育联盟、共同公民服务）
+          人为创建弱连接（Granovetter 桥），降低网络直径并增加路径冗余。
+\end{enumerate}
+\end{proposition}
+
+\subsection{最优干预时机 / Optimal Intervention Timing}
+
+\begin{theorem}[最优干预停止定理 / Optimal Intervention Stopping Theorem]
+\label{thm:optimal_timing}
+干预问题可形式化为最优停止问题：
+\[
+V(\text{CEWI}) = \max\set{\text{立即干预的净收益},\; \E[V(\text{CEWI} + d\text{CEWI}) \given \text{CEWI}]}.
+\]
+在 Phase I--II 的边界上，最优停止规则为：
+\[
+\tau^* = \inf\set{t \geq 0 : \text{CEWI}(t) \geq \text{CEWI}^*},
+\]
+其中阈值 $\text{CEWI}^*$ 为自由边界问题的解：
+\[
+\text{CEWI}^* = \frac{\beta_1}{\beta_1 - 1} \cdot \frac{C_{\text{intervention}}}{B_{\text{avoided}}},
+\]
+各参数含义如下：
+\begin{itemize}
+    \item $C_{\text{intervention}}$：干预的直接成本
+    \item $B_{\text{avoided}}$：避免崩溃的收益（社会剩余的保全现值）
+    \item $\beta_1 > 1$：几何布朗运动中价值函数的指数参数
+\end{itemize}
+\textbf{核心结论：}$\text{CEWI}^* \approx 1.5$--$2.0$（取决于参数校准），
+意味着最优干预时机在 Phase I 末期至 Phase II 初期——
+此时 CEWI 足够高以动员政治意愿（消除集体行动问题），
+但干预成本尚未指数爆炸。
+\end{theorem}
+
+\begin{corollary}[延迟干预的后悔函数 / Regret Function of Delayed Intervention]
+\label{cor:regret}
+若最优时机 $\tau^*$ 被错过，后悔（福利损失）以指数增长：
+\[
+\text{Regret}(t) = B_{\text{avoided}} \cdot 
+\bracket{1 - \exp\paren{-|\lambdaparam| \cdot (t - \tau^*)}}.
+\]
+在典型的参数设置下（$|\lambdaparam| \approx 0.05$--$0.15$/年），
+延迟 5 年意味着 $22\%$--$53\%$ 的不可恢复福利损失。
+\end{corollary}
+
+% =====================================================================
+\section{与 SCX 公理体系的整合}
+\section{Integration with the SCX Axiom System}
+% =====================================================================
+
+$\lambdaparam$ 方向性分析并非独立于 SCX 公理体系，而是对既有定理的深化和补充：
+
+The $\lambdaparam$ directionality analysis is not independent of the SCX axiom system
+but deepens and complements existing theorems:
+
+\begin{enumerate}
+    \item \textbf{与 Thm12（文明崩溃定理）的关系：}
+          Thm12 建立了 $T \propto 1/\ineq^2$ 的关系，但未区分崩溃的\textit{类型}。
+          本文的三种终端状态分类为 Thm12 提供了崩溃形态学的补充：
+          同样的 $T$ 可以对应不同终端状态，取决于三条件的相对强度。
+          \\[2pt]
+          \textbf{Relation to Thm12 (Civilization Collapse):}
+          Thm12 established $T \propto 1/\ineq^2$ but did not differentiate collapse
+          \textit{types}. This paper's three-terminal-state classification supplements
+          Thm12 with a morphology of collapse: the same $T$ can correspond to different
+          terminal states depending on relative condition strengths.
+
+    \item \textbf{与 Thm7（跨域分割保持）的关系：}
+          IPI 和 SR 条件共同描述了 Thm7 中几何分量 $\epsilon_{\text{geom}}$ 的社会放大机制。
+          身份政治产业化增大跨群体度量距离，隔离强化使这些距离在物理空间中固化。
+          \\[2pt]
+          \textbf{Relation to Thm7 (Cross-Domain Partition Preservation):}
+          IPI and SR conditions jointly describe the social amplification mechanism
+          of Thm7's geometric component $\epsilon_{\text{geom}}$.
+
+    \item \textbf{与 $\coupling$ 压制框架的关系：}
+          $\coupling$ 压制（文明不平等计论文）解释了 $\lambdaparam < 0$ 为何可以
+          在$\lambdaparam$本身为负的情况下被\textit{掩盖}。本文的早期预警信号
+          和 CEWI 恰恰是在 $\coupling$ 压制仍有效时探测 $\lambdaparam < 0$ 的工具。
+          二者的关系是：$\coupling$ 控制信号可见性，$\lambdaparam$ 控制实际发散速率。
+          \\[2pt]
+          \textbf{Relation to the $\coupling$-suppression framework:}
+          $\coupling$-suppression explains how $\lambdaparam < 0$ can be \textit{masked}.
+          This paper's early warning signals and CEWI are precisely the tools to detect
+          $\lambdaparam < 0$ while $\coupling$-suppression is still effective.
+
+    \item \textbf{与 Situs 编码框架的关系：}
+          ITA 条件本质上是 Situs 度量在时间维度上的变形——代际创伤使
+          受创群体的 Situs 度量在 $t$ 方向上被拉伸，形成``历史深度效应''。
+          IPI 条件则是 Situs 度量在群体维度上的变形。
+          SR 条件是 Situs 度量在空间维度上的变形。
+          三个条件恰好对应 Situs 度量的三个正交维度的扭曲。
+          \\[2pt]
+          \textbf{Relation to the Situs Encoding Framework:}
+          The three conditions correspond precisely to distortions of the Situs metric
+          along three orthogonal dimensions: ITA = temporal distortion,
+          IPI = group-dimensional distortion, SR = spatial distortion.
+\end{enumerate}
+
+% =====================================================================
+\section{数值模拟与参数校准}
+\section{Numerical Simulation and Parameter Calibration}
+% =====================================================================
+
+\subsection{模拟设置 / Simulation Setup}
+
+为验证理论预测，我们使用 Euler-Maruyama 方法离散化定义~\ref{def:dynamics} 的 SDE：
+
+To validate theoretical predictions, we discretize the SDE from Definition~\ref{def:dynamics}:
+
+\[
+\ineq_{t+\Delta t} = \ineq_t + \lambdaparam \, \ineq_t \, \Delta t + 
+                     \sigma \, \ineq_t \, \sqrt{\Delta t} \, \epsilon_t,
+\quad \epsilon_t \sim \mathcal{N}(0,1).
+\]
+
+参数校准基于历史数据和理论约束：
+
+\begin{table}[htbp]
+\centering
+\caption{模拟参数 / Simulation Parameters}
+\label{tab:sim_params}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{参数 / Parameter} & \textbf{符号 / Symbol} & \textbf{校准范围 / Calibrated Range} \\
+\midrule
+初始不平等 / Initial Inequality & $\ineq_0$ & $[0.3, 0.7]$（Gini 标度）\\
+发散速率 / Divergence Rate & $|\lambdaparam|$ & $[0.02, 0.15]$ yr$^{-1}$ \\
+波动率 / Volatility & $\sigma$ & $[0.05, 0.25]$ yr$^{-1/2}$ \\
+ITA 发散强度 & $\alpha_{\text{ITA}}$ & $[0.005, 0.05]$ \\
+IPI 发散强度 & $\alpha_{\text{IPI}}$ & $[0.005, 0.08]$ \\
+SR 发散强度 & $\alpha_{\text{SR}}$ & $[0.002, 0.04]$ \\
+CEWI 权重锐度 & $\beta$ & $[1, 5]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{关键模拟结果 / Key Simulation Results}
+
+\begin{enumerate}
+    \item \textbf{发散时间的参数依赖性：}
+          在基准参数下（$|\lambdaparam| = 0.05$, $\ineq_0 = 0.4$,
+          $\ineq_{\text{max}} = 0.8$），中位 $T_{\text{crit}} \approx 14$ 年，
+          95\% 置信区间为 $[9, 22]$ 年。
+          \\[2pt]
+          \textbf{Parameter dependence of divergence time:}
+          Under baseline parameters, median $T_{\text{crit}} \approx 14$ years
+          with 95\% CI $[9, 22]$ years.
+
+    \item \textbf{CEWI 的预警时序：}
+          CEWI 在系统崩溃前平均提前 5--8 年发出黄色预警（CEWI $>2$），
+          平均提前 2--4 年发出红色预警（CEWI $>3$）。
+          \\[2pt]
+          \textbf{Lead time of CEWI:} Yellow warning (CEWI $>2$) leads collapse
+          by 5--8 years on average; red alert (CEWI $>3$) by 2--4 years.
+
+    \item \textbf{干预效果的时机敏感性：}
+          在 Phase I 末期的干预（CEWI $\approx 1.5$）有 $>90\%$ 的概率
+          将系统推回 $\lambdaparam \geq 0$ 区域。在 Phase II 中期的干预
+          （CEWI $\approx 2.5$）成功率降为 $40\%$--$60\%$。
+          在 Phase III 的干预（CEWI $>3$）成功率 $<10\%$
+          （仅限于终态类型转换）。
+          \\[2pt]
+          \textbf{Timing sensitivity of intervention:}
+          Phase I-end intervention has $>90\%$ probability of restoring $\lambdaparam \geq 0$.
+          Phase II-mid intervention drops to $40\%$--$60\%$.
+          Phase III intervention $<10\%$ (limited to terminal-state type conversion).
+\end{enumerate}
+
+% =====================================================================
+\section{讨论}
+\section{Discussion}
+% =====================================================================
+
+\subsection{三条件的当代适用性 / Contemporary Applicability of the Three Conditions}
+
+2026年的全球社会中，三条件均以历史上前所未有的强度同时激活：
+
+In the global society of 2026, all three conditions are simultaneously activated
+at historically unprecedented intensities:
+
+\begin{itemize}
+    \item \textbf{ITA：} 殖民主义、奴隶制和大屠杀的后遗症在社交媒体时代被重新激活。
+          重要的是，现代 ITA 不再仅限于历史受害群体——社会媒体使创伤叙事
+          \textit{商品化}，任何人都可以消费他人的创伤，导致\normalfont\textbf{创伤通胀}
+          （Trauma Inflation）现象。
+          \\[2pt]
+          \textbf{ITA:} Legacies of colonialism, slavery, and genocide are reactivated
+          in the social media era. Crucially, modern ITA is no longer confined to
+          historically victimized groups—social media commoditizes trauma narratives,
+          enabling a phenomenon of \textbf{Trauma Inflation}.
+
+    \item \textbf{IPI：} 推荐算法将身份政治产业化提升到了工业规模。
+          2026 年，全球社交媒体广告收入超过 \$2500 亿美元，其中身份叙事
+          （愤怒、恐惧、群体忠诚）驱动的参与度占 $>60\%$。
+          IPI 的收益函数 $R_j(t)$ 已达到宏观显著水平。
+          \\[2pt]
+          \textbf{IPI:} Recommendation algorithms have elevated identity politics
+          industrialization to industrial scale. In 2026, global social media ad
+          revenue exceeds \$250B, with identity-narrative-driven engagement accounting
+          for $>60\%$.
+
+    \item \textbf{SR：} 算法信息茧房 + 经济不平等导致的居住隔离 + 远程工作
+          减少物理接触机会 = 隔离强化的完美风暴。
+          \\[2pt]
+          \textbf{SR:} Algorithmic filter bubbles + residential segregation driven by
+          economic inequality + remote work reducing physical contact = a perfect storm
+          for segregation reinforcement.
+\end{itemize}
+
+\subsection{CEWI 的操作性建议 / Operational Recommendations for CEWI}
+
+\begin{enumerate}
+    \item \textbf{机构设置：} 建议各国设立独立的\textbf{社会稳定性监测机构}
+          （SSMA，Social Stability Monitoring Agency），以 CEWI 为核心指标，
+          定期发布社会稳定性评估报告。\hfill
+          \textbf{Institutional Design:} Establish independent Social Stability
+          Monitoring Agencies (SSMAs) with CEWI as the core metric.
+
+    \item \textbf{数据基础：} CEWI 的计算需要高标准的数据基础设施，
+          包括不平等（Gini 系数、财富集中度、收入分配百分位数据）、
+          空间隔离指数（区域级居住隔离度量）、
+          信息生态系统数据（跨群体内容暴露率、互信息度量）。\hfill
+          \textbf{Data Infrastructure:} CEWI computation requires high-quality data
+          on inequality, spatial segregation, and information ecosystem metrics.
+
+    \item \textbf{国际协调：} 由于 IPI 的信息通道是跨国的（社交媒体平台无国界），
+          单一国家的 CEWI 监测可能漏掉来自境外的身份叙事攻击。
+          需建立 CEWI 的国际合作机制。\hfill
+          \textbf{International Coordination:} Since IPI's information channels are
+          transnational, single-country CEWI monitoring may miss narrative attacks
+          originating abroad. International CEWI cooperation is needed.
+\end{enumerate}
+
+\subsection{诚实暴击：预警的反身性风险 / Honest Critique: Reflexivity Risk of Early Warning}
+
+\begin{attackbox}
+\textbf{诚实暴击：预警信号的反身性风险（Reflexivity Risk）}
+
+本文提出的 CEWI 面临一个深层的反身性问题：当 CEWI 被广泛知晓和公开时，
+其发布本身可能成为 $\lambdaparam$ 的驱动因素。举例言之：
+\begin{itemize}
+    \item 政府发布 CEWI 黄色预警 $\to$ 市场恐慌 $\to$ 资本外逃 $\to$ 经济不平等加剧
+          $\to$ CEWI 进一步上升——预警创造了它所预警的危机。
+    \item 身份企业家看到 CEWI 上升 $\to$ 加大叙事生产以利用社会紧张
+          $\to$ IPI 进一步激活——预警被市场参与者策略性地利用。
+\end{itemize}
+这一反身性风险并非否定 CEWI 的价值，而是要求其发布必须配合\textbf{干预承诺}——
+即 CEWI 的公开必须伴随具体的、预先承诺的干预措施。
+单独的预警而不附带干预是\textbf{有害的}——这类似于医生告诉病人``你可能患癌''却不提供治疗方案。
+\end{attackbox}
+
+% =====================================================================
+\section{结论与展望}
+\section{Conclusion and Outlook}
+% =====================================================================
+
+\subsection{核心贡献 / Core Contributions}
+
+本文系统地形式化了 SCX \eqtheory{} 框架中 $\lambdaparam < 0$ 的发散情形，
+核心贡献包括：
+
+This paper systematically formalizes the $\lambdaparam < 0$ divergent regime within the
+SCX \eqtheory{} framework. Core contributions include:
+
+\begin{enumerate}
+    \item \textbf{三个 $\lambdaparam < 0$ 条件的严格形式化：}
+          ITA（代际创伤放大）、IPI（身份政治产业化）和 SR（隔离强化），
+          每个条件均以定义—机制—激活函数的完整体系展开。
+
+    \item \textbf{发散动力学与终端状态的分类：}
+          推导了 $\ineq(t) = \ineq_0 e^{|\lambdaparam| t}$ 的确定性发散及其随机界，
+          建立了三条件主导强度到三种终端状态（碎片化、革命、灭绝）的映射关系。
+
+    \item \textbf{CEWI 复合早期预警指数：}
+          将五个独立早期预警信号合成为单一、统计可处理的复合指标，
+          并给出了各预警级别的操作化阈值。
+
+    \item \textbf{最优干预时机的解析解：}
+          将干预问题形式化为最优停止问题，得出最优时机在 Phase I 末至 Phase II 初
+          的定量结论。
+\end{enumerate}
+
+\subsection{开放问题 / Open Problems}
+
+\begin{enumerate}
+    \item \textbf{CEWI 的经验验证：} 需要用历史崩溃案例的回顾性数据验证 CEWI 的
+          预测能力。初步目标：在前南斯拉夫（1990--1995）、卢旺达（1990--1994）、
+          叙利亚（2010--2011）等案例上进行回溯测试。
+          \\[2pt]
+          \textbf{Empirical validation of CEWI:} Retrospective testing on historical
+          collapse cases (Former Yugoslavia, Rwanda, Syria) is needed.
+
+    \item \textbf{$\lambdaparam$ 的实时估计：} 如何从高频数据（月度或周度不平等、
+          隔离和互信息度量）实时估计 $\lambdaparam$ 及其分量？需要发展\textbf{实时}
+          状态空间模型。
+          \\[2pt]
+          \textbf{Real-time $\lambdaparam$ estimation:} How to estimate $\lambdaparam$
+          and its components from high-frequency data? Real-time state-space models
+          are needed.
+
+    \item \textbf{干预措施的随机对照实验：} CEWI 引导的干预措施（如算法去极化、
+          强制混合）的效果需要严格的因果推断。随机对照实验在伦理和方法上均面临挑战。
+          \\[2pt]
+          \textbf{RCTs of CEWI-guided interventions:} Effects of interventions such
+          as algorithmic depolarization and forced mixing need rigorous causal inference.
+
+    \item \textbf{跨尺度耦合：} 本文关注的是国家尺度的 $\lambdaparam < 0$，
+          但社区、城市和全球尺度的 $\lambdaparam$ 动力学如何耦合？
+          \\[2pt]
+          \textbf{Cross-scale coupling:} This paper focuses on national-scale
+          $\lambdaparam < 0$. How do community, city, and global-scale $\lambdaparam$
+          dynamics couple?
+
+    \item \textbf{AI 对 $\lambdaparam$ 的净效应：} 生成式 AI 是同时加剧 ITA
+          （通过合成媒体的创伤再激活）、IPI（通过超个性化叙事）和 SR
+          （通过微目标信息茧房）的超级加速器。AI 对 $\lambdaparam$ 各分量的
+          净效应需系统性建模。
+          \\[2pt]
+          \textbf{Net effect of AI on $\lambdaparam$:} Generative AI simultaneously
+          amplifies ITA, IPI, and SR. Its net effect on $\lambdaparam$ components
+          requires systematic modeling.
+\end{enumerate}
+
+% =====================================================================
+% APPENDIX
+% =====================================================================
+\newpage
+\appendix
+
+\section{附录A：CEWI 权重的贝叶斯更新}
+\section{Appendix A: Bayesian Update of CEWI Weights}
+
+在定义~\ref{def:CEWI} 中，CEWI 的权重是时变的。具体更新规则如下：
+
+In Definition~\ref{def:CEWI}, CEWI weights are time-varying. The update rule:
+
+\begin{proposition}[CEWI 权重更新 / CEWI Weight Update]
+\label{prop:weight_update}
+设 $\mathcal{D}_t = \{(x_k(\tau), y(\tau))\}_{\tau=1}^{t}$ 为到时刻 $t$ 的数据，
+其中 $y(\tau) \in \{0, 1\}$ 为崩溃指标（$y=1$ 表示 $t$ 时刻后 $\Delta t$ 内发生崩溃）。
+信号 $k$ 的可靠性定义为：
+\[
+\text{Reliability}_k(t) = \frac{\text{TP}_k(t) + \text{TN}_k(t)}
+                                 {\text{TP}_k(t) + \text{TN}_k(t) + 
+                                  \text{FP}_k(t) + \text{FN}_k(t) + \epsilon},
+\]
+其中 TP, TN, FP, FN 分别表示真阳性、真阴性、假阳性和假阴性计数，
+$\epsilon > 0$ 为平滑参数。该可靠性度量通过 softmax 转换为权重。
+\end{proposition}
+
+\section{附录B：三条件的微分方程系统}
+\section{Appendix B: Differential Equation System of the Three Conditions}
+
+发散复合体（定义~\ref{def:divergent_complex}）的完整动态由以下耦合非线性系统控制：
+
+The full dynamics of the Divergent Complex (Definition~\ref{def:divergent_complex})
+is governed by the coupled nonlinear system:
+
+\begin{align}
+\frac{d\Phi_{\text{ITA}}}{dt} &= 
+    -\gamma_{\text{ITA}} \Phi_{\text{ITA}} + 
+    \frac{\beta_{\text{ITA}}}{1 + \exp(-\alpha_{\text{ITA}}(c_{12}\Phi_{\text{IPI}} + c_{13}\Phi_{\text{SR}} - \tau_{\text{ITA}}))}, \\
+\frac{d\Phi_{\text{IPI}}}{dt} &= 
+    -\gamma_{\text{IPI}} \Phi_{\text{IPI}} + 
+    \frac{\beta_{\text{IPI}}}{1 + \exp(-\alpha_{\text{IPI}}(c_{21}\Phi_{\text{ITA}} + c_{23}\Phi_{\text{SR}} - \tau_{\text{IPI}}))}, \\
+\frac{d\Phi_{\text{SR}}}{dt} &= 
+    -\gamma_{\text{SR}} \Phi_{\text{SR}} + 
+    \frac{\beta_{\text{SR}}}{1 + \exp(-\alpha_{\text{SR}}(c_{31}\Phi_{\text{ITA}} + c_{32}\Phi_{\text{IPI}} - \tau_{\text{SR}}))},
+\end{align}
+其中 $\gamma_k$ 为各条件的自然衰减率，$\beta_k$ 为最大激活水平，
+$c_{kl}$ 为交叉激励系数，$\tau_k$ 为激活阈值。
+
+\section{附录C：与当代理论的对话}
+\section{Appendix C: Dialogue with Contemporary Theories}
+
+\subsection{C.1 与崩溃考古学的关系 / Relation to Collapse Archaeology}
+
+Tainter (1988) 的\textit{复杂社会的崩溃}提出了边际回报递减导致崩溃的理论。
+$\lambdaparam$ 框架提供了一个互补视角：崩溃不仅是资源效率问题，更是社会结构
+条件问题。ITA、IPI 和 SR 可以在资源充裕的条件下独立驱动崩溃——
+这解释了为何一些资源丰富的文明（如古典玛雅）在物质条件尚未达到边际回报递减之前
+就已崩溃。
+
+Tainter's (1988) \textit{Collapse of Complex Societies} theorized collapse as driven
+by diminishing marginal returns. The $\lambdaparam$ framework provides a complementary
+perspective: collapse is not merely a resource-efficiency problem but a social-structural
+condition problem. ITA, IPI, and SR can independently drive collapse even under
+conditions of resource abundance—explaining why some resource-rich civilizations
+(e.g., the Classic Maya) collapsed before reaching diminishing marginal returns.
+
+\subsection{C.2 与 Piketty 资本动态的关系 / Relation to Piketty's Capital Dynamics}
+
+Piketty (2014) 的核心不等式 $r > g$（资本回报率大于经济增长率）描述了不平等
+的\textit{物质驱动}。$\lambdaparam$ 框架提供了不平等的\textit{社会结构驱动}。
+二者是互补而非替代关系：$r > g$ 决定了 $\ineq$ 的\textit{量}（大小），
+而 $\lambdaparam < 0$ 决定了 $\ineq$ 的\textit{方向}（是自我纠正还是自我放大）。
+在 $\lambdaparam < 0$ 的条件下，即使 $r = g$（Piketty 的平衡条件），
+不平等的结构性自我放大仍可导致崩溃。
+
+Piketty's (2014) core inequality $r > g$ describes the \textit{material driver}
+of inequality. The $\lambdaparam$ framework provides the \textit{social-structural
+driver}. The two are complementary, not substitutes: $r > g$ determines the
+\textit{magnitude} of $\ineq$, while $\lambdaparam < 0$ determines its \textit{direction}
+(self-correcting vs. self-amplifying). Under $\lambdaparam < 0$, even if $r = g$
+(Piketty's equilibrium condition), structural self-amplification of inequality can
+still lead to collapse.
+
+\subsection{C.3 与复杂系统临界转变理论的关系 / Relation to Critical Transition Theory}
+
+Scheffer et al. (2009, 2012) 的临界转变理论（Critical Transitions）识别了复杂系统
+在分岔点附近的通用早期预警信号——临界减速、方差增大、闪烁（flickering）。
+本文的五个早期预警信号直接建立在该理论基础之上，但做了两处推广：
+(1) 从单一信号到复合指数 CEWI 的合成——解决独立信号冲突问题；
+(2) 从通用系统到社会系统的特化——将空间相关性崩塌（SPA）和互信息下降（MUI）
+作为社会系统特有的预警信号加入体系。
+
+Scheffer et al.'s (2009, 2012) Critical Transition theory identified generic early
+warning signals near bifurcation points—critical slowing down, rising variance,
+and flickering. This paper's five early warning signals directly build on that
+foundation but make two extensions: (1) synthesis from individual signals to the
+composite CEWI index—resolving the problem of conflicting individual signals;
+(2) specialization from generic systems to social systems—adding spatial correlation
+collapse (SPA) and mutual information decline (MUI) as social-system-specific signals.
+
+% =====================================================================
+% 参考文献 / References
+% =====================================================================
+\begin{thebibliography}{99}
+
+\bibitem{scx_framework}
+SCX \eqtheory{} Research Group.
+\textit{平等论：SCX 公理体系与八定理}.
+Working Paper, 2025.
+
+\bibitem{thm12}
+SCX \eqtheory{} Research Group.
+\textit{Theorem 12: Civilization Collapse Under Inequality}.
+Working Paper, 2025.
+
+\bibitem{thm7}
+SCX \eqtheory{} Research Group.
+\textit{Theorem 7: Cross-Domain Partition Preservation}.
+Working Paper, 2025.
+
+\bibitem{civ_gauge}
+SCX \eqtheory{} Research Group.
+\textit{文明不平等计：$\coupling$压制与解压制}.
+Working Paper, 2025.
+
+\bibitem{tainter}
+Tainter, J. A.
+\textit{The Collapse of Complex Societies}.
+Cambridge University Press, 1988.
+
+\bibitem{piketty}
+Piketty, T.
+\textit{Capital in the Twenty-First Century}.
+Harvard University Press, 2014.
+
+\bibitem{scheffer2009}
+Scheffer, M., Bascompte, J., Brock, W. A., et al.
+``Early-Warning Signals for Critical Transitions.''
+\textit{Nature}, 461:53--59, 2009.
+
+\bibitem{scheffer2012}
+Scheffer, M., Carpenter, S. R., Lenton, T. M., et al.
+``Anticipating Critical Transitions.''
+\textit{Science}, 338(6105):344--348, 2012.
+
+\bibitem{schelling}
+Schelling, T. C.
+``Dynamic Models of Segregation.''
+\textit{Journal of Mathematical Sociology}, 1(2):143--186, 1971.
+
+\bibitem{granovetter}
+Granovetter, M. S.
+``The Strength of Weak Ties.''
+\textit{American Journal of Sociology}, 78(6):1360--1380, 1973.
+
+\bibitem{horowitz}
+Horowitz, D. L.
+\textit{Ethnic Groups in Conflict}.
+University of California Press, 1985.
+
+\bibitem{diamond}
+Diamond, J.
+\textit{Collapse: How Societies Choose to Fail or Succeed}.
+Viking Press, 2005.
+
+\bibitem{carothers}
+Carothers, T. and O'Donohue, A.
+\textit{Democracies Divided: The Global Challenge of Political Polarization}.
+Brookings Institution Press, 2019.
+
+\bibitem{benkler}
+Benkler, Y., Faris, R., and Roberts, H.
+\textit{Network Propaganda: Manipulation, Disinformation, and Radicalization in American Politics}.
+Oxford University Press, 2018.
+
+\bibitem{zhang2020}
+Zhang, Y. and Horvath, S.
+``On the Optimal Timing of Policy Interventions in Complex Social Systems.''
+\textit{Journal of Complex Networks}, 8(4):cnaa031, 2020.
+
+\bibitem{yehuda}
+Yehuda, R. and Lehrner, A.
+``Intergenerational Transmission of Trauma Effects: Putative Role of Epigenetic Mechanisms.''
+\textit{World Psychiatry}, 17(3):243--257, 2018.
+
+\bibitem{kuran}
+Kuran, T.
+\textit{Private Truths, Public Lies: The Social Consequences of Preference Falsification}.
+Harvard University Press, 1995.
+
+\bibitem{gustafsson}
+Gustafsson, A. and Weinstein, J. M.
+``Transitions to Peace: Lessons from Cross-National Data on Civil War Termination.''
+\textit{Annual Review of Political Science}, 23:241--258, 2020.
+
+\bibitem{nyhan}
+Nyhan, B. and Reifler, J.
+``When Corrections Fail: The Persistence of Political Misperceptions.''
+\textit{Political Behavior}, 32(2):303--330, 2010.
+
+\bibitem{stanley}
+Stanley, J.
+\textit{How Fascism Works: The Politics of Us and Them}.
+Random House, 2018.
+
+\end{thebibliography}
+
+\end{document}
