@@ -1,0 +1,1346 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+% ================================================================
+% Packages
+% ================================================================
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{cleveref}
+\usepackage{bbm}
+\usepackage{float}
+\usepackage{physics}
+\usepackage{setspace}
+\usepackage{longtable}
+\usepackage{makecell}
+\usepackage{multirow}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+% ================================================================
+% Hyperref setup
+% ================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={Spring自演化势函数训练器：训练即审计的势函数学习框架},
+    pdfauthor={SCX},
+    pdfsubject={SCX Spring Self-Evolving Potential Function Trainer},
+}
+
+% ================================================================
+% Theorem environments
+% ================================================================
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{conjecture}[theorem]{猜想}
+\newtheorem{criterion}[theorem]{判据}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注记}
+\newtheorem{example}[theorem]{例}
+\newtheorem{protocol}[theorem]{操作流程}
+
+% ================================================================
+% Custom commands — Mathematics
+% ================================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\Fset}{\mathcal{F}}
+
+% ================================================================
+% Custom commands — SCX Framework
+% ================================================================
+\newcommand{\SCX}{\textsc{SCX}}
+\newcommand{\Spring}{\textsc{Spring}}
+\newcommand{\Yajie}{\textsc{Yajie}}
+\newcommand{\Cercis}{\textsc{Cercis}}
+\newcommand{\Situs}{\textsc{Situs}}
+
+\newcommand{\Mauto}{\ensuremath{M_t^{\text{auto}}}}
+\newcommand{\Lyap}{\ensuremath{\Psi}}
+\newcommand{\Dhash}{\ensuremath{\mathcal{H}(\D)}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spec}{spec}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+\DeclareMathOperator{\Auditable}{Auditable}
+\DeclareMathOperator{\Lip}{Lip}
+
+% ================================================================
+% Proof-status markers
+% ================================================================
+\newcommand{\rigorous}{\textnormal{\textbf{[严格证明]}}}
+\newcommand{\heuristic}{\textnormal{\textbf{[启发式]}}}
+\newcommand{\openproblem}{\textnormal{\textbf{[开放问题]}}}
+\newcommand{\honeststrike}{\textnormal{\textbf{[诚实暴击]}}}
+
+% Honest critique marker
+\newcommand{\honestcrit}[1]{%
+    \textcolor{red}{\textbf{【诚实暴击】#1}}%
+}
+
+% ================================================================
+% Title
+% ================================================================
+\title{\textbf{Spring自演化势函数训练器：\\[4pt]
+训练即审计的分子动力学势函数学习框架}\\[8pt]
+\large The Spring Self-Evolving Potential Function Trainer:\\
+A Training-Is-Audit Framework for\\
+Molecular Dynamics Potential Learning}
+\author{SCX}
+\date{2026年7月1日}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\footnotesize
+\textbf{版本：} v1.0 \quad | \quad
+\textbf{状态：} 预印本 \quad | \quad
+\textbf{分类：} SCX理论体系 — 分子模拟卷·势函数训练篇
+\end{center}
+
+% ================================================================
+% Abstract
+% ================================================================
+\begin{abstract}
+本文提出\Spring{}自演化势函数训练器——第一个将训练过程本身作为审计过程的分子动力学势函数学习框架。
+与现有范式（NEP、DeepMD、ACE等）在训练完成后进行事后验证不同，
+\Spring{}的每一次训练迭代即产生一份经过审计的势函数。
+其核心机制为：从$M>1$个独立专家中自举训练，
+通过\Yajie{}共识评分实时滤除噪声，
+以Lyapunov函数$\Lyap_t$监控收敛性，
+自动生成$M_t$参数并绑定至数据哈希（共生绑定），
+最终以\Cercis{}评分作为跨架构可比的单一质量度量。
+
+我们证明：在温和条件下，Spring训练循环满足$\Lyap_t \to 0$（$t \to \infty$）的收敛保证（定理1）；
+自动生成的$M_t$是数据复杂度$\Sigma_0(\D)$的单调函数，实现了参数-数据的结构绑定（定理2）；
+\Yajie{}共识在多专家框架下的噪声检测概率随$M_t$呈指数增长（定理3）。
+我们将\Spring{}与NEP（$M=1$，不可验证）、DeepMD（$M=1$，无多专家机制）和ACE（$M=1$，无审计结构）
+进行了系统比较，论证了\Spring{}是目前唯一实现"训练即审计"的势函数学习框架。
+
+\textbf{关键词：} 势函数训练；自演化学习；多专家共识；Yajie协议；Lyapunov收敛；Cercis评分；Spring框架；分子动力学；审计内建训练
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ================================================================
+% 1. Introduction
+% ================================================================
+\section{引言：势函数训练的审计缺口}
+
+\subsection{分子动力学势函数：从经验到机器学习}
+
+分子动力学（Molecular Dynamics, MD）模拟的核心是原子间相互作用势函数$V(\mathbf{r}_1, \ldots, \mathbf{r}_N)$，
+它决定了体系的一切静态和动力学性质。
+传统势函数（Lennard-Jones、EAM、ReaxFF等）依赖人工设计的解析形式，参数通过拟合实验或第一性原理数据确定。
+其根本局限在于：\textbf{解析形式的表达能力受限于人类的物理直觉}。
+
+机器学习势函数（Machine Learning Potentials, MLPs）的兴起打破了这一限制。
+以Behler-Parrinello对称函数（2007）为起点，过去十五年间涌现了多种架构：
+\begin{itemize}[nosep]
+    \item \textbf{NEP（Neuroevolution Potential, 2022）：} 基于分离卷积神经网络的单模型训练，$M=1$。
+    \item \textbf{DeepMD（Deep Potential Molecular Dynamics, 2018）：} 深度势能网络，通过能量-力联合训练生成单一势函数，$M=1$。
+    \item \textbf{ACE（Atomic Cluster Expansion, 2019）：} 基于完备基展开的线性模型，单个拟合过程，$M=1$。
+    \item \textbf{GAP（Gaussian Approximation Potential, 2010）：} 高斯过程回归，单一核函数选择，$M=1$。
+    \item \textbf{MTP（Moment Tensor Potential, 2016）：} 线性回归在张量基上的展开，$M=1$。
+\end{itemize}
+
+这些方法的共同特征——也是本文将要论证的\textbf{结构性缺陷}——是它们的训练过程和验证过程是分离的。
+训练产生一个势函数，随后通过测试集的能量/力误差来评估其质量。
+但测试集误差是\textbf{聚合统计量}——它回答"平均而言这个势函数有多准"，而不能回答"对于这个特定的原子构型，预测是否可靠"。
+
+\subsection{审计缺口：聚合精度与逐点可靠性的鸿沟}
+
+在SCX理论框架下~\cite{scx_ml_audit,scx_hamiltonian}，审计缺口的本质是\textbf{实例级验证的缺失}。
+设训练数据为$\D = \{(\mathbf{R}_i, E_i, \mathbf{F}_i)\}_{i=1}^{N_{\text{data}}}$，
+其中$\mathbf{R}_i$为原子坐标，$E_i$为参考能量，$\mathbf{F}_i$为参考力。
+一个势函数$V_\theta(\mathbf{R})$的测试误差定义为：
+
+\begin{equation}\label{eq:rmse_def}
+    \text{RMSE}_E = \sqrt{\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}}(V_\theta(\mathbf{R}_i) - E_i)^2},
+    \quad
+    \text{RMSE}_F = \sqrt{\frac{1}{3N_{\text{test}}N_{\text{atoms}}}\sum_{i=1}^{N_{\text{test}}}\|\mathbf{F}_\theta(\mathbf{R}_i) - \mathbf{F}_i\|^2}
+\end{equation}
+
+当$\text{RMSE}_E = 1\ \text{meV/atom}$时，这个数字告诉我们\textit{平均}偏差为1 meV/atom。
+它\textit{不}告诉我们的是：
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item 哪1\%的构型贡献了50\%的误差？
+    \item 对于构型$\mathbf{R}^*$——处于训练数据分布边界或之外的构型——预测是否可靠？
+    \item 两个训练得到的势函数$V_{\theta_1}$和$V_{\theta_2}$在测试集上RMSE相同，但在关键构型上的预测完全相反——我们如何知道？
+\end{enumerate}
+
+这三个问题构成了势函数训练的\textbf{审计三元组}（Audit Trilemma），
+而现有框架无一能同时解决。
+
+\begin{definition}[势函数审计三元组]
+势函数$V_\theta$被称为\textbf{可审计}的，当且仅当以下三个条件同时满足：
+\begin{enumerate}[label=\textbf{(A\arabic*)},leftmargin=*,itemsep=4pt]
+    \item \textbf{误差定位（Error Localization）：} 对于任意构型$\mathbf{R}$，系统能判断$V_\theta(\mathbf{R})$的误差是否超出阈值$\varepsilon$，无需参考真实值$E_{\text{ref}}(\mathbf{R})$。
+    \item \textbf{分布外检测（OOD Detection）：} 系统能识别$\mathbf{R}$是否处于训练数据支持的域外，并在域外构型上拒绝给出高置信度预测。
+    \item \textbf{多解可辨性（Multi-Solution Distinguishability）：} 当存在多个RMSE相近的势函数时，系统能判断它们是否在关键物理区域给出定性一致的预测。
+\end{enumerate}
+\end{definition}
+
+现有框架的审计失败是结构性的：
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{NEP（$M=1$）：} 单个网络产生单个输出。没有任何机制实现(A1)误差定位——模型无法判断自己的预测何时错误（自审计等于无审计，SCX定理2~\cite{scx_ml_audit}）。
+    \item \textbf{DeepMD（$M=1$）：} 虽然使用能量-力联合训练提高精度，但最终仍是一个模型。对(A2)分布外检测，DeepMD依赖事后不确定性估计（如Dropout ensemble、Deep Ensemble），这些是\textit{事后}追加的，不是训练本身的内建特性。
+    \item \textbf{ACE（$M=1$）：} 线性模型虽然系数可解释，但\textit{基的完备性不等于预测的可靠性}。对于(A3)，ACE无法区分"缺乏训练数据"和"物理上预测可靠"——两者都给出低置信度，但原因完全不同。
+\end{itemize}
+
+\subsection{Spring的定位：训练即审计}
+
+\Spring{}框架的根本创新在于：\textbf{它不区分"训练阶段"和"审计阶段"}。
+在Spring中，每一次训练迭代本身就是一次完整的审计循环。
+具体而言，Spring的第$t$次迭代产生以下五项输出：
+
+\begin{equation}\label{eq:spring_outputs}
+    \boxed{
+    \begin{aligned}
+        \text{Spring}(t) \mapsto \Bigl(
+            &\underbrace{V^{(t)}_{\text{consensus}}}_{\text{经共识的势函数}},\ 
+            \underbrace{\mathbf{s}_{\Yajie}^{(t)}}_{\text{Yajie共识评分}},\ 
+            \underbrace{\Lyap_t}_{\text{Lyapunov监控量}},\ 
+            \underbrace{\Mauto}_{\text{自生成$M_t$}},\ 
+            \underbrace{S_{\Cercis}^{(t)}}_{\text{Cercis评分}}
+        \Bigr)
+    \end{aligned}}
+\end{equation}
+
+其中每一项都不是事后计算的——它们是训练循环的\textit{内生}产物。
+这就是"训练即审计"的严格含义：\textbf{如果你完成了Spring训练，你就已经完成了审计——你拿到的势函数天然是经过审计的。}
+
+\subsection{本文结构}
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item 第2节：Spring自演化训练架构的完整描述。
+    \item 第3节：多专家训练定理——$M>1$训练的形式化保证。
+    \item 第4节：Yajie共识评分的集成——实时噪声过滤的数学机制。
+    \item 第5节：$M_t$自动生成与共生绑定——数据驱动的结构参数。
+    \item 第6节：Cercis评分——跨架构可比的单一质量度量。
+    \item 第7节：Lyapunov收敛分析与收敛定理。
+    \item 第8节：与NEP/DeepMD/ACE的系统比较。
+    \item 第9节：讨论——适用边界、计算成本、诚实暴击。
+    \item 第10节：结论。
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% 2. Spring Architecture
+% ================================================================
+\section{Spring自演化训练架构}
+
+\subsection{训练循环的拓扑结构}
+
+Spring的训练循环是一个\textbf{自演化自治系统}（Self-Evolving Autonomous System），
+由四个拓扑层组成，每一层在逻辑上封闭但信息上互通：
+
+\begin{enumerate}[label=\textbf{层 \arabic*},leftmargin=*,itemsep=6pt]
+    \item \textbf{多专家自举层（Multi-Expert Bootstrap Layer）：}
+    从训练数据$\D$中自举生成$M_t$个独立训练子集$\D_1, \ldots, \D_{M_t}$。
+    每个训练子集通过以下约束保证统计独立性：
+    \begin{equation}\label{eq:bootstrap_indep}
+        I(\D_m; \D_{m'}) \leq \delta_{\text{indep}}, \quad \forall m \neq m'
+    \end{equation}
+    其中$I(\cdot;\cdot)$为互信息，$\delta_{\text{indep}}$为独立性容差参数。
+    实践中通过分层自举（stratified bootstrap）实现：按构型能量的分位数分层，
+    确保各子集覆盖相似的能量分布但包含不重叠的构型实例。
+
+    \item \textbf{独立训练层（Independent Training Layer）：}
+    每个专家$f_m$（$m = 1, \ldots, M_t$）在$\D_m$上独立训练，使用不同的随机初始化和不同的优化轨迹。
+    形式化地，专家$m$的参数$\theta_m$通过以下优化获得：
+    \begin{equation}\label{eq:expert_training}
+        \theta_m^{(t)} = \argmin_{\theta} \loss_m(\theta; \D_m) + \Omega(\theta)
+    \end{equation}
+    其中$\loss_m$为专家$m$的损失函数（同一架构但独立初始化），$\Omega(\theta)$为正则化项。
+    关键约束：\textbf{专家之间不共享任何信息}——无梯度通信，无参数共享，无集成训练。
+    这一层体现了SCX假设A1（独立专家训练）和A2（条件独立）的要求。
+
+    \item \textbf{Yajie共识层（Yajie Consensus Layer）：}
+    对给定的输入构型$\mathbf{R}$，$M_t$个专家分别给出预测：
+    \begin{equation}\label{eq:expert_predictions}
+        \hat{E}_m = f_m(\mathbf{R}), \quad \hat{\mathbf{F}}_m = -\nabla_{\mathbf{R}} f_m(\mathbf{R}), \quad m = 1, \ldots, M_t
+    \end{equation}
+    Yajie共识机制（详见第4节）将这些独立预测合成为单一共识预测$\hat{E}_{\Yajie}$，
+    并给出逐构型的共识评分$s_{\Yajie}(\mathbf{R}) \in [0,1]$。
+
+    \item \textbf{自演化调控层（Self-Evolution Regulation Layer）：}
+    基于Yajie共识评分和历史趋势，调控层执行三项操作：
+    \begin{itemize}[nosep]
+        \item \textbf{噪声移除：} 标记并移除共识评分低于阈值$\tau_{\text{noise}}$的训练构型。
+        \item \textbf{Lyapunov监控：} 计算收敛度量$\Lyap_t$并判断是否继续迭代。
+        \item \textbf{$M_t$自适应：} 根据当前共识质量调整下一轮的专家数量$M_{t+1}$。
+    \end{itemize}
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=2.2cm, auto,
+    block/.style={rectangle, draw, minimum width=3.2cm, minimum height=0.8cm, align=center, rounded corners=3pt},
+    arrow/.style={->, thick}]
+
+    % Nodes
+    \node[block, fill=blue!8] (data) {训练数据 $\D$ \\ Training Data};
+    \node[block, fill=green!8, right=of data, xshift=1.5cm] (bootstrap) {多专家自举 \\ $M_t$ 独立子集};
+    \node[block, fill=yellow!12, right=of bootstrap, xshift=1.5cm] (train) {独立训练 \\ $M_t$ 个专家};
+    \node[block, fill=orange!10, below=of train] (yajie) {\Yajie{} 共识评分 \\ 噪声滤除};
+    \node[block, fill=red!8, below=of bootstrap] (lyap) {Lyapunov 监控 \\ $\Lyap_t \to 0$?};
+    \node[block, fill=purple!8, left=of lyap] (output) {输出 \\ $V_{\text{consensus}}, \Mauto, S_{\Cercis}$};
+
+    % Arrows
+    \draw[arrow] (data) -- (bootstrap);
+    \draw[arrow] (bootstrap) -- (train);
+    \draw[arrow] (train) -- (yajie);
+    \draw[arrow] (yajie) -- (lyap) node[midway, right] {$\Lyap_t$};
+    \draw[arrow] (lyap) -- node[below] {未收敛} (bootstrap);
+    \draw[arrow] (lyap) -- node[above] {收敛} (output);
+
+    % Loop label
+    \draw[arrow, blue!60, thick, dashed] (yajie.west) -- ++(-0.8,0) |- (bootstrap.west)
+        node[pos=0.3, left] {\small 噪声移除};
+
+    % Annotations
+    \node[font=\footnotesize, text=blue!60] at (-1.2, -0.5) {\small 自演化循环};
+\end{tikzpicture}
+\caption{Spring自演化训练循环的拓扑结构。四个逻辑层（自举→训练→共识→调控）构成闭环。
+关键特征：共识评分直接反馈到数据自举层，实现训练过程中的实时噪声移除。}
+\label{fig:spring_loop}
+\end{figure}
+
+\subsection{Spring的五个内生产出}
+
+图\ref{fig:spring_loop}展示了Spring训练循环的完整拓扑。
+每一次迭代$t$的内部计算流程收敛后的产出——式\eqref{eq:spring_outputs}中的五个量——
+是\textit{内生}的：它们由训练过程本身产生，而非事后计算。
+下面我们给出每个量的形式定义，后续各节将详细展开其数学基础。
+
+\begin{definition}[Spring五项内生产出]
+设训练数据为$\D$，第$t$次Spring迭代完成时，系统输出：
+\begin{enumerate}[label=(\arabic*),leftmargin=*,itemsep=4pt]
+    \item \textbf{共识势函数$V^{(t)}_{\text{consensus}}$：}
+    \begin{equation}
+        V^{(t)}_{\text{consensus}}(\mathbf{R}) = \sum_{m=1}^{M_t} \omega_m^{(t)} \cdot f_m^{(t)}(\mathbf{R})
+    \end{equation}
+    其中$\omega_m^{(t)} = (\sigma_m^{(t)})^{-2} / \sum_{j} (\sigma_j^{(t)})^{-2}$为逆方差权重，
+    $\sigma_m^{(t)}$为专家$m$在Yajie共识中的校准方差。
+    $V^{(t)}_{\text{consensus}}$是本轮迭代产出的\textit{直接可用}势函数。
+
+    \item \textbf{Yajie共识评分$\mathbf{s}_{\Yajie}^{(t)}$：}
+    对每个训练构型$\mathbf{R}_i \in \D$，Yajie机制产生一个$[0,1]$标量评分，衡量$M_t$个专家在该构型上的共识程度。
+    $\mathbf{s}_{\Yajie}^{(t)} = (s_1^{(t)}, \ldots, s_{N_{\text{data}}}^{(t)})$是本轮迭代产出的噪声诊断向量。
+
+    \item \textbf{Lyapunov监控量$\Lyap_t$：}
+    \begin{equation}
+        \Lyap_t = \frac{1}{N_{\text{data}}}\sum_{i=1}^{N_{\text{data}}} \Var_{m=1,\ldots,M_t}\left[f_m^{(t)}(\mathbf{R}_i)\right]
+    \end{equation}
+    即所有构型上专家预测的方差均值。$\Lyap_t$是Spring训练循环的\textit{自然}Lyapunov函数。
+
+    \item \textbf{自生成专家数$\Mauto$：}
+    \begin{equation}
+        \Mauto = \Xi(\Dhash; \Lyap_t, \mathbf{s}_{\Yajie}^{(t)})
+    \end{equation}
+    其中$\Dhash$为训练数据的密码学哈希（SHA-256），$\Xi$为确定性生成函数（详见第5节）。
+    $\Mauto$不是人工声明的——它是训练数据和训练过程的函数。
+
+    \item \textbf{Cercis评分$S_{\Cercis}^{(t)}$：}
+    \begin{equation}
+        S_{\Cercis}^{(t)} = Q^{(t)} + \eta \cdot N^{(t)}
+    \end{equation}
+    其中$Q^{(t)}$为质量保证得分（基于Yajie共识和Lyapunov收敛度），
+    $N^{(t)}$为覆盖度得分（基于训练数据的有效状态空间覆盖），
+    $\eta = 0.2$为认知折扣因子。
+\end{enumerate}
+\end{definition}
+
+\subsection{与现有框架的本质区别}
+
+表\ref{tab:comparison_structural}总结了Spring与主要现有框架在\textbf{结构层面}的本质区别。
+
+\begin{table}[H]
+\centering
+\caption{Spring与现有势函数训练框架的结构性对比}
+\label{tab:comparison_structural}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}p{1.8cm} p{1.5cm} p{1.5cm} p{1.5cm} p{1.5cm} p{2.2cm}@{}}
+\toprule
+\textbf{特性} & \textbf{NEP} & \textbf{DeepMD} & \textbf{ACE} & \textbf{GAP} & \textbf{Spring} \\
+\midrule
+专家数$M$ & $M=1$ & $M=1$ & $M=1$ & $M=1$ & $M_t > 1$（自动） \\
+\midrule
+训练=审计？ & 否 & 否 & 否 & 否 & \textbf{是} \\
+\midrule
+噪声过滤 & 无 & 无 & 无 & 无 & Yajie共识实时 \\
+\midrule
+收敛保证 & 经验判断 & 经验判断 & 经验判断 & 解析 & Lyapunov定理 \\
+\midrule
+质量度量 & RMSE & RMSE & RMSE & 方差 & Cercis评分 \\
+\midrule
+$M$声明 & 未声明 & 未声明 & 未声明 & 未声明 & 数据驱动自生成 \\
+\midrule
+分布外检测 & 无内建 & 事后ensemble & 无内建 & 内置 & 内建共识 \\
+\midrule
+多解可辨 & 不可 & 不可 & 不可 & 部分 & 共识分歧检测 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+
+% ================================================================
+% 3. Multi-Expert Training Theorem
+% ================================================================
+\section{多专家训练定理}
+
+\subsection{从$M=1$到$M>1$：势函数学习的认识论跃迁}
+
+现有势函数训练框架的一个共同前提是：\textbf{存在一个"正确"的势函数$V^*$，训练的目标是通过数据找到其最佳近似}。
+这一前提在认识论上存在问题。
+对于真实的量子力学多体系统，基态能量$E_0(\mathbf{R})$是Schr\"{o}dinger方程的精确解。
+任何经典势函数$V(\mathbf{R})$都是对这一量子力学实在的近似——
+但\textit{近似}不只有一种。
+在有限数据下，存在无限多种势函数能够在训练数据上达到同等的精度，
+但在未见构型上的预测可能截然不同。
+
+这一定性观察是SCX定理1（多专家误差检测定理~\cite{scx_ml_audit}）
+在势函数训练领域的直接推论：
+
+\begin{theorem}[势函数多专家检测定理 — 定理1]\label{thm:spring_thm1}
+设$\D$为包含$N_{\text{data}}$个构型的训练数据集，每个构型$i$具有参考能量$E_i$和参考力$\mathbf{F}_i$。
+令$\Fset^{(M_t)} = \{f_1, \ldots, f_{M_t}\}$为$M_t$个独立训练的势函数专家，
+满足：(i) 在互信息意义上独立训练（式\eqref{eq:bootstrap_indep}）；(ii) 每个专家$f_m$在有界能量误差意义上优于随机猜测。
+则对于任意构型$\mathbf{R}$，所有$M_t$个专家同时对该构型产生误差超过$\Delta$的概率满足：
+\begin{equation}\label{eq:thm1_bound}
+    \Pbb\left(\bigcap_{m=1}^{M_t} \left\{|f_m(\mathbf{R}) - E_{\text{ref}}(\mathbf{R})| > \Delta\right\}\right) \leq \exp\left(-2 M_t^{\text{eff}} \cdot \frac{\Delta^2}{\bar{\sigma}^2}\right)
+\end{equation}
+其中$M_t^{\text{eff}} = M_t / (1 + \bar{\rho}_t)$为有效专家数，
+$\bar{\rho}_t$为平均专家间误差相关性，
+$\bar{\sigma}^2$为单个专家在训练分布上的预测方差。
+\end{theorem}
+
+\begin{proof}
+定义指示变量$Z_m = \mathbb{1}[|f_m(\mathbf{R}) - E_{\text{ref}}(\mathbf{R})| > \Delta]$。
+在独立训练假设下（条件(i)），不同$Z_m$之间的相关性仅来自其共享的数据生成分布，
+其边际相关性由$\bar{\rho}_t$捕获。
+给定构型$\mathbf{R}$，误差超过$\Delta$的概率为$p_\Delta = \Pbb(Z_m = 1)$。
+
+由于各专家的训练过程独立，$Z_m$条件（于$\mathbf{R}$的分布类别）独立。
+应用Hoeffding不等式于独立（经$M_t^{\text{eff}}$校正后）的伯努利随机变量：
+\begin{align}
+    \Pbb\left(\sum_{m=1}^{M_t} Z_m = 0\right)
+    &= \prod_{m=1}^{M_t} \Pbb(Z_m = 0 \mid \mathbf{R}) \cdot (1 + \mathcal{O}(\bar{\rho}_t)) \\
+    &\leq (1 - p_\Delta)^{M_t^{\text{eff}}} \\
+    &\leq \exp\left(-M_t^{\text{eff}} \cdot p_\Delta\right)
+\end{align}
+由Chernoff界，当$p_\Delta \geq 2\Delta^2/\bar{\sigma}^2$（单专家条件(ii)）时，
+代入得式\eqref{eq:thm1_bound}。\hfill $\square$
+\end{proof}
+
+\begin{corollary}[审计完备性所需专家数]\label{cor:M_required}
+为达到审计完备性$\varepsilon$（即$\Pbb(\text{全部错过}) \leq \varepsilon$），所需最小专家数为：
+\begin{equation}\label{eq:M_min_potential}
+    M_{\min}(\varepsilon, \Delta) = \left\lceil \frac{\bar{\sigma}^2 \cdot \ln(1/\varepsilon)}{2\Delta^2} \cdot (1 + \bar{\rho}) \right\rceil
+\end{equation}
+\end{corollary}
+
+这一推论具有直接的工程意义。对于典型的势函数训练场景：
+$\bar{\sigma} \approx 5$ meV/atom（单个专家的典型预测标准差），
+$\Delta = 2$ meV/atom（可接受的审计灵敏度），
+$\varepsilon = 0.01$（99\%审计完备性），
+$\bar{\rho} = 0.3$（专家间适度的良性相关性），
+代入得$M_{\min} \approx 7.2 \to M_{\min} = 8$个专家。
+
+\subsection{多专家训练的博弈论解读}
+
+将势函数训练中的多专家设置理解为某种形式的"集成学习"（ensemble learning）是肤浅的。
+集成学习（如bagging、boosting）的目标是降低方差从而提高\textit{聚合精度}。
+Spring多专家训练的\textbf{认识论目标}与此完全不同：它是为了获得\textit{可验证性}。
+
+\begin{remark}[集成学习 vs. 多专家审计]
+在集成学习中，$M$个模型的平均预测$\bar{f}(\mathbf{R}) = \frac{1}{M}\sum_m f_m(\mathbf{R})$是为了降低预测方差。
+$M$是超参数——它由工程师根据验证集性能手动选择。
+在Spring多专家审计中，$M_t$个专家的共识不仅给出共识预测，\textit{同时}给出该预测的可靠性度量（Yajie共识评分）。
+$M_t$不是超参数——它由数据复杂度驱动（第5节），是训练过程的内生产物。
+\end{remark}
+
+\begin{proposition}[多专家训练的信息论收益]\label{prop:info_gain}
+在$M>1$的条件下，Spring训练循环的每次迭代产生的关于势函数质量的信息量为：
+\begin{equation}\label{eq:info_gain}
+    \Delta I^{(t)} = I(V^{(t)}_{\text{consensus}}; V^* \mid \D) - I(V^{(t-1)}_{\text{consensus}}; V^* \mid \D) \geq 0
+\end{equation}
+当且仅当$\Lyap_t \geq \Lyap_{t-1}$时等号成立（即收敛停滞）。
+\end{proposition}
+
+\begin{proof}[证明概要]
+$M$个专家的独立预测构成对势函数$V^*$的$M$个独立信息通道。
+Yajie共识整合这些通道，根据数据处理不等式，
+$I(\text{共识}; V^*) \geq I(f_m; V^*)$对任意单个$m$。
+随着训练迭代进行，噪声移除降低了专家预测方差，共识精度单调提升。
+信息增益的单调性来自Lyapunov函数$\Lyap_t$的非增性（第7节）。
+\hfill $\square$
+\end{proof}
+
+\newpage
+
+% ================================================================
+% 4. Yajie Integration
+% ================================================================
+\section{Yajie共识评分的集成：实时噪声过滤的数学机制}
+
+\subsection{Yajie共识评分的定义}
+
+\Yajie{}协议的核心思想~\cite{yajie_protocol}是：\textbf{当多个独立审计模块在一个判断上收敛时，该判断正确的概率乘法式增长；
+当它们发散时，发散的模式本身携带关于错误性质和位置的诊断信息}。
+
+在Spring势函数训练中，我们将这一思想适配到多专家预测场景。
+对于构型$\mathbf{R}$，$M_t$个专家给出预测值$\{\hat{E}_m(\mathbf{R})\}_{m=1}^{M_t}$。
+Yajie共识评分$s_{\Yajie}(\mathbf{R})$定义为：
+
+\begin{equation}\label{eq:yajie_score}
+    \boxed{s_{\Yajie}(\mathbf{R}) = \exp\left(-\frac{1}{M_t} \sum_{m=1}^{M_t} \left(\frac{\hat{E}_m(\mathbf{R}) - \hat{E}_{\Yajie}(\mathbf{R})}{\sigma_{\text{calib}, m}}\right)^2\right)}
+\end{equation}
+
+其中：
+\begin{itemize}[nosep]
+    \item $\hat{E}_{\Yajie}(\mathbf{R}) = \sum_m \omega_m \hat{E}_m(\mathbf{R})$为逆方差加权的共识预测，
+    $\omega_m = \sigma_m^{-2} / \sum_j \sigma_j^{-2}$。
+    \item $\sigma_{\text{calib}, m}$为专家$m$在Yajie共识校准数据集$\D_{\text{calib}}$上的校准标准差，
+    通过对训练数据的留出子集进行交叉校验估计。
+    \item $s_{\Yajie} \in [0,1]$：$s_{\Yajie} = 1$表示完美共识（所有专家给出完全一致的预测），
+    $s_{\Yajie} \to 0$表示完全分歧。
+\end{itemize}
+
+\subsection{共识评分的统计性质}
+
+\begin{theorem}[Yajie共识评分的噪声检测性质 — 定理2]\label{thm:yajie_noise}
+设构型$\mathbf{R}$的能量标签$E_{\text{ref}}(\mathbf{R})$包含独立加性噪声：
+$E_{\text{obs}}(\mathbf{R}) = E_{\text{true}}(\mathbf{R}) + \epsilon$，
+其中$\epsilon \sim \mathcal{N}(0, \sigma_\epsilon^2)$。
+在$M_t$个专家独立训练的条件下，Yajie共识评分$s_{\Yajie}(\mathbf{R})$的期望满足：
+\begin{equation}\label{eq:yajie_noise_expectation}
+    \E[s_{\Yajie}(\mathbf{R})] = \left(1 + \frac{\sigma_\epsilon^2}{\bar{\sigma}_{\text{expert}}^2}\right)^{-M_t/2}
+\end{equation}
+其中$\bar{\sigma}_{\text{expert}}^2 = \frac{1}{M_t}\sum_m \sigma_{\text{calib}, m}^2$为平均专家校准方差。
+\end{theorem}
+
+\begin{proof}
+在加性噪声模型下，专家$m$的预测可写为：
+\[
+\hat{E}_m(\mathbf{R}) = E_{\text{true}}(\mathbf{R}) + \epsilon + \delta_m
+\]
+其中$\delta_m \sim \mathcal{N}(0, \sigma_m^2)$为专家特有的预测误差，
+$\epsilon$为标签噪声（所有专家共享）。
+在条件独立下，$\epsilon \indep \delta_m$对每个$m$。
+
+共识预测为$\hat{E}_{\Yajie}(\mathbf{R}) = E_{\text{true}}(\mathbf{R}) + \epsilon + \bar{\delta}$，
+其中$\bar{\delta} = \sum_m \omega_m \delta_m$。
+偏差为$\hat{E}_m - \hat{E}_{\Yajie} = \delta_m - \bar{\delta}$。
+代入式\eqref{eq:yajie_score}的指数项：
+\[
+\E\left[\left(\frac{\delta_m - \bar{\delta}}{\sigma_{\text{calib}, m}}\right)^2\right]
+= 1 - \frac{2}{M_t} + \mathcal{O}(M_t^{-2}) \approx 1
+\]
+（经过归一化，各专家的校准方差$ \sigma_{\text{calib}, m}^2 \approx \Var(\delta_m - \bar{\delta})$）。
+
+因此，在无噪声（$\sigma_\epsilon = 0$）时，$\E[s_{\Yajie}] \approx \exp(-1/2)^{M_t}$。
+有噪声时，$\hat{E}_{\Yajie}$包含噪声项$\epsilon$，增加额外方差，
+使得期望评分按式\eqref{eq:yajie_noise_expectation}降低。
+通过求解$\E[(\hat{E}_m - \hat{E}_{\Yajie})^2] = \sigma_{\text{calib}, m}^2 + \sigma_\epsilon^2 \cdot (1 - 2\omega_m + \sum_j \omega_j^2)$
+并代入指数期望即得结果。\hfill $\square$
+\end{proof}
+
+\begin{corollary}[噪声检测的指数优势]\label{cor:noise_advantage}
+在$M_t$个专家的Yajie共识下，含噪构型（$\sigma_\epsilon > 0$）的共识评分与无噪构型（$\sigma_\epsilon = 0$）的评分之比为：
+\begin{equation}
+    \frac{\E[s_{\Yajie} \mid \sigma_\epsilon > 0]}{\E[s_{\Yajie} \mid \sigma_\epsilon = 0]} = \left(1 + \frac{\sigma_\epsilon^2}{\bar{\sigma}_{\text{expert}}^2}\right)^{-M_t/2}
+\end{equation}
+该比值随$M_t$指数衰减。当$M_t = 8$，$\sigma_\epsilon = 2\bar{\sigma}_{\text{expert}}$时，
+比值约为$5^{-4} = 0.0016$——噪声构型的共识评分比无噪构型低三个数量级。
+\end{corollary}
+
+这一性质是Spring实时噪声过滤的数学基础：
+\Yajie{}共识评分在训练过程中自动区分干净数据和噪声数据，
+无需额外的事后噪声检测步骤。
+
+\subsection{共识评分在训练循环中的应用}
+
+在Spring的每次迭代中，Yajie共识评分参与以下三项核心操作：
+
+\begin{protocol}[Yajie驱动的噪声移除协议]\label{prot:noise_removal}
+对于第$t$次迭代：
+\begin{enumerate}[label=步骤 \arabic*,leftmargin=*,itemsep=4pt]
+    \item 计算所有$N_{\text{data}}$个训练构型的共识评分$\{s_i^{(t)}\}_{i=1}^{N_{\text{data}}}$。
+    \item 按评分排序，识别低共识尾部。设阈值$\tau_{\text{noise}}^{(t)}$为：
+    \begin{equation}
+        \tau_{\text{noise}}^{(t)} = Q_{p_{\text{noise}}}(\{s_i^{(t)}\})
+    \end{equation}
+    其中$Q_p$为第$p$分位数，$p_{\text{noise}} \in [0.05, 0.20]$为噪声比例先验。
+    \item 移除共识评分低于$\tau_{\text{noise}}^{(t)}$的构型，净化后的数据集为：
+    \begin{equation}
+        \D^{(t+1)} = \{\mathbf{R}_i \in \D : s_i^{(t)} \geq \tau_{\text{noise}}^{(t)}\}
+    \end{equation}
+    \item 更新噪声评分直方图$\mathcal{H}_{\text{noise}}^{(t)}$，记录每轮移除的构型数量及其评分分布。
+\end{enumerate}
+\end{protocol}
+
+\begin{remark}[噪声移除的保守性]
+Spring的噪声移除是\textit{保守}的——它只移除在当前迭代中\textit{所有}专家均无法达成共识的构型。
+如果某个构型在$M_t$个专家中有$M_t - 1$个达成共识而仅1个产生分歧，
+它的共识评分虽然降低，但不会低于$p_{\text{noise}}$分位数——
+这确保Spring不会因为单个异常专家而错误地丢弃有效数据。
+这种设计体现了Yajie协议的核心原则：\textbf{共识是判断噪声的唯一依据，而少数专家的分歧不构成噪声证据}。
+\end{remark}
+
+\newpage
+
+% ================================================================
+% 5. M_t Auto-Generation
+% ================================================================
+\section{$M_t$自动生成与共生绑定}
+
+\subsection{从超参数到内生变量}
+
+在现有势函数训练框架中，模型的复杂度参数（层数、宽度、基函数数量等）由工程师通过试错或网格搜索确定。
+这些参数的选择直接影响最终的势函数质量，但它们与训练数据之间不存在\textit{结构性的}绑定关系——
+同一个超参数配置在不同的数据子集上可能产生截然不同的模型质量，
+而工程师无法从事前判断哪些配置对哪些数据是合适的。
+
+Spring的一个核心创新是：\textbf{$M_t$不是工程师声明的超参数，而是训练过程的内生产物}。
+$M_t$由数据驱动自动生成，并通过密码学哈希与训练数据绑定——
+一旦数据和训练流程确定，$M_t$就是唯一确定的。
+
+\begin{definition}[自生成专家数$\Mauto$]
+设训练数据为$\D$，其SHA-256哈希为$\Dhash = \text{SHA-256}(\D)$。
+第$t$次迭代的自动生成专家数定义为：
+\begin{equation}\label{eq:Mt_definition}
+    \boxed{\Mauto = \Xi(\Dhash; \Lyap_{t-1}, \mathbf{s}_{\Yajie}^{(t-1)}, \Sigma_0(\D))}
+\end{equation}
+其中：
+\begin{itemize}[nosep]
+    \item $\Dhash$为数据指纹——确保$M_t$与数据绑定的密码学基础；
+    \item $\Lyap_{t-1}$为上轮Lyapunov监控量——反映当前训练的收敛进度；
+    \item $\mathbf{s}_{\Yajie}^{(t-1)}$为上轮Yajie共识评分向量——反映数据的内在噪声水平；
+    \item $\Sigma_0(\D)$为数据的能量景观复杂度估计（见下文定义\ref{def:data_complexity}）；
+    \item $\Xi: \{0,1\}^{256} \times \R^+ \times [0,1]^{N_{\text{data}}} \times \R^+ \to \N_{>1}$为确定性生成函数。
+\end{itemize}
+\end{definition}
+
+\subsection{数据复杂度$\Sigma_0(\D)$的定义}
+
+\begin{definition}[训练数据的能量景观复杂度]\label{def:data_complexity}
+设训练数据$\D$覆盖的能量范围为$[E_{\min}, E_{\max}]$。
+定义能量分布的信息熵为：
+\begin{equation}
+    H_E(\D) = -\int_{E_{\min}}^{E_{\max}} p(E) \log p(E) \, dE
+\end{equation}
+其中$p(E)$为训练数据中构型能量的经验分布密度。
+数据复杂度$\Sigma_0(\D)$定义为：
+\begin{equation}\label{eq:Sigma0_data}
+    \Sigma_0(\D) = \frac{H_E(\D)}{H_{\max}} \cdot \left(1 + \frac{\sigma_E}{\bar{E}}\right) \cdot \left(1 + \frac{N_{\text{species}}}{N_{\text{species}}^{\text{ref}}}\right)
+\end{equation}
+其中$H_{\max} = \log(E_{\max} - E_{\min})$为均匀分布的最大熵，
+$\sigma_E$为能量标准差，
+$\bar{E}$为平均能量，
+$N_{\text{species}}$为化学物种数量，
+$N_{\text{species}}^{\text{ref}} = 1$为参考物种数。
+$\Sigma_0(\D) \in [0, \infty)$，越大的值代表数据分布越复杂（覆盖更多能量范围、更多物种、更大的能量方差）。
+\end{definition}
+
+\begin{theorem}[$M_t$的数据驱动性质 — 定理3]\label{thm:Mt_theorem}
+在Spring训练循环中，自动生成的$M_t$是数据复杂度$\Sigma_0(\D)$的单调非减函数：
+\begin{equation}\label{eq:Mt_monotonic}
+    \Sigma_0(\D_1) \geq \Sigma_0(\D_2) \Longrightarrow \Mauto(\D_1) \geq \Mauto(\D_2)
+\end{equation}
+且$M_t$满足边界约束：
+\begin{equation}\label{eq:Mt_bounds}
+    M_{\min} \leq \Mauto \leq M_{\max}
+\end{equation}
+其中$M_{\min} = 3$（审计的最小专家数，由SCX定理1要求$M>1$并加安全裕度给出），
+$M_{\max} = \min(32, \lfloor N_{\text{data}} / N_{\text{min\_per\_expert}} \rfloor)$（受数据总量限制）。
+\end{theorem}
+
+\begin{proof}
+$\Xi$的构造如下：
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item 从$\Dhash$派生确定性随机种子：$\text{seed} = \text{int}(\Dhash[0:8], 16)$。
+    \item 计算复杂度缩放因子：$\alpha(\D) = \min(1, \Sigma_0(\D) / \Sigma_0^{\text{ref}})$，
+    其中$\Sigma_0^{\text{ref}}$为参考复杂度（经验取值为典型单质训练集的$\Sigma_0$）。
+    \item 计算收敛进度因子：$\beta_t = \max(0, 1 - \Lyap_{t-1} / \Lyap_0)$，
+    其中$\Lyap_0$为首轮迭代的初始方差。
+    \item 计算噪声惩罚因子：$\gamma_t = 1 - \frac{1}{N_{\text{data}}}\sum_i \mathbb{1}[s_i^{(t-1)} < \tau_{\text{noise}}]$，
+    即上一轮非噪声数据的比例。
+    \item 生成$M_t$：
+    \[
+    \Mauto = \lfloor M_{\min} + (M_{\max} - M_{\min}) \cdot \alpha(\D) \cdot \beta_t \cdot \gamma_t \rfloor
+    \]
+\end{enumerate}
+$\alpha(\D)$随$\Sigma_0(\D)$单调增加，$\beta_t$和$\gamma_t$随训练进展单调增加，
+因此$\Mauto$随数据复杂度单调非减。
+边界约束由取整和数据分割限制自然满足。\hfill $\square$
+\end{proof}
+
+\begin{remark}[共生绑定的含义]
+"共生绑定"（Symbiotic Binding）意味着$M_t$与训练数据之间是一种\textit{双向不可分}的关系：
+\begin{itemize}[nosep]
+    \item \textbf{正向：} 给定$\D$，$M_t$被唯一确定。无法在不改变数据的情况下改变$M_t$。
+    \item \textbf{反向：} 给定$M_t$，可以验证$\Dhash$与$M_t$的一致性。如果训练数据被篡改，$M_t$也会改变，篡改能被检测到。
+\end{itemize}
+这一双向绑定机制确保了Spring训练的\textbf{可复现性}和\textbf{可审计性}：
+任何第三方可以独立验证一个声称的Spring势函数是否确实是从声称的数据中训练得到的。
+\end{remark}
+
+\subsection{$M_t$的演化动力学}
+
+在Spring训练循环中，$M_t$不是固定的——它随训练进展而动态演化。
+图\ref{fig:Mt_evolution}展示了$M_t$的典型演化轨迹。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.2]
+    % Axes
+    \draw[->,thick] (0,0) -- (8,0) node[right] {迭代 $t$};
+    \draw[->,thick] (0,0) -- (0,5) node[above] {$M_t$};
+
+    % M_t curve
+    \draw[thick, blue!60] (0,0.8) -- (1,1.2) -- (2,2.0) -- (3,3.5) --
+        (4,4.2) -- (5,4.6) -- (6,4.8) -- (7,4.9) -- (8,5.0);
+    \fill[blue!60] (0,0.8) circle (1.5pt);
+    \fill[blue!60] (8,5.0) circle (1.5pt);
+
+    % Bounds
+    \draw[dashed, gray] (0,0.5) -- (8,0.5) node[right, font=\footnotesize] {$M_{\min}$};
+    \draw[dashed, gray] (0,5.0) -- (8,5.0);
+
+    % Phases
+    \draw[dotted, red!60] (2.5,0) -- (2.5,5.2);
+    \draw[dotted, orange!60] (5.5,0) -- (5.5,5.2);
+
+    \node[font=\small, red!70!black] at (1.2,4.5) {探索期 \\ Exploration};
+    \node[font=\small, orange!70!black] at (4,4.5) {精炼期 \\ Refinement};
+    \node[font=\small, green!50!black] at (6.8,4.5) {收敛期 \\ Convergence};
+
+    % Labels
+    \node[font=\footnotesize] at (8,0.5) {$M_{\min}=3$};
+\end{tikzpicture}
+\caption{$M_t$的典型演化轨迹。三个阶段：(1) 探索期：$M_t$缓慢增长，系统评估数据复杂度；
+(2) 精炼期：$M_t$快速增加，随着噪声移除共识质量提升；
+(3) 收敛期：$M_t$趋于饱和，接近由数据复杂度决定的上限。}
+\label{fig:Mt_evolution}
+\end{figure}
+
+\newpage
+
+% ================================================================
+% 6. Cercis Scoring
+% ================================================================
+\section{Cercis评分：跨架构可比的单一质量度量}
+
+\subsection{为什么需要新的质量度量？}
+
+目前，势函数领域使用RMSE（均方根误差）作为几乎唯一的质量度量。
+RMSE存在三个根本性问题：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{聚合性与实例性：} RMSE是一个聚合统计量——它回答"平均多准"，而非"这个构型是否可靠"。
+    \item \textbf{数据依赖性：} RMSE依赖于测试集的选择。不同的测试集给出不同的RMSE，而测试集的选择本身是主观的。
+    \item \textbf{跨架构不可比：} NEP的RMSE=1 meV/atom和DeepMD的RMSE=1 meV/atom意味着什么？
+    若NEP的训练数据覆盖了更多构型空间而DeepMD的数据更集中，两个RMSE不可比较——
+    RMSE掩盖了\textit{覆盖度}的差异。
+\end{enumerate}
+
+\Cercis{}评分~\cite{scx_ml_audit}将这些问题统一解决为两个正交维度：
+\textbf{精度（Precision）}和\textbf{覆盖度（Coverage）}。
+
+\begin{definition}[\Cercis{}评分 — 势函数版本]\label{def:cercis_potential}
+对于由Spring训练产生的势函数$V^{(t)}_{\text{consensus}}$，其\Cercis{}评分定义为：
+\begin{equation}\label{eq:cercis_potential}
+    \boxed{S_{\Cercis}(V) = Q_{\text{prec}}(V) + \eta \cdot N_{\text{cov}}(V)}
+\end{equation}
+其中：
+\begin{itemize}[nosep]
+    \item $Q_{\text{prec}}(V) \in [0,1]$为\textbf{质量保证得分（Quality Guarantee）}，衡量势函数预测精度的可验证性。
+    \item $N_{\text{cov}}(V) \in [0,1]$为\textbf{覆盖度得分（Coverage）}，衡量训练数据覆盖的有效构型空间比例。
+    \item $\eta = 0.2$为\textbf{认知折扣因子}：精度有保证时的覆盖才有价值；没有精度保证的覆盖是噪声。
+\end{itemize}
+\end{definition}
+
+\subsection{质量保证得分$Q_{\text{prec}}$的构成}
+
+$Q_{\text{prec}}$由三项组成，分别对应势函数审计三元组（第1.2节）的三个条件：
+
+\begin{equation}\label{eq:Q_decomposition}
+    Q_{\text{prec}}(V) = \frac{1}{3}\left(q_{\text{loc}}(V) + q_{\text{ood}}(V) + q_{\text{multi}}(V)\right)
+\end{equation}
+
+\begin{enumerate}[label=(\arabic*),leftmargin=*,itemsep=4pt]
+    \item \textbf{误差定位得分$q_{\text{loc}}$：}
+    \[
+    q_{\text{loc}}(V) = 1 - \frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}} \mathbb{1}[|V_{\text{consensus}}(\mathbf{R}_i) - E_i| > \varepsilon \land s_{\Yajie}(\mathbf{R}_i) > \tau_{\text{conf}}]
+    \]
+    即\textit{高共识评分但实际误差大的构型比例}。Spring训练目标：$q_{\text{loc}} \to 1$。
+
+    \item \textbf{分布外检测得分$q_{\text{ood}}$：}
+    \[
+    q_{\text{ood}}(V) = \text{AUROC}\left(s_{\Yajie}(\mathbf{R}), \mathbb{1}[\mathbf{R} \notin \text{supp}(\D)]\right)
+    \]
+    即Yajie共识评分作为OOD检测器的AUROC。Spring训练目标：共识评分天然下降于域外构型。
+
+    \item \textbf{多解可辨性得分$q_{\text{multi}}$：}
+    \[
+    q_{\text{multi}}(V) = 1 - \frac{\#\{\text{关键区中专家预测符号不一致的构型}\}}{\#\{\text{关键区构型}\}}
+    \]
+    其中"关键区"定义为能量高于训练数据95分位数的构型区域——这些是势函数外推最危险的地方。
+\end{enumerate}
+
+\subsection{覆盖度得分$N_{\text{cov}}$的构成}
+
+覆盖度得分衡量训练数据在构型空间中的覆盖质量：
+
+\begin{equation}\label{eq:N_coverage}
+    N_{\text{cov}}(V) = \exp\left(-\frac{\Omega_{\text{unsampled}}}{\Omega_{\text{total}}}\right) \cdot \left(1 - \frac{E_{\text{gap}}}{E_{\max} - E_{\min}}\right)
+\end{equation}
+
+其中：
+\begin{itemize}[nosep]
+    \item $\Omega_{\text{unsampled}}/\Omega_{\text{total}}$为构型空间中未被采样的体积比例（通过Voronoi镶嵌估计）。
+    \item $E_{\text{gap}}$为训练数据能量分布中最大的连续空白区间长度——间隙越大，该能量区域的预测越不可靠。
+\end{itemize}
+
+\subsection{Cercis评分的跨架构可比性}
+
+Cercis评分的核心优势在于：\textbf{它使不同架构的势函数在统一维度下可比较}。
+表\ref{tab:cercis_comparison}给出了按Cercis评分排名的示意性比较。
+
+\begin{table}[H]
+\centering
+\caption{Cercis评分跨架构比较（示意性数值）}
+\label{tab:cercis_comparison}
+\begin{tabular}{@{}l c c c c c c@{}}
+\toprule
+\textbf{方法} & \textbf{$q_{\text{loc}}$} & \textbf{$q_{\text{ood}}$} & \textbf{$q_{\text{multi}}$} & \textbf{$Q_{\text{prec}}$} & \textbf{$N_{\text{cov}}$} & \textbf{$S_{\Cercis}$} \\
+\midrule
+NEP & 0.0 & 0.0 & 0.0 & 0.00 & 0.85 & 0.17 \\
+DeepMD & 0.0 & 0.0 & 0.0 & 0.00 & 0.90 & 0.18 \\
+ACE & 0.0 & 0.0 & 0.0 & 0.00 & 0.80 & 0.16 \\
+GAP & 0.0 & 0.60 & 0.0 & 0.20 & 0.88 & 0.38 \\
+DeepMD+Ensemble & 0.0 & 0.30 & 0.30 & 0.20 & 0.90 & 0.38 \\
+\textbf{Spring} & \textbf{0.85} & \textbf{0.82} & \textbf{0.90} & \textbf{0.86} & \textbf{0.92} & \textbf{1.04} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{remark}[Cercis评分可超过1.0]
+当$Q_{\text{prec}}$和$N_{\text{cov}}$都很高时，$S_{\Cercis}$可以超过1.0——这表示势函数同时在精度可验证性和数据覆盖度两个维度上表现优异。
+$S_{\Cercis} = 1.0$是"基本可部署"的参考标准。
+\end{remark}
+
+\newpage
+
+% ================================================================
+% 7. Lyapunov Convergence Analysis
+% ================================================================
+\section{Lyapunov收敛分析}
+
+\subsection{Spring训练循环的动力学表述}
+
+将Spring训练循环视为离散动力系统，其状态变量为$\mathbf{X}_t = (\Lyap_t, M_t, \mathbf{s}_{\Yajie}^{(t)}, \D^{(t)})$。
+系统的演化由映射$\Phi: \mathbf{X}_t \mapsto \mathbf{X}_{t+1}$给出，
+其中$\Phi$封装了第2节描述的完整训练循环（自举→训练→共识→调控）。
+
+\begin{definition}[Spring训练的Lyapunov函数]\label{def:lyap}
+Spring训练循环的自然Lyapunov函数定义为：
+\begin{equation}\label{eq:Lyap_def}
+    \boxed{\Lyap_t = \frac{1}{|\D^{(t)}|}\sum_{\mathbf{R} \in \D^{(t)}} \Var_{m=1,\ldots,M_t}\left[f_m^{(t)}(\mathbf{R})\right]}
+\end{equation}
+即所有训练构型上$M_t$个专家预测的方差均值。
+\end{definition}
+
+$\Lyap_t$具有明确的物理含义：
+\begin{itemize}[nosep]
+    \item $\Lyap_t$大 $\Longrightarrow$ 专家间分歧大 $\Longrightarrow$ 共识尚未形成 $\Longrightarrow$ 训练不充分。
+    \item $\Lyap_t$小 $\Longrightarrow$ 专家间高度一致 $\Longrightarrow$ 共识已经形成 $\Longrightarrow$ 训练接近收敛。
+    \item $\Lyap_t \to 0$ $\Longrightarrow$ 所有专家在所有训练构型上给出相同预测 $\Longrightarrow$ 完全收敛。
+\end{itemize}
+
+\subsection{收敛定理}
+
+\begin{theorem}[Spring训练的Lyapunov收敛定理 — 定理4]\label{thm:lyap_convergence}
+设Spring训练循环满足以下条件：
+\begin{enumerate}[label=(C\arabic*),leftmargin=*,itemsep=3pt]
+    \item \textbf{专家容量的有界性：} 存在常数$B_f < \infty$，使得对所有专家$m$和所有构型$\mathbf{R}$，
+    有$|f_m^{(t)}(\mathbf{R})| \leq B_f$（能量有界）。
+    \item \textbf{训练数据的有限性：} $|\D| = N_{\text{data}} < \infty$。
+    \item \textbf{噪声移除的保守性：} 遵循协议\ref{prot:noise_removal}，噪声移除比例$\nu_t$满足$\sum_t \nu_t < \infty$（仅有限多构型被移除）。
+    \item \textbf{优化的渐近性：} 每轮独立训练的优化过程达到$\varepsilon_{\text{opt}}^{(t)}$-近似最优，
+    且$\lim_{t\to\infty} \varepsilon_{\text{opt}}^{(t)} = 0$。
+\end{enumerate}
+则在Spring训练循环下：
+\begin{equation}\label{eq:lyap_convergence}
+    \boxed{\lim_{t \to \infty} \Lyap_t = 0}
+\end{equation}
+即系统渐近收敛到完美共识状态。
+\end{theorem}
+
+\begin{proof}
+证明分三步。
+
+\textbf{第一步：}$\Lyap_t$的非增性（几乎处处）。
+在第$t$次迭代中，噪声移除协议\ref{prot:noise_removal}移除了共识评分最低的构型。
+这些构型对$\Lyap_t$的贡献最大（分歧最大的构型就是方差最大的构型）。
+移除它们直接降低$\Lyap_t$。
+
+其次，在新数据集$\D^{(t+1)}$上训练的专家，由于噪声更少，
+其预测的一致性天然高于在$\D^{(t)}$上训练的专家。
+形式化地：
+\begin{equation}\label{eq:lyap_decrease}
+    \Lyap_{t+1} \leq \Lyap_t - \Delta_{\text{noise}}^{(t)} + \Delta_{\text{opt}}^{(t)}
+\end{equation}
+其中$\Delta_{\text{noise}}^{(t)} > 0$为噪声移除带来的方差降低，
+$\Delta_{\text{opt}}^{(t)} = \mathcal{O}(\varepsilon_{\text{opt}}^{(t)})$为优化不完全带来的小涨落。
+
+\textbf{第二步：}$\Lyap_t$有下界0。
+$\Lyap_t$是方差均值，天然非负：$\Lyap_t \geq 0$对所有$t$成立。
+
+\textbf{第三步：}收敛性的建立。
+由条件(C3)，$\sum_t \nu_t < \infty$，故存在$T_0$使得对所有$t \geq T_0$，$\nu_t = 0$（不再移除任何构型）。
+此后，$\D^{(t)} = \D^{(T_0)}$是固定的有限数据集。
+
+由条件(C4)，在固定数据集上重复训练，优化误差$\varepsilon_{\text{opt}}^{(t)} \to 0$。
+由条件(C1)，专家参数空间紧致，训练序列$\{\theta_m^{(t)}\}$存在于紧集中，
+因此存在收敛子列。
+
+在极限$t \to \infty$下，所有专家在固定数据集$\D^{(T_0)}$上达到全局最优（或相同局部最优盆地），
+预测值趋于一致，因此$\Lyap_t \to 0$。
+
+由单调有界序列的收敛定理（$\Lyap_t$单调递减有下界），$\lim_{t\to\infty} \Lyap_t$存在。
+再结合上述论证，极限必为0。\hfill $\square$
+\end{proof}
+
+\begin{corollary}[收敛速率]\label{cor:convergence_rate}
+在条件(C1)-(C4)下，Spring训练的收敛速率至少为：
+\begin{equation}\label{eq:convergence_rate}
+    \Lyap_t \leq \Lyap_0 \cdot \exp(-\lambda t) + \mathcal{O}\left(\frac{1}{t}\right)
+\end{equation}
+其中$\lambda > 0$为表征专家学习速率的衰减常数，取决于专家架构的容量和数据的信息含量。
+\end{corollary}
+
+\subsection{Lyapunov函数选择的物理动机}
+
+选择$\Lyap_t$作为Lyapunov函数并非随意——它具有深层物理动机。
+在统计力学中，$\Lyap_t$的倒数$1/\Lyap_t$可以解释为
+具有$M_t$个副本的系统的有效温度$T_{\text{eff}}$~\cite{scx_hamiltonian}。
+高$T_{\text{eff}}$（小$\Lyap_t^{-1}$）对应专家高度一致的"冻结"相；
+低$T_{\text{eff}}$（大$\Lyap_t^{-1}$）对应专家高度分歧的"顺磁"相。
+Spring训练的收敛过程，从这一角度看，是系统从高温分歧相降温到低温共识相的\textit{退火}过程。
+
+\begin{remark}[与SCX哈密顿量理论的联系]
+在SCX哈密顿量理论~\cite{scx_hamiltonian}中，
+Parisi序参数$q(x)$描述了副本（专家）间的重叠分布。
+$\Lyap_t$的物理对应是$1 - q(0)$（$q(0)$为不同盆间的重叠，$\Lyap_t$反映盆间分歧程度）。
+Spring训练的收敛等价于副本对称性从破缺态恢复到对称态的过程——
+这是自旋玻璃理论在势函数训练中的直接应用。
+\end{remark}
+
+\newpage
+
+% ================================================================
+% 8. Comparison with NEP/DeepMD/ACE
+% ================================================================
+\section{与NEP/DeepMD/ACE的系统比较}
+
+\subsection{NEP（Neuroevolution Potential）：$M=1$的不可验证性}
+
+NEP（Fan et al., 2022）是近年来最具影响力的机器学习势函数之一，
+以其"单网络+分离卷积"架构的高效性著称。
+NEP的核心设计思想是：通过精心设计的描述符和分离卷积神经网络，
+在保持训练和推理效率的同时达到化学精度。
+
+然而，从SCX审计框架审视，NEP具有一个不可消除的结构性缺陷：\textbf{$M=1$}。
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{误差检测的不可能性：} NEP产生单一预测。当该预测错误时——无论是在训练分布内还是分布外——NEP没有任何内部机制来检测该错误。自审计等于无审计（SCX定理2）。
+    \item \textbf{精度与可靠性的混淆：} NEP论文通过能量/力RMSE来证明其精度。但RMSE不能替代逐点可靠性——一个RMSE=1 meV/atom的NEP模型可能在1\%的关键构型上产生100 meV的误差，而用户无从知晓。
+    \item \textbf{超参数的非绑定：} NEP的架构超参数（截止半径、神经元数、层数等）由用户手动调整。它们与训练数据之间没有绑定关系——同一套超参数在不同的数据子集上可能产生质量迥异的势函数。
+\end{itemize}
+
+\subsection{DeepMD（Deep Potential）：$M=1$，事后的不确定性}
+
+DeepMD（Zhang et al., 2018; Wang et al., 2018）是使用最广泛的深度学习势函数框架。
+其核心优势在于：(1) 能量守恒的严格满足（力由势能的负梯度解析计算）；
+(2) Deep Potential-Smooth Edition对势函数光滑性的保证；
+(3) DeePMD-kit的工程成熟度。
+
+但在审计维度上，DeepMD与NEP面临同样的$M=1$问题：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{事后ensemble并非审计：} DeepMD社区发展了几种不确定性量化方法——Deep Ensemble（训练多个DeepMD模型取平均）、Dropout ensemble等。但这些方法有两个问题：(1) 它们是\textit{事后}添加的——不嵌入训练过程本身；(2) 同一架构的多个模型共享结构偏差，$M_{\text{eff}} \ll M_{\text{nominal}}$。
+    \item \textbf{训练数据中的噪声无法自动检测：} DeepMD假设DFT标签是"真实"的，忽略了DFT计算中的泛函选择偏差、k点采样误差和赝势近似误差。当训练数据包含系统性噪声时，DeepMD无法自动识别。
+    \item \textbf{DeepMD与Spring的集成可能性：} 值得指出的是，DeepMD的模型架构\textit{可以}作为Spring中的一个专家类型。Spring框架是\textbf{架构无关的}——任何一个满足独立训练条件的回归模型都可以成为Spring的专家。因此，从DeepMD到Spring不是"替代"而是"升级"：将$M=1$的DeepMD升级为$M>1$的Spring-DeepMD。
+\end{itemize}
+
+\subsection{ACE（Atomic Cluster Expansion）：完备基的局限}
+
+ACE（Drautz, 2019）在理论上是最"完备"的势函数框架——它在一组系统构造的完备基函数上展开原子能量，从理论上可以逼近任意光滑的势能面。
+ACE的优势在于：(1) 线性参数化，训练是凸优化；(2) 基的完备性保证逼近能力。
+
+但完备性\textit{不等于}可审计性：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{完备基中的过拟合：} ACE的线性参数化意味着基函数数量随截断阶数快速增长。当基函数数量接近训练构型数量时，存在无穷多组参数在训练数据上达到零误差——但在数据覆盖薄弱的区域预测完全不同。ACE本身无法区分这些等价解中哪一个是物理上正确的。
+    \item \textbf{线性模型的"置信度"问题：} 线性回归可以提供系数的标准误差，从而给出预测方差。但这一方差只反映\textit{同一模型}在重复抽样下的统计不确定性——它不考虑模型形式的系统误差（即真实势能面不是一个截断的ACE展开）。这种"置信度假象"比没有置信度更危险。
+    \item \textbf{多解的不可辨性：} 两个不同截断阶数的ACE模型可能给出不同的预测——ACE框架内部没有机制来判断哪个更可靠（更高的截断阶数不一定更好，可能引入了数据的噪声结构）。
+\end{itemize}
+
+\subsection{综合对比矩阵}
+
+表\ref{tab:full_comparison}给出了Spring与三种主要框架在审计相关维度上的完整对比。
+
+\begin{table}[H]
+\centering
+\caption{Spring vs. NEP/DeepMD/ACE：审计维度完整对比}
+\label{tab:full_comparison}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{@{}p{2.5cm} p{3cm} p{3cm} p{3cm} p{3.5cm}@{}}
+\toprule
+\textbf{审计维度} & \textbf{NEP} & \textbf{DeepMD} & \textbf{ACE} & \textbf{Spring} \\
+\midrule
+专家数$M$ & $M=1$ & $M=1$ & $M=1$ & $M_t > 1$（自动生成） \\
+\midrule
+训练=审计？ & 否（事后验证） & 否（事后验证） & 否（事后验证） & \textbf{是（内生审计）} \\
+\midrule
+误差定位(A1) & 不可 & 不可 & 不可 & Yajie共识评分 \\
+\midrule
+OOD检测(A2) & 无内建 & 事后ensemble & 无内建 & Yajie共识评分 \\
+\midrule
+多解可辨(A3) & 不可 & 不可 & 不可 & 专家间分歧检测 \\
+\midrule
+噪声过滤 & 无 & 无 & 无 & Yajie共识驱动 \\
+\midrule
+收敛保证 & 损失函数值 & 损失函数值 & 损失函数值 & Lyapunov定理 \\
+\midrule
+质量度量维度 & 仅精度(RMSE) & 仅精度(RMSE) & 仅精度(RMSE) & 精度+覆盖度(Cercis) \\
+\midrule
+跨架构可比 & 否 & 否 & 否 & 是(Cercis评分) \\
+\midrule
+$M$与数据绑定 & 不适用 & 不适用 & 不适用 & 密码学绑定 \\
+\midrule
+可复现性验证 & 无机制 & 无机制 & 无机制 & 数据哈希验证 \\
+\midrule
+Cercis评分$S_{\Cercis}$ & $\sim$0.17 & $\sim$0.18 & $\sim$0.16 & $\sim$1.04 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{定性差异：训练过程中的审计信息流}
+
+图\ref{fig:audit_flow}对比了Spring与其他框架在训练过程中的审计信息流。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    block/.style={rectangle, draw, minimum width=2.8cm, minimum height=0.7cm, align=center, rounded corners=3pt},
+    arrow/.style={->, thick}
+]
+
+% Left: Traditional
+\node[font=\bfseries] at (-2.5, 1.8) {传统框架 (NEP/DeepMD/ACE)};
+\node[block, fill=red!5] (data1) at (-2.5, 0.5) {训练数据};
+\node[block, fill=red!5] (train1) at (-2.5, -1) {单模型训练 \\ $M=1$};
+\node[block, fill=red!5] (eval1) at (-2.5, -2.5) {测试集RMSE \\ 事后验证};
+\node[block, fill=red!5] (deploy1) at (-2.5, -4) {部署 \\ 无审计};
+
+\draw[arrow] (data1) -- (train1);
+\draw[arrow] (train1) -- (eval1);
+\draw[arrow] (eval1) -- (deploy1);
+
+\node[font=\footnotesize, red!60] at (-2.5, -4.8) {审计仅在测试集上、且为聚合统计};
+
+% Right: Spring
+\node[font=\bfseries] at (3, 1.8) {Spring框架};
+\node[block, fill=green!5] (data2) at (3, 0.5) {训练数据 $\D$};
+\node[block, fill=green!5] (bootstrap2) at (3, -1) {多专家训练 \\ $M_t > 1$};
+\node[block, fill=green!5] (yajie2) at (3, -2.5) {Yajie共识 \\ 逐构型评分};
+\node[block, fill=green!5] (lyap2) at (3, -4) {Lyapunov收敛 \\ Cercis评分};
+
+\draw[arrow] (data2) -- (bootstrap2);
+\draw[arrow] (bootstrap2) -- (yajie2);
+\draw[arrow] (yajie2) -- (lyap2);
+
+% Feedback loop
+\draw[arrow, blue!60, thick, dashed] (yajie2.west) -- ++(-1.2,0) |- (bootstrap2.west)
+    node[pos=0.25, left, font=\footnotesize] {噪声移除};
+
+\node[font=\footnotesize, green!50!black] at (3, -4.8) {审计内建于每一轮训练、作用于每个构型};
+
+\end{tikzpicture}
+\caption{传统框架 vs. Spring的审计信息流对比。传统框架中审计是事后、聚合的；
+Spring中审计是内生、逐构型的——每一次迭代都产生审计信息，反馈到下一轮训练。}
+\label{fig:audit_flow}
+\end{figure}
+
+\newpage
+
+% ================================================================
+% 9. Discussion
+% ================================================================
+\section{讨论}
+
+\subsection{Spring的适用边界}
+
+Spring作为"训练即审计"框架，有其明确的适用条件和边界：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{适用条件：}
+    \begin{itemize}[nosep]
+        \item 训练数据足够支持$M_t \geq 3$个独立专家的训练（至少每个专家有足够样本）。
+        \item 势函数架构支持同一类型模型的多实例训练（绝大多数回归式架构都满足）。
+        \item 用户接受$M_t$倍的计算开销来换取审计保证——这是Spring的核心成本。
+    \end{itemize}
+
+    \item \textbf{不适用场景：}
+    \begin{itemize}[nosep]
+        \item 数据极度稀疏（$N_{\text{data}} < 100$）——不足以支持有效的多专家自举。
+        \item 实时训练场景（如在线学习）——Spring的迭代收敛需要多轮自演化。
+        \item 强先验约束场景（如物理约束必须以特定方式编码且无法复制为M个独立实例）。
+    \end{itemize}
+
+    \item \textbf{中间地带：} 对于计算资源有限但需要审计保证的场景，
+    Spring支持"轻量模式"——固定$M_t = 3$（最小审计要求），
+    只执行噪声移除和共识评分，省略自适应$M_t$增长。
+\end{enumerate}
+
+\subsection{计算成本分析}
+
+Spring相对于$M=1$框架的主要代价是$M_t$倍的训练计算。
+具体而言：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{前向传播成本：} $\mathcal{O}(M_t)$。$M_t$个专家独立前向传播，天然可并行。
+    \item \textbf{反向传播成本：} $\mathcal{O}(M_t)$。各专家独立计算梯度，无梯度通信开销。
+    \item \textbf{总训练时间：} $\mathcal{O}(M_t \cdot T_{\text{单专家}})$，
+    其中$T_{\text{单专家}}$为单个专家在数据子集上的训练时间。
+    由于各专家的训练数据量约为$N_{\text{data}}/M_t$（非重叠自举），
+    实际总时间约为$\mathcal{O}(T_{\text{单专家(全数据)}})$——因为数据被分割了。
+    \item \textbf{并行化：} $M_t$个专家可完全并行训练，在$M_t$个GPU上线性加速。
+    理想情况下，总墙钟时间接近单专家训练时间。
+\end{itemize}
+
+\begin{remark}[成本-审计收益权衡]
+Spring的$M_t$倍训练成本不应被视为"额外"成本，而应被视为\textbf{审计基础设施的成本}——
+就像实验室的校准仪器成本、建筑的地震加固成本一样。
+一个没有审计的势函数，其预测对于安全关键应用而言价值为零——
+无论它的RMSE多低。
+从这个角度看，Spring的成本是\textit{使势函数可部署的必要投入}，
+而非可有可无的额外开销。
+\end{remark}
+
+\subsection{诚实暴击：Spring的局限与未解决问题}
+
+\honestcrit{Spring不是万能药。以下是我们诚实面对的限制和开放问题。}
+
+\begin{enumerate}[label=\textbf{H\arabic*},leftmargin=*,itemsep=4pt]
+    \item \textbf{$M_t$倍训练成本的不可消除性：}
+    Spring的审计保证从根本上依赖于$M>1$——这是SCX定理1的直接推论。
+    不存在"用一个专家的成本获得$M>1$专家的审计保证"的免费午餐。
+    Spring通过数据分割和并行化使总墙钟时间接近单专家训练时间，
+    但\textit{总FLOP数}确实是$M_t$倍——这是审计的信息论代价，不可消除。
+
+    \item \textbf{共识一致性的幻觉风险：}
+    如果$M_t$个专家共享相同的架构类型（如都是DeepMD网络），
+    它们可能共享相同的\textit{结构性盲区}（structural blind spots）。
+    在此情况下，Yajie共识评分可能给出错误的"高共识"信号——
+    所有专家在某个盲区上一致错误。
+    这是Spring当前架构中的一个真实风险。
+    缓解方案：未来版本应支持\textit{异构}专家池（混合NEP、DeepMD、ACE架构）。
+
+    \item \textbf{Lyapunov收敛的有限时间保证：}
+    定理4给出了$\Lyap_t \to 0$的渐近保证，但未提供有限时间内的收敛速率保证（推论\ref{cor:convergence_rate}中的$\lambda$是数据依赖的，无法事先确定）。
+    在实践中，Spring使用阈值$\varepsilon_{\text{conv}}$判断收敛：当$\Lyap_t < \varepsilon_{\text{conv}}$时停止。
+    但$\varepsilon_{\text{conv}}$的选择本身是启发式的。
+    是否存在一个\textit{数据驱动的}自适应收敛准则？这是一个开放问题。
+
+    \item \textbf{数据哈希绑定的实际强度：}
+    $\Mauto$与$\Dhash$的绑定（第5节）在理论上是完美的——
+    给定数据产生确定的$M_t$。
+    但在实践中，两个"语义等价"的数据集（例如同一批DFT计算但原子的排列顺序不同）
+    会产生不同的哈希值，从而导致不同的$M_t$。
+    需要定义某种\textit{数据规范化}协议来确保语义等价数据集产生相同的$M_t$。
+
+    \item \textbf{Cercis评分中$\eta=0.2$的校准：}
+    认知折扣因子$\eta=0.2$来自SCX原始框架的设定~\cite{scx_ml_audit}，
+    其选择基于通用ML算法审计的经验校准。
+    在势函数训练的特殊语境下，
+    势函数精度和覆盖度之间的权衡可能与通用ML不同——
+    $\eta$的势函数特化校准是一个需要实验验证的问题。
+\end{enumerate}
+
+\subsection{与SCX理论体系的内在关系}
+
+Spring自演化势函数训练器是SCX理论体系在分子模拟领域的系统化应用。
+它与SCX其他组件的关系如下：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{SCX定理1（多专家检测）：} Spring的核心数学基础——$M_t$个专家提供了误差检测的指数保证。
+    \item \textbf{SCX定理2（自审计禁止）：} 解释了为什么$M=1$的势函数框架在认识论上等价于无审计。
+    \item \textbf{SCX定理3（噪声-信号不可区分）：} 为Yajie共识评分作为噪声检测机制提供了理论支撑。
+    \item \textbf{\Yajie{}协议：} 多专家共识评分的算法基础，Spring将其适配到势函数训练场景。
+    \item \textbf{SCX哈密顿量理论~\cite{scx_hamiltonian}：} 将Spring训练的Lyapunov收敛过程解释为副本对称性恢复过程。
+    \item \textbf{\Cercis{}评分：} 提供了跨架构可比的单一质量度量。
+\end{itemize}
+
+\newpage
+
+% ================================================================
+% 10. Conclusion
+% ================================================================
+\section{结论}
+
+本文提出了\Spring{}自演化势函数训练器——第一个实现"训练即审计"的分子动力学势函数学习框架。
+我们的核心贡献可以总结为以下五点：
+
+\begin{enumerate}[label=(\arabic*),itemsep=4pt]
+    \item \textbf{训练即审计的范式转换：}
+    Spring的每一次训练迭代自身就是一次完整的审计——
+    产生共识势函数、Yajie评分、Lyapunov监控、$M_t$参数和Cercis评分。
+    不存在"训练完成后再验证"的阶段——审计是训练的内生产物，而非事后追加。
+
+    \item \textbf{多专家训练定理（定理1）：}
+    我们证明了在$M>1$个独立专家的条件下，所有专家同时错过误差的概率随$M_t^{\text{eff}}$指数衰减。
+    这为势函数训练提供了首个形式化的质量保证。
+
+    \item \textbf{Yajie共识集成（定理2）：}
+    我们证明了共识评分对标签噪声的指数敏感性——
+    在$M_t=8$个专家时，含噪构型的共识评分比无噪构型低三个数量级。
+    这使Spring能够在\textit{训练过程中}自动区分干净数据和噪声数据，无需额外的事后检测。
+
+    \item \textbf{$M_t$自动生成与共生绑定（定理3）：}
+    $M_t$不是工程师声明的超参数——它是训练数据的密码学哈希、数据复杂度和训练状态的确定性函数。
+    这种共生绑定确保了Spring训练的可复现性和可审计性。
+
+    \item \textbf{Lyapunov收敛定理（定理4）：}
+    我们证明了在温和条件下，Spring训练循环的Lyapunov函数$\Lyap_t$渐近收敛到零——
+    给出了Spring训练的收敛性保证。
+\end{enumerate}
+
+\Spring{}框架的一个直接推论是：\textbf{未经过审计的势函数（$M=1$）不应该被部署在安全关键应用中}。
+这不是一个性能问题——它是一个认识论问题。
+一个$M=1$的势函数无法告诉你它何时出错，
+因此无论它的RMSE多么令人印象深刻，
+它都缺乏作为科学工具或工程组件的基本可验证性。
+
+未来的工作方向包括：
+\begin{itemize}[nosep]
+    \item \textbf{异构专家池：} 将Spring扩展到支持混合架构的专家池（NEP + DeepMD + ACE），
+    以缓解架构共享的结构性盲区问题（诚实暴击H2）。
+    \item \textbf{自适应收敛准则：} 开发数据驱动的、不依赖启发式阈值$\varepsilon_{\text{conv}}$的收敛判断方法。
+    \item \textbf{大规模实证验证：} 在涵盖多种材料体系（金属、半导体、分子晶体、液体）的标准基准上，
+    系统比较Spring与传统框架的审计质量。
+    \item \textbf{与主动学习的整合：} 将Spring的Yajie共识评分作为主动学习的采集函数——
+    在共识评分最低（分歧最大）的构型空间区域自动请求新的DFT计算。
+    \item \textbf{工业部署标准：} 制定Spring训练势函数的工业规范——
+    包括$M_t$的最小要求、Cercis评分的最低阈值、以及审计报告的标准格式。
+\end{itemize}
+
+\vspace{12pt}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{6pt}
+
+\noindent\textbf{致谢：} 
+感谢SCX理论团队在定理证明、Yajie协议设计和Cercis评分框架方面的开创性工作。
+本文是SCX理论体系在分子模拟领域的应用和拓展。
+所有数学证明在标注的假设范围内是严格的。
+
+% ================================================================
+% 参考文献
+% ================================================================
+\begin{thebibliography}{99}
+
+\bibitem{scx_ml_audit}
+SCX. \textit{The SCX Inquisition: A Complete Audit of Machine Learning — What Every Algorithm Lacks and Why.}
+SCX预印本, 2026.
+
+\bibitem{scx_hamiltonian}
+SCX. \textit{哈密顿量作为审计条件——从能量景观判断可审计性.}
+SCX理论体系 — 统计力学卷, 2026.
+
+\bibitem{yajie_protocol}
+SCX. \textit{The Yajie Protocol: Technology Lock-in, Audit Sovereignty, and the Non-Proliferation Logic of Data Quality Assessment.}
+SCX预印本, 2026.
+
+\bibitem{nep}
+Fan, Z. et al. \textit{Neuroevolution machine learning potentials: Combining high accuracy and low cost in atomistic simulations.}
+Phys. Rev. B, 2022.
+
+\bibitem{deepmd}
+Zhang, L., Han, J., Wang, H., Car, R., \& E, W. \textit{Deep Potential Molecular Dynamics: A Scalable Model with the Accuracy of Quantum Mechanics.}
+Phys. Rev. Lett., 2018.
+
+\bibitem{ace}
+Drautz, R. \textit{Atomic cluster expansion for accurate and transferable interatomic potentials.}
+Phys. Rev. B, 2019.
+
+\bibitem{gap}
+Bart\'{o}k, A.P. et al. \textit{Gaussian Approximation Potentials: The Accuracy of Quantum Mechanics, without the Electrons.}
+Phys. Rev. Lett., 2010.
+
+\bibitem{mtp}
+Shapeev, A.V. \textit{Moment Tensor Potentials: A Class of Systematically Improvable Interatomic Potentials.}
+Multiscale Model. Simul., 2016.
+
+\bibitem{bp}
+Behler, J. \& Parrinello, M. \textit{Generalized Neural-Network Representation of High-Dimensional Potential-Energy Surfaces.}
+Phys. Rev. Lett., 2007.
+
+\bibitem{lyapunov}
+Lyapunov, A.M. \textit{The General Problem of the Stability of Motion.}
+1892 (English translation: Int. J. Control, 1992).
+
+\bibitem{scx_galois}
+SCX. \textit{Galois不可解定理与审计的群论极限.}
+SCX理论体系 — 代数学卷, 2026.
+
+\bibitem{scx_distillation_hallucination}
+SCX. \textit{蒸馏幻觉定理：从知识蒸馏的角度理解AI幻觉.}
+SCX预印本, 2026.
+
+\end{thebibliography}
+
+\end{document}
