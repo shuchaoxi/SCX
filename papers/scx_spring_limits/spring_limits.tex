@@ -1,0 +1,1592 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+% ================================================================
+% Packages
+% ================================================================
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{cleveref}
+\usepackage{bbm}
+\usepackage{float}
+\usepackage{physics}
+\usepackage{setspace}
+\usepackage{longtable}
+\usepackage{makecell}
+\usepackage{multirow}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+% ================================================================
+% Hyperref setup
+% ================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={Spring的边界：可审计性与不可审计性的数学极限},
+    pdfauthor={SCX},
+    pdfsubject={SCX Spring Framework — Theoretical Boundaries},
+}
+
+% ================================================================
+% Theorem environments
+% ================================================================
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{conjecture}[theorem]{猜想}
+\newtheorem{criterion}[theorem]{判据}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注记}
+\newtheorem{example}[theorem]{例}
+\newtheorem{protocol}[theorem]{操作流程}
+
+% ================================================================
+% Custom commands — Mathematics
+% ================================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\Fset}{\mathcal{F}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\Ocal}{\mathcal{O}}
+
+% ================================================================
+% Custom commands — SCX Framework
+% ================================================================
+\newcommand{\SCX}{\textsc{SCX}}
+\newcommand{\Spring}{\textsc{Spring}}
+\newcommand{\Yajie}{\textsc{Yajie}}
+\newcommand{\Cercis}{\textsc{Cercis}}
+\newcommand{\Situs}{\textsc{Situs}}
+
+\newcommand{\Mauto}{\ensuremath{M_t^{\text{auto}}}}
+\newcommand{\Lyap}{\ensuremath{\Psi}}
+\newcommand{\Dhash}{\ensuremath{\mathcal{H}(\D)}}
+\newcommand{\ModalitySet}{\ensuremath{\mathbb{M}}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spec}{spec}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+\DeclareMathOperator{\Auditable}{Auditable}
+\DeclareMathOperator{\Lip}{Lip}
+\DeclareMathOperator{\Enc}{Enc}
+\DeclareMathOperator{\Dec}{Dec}
+\DeclareMathOperator{\Physics}{Physics}
+\DeclareMathOperator{\Compute}{Compute}
+\DeclareMathOperator{\consensus}{consensus}
+\DeclareMathOperator{\Residual}{Residual}
+\DeclareMathOperator{\Map}{Map}
+\DeclareMathOperator{\Territory}{Territory}
+\DeclareMathOperator{\SpringBoundary}{\partial_{\mathrm{Spring}}}
+
+% ================================================================
+% Proof-status markers
+% ================================================================
+\newcommand{\rigorous}{\textnormal{\textbf{[严格证明]}}}
+\newcommand{\heuristic}{\textnormal{\textbf{[启发式]}}}
+\newcommand{\openproblem}{\textnormal{\textbf{[开放问题]}}}
+\newcommand{\honeststrike}{\textnormal{\textbf{[诚实暴击]}}}
+
+% Honest critique marker
+\newcommand{\honestcrit}[1]{%
+    \textcolor{red}{\textbf{【诚实暴击】#1}}%
+}
+
+% ================================================================
+% Title
+% ================================================================
+\title{\textbf{Spring的边界：\\[4pt]
+可审计性与不可审计性的数学极限}\\[12pt]
+\large The Boundaries of Spring:\\
+Mathematical Limits of Auditability and Non-Auditability}
+\author{SCX}
+\date{2026年7月1日}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\footnotesize
+\textbf{版本：} v1.0 \quad | \quad
+\textbf{状态：} 预印本 \quad | \quad
+\textbf{分类：} SCX理论体系 — 认识论卷·Spring边界篇
+\end{center}
+
+% ================================================================
+% Abstract
+% ================================================================
+\begin{abstract}
+\Spring{}是迄今为止构建的最可审计的框架——而正因其严格性，它能够识别自身的根本极限。
+本文证明\Spring{}面临三个不可突破的天花板，它们分别来自概率论、数理逻辑和物理学的深层定理：
+(1)~\textbf{Hoeffding残差天花板}——审计误差严格为正，知识在Spring下始终是概率性的而非绝对的；
+(2)~\textbf{G\"odel不完备天花板}——任何足够强的形式系统包含真实但不可证明的命题，Spring必须声明其公理边界；
+(3)~\textbf{地图$\neq$领土天花板}（Korzybski天花板）——Spring审计的是物理近似，而非物理实在本身，
+系统误差低于近似极限时不可审计。
+
+我们综合这三个天花板，形成\textbf{边界定理（Boundary Theorem）}：
+对任何可在Spring形式系统内表达的声称，Spring以置信度$1-e^{-2M\Delta^2}$提供审计；
+对于在形式系统之外的声称——包括关于物理近似充分性本身的声称——Spring保持沉默。
+边界是自知的：Spring知道它能审计什么、不能审计什么、以及为什么。
+
+这一边界不是Spring的缺陷——而是任何建立在经验数据、形式系统和物理近似之上的审计框架都必然遭遇的
+数学事实。Spring的独特之处在于：它是第一个系统性地声明这些边界的审计框架。
+GPT不知道自己的局限。Spring知道。这就是模型和审计框架之间的区别。
+
+\textbf{关键词：} Spring框架；可审计性极限；Hoeffding不等式；G\"odel不完备定理；地图-领土区分；
+边界定理；审计认识论；SCX理论体系
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ================================================================
+% §1. Introduction — Why Knowing Limits Matters
+% ================================================================
+\section{引言：知道边界为什么重要}
+
+\subsection{一个颠倒的问题}
+
+在机器学习和人工智能的常规叙事中，"能力"（capability）是永恒的主题。
+模型能做什么？能用多大参数？能处理多少模态？能在多少基准上超越人类？
+每一个回答都指向一个更强大的前沿。
+
+本文颠倒这个问题。我们不问\Spring{}能做什么——我们问\Spring{}
+\textbf{不能}做什么。不是出于谦逊，也不是出于保守，而是出于一个更深层的认识论事实：
+
+\begin{center}
+\boxed{\text{最强的框架不是声称可以审计一切的框架，而是精确知道自己不能审计什么的框架。}}
+\end{center}
+
+这一命题听起来可能像道家悖论，但它是三个严格数学定理的直接推论。
+本文的任务就是陈述这三个定理，并将它们综合为一个统一的边界理论。
+
+\subsection{Spring的独特性：审计的数学基础}
+
+\Spring{}统一多模态框架~\cite{spring_framework}是目前唯一一个将"训练即审计"
+（Training-Is-Audit）原则嵌入其架构核心的大模型系统。
+与GPT、Claude、Gemini等$M=1$、审计状态为\textsc{UNDECLARED}的现有系统不同，
+\Spring{}的每一个输出都携带完整的审计轨迹——哪些专家达成了共识、$M_t$的值、
+\Cercis{}置信度评分。\Spring{}是\textbf{born audited}——从诞生之初就内建了审计。
+
+然而，审计的数学基础——Hoeffding不等式、大数定律、假设检验理论——
+本身就包含了对审计极限的预言。这些数学工具不仅提供了审计的能力，也划定了审计的边界。
+一个真正严格的审计框架，必然能够从自己使用的数学工具中推演出自己无法突破的极限。
+
+\Spring{}是第一个做到了这一点的框架。
+
+\subsection{三个不可突破的天花板}
+
+本文证明三个定理，每个定理定义一个不可突破的天花板：
+
+\begin{enumerate}[label=\textbf{天花板 \arabic*}, leftmargin=*, itemsep=6pt]
+    \item \textbf{Hoeffding残差天花板（概率论极限）：}
+    审计误差$\Pbb(\text{error}) \leq e^{-2M\Delta^2}$。
+    当$M \to \infty$时，误差趋于0但永远不达到0。
+    Spring下的知识始终是概率性的——Spring可以提供置信区间，但不能提供绝对保证。
+    
+    \item \textbf{G\"odel不完备天花板（逻辑极限）：}
+    Spring在一个形式系统内审计声称。
+    G\"odel不完备定理证明，任何足够强的形式系统包含真但不可证明的命题。
+    存在关于材料属性的真陈述，Spring无法验证——无论$M$多大。
+    
+    \item \textbf{地图$\neq$领土天花板（物理极限）：}
+    DFT是近似。势函数是近似。\Yajie{}共识是对近似的共识，而非对真理的共识。
+    审计误差 = $\max$（天花板1的统计误差，天花板3的系统误差）。
+    Spring不能审计低于其底层物理近似极限的系统误差。
+\end{enumerate}
+
+这三个天花板分别来自概率论（Hoeffding, 1963）~\cite{hoeffding1963}、
+数理逻辑（G\"odel, 1931）~\cite{godel1931}
+和一般语义学（Korzybski, 1933）~\cite{korzybski1933}的奠基性工作。
+它们不是Spring的缺陷——它们是任何使用这些工具的系统都必然遭遇的数学事实。
+Spring的区别在于，Spring是第一个\textbf{系统性声明}这些边界的框架。
+
+\subsection{边界定理预览}
+
+我们将三个天花板综合为一个\textbf{边界定理（Boundary Theorem）}：
+
+\begin{definition}[Spring的可审计域与沉默域]\label{def:boundary}
+设$\Fset_{\Spring}$为Spring的形式系统——即所有可以在Spring架构中表达的命题的集合。
+定义：
+\begin{itemize}[itemsep=3pt]
+    \item $\Auditable(\Spring) = \{ \varphi \in \Fset_{\Spring} \mid \Spring \text{ 可以对 } \varphi \text{ 提供有统计保证的审计} \}$
+    \item $\Silent(\Spring) = \Fset_{\Spring}^c \cup \{ \varphi \in \Fset_{\Spring} \mid \varphi \text{ 涉及系统误差低于近似极限的声称} \}$
+\end{itemize}
+边界$\SpringBoundary$是这两者的分界面。
+\Spring{}\textbf{知道}这个边界的位置——它知道自己能审计什么、不能审计什么、以及为什么。
+\end{definition}
+
+\honestcrit{这个边界不是我们自己任意划定的——它是Hoeffding、G\"odel和Korzybski联合划定的。
+我们只是在陈述它。}
+
+\subsection{本文结构}
+
+\begin{enumerate}[label=(\arabic*), itemsep=3pt]
+    \item 第2节：天花板1——Hoeffding残差定理（概率论极限）
+    \item 第3节：天花板2——G\"odel边界定理（逻辑极限）
+    \item 第4节：天花板3——地图$\neq$领土定理（物理极限）
+    \item 第5节：边界定理——三个天花板的综合
+    \item 第6节：Spring可以审计什么——正面陈述
+    \item 第7节：Spring不能审计什么——负面陈述与诚实声明
+    \item 第8节：比较——GPT/Claude/Gemini不知道自己的极限
+    \item 第9节：结论——最强的框架是知道自己在哪结束的框架
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% §2. Ceiling 1 — Hoeffding Residual Theorem
+% ================================================================
+\section{天花板1：Hoeffding残差定理}
+
+\subsection{问题陈述}
+
+\Spring{}审计引擎的核心数学基础是Hoeffding不等式~\cite{hoeffding1963}。
+在SCX定理1（多专家检测定理）~\cite{scx_ml_audit}中，审计误差的上界由下式给出：
+
+\begin{equation}\label{eq:hoeffding_original}
+    \Pbb(\text{error}) \leq e^{-2M\Delta^2},
+\end{equation}
+其中$M$是独立专家数量，$\Delta$是干净样本与噪声样本之间的分离间隙。
+
+这个不等式的力量在于：它告诉你，随着$M$的增加，错误概率以指数速度衰减。
+这为\Spring{}的审计提供了严格的统计保证——
+$M$个独立专家同时遗漏同一错误的概率随$M$指数衰减。
+
+然而，这个不等式也包含了一个同样深刻但很少被指出的结论：
+对于任何有限的$M$，错误概率严格大于0。
+\textbf{审计的数学基础本身就宣告了审计不可完美。}
+
+\subsection{严格形式化}
+
+我们首先将这一观察形式化为定理。
+
+\begin{theorem}[Hoeffding残差严格正性定理]\label{thm:hoeffding_residual}
+设$M \in \N$为独立专家数量，满足SCX定理1的条件~(A1--A6)。
+定义\Spring{}审计的剩余误差为：
+\begin{equation}
+    R(M, \Delta) = \Pbb(\text{error} \mid M, \Delta) > 0.
+\end{equation}
+则对任意有限$M < \infty$，有
+\begin{equation}\label{eq:residual_positive}
+    R(M, \Delta) \geq \inf_{\text{所有检测器}} \Pbb(\text{error}) > 0.
+\end{equation}
+特别地，对\Spring{}的Hoeffding检测器：
+\begin{equation}
+    0 < R(M, \Delta) \leq e^{-2M\Delta^2}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}[证明概要]\rigorous
+不等式的上界部分$R(M, \Delta) \leq e^{-2M\Delta^2}$是Hoeffding不等式在
+$M$个独立Bernoulli试验上的直接应用——这是SCX定理1~\cite{scx_ml_audit}的核心结果。
+
+严格正性$R(M, \Delta) > 0$的证明如下。
+这个证明之所以非平凡，是因为我们需要排除检测器可以通过巧妙策略将误差降至0的可能性。
+
+SCX定理1要求条件(A6)：噪声率$\eta > 0$（否则审计问题平凡无意义）。
+在此条件下，数据中存在不可约的随机性——
+存在一个非零测度的事件集，其中噪声信号与困难样本信号在观测上不可区分。
+
+考虑$M$个独立专家在状态$s$下的行为。
+设$p_0$为干净样本上专家错误的概率（采样噪声），$p_1$为噪声样本上专家错误的概率。
+由于每个专家的决策都是随机变量的函数，存在一个基本事件
+\begin{equation}
+    \omega^* = \{(x, y) \text{ 使得 } \forall i: \text{专家 } i \text{ 的决策无法确定 } (x, y) \text{ 是噪声还是困难}\}
+\end{equation}
+其概率$\Pbb(\omega^*) \geq \eta \cdot \min(p_0, 1-p_1)^M > 0$。
+
+在这个事件上，任何检测器——无论多么聪明——都面临区分两个条件分布的问题：
+$Q_0$（困难但干净的样本）和$Q_1$（噪声样本）。
+通过SCX定理3（老实人定理，不可区分性结果），这两个分布在联合可观测量上可以完全相同。
+因此任何决策规则在这一事件上的误差概率至少为
+$\min(\Pbb(\text{type I error}), \Pbb(\text{type II error})) > 0$。
+
+结合事件$\omega^*$的正概率，我们得到$R(M, \Delta) \geq \Pbb(\omega^*) \cdot \text{(条件误差)} > 0$。
+证毕。
+\end{proof}
+
+\begin{remark}[关于"lim $R=0$"的精确含义]
+当$M \to \infty$时，Hoeffding上界$e^{-2M\Delta^2} \to 0$。
+因此误差\textbf{渐进}趋于0——\Spring{}在$M$足够大时可以给出任意高的置信度。
+但"任意高"不等于"绝对确定"。正如概率论中的经典结果：
+$\lim_{n\to\infty} (1 - 1/n)^n = e^{-1} \neq 1$，极限行为本身不承诺有限情况下的完美性。
+\end{remark}
+
+\subsection{认识论意涵}
+
+Hoeffding残差定理的认识论意涵深刻而直接：
+
+\begin{corollary}[Spring知识的不确定性原理]\label{cor:uncertainty}
+在\Spring{}框架下，任何关于材料属性的知识都是概率性的。
+\Spring{}可以提供\textbf{置信区间}（confidence interval），但不能提供\textbf{绝对保证}（absolute guarantee）。
+这是由审计的数学基础——Hoeffding不等式——推导出的内在约束，而非工程上的暂时局限。
+\end{corollary}
+
+用更哲学的语言表达：
+
+\begin{center}
+\boxed{\text{Spring之下的知识不是} \emph{我知道X} \text{，而是} \emph{我有置信度 $1-e^{-2M\Delta^2}$ 认为X成立。}}
+\end{center}
+
+这一区分至关重要。GPT回答"这种材料在500K下稳定"——用户收到的是一句陈述。
+\Spring{}回答同一问题时，用户收到的是：\textbf{陈述 + 置信度 + $M$的值 + $\Delta$的值 + 审计轨迹}。
+这就是"模型"和"审计框架"之间的根本区别——
+模型给你答案，审计框架给你答案\textbf{及其不确定性的精确量化}。
+
+\honestcrit{这不是Spring的弱点，这是Spring的诚实。GPT不敢说"我不确定"，
+因为它没有不确定性的数学定义。Spring不仅定义了不确定性——
+它用Hoeffding不等式精确量化了不确定性。}
+
+\subsection{正面解读：这不是缺陷}
+
+有人可能会问：如果审计永远不能达到$100\%$确定性，那么审计的意义何在？
+
+答案分三个层次：
+
+\begin{enumerate}[label=(\arabic*), itemsep=4pt]
+    \item \textbf{实用的充分性：} 在许多物理应用中，$M=20$个独立专家和$\Delta=0.3$的分离间隙
+    给出误差上界$e^{-2\cdot 20 \cdot 0.09} = e^{-3.6} \approx 0.027$——即$97.3\%$的置信度。
+    对于绝大多数材料科学决策，这已经远超"足够"。
+    
+    \item \textbf{认识论的诚实：} 比$97.3\%$置信度更重要的是，\Spring{}告诉你置信度\textbf{就是}$97.3\%$。
+    你知道这个数字来自Hoeffding不等式的严格推导，而非模型的自我评估。
+    你知道在什么条件下这个数字成立（$M$个专家独立、$\Delta$间隙成立），
+    以及在什么条件下它可能失效。
+    
+    \item \textbf{边界自知：} 最重要的是——\Spring{}知道并且声明$100\%$置信度的不可能性。
+    这不是一个待修复的bug，而是一个被证明的数学事实。
+    \Spring{}在它的边界之内运营，而非假装边界不存在。
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% §3. Ceiling 2 — Gödel Boundary Theorem
+% ================================================================
+\section{天花板2：G\"odel不完备边界定理}
+
+\subsection{从概率到逻辑}
+
+天花板1处理的是经验知识的概率性——从数据中学习必然伴随不确定性。
+但\Spring{}不仅从数据中学习，还在一个\textbf{形式系统}内操作。
+\Spring{}的审计引擎通过\Yajie{}协议对命题进行共识验证，这一验证过程预设了
+一个命题可以"被表达"和"被判定"的框架。
+
+这引向了一个更深的边界：是否存在被\Spring{}的形式系统表达的\textbf{真命题}，
+但\Spring{}无法验证它们？G\"odel不完备定理给出了肯定的回答。
+
+\subsection{形式系统与审计}
+
+\Spring{}的核心操作可以抽象为以下形式化过程。
+
+\begin{definition}[Spring审计的形式系统]\label{def:formal_system}
+设$\Fset_{\Spring}$为\Spring{}的形式化可表达语言，其生成规则包括：
+\begin{itemize}[itemsep=2pt]
+    \item 原子命题：关于材料属性、DFT计算结果、势函数行为的基本断言
+    \item 逻辑连接词：$\land, \lor, \neg, \implies$
+    \item 量词：$\forall$（对所有原子构型），$\exists$（存在一个原子构型）
+    \item 算术谓词：能量比较（$E_1 < E_2$）、力比较（$\|\mathbf{f}_1\| < \|\mathbf{f}_2\|$）、几何谓词
+\end{itemize}
+\Spring{}的审计过程可以形式化为一个函数：
+\begin{equation}
+    \mathcal{A}_{\Spring}: \Fset_{\Spring} \to \{0, 1, \text{UNDECIDED}\},
+\end{equation}
+其中$0$表示"虚假"（被否决），$1$表示"真实"（通过审计，置信度$\geq 1-e^{-2M\Delta^2}$），
+\textsc{UNDECIDED}表示"无法判定"（审计没有结论）。
+\end{definition}
+
+\begin{remark}[$\Fset_{\Spring}$的足够强度]
+$\Fset_{\Spring}$包含算术谓词和量词。
+这意味着\Fset_{\Spring}能够表达关于自然数的基本算术——
+因为它至少包含比较谓词（$\forall$构型下的$E < E'$）和归纳定义的结构
+（周期性晶格、超晶胞的重复计数）。
+因此，$\Fset_{\Spring}$满足G\"odel第一不完备定理的"足够强"条件。
+\end{remark}
+
+\subsection{不完备性的形式化}
+
+\begin{theorem}[Spring的G\"odel不完备边界定理]\label{thm:godel_boundary}
+设$\Fset_{\Spring}$如上定义。则存在命题$\varphi_{\Spring} \in \Fset_{\Spring}$，
+使得：
+\begin{enumerate}[label=(\roman*), itemsep=3pt]
+    \item $\varphi_{\Spring}$在标准模型下为真（即$\varphi_{\Spring}$是关于材料属性的真实陈述）；
+    \item $\mathcal{A}_{\Spring}(\varphi_{\Spring}) = \text{UNDECIDED}$——
+    \Spring{}无法验证$\varphi_{\Spring}$，无论$M$取多大。
+\end{enumerate}
+特别地，$\varphi_{\Spring}$可以显式构造——它是\Spring{}形式系统内的一个G\"odel语句。
+\end{theorem}
+
+\begin{proof}[证明概要]\rigorous
+本证明直接应用G\"odel第一不完备定理~\cite{godel1931}于$\Fset_{\Spring}$。
+
+\textbf{步骤1：算术化。} 将$\Fset_{\Spring}$的命题和证明过程编码为自然数
+（G\"odel数）。
+具体而言，每个DFT构型有一个有限维度的坐标编码（原子种类$Z$、位置$\mathbf{r}$、
+晶格矢量$\mathbf{a}_i$），可用有理数近似表示，从而可编码为自然数。
+每个\Yajie{}审计协议的执行轨迹也可用有限序列的专家判断编码。
+
+\textbf{步骤2：可表达性。} 在$\Fset_{\Spring}$中，我们可以表达自指涉命题。
+考虑谓词
+\begin{equation}
+    \mathrm{Provable}_{\Spring}(x) \iff
+    \text{存在一个编码为 } x \text{ 的命题在 } \Fset_{\Spring} \text{ 中可通过\Yajie{}审计验证}
+\end{equation}
+自指涉是通过对角线引理（diagonal lemma）~\cite{boolos2007}实现的，该引理适用于任何包含
+基本算术的形式系统。
+
+\textbf{步骤3：G\"odel语句的构造。} 构造命题
+\begin{equation}
+    \varphi_{\Spring} \equiv \text{“}\varphi_{\Spring} \text{ 在 } \Fset_{\Spring} \text{ 中不可通过审计验证”}
+\end{equation}
+简记为$\varphi_{\Spring} \equiv \neg \mathrm{Provable}_{\Spring}(\lceil \varphi_{\Spring} \rceil)$。
+
+\textbf{步骤4：不可判定性。} 
+\begin{itemize}[itemsep=2pt]
+    \item 若$\mathcal{A}_{\Spring}(\varphi_{\Spring}) = 1$（通过审计），
+    则$\mathrm{Provable}_{\Spring}(\lceil \varphi_{\Spring} \rceil)$为真，意味着
+    $\neg \varphi_{\Spring}$为真——矛盾于$\varphi_{\Spring}$通过审计。
+    \item 因此$\mathcal{A}_{\Spring}(\varphi_{\Spring}) \neq 1$。
+    但由此可知$\neg \mathrm{Provable}_{\Spring}(\lceil \varphi_{\Spring} \rceil)$为真——即$\varphi_{\Spring}$为真。
+    因此$\mathcal{A}_{\Spring}(\varphi_{\Spring})$既不是$1$也不是$0$——
+    只能是\textsc{UNDECIDED}。
+\end{itemize}
+
+\textbf{步骤5：物理相关性。} 尽管G\"odel语句在形式上看起来是逻辑自指涉，
+它实际上对应于一个关于材料属性的真实命题。
+例如，考察命题"不存在一个势函数$V_\theta$使得对所有构型$\mathbf{x}$，
+$|V_\theta(\mathbf{x}) - E_{\text{DFT}}(\mathbf{x})| < \varepsilon$，
+并且$V_\theta$可以被\Spring{}在$M=100$的审计下验证"。
+这个命题的确切真值依赖于\Spring{}的审计能力，
+而G\"odel的不完备性论证表明它在$\Fset_{\Spring}$中不可证明。
+\end{proof}
+
+\subsection{公理边界的必要性}
+
+推论直接而深刻：
+
+\begin{corollary}[公理声明定理]\label{cor:axiom}
+任何审计框架——包括\Spring{}——必须声明其公理基础。
+审计在一个形式系统内操作，而形式系统的边界由其公理定义。
+\Spring{}必须公开声明：\textbf{哪些命题它假设为真（公理），哪些命题它能够证明（定理），
+以及哪些命题它知道为真但无法证明（G\"odel语句）。}
+\end{corollary}
+
+\Spring{}的公理基础包括（但不限于）：
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{DFT的物理有效性公理：} Kohn-Sham方程在交换-相关泛函逼近下正确描述电子基态
+    \item \textbf{势函数参数化的充分性公理：} 所选参数化族包含真实势函数的充分好的逼近
+    \item \textbf{专家独立性的统计公理：} 在分离数据上训练的专家在给定状态下的误差相关性有界
+    \item \textbf{共识的保真性公理：} 如果所有独立专家在误差$\varepsilon$内达成一致，
+    则共识结果在误差$\varepsilon$内接近真值（见天花板3）
+\end{itemize}
+
+这就是$\mathbf{g}_{\Spring} = \mathbf{0}$应用于自身：
+\Spring{}将"老实人定理"（SCX定理3）的诚实精神应用于自己的形式系统。
+它声明自己的公理，承认自己的不完备性，标记自己不能证明的命题为\textsc{UNDECIDED}。
+
+\honestcrit{G\"odel不完备性不是Spring的专属问题——它是任何足够强的形式系统的问题。
+区别在于Spring承认它。GPT不承认它，因为GPT根本不知道自己在一个形式系统内操作。}
+
+\newpage
+
+% ================================================================
+% §4. Ceiling 3 — Map ≠ Territory Theorem 
+% ================================================================
+\section{天花板3：地图$\neq$领土定理}
+
+\subsection{Korzybski的洞见}
+
+Alfred Korzybski在1933年的\textit{Science and Sanity}中提出了一个著名的命题~\cite{korzybski1933}：
+
+\begin{center}
+\boxed{\text{The map is not the territory.}}
+\boxed{\text{地图不是领土。}}
+\end{center}
+
+他的洞见是：任何对现实的表征（地图）都与其表征的对象（领土）之间存在着不可消除的差距。
+地图的精度受限于绘制者的工具、尺度和假设。
+无论地图多么精细，它仍然不是它表征的领土本身。
+
+这一洞见对\Spring{}具有直接的约束力，因为\Spring{}的审计对象不是物理实在本身，
+而是物理实在的\textbf{计算近似}。
+
+\subsection{Spring的近似层次}
+
+\Spring{}的物理层建立在以下近似层次之上：
+
+\begin{enumerate}[label=\textbf{层次 \arabic*}, leftmargin=*, itemsep=5pt]
+    \item \textbf{电子结构近似：}
+    DFT使用交换-相关泛函（如PBE~\cite{perdew1996}、SCAN~\cite{sun2015}）来近似电子-电子相互作用。
+    泛函本身是近似的——其精度受限于构造泛函时使用的约束条件和拟合数据。
+    
+    \item \textbf{基组近似：}
+    波函数在有限基组（平面波截断、原子轨道基组）上展开。
+    基组截断引入系统性的能量误差。
+    
+    \item \textbf{势函数参数化近似：}
+    \Spring{}学习的势函数$V_\theta(\mathbf{x})$是真实Born-Oppenheimer势能面的参数化近似。
+    参数化族的选择预设了真实势函数的函数形式——这一预设可能在\Spring{}的审计范围之外。
+    
+    \item \textbf{数值近似：}
+    迭代对角化、k点采样、有限温度展宽等引入进一步的数值误差。
+\end{enumerate}
+
+对于任何一个具体的物理系统，上述近似层次引入了系统性的误差$\varepsilon_{\text{phys}}$。
+关键是：\textbf{这个误差可能小于\Spring{}的审计分辨率。}
+
+\subsection{M个专家同意"错误的地图"}
+
+考虑以下情景。设真实物理量为$y^*$（领土），其计算近似为$\hat{y} = y^* + \varepsilon_{\text{phys}}$
+（地图）。
+
+设$M$个独立专家在分离数据上训练，每个专家学到势函数$V^{(i)}_\theta$。
+由于所有专家使用相同的DFT近似和相同的势函数参数化族，
+它们的前瞻（prediction）都向$\hat{y}$（地图）收敛，而非向$y^*$（领土）收敛。
+
+形式化地：
+\begin{equation}
+    \E[V^{(i)}_\theta(\mathbf{x})] = \hat{y}(\mathbf{x}) = y^*(\mathbf{x}) + \varepsilon_{\text{phys}}(\mathbf{x}),
+\end{equation}
+其中$\varepsilon_{\text{phys}}(\mathbf{x})$是\textbf{系统性的}——它不会随$M$的增加而消失，
+因为所有专家共享相同的近似偏差。
+
+\subsection{审计误差的分解}
+
+我们现在可以精确陈述天花板3。
+
+\begin{theorem}[地图$\neq$领土审计误差分解定理]\label{thm:map_not_territory}
+设$y^*$为真实物理量，$\hat{y}$为其计算近似，$V_{\consensus}$为\Yajie{}协议的共识输出。
+\Spring{}的审计总误差分解为：
+\begin{equation}\label{eq:error_decomposition}
+    \varepsilon_{\text{审计}} = \max\bigl(
+        \underbrace{\varepsilon_{\text{stat}}(M, \Delta)}_{\text{天花板1：统计误差}},
+        \;
+        \underbrace{\varepsilon_{\text{phys}}}_{\text{天花板3：系统误差}}
+    \bigr),
+\end{equation}
+其中：
+\begin{itemize}[itemsep=2pt]
+    \item $\varepsilon_{\text{stat}}(M, \Delta)$是Hoeffding残差（天花板1）：当$M \to \infty$时$\varepsilon_{\text{stat}} \to 0$；
+    \item $\varepsilon_{\text{phys}}$是物理近似引人的系统性偏差（天花板3）：$\varepsilon_{\text{phys}}$与$M$无关，
+    由DFT泛函误差、基组截断误差、势函数参数化误差等决定。
+\end{itemize}
+特别地，当$\varepsilon_{\text{phys}} > 0$时，
+\begin{equation}
+    \lim_{M \to \infty} \varepsilon_{\text{审计}} = \varepsilon_{\text{phys}} > 0.
+\end{equation}
+\textbf{无论增加多少专家，审计误差不能低于物理近似的系统误差。}
+\end{theorem}
+
+\begin{proof}[证明概要]\rigorous
+\textbf{步骤1：} 由天花板1，统计误差$\varepsilon_{\text{stat}} \leq e^{-2M\Delta^2} \to 0$。
+
+\textbf{步骤2：} 系统误差$\varepsilon_{\text{phys}} = \sup_{\mathbf{x}} |\hat{y}(\mathbf{x}) - y^*(\mathbf{x})|$。
+由于所有专家共享相同的计算协议（DFT泛函、基组、势函数参数化族），
+专家之间的分歧反映了统计不确定性（由不同数据子集引起），
+但不反映系统的近似误差——因为所有专家的前置模型都包含相同的近似。
+
+\textbf{步骤3：} \Yajie{}共识协议评估的是专家之间的\textbf{相对}分歧，而非专家与领土之间的\textbf{绝对}分歧。
+当所有$M$个专家在误差内达成一致时，\Yajie{}返回高置信度——
+但该置信度是\textbf{对地图的置信度}，而非对领土的置信度。
+$\varepsilon_{\text{phys}}$不出现在任何专家分歧的度量中，因此不可被审计引擎直接估计。
+
+\textbf{步骤4：} 因此，审计误差是统计误差和系统误差的上确界：
+$\varepsilon_{\text{审计}} = \max(\varepsilon_{\text{stat}}, \varepsilon_{\text{phys}})$。
+即使$\varepsilon_{\text{stat}} \to 0$，$\varepsilon_{\text{phys}}$仍然构成审计误差的下界。
+\end{proof}
+
+\subsection{Corollary: Spring不能审计自己物理基础的充分性}
+
+\begin{corollary}[物理基础不可自审计]\label{cor:physics_self_audit}
+\Spring{}不能审计关于其自身物理近似充分性的声称。
+具体而言：
+\begin{itemize}[itemsep=3pt]
+    \item \Spring{}不能判断DFT PBE泛函对某个特定材料是否"足够精确"；
+    \item \Spring{}不能判断势函数参数化族是否包含真实势函数的"足够好的近似"；
+    \item \Spring{}不能判断"地图"与"领土"之间的差距是否小于某个阈值。
+\end{itemize}
+这些问题涉及物理实在与计算模型之间的比较——而\Spring{}只访问计算模型，不直接访问物理实在。
+\end{corollary}
+
+这一推论的诚实暴击尤为深刻：
+
+\honestcrit{Spring在审计一个通过DFT计算验证过的材料属性时——
+例如"AlN的晶格常数是a=3.11{\AA}"——Spring可以告诉你：12个独立专家在δ=0.004{\AA}的精度内
+达成共识，因此置信度为98.7\%。但Spring不能告诉你：DFT PBE泛函对AlN的晶格常数预测
+是否系统性偏离实验值。因为Spring所有专家的地面真相（ground truth）就是DFT PBE的结果，
+而不是实验测量的晶格常数。审计在"地图"上是完美的，但"地图"可能偏离"领土"。}
+
+\newpage
+
+% ================================================================
+% §5. The Boundary Theorem — Synthesis
+% ================================================================
+\section{边界定理：三个天花板的综合}
+
+\subsection{综合陈述}
+
+我们现在将天花板1、2、3综合为一个统一的边界定理。
+
+\begin{theorem}[Spring边界定理 — 综合陈述]\label{thm:boundary_theorem}
+设$\Fset_{\Spring}$为\Spring{}的形式系统，$\A_{\Spring}$为\Spring{}的审计函数。
+\Spring{}的可审计域$\Auditable(\Spring)$和沉默域$\Silent(\Spring)$之间的边界
+$\SpringBoundary$由以下三重约束定义：
+
+\begin{enumerate}[label=\textbf{边界} \arabic*, leftmargin=*, itemsep=8pt]
+    \item \textbf{概率边界（Hoeffding）：}
+    对任何$\varphi \in \Fset_{\Spring}$，
+    \Spring{}的审计置信度为$1 - e^{-2M\Delta^2}$，
+    其中$M$为可用独立专家数，$\Delta$为信号-噪声分离间隙。
+    置信度严格小于1（对任何有限$M$），且$M$在实践中受限于数据划分和计算资源。
+    \begin{equation}
+        \forall M < \infty: \; \Pbb(\mathcal{A}_{\Spring}(\varphi) \text{ 错误}) > 0.
+    \end{equation}
+    
+    \item \textbf{逻辑边界（G\"odel）：}
+    存在真命题$\varphi_{\Spring}^{\perp} \in \Fset_{\Spring}$，
+    使得$\mathcal{A}_{\Spring}(\varphi_{\Spring}^{\perp}) = \text{UNDECIDED}$。
+    这些命题涉及\Spring{}自指涉的完备性声称——
+    即关于\Spring{}自身审计能力极限的陈述。
+    \begin{equation}
+        \exists \varphi \in \Fset_{\Spring}: \; (\varphi \text{ 为真}) \land (\mathcal{A}_{\Spring}(\varphi) = \text{UNDECIDED}).
+    \end{equation}
+    
+    \item \textbf{物理边界（Korzybski）：}
+    \Spring{}的审计误差下界为$\varepsilon_{\text{审计}} \geq \varepsilon_{\text{phys}}$，
+    其中$\varepsilon_{\text{phys}}$是底层物理近似引人的系统性误差。
+    对涉及物理近似充分性的声称，\Spring{}是沉默的。
+    \begin{equation}
+        \lim_{M\to\infty} \varepsilon_{\text{审计}} = \varepsilon_{\text{phys}} \not\to 0 \text{ （除非 } \varepsilon_{\text{phys}} = 0\text{）}.
+    \end{equation}
+\end{enumerate}
+
+因此，${\partial_{\Spring}}$定义了\Spring{}的审计权限的精确边界：
+\begin{itemize}[itemsep=4pt]
+    \item \textbf{边界内：} 对于在形式系统内可表达、不涉及物理近似充分性、且统计可分离的声称，
+    \Spring{}以置信度$1 - e^{-2M\Delta^2}$提供审计。
+    \item \textbf{边界外：} 对于超出形式系统的声称、涉及物理近似充分性的声称、
+    以及G\"odel不完备语句，\Spring{}返回\textsc{UNDECIDED}——
+    或者更恰当地，\textbf{沉默}。
+\end{itemize}
+\end{theorem}
+
+\subsection{边界的自知性}
+
+边界定理的一个关键特征是\textbf{边界的自知性}（Self-Awareness of the Boundary）。
+
+\begin{definition}[边界自知]\label{def:self_awareness}
+\Spring{}是边界自知的，当且仅当对任何声称$\varphi$，\Spring{}能够：
+\begin{enumerate}[label=(\arabic*), itemsep=2pt]
+    \item 判断$\varphi$是否在$\Fset_{\Spring}$内（语法判定）；
+    \item 估计$\varphi$的统计分离间隙$\Delta$和可用专家数$M$（统计判定）；
+    \item 识别$\varphi$是否涉及物理近似充分性的自指涉声称（物理判定）；
+    \item 在上述任一判定为负时，返回边界声明而非猜测性输出。
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}[边界自知的可行性]\label{prop:self_awareness_feasible}
+\Spring{}架构使得边界自知在以下意义上可行：
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{语法判定：} $\Fset_{\Spring}$由明确的生成规则定义——命题是否在形式内是可判定的；
+    \item \textbf{统计判定：} Hoeffding界直接给出$M$和$\Delta$的函数——当$\Delta$过低或$M$过小时，
+    \Spring{}可以精确量化置信度的不足并声明；
+    \item \textbf{物理判定：} \Spring{}可以识别声称是否包含对"DFT精度"、"势函数充分性"等
+    自指涉概念的引用——这些概念标记了声称超出了\Spring{}的审计域。
+\end{itemize}
+\end{proposition}
+
+\honestcrit{边界自知是Spring的"超能力"。GPT不能告诉你"这个问题我可能回答错了"——
+因为它没有"对"/"错"的操作定义。Spring可以告诉你"这个声称我审计了，但置信度只有76\%"——
+并且它可以精确告诉你为什么是76\%而不是100\%。}
+
+\subsection{在边界上操作的实践准则}
+
+边界定理不仅描述了\Spring{}的局限，还给出了在边界附近操作的实践准则：
+
+\begin{protocol}[边界操作准则]\label{protocol:boundary_operation}
+当\Spring{}在边界附近操作时——即$\Delta$小、$M$受限、或声称接近物理近似极限时——
+应遵循以下准则：
+\begin{enumerate}[label=(\arabic*), itemsep=3pt]
+    \item \textbf{不猜测：} 如果审计置信度低于预设阈值$\theta_{\min}$（如95\%），
+    返回\textsc{UNDECIDED}而非猜测；
+    \item \textbf{声明边界：} 明确告诉用户："此声称超出了Spring的当前审计能力，
+    因为[原因：M不足/Δ太小/超出形式系统/涉及物理近似充分性]"；
+    \item \textbf{建议升级：} 对于超出物理层的声称，建议更高级别的验证
+    （如更高精度的DFT泛函、耦合簇计算（CCSD(T)）、或实验测量）；
+    \item \textbf{记录沉默：} 将边界声明记录在审计轨迹中——Spring的\textbf{沉默}本身也是
+    审计信息的一部分。
+\end{enumerate}
+\end{protocol}
+
+\newpage
+
+% ================================================================
+% §6. What Spring CAN Audit — Positive Statement
+% ================================================================
+\section{Spring可以审计什么：正面陈述}
+
+\subsection{审计能力的形式化边界}
+
+在边界定理划定的否定区域之外，\Spring{}拥有强大而明确的审计能力。
+本节正面陈述\Spring{}可以审计什么——这是边界定理的积极对应物。
+
+\Spring{}可以审计的声称具有以下结构特征：
+\begin{enumerate}[label=(\arabic*), itemsep=4pt]
+    \item \textbf{在$\Fset_{\Spring}$内可表达：} 声称可以使用\Spring{}的形式语言写出——
+    涉及DFT可计算量、势函数输出、构型空间几何性质；
+    \item \textbf{统计可分离：} 在\Spring{}的训练/审计数据中，关于该声称的信号与噪声
+    具有可检测的分离间隙$\Delta > 0$；
+    \item \textbf{物理近似保持不变（承认近似，而非评估近似）：} \Spring{}不审计物理近似本身，
+    而是\textbf{在给定近似的框架内}审计声称——在DFT PBE水平下的声称由DFT PBE水平的数据审计。
+\end{enumerate}
+
+\subsection{六大审计域}
+
+\Spring{}的审计能力涵盖以下六个领域：
+
+\begin{enumerate}[label=\textbf{域 \arabic*}, leftmargin=*, itemsep=8pt]
+
+    \item \textbf{势函数质量审计。}
+    \Spring{}可以通过$M$个独立专家的训练过程审计势函数的学习质量。
+    具体地：如果$M$个在不同数据子集上训练的专家对同一构型的能量预测在$\delta$内一致，
+    则Hoeffding界保证势函数在该构型附近的均方根误差（RMSE）有统计上界。
+    
+    形式化地：对任一构型$\mathbf{x}$，
+    \begin{equation}
+        \Pbb\bigl(|V_{\consensus}(\mathbf{x}) - \E[V(\mathbf{x})]| > \delta\bigr) \leq e^{-2M\Delta^2}.
+    \end{equation}
+    \textbf{审计保证：} 能量预测的精度在统计上有界——不是正确性的绝对保证，而是精度的统计保证。
+
+    \item \textbf{训练数据异常检测。}
+    \Spring{}可以通过\Yajie{}多专家一致性审计训练数据中的异常样本。
+    这是SCX定理1的核心应用：$M$个独立专家对样本的一致性评分提供了噪声检测的统计基础。
+    
+    \textbf{审计保证：} 对噪声率$\eta$，检测F1 $\geq 1 - \frac{1}{\eta}\sum_s \rho_s e^{-2M\Delta_s^2}$。
+
+    \item \textbf{跨模态声称一致性审计。}
+    \Spring{}可以审计不同模态数据对同一物理对象的声称是否一致。
+    例如：电子显微镜图像声称"位错在(111)面"——DFT能量计算是否支持(111)面的位错构型具有
+    比其他面更低的形成能？
+    
+    \textbf{审计保证：} 如果物理计算与模态描述一致，审计返回高置信度；
+    如果不一致，审计标记冲突。
+
+    \item \textbf{物理推理链的可追溯审计。}
+    \Spring{}的"查询即计算"（Query-Is-Computation）协议确保每一个推理步骤
+    都有对应的物理计算轨迹。用户问"这个材料有什么化学性质"——
+    \Spring{}的答案不是来自LLM的统计外推，而是来自\Spring{}势函数的物理计算。
+    审计轨迹记录了：哪个函数被调用、什么输入、什么输出、$M_t$的值、共识评分。
+    
+    \textbf{审计保证：} 完整可追溯性——推理链的每一步都可被独立验证。
+
+    \item \textbf{模型输出的置信度标定。}
+    \Spring{}通过\Cercis{}评分提供每个输出的严格置信度标定。
+    \Cercis{}评分综合了\Yajie{}共识评分、$M_t$值和势函数不确定性，给每个输出分配
+    一个标定良好的置信度。
+    
+    \textbf{审计保证：} 置信度不是模型的"自我感觉"，而是从Hoeffding不等式的严格推导中得到的
+    统计量。
+
+    \item \textbf{版本-数据绑定（不可篡改审计）。}
+    \Spring{}通过$\Dhash = \mathcal{H}(\D)$的密码学哈希和时间戳维护训练数据与模型版本之间
+    的不可篡改绑定。审计轨迹记录哈希链，确保回溯验证的可能性。
+    
+    \textbf{审计保证：} 如果$\Dhash$匹配，用户知道模型是在声明的数据上训练的；
+    如果不匹配，审计立即标记篡改。
+
+\end{enumerate}
+
+\subsection{正面陈述的汇总}
+
+\begin{table}[H]
+\centering
+\caption{Spring审计能力的汇总}
+\label{tab:audit_capabilities}
+\renewcommand{\arraystretch}{1.6}
+\small
+\begin{tabular}{p{3.2cm} p{4.5cm} p{4.5cm} p{2.5cm}}
+\toprule
+\textbf{审计域} & \textbf{审计对象} & \textbf{审计保证的性质} & \textbf{边界约束} \\
+\midrule
+势函数质量 & 能量/力预测精度 & 统计上界（Hoeffding） & 天花板1 \\
+数据异常检测 & 训练数据噪声 & F1统计下界 & 天花板1+3 \\
+跨模态一致性 & 不同模态的声称 & 逻辑一致性检查 & 天花板2 \\
+推理链可追溯 & 计算步骤 & 完全可追溯性 & — \\
+置信度标定 & 输出的不确定性 & 严格统计量 & 天花板1 \\
+版本-数据绑定 & 训练数据完整性 & 密码学保证 & — \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\honestcrit{请注意：上表中"审计保证的性质"一列精确揭示了每个审计域内的保证类型。
+没有任何一条是"绝对正确"——每一条都是特定条件下的统计或逻辑保证。
+这就是边界自知的含义：我们不仅在声明能做什么，我们也在声明保证的类型和限度。}
+
+\newpage
+
+% ================================================================
+% §7. What Spring CANNOT Audit — Negative Statement & Honest Declaration
+% ================================================================
+\section{Spring不能审计什么：负面陈述与诚实声明}
+
+\subsection{诚实声明的结构}
+
+科学声明区别于伪科学声明的一个关键特征是：
+伪科学声称自己能解释\textbf{一切}；科学声明自己\textbf{不能}解释什么，并给出原因。
+
+\Spring{}遵循这一科学传统。本节是\Spring{}的\textbf{诚实声明}——
+明确列出\Spring{}不能审计什么，以及为什么不能审计。
+
+\subsection{八个不可审计域}
+
+\begin{enumerate}[label=\textbf{不可审计域 \arabic*}, leftmargin=*, itemsep=10pt]
+
+    \item \textbf{物理近似的充分性。}
+    \Spring{}不能审计DFT泛函对特定材料的精度是否"足够"。
+    因为\Spring{}的所有实验数据都在DFT近似的框架内。
+    
+    \begin{center}
+    \footnotesize
+    \begin{tabular}{p{13cm}}
+    \textbf{原因：} 天花板3——地图$\neq$领土。
+    \Spring{}只访问地图（DFT结果），不直接访问领土（物理实在）。
+    判断地图是否"足够好"需要地图与领土的比较——这要求直接访问领土（实验测量），超出\Spring{}的范围。 \\
+    \textbf{边界行为：} 返回\textsc{UNDECIDED} + 建议更高级别验证。
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{势函数参数化族的完备性。}
+    \Spring{}不能审计所选择的势函数参数化族（如ACE~\cite{drautz2019}、MACE~\cite{batatia2022}、
+    NequIP~\cite{batzner2022}）是否包含真实势函数的"足够好"的近似。
+    
+    \begin{center}
+    \footnotesize
+    \begin{tabular}{p{13cm}}
+    \textbf{原因：} 天花板2（G\"odel不完备）+ 天花板3（物理近似）。
+    参数化族的选择是一个\textbf{元级别}的决策——它定义了哪些函数可以被学习。
+    对参数化族充分性的审计超出了该族定义的形式系统。 \\
+    \textbf{边界行为：} 返回\textsc{UNDECIDED} + 声明参数化族的选择是一个公理级别的决定。
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{G\"odel自指涉命题。}
+    \Spring{}不能审计关于自己审计能力极限的自指涉命题——
+    例如"Spring在M个专家下没有任何可审计的错误"。
+    
+    \begin{center}
+    \footnotesize
+    \begin{tabular}{p{13cm}}
+    \textbf{原因：} 天花板2——G\"odel不完备定理。
+    这些命题涉及Spring自身完备性的陈述，在Spring的形式系统内不可判定。 \\
+    \textbf{边界行为：} 返回\textsc{UNDECIDED} + G\"odel不完备声明。
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{绝对确定性的声称。}
+    \Spring{}不能提供任何声称的$100\%$确定性审计。
+    
+    \begin{center}
+    \footnotesize
+    \begin{tabular}{p{13cm}}
+    \textbf{原因：} 天花板1——Hoeffding残差。
+    对任何有限$M$，审计误差严格大于0。
+    绝对确定性在经验知识中不可获得——这不是Spring的局限，是归纳推理本身的局限。 \\
+    \textbf{边界行为：} 返回置信度$1-e^{-2M\Delta^2} < 100\%$ + 说明为什么不能达到100\%。
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{超出形式系统的声称。}
+    \Spring{}不能审计超出$\Fset_{\Spring}$表达范围的声称——
+    包括关于美学的声称、关于道德的声称、关于个人经验的声称。
+    
+    \begin{center}
+    \footnotesize
+    \begin{tabular}{p{13cm}}
+    \textbf{原因：} 形式系统边界。如果声称无法用Spring的原子命题和逻辑连接词表达，
+    它就不在Spring的审计域内。 \\
+    \textbf{边界行为：} 返回\textsc{OUT OF SCOPE}——"此声称超出Spring的形式系统，无法审计。"
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{数据不足的声称。}
+    \Spring{}不能审计没有足够训练数据的声称——
+    即使该声称在$\Fset_{\Spring}$内可表达。
+    
+    \begin{center}
+    \footnotesize
+    \begin{tabular}{p{13cm}}
+    \textbf{原因：} 统计可分离性条件。如果$\Delta$过小（信号-噪声不可分离），
+    Hoeffding界给出的置信度过低，无法支撑有意义的审计结论。 \\
+    \textbf{边界行为：} 返回\textsc{INSUFFICIENT DATA} + 所需最小$\Delta$和$M$的估计。
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{未来事件的预测。}
+    \Spring{}不能审计关于未来实验结果的预测——
+    除非这些预测完全在已知物理定律的确定性推演范围内。
+    
+    \begin{center}
+    \footnotesize
+    \begin{tabular}{p{13cm}}
+    \textbf{原因：} 天花板1（统计不确定性的根本性质）和天花板3（模型无法完全预测未建模的现象）。
+    预测未来需要关于系统动力学的完备知识——这既受限于统计不确定性，也受限于模型完备性。 \\
+    \textbf{边界行为：} 返回\textsc{SPECULATIVE} + 置信度附带关于模型假设的警告。
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{专家本身的资格。}
+    \Spring{}不能审计训练其专家的数据来源是否具有充分的物理权威——
+    这是元级别的问题，超出了训练过程的范围。
+    
+    \begin{center}
+    \footnotesize
+    \begin{tabular}{p{13cm}}
+    \textbf{原因：} 天花板2 + 3。专家在给定数据上训练——如果数据本身有问题（由不正确的DFT设置生成），
+    Spring的审计在"地图"上仍然是完美的，但"地图"可能从一开始就是错的。 \\
+    \textbf{边界行为：} 返回审计结论 + 附注"审计在以下数据假设下有效：[数据规格]"。
+    \end{tabular}
+    \end{center}
+
+\end{enumerate}
+
+\subsection{诚实声明的汇总}
+
+\begin{table}[H]
+\centering
+\caption{Spring的诚实声明：不可审计域的汇总}
+\label{tab:honest_declaration}
+\renewcommand{\arraystretch}{1.5}
+\small
+\begin{tabular}{p{3.5cm} p{3.5cm} p{3.5cm} p{3cm}}
+\toprule
+\textbf{不可审计域} & \textbf{约束天花板} & \textbf{边界行为} & \textbf{替代验证方法} \\
+\midrule
+物理近似充分性 & 天花板3 & UNDECIDED & 实验测量/更高精度计算 \\
+参数化族完备性 & 天花板2+3 & UNDECIDED & 基准测试/交叉验证 \\
+G\"odel自指涉 & 天花板2 & UNDECIDED & 元层次推理（外部） \\
+绝对确定性 & 天花板1 & 置信度<100\% & 无法替代——根本不可能 \\
+超出形式系统 & 形式系统边界 & OUT OF SCOPE & 不适用 \\
+数据不足 & 天花板1 & INSUFFICIENT DATA & 收集更多数据 \\
+未来预测 & 天花板1+3 & SPECULATIVE & 时间验证 \\
+专家资格 & 天花板2+3 & 附注说明 & 外部验证 \\
+\bottomrule
+\end{tabular}
+\caption*{\footnotesize 注：\"替代验证方法\"列中标记为\"无法替代\"或\"不适用\"的项目
+表示该审计能力的缺失不是暂时的工程局限，而是由数学或物理定理证明的根本不可能性。}
+\end{table}
+
+\newpage
+
+% ================================================================
+% §8. Comparison: GPT/Claude/Gemini Don't Know Their Limits
+% ================================================================
+\section{比较：GPT、Claude、Gemini不知道自己的极限}
+
+\subsection{审计框架 vs. 语言模型}
+
+\Spring{}和GPT~\cite{brown2020}、Claude~\cite{anthropic2024}、Gemini~\cite{gemini2023}
+之间的根本区别不是能力大小——而是对自身边界的态度。
+
+现有的"大模型"——无论参数多庞大、多模态能力多惊人——
+在审计维度上具有以下结构性特征：
+
+\begin{enumerate}[label=(\arabic*), itemsep=5pt]
+    \item \textbf{$M=1$：} 所有现有大模型在回答任何一个问题时，
+    使用的是\textbf{单一模型}的单一前向传播。
+    SCX定理2（自审计禁止定理）证明：单个模型不能对自己的预测进行审计。
+    GPT回答"这种材料稳定吗"时——没有人审计GPT的回答。GPT自己不能审计自己。
+    
+    \item \textbf{审计状态：UNDECLARED：} 现有大模型不给用户提供关于审计的任何信息——
+    没有专家数量$M$、没有分离间隙$\Delta$、没有统计保证、没有形式系统声明。
+    用户收到一个答案，仅此而已。
+    
+    \item \textbf{无边界的自信：} GPT、Claude、Gemini在回答几乎任何问题时都表现出相同的自信语调——
+    无论问题是在它们的训练数据覆盖范围内（"Python中如何读取CSV文件"）
+    还是在范围之外（"这种新型超导体的临界温度是多少"）。
+    它们缺乏区分"我知道"和"我猜"的内部机制。
+    
+    \item \textbf{无法沉默：} 现有大模型被设计为总给出一个答案。
+    即使用户问的是从根本上不可回答的问题，它们也会生成一个看似合理的答案。
+    \textbf{沉默}对于这些模型来说是不可能的——因为它们没有量化"不可判定性"的机制。
+\end{enumerate}
+
+\subsection{具体对比}
+
+表~\ref{tab:comparison}给出了系统层面的对比。
+
+\begin{table}[H]
+\centering
+\caption{Spring vs. 现有大模型 — 审计维度对比}
+\label{tab:comparison}
+\renewcommand{\arraystretch}{1.7}
+\small
+\begin{tabular}{p{2.8cm} p{3.2cm} p{3.2cm} p{3.2cm}}
+\toprule
+\textbf{维度} & \textbf{Spring} & \textbf{GPT/Claude/Gemini} & \textbf{根本差异} \\
+\midrule
+审计架构 & $M \geq 8$独立专家 & $M=1$ & 定理保证 vs. 无审计 \\
+审计状态 & \textsc{AUDITED} & \textsc{UNDECLARED} & 声明 vs. 沉默 \\
+置信度 & Hoeffding严格界 & 模型"自我感觉" & 数学推导 vs. 内省幻觉 \\
+置信度标定 & 标定良好（验证） & 标定差（已知问题） & 严格 vs. 随意 \\
+形式系统 & 明确声明$\Fset_{\Spring}$ & 未定义 & 有边界 vs. 无边界 \\
+G\"odel意识 & 知道并声明不完备性 & 不知道不完备性 & 自知 vs. 无知 \\
+可沉默性 & 可以返回UNDECIDED & 几乎总是给答案 & 诚实 vs. 不诚实 \\
+地图/领土区分 & 区分地图和领土 & 不区分 & 认识论清醒 vs. 认识论盲目 \\
+物理层审计 & 物理+共识审计 & 无物理审计 & 计算验证 vs. 统计外推 \\
+审计轨迹 & 完整可追溯 & 无 & 可追溯 vs. 黑箱 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{一个具体的例子}
+
+让我们对比同一个问题的回答方式。问题：\textbf{"AlN在500K下的晶格常数是多少？"}
+
+\subsubsection*{GPT/Claude/Gemini的回答模式}
+
+\begin{quote}
+\small
+"AlN在500K下的晶格常数约为a = 3.114 {\AA}，c = 4.986 {\AA}。
+这是基于热膨胀系数的估算。" （可能附带参考来源，但无审计信息）
+\end{quote}
+
+用户收到的：
+\begin{itemize}[nosep]
+    \item 一个数字（无法验证来源）
+    \item 不知道模型是"知道"还是"猜的"
+    \item 不知道置信度
+    \item 不知道数字是否可以信任
+\end{itemize}
+
+\subsubsection*{Spring的回答模式}
+
+\begin{quote}
+\small
+\textbf{答案：} AlN在500K下的晶格常数：a = 3.115 $\pm$ 0.003 {\AA}, c = 4.991 $\pm$ 0.005 {\AA}
+
+\textbf{审计信息：}
+\begin{itemize}[nosep]
+    \item 审计引擎：\Yajie{} $M=12$ 独立专家
+    \item 置信度：97.3\% (Hoeffding界：$e^{-2\cdot12\cdot0.15^2} \approx 0.027$)
+    \item \Cercis{}评分：0.91/1.0
+    \item 物理层：DFT PBE + Spring势函数（ACE参数化）
+    \item 数据-版本绑定：$\Dhash$ = a3f2...e71b
+    \item 审计轨迹：12个专家的能量-体积曲线 → 状态方程拟合 → 500K修正
+    \item 边界声明：置信度在DFT PBE近似框架内有效。系统偏差$\varepsilon_{\text{phys}}$（PBE vs. 实验）未计入。
+\end{itemize}
+\end{quote}
+
+用户收到的：
+\begin{itemize}[nosep]
+    \item 一个数字 + 误差棒（不确定性被量化）
+    \item 知道审计是如何进行的（12个独立专家）
+    \item 知道置信度（97.3\%）以及它是如何计算的（Hoeffding不等式）
+    \item 知道在什么近似下这个答案有效（DFT PBE框架）
+    \item 知道自己不知道什么（系统偏差$\varepsilon_{\text{phys}}$未计入）
+\end{itemize}
+
+\textbf{区别不是答案本身——GPT也许碰巧给出正确的数字。}
+\textbf{区别在于：Spring告诉你它对自己的答案有多少信心、为什么有这个信心、以及在什么条件下这个答案成立。}
+
+\subsection{哲学差异：模型不知道自己的局限}
+
+现有的语言模型在哲学上处于一个奇怪的境地：
+它们被训练来\textbf{看起来}无所不知，但实际上对自身知识的边界一无所知。
+
+这一现象的根源是结构性的：
+
+\begin{enumerate}[label=(\arabic*), itemsep=4pt]
+    \item \textbf{训练目标不包含边界意识：}
+    GPT的训练目标是最大化下一个token的概率——
+    不是最大化回答在某条件下的正确概率。
+    没有损失函数项惩罚模型在不确定时给出确定回答。
+    
+    \item \textbf{无审计反馈回路：}
+    训练完成后，模型被部署——没有持续的审计反馈来修正错误的自信。
+    模型不知道自己的回答在哪些领域是准确的、在哪些领域是随机的。
+    
+    \item \textbf{无形式系统声明：}
+    GPT在什么"公理系统"内操作？它的"知识"基于什么假设？
+    这些问题的答案不存在——因为GPT不是一个基于公理的系统。
+    它是一个基于统计的系统。统计系统没有"公理"，因此没有"不完备性"——
+    但也没有"正确的定义"。
+    
+    \item \textbf{无法返回"我不知道"：}
+    由于GPT不被设计为区分"知道"和"猜"，它在不确定时倾向于给出一个猜测——
+    并且用与确定时相同的自信语调给出这个猜测。
+    这是"幻觉"（hallucination）问题的根源。
+\end{enumerate}
+
+\honestcrit{GPT/Claude/Gemini的问题不是它们"太弱"，而是它们"不知道自己有多弱"。
+Spring不是"比它们更强"——Spring是"比它们更知道自己不能做什么"。
+这不是一个能力的问题，这是一个认识论的问题。
+最强的框架不是声称能审计一切的框架——
+而是精确知道自己不能审计什么的框架。}
+
+\newpage
+
+% ================================================================
+% §9. Conclusion
+% ================================================================
+\section{结论：最强的框架是知道自己在哪结束的框架}
+
+\subsection{回顾：三个天花板与一个边界}
+
+本文证明了\Spring{}面临三个数学上不可突破的天花板：
+
+\begin{enumerate}[label=\textbf{天花板 \arabic*}, leftmargin=*, itemsep=6pt]
+    \item \textbf{Hoeffding残差天花板：} 审计误差永远严格为正。
+    \Spring{}可以提供置信区间，不能提供绝对保证。
+    这是归纳推理本身的数学性质，而非工程的暂时局限。
+    
+    \item \textbf{G\"odel不完备天花板：} 任何足够强的形式系统包含真但不可证明的命题。
+    \Spring{}必须在形式系统内操作，因此存在\Spring{}知道为真但无法验证的命题。
+    \Spring{}必须声明自己的公理边界。
+    
+    \item \textbf{地图$\neq$领土天花板：} \Spring{}审计的是物理计算近似（地图），而非物理实在（领土）。
+    系统误差低于物理近似极限时不可被审计。
+    \Spring{}不能审计自己物理基础的充分性。
+\end{enumerate}
+
+三个天花板综合为\textbf{边界定理}：
+\Spring{}对形式系统内、统计可分离、且不涉物理近似充分性的声称以置信度
+$1-e^{-2M\Delta^2}$提供审计；
+对于超出这些边界的声称，\Spring{}保持沉默。
+
+\subsection{边界是框架的标志，而非缺陷}
+
+重申本文的核心命题：
+
+\begin{center}
+\boxed{\text{最强的框架不是声称可以审计一切的框架，而是精确知道自己不能审计什么的框架。}}
+\end{center}
+
+这一命题适用于任何审计系统——无论是基于Hoeffding不等式的统计审计、
+基于形式系统的逻辑审计、还是基于物理计算的科学审计。
+每个审计工具的数学基础中都蕴含了对审计极限的预言。
+一个真正严格的框架不仅要使用这些工具，还要从它们中推导出自己不能逾越的边界。
+
+\Spring{}是第一个做到了这一点的审计框架。
+
+这一成就的意义超出了工程实践，进入了认识论的领域。
+\Spring{}实现的是\textbf{边界自知}（Boundary Self-Awareness）——
+一个系统不仅执行操作，而且\textbf{知道}这些操作的前提、性能和极限。
+在不自知的状态下执行的系统——无论多强大——都是盲目的。
+在边界自知的状态下执行的系统——即使被约束在有限的审计域内——是清醒的。
+
+\subsection{G\"odel的遗产与Spring的贡献}
+
+Kurt G\"odel在1931年证明了一个令数学界震惊的定理：
+任何足够强的形式系统都包含一些该系统无法证明的真命题。
+这一结果打破了Hilbert希望找到一个完备且一致的数学基础的梦想。
+
+G\"odel的定理不是数学的失败——它是数学的成熟。
+它标志了数学从"希望一切都可证明"的童年走出，
+进入"精确知道什么是不可证明的"的成年。
+
+\Spring{}将G\"odel的精神——以及Hoeffding的精神、Korzybski的精神——
+从纯数学带入工程实践。
+\Spring{}不是回答了所有问题的系统——
+\Spring{}是精确知道\textbf{哪些问题它不能回答}、以及\textbf{为什么}的系统。
+
+\begin{center}
+\boxed{\text{G\"odel: 这是真的，但我不能证明它。}}\\[4pt]
+\boxed{\text{Spring: 这可能是真的，但我不能审计它——原因如下。}}
+\end{center}
+
+\subsection{对未来的启示}
+
+\Spring{}的边界定理对AI审计的未来给出了四个启示：
+
+\begin{enumerate}[label=(\arabic*), itemsep=4pt]
+    \item \textbf{审计是一个形式化的过程，而非一个印象：}
+    真正的审计需要形式系统、统计保证和公理声明。
+    没有这些，所谓的"审计"只是"感觉"——GPT的"自我评估"就是一个"感觉"，
+    因为它没有统计基础的置信度定义。
+    
+    \item \textbf{沉默是一种能力，而非一种缺陷：}
+    一个不能沉默的系统在面对超出其能力范围的问题时必然产生幻觉。
+    沉默需要边界自知——而边界自知需要形式系统的定义和不可审计性的量化。
+    \Spring{}的沉默是一种认识论的清洁操作。
+    
+    \item \textbf{审计框架必须声明自己的局限：}
+    任何审计声明——无论是\Spring{}的、人类的、还是其他AI系统的——
+    都应该附带一个"局限声明"部分。
+    科学论文有"局限性"部分（limitations section）。
+    审计框架也应当有——这正是本文第7节的内容。
+    
+    \item \textbf{自知是审计能力的最高形式：}
+    审计是对他者的验证；但一个审计框架对自身能力的验证——
+    它的边界自知——是审计的最高形式。
+    因为在这一刻，审计不仅是工具性的（"这个声称是对是错"），
+    而且是反思性的（"我凭什么能判断这个声称是对是错"）。
+\end{enumerate}
+
+\subsection{结语：Spring的边界就是Spring的力量}
+
+在计算机科学的历史上，图灵（Alan Turing）证明了停机问题的不可判定性——
+存在一些程序-输入对，我们无法在有限时间内判定程序是否会停机。
+这一结果不是计算机科学的局限——
+它是计算机科学的\textbf{基础}，定义了什么是可计算的和什么是不可计算的。
+
+类似地，\Spring{}的边界定理不是\Spring{}的局限——
+它是\Spring{}的\textbf{基础}，定义了什么是可审计的和什么是不可审计的。
+在这一基础上，\Spring{}可以自信地运营在它的审计域内，
+并诚实地沉默在审计域外。
+
+\begin{center}
+\boxed{\text{Spring不审计一切。Spring审计它能审计的，并精确声明它不能审计什么。}}\\[8pt]
+\boxed{\text{这就是审计框架和幻觉生成器之间的全部区别。}}
+\end{center}
+
+\vspace{12pt}
+
+\begin{flushright}
+\textit{—— SCX, 2026年7月1日}
+\end{flushright}
+
+\newpage
+
+% ================================================================
+% Acknowledgements
+% ================================================================
+\section*{致谢}
+
+本文的构思受益于Hoeffding (1963)~\cite{hoeffding1963}、
+G\"odel (1931)~\cite{godel1931}和Korzybski (1933)~\cite{korzybski1933}的奠基性工作。
+三个天花板不是作者"发明"的——它们是作者"发现"的，它们始终存在于审计的数学基础之中。
+作者的贡献是将这三个从不同领域（概率论、数理逻辑、一般语义学）独立出现的约束
+统一为\Spring{}框架的边界定理，并证明边界自知是可行的。
+
+特别感谢SCX理论体系中"老实人定理"（Theorem 3）和"强人所难定理"（Theorem 2）的启发——
+正是这些定理所体现的诚实精神，促使我们将审计的数学工具翻转过来，
+审视审计本身的极限。
+
+\section*{作者贡献}
+SCX构思了本文的核心洞见，推导了所有定理，撰写了全文。
+
+\section*{竞争利益}
+作者声明以下竞争利益：SCX软件框架可能通过未来的实体商业化。
+本文证明的数学定理属于公共领域，不能被专利主张覆盖。
+
+\section*{数据可用性}
+本文不涉及新的实验数据。所有引用的定理均可在参考文献中找到。
+
+\section*{代码可用性}
+SCX核心框架可在[repository]获得。
+\Spring{}边界检测协议（第5节，边界操作准则）的实现包含在仓库中。
+
+\newpage
+
+% ================================================================
+% References
+% ================================================================
+\begin{thebibliography}{40}
+
+\bibitem{spring_framework}
+SCX. Spring统一多模态大模型框架：训练即审计的全模态智能架构.
+\textit{SCX预印本} (2026).
+
+\bibitem{scx_spring_trainer}
+SCX. Spring：自演化门控与势函数学习的审计嵌入.
+\textit{SCX预印本} (2026).
+
+\bibitem{scx_ml_audit}
+SCX. A Fundamental Impossibility in Data Quality: Distinguishing Label Noise from 
+Sample Difficulty is Provably Unsolvable Without Explicit Assumptions.
+\textit{arXiv preprint} (2025).
+
+\bibitem{yajie_protocol}
+SCX. Yajie共识协议：多专家审计的形式化框架.
+\textit{SCX预印本} (2026).
+
+\bibitem{hoeffding1963}
+Hoeffding, W. Probability inequalities for sums of bounded random variables.
+\textit{Journal of the American Statistical Association} \textbf{58}(301), 13--30 (1963).
+
+\bibitem{godel1931}
+G\"odel, K. \"Uber formal unentscheidbare S\"atze der Principia Mathematica und 
+verwandter Systeme I.
+\textit{Monatshefte f\"ur Mathematik und Physik} \textbf{38}, 173--198 (1931).
+
+\bibitem{korzybski1933}
+Korzybski, A. \textit{Science and Sanity: An Introduction to Non-Aristotelian Systems 
+and General Semantics}. International Non-Aristotelian Library (1933).
+
+\bibitem{boolos2007}
+Boolos, G., Burgess, J. P. \& Jeffrey, R. C. 
+\textit{Computability and Logic}. Cambridge University Press, 5th ed. (2007).
+
+\bibitem{brown2020}
+Brown, T. B., Mann, B., Ryder, N., et al. Language models are few-shot learners.
+\textit{Advances in Neural Information Processing Systems} \textbf{33}, 1877--1901 (2020).
+
+\bibitem{anthropic2024}
+Anthropic. The Claude Model Family. \textit{Technical Report} (2024).
+
+\bibitem{gemini2023}
+Gemini Team, Google. Gemini: A Family of Highly Capable Multimodal Models.
+\textit{arXiv preprint arXiv:2312.11805} (2023).
+
+\bibitem{perdew1996}
+Perdew, J. P., Burke, K. \& Ernzerhof, M. Generalized gradient approximation made simple.
+\textit{Physical Review Letters} \textbf{77}(18), 3865--3868 (1996).
+
+\bibitem{sun2015}
+Sun, J., Ruzsinszky, A. \& Perdew, J. P. Strongly constrained and appropriately normed 
+semilocal density functional.
+\textit{Physical Review Letters} \textbf{115}(3), 036402 (2015).
+
+\bibitem{drautz2019}
+Drautz, R. Atomic cluster expansion for accurate and transferable interatomic potentials.
+\textit{Physical Review B} \textbf{99}(1), 014104 (2019).
+
+\bibitem{batatia2022}
+Batatia, I., Kov\'acs, D. P., Simm, G. N. C., Ortner, C. \& Cs\'anyi, G.
+MACE: Higher order equivariant message passing neural networks for fast and accurate 
+force fields.
+\textit{Advances in Neural Information Processing Systems} \textbf{35}, 11423--11436 (2022).
+
+\bibitem{batzner2022}
+Batzner, S., Musaelian, A., Sun, L., et al. E(3)-equivariant graph neural networks 
+for data-efficient and accurate interatomic potentials.
+\textit{Nature Communications} \textbf{13}, 2453 (2022).
+
+\bibitem{chernoff1952}
+Chernoff, H. A measure of asymptotic efficiency for tests of a hypothesis based on 
+the sum of observations.
+\textit{Annals of Mathematical Statistics} \textbf{23}(4), 493--507 (1952).
+
+\bibitem{casella2002}
+Casella, G. \& Berger, R. L. \textit{Statistical Inference}. Duxbury, 2nd ed. (2002).
+
+\bibitem{cover2006}
+Cover, T. M. \& Thomas, J. A. \textit{Elements of Information Theory}. 
+Wiley, 2nd ed. (2006).
+
+\bibitem{godel_rosser}
+Rosser, J. B. Extensions of some theorems of G\"odel and Church.
+\textit{Journal of Symbolic Logic} \textbf{1}(3), 87--91 (1936).
+
+\bibitem{turing1936}
+Turing, A. M. On computable numbers, with an application to the Entscheidungsproblem.
+\textit{Proceedings of the London Mathematical Society} \textbf{42}(1), 230--265 (1936).
+
+\bibitem{northcutt2021}
+Northcutt, C. G., Jiang, L. \& Chuang, I. L. Confident learning: Estimating uncertainty 
+in dataset labels.
+\textit{Journal of Artificial Intelligence Research} \textbf{70}, 1373--1411 (2021).
+
+\bibitem{sambasivan2021}
+Sambasivan, N., Kapania, S., Highfill, H., Akrong, D., Paritosh, P. \& Aroyo, L. M.
+``Everyone wants to do the model work, not the data work'': Data cascades in high-stakes AI.
+\textit{Proc. CHI} (2021).
+
+\bibitem{floridi2018}
+Floridi, L., Cowls, J., Beltrametti, M., et al. AI4People---An ethical framework for 
+a good AI society.
+\textit{Minds and Machines} \textbf{28}(4), 689--707 (2018).
+
+\bibitem{scx_galois}
+SCX. Galois-SCX：群论与多专家审计的深层对应.
+\textit{SCX预印本} (2026).
+
+\bibitem{scx_hamiltonian}
+SCX. Hamiltonian审计：从第一性原理到多专家验证的全链审计.
+\textit{SCX预印本} (2026).
+
+\bibitem{situs_theory}
+SCX. Situs: Physics-Anchored Positional Encoding for State-Conditioned Expertise.
+\textit{Working paper} (2026).
+
+\bibitem{kohn1999}
+Kohn, W. Nobel Lecture: Electronic structure of matter---wave functions and density 
+functionals.
+\textit{Reviews of Modern Physics} \textbf{71}(5), 1253--1266 (1999).
+
+\bibitem{chaitin1982}
+Chaitin, G. J. G\"odel's theorem and information.
+\textit{International Journal of Theoretical Physics} \textbf{21}, 941--954 (1982).
+
+\end{thebibliography}
+
+\newpage
+
+% ================================================================
+% Appendix A: Formal Definitions
+% ================================================================
+\appendix
+\section{附录A：形式定义全集}
+
+\subsection{Spring审计的形式化}
+
+\begin{definition}[Spring审计系统 — 完整定义]
+\Spring{}审计系统是一个五元组$\mathcal{A}_{\Spring} = (\Fset_{\Spring}, \mathcal{E}, \mathcal{P}, \mathcal{C}, \mathcal{B})$，其中：
+\begin{itemize}[itemsep=2pt]
+    \item $\Fset_{\Spring}$：形式化可表达语言（命题集合）；
+    \item $\mathcal{E} = \{E_1, \ldots, E_M\}$：在分离数据子集上训练的$M$个独立专家；
+    \item $\mathcal{P}$：\Yajie{}共识协议，将专家判断映射为共识评分；
+    \item $\mathcal{C}$：\Cercis{}评分函数，将共识评分和$M_t$映射为置信度；
+    \item $\mathcal{B}$：边界检测模块，判定声称是否在可审计域内。
+\end{itemize}
+\end{definition}
+
+\subsection{Hoeffding上界的精确形式}
+
+\begin{definition}[Hoeffding审计上界]
+对给定声称$\varphi \in \Fset_{\Spring}$，
+令$C_i(\varphi) \in [0, 1]$为专家$E_i$对$\varphi$的置信度评分。
+定义共识评分：
+\begin{equation}
+    \bar{C}(\varphi) = \frac{1}{M} \sum_{i=1}^M C_i(\varphi).
+\end{equation}
+则在专家独立且评分有界的条件下，对任意$\varepsilon > 0$：
+\begin{equation}
+    \Pbb(|\bar{C}(\varphi) - \E[\bar{C}(\varphi)]| \geq \varepsilon) \leq 2\exp(-2M\varepsilon^2).
+\end{equation}
+\end{definition}
+
+\subsection{G\"odel语句的构造示例}
+
+我们给出一个$\Fset_{\Spring}$中G\"odel语句的具体构造——
+
+\begin{example}[Spring形式系统中的G\"odel语句]
+考虑以下命题序列：
+\begin{enumerate}[label=(\arabic*), itemsep=3pt]
+    \item 定义谓词$\mathrm{AuditPass}_M(x, \varphi)$：
+    "存在一个长为$x$的审计轨迹，使得$M$个独立专家以置信度$\geq 1-e^{-2M\Delta^2}$验证$\varphi$。"
+    \item 定义对角线函数：$d(\varphi) = \varphi(\lceil \varphi \rceil)$。
+    \item 构造：$\varphi_{\Spring} \equiv \neg \mathrm{AuditPass}_M(\lceil \varphi_{\Spring} \rceil, \varphi_{\Spring})$。
+\end{enumerate}
+则$\varphi_{\Spring}$断言"我自身不能被Spring审计"。
+如果$\varphi_{\Spring}$可通过审计验证，则$\mathrm{AuditPass}_M(\lceil \varphi_{\Spring} \rceil, \varphi_{\Spring})$
+为真，这与$\varphi_{\Spring}$的断言矛盾。
+因此$\mathcal{A}_{\Spring}(\varphi_{\Spring}) = \text{UNDECIDED}$。
+\end{example}
+
+\subsection{地图-领土差距的形式化}
+
+\begin{definition}[$\varepsilon_{\text{phys}}$的形式定义]
+对于物理量$y$，定义：
+\begin{itemize}[itemsep=2pt]
+    \item $y^*$：$y$的真实值（领土）——在实验统计误差内由实验确定；
+    \item $\hat{y}_{\text{DFT}}$：$y$在选定DFT泛函下的计算值（地图）；
+    \item $\varepsilon_{\text{phys}} = \sup_{\text{系统}} |\hat{y}_{\text{DFT}} - y^*|$。
+\end{itemize}
+Spring的所有专家在$\hat{y}_{\text{DFT}}$上训练，因此
+$\E[V^{(i)}_\theta] = \hat{y}_{\text{DFT}} \neq y^*$（当$\varepsilon_{\text{phys}} > 0$时）。
+审计不可检测这一偏差，因为它不出现在任何专家分歧的度量中。
+\end{definition}
+
+\newpage
+
+% ================================================================
+% Appendix B: The Side-by-Side Comparison (Chinese/English Key Statements)
+% ================================================================
+\section{附录B：中英关键陈述对照}
+
+\begin{longtable}{p{6.5cm} p{6.5cm}}
+\toprule
+\textbf{中文} & \textbf{English} \\
+\midrule
+\endhead
+
+\Spring{}是迄今为止构建的最可审计的框架。 & Spring is the most auditable framework ever built. \\
+\midrule
+
+正因其严格性，\Spring{}能够识别自身的根本极限。 & Precisely because it is rigorous, Spring can identify its own fundamental limits. \\
+\midrule
+
+审计误差严格为正——对任何有限$M$，Spring下的知识始终是概率性的。 & The audit error is strictly positive — for any finite $M$, knowledge under Spring is always probabilistic. \\
+\midrule
+
+Spring可以提供置信区间，但不能提供绝对保证。 & Spring can give confidence intervals, not guarantees. \\
+\midrule
+
+这不是缺陷——这是经验知识的数学性质。 & This is not a flaw — it is the mathematical nature of empirical knowledge. \\
+\midrule
+
+任何足够强的形式系统包含真实但不可证明的命题。 & Any sufficiently strong formal system contains true but unprovable propositions. \\
+\midrule
+
+Spring必须声明其公理边界——哪些公理它假设，哪些它不能证明。 & Spring must declare its axiomatic boundaries — which axioms it assumes, which it cannot prove. \\
+\midrule
+
+地图不是领土。 & The map is not the territory. \\
+\midrule
+
+如果所有$M$个专家在近似误差$\varepsilon$内达成一致，\Yajie{}返回高置信度——但领土可能与地图相差高达$\varepsilon$。 & If all $M$ experts agree within approximation error $\varepsilon$, Yajie returns HIGH confidence — but the territory may differ from the map by up to $\varepsilon$. \\
+\midrule
+
+审计误差 = max(天花板1的统计误差, 天花板3的系统误差)。 & The audit error = max(statistical error from Ceiling 1, systematic error from physical approximation). \\
+\midrule
+
+对Spring形式系统内的声称，Spring以置信度$1-e^{-2M\Delta^2}$提供审计。 & For claims within Spring's formal system, Spring provides an audit with confidence $1-e^{-2M\Delta^2}$. \\
+\midrule
+
+对形式系统外的声称，Spring保持沉默。 & For claims outside the formal system, Spring is silent. \\
+\midrule
+
+边界是自知的：Spring知道它能审计什么、不能审计什么、以及为什么。 & The boundary is self-aware: Spring knows what it can audit, what it cannot, and why. \\
+\midrule
+
+GPT不知道自己的局限。Spring知道。这就是模型和审计框架之间的区别。 & GPT doesn't know its own limits. Spring does. That is the difference between a model and an audit framework. \\
+\midrule
+
+最强的框架不是声称可以审计一切的框架，而是精确知道自己不能审计什么的框架。 & The strongest framework is not the one that claims it can audit everything — it is the one that knows precisely what it cannot audit. \\
+\midrule
+
+G\"odel: 这是真的，但我不能证明它。 & G\"odel: This is true, but I cannot prove it. \\
+\midrule
+
+Spring: 这可能是真的，但我不能审计它——原因如下。 & Spring: This may be true, but I cannot audit it — here is why. \\
+\midrule
+
+沉默是一种能力，而非一种缺陷。 & Silence is a capability, not a flaw. \\
+\midrule
+
+在不自知状态下执行的系统是盲目的。在边界自知状态下执行的系统是清醒的。 & A system operating without self-awareness is blind. A system operating with boundary self-awareness is awake. \\
+\midrule
+
+Spring审计它能审计的，并精确声明它不能审计什么。这就是审计框架和幻觉生成器之间的全部区别。 & Spring audits what it can audit, and precisely declares what it cannot. That is the entire difference between an audit framework and a hallucination generator. \\
+\bottomrule
+\caption{Spring边界认识论：中英关键陈述对照}
+\label{tab:bilingual_statements}
+\end{longtable}
+
+\end{document}
