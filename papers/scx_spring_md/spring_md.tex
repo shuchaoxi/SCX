@@ -1,0 +1,2094 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+% ================================================================
+% Packages
+% ================================================================
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{cleveref}
+\usepackage{bbm}
+\usepackage{float}
+\usepackage{physics}
+\usepackage{setspace}
+\usepackage{longtable}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+% ================================================================
+% Hyperref setup
+% ================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={Spring MD：终极势函数训练与分子动力学运行软件},
+    pdfauthor={SCX},
+    pdfsubject={SCX Spring MD — Ultimate Potential Function Training and Molecular Dynamics Execution Software},
+}
+
+% ================================================================
+% Theorem environments
+% ================================================================
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{conjecture}[theorem]{猜想}
+\newtheorem{criterion}[theorem]{判据}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注记}
+\newtheorem{example}[theorem]{例}
+\newtheorem{protocol}[theorem]{操作流程}
+
+% ================================================================
+% Custom commands — Mathematics
+% ================================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\Fset}{\mathcal{F}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\Ocal}{\mathcal{O}}
+
+% ================================================================
+% Custom commands — SCX Framework
+% ================================================================
+\newcommand{\SCX}{\textsc{SCX}}
+\newcommand{\Spring}{\textsc{Spring}}
+\newcommand{\Yajie}{\textsc{Yajie}}
+\newcommand{\Cercis}{\textsc{Cercis}}
+\newcommand{\Situs}{\textsc{Situs}}
+\newcommand{\Arbiter}{\textsc{Arbiter}}
+
+\newcommand{\SpringMD}{\textsc{Spring MD}}
+\newcommand{\Mauto}{\ensuremath{M_t^{\text{auto}}}}
+\newcommand{\Lyap}{\ensuremath{\Psi}}
+\newcommand{\Dhash}{\ensuremath{\mathcal{H}(\D)}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spec}{spec}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+\DeclareMathOperator{\Auditable}{Auditable}
+\DeclareMathOperator{\Lip}{Lip}
+\DeclareMathOperator{\Enc}{Enc}
+\DeclareMathOperator{\Dec}{Dec}
+
+% ================================================================
+% Proof-status markers
+% ================================================================
+\newcommand{\rigorous}{\textnormal{\textbf{[严格证明]}}}
+\newcommand{\heuristic}{\textnormal{\textbf{[启发式]}}}
+\newcommand{\openproblem}{\textnormal{\textbf{[开放问题]}}}
+\newcommand{\honeststrike}{\textnormal{\textbf{[诚实暴击]}}}
+
+% Honest critique marker
+\newcommand{\honestcrit}[1]{%
+    \textcolor{red}{\textbf{【诚实暴击】#1}}%
+}
+
+% ================================================================
+% Code listing style
+% ================================================================
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    columns=flexible,
+    backgroundcolor=\color{gray!5},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+}
+
+% ================================================================
+% Title
+% ================================================================
+\title{\textbf{\SpringMD{}：终极势函数训练与分子动力学运行软件}\\[6pt]
+\large Spring MD: The Ultimate Potential Function Training \\
+and Molecular Dynamics Execution Software}
+\author{SCX}
+\date{2026年7月1日}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\footnotesize
+\textbf{版本：} v1.0 \quad | \quad
+\textbf{状态：} 预印本 \quad | \quad
+\textbf{分类：} SCX理论体系 — 分子模拟卷·Spring MD工程实现篇
+\end{center}
+
+% ================================================================
+% Abstract
+% ================================================================
+\begin{abstract}
+本文提出\SpringMD{}——第一款端到端的、训练即审计的势函数训练与分子动力学运行软件。
+\SpringMD{}将\Spring{}自演化多专家训练循环、\Yajie{}共识审计、$M_t$共生绑定、\Arbiter{}审计报告
+整合为四个子命令的统一工作流：\texttt{spring-md train}（训练）、\texttt{spring-md run}（运行）、
+\texttt{spring-md audit}（审计）、\texttt{spring-md compare}（对比）。
+
+\SpringMD{}的核心工程主张有三：
+\textbf{第一，BORN AUDITED势函数。} 通过\Spring{}训练循环产生的每一个势函数，在训练完成之时即携
+带$M_t$、\Cercis{}评分、\Yajie{}共识向量——势函数与审计元数据不可分离。
+这是第一款在势函数层面实现"born audited"的MD软件。
+\textbf{第二，审计报告而非裸轨迹。} \SpringMD{}的分子动力学模拟产出不仅是原子轨迹（trajectory），
+还包含\Arbiter{}审计报告——逐帧的\Cercis{}评分、\Yajie{}共识度、势函数适用域诊断。
+用户不再需要信任一个裸的轨迹文件；审计报告告诉用户模拟的每一帧是否可靠。
+\textbf{第三，统一审计工作流。} \SpringMD{}用一个命令替代了NEP/DeepMD/MACE各自独立的训练管道
+——训练、验证、审计不再分离。
+
+本文详细描述了\SpringMD{}的软件架构、四个子命令的完整规范、数据格式与API接口、
+与LAMMPS/ASE的兼容性设计、\Arbiter{}审计报告的生成逻辑，
+以及端到端的使用示例。本文是SCX Spring理论体系的工程实现论文——使所有定理成为可执行的代码。
+
+\textbf{关键词：} Spring MD；势函数训练；分子动力学；训练即审计；Arbiter审计报告；
+Yajie共识；Cercis评分；LAMMPS接口；ASE接口；软件工程
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ================================================================
+% 1. Introduction
+% ================================================================
+\section{引言：分子动力学软件的审计真空}
+
+\subsection{从DFT到MD模拟：信任链的断裂}
+
+分子动力学（Molecular Dynamics, MD）模拟是现代材料科学、化学、生物物理的基石计算工具。
+一个典型的MD工作流包含以下步骤：
+
+\begin{enumerate}[label=步骤 \arabic*,leftmargin=*,itemsep=3pt]
+    \item \textbf{第一性原理计算：} 使用密度泛函理论（DFT）对数千个原子构型计算参考能量和力。
+    \item \textbf{势函数训练：} 使用机器学习方法（NEP、DeepMD、ACE、GAP、MTP等）拟合DFT数据，
+    获得一个快速、可微的势函数$V_\theta(\mathbf{R})$。
+    \item \textbf{分子动力学模拟：} 将训练好的势函数加载到MD引擎（LAMMPS、ASE等），
+    对百万甚至亿级原子体系进行纳秒至微秒时间尺度的模拟。
+    \item \textbf{轨迹分析：} 对MD模拟产生的轨迹进行后处理——计算径向分布函数、
+    扩散系数、振动谱、自由能面等物理量。
+\end{enumerate}
+
+在这一工作流中，存在一个\\textbf{结构性的信任链断裂}：
+
+\begin{itemize}[itemsep=3pt]
+    \item DFT计算的质量取决于交换关联泛函的选择、k点采样、截断能等参数——这些选择的可靠性
+    \\textit{未被系统审计}。
+    \item 势函数训练的质量通常以测试集RMSE衡量——但RMSE是聚合统计量，
+    不回答"\\textit{对于模拟中具体遇到的构型，预测是否可靠}"这一问题。
+    \item MD模拟的质量假设势函数在模拟的所有构型上都可靠——这是一个\\textit{从未被验证的假设}。
+    模拟可能进入势函数训练数据未覆盖的构型空间（分布外，OOD），此时势函数的预测不可靠，
+    但传统MD软件\\textit{不会发出任何警告}。
+    \item 轨迹分析的质量假设模拟轨迹是物理真实的——但这一假设建立在上述所有未经验证的环节之上。
+\end{itemize}
+
+\honestcrit{现有MD软件（LAMMPS、GROMACS、ASE、VASP等）在势函数可靠性和模拟轨迹可信度
+这两个核心问题上处于"信任我"（trust-me）模式——用户被要求信任软件的输出，而没有任何内建机制
+来验证这一信任是否应该被给予。}
+
+\subsection{SCX审计理论在MD领域的工程含义}
+
+\SCX{}理论体系\cite{scx_ml_audit,scx_hamiltonian,yajie_protocol,scx_spring_trainer}已经证明：
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item 单模型（$M=1$）无法自审计——NEP、DeepMD、ACE、GAP、MTP均属于此列（SCX定理2）。
+    \item $M>1$个独立专家提供指数增长的误差检测能力（SCX定理1）。
+    \item 审计必须内建于训练过程，不能事后追加（SCX定理3）。
+    \item \Spring{}自演化训练循环实现了"训练即审计"（Spring Trainer论文\cite{scx_spring_trainer}）。
+\end{enumerate}
+
+这些理论的\\textbf{工程含义}是清晰的：需要一款软件，将训练-审计-运行-验证整合为单一工作流，
+使得审计信息从训练阶段无缝传递到运行阶段，最终产出自带审计报告的模拟结果。
+
+\SpringMD{}正是这一工程含义的实现。
+
+\subsection{Spring MD的定位与核心主张}
+
+\SpringMD{}不是又一\\个势函数训练器（与NEP/DeepMD/ACE竞争），也不是又一个MD引擎（与LAMMPS/GROMACS竞争）。
+它的定位是\\textbf{审计中间件}（Audit Middleware）——位于训练器和引擎之间的审计层，
+确保从DFT数据到最终模拟报告的整个链路都是可审计的。
+
+\SpringMD{}的五项核心主张：
+
+\begin{enumerate}[label=\textbf{主张 \arabic*},leftmargin=*,itemsep=5pt]
+    \item \textbf{BORN AUDITED势函数：}
+    \SpringMD{}训练的每一个势函数在诞生之时即携带$M_t$、\Cercis{}评分、\Yajie{}共识向量。
+    这是第一款在势函数层面实现"born audited"的MD软件。
+
+    \item \textbf{审计报告而非裸轨迹：}
+    \SpringMD{}的模拟产出不仅是轨迹文件，还包含\Arbiter{}审计报告——
+    逐帧的\Cercis{}评分、\Yajie{}共识度、势函数适用域诊断。
+
+    \item \textbf{替代NEP/DeepMD/MACE训练管道：}
+    \SpringMD{}用一个统一的\texttt{spring-md train}命令替代了各框架独立的、不可审计的训练管道。
+
+    \item \textbf{LAMMPS/ASE兼容：}
+    \SpringMD{}本身不是MD引擎——它通过标准接口调用LAMMPS或ASE执行模拟，
+    但在调用前后注入审计层。
+
+    \item \textbf{端到端审计闭环：}
+    从DFT数据喂入到最终模拟报告的每一步都携带审计信息，形成完整的审计闭环。
+\end{enumerate}
+
+\subsection{术语约定}
+
+\begin{itemize}[nosep]
+    \item \textbf{PES（Potential Energy Surface）：} 势能面——体系总能量作为原子坐标的函数$E(\mathbf{R})$。
+    \item \textbf{势函数（Potential Function）：} PES的参数化近似$V_\theta(\mathbf{R}) \approx E(\mathbf{R})$。
+    \item \textbf{轨迹（Trajectory）：} MD模拟产生的时间序列$\{\mathbf{R}(t_1), \ldots, \mathbf{R}(t_T)\}$。
+    \item \textbf{审计报告（Audit Report）：} \Arbiter{}对轨迹的逐帧诊断，包含\Cercis{}评分、\Yajie{}共识度和OOD标志。
+    \item \textbf{Born Audited：} 审计信息在势函数/轨迹诞生之时即已绑定，不可分离。
+\end{itemize}
+
+\subsection{本文结构}
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item 第2节：软件架构总览——\SpringMD{}的四命令工作流。
+    \item 第3节：\texttt{spring-md train}——训练即审计的势函数学习管道。
+    \item 第4节：\texttt{spring-md run}——审计注入的分子动力学运行。
+    \item 第5节：\texttt{spring-md audit}——已有轨迹的独立审计。
+    \item 第6节：\texttt{spring-md compare}——多势函数的\Cercis{}排名。
+    \item 第7节：\Arbiter{}审计报告——格式、字段、生成逻辑。
+    \item 第8节：数据格式与API——势函数格式、轨迹格式、审计报告格式。
+    \item 第9节：LAMMPS/ASE兼容性设计。
+    \item 第10节：端到端使用示例。
+    \item 第11节：与NEP/DeepMD/MACE的工程对比。
+    \item 第12节：讨论——诚实暴击、适用边界、未来方向。
+    \item 第13节：结论。
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% 2. Architecture Overview
+% ================================================================
+\section{软件架构总览：Spring MD的四命令工作流}
+
+\subsection{顶层架构}
+
+\SpringMD{}由一个命令行入口\texttt{spring-md}和四个子命令构成：
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=2.0cm, auto,
+    block/.style={rectangle, draw, minimum width=4.5cm, minimum height=1.0cm, align=center, rounded corners=4pt},
+    arrow/.style={->, thick}]
+
+    % Root command
+    \node[block, fill=blue!8] (root) {\texttt{spring-md} \\ \footnotesize Spring MD 命令行入口};
+
+    % Four subcommands
+    \node[block, fill=green!10, below left=1.2cm and -2.8cm of root,
+          minimum width=3.2cm] (train) {\texttt{spring-md train} \\ \footnotesize 训练：势函数学习};
+
+    \node[block, fill=yellow!10, below right=1.2cm and -2.8cm of root,
+          minimum width=3.2cm] (run) {\texttt{spring-md run} \\ \footnotesize 运行：MD模拟};
+
+    \node[block, fill=orange!10, below=1.8cm of train,
+          minimum width=3.2cm] (audit) {\texttt{spring-md audit} \\ \footnotesize 审计：轨迹审计};
+
+    \node[block, fill=red!8, below=1.8cm of run,
+          minimum width=3.2cm] (compare) {\texttt{spring-md compare} \\ \footnotesize 对比：势函数排名};
+
+    % Arrows
+    \draw[arrow] (root) -- (train);
+    \draw[arrow] (root) -- (run);
+    \draw[arrow] (root) -- (audit);
+    \draw[arrow] (root) -- (compare);
+
+    % Data flow between commands (dashed)
+    \draw[arrow, dashed, blue!60] (train.east) -- ++(0.8,0) |- (run.east)
+        node[pos=0.3, right, font=\footnotesize] {势函数};
+
+    \draw[arrow, dashed, red!60] (run.south) -- ++(0,-0.4) -| (audit.north)
+        node[pos=0.3, right, font=\footnotesize] {轨迹};
+
+    \draw[arrow, dashed, purple!60] (train.south) -- ++(0,-0.4) -| (compare.north)
+        node[pos=0.3, left, font=\footnotesize] {多势函数};
+
+\end{tikzpicture}
+\caption{\SpringMD{}的四命令架构。实线箭头表示命令调用关系，虚线箭头表示数据流。
+\texttt{train}产出的势函数可直接用于\texttt{run}；\texttt{run}产出的轨迹可被\texttt{audit}独立审计；
+\texttt{train}产出的多个势函数可通过\texttt{compare}进行排名对比。}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{四命令的职责划分}
+
+\begin{table}[H]
+\centering
+\caption{\SpringMD{}四命令职责矩阵}
+\label{tab:commands}
+\renewcommand{\arraystretch}{1.5}
+\small
+\begin{tabular}{@{}p{2.0cm} p{3.2cm} p{3.2cm} p{4.8cm}@{}}
+\toprule
+\textbf{命令} & \textbf{输入} & \textbf{输出} & \textbf{核心功能} \\
+\midrule
+\texttt{train} &
+DFT数据（extxyz/npz）&
+势函数 + $M_t$ + \Cercis{} +
+\Yajie{}向量 &
+\Spring{}自演化多专家训练$\to$\Yajie{}降噪$\to$$M_t$绑定$\to$\Cercis{}评分 \\
+\midrule
+\texttt{run} &
+势函数 + 初始构型 &
+轨迹 + \Arbiter{}审计报告 &
+LAMMPS/ASE驱动模拟 + 逐帧审计注入 \\
+\midrule
+\texttt{audit} &
+轨迹 + 势函数（可选）&
+\Arbiter{}审计报告 &
+对已有轨迹做\Yajie{}审计 + OOD检测 \\
+\midrule
+\texttt{compare} &
+多个势函数 + 测试集 &
+\Cercis{}排名表 &
+同时运行多个势函数，逐构型打分排名 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{审计信息流：从训练到运行的贯通}
+
+\SpringMD{}区别于所有现有MD软件的核心特征，是审计信息从训练到运行的\\textbf{无缝贯通}：
+
+\begin{enumerate}[label=\textbf{阶段 \arabic*},leftmargin=*,itemsep=4pt]
+    \item \textbf{训练阶段（\texttt{train}）：}
+    \Spring{}多专家训练循环产出五项内生产物：共识势函数$V_{\text{consensus}}$、
+    $M_t$（自生成专家数）、\Cercis{}评分$S_{\Cercis}$、\Yajie{}共识向量$\mathbf{s}_{\Yajie}$、
+    Lyapunov收敛量$\Lyap$。这五项信息被序列化为审计元数据，嵌入势函数文件。
+
+    \item \textbf{运行阶段（\texttt{run}）：}
+    加载训练好的势函数（及其审计元数据）$\to$ 通过LAMMPS/ASE接口执行MD模拟 $\to$
+    在模拟的每一帧（或每$k$帧），\Arbiter{}审计引擎计算该帧的\Cercis{}评分和\Yajie{}共识度 $\to$
+    审计结果与轨迹同步写入，最终产出"轨迹 + 审计报告"的绑定输出。
+
+    \item \textbf{独立审计阶段（\texttt{audit}）：}
+    用户可以对任何已有轨迹（无论是否由\SpringMD{}产生）调用\texttt{spring-md audit}，
+    进行\Yajie{}审计和OOD检测。这适用于来自其他MD引擎（LAMMPS、GROMACS等）的轨迹。
+
+    \item \textbf{对比排名阶段（\texttt{compare}）：}
+    当用户有多个候选势函数（来自不同训练或不同框架），\texttt{spring-md compare}
+    在共同的测试构型集上运行所有势函数，输出\Cercis{}评分排名。
+\end{enumerate}
+
+\begin{remark}[审计不可绕过]
+\SpringMD{}的软件设计遵循一条强制原则：\\textbf{审计不可绕过}（Audit Non-Bypassability）。
+\texttt{spring-md run}在执行MD模拟时\\textit{必须}同时运行\Arbiter{}审计引擎——
+不存在"只跑模拟不审计"的模式。这不是一个可选的flag，而是软件的硬编码行为。
+如果用户确实只需要裸轨迹，他们可以使用原始的LAMMPS或ASE——\SpringMD{}的定位是审计中间件。
+\end{remark}
+
+\newpage
+
+% ================================================================
+% 3. spring-md train
+% ================================================================
+\section{\texttt{spring-md train}：训练即审计的势函数学习管道}
+
+\subsection{命令规范}
+
+\begin{lstlisting}[caption={\texttt{spring-md train} 命令语法},label=lst:train]
+spring-md train [OPTIONS] <INPUT>
+
+INPUT:
+  <data.xyz>           DFT训练数据 (extended XYZ格式)
+  <data.npz>           或NPZ格式 ({R, E, F, Z})
+
+OPTIONS:
+  --config <FILE>       Spring训练配置文件 (YAML)
+  --output <DIR>        输出目录 (默认: ./spring_output/)
+  --arch <ARCH>         专家架构: nep | deepmd | ace | mace (默认: nep)
+  --M-min <INT>         最小专家数 (默认: 3)
+  --M-max <INT>         最大专家数 (默认: 32)
+  --epochs <INT>        最大训练轮数 (默认: 1000)
+  --batch-size <INT>    批次大小 (默认: 32)
+  --lr <FLOAT>          学习率 (默认: 1e-3)
+  --noise-threshold <FLOAT>  Yajie噪声过滤阈值 (默认: 0.05)
+  --device <STR>        计算设备: cuda | cpu (默认: cuda)
+  --seed <INT>          随机种子 (默认: 42)
+
+OUTPUT (在 <DIR>/ 下):
+  potential.pt          共识势函数 (PyTorch格式)
+  potential.yaml        势函数元数据 (YAML格式)
+  audit_report.json     Cercis评分 + Yajie向量 + Mt + Lyapunov
+  training_log.csv      训练日志 (loss, consensus, lyap per epoch)
+  checkpoints/          训练检查点目录
+\end{lstlisting}
+
+\subsection{训练管道的五个阶段}
+
+\texttt{spring-md train}的内部管道由五个顺序阶段构成，对应\Spring{}自演化训练循环的五项内生产出。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=2.5cm, auto,
+    stage/.style={rectangle, draw, minimum width=2.8cm, minimum height=0.9cm, align=center, rounded corners=3pt, font=\small},
+    arrow/.style={->, thick}]
+
+    \node[stage, fill=blue!8] (data) {数据喂入 \\ Data Ingestion};
+    \node[stage, fill=green!8, right=of data, xshift=1.0cm] (multiexpert) {多专家训练 \\ Multi-Expert};
+    \node[stage, fill=yellow!10, right=of multiexpert, xshift=1.0cm] (yajie) {\Yajie{}降噪 \\ Denoising};
+    \node[stage, fill=orange!10, right=of yajie, xshift=1.0cm] (mtbind) {$M_t$ 绑定 \\ Binding};
+    \node[stage, fill=red!8, right=of mtbind, xshift=1.0cm] (cercis) {\Cercis{}评分 \\ Scoring};
+
+    \draw[arrow] (data) -- (multiexpert);
+    \draw[arrow] (multiexpert) -- (yajie);
+    \draw[arrow] (yajie) -- (mtbind);
+    \draw[arrow] (mtbind) -- (cercis);
+
+    % Feedback from Yajie back to Multi-Expert
+    \draw[arrow, dashed, blue!60] (yajie.south) -- ++(0,-1.0) -| (multiexpert.south)
+        node[pos=0.2, below, font=\footnotesize] {净化后数据};
+
+    % Annotations below
+    \node[font=\footnotesize, align=center] at (1.5, -2.0) {(1) 数据加载与验证};
+    \node[font=\footnotesize, align=center] at (5.5, -2.0) {(2) $M_t$专家自举训练};
+    \node[font=\footnotesize, align=center] at (9.5, -2.0) {(3) Yajie共识噪声滤除};
+    \node[font=\footnotesize, align=center] at (13.5, -2.0) {(4) Mt与数据哈希绑定};
+    \node[font=\footnotesize, align=center] at (17.0, -2.0) {(5) Cercis综合评分};
+
+\end{tikzpicture}
+\caption{\texttt{spring-md train}五阶段管道。阶段(3)的噪声移除结果反馈到阶段(2)的下一轮训练，
+形成自演化闭环。}
+\label{fig:train_pipeline}
+\end{figure}
+
+\subsubsection*{阶段1：数据喂入（Data Ingestion）}
+
+从DFT计算输出加载训练数据。支持的输入格式：
+\begin{itemize}[nosep]
+    \item \textbf{extended XYZ：} 标准原子构型格式，包含晶格矢量、原子坐标、物种、能量、力、应力。
+    \item \textbf{NPZ：} 紧凑的NumPy字典格式，键为\texttt{R}（坐标，$N_{\text{data}} \times N_{\text{atoms}} \times 3$）、
+    \texttt{E}（能量）、\texttt{F}（力）、\texttt{Z}（原子序数）。
+\end{itemize}
+
+数据验证步骤：
+\begin{enumerate}[label=(\arabic*),nosep]
+    \item 检查每个构型的原子数一致性（同一体系）；
+    \item 检查能量/力的数值范围，标记异常值（$|E| > 10^6$ eV或$|F| > 10^4$ eV/Å）；
+    \item 计算数据复杂度$\Sigma_0(\D)$（式\eqref{eq:Sigma0_data}），用于后续$M_t$自动生成；
+    \item 计算数据哈希$\Dhash = \text{SHA-256}(\D)$；
+    \item 按能量分位数进行分层划分：训练集80\%，验证集10\%，校准集10\%。
+\end{enumerate}
+
+\subsubsection*{阶段2：多专家训练（Multi-Expert Training）}
+
+\Spring{}自演化训练循环的核心。伪代码如算法\ref{alg:spring_training}所示。
+
+\begin{algorithm}[H]
+\caption{Spring自演化多专家训练循环}
+\label{alg:spring_training}
+\begin{algorithmic}[1]
+\Require 训练数据 $\D_{\text{train}}$，验证数据 $\D_{\text{val}}$，校准数据 $\D_{\text{calib}}$
+\Require 最大迭代数 $T_{\text{max}}$，收敛阈值 $\varepsilon_{\text{conv}}$
+\Ensure 共识势函数 $V_{\text{consensus}}$，审计元数据
+\State $\Lyap_0 \gets \infty$; $t \gets 0$
+\State $\mathcal{H}_{\text{data}} \gets \text{SHA-256}(\D_{\text{train}})$
+\State $\Sigma_0 \gets \text{ComputeComplexity}(\D_{\text{train}})$ \Comment{数据复杂度}
+\State $M_0 \gets \Xi(\mathcal{H}_{\text{data}}, \Sigma_0)$ \Comment{初始$M_t$自动生成}
+\While{$t < T_{\text{max}}$ \textbf{and} $\Lyap_t > \varepsilon_{\text{conv}}$}
+    \State $\{\D_1, \ldots, \D_{M_t}\} \gets \text{StratifiedBootstrap}(\D_{\text{train}}, M_t)$
+    \State \textbf{parallel for} $m = 1$ \textbf{to} $M_t$ \textbf{do}
+        \State $\theta_m^{(t)} \gets \text{TrainExpert}(\D_m, \theta_m^{\text{init}})$
+            \Comment{独立训练，无梯度共享}
+    \State \textbf{end parallel for}
+    \State $\mathbf{s}_{\Yajie}^{(t)} \gets \text{YajieConsensus}(\{f_{\theta_m}\}_{m=1}^{M_t}, \D_{\text{calib}})$
+    \State $\Lyap_t \gets \frac{1}{|\D_{\text{train}}|}\sum_{i}\Var_m[f_m(\mathbf{R}_i)]$
+    \State $\D_{\text{train}} \gets \text{RemoveNoise}(\D_{\text{train}}, \mathbf{s}_{\Yajie}^{(t)}, \tau_{\text{noise}})$
+    \State $M_{t+1} \gets \Xi(\mathcal{H}_{\text{data}}, \Lyap_t, \mathbf{s}_{\Yajie}^{(t)}, \Sigma_0)$
+    \State $t \gets t + 1$
+\EndWhile
+\State $V_{\text{consensus}} \gets \sum_{m} \omega_m f_{\theta_m}$ \Comment{逆方差加权}
+\State $S_{\Cercis} \gets \text{CercisScore}(V_{\text{consensus}}, \mathbf{s}_{\Yajie}, \Lyap_t, \D_{\text{val}})$
+\State \Return $(V_{\text{consensus}}, \mathbf{s}_{\Yajie}, \Lyap_t, M_t, S_{\Cercis})$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection*{阶段3：\Yajie{}降噪（Yajie Denoising）}
+
+\Yajie{}共识机制\cite{yajie_protocol}在Spring训练中的应用包括三项操作：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{逐构型共识评分：} 对每个训练构型$\mathbf{R}_i$，计算$M_t$个专家的预测一致性：
+    \begin{equation}\label{eq:yajie_score_spring}
+        s_{\Yajie}(\mathbf{R}_i) = \exp\left(-\frac{1}{M_t} \sum_{m=1}^{M_t}
+        \left(\frac{\hat{E}_m(\mathbf{R}_i) - \hat{E}_{\Yajie}(\mathbf{R}_i)}{\sigma_{\text{calib}, m}}\right)^2\right)
+    \end{equation}
+
+    \item \textbf{低共识构型标记：} 评分低于$\tau_{\text{noise}}$分位数的构型被标记为"疑似噪声/异常"。
+
+    \item \textbf{数据净化：} 标记的构型从下一轮训练中移除，净化后的数据返回阶段2。
+\end{itemize}
+
+\begin{remark}[降噪的理性]
+\Yajie{}降噪不是武断地删除数据——它是\\textit{多专家集体判断}的结果。
+一个构型只有在\\textit{所有}独立专家都无法就它的能量达成共识时，才被认为是不可靠的。
+如果$M_t-1$个专家达成共识而仅1个分歧，该构型的评分虽降低但不会被移除——
+这防止了单个异常模型污染全体数据。
+\end{remark}
+
+\subsubsection*{阶段4：$M_t$绑定（$M_t$ Binding）}
+
+$M_t$的自动生成与密码学绑定是\SpringMD{}实现"训练即审计"的关键机制\cite{scx_spring_trainer}。
+
+\begin{definition}[$M_t$共生绑定]\label{def:Mt_binding}
+第$t$次迭代的专家数$\Mauto$由数据哈希$\Dhash$、Lyapunov监控量$\Lyap_{t-1}$和
+Yajie共识评分向量$\mathbf{s}_{\Yajie}^{(t-1)}$共同确定：
+\begin{equation}\label{eq:Mt_binding_formula}
+    \Mauto = \Xi(\Dhash; \Lyap_{t-1}, \mathbf{s}_{\Yajie}^{(t-1)}, \Sigma_0(\D))
+\end{equation}
+这一确定性映射确保了：给定相同的数据和相同的训练流程，产生的$M_t$是唯一确定的——
+这就是"共生绑定"的含义：$M_t$与数据\\textit{共生}（co-emerge），不可篡改。
+\end{definition}
+
+\begin{proposition}[$M_t$的密码学验证性]\label{prop:Mt_verifiable}
+任何持有原始数据$\D$的第三方可以独立重计算$\Dhash$和$\Sigma_0(\D)$，进而验证
+$M_t$是否正确生成。这种可验证性防止了"声明$M_t=8$但实际只用$M=1$训练"的欺诈行为。
+\end{proposition}
+
+\subsubsection*{阶段5：\Cercis{}评分（Cercis Scoring）}
+
+\Cercis{}评分是\SpringMD{}为每个训练完成的势函数分配的单一质量度量\cite{scx_spring_trainer}：
+
+\begin{equation}\label{eq:cercis_score}
+    S_{\Cercis} = Q + \eta \cdot N
+\end{equation}
+
+其中：
+\begin{itemize}[nosep]
+    \item $Q \in [0, 1]$：质量保证得分，基于\Yajie{}平均共识度和Lyapunov收敛度：
+    \begin{equation}
+        Q = \frac{1}{2}\left(\bar{s}_{\Yajie} + \exp(-\Lyap_T / \Lyap_0)\right)
+    \end{equation}
+    \item $N \in [0, 1]$：覆盖度得分，基于训练数据在能量空间和构型空间的覆盖：
+    \begin{equation}
+        N = \min\left(1, \frac{|\D_{\text{eff}}|}{|\D_{\text{train}}|} \cdot
+        \frac{\sigma_E}{\Delta E_{\text{target}}}\right)
+    \end{equation}
+    \item $\eta = 0.2$：认知折扣因子——除非经过实验验证，覆盖率评价的价值打两折。
+\end{itemize}
+
+$S_{\Cercis} \in [0, 1.2]$，越接近1.2表示势函数质量越高（经过验证的广泛适用性）。
+
+\subsection{训练配置文件格式}
+
+\texttt{spring-md train}通过YAML配置文件控制所有训练参数：
+
+\begin{lstlisting}[caption={\texttt{spring\_config.yaml} 示例},label=lst:config]
+# Spring MD 训练配置
+train:
+  data:
+    path: "./data/train.xyz"
+    format: "extxyz"
+    train_ratio: 0.8
+    val_ratio: 0.1
+    calib_ratio: 0.1
+
+  model:
+    architecture: "nep"        # nep | deepmd | ace | mace
+    num_neurons: [30, 30]      # 隐藏层神经元数
+    cutoff: 6.0                # 截断半径 (Å)
+    descriptor_dim: 128        # 描述符维度
+
+  spring:
+    M_min: 3                   # 最小专家数
+    M_max: 32                  # 最大专家数
+    noise_fraction: 0.05       # 噪声比例先验
+    consensus_threshold: 0.7   # Yajie共识阈值
+
+  optim:
+    epochs: 1000
+    batch_size: 32
+    learning_rate: 1.0e-3
+    scheduler: "cosine"
+    weight_decay: 1.0e-5
+
+  output:
+    dir: "./spring_output"
+    save_checkpoints: true
+    checkpoint_freq: 50
+\end{lstlisting}
+
+\subsection{训练产出的审计元数据}
+
+每次\texttt{spring-md train}完成后，\texttt{audit\_report.json}包含以下审计元数据：
+
+\begin{lstlisting}[caption={\texttt{audit\_report.json} 结构},label=lst:audit_json]
+{
+  "spring_md_version": "1.0.0",
+  "timestamp": "2026-07-01T12:00:00Z",
+  "data_hash": "a3f8c2...",
+  "complexity": {
+    "Sigma_0": 1.42,
+    "energy_entropy": 3.21,
+    "energy_range": [-78.5, -72.3],
+    "num_species": 2,
+    "num_configurations": 10000
+  },
+  "training": {
+    "M_t": 12,
+    "M_t_history": [8, 12, 12, 12],
+    "total_epochs": 450,
+    "converged": true,
+    "Lyapunov_final": 0.0012,
+    "Lyapunov_initial": 0.0450
+  },
+  "yajie": {
+    "mean_consensus": 0.92,
+    "consensus_histogram": [0, 5, 23, 142, ...],
+    "noise_fraction_removed": 0.032,
+    "calibration_set_size": 1000
+  },
+  "cercis": {
+    "score": 1.08,
+    "quality_Q": 0.92,
+    "coverage_N": 0.80,
+    "discount_eta": 0.20
+  }
+}
+\end{lstlisting}
+
+\newpage
+
+% ================================================================
+% 4. spring-md run
+% ================================================================
+\section{\texttt{spring-md run}：审计注入的分子动力学运行}
+
+\subsection{命令规范}
+
+\begin{lstlisting}[caption={\texttt{spring-md run} 命令语法},label=lst:run]
+spring-md run [OPTIONS] <POTENTIAL> <INPUT_STRUCTURE>
+
+INPUT:
+  <POTENTIAL>            训练好的势函数文件 (potential.pt)
+  <INPUT_STRUCTURE>      初始构型文件 (XYZ, POSCAR, CIF, LAMMPS data)
+
+OPTIONS:
+  --config <FILE>        MD运行配置文件 (YAML)
+  --output <DIR>         输出目录 (默认: ./md_output/)
+  --engine <ENGINE>      MD引擎: lammps | ase (默认: lammps)
+  --ensemble <ENS>       系综: nve | nvt | npt (默认: nvt)
+  --temperature <FLOAT>  温度 (K) (默认: 300)
+  --timestep <FLOAT>     时间步长 (fs) (默认: 0.5)
+  --steps <INT>          总步数 (默认: 100000)
+  --audit-every <INT>    每多少步做一次审计 (默认: 100)
+  --device <STR>         计算设备 (默认: cuda)
+
+OUTPUT (在 <DIR>/ 下):
+  trajectory.xyz         原子轨迹 (extended XYZ)
+  trajectory.h5          原子轨迹 (HDF5, 含速度/力)
+  arbiter_report.json    Arbiter审计报告
+  md_log.txt             MD运行日志
+  thermo.dat             热力学量记录 (T, P, E...)
+\end{lstlisting}
+
+\subsection{运行管道的架构}
+
+\texttt{spring-md run}的核心设计原则是：\\textbf{\SpringMD{}本身不执行MD积分——它调用LAMMPS或ASE来执行，
+但在调用前后注入审计层。}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.8cm, auto,
+    block/.style={rectangle, draw, minimum width=3.0cm, minimum height=0.9cm, align=center, rounded corners=3pt, font=\small},
+    arrow/.style={->, thick}]
+
+    \node[block, fill=blue!8] (load) {加载势函数 \\ + 审计元数据};
+    \node[block, fill=green!8, below=of load] (setup) {MD参数设置 \\ 系综/温度/步长};
+    \node[block, fill=yellow!10, below=of setup] (launch) {启动LAMMPS/ASE \\ 逐步积分};
+    \node[block, fill=orange!10, below=of launch] (arbiter) {Arbiter审计钩子 \\ 每k步触发};
+    \node[block, fill=red!8, below=of arbiter] (output) {输出轨迹 \\ + 审计报告};
+
+    \draw[arrow] (load) -- (setup);
+    \draw[arrow] (setup) -- (launch);
+    \draw[arrow] (launch) -- (arbiter);
+    \draw[arrow] (arbiter) -- (output);
+
+    % Side loop: Arbiter calls back to MD
+    \draw[arrow, dashed, red!60] (arbiter.east) -- ++(3.0,0) |- (launch.east)
+        node[pos=0.3, right, font=\footnotesize] {OOD预警};
+
+    % Annotation
+    \node[font=\footnotesize\itshape, text=red!60] at (5.0, -3.5) {\Arbiter{}持续监控};
+
+\end{tikzpicture}
+\caption{\texttt{spring-md run}的内部管道。\Arbiter{}审计钩子在MD运行的每$k$步触发，
+对当前帧的势函数预测进行审计。当检测到OOD时，\Arbiter{}向MD引擎发送预警信号
+（但不会主动停止模拟——停止决策留给用户）。}
+\label{fig:run_pipeline}
+\end{figure}
+
+\subsection{审计钩子（Audit Hook）的触发逻辑}
+
+\Arbiter{}审计钩子在MD模拟期间以固定频率（由\texttt{--audit-every}指定，默认每100步）触发。
+每一次触发执行以下审计流程：
+
+\begin{protocol}[Arbiter审计钩子操作流程]\label{prot:audit_hook}
+\begin{enumerate}[label=步骤 \arabic*,leftmargin=*,itemsep=3pt]
+    \item \textbf{提取当前帧构型$\mathbf{R}(t)$：} 从MD引擎获取当前原子坐标。
+
+    \item \textbf{多专家一致性检查：} 如果势函数携带$M_t>1$个专家的信息，
+    \Arbiter{}使用所有$M_t$个专家对$\mathbf{R}(t)$进行独立预测，计算：
+    \begin{itemize}[nosep]
+        \item 当前帧的\Yajie{}共识评分$s_{\Yajie}(\mathbf{R}(t))$（式\eqref{eq:yajie_score_spring}）；
+        \item 能量预测的标准差$\sigma_E(t) = \text{std}_m[\hat{E}_m(\mathbf{R}(t))]$；
+        \item 力预测的平均标准差$\bar{\sigma}_F(t) = \frac{1}{N_{\text{atoms}}}\sum_i \text{std}_m[\hat{F}_{i,m}(\mathbf{R}(t))]$。
+    \end{itemize}
+
+    \item \textbf{OOD检测：} 比较$\mathbf{R}(t)$的ACE描述符与训练数据的ACE描述符分布。
+    如果$\mathbf{R}(t)$在训练数据的支持域之外（Mahalanobis距离超过95\%分位数），标记为OOD。
+
+    \item \textbf{\Cercis{}逐帧评分：}
+    \begin{equation}
+        s_{\Cercis}^{\text{frame}}(t) = s_{\Yajie}(\mathbf{R}(t)) \cdot (1 - \mathbb{1}_{\text{OOD}} \cdot 0.5)
+    \end{equation}
+    其中$\mathbb{1}_{\text{OOD}}$为OOD指示函数。OOD帧的\Cercis{}评分自动减半。
+
+    \item \textbf{写入审计记录：} 将当前步数$t$、$s_{\Yajie}$、$\sigma_E$、$\bar{\sigma}_F$、
+    OOD标志、$s_{\Cercis}^{\text{frame}}$写入\Arbiter{}审计报告的时序数组。
+
+    \item \textbf{OOD预警（可选）：} 如果连续$n_{\text{warn}}$帧被标记为OOD（默认$n_{\text{warn}}=10$），
+    \Arbiter{}向\texttt{stderr}输出警告信息——但\\textit{不}主动停止模拟。
+\end{enumerate}
+\end{protocol}
+
+\begin{remark}[为什么不主动停止MD？]
+一个合理的疑问是：当\Arbiter{}检测到OOD时，为什么不自动停止模拟？
+答案是：\textbf{审计和执行的职责分离}。\Arbiter{}的职责是\\textit{报告}势函数的可靠性状态，
+而不是\\textit{控制}MD的执行。用户可能有意探索OOD区域（例如自由能计算中的非平衡过程），
+此时模拟的继续是有科学价值的。\Arbiter{}忠实地报告"这个区域是OOD"——
+如何响应这一信息，是用户的决策。
+\end{remark}
+
+\subsection{MD运行配置文件}
+
+\begin{lstlisting}[caption={\texttt{md\_config.yaml} 示例},label=lst:md_config]
+# Spring MD 运行配置
+run:
+  engine: "lammps"            # lammps | ase
+  ensemble: "nvt"             # nve | nvt | npt
+  temperature: 300.0          # 温度 (K)
+  pressure: 1.0               # 压力 (bar, 仅NPT)
+  timestep: 0.5               # 时间步长 (fs)
+  total_steps: 100000         # 总步数
+
+  thermostat:
+    type: "nose_hoover"       # nose_hoover | berendsen | langevin
+    tau: 100.0                # 热浴弛豫时间 (fs)
+
+  barostat:                   # 仅NPT
+    type: "nose_hoover"
+    tau: 1000.0
+
+  audit:
+    frequency: 100            # 审计频率 (步)
+    ood_warn_consecutive: 10  # OOD连续预警阈值
+    save_full_experts: false  # 是否保存所有专家预测
+
+  output:
+    dir: "./md_output"
+    format: "xyz"             # xyz | h5 | both
+    thermo_freq: 10           # 热力学量输出频率
+\end{lstlisting}
+
+\subsection{LAMMPS接口设计}
+
+当\texttt{--engine lammps}时，\SpringMD{}通过以下机制与LAMMPS交互：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{势函数转换：} 训练好的PyTorch势函数被序列化为LibTorch C++格式（TorchScript），
+    然后通过LAMMPS的\texttt{pair\_style}自定义接口加载。\SpringMD{}自动生成LAMMPS输入脚本，
+    包含正确的\texttt{pair\_style}和\texttt{pair\_coeff}命令。
+
+    \item \textbf{LAMMPS库调用：} \SpringMD{}以Python子进程方式调用LAMMPS二进制文件，
+    传递生成的输入脚本。或者，也可以通过LAMMPS的Python接口（\texttt{lammps}模块）以库模式调用。
+
+    \item \textbf{审计钩子集成：} \SpringMD{}在LAMMPS运行期间通过读取临时输出的轨迹文件
+    （每\texttt{audit-every}步写入一次）来获取当前构型，执行审计计算，然后将结果写入审计报告。
+    这一设计避免了修改LAMMPS源码——审计层完全在\SpringMD{}进程内运行。
+
+    \item \textbf{性能开销：} 每次审计钩子触发的计算开销约为单步MD积分的$10\times \sim 50\times$
+    （取决于$M_t$的大小和体系原子数）。以审计频率每100步、$M_t=8$为例，
+    审计开销约为总运行时间的2\%$\sim$5\%——是可忽略的。
+\end{enumerate}
+
+\subsection{ASE接口设计}
+
+当\texttt{--engine ase}时，\SpringMD{}直接使用ASE（Atomic Simulation Environment）的Python API：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{势函数封装：} 训练好的势函数被封装为ASE兼容的\texttt{Calculator}对象，
+    实现\texttt{get\_potential\_energy()}和\texttt{get\_forces()}方法。
+
+    \item \textbf{审计钩子集成：} ASE支持自定义\texttt{Observer}回调函数。
+    \SpringMD{}注册一个\texttt{ArbiterObserver}，在每\texttt{audit-every}步时触发审计计算。
+
+    \item \textbf{优势：} ASE接口比LAMMPS接口更紧密——审计钩子可以直接访问MD引擎的内部状态
+    （原子的速度、力、位置），无需通过文件IO中转。
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% 5. spring-md audit
+% ================================================================
+\section{\texttt{spring-md audit}：已有轨迹的独立审计}
+
+\subsection{命令规范}
+
+\begin{lstlisting}[caption={\texttt{spring-md audit} 命令语法},label=lst:audit]
+spring-md audit [OPTIONS] <TRAJECTORY> [POTENTIAL]
+
+INPUT:
+  <TRAJECTORY>           轨迹文件 (XYZ, H5, LAMMPS dump)
+  [POTENTIAL]            势函数文件 (可选; 不提供则仅做结构分析)
+
+OPTIONS:
+  --config <FILE>        审计配置文件 (YAML)
+  --output <DIR>         输出目录 (默认: ./audit_output/)
+  --M <INT>              审计专家数 (不提供则从势函数读取)
+  --ood-method <STR>     OOD检测方法: ace_mahalanobis | knn | isolation_forest
+  --per-frame            逐帧审计 (默认: 每10帧)
+  --reference <FILE>     参考势函数进行交叉审计
+
+OUTPUT (在 <DIR>/ 下):
+  arbiter_report.json    Arbiter审计报告
+  per_frame.csv          逐帧审计明细
+  ood_analysis.json      OOD帧分析
+  summary.txt            审计摘要
+\end{lstlisting}
+
+\subsection{审计模式}
+
+\texttt{spring-md audit}支持三种审计模式，取决于是否提供势函数和参考势函数：
+
+\begin{table}[H]
+\centering
+\caption{\texttt{spring-md audit}的三种审计模式}
+\label{tab:audit_modes}
+\renewcommand{\arraystretch}{1.5}
+\small
+\begin{tabular}{@{}p{2.2cm} p{3.0cm} p{3.0cm} p{5.0cm}@{}}
+\toprule
+\textbf{模式} & \textbf{所需输入} & \textbf{审计内容} & \textbf{适用场景} \\
+\midrule
+\textbf{结构审计} &
+仅轨迹 &
+构型分布分析：
+能量-体积关系、
+配位数分布、
+键长/键角分布 &
+来自任何MD引擎的轨迹的初步诊断 \\
+\midrule
+\textbf{单势函数审计} &
+轨迹 + 势函数 &
+\Yajie{}共识评分、
+\Cercis{}逐帧评分、
+OOD检测 &
+\SpringMD{}产生的轨迹的全面审计 \\
+\midrule
+\textbf{交叉审计} &
+轨迹 + 势函数A +
+参考势函数B &
+A vs B的逐帧预测差异、
+交叉\Yajie{}共识、
+分歧帧定位 &
+验证势函数的预测一致性 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{交叉审计的工程价值}
+
+交叉审计是\texttt{spring-md audit}最具工程价值的特性之一。其场景为：
+用户使用\SpringMD{}训练了一个势函数$V_A$，想要验证$V_A$与另一个独立训练的势函数$V_B$
+（可能来自不同框架，如DeepMD或MACE）在相同轨迹上是否给出一致的物理预测。
+
+\begin{protocol}[交叉审计协议]\label{prot:cross_audit}
+\begin{enumerate}[label=步骤 \arabic*,leftmargin=*,itemsep=3pt]
+    \item 对轨迹的每一帧$\mathbf{R}(t)$，使用$V_A$和$V_B$分别计算能量$E_A(t), E_B(t)$和力$\mathbf{F}_A(t), \mathbf{F}_B(t)$。
+
+    \item 计算逐帧的能量差$\Delta E(t) = |E_A(t) - E_B(t)|$和力差$\Delta F(t) = \|\mathbf{F}_A(t) - \mathbf{F}_B(t)\|$。
+
+    \item 识别"分歧帧"——$\Delta E(t) > \varepsilon_E$或$\Delta F(t) > \varepsilon_F$的帧
+    （$\varepsilon_E, \varepsilon_F$为预设的容差，默认为10 meV/atom和0.1 eV/Å）。
+
+    \item 对分歧帧进行深入分析：检查其ACE描述符是否处于任一势函数的训练数据分布之外。
+
+    \item 计算"交叉\Yajie{}共识评分"——将两个势函数视为两个"专家"：
+    \begin{equation}
+        s_{\Yajie}^{\text{cross}}(t) = \exp\left(-\frac{(E_A(t) - E_B(t))^2}
+        {\sigma_A^2 + \sigma_B^2}\right)
+    \end{equation}
+
+    \item 输出交叉审计报告，重点突出分歧帧及其特征。
+\end{enumerate}
+\end{protocol}
+
+\subsection{无势函数的轨迹结构审计}
+
+即使在没有势函数的情况下（模式1：结构审计），\texttt{spring-md audit}也能对轨迹进行有价值的诊断：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{能量漂移检测：} 如果轨迹包含势能信息，检测能量的系统漂移（线性拟合斜率）。
+    \item \textbf{温度控制质量：} 从速度计算温度，检查温度波动是否在合理范围。
+    \item \textbf{结构异常检测：} 检测异常的原子间距（过近接触）、异常配位数、
+    键长突越等结构异常。
+    \item \textbf{周期性破坏检测：} 检测原子是否因热涨落漂移出模拟盒子。
+    \item \textbf{保守量检查：} 对于NVE系综，检查总能量守恒；对于NVT，检查温度稳定性。
+\end{itemize}
+
+\begin{remark}[结构审计的价值]
+仅依赖轨迹文件的结构审计虽然不如完整\Arbiter{}审计（含势函数）强大，
+但它可以在\\textit{势函数不存在的情况下}发现MD模拟的明显问题——
+例如能量漂移（表明积分器步长过大或势函数不光滑）、原子碰撞（表明初始构型不合理或
+势函数排斥壁过软）等。结构审计是MD模拟质量的"第一道防线"。
+\end{remark}
+
+\newpage
+
+% ================================================================
+% 6. spring-md compare
+% ================================================================
+\section{\texttt{spring-md compare}：多势函数的Cercis排名}
+
+\subsection{命令规范}
+
+\begin{lstlisting}[caption={\texttt{spring-md compare} 命令语法},label=lst:compare]
+spring-md compare [OPTIONS] <POTENTIALS...> --test-set <FILE>
+
+INPUT:
+  <POTENTIALS...>        两个或更多势函数文件 (potential_1.pt potential_2.pt ...)
+  --test-set <FILE>      测试构型集 (extended XYZ)
+
+OPTIONS:
+  --config <FILE>        对比配置文件 (YAML)
+  --output <DIR>         输出目录 (默认: ./compare_output/)
+  --metrics <LIST>       对比指标: energy, forces, stress, yajie, cercis
+  --per-config           逐构型详细对比 (默认: 聚合对比)
+  --reference <FILE>     参考势函数 (可选; 用于"相对误差"计算)
+  --plot                 生成对比图 (需要matplotlib)
+
+OUTPUT (在 <DIR>/ 下):
+  ranking.json           Cercis排名结果
+  ranking.csv            排名表 (CSV)
+  per_config.csv         逐构型对比 (如果 --per-config)
+  comparison_report.pdf  对比报告 (如果 --plot)
+\end{lstlisting}
+
+\subsection{对比指标的层次结构}
+
+\texttt{spring-md compare}计算的对比指标分为三个层次：
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.6cm, auto,
+    level/.style={rectangle, draw, minimum width=6.0cm, minimum height=0.8cm, align=center, rounded corners=3pt, font=\small},
+    arrow/.style={->, thick}]
+
+    \node[level, fill=red!8] (l1) {第一层：聚合精度 — RMSE\_E, RMSE\_F, RMSE\_stress};
+    \node[level, fill=orange!10, below=of l1] (l2) {第二层：审计质量 — Yajie共识度, Lyapunov收敛度, OOD覆盖率};
+    \node[level, fill=green!10, below=of l2] (l3) {第三层：综合评分 — Cercis Score (Q + $\eta \cdot$ N)};
+
+    \draw[arrow] (l1) -- (l2);
+    \draw[arrow] (l2) -- (l3);
+
+    \node[font=\footnotesize, align=right, text=gray] at (9.5, 0) {谁拟合得更准？};
+    \node[font=\footnotesize, align=right, text=gray] at (9.5, -1.6) {谁更可信？};
+    \node[font=\footnotesize, align=right, text=gray] at (9.5, -3.2) {谁综合最优？};
+
+\end{tikzpicture}
+\caption{\texttt{spring-md compare}的三层对比指标体系。第一层是传统MD社区关心的聚合精度；
+第二层是SCX审计关心的共识/收敛/覆盖；第三层是\Cercis{}综合评分。}
+\label{fig:compare_levels}
+\end{figure}
+
+\subsection{对比算法}
+
+\begin{algorithm}[H]
+\caption{多势函数Cercis排名算法}
+\label{alg:compare}
+\begin{algorithmic}[1]
+\Require $K$个势函数 $\{V_k\}_{k=1}^{K}$，测试构型集 $\D_{\text{test}} = \{\mathbf{R}_i, E_i^{\text{ref}}, \mathbf{F}_i^{\text{ref}}\}_{i=1}^{N}$
+\Ensure Cercis排名 $\text{rank}_k$ 和综合对比报告
+\For{$k = 1$ \textbf{to} $K$}
+    \State 加载势函数$V_k$及其审计元数据 $\mathcal{A}_k$
+    \State \textbf{// 第一层：聚合精度}
+    \For{$i = 1$ \textbf{to} $N$}
+        \State $\hat{E}_i^{(k)} \gets V_k(\mathbf{R}_i)$; $\hat{\mathbf{F}}_i^{(k)} \gets -\nabla V_k(\mathbf{R}_i)$
+    \EndFor
+    \State $\text{RMSE}_E^{(k)} \gets \sqrt{\frac{1}{N}\sum_i (\hat{E}_i^{(k)} - E_i^{\text{ref}})^2}$
+    \State $\text{RMSE}_F^{(k)} \gets \sqrt{\frac{1}{3N N_{\text{atoms}}}\sum_i \|\hat{\mathbf{F}}_i^{(k)} - \mathbf{F}_i^{\text{ref}}\|^2}$
+
+    \State \textbf{// 第二层：审计质量}
+    \If{$\mathcal{A}_k$ 包含多专家信息}
+        \State 对每个测试构型计算\Yajie{}共识评分 $\{s_{\Yajie}^{(k)}(\mathbf{R}_i)\}$
+        \State $\bar{s}_{\Yajie}^{(k)} \gets \frac{1}{N}\sum_i s_{\Yajie}^{(k)}(\mathbf{R}_i)$
+        \State $f_{\text{OOD}}^{(k)} \gets$ 被标记为OOD的测试构型比例
+    \Else
+        \State $\bar{s}_{\Yajie}^{(k)} \gets \text{NaN}$; $f_{\text{OOD}}^{(k)} \gets \text{NaN}$
+    \EndIf
+
+    \State \textbf{// 第三层：Cercis综合评分}
+    \State $S_{\Cercis}^{(k)} \gets \text{CercisScore}(V_k, \bar{s}_{\Yajie}^{(k)}, \text{RMSE}_E^{(k)})$
+\EndFor
+
+\State 按$S_{\Cercis}$降序排列势函数 → $\text{rank}_k$
+\State \Return $\{(\text{rank}_k, S_{\Cercis}^{(k)}, \text{RMSE}_E^{(k)}, \bar{s}_{\Yajie}^{(k)})\}_{k=1}^{K}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Cercis排名报告格式}
+
+\begin{lstlisting}[caption={\texttt{ranking.json} 示例},label=lst:ranking]
+{
+  "test_set": {
+    "path": "./data/test.xyz",
+    "num_configurations": 500,
+    "energy_range": [-80.2, -71.5],
+    "num_species": 2
+  },
+  "rankings": [
+    {
+      "rank": 1,
+      "potential": "spring_nep_M12",
+      "source": "spring-md train",
+      "M_t": 12,
+      "Cercis_score": 1.08,
+      "RMSE_E": 0.85,
+      "RMSE_F": 52.3,
+      "Yajie_consensus": 0.92,
+      "Lyapunov_final": 0.0012,
+      "OOD_fraction": 0.01
+    },
+    {
+      "rank": 2,
+      "potential": "spring_nep_M8",
+      "source": "spring-md train",
+      "M_t": 8,
+      "Cercis_score": 0.96,
+      "RMSE_E": 0.92,
+      "RMSE_F": 58.1,
+      "Yajie_consensus": 0.87,
+      "Lyapunov_final": 0.0024,
+      "OOD_fraction": 0.03
+    },
+    {
+      "rank": 3,
+      "potential": "deepmd_v2",
+      "source": "DeepMD-kit",
+      "M_t": null,
+      "Cercis_score": null,
+      "RMSE_E": 0.88,
+      "RMSE_F": 55.0,
+      "Yajie_consensus": null,
+      "OOD_fraction": null
+    }
+  ],
+  "notes": ["DeepMD势函数缺少多专家审计信息，因此Cercis评分和Yajie共识度不可用"]
+}
+\end{lstlisting}
+
+\begin{remark}[非Spring势函数的审计缺失]
+\honestcrit{来自NEP/DeepMD/MACE的势函数在\texttt{spring-md compare}中只能参与第一层比较
+（聚合精度），无法参与第二层（审计质量）和第三层（Cercis综合）的排名。
+这不是\SpringMD{}的偏见——而是这些框架的设计缺陷：它们的训练过程不产生审计信息，
+因此\SpringMD{}无法事后"捏造"审计元数据。第一层的RMSE排名仍然可用，
+但它回答的是"平均而言谁拟合得更准"，而非"对于具体的构型谁更可信"。}
+\end{remark}
+
+\newpage
+
+% ================================================================
+% 7. Arbiter Audit Report
+% ================================================================
+\section{Arbiter审计报告：格式、字段与生成逻辑}
+
+\subsection{审计报告的设计哲学}
+
+\Arbiter{}（仲裁者）审计报告是\SpringMD{}区别于所有现有MD软件的核心产出物。
+其设计哲学遵循三条原则：
+
+\begin{enumerate}[label=\textbf{原则 \arabic*},leftmargin=*,itemsep=4pt]
+    \item \textbf{审计不可分离（Audit Non-Separability）：}
+    审计报告与轨迹文件通过密码学哈希绑定。\Arbiter{}报告的\texttt{trajectory\_hash}
+    字段包含轨迹文件的SHA-256指纹——任何一个比特的轨迹修改都将导致哈希不匹配，
+    使得审计报告失效。审计无法被"事后篡改"。
+
+    \item \textbf{逐帧可追溯（Per-Frame Traceability）：}
+    审计报告的每一行对应MD模拟的一个审计帧。用户不需要信任"平均而言这轨迹是好的"——
+    他们可以定位到\\textit{具体哪些帧}的势函数预测不可靠，
+    哪些帧处于分布外区域，哪些帧的专家共识破裂。
+
+    \item \textbf{人机双读（Human-Machine Dual-Readability）：}
+    审计报告同时支持人类阅读（JSON格式，清晰的字段命名，内嵌解释性的\texttt{notes}字段）
+    和机器处理（结构化数据，标准的JSON Schema，可通过\texttt{jq}等工具查询）。
+\end{enumerate}
+
+\subsection{审计报告的完整Schema}
+
+\begin{table}[H]
+\centering
+\caption{\Arbiter{}审计报告的完整JSON Schema}
+\label{tab:arbiter_schema}
+\renewcommand{\arraystretch}{1.3}
+\scriptsize
+\begin{tabular}{@{}p{3.2cm} p{2.0cm} p{8.8cm}@{}}
+\toprule
+\textbf{字段路径} & \textbf{类型} & \textbf{说明} \\
+\midrule
+\texttt{report\_meta.version} & string & \SpringMD{}版本号 \\
+\texttt{report\_meta.timestamp} & string & ISO 8601时间戳 \\
+\texttt{report\_meta.report\_type} & string & \texttt{"train"} | \texttt{"run"} | \texttt{"audit"} \\
+\midrule
+\texttt{potential.path} & string & 势函数文件路径 \\
+\texttt{potential.architecture} & string & 架构名称：\texttt{"nep"} | \texttt{"deepmd"} | \texttt{"ace"} | \texttt{"mace"} \\
+\texttt{potential.M\_t} & int & 训练时使用的专家数 \\
+\texttt{potential.data\_hash} & string & 训练数据的SHA-256哈希 \\
+\texttt{potential.Cercis\_score} & float & 势函数的\Cercis{}综合评分 \\
+\midrule
+\texttt{simulation.ensemble} & string & 系综：\texttt{"nve"} | \texttt{"nvt"} | \texttt{"npt"} \\
+\texttt{simulation.temperature} & float & 目标温度（K） \\
+\texttt{simulation.timestep} & float & 时间步长（fs）\\
+\texttt{simulation.total\_steps} & int & 总步数 \\
+\texttt{simulation.engine} & string & MD引擎：\texttt{"lammps"} | \texttt{"ase"} \\
+\texttt{simulation.trajectory\_hash} & string & 输出轨迹文件的SHA-256哈希 \\
+\midrule
+\texttt{audit\_frames[N]} & array & 逐帧审计记录的时序数组 \\
+\texttt{audit\_frames[].step} & int & MD步数 \\
+\texttt{audit\_frames[].time} & float & 模拟时间（ps） \\
+\texttt{audit\_frames[].Yajie\_consensus} & float & \Yajie{}共识评分 $s_{\Yajie} \in [0,1]$ \\
+\texttt{audit\_frames[].energy\_std} & float & 多专家能量预测的标准差 $\sigma_E$ (meV/atom) \\
+\texttt{audit\_frames[].force\_std} & float & 多专家力预测的平均标准差 $\bar{\sigma}_F$ (meV/Å) \\
+\texttt{audit\_frames[].is\_OOD} & bool & 当前帧是否处于分布外（OOD） \\
+\texttt{audit\_frames[].OOD\_score} & float & OOD程度（Mahalanobis距离/阈值） \\
+\texttt{audit\_frames[].Cercis\_frame} & float & 当前帧的\Cercis{}逐帧评分 \\
+\texttt{audit\_frames[].flags} & [string] & 标记列表：\texttt{"low\_consensus"} | \texttt{"high\_dispersion"} | \texttt{"critical\_ood"} \\
+\midrule
+\texttt{summary.total\_frames} & int & 审计的总帧数 \\
+\texttt{summary.mean\_consensus} & float & 平均\Yajie{}共识度 \\
+\texttt{summary.consensus\_below\_0\_5} & int & 共识度低于0.5的帧数 \\
+\texttt{summary.OOD\_fraction} & float & OOD帧的比例 \\
+\texttt{summary.Cercis\_mean} & float & 平均逐帧\Cercis{}评分 \\
+\texttt{summary.flags\_summary} & object & 各flag的计数统计 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{审计报告的可视化摘要}
+
+\Arbiter{}审计报告的\texttt{summary}部分提供了轨迹整体质量的快速诊断：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{良好轨迹（Healthy Trajectory）：}
+    \texttt{mean\_consensus} $> 0.85$，\texttt{OOD\_fraction} $< 0.05$，
+    \texttt{Cercis\_mean} $> 0.80$。模拟全程的势函数预测可靠，轨迹物理意义完整。
+
+    \item \textbf{警告轨迹（Warning Trajectory）：}
+    \texttt{mean\_consensus} $\in [0.5, 0.85]$，\texttt{OOD\_fraction} $\in [0.05, 0.20]$。
+    模拟的部分区域势函数可靠性存疑。用户应检查OOD帧对应的物理事件（如相变、缺陷迁移等），
+    判断这些区域的模拟结果是否仍具有物理价值。
+
+    \item \textbf{不可靠轨迹（Unreliable Trajectory）：}
+    \texttt{mean\_consensus} $< 0.5$ 或 \texttt{OOD\_fraction} $> 0.20$。
+    模拟结果不应被用于物理分析。可能原因：(a) 初始构型不合理；(b) 温度过高导致
+    体系进入势函数未训练的区域；(c) 势函数训练不充分。
+\end{itemize}
+
+\newpage
+
+% ================================================================
+% 8. Data Formats and API
+% ================================================================
+\section{数据格式与API}
+
+\subsection{势函数文件格式}
+
+\SpringMD{}的势函数以两种互补格式存储：
+
+\begin{enumerate}[label=(\arabic*),itemsep=4pt]
+    \item \textbf{PyTorch二进制格式（\texttt{potential.pt}）：}
+    使用\texttt{torch.save()}序列化，包含：
+    \begin{itemize}[nosep]
+        \item 共识模型的\texttt{state\_dict}（权重和偏置）
+        \item 所有$M_t$个专家模型的\texttt{state\_dict}列表
+        \item 模型架构配置（层数、宽度、截断半径等）
+        \item 审计元数据字典（嵌入在PyTorch模型的\texttt{\_audit\_metadata}属性中）
+    \end{itemize}
+
+    \item \textbf{YAML元数据格式（\texttt{potential.yaml}）：}
+    人类可读的势函数元数据，包含：
+    \begin{itemize}[nosep]
+        \item 训练信息：数据来源、训练时间、收敛状态、\Cercis{}评分
+        \item 审计信息：$M_t$、\Yajie{}共识度、$M_t$签名
+        \item 模型信息：架构、参数数量、截断半径
+        \item 密码学绑定：训练数据哈希、势函数哈希
+    \end{itemize}
+\end{enumerate}
+
+\subsection{势函数加载API}
+
+\begin{lstlisting}[caption={Python API：加载势函数},label=lst:api_load]
+from spring_md import SpringPotential
+
+# 加载训练好的势函数
+potential = SpringPotential.load("spring_output/potential.pt")
+
+# 获取共识预测
+energy = potential.predict_energy(positions, cell, atomic_numbers)
+forces = potential.predict_forces(positions, cell, atomic_numbers)
+
+# 获取多专家预测（用于审计）
+expert_energies = potential.predict_energy_all_experts(positions, cell, atomic_numbers)
+
+# 获取审计元数据
+meta = potential.audit_metadata
+print(f"M_t = {meta['M_t']}")
+print(f"Cercis = {meta['Cercis_score']}")
+print(f"Yajie consensus = {meta['Yajie_mean_consensus']}")
+\end{lstlisting}
+
+\subsection{轨迹格式}
+
+\SpringMD{}支持的轨迹格式：
+
+\begin{table}[H]
+\centering
+\caption{轨迹格式支持矩阵}
+\label{tab:trajectory_formats}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}p{2.2cm} p{3.5cm} p{2.0cm} p{2.0cm} p{3.5cm}@{}}
+\toprule
+\textbf{格式} & \textbf{文件} & \textbf{读} & \textbf{写} & \textbf{备注} \\
+\midrule
+Extended XYZ & \texttt{.xyz} & \checkmark & \checkmark & 默认输出格式，含晶格/能量/力 \\
+HDF5 & \texttt{.h5, .hdf5} & \checkmark & \checkmark & 高性能，适合大轨迹 \\
+LAMMPS dump & \texttt{.dump, .lammpstrj} & \checkmark & & 仅读，来自LAMMPS输出 \\
+ASE trajectory & \texttt{.traj} & \checkmark & \checkmark & ASE原生格式 \\
+NetCDF & \texttt{.nc} & \checkmark & & AMBER/CHARMM格式 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{\Arbiter{}审计报告API}
+
+\begin{lstlisting}[caption={Python API：加载和分析审计报告},label=lst:api_arbiter]
+from spring_md import ArbiterReport
+
+# 加载审计报告
+report = ArbiterReport.load("md_output/arbiter_report.json")
+
+# 获取摘要
+print(report.summary())
+# => "Healthy: 99.2% consensus, 1.3% OOD, Cercis 0.89"
+
+# 获取OOD帧列表
+ood_frames = report.get_ood_frames(threshold=0.5)
+for frame in ood_frames:
+    print(f"Step {frame.step}: OOD score = {frame.OOD_score:.2f}")
+
+# 获取共识度低于阈值的帧
+low_consensus = report.get_frames_by_flag("low_consensus")
+
+# 绘制共识度随时间的变化
+report.plot_consensus_over_time(save="consensus_plot.png")
+
+# 导出为CSV
+report.export_csv("arbiter_report.csv")
+\end{lstlisting}
+
+\newpage
+
+% ================================================================
+% 9. LAMMPS/ASE Compatibility
+% ================================================================
+\section{LAMMPS/ASE兼容性设计}
+
+\subsection{设计原则：审计层透明注入}
+
+\SpringMD{}与LAMMPS和ASE的兼容遵循一条核心原则：\\textbf{审计层透明注入}（Transparent Audit Injection）。
+这意味着：
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \SpringMD{}不修改LAMMPS或ASE的源代码。
+    \item \SpringMD{}不修改LAMMPS或ASE的输入/输出格式——任何原生LAMMPS/ASE脚本
+    可以在\SpringMD{}的包装下运行而无需修改。
+    \item 审计过程的添加对用户是可见的（通过审计报告），但对MD引擎是透明的（引擎不知道审计的存在）。
+\end{enumerate}
+
+\subsection{LAMMPS集成细节}
+
+\begin{lstlisting}[caption={LAMMPS集成：Python端代码},label=lst:lammps_integration]
+import subprocess
+from spring_md import SpringPotential, ArbiterHook
+
+# 1. 加载势函数并生成LAMMPS势函数文件
+potential = SpringPotential.load("potential.pt")
+potential.export_lammps("spring_potential.so")  # TorchScript → LAMMPS pair style
+
+# 2. 生成LAMMPS输入脚本
+lammps_script = f"""
+units          metal
+atom_style     atomic
+pair_style     spring_md
+pair_coeff     * * spring_potential.so {element_list}
+
+read_data      input.data
+velocity       all create {temp} {seed}
+fix            nvt all nvt temp {temp} {temp} {tau}
+thermo         {thermo_freq}
+thermo_style   custom step temp pe ke etotal press
+dump           traj all xyz {dump_freq} trajectory.xyz
+run            {total_steps}
+"""
+
+with open("in.spring", "w") as f:
+    f.write(lammps_script)
+
+# 3. 启动LAMMPS（后台）
+proc = subprocess.Popen(
+    ["lmp", "-in", "in.spring"],
+    stdout=subprocess.PIPE, stderr=subprocess.PIPE
+)
+
+# 4. 注册Arbiter审计钩子
+hook = ArbiterHook(
+    potential=potential,
+    trajectory_file="trajectory.xyz",
+    audit_every=100,
+    output="arbiter_report.json"
+)
+hook.attach_to_process(proc)  # 监控子进程，在每k步后读取trajectory.xyz并审计
+
+proc.wait()
+hook.finalize()  # 写入最终审计报告
+\end{lstlisting}
+
+\subsection{ASE集成细节}
+
+ASE集成更简单，因为ASE的所有组件都是Python对象：
+
+\begin{lstlisting}[caption={ASE集成：Python端代码},label=lst:ase_integration]
+from ase.io import read
+from ase.md.nvt import NVTBerendsen
+from ase import units
+from spring_md import SpringPotential, ArbiterObserver
+
+# 1. 加载势函数，封装为ASE Calculator
+potential = SpringPotential.load("potential.pt")
+atoms = read("input.xyz")
+atoms.calc = potential.to_ase_calculator()
+
+# 2. 设置MD
+dyn = NVTBerendsen(
+    atoms,
+    timestep=0.5 * units.fs,
+    temperature=300 * units.kB,
+    taut=100 * units.fs
+)
+
+# 3. 注册Arbiter审计观察者
+observer = ArbiterObserver(
+    potential=potential,
+    audit_every=100,
+    output="arbiter_report.json"
+)
+dyn.attach(observer, interval=100)
+
+# 4. 运行MD
+trajectory_writer = Trajectory("trajectory.traj", "w", atoms)
+dyn.attach(trajectory_writer.write, interval=10)
+dyn.run(100000)
+
+# 5. 生成审计报告
+observer.save_report()
+\end{lstlisting}
+
+\subsection{支持的功能矩阵}
+
+\begin{table}[H]
+\centering
+\caption{Spring MD功能在不同MD引擎中的支持程度}
+\label{tab:engine_features}
+\renewcommand{\arraystretch}{1.4}
+\small
+\begin{tabular}{@{}p{3.5cm} p{2.5cm} p{2.5cm} p{2.5cm}@{}}
+\toprule
+\textbf{功能} & \textbf{LAMMPS} & \textbf{ASE} & \textbf{备注} \\
+\midrule
+NVE系综 & \checkmark & \checkmark & \\
+NVT系综 & \checkmark & \checkmark & \\
+NPT系综 & \checkmark & \checkmark & \\
+多专家预测 & \checkmark & \checkmark & 需势函数携带$M_t$信息 \\
+逐帧审计钩子 & \checkmark & \checkmark & 频率可配置 \\
+OOD检测 & \checkmark & \checkmark & 基于ACE描述符 \\
+审计报告 & \checkmark & \checkmark & JSON格式 \\
+Langevin热浴 & \checkmark & \checkmark & \\
+Nose-Hoover热浴 & \checkmark & \checkmark & \\
+周期性边界 & \checkmark & \checkmark & \\
+多GPU & \checkmark & \checkmark & 通过PyTorch后端 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+
+% ================================================================
+% 10. End-to-End Usage Examples
+% ================================================================
+\section{端到端使用示例}
+
+\subsection{示例1：从DFT数据到审计轨迹的完整工作流}
+
+以下是一个完整的端到端工作流——从原始DFT数据开始，到产生自带审计报告的MD轨迹：
+
+\begin{lstlisting}[caption={端到端工作流},label=lst:workflow]
+# ================================================================
+# 步骤1：准备DFT训练数据
+# ================================================================
+# DFT数据已由VASP/CP2K/Quantum ESPRESSO生成，格式为extended XYZ
+# 文件名：data/dft_train.xyz (10000个构型)
+
+# ================================================================
+# 步骤2：训练势函数
+# ================================================================
+spring-md train data/dft_train.xyz \
+    --config configs/train.yaml \
+    --arch nep \
+    --output ./outputs/Si_potential \
+    --device cuda
+
+# 输出（在 ./outputs/Si_potential/ 下）：
+#   potential.pt          ← 共识势函数
+#   potential.yaml        ← 人类可读的元数据
+#   audit_report.json     ← Cercis评分 + Yajie + Mt
+#   training_log.csv      ← 训练日志
+
+# ================================================================
+# 步骤3：检查训练产出的审计信息
+# ================================================================
+cat ./outputs/Si_potential/potential.yaml
+# 输出：
+#   Cercis_score: 1.08
+#   M_t: 12
+#   Yajie_mean_consensus: 0.92
+#   Lyapunov_final: 0.0012
+#   Data_hash: a3f8c2e1...
+
+# ================================================================
+# 步骤4：运行MD模拟（带Arbiter审计）
+# ================================================================
+spring-md run ./outputs/Si_potential/potential.pt data/initial_Si.xyz \
+    --config configs/md.yaml \
+    --engine lammps \
+    --ensemble nvt \
+    --temperature 300 \
+    --steps 100000 \
+    --audit-every 100 \
+    --output ./outputs/Si_md_run
+
+# 输出（在 ./outputs/Si_md_run/ 下）：
+#   trajectory.xyz        ← 原子轨迹
+#   arbiter_report.json   ← Arbiter审计报告
+#   thermo.dat            ← 热力学量
+#   md_log.txt            ← MD日志
+
+# ================================================================
+# 步骤5：审查审计报告
+# ================================================================
+spring-md audit ./outputs/Si_md_run/trajectory.xyz \
+    ./outputs/Si_potential/potential.pt \
+    --output ./outputs/Si_md_audit
+
+# 或者，使用Python API进行更详细的分析
+python -c "
+from spring_md import ArbiterReport
+report = ArbiterReport.load('./outputs/Si_md_run/arbiter_report.json')
+print(report.summary())
+report.plot_consensus_over_time('consensus.png')
+ood = report.get_ood_frames()
+print(f'OOD frames: {len(ood)}/{report.summary_data[\"total_frames\"]}')
+"
+
+# ================================================================
+# 步骤6：对比多个势函数（可选）
+# ================================================================
+spring-md compare \
+    ./outputs/Si_potential/potential.pt \
+    ./outputs/Si_potential_alt/potential.pt \
+    ./external/deepmd_Si.pb \
+    --test-set data/test_Si.xyz \
+    --output ./outputs/Si_comparison
+
+# 查看排名
+cat ./outputs/Si_comparison/ranking.json
+\end{lstlisting}
+
+\subsection{示例2：第三方轨迹的独立审计}
+
+用户拥有来自传统LAMMPS运行的轨迹（未经\SpringMD{}），想要评估其可靠性：
+
+\begin{lstlisting}[caption={第三方轨迹审计},label=lst:third_party]
+# 场景：用户有一个LAMMPS dump轨迹（来自DeepMD势函数的模拟）
+# 想要使用Spring MD进行独立审计
+
+# 步骤1：仅结构审计（不需要势函数）
+spring-md audit legacy_run/dump.lammpstrj \
+    --output ./audit_legacy
+
+# 输出：结构分析——能量漂移、异常键长、温度稳定性等
+
+# 步骤2：如果用户有自己的Spring势函数，使用交叉审计
+# （将Spring势函数的预测与原始模拟的预测对比）
+spring-md audit legacy_run/dump.lammpstrj \
+    ./outputs/Si_potential/potential.pt \
+    --output ./audit_legacy_cross
+
+# 输出：交叉审计报告——Spring势函数 vs 原始DeepMD势函数
+# 重点：识别两个势函数预测分歧的帧
+\end{lstlisting}
+
+\subsection{示例3：高吞吐量材料筛选}
+
+对数百种材料成分进行自动化的势函数训练、模拟和审计：
+
+\begin{lstlisting}[caption={高吞吐量材料筛选},label=lst:high_throughput]
+#!/bin/bash
+# 高吞吐量材料筛选脚本
+
+MATERIALS=("Si" "SiO2" "SiC" "Si3N4" "Al2O3" "MgO" "TiN" "ZrO2")
+
+for mat in "${MATERIALS[@]}"; do
+    echo "=== Processing $mat ==="
+
+    # 训练
+    spring-md train data/${mat}_dft.xyz \
+        --output ./ht_outputs/${mat}_potential \
+        --config configs/ht_train.yaml
+
+    # 读取Cercis评分
+    CERCIS=$(python -c "
+import json
+with open('./ht_outputs/${mat}_potential/audit_report.json') as f:
+    print(json.load(f)['cercis']['score'])
+")
+
+    # 只有Cercis > 0.7的材料才进行昂贵的MD模拟
+    if (( $(echo "$CERCIS > 0.7" | bc -l) )); then
+        spring-md run ./ht_outputs/${mat}_potential/potential.pt \
+            data/${mat}_initial.xyz \
+            --output ./ht_outputs/${mat}_md \
+            --config configs/ht_md.yaml
+    else
+        echo "Skipping $mat: Cercis score $CERCIS < 0.7"
+    fi
+done
+
+# 最终排名
+spring-md compare ./ht_outputs/*_potential/potential.pt \
+    --test-set data/ht_test.xyz \
+    --output ./ht_outputs/final_ranking
+\end{lstlisting}
+
+\newpage
+
+% ================================================================
+% 11. Engineering Comparison
+% ================================================================
+\section{与NEP/DeepMD/MACE的工程对比}
+
+\subsection{功能性对比}
+
+\begin{table}[H]
+\centering
+\caption{\SpringMD{}与主流势函数MD软件的工程功能对比}
+\label{tab:engineering_comparison}
+\renewcommand{\arraystretch}{1.4}
+\small
+\begin{tabular}{@{}p{2.5cm} p{1.8cm} p{1.8cm} p{1.8cm} p{1.8cm} p{3.0cm}@{}}
+\toprule
+\textbf{功能} & \textbf{NEP} & \textbf{DeepMD} & \textbf{ACE} & \textbf{MACE} & \textbf{Spring MD} \\
+\midrule
+势函数训练 & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark\ (多专家) \\
+\midrule
+训练=审计? & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+$M_t>1$训练 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+Yajie共识 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+Cercis评分 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+LAMMPS接口 & \checkmark & \checkmark & 部分 & \ding{55} & \checkmark \\
+\midrule
+ASE接口 & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+\midrule
+Arbiter审计报告 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+逐帧OOD检测 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+多势函数排名 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark\ (\Cercis) \\
+\midrule
+交叉审计 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+轨迹独立审计 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+审计不可绕过 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark \\
+\midrule
+密码学数据绑定 & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \checkmark\ (SHA-256) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{审计维度的根本差距}
+
+\begin{definition}[审计完备性的工程判据]\label{def:audit_engineering}
+一款MD软件在工程意义上被称为\\textbf{审计完备}的，当且仅当：
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item 势函数训练过程产生可验证的审计信息（$M_t$、\Cercis{}、\Yajie{}）；
+    \item 势函数与审计信息通过密码学手段绑定，不可分离篡改；
+    \item 分子动力学模拟的产出包含逐帧的审计诊断；
+    \item 存在独立审计命令，可对任意轨迹（包括第三方轨迹）进行审计；
+    \item 审计不可在软件中被绕过（非可选功能）。
+\end{enumerate}
+\end{definition}
+
+根据定义\ref{def:audit_engineering}，当前所有主流MD软件（NEP、DeepMD、ACE、MACE、GAP、MTP）的
+审计完备性评分为\textbf{0/5}。\SpringMD{}是第一款在所有五个维度上都满足条件的软件。
+
+\begin{remark}[这不是营销——这是逻辑结论]
+\honestcrit{声称"Spring MD比NEP/DeepMD/MACE更好"是不准确的——这是一种误导性的比较。
+\\SpringMD{}和NEP/DeepMD/MACE解决的问题不同。NEP/DeepMD/MACE解决的是"拟合精度"问题——
+如何用更少的参数、更快的速度、更少的数据来达到更低的RMSE。
+\SpringMD{}解决的是"审计"问题——如何确保用户知道模拟的哪些部分可信、哪些部分不可信。
+两者不是竞争对手，而是不同维度上的工具。真正的诚实陈述是：
+\\现有工具在审计维度上是空白（0/5），\SpringMD{}填补了这一空白（5/5）。}
+\end{remark}
+
+\subsection{计算成本对比}
+
+\SpringMD{}的多专家训练自然比单专家训练（NEP/DeepMD/ACE）更昂贵。
+但是，这一成本需要放在正确的上下文中理解：
+
+\begin{table}[H]
+\centering
+\caption{训练计算成本对比（以单专家NEP为基准1×）}
+\label{tab:cost_comparison}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}p{3.0cm} p{2.5cm} p{5.0cm} p{3.5cm}@{}}
+\toprule
+\textbf{方法} & \textbf{相对成本} & \textbf{产出} & \textbf{审计信息} \\
+\midrule
+NEP ($M=1$) & 1× & 1个势函数 & 无 \\
+DeepMD ($M=1$) & 2-3× & 1个势函数 & 无 \\
+ACE ($M=1$) & 0.5× & 1个势函数 & 无 \\
+MACE ($M=1$) & 3-5× & 1个势函数 & 无 \\
+\midrule
+\SpringMD{} ($M_t=8$) & 6-8× & 1个共识势函数 + 8个专家 + 审计元数据 & 完整 \\
+\SpringMD{} ($M_t=12$) & 9-12× & 1个共识势函数 + 12个专家 + 审计元数据 & 完整 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{remark}[成本-审计的权衡]
+$M_t=8$的\SpringMD{}训练成本约为NEP的6-8倍。这一额外的4-7×成本购买的是什么？
+答案是：\\textbf{审计信息}——$M_t$个专家的共识/分歧模式、\Yajie{}噪声诊断、逐构型的可靠性评分。
+如果用户的科学场景是"跑一个粗略的MD然后看结果"——传统NEP/DeepMD可能足够。
+如果用户的科学场景是"我发表的这个相的稳定性依赖于这个MD轨迹"——
+\SpringMD{}提供的审计信息可能是论文被接受或被拒稿的区别。
+\end{remark}
+
+\newpage
+
+% ================================================================
+% 12. Discussion
+% ================================================================
+\section{讨论}
+
+\subsection{诚实暴击：Spring MD做不到的事情}
+
+作为一篇工程论文，我们有责任诚实地列出\SpringMD{}的当前局限：
+
+\begin{enumerate}[label=\textbf{暴击 \arabic*},leftmargin=*,itemsep=6pt]
+    \item \honestcrit{审计不等于物理真实性。}
+    \Yajie{}共识度高（如0.95）意味着\\textit{所有专家都同意势函数的预测}，
+    但这不保证势函数的预测等于Schrödinger方程的精确解。
+    所有专家可能集体地、一致地犯错——例如，当训练数据本身包含系统误差时
+    （如DFT的交换关联泛函近似导致的系统偏差），多专家共识无法检测这一问题。
+    审计验证的是\\textit{训练质量}（势函数是否忠实地拟合了训练数据），
+    而非\\textit{物理质量}（训练数据是否忠实地描述了量子力学实在）。
+
+    \item \honestcrit{计算成本是真实的。}
+    $M_t=8$的训练成本是单专家训练的6-8倍。对于大型体系（$>10^5$原子）或
+    大量训练数据（$>10^5$构型），这一成本可能使训练在普通硬件上不可行。
+    \SpringMD{}假定用户有足够的GPU资源——这一假定在超算环境中合理，在个人工作站上可能不成立。
+
+    \item \honestcrit{MD模拟中的审计开销不可忽略。}
+    虽然审计钩子的相对开销较小（2\%-5\%），但在极大规模模拟
+    （$>10^6$原子，$>10^7$步）中，这一开销的绝对量仍然可观。
+    特别是当$M_t$较大（$>16$）时，每帧的多专家预测可能成为瓶颈。
+
+    \item \honestcrit{非Spring势函数的审计能力有限。}
+    对于已有的NEP/DeepMD/MACE势函数，\SpringMD{}无法"事后注入"审计信息。
+    这些势函数可以加载到\texttt{spring-md run}和\texttt{spring-md compare}中使用，
+    但\Yajie{}共识和\Cercis{}评分将不可用——因为训练过程没有产生多专家信息。
+    \SpringMD{}的审计能力\\textit{仅}在势函数由\texttt{spring-md train}训练时才能完全发挥。
+
+    \item \honestcrit{生态系统不成熟。}
+    NEP有GPUMD、DeepMD有DeePMD-kit、MACE有MACE-MP——这些工具拥有多年的社区积累、
+    大量的预训练势函数和成熟的工作流。\SpringMD{}作为一个新软件，在这些方面是空白的。
+\end{enumerate}
+
+\subsection{适用边界}
+
+\SpringMD{}的设计适用于以下场景：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{高可靠性需求：} 当MD模拟的结果将用于发表、工业决策或安全评估时，
+    \Arbiter{}审计报告提供了传统软件无法提供的可靠性保证。
+
+    \item \textbf{多势函数比较：} 当有多个候选势函数且需要系统性地选择最佳者时，
+    \texttt{spring-md compare}的\Cercis{}排名提供了比纯RMSE更全面的质量判据。
+
+    \item \textbf{第三方审计：} 当需要独立验证他人的MD模拟结果时，
+    \texttt{spring-md audit}提供了系统性的轨迹诊断。
+
+    \item \textbf{高吞吐量筛选：} 当需要对大量材料进行自动化训练-模拟-分析时，
+    \Cercis{}评分可以作为自动化的质量门槛（如示例3）。
+\end{itemize}
+
+\SpringMD{}的当前设计\\textbf{不}适用于以下场景：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{快速原型：} 如果用户只需要快速测试一个势函数的可行性，
+    NEP或MACE的单专家训练（成本低3-8×）更合适。
+
+    \item \textbf{反应力场（ReaxFF）：} \SpringMD{}当前专注于机器学习势函数
+    （NEP、DeepMD、ACE、MACE架构），不支持传统的反应力场。
+
+    \item \textbf{粗粒化模拟：} \SpringMD{}当前在全原子层面操作，不支持粗粒化映射。
+\end{itemize}
+
+\subsection{与SCX理论体系的关系}
+
+\SpringMD{}是SCX理论体系\cite{scx_ml_audit,scx_hamiltonian,yajie_protocol,scx_spring_trainer,scx_spring_framework}
+在分子模拟工程领域的具体实现。它在SCX体系的定位如下：
+
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{SCX理论卷：} 证明审计的数学基础——$M=1$不可能、$M>1$指数增长、
+    噪声-信号不可区分。
+    \item \textbf{Spring框架卷\cite{scx_spring_framework}：} 提出五层统一多模态架构——
+    输入→物理→推理→审计→输出。
+    \item \textbf{Spring Trainer卷\cite{scx_spring_trainer}：} 定义自演化训练循环——
+    多专家自举、Yajie共识、$M_t$绑定、Cercis评分。
+    \item \textbf{Spring MD卷（本文）：} 将上述理论工程化为可执行的软件——
+    四个子命令、Arbiter审计报告、LAMMPS/ASE接口。
+\end{itemize}
+
+\subsection{未来方向}
+
+\begin{enumerate}[label=(\arabic*),itemsep=3pt]
+    \item \textbf{在线学习模式：} 当前\SpringMD{}在训练和运行之间是分离的。
+    未来版本将支持"运行中学习"（on-the-fly learning）——当\Arbiter{}检测到OOD构型时，
+    自动触发DFT计算并更新势函数（类似Active Learning）。
+
+    \item \textbf{分布式训练：} 支持多节点、多GPU的Spring多专家并行训练，
+    使$M_t=32$的训练在合理时间内完成。
+
+    \item \textbf{审计信息可视化：} 开发基于Web的审计仪表板，
+    实时展示MD模拟的\Cercis{}评分和OOD状态。
+
+    \item \textbf{预训练审计势函数库：} 建立经过\SpringMD{}审计的预训练势函数库，
+    覆盖常见材料体系，使非DFT专家也能使用审计完备的势函数。
+
+    \item \textbf{审计标准协议：} 与MD社区合作，将\Arbiter{}审计报告格式
+    建立为MD模拟审计的开放标准——使任何MD软件都可以选择支持审计报告输出。
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% 13. Conclusion
+% ================================================================
+\section{结论}
+
+本文提出了\SpringMD{}——第一款将"训练即审计"理念工程化为可执行命令的分子动力学软件。
+\SpringMD{}通过四个子命令（\texttt{train}、\texttt{run}、\texttt{audit}、\texttt{compare}）
+实现了从DFT数据到审计完备的MD模拟报告的端到端工作流。
+
+\SpringMD{}的核心工程贡献可以概括为三点：
+
+\begin{enumerate}[label=(\arabic*),itemsep=5pt]
+    \item \textbf{BORN AUDITED势函数：}
+    \texttt{spring-md train}产出的每一个势函数在诞生之时即携带$M_t$、\Cercis{}评分、
+    \Yajie{}共识向量——审计信息与势函数共生，不可分离。这是分子模拟历史上第一款
+    实现"势函数自审计"的软件。
+
+    \item \textbf{审计报告而非裸轨迹：}
+    \texttt{spring-md run}产出的不再是"裸的"原子轨迹，而是"轨迹 + \Arbiter{}审计报告"的
+    绑定输出。审计报告提供了逐帧的\Cercis{}评分、\Yajie{}共识度和OOD诊断——
+    用户首次拥有\\textit{数据驱动}的依据来判断MD模拟的每一帧是否可靠。
+
+    \item \textbf{统一审计工作流：}
+    \SpringMD{}用一个\texttt{spring-md train}命令替代了NEP/DeepMD/MACE各自独立的、
+    不可审计的训练管道。训练、验证和审计不再是三个阶段，而是同一个过程。
+    \texttt{spring-md audit}和\texttt{spring-md compare}进一步扩展了这一工作流，
+    使得已有轨迹的审计和多势函数的系统对比成为标准化的操作。
+
+\end{enumerate}
+
+\honestcrit{\SpringMD{}不是"更好的NEP"或"更好的DeepMD"——它是一款在\\textit{不同维度}上
+运作的软件。传统MD软件解决的是"速率-精度"问题（更快更准的势函数），
+\SpringMD{}解决的是"信任-可验证"问题（更可靠的模拟报告）。两个维度并不相互替代——
+但它们也不应永远分离。我们希望未来NEP/DeepMD/MACE能够内建审计机制，
+使"auditable by design"成为分子模拟软件的行业标准。}
+
+\SpringMD{}的当前版本（v1.0）是SCX Spring理论体系的工程实现——
+它将SCX定理1（多专家检测）、SCX定理2（自审计不可能）、SCX定理3（噪声-信号不可区分）、
+\Spring{}自演化训练循环和\Yajie{}共识协议转化为四个可执行的命令。
+它是第一个使"auditable MD"从理论概念变为工程现实的软件。
+
+% ================================================================
+% References
+% ================================================================
+\begin{thebibliography}{99}
+
+\bibitem{scx_ml_audit}
+SCX, ``安全共识专家系统（SCX）：多专家审计的机器学习范式,''
+\textit{SCX理论体系 — 机器学习审计卷}, 2026.
+
+\bibitem{scx_hamiltonian}
+SCX理论物理工作组, ``神经网络哈密顿量与SCX多专家审计：一个统计力学对应,''
+\textit{SCX理论体系 — 统计力学卷}, 2026.
+
+\bibitem{yajie_protocol}
+SCX, ``Yajie共识协议：多独立审计模块的结盟、审查与审计数学基础,''
+\textit{SCX理论体系 — 审计协议卷}, 2026.
+
+\bibitem{scx_spring_trainer}
+SCX, ``Spring自演化势函数训练器：训练即审计的分子动力学势函数学习框架,''
+\textit{SCX理论体系 — 分子模拟卷}, 2026.
+
+\bibitem{scx_spring_framework}
+SCX, ``Spring统一多模态大模型框架：训练即审计的全模态智能架构,''
+\textit{SCX理论体系 — 大模型架构卷}, 2026.
+
+\bibitem{nep}
+Z. Fan \textit{et al.}, ``Neuroevolution machine learning potentials:
+Combining high accuracy and low cost in atomistic simulations,''
+\textit{Phys. Rev. B}, vol. 104, p. 104309, 2021.
+
+\bibitem{deepmd}
+L. Zhang, J. Han, H. Wang, R. Car, and W. E, ``Deep Potential Molecular Dynamics:
+A Scalable Model with the Accuracy of Quantum Mechanics,''
+\textit{Phys. Rev. Lett.}, vol. 120, p. 143001, 2018.
+
+\bibitem{ace}
+R. Drautz, ``Atomic cluster expansion for accurate and transferable interatomic potentials,''
+\textit{Phys. Rev. B}, vol. 99, p. 014104, 2019.
+
+\bibitem{mace}
+I. Batatia, D. P. Kovács, G. N. C. Simm, C. Ortner, and G. Csányi,
+``MACE: Higher Order Equivariant Message Passing Neural Networks for
+Fast and Accurate Force Fields,''
+\textit{Advances in Neural Information Processing Systems}, 2022.
+
+\bibitem{gap}
+A. P. Bartók, M. C. Payne, R. Kondor, and G. Csányi,
+``Gaussian Approximation Potentials: The Accuracy of Quantum Mechanics,
+without the Electrons,''
+\textit{Phys. Rev. Lett.}, vol. 104, p. 136403, 2010.
+
+\bibitem{lammps}
+S. Plimpton, ``Fast Parallel Algorithms for Short-Range Molecular Dynamics,''
+\textit{J. Comp. Phys.}, vol. 117, pp. 1–19, 1995.
+
+\bibitem{ase}
+A. H. Larsen \textit{et al.}, ``The Atomic Simulation Environment—a Python library
+for working with atoms,''
+\textit{J. Phys.: Condens. Matter}, vol. 29, p. 273002, 2017.
+
+\end{thebibliography}
+
+% ================================================================
+% Appendices
+% ================================================================
+\appendix
+
+\section{\Arbiter{}审计报告JSON Schema（完整版）}
+
+以下为\Arbiter{}审计报告的完整JSON Schema定义（JSON Schema Draft 2020-12）：
+
+\begin{lstlisting}[caption={Arbiter审计报告JSON Schema},label=lst:schema, basicstyle=\ttfamily\tiny]
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arbiter Audit Report",
+  "type": "object",
+  "required": ["report_meta", "potential", "simulation", "audit_frames", "summary"],
+  "properties": {
+    "report_meta": {
+      "type": "object",
+      "required": ["version", "timestamp", "report_type"],
+      "properties": {
+        "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+        "timestamp": {"type": "string", "format": "date-time"},
+        "report_type": {"type": "string", "enum": ["train", "run", "audit"]}
+      }
+    },
+    "potential": {
+      "type": "object",
+      "required": ["path", "architecture", "M_t", "data_hash"],
+      "properties": {
+        "path": {"type": "string"},
+        "architecture": {"type": "string"},
+        "M_t": {"type": "integer", "minimum": 2},
+        "data_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "Cercis_score": {"type": "number", "minimum": 0, "maximum": 1.2},
+        "Yajie_mean_consensus": {"type": "number", "minimum": 0, "maximum": 1},
+        "Lyapunov_final": {"type": "number", "minimum": 0}
+      }
+    },
+    "simulation": {
+      "type": "object",
+      "required": ["ensemble", "temperature", "timestep", "total_steps"],
+      "properties": {
+        "ensemble": {"type": "string", "enum": ["nve", "nvt", "npt"]},
+        "temperature": {"type": "number", "minimum": 0},
+        "timestep": {"type": "number", "minimum": 0},
+        "total_steps": {"type": "integer", "minimum": 1},
+        "engine": {"type": "string", "enum": ["lammps", "ase"]},
+        "trajectory_hash": {"type": "string"}
+      }
+    },
+    "audit_frames": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step", "time", "Yajie_consensus", "Cercis_frame"],
+        "properties": {
+          "step": {"type": "integer", "minimum": 0},
+          "time": {"type": "number"},
+          "Yajie_consensus": {"type": "number", "minimum": 0, "maximum": 1},
+          "energy_std": {"type": "number", "minimum": 0},
+          "force_std": {"type": "number", "minimum": 0},
+          "is_OOD": {"type": "boolean"},
+          "OOD_score": {"type": "number", "minimum": 0},
+          "Cercis_frame": {"type": "number", "minimum": 0, "maximum": 1},
+          "flags": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total_frames", "mean_consensus"],
+      "properties": {
+        "total_frames": {"type": "integer"},
+        "mean_consensus": {"type": "number", "minimum": 0, "maximum": 1},
+        "OOD_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+        "Cercis_mean": {"type": "number", "minimum": 0, "maximum": 1},
+        "flags_summary": {"type": "object"}
+      }
+    }
+  }
+}
+\end{lstlisting}
+
+\section{命令行完整参考}
+
+\subsection*{\texttt{spring-md}}
+
+\begin{lstlisting}[basicstyle=\ttfamily\small, frame=single]
+spring-md <COMMAND> [OPTIONS]
+
+COMMANDS:
+  train     训练势函数 (Training)
+  run       运行分子动力学模拟 (MD Simulation)
+  audit     审计已有轨迹 (Trajectory Auditing)
+  compare   对比多个势函数 (Potential Comparison)
+  help      显示帮助信息
+
+GLOBAL OPTIONS:
+  --version  显示版本号
+  --help     显示帮助信息
+\end{lstlisting}
+
+\subsection*{退出码}
+
+\begin{table}[H]
+\centering
+\caption{\SpringMD{}退出码}
+\label{tab:exit_codes}
+\begin{tabular}{@{}p{2.0cm} p{10.0cm}@{}}
+\toprule
+\textbf{退出码} & \textbf{含义} \\
+\midrule
+0 & 成功完成 \\
+1 & 一般错误（输入文件不存在、格式错误等） \\
+2 & 训练未收敛（Lyapunov $\Lyap_T > \varepsilon_{\text{conv}}$） \\
+3 & MD模拟异常终止（能量发散、原子碰撞等） \\
+4 & 审计失败（轨迹文件损坏、格式不支持等） \\
+5 & GPU/CUDA错误 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{安装指南}
+
+\SpringMD{}的安装依赖：
+
+\begin{lstlisting}[caption={安装命令},label=lst:install]
+# 通过pip安装
+pip install spring-md
+
+# 系统依赖
+# - Python >= 3.9
+# - PyTorch >= 2.0 (with CUDA support for GPU)
+# - LAMMPS (可选, 用于lammps引擎)
+# - ASE >= 3.22 (可选, 用于ase引擎)
+
+# 验证安装
+spring-md --version
+# Spring MD v1.0.0 (SCX Audit Middleware)
+# PyTorch backend: CUDA 12.1
+# Engines: lammps (found), ase (v3.23.0)
+\end{lstlisting}
+
+\end{document}
