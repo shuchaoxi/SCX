@@ -108,7 +108,7 @@
 \title{\textbf{SCX-Audited Cybersecurity:}\\
 \large Multi-Sensor Consensus for Certified Intrusion Detection\\
 \medskip
-\normalsize\textbf{SCX审计网络安全：多传感器共识认证入侵检测}}
+\normalsize\textbf{SCX}}
 
 \author{SCX}
 \date{Version 1.0 --- June 2026}
@@ -120,18 +120,18 @@
 The fundamental challenge in network intrusion detection is not detection itself but \textbf{certification}: given a stream of alerts from multiple intrusion detection and prevention systems (IDS/IPS), how can we certify that no genuine attack has been missed, and that every alarm is not a false positive? Current Security Information and Event Management (SIEM) systems aggregate alerts heuristically, without formal guarantees on detection completeness or false-positive rates. We apply the \SCX{} (Structured Causal eXamination) auditing framework to cybersecurity, treating each IDS/IPS sensor as an expert $m \in [M]$, each alert as a claim about traffic state, and each false positive as noise. We provide: (i)~a multi-sensor consensus detection theorem bounding the probability of missing a genuine intrusion as $\exp(-2 M^{\mathrm{eff}} \Delta^2 / B^2)$ for $M$ independent sensors (Theorem~1); (ii)~an unidentifiability theorem proving that, without declared assumptions about sensor error rates or traffic baseline, a false alarm and a novel (zero-day) attack are observationally equivalent — the alert alone cannot distinguish noise from signal (Theorem~2); (iii)~a \Cercis{} score $S = Q + \eta N$ where $Q$ combines detection accuracy (TPR, FPR, AUC) and traffic novelty $N$ quantifies deviation from historical baseline; (iv)~a \Yajie{} multi-sensor consensus mechanism that correlates alerts across heterogeneous sensor types (signature-based, anomaly-based, behavior-based) with explicit assumption tracking; (v)~a \Spring{} gating mechanism for zero-day attack detection as a sequential regime-shift test on alert statistics; and (vi)~a formalization of SIEM aggregation as the audit layer in the SCX architecture. All theorems are proved with 8+ explicitly declared assumptions, and an experimental protocol is specified using the CIC-IDS-2017, CSE-CIC-IDS-2018, and UNSW-NB15 benchmark datasets. The framework establishes that cybersecurity auditing requires multi-sensor diversity as a logical necessity, not merely a best practice.
 
 \medskip
-\noindent\textbf{Keywords:} intrusion detection 入侵检测, false positive reduction 误报降低, zero-day attacks 零日漏洞, multi-sensor consensus 多传感器共识, SCX auditing, \Cercis{} scoring, \Yajie{} consensus, \Spring{} gating, SIEM aggregation, cybersecurity certification 网络安全认证
+\noindent\textbf{Keywords:} intrusion detection , false positive reduction , zero-day attacks , multi-sensor consensus , SCX auditing, \Cercis{} scoring, \Yajie{} consensus, \Spring{} gating, SIEM aggregation, cybersecurity certification 
 \end{abstract}
 
 % ======================================================================
-\section{Introduction 引言 入侵检测的认证鸿沟}
+\section{Introduction  }
 % ======================================================================
 
-Intrusion detection is the enterprise of monitoring network traffic to identify malicious activity — unauthorized access, malware propagation, data exfiltration, denial-of-service attacks, and exploitation of software vulnerabilities. The operational context is a network $G = (V, E)$ carrying traffic flows $\{\flowvec_t\}_{t=1}^{\infty}$ where each flow $\flowvec_t$ is a vector of packet headers, payload features, and connection metadata. Intrusion Detection Systems (IDS, 入侵检测系统) and Intrusion Prevention Systems (IPS, 入侵防御系统) analyze these flows and emit alerts $\alertvec_t \in \{0, 1\}^{M}$ indicating suspected malicious activity.
+Intrusion detection is the enterprise of monitoring network traffic to identify malicious activity — unauthorized access, malware propagation, data exfiltration, denial-of-service attacks, and exploitation of software vulnerabilities. The operational context is a network $G = (V, E)$ carrying traffic flows $\{\flowvec_t\}_{t=1}^{\infty}$ where each flow $\flowvec_t$ is a vector of packet headers, payload features, and connection metadata. Intrusion Detection Systems (IDS, ) and Intrusion Prevention Systems (IPS, ) analyze these flows and emit alerts $\alertvec_t \in \{0, 1\}^{M}$ indicating suspected malicious activity.
 
 The problem is well-known to every security operations center (SOC): \textbf{the alert stream is dominated by false positives}. Studies report that 95--99\% of alerts from signature-based IDS are false positives~\cite{Axelsson2000}, and SOC analysts spend the majority of their time triaging alerts that turn out to be benign traffic~\cite{Bhatt2014}. The statistical problem is a classic signal-detection dilemma: the base rate of genuine attacks is extremely low (typically $< 0.1\%$ of traffic), so even a sensor with 99.9\% specificity produces mostly false positives. Furthermore, zero-day attacks — exploits of previously unknown vulnerabilities for which no signature exists — are undetectable by signature-based sensors and appear as anomalous traffic patterns that anomaly-based sensors must distinguish from benign anomalies (e.g., new application deployments, configuration changes, flash crowds)~\cite{Bilge2012, Sommer2010}.
 
-\subsection{The Cybersecurity Audit Gap 网络安全审计空白}
+\subsection{The Cybersecurity Audit Gap }
 
 Current cybersecurity practice exhibits a structural gap analogous to the audit gap identified in scientific publication~\cite{SCXManifesto2026}:
 
@@ -153,15 +153,15 @@ The mapping from cybersecurity concepts to SCX constructs is:
 \toprule
 \textbf{Cybersecurity Concept} & \textbf{SCX Construct} & \textbf{Chinese} \\
 \midrule
-IDS/IPS sensor & Expert $m \in [M]$ & 专家/传感器 \\
-Alert & Claim about traffic state & 告警声明 \\
-False positive & Noise (sensor error) & 误报/噪声 \\
-True attack & Signal (genuine anomaly) & 真实攻击/信号 \\
-Multi-sensor correlation & \Yajie{} consensus & 雅洁共识 \\
-Zero-day detection & \Spring{} regime shift & 零日漏洞检测 \\
-SIEM aggregation & Audit layer & 审计层 \\
-Benign traffic baseline & Historical regime $r_0$ & 良性流量基线 \\
-Attack campaign & Anomalous regime $r_a$ & 攻击活动 \\
+IDS/IPS sensor & Expert $m \in [M]$ & / \\
+Alert & Claim about traffic state &  \\
+False positive & Noise (sensor error) & / \\
+True attack & Signal (genuine anomaly) & / \\
+Multi-sensor correlation & \Yajie{} consensus &  \\
+Zero-day detection & \Spring{} regime shift &  \\
+SIEM aggregation & Audit layer &  \\
+Benign traffic baseline & Historical regime $r_0$ &  \\
+Attack campaign & Anomalous regime $r_a$ &  \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -191,13 +191,13 @@ The paper's contributions are:
 \limitationTag{0} The framework is diagnostic and auditing; it does not propose new intrusion detection algorithms. It provides the certification infrastructure that any IDS/IPS system — existing or future — can be evaluated against.
 
 % ======================================================================
-\section{Formalization: Network Intrusion Detection as State-Conditioned Expert Prediction 网络入侵检测作为状态条件专家预测的形式化}
+\section{Formalization: Network Intrusion Detection as State-Conditioned Expert Prediction }
 \label{sec:formalization}
 % ======================================================================
 
-\subsection{Network Traffic State 网络流量状态}
+\subsection{Network Traffic State }
 
-\begin{definition}[Network Traffic State Space 网络流量状态空间]
+\begin{definition}[Network Traffic State Space ]
 \label{def:state}
 The network traffic state at time $t$ is a vector:
 \begin{equation}
@@ -212,24 +212,24 @@ where:
 \end{itemize}
 \end{definition}
 
-\begin{definition}[Attack — 攻击事件]
+\begin{definition}[Attack — ]
 \label{def:attack}
-An \textbf{attack} at time $t$ is a transition from the benign regime to any attack regime: $r_t \in \mathcal{R} \setminus \{r_{\mathrm{benign}}\}$ while $r_{t-1} = r_{\mathrm{benign}}$. A \textbf{zero-day attack} (零日漏洞攻击) is an attack where $r_t = r_{\mathrm{zeroday}}$ and the traffic pattern $\flowvec_t$ lies outside the convex hull of the historical benign traffic distribution $\cD_{\mathrm{benign}}$.
+An \textbf{attack} at time $t$ is a transition from the benign regime to any attack regime: $r_t \in \mathcal{R} \setminus \{r_{\mathrm{benign}}\}$ while $r_{t-1} = r_{\mathrm{benign}}$. A \textbf{zero-day attack} () is an attack where $r_t = r_{\mathrm{zeroday}}$ and the traffic pattern $\flowvec_t$ lies outside the convex hull of the historical benign traffic distribution $\cD_{\mathrm{benign}}$.
 \end{definition}
 
-\begin{definition}[False Positive — 误报]
+\begin{definition}[False Positive — ]
 \label{def:false_positive}
 A \textbf{false positive} from sensor $m$ at time $t$ occurs when the sensor emits an alert ($\alertvec_t^{(m)} = 1$) but the true regime is benign ($r_t = r_{\mathrm{benign}}$). The false positive probability is $\FPR_m = \Pbb(\alertvec_t^{(m)} = 1 \mid r_t = r_{\mathrm{benign}})$.
 \end{definition}
 
-\begin{definition}[False Negative — 漏报]
+\begin{definition}[False Negative — ]
 \label{def:false_negative}
 A \textbf{false negative} from sensor $m$ at time $t$ occurs when the sensor emits no alert ($\alertvec_t^{(m)} = 0$) but the true regime is an attack ($r_t \neq r_{\mathrm{benign}}$). The false negative probability (miss rate) is $\FNR_m = \Pbb(\alertvec_t^{(m)} = 0 \mid r_t \neq r_{\mathrm{benign}})$.
 \end{definition}
 
-\subsection{IDS/IPS Sensors as Experts 传感器作为专家}
+\subsection{IDS/IPS Sensors as Experts }
 
-\begin{definition}[Intrusion Detection Expert 入侵检测专家]
+\begin{definition}[Intrusion Detection Expert ]
 \label{def:expert}
 A sensor expert is a function $f_m: \cS \to \{0, 1\}$ mapping the current network state to a binary alert:
 \begin{equation}
@@ -244,9 +244,9 @@ We consider $M$ sensors partitioned into $K$ families based on detection methodo
 \cF = \cF_{\mathrm{sig}} \cup \cF_{\mathrm{anom}} \cup \cF_{\mathrm{behav}} \cup \cF_{\mathrm{host}},
 \label{eq:families}
 \end{equation}
-where $\cF_{\mathrm{sig}}$ are signature-based sensors (Snort, Suricata — 基于签名), $\cF_{\mathrm{anom}}$ are anomaly-based sensors (statistical models, autoencoders — 基于异常), $\cF_{\mathrm{behav}}$ are behavior-based sensors (Zeek, NBAD — 基于行为), and $\cF_{\mathrm{host}}$ are host-based sensors (OSSEC, Wazuh — 基于主机). Each family embodies different structural assumptions about what constitutes malicious activity.
+where $\cF_{\mathrm{sig}}$ are signature-based sensors (Snort, Suricata — ), $\cF_{\mathrm{anom}}$ are anomaly-based sensors (statistical models, autoencoders — ), $\cF_{\mathrm{behav}}$ are behavior-based sensors (Zeek, NBAD — ), and $\cF_{\mathrm{host}}$ are host-based sensors (OSSEC, Wazuh — ). Each family embodies different structural assumptions about what constitutes malicious activity.
 
-\assumptionTag{1} \textbf{(Sensor Independence Across Families 跨传感器族的独立性)}: Sensors from different families $k \neq k'$ make genuinely independent detection errors conditional on the traffic state. Formally, for any attack regime $r \neq r_{\mathrm{benign}}$:
+\assumptionTag{1} \textbf{(Sensor Independence Across Families )}: Sensors from different families $k \neq k'$ make genuinely independent detection errors conditional on the traffic state. Formally, for any attack regime $r \neq r_{\mathrm{benign}}$:
 \begin{equation}
 \Cov(\alertvec_t^{(m)}, \alertvec_t^{(m')} \mid r) = 0, \quad \forall m \in \cF_k, m' \in \cF_{k'}, k \neq k'.
 \label{eq:sensor_independence}
@@ -254,12 +254,12 @@ where $\cF_{\mathrm{sig}}$ are signature-based sensors (Snort, Suricata — 基�
 
 \textit{Justification:} Signature-based sensors match against known exploit patterns; anomaly-based sensors flag deviations from learned baselines; behavior-based sensors track protocol state machines and connection graphs; host-based sensors monitor system calls and file integrity. These fundamentally different mechanisms produce conditionally independent errors.
 
-\assumptionTag{2} \textbf{(Bounded Alert Signal 有界告警信号)}: The alert space $\{0, 1\}^{M}$ is compact with diameter $B = \sqrt{M}$, bounded by construction since each alert is binary.
+\assumptionTag{2} \textbf{(Bounded Alert Signal )}: The alert space $\{0, 1\}^{M}$ is compact with diameter $B = \sqrt{M}$, bounded by construction since each alert is binary.
 
-\assumptionTag{3} \textbf{(Attack Base Rate 攻击基础率)}: The prior probability of any attack in a given time window satisfies $\Pbb(r_t \neq r_{\mathrm{benign}}) = \pi_a \in (0, 1)$. For operational networks, $\pi_a \ll 1$ (typically $\pi_a < 10^{-3}$), which drives the false-positive problem.
+\assumptionTag{3} \textbf{(Attack Base Rate )}: The prior probability of any attack in a given time window satisfies $\Pbb(r_t \neq r_{\mathrm{benign}}) = \pi_a \in (0, 1)$. For operational networks, $\pi_a \ll 1$ (typically $\pi_a < 10^{-3}$), which drives the false-positive problem.
 
 % ======================================================================
-\section{Core Assumptions 核心假设}
+\section{Core Assumptions }
 \label{sec:assumptions}
 % ======================================================================
 
@@ -321,7 +321,7 @@ The traffic feature space has finite dimension $d = \dim(\flowvec_t) < \infty$ (
 \end{assumption}
 
 % ======================================================================
-\section{Theorem 1: Multi-Sensor Consensus Detection 多传感器共识检测定理}
+\section{Theorem 1: Multi-Sensor Consensus Detection }
 \label{sec:theorem1}
 % ======================================================================
 
@@ -331,7 +331,7 @@ We now prove the core detection theorem: when $M$ diverse IDS/IPS sensors are de
 
 Consider $M$ sensors $\{f_1, \ldots, f_M\}$ from $K$ distinct families, monitoring traffic at time $t$. Let $E_{\mathrm{miss}}$ be the event that a genuine attack occurs ($r_t \neq r_{\mathrm{benign}}$) but is \textit{missed by all sensors} — i.e., $\alertvec_t^{(m)} = 0$ for all $m \in [M]$, meaning no alert is raised by any sensor.
 
-\begin{definition}[Effective Sensor Multiplicity 有效传感器多重性]
+\begin{definition}[Effective Sensor Multiplicity ]
 \label{def:Meff}
 For a given attack type, the effective number of independent sensors is:
 \begin{equation}
@@ -348,7 +348,7 @@ Under \assumptionTag{1}, $\rho_{kk'} = 0$ for $k \neq k'$, simplifying to $M_{\m
 
 \subsection{Theorem Statement}
 
-\begin{theorem}[Multi-Sensor Attack Miss Bound 多传感器攻击漏报界]
+\begin{theorem}[Multi-Sensor Attack Miss Bound ]
 \label{thm:miss_bound}
 \rigorFull
 Let $M$ sensors from $K$ distinct families be deployed, with effective multiplicity $M_{\mathrm{eff}}$. Let $\beta_{\min} = \min_m \TPR_m$ be the minimum true-positive rate across sensors, and let $\Delta = \min_m (1 - \FNR_m)$ be the minimum detection margin (where $\FNR_m = 1 - \TPR_m$). Then, under \assumptionTag{A4} and the detectability condition \assumptionTag{A5}, the probability that a genuine attack is missed by all sensors satisfies:
@@ -393,7 +393,7 @@ Taking the effective multiplicity correction:
 since $\exp(-M_{\mathrm{eff}} \beta_{\min}) \leq \exp(-2 M_{\mathrm{eff}} (\beta_{\min} - 1/2)^2)$ for $\beta_{\min} \in [1/2, 1]$ (verified by comparing the exponents). $\square$
 \end{proof}
 
-\begin{corollary}[Required Sensor Multiplicity 所需传感器多重性]
+\begin{corollary}[Required Sensor Multiplicity ]
 \label{cor:required_M}
 To achieve detection confidence $1 - \alpha$ (i.e., $\Pbb(E_{\mathrm{miss}}) \leq \alpha$) with sensors of minimum TPR $\beta_{\min} = 0.85$ and within-family correlation $\bar{\rho} = 0.5$:
 \begin{equation}
@@ -403,7 +403,7 @@ M_{\mathrm{eff}} \geq \frac{\log(1/\alpha)}{2 (\beta_{\min} - 1/2)^2} = \frac{\l
 For $\alpha = 10^{-4}$ (99.99\% confidence): $M_{\mathrm{eff}} \geq 37.6 \approx 38$. With $K = 4$ families and $\rho_k = 0.5$, this requires $M_k \approx 10$ sensors per family for $M = 40$ total sensors. The actual $M$ needed is larger when within-family correlation is high.
 \end{corollary}
 
-\begin{corollary}[Family Diversity Tradeoff 传感器族多样性的权衡]
+\begin{corollary}[Family Diversity Tradeoff ]
 \label{cor:diversity}
 For a fixed total sensor count $M$, the detection guarantee is maximized when sensors are distributed across families to maximize $M_{\mathrm{eff}}$. Deploying 40 Snort variants ($M_1 = 40$, $\rho_1 \approx 0.9$, $M_{\mathrm{eff}} \approx 40 / (1 + 39 \cdot 0.9) \approx 1.1$) provides dramatically weaker detection than 10 sensors from each of 4 families ($M_{\mathrm{eff}} = 4 \cdot 10 / (1 + 9 \cdot 0.5) \approx 7.27$).
 \end{corollary}
@@ -413,13 +413,13 @@ For a fixed total sensor count $M$, the detection guarantee is maximized when se
 \limitationTag{2} The attack base rate $\pi_a$ is not needed for the miss bound conditional on an attack occurring. However, the \textit{unconditional} rate of missed attacks requires multiplying by $\pi_a$, which provides another lever: if $\pi_a$ is truly tiny, the absolute miss rate may be acceptable even with moderate $M_{\mathrm{eff}}$.
 
 % ======================================================================
-\section{Theorem 2: False Alarm vs.\ Novel Attack Unidentifiability 误报与新型攻击的不可辨识性}
+\section{Theorem 2: False Alarm vs.\ Novel Attack Unidentifiability }
 \label{sec:theorem2}
 % ======================================================================
 
 We now prove the paper's central theoretical result: a single sensor's alert cannot distinguish a false positive from a genuine zero-day attack without declared assumptions about the sensor's error distribution or the traffic baseline.
 
-\subsection{The Alert Ambiguity Problem 告警歧义问题}
+\subsection{The Alert Ambiguity Problem }
 
 Consider a single sensor $m$ that fires an alert at time $t$: $\alertvec_t^{(m)} = 1$. The SOC analyst must determine whether this alert represents:
 \begin{enumerate}[label=(\roman*)]
@@ -432,7 +432,7 @@ The ambiguity between (i) and (iii) is particularly dangerous: dismissing a zero
 
 \subsection{Observational Equivalence Construction}
 
-\begin{theorem}[False Positive vs.\ Zero-Day Attack Unidentifiability 误报与零日漏洞攻击不可辨识性]
+\begin{theorem}[False Positive vs.\ Zero-Day Attack Unidentifiability ]
 \label{thm:fp_zeroday}
 \rigorFull
 Let sensor $m$ emit an alert $\alertvec_t^{(m)} = 1$ on traffic flow $\flowvec_t$. Without declared assumptions about either (a) the sensor's false-positive rate $\FPR_m$ conditional on novel traffic patterns, or (b) the probability of a zero-day attack in the current traffic context, there exist two observationally equivalent worlds — one where the alert is a false positive and one where it is a zero-day attack — that produce identical observable data but attribute the alert to fundamentally different causes. Consequently, post-hoc attribution of a single alert to sensor error versus genuine novelty is logically underdetermined.
@@ -441,14 +441,14 @@ Let sensor $m$ emit an alert $\alertvec_t^{(m)} = 1$ on traffic flow $\flowvec_t
 \begin{proof}
 We construct two observationally equivalent worlds $\mathcal{W}_{\FP}$ and $\mathcal{W}_{\zeroday}$.
 
-\textbf{World $\mathcal{W}_{\FP}$ (False Positive 误报世界):} The true regime is benign: $r_t = r_{\mathrm{benign}}$. The traffic $\flowvec_t$ is a \textit{benign anomaly} — legitimate traffic that deviates from the historical baseline due to a new application, configuration change, or unusual but harmless user behavior. The sensor erroneously flags it as malicious. The alert probability decomposition is:
+\textbf{World $\mathcal{W}_{\FP}$ (False Positive ):} The true regime is benign: $r_t = r_{\mathrm{benign}}$. The traffic $\flowvec_t$ is a \textit{benign anomaly} — legitimate traffic that deviates from the historical baseline due to a new application, configuration change, or unusual but harmless user behavior. The sensor erroneously flags it as malicious. The alert probability decomposition is:
 \begin{equation}
 \Pbb(\alertvec_t^{(m)} = 1 \mid \mathcal{W}_{\FP}) = \FPR_m(\flowvec_t),
 \label{eq:W_FP}
 \end{equation}
 where $\FPR_m(\flowvec_t)$ is the sensor's false-positive rate on this specific traffic pattern. Since $\flowvec_t$ is novel, $\FPR_m(\flowvec_t)$ may be elevated above the sensor's nominal (average) false-positive rate.
 
-\textbf{World $\mathcal{W}_{\zeroday}$ (Zero-Day Attack 零日漏洞世界):} The true regime is zero-day attack: $r_t = r_{\zeroday}$. The traffic $\flowvec_t$ is a genuinely malicious payload exploiting a previously unknown vulnerability, detected (correctly) by the sensor through some mechanism (anomaly detection, behavioral analysis, or luck). The alert probability decomposition is:
+\textbf{World $\mathcal{W}_{\zeroday}$ (Zero-Day Attack ):} The true regime is zero-day attack: $r_t = r_{\zeroday}$. The traffic $\flowvec_t$ is a genuinely malicious payload exploiting a previously unknown vulnerability, detected (correctly) by the sensor through some mechanism (anomaly detection, behavioral analysis, or luck). The alert probability decomposition is:
 \begin{equation}
 \Pbb(\alertvec_t^{(m)} = 1 \mid \mathcal{W}_{\zeroday}) = \TPR_m(\flowvec_t, \zeroday),
 \label{eq:W_zeroday}
@@ -473,7 +473,7 @@ Every $\alpha \in [0, 1]$ produces an observationally-equivalent model. The para
 \textbf{Dimensionality argument:} The full state of the world is $(r_t, \FPR_m(\flowvec_t), \TPR_m(\flowvec_t, \zeroday), \pi_{\zeroday})$, where $\pi_{\zeroday} = \Pbb(r_t = r_{\zeroday})$ is the prior probability of a zero-day attack. This is a 4-dimensional parameter vector. The observable data provide at most 2 constraints: $\Pbb(\alertvec_t^{(m)} = 1)$ and $\{\flowvec_t\}$. With $4 > 2$, the system is underdetermined, yielding at least a 2-dimensional manifold of valid attributions. $\square$
 \end{proof}
 
-\begin{corollary}[Multi-Sensor Resolution of Ambiguity 多传感器消解歧义]
+\begin{corollary}[Multi-Sensor Resolution of Ambiguity ]
 \label{cor:multi_resolution}
 When $M \geq 2$ sensors from different families fire on the same traffic $\flowvec_t$, the ambiguity is partially resolvable. If sensor $i$ (signature-based) does not fire ($\alertvec_t^{(i)} = 0$) while sensor $j$ (anomaly-based) fires ($\alertvec_t^{(j)} = 1$), the signature-based sensor's silence provides evidence against known attacks, and the anomaly sensor's alert provides evidence of novelty. However, the false-positive vs.\ zero-day ambiguity persists: the anomaly sensor's alert could be a false positive on benign novelty or a true positive on malicious novelty. Complete resolution requires a declared assumption bounding either $\FPR_j$ on novel traffic or $\pi_{\zeroday}$.
 \end{corollary}
@@ -487,9 +487,9 @@ BF = \frac{\Pbb(\alertvec_t^{(i)} = 0 \mid \mathcal{W}_{\FP}) \cdot \Pbb(\alertv
 Under $\mathcal{W}_{\zeroday}$, $\Pbb(\alertvec_t^{(i)} = 0 \mid \mathcal{W}_{\zeroday}) \approx 1$ (signature sensor misses zero-day), and $\Pbb(\alertvec_t^{(j)} = 1 \mid \mathcal{W}_{\zeroday}) = \TPR_j^{\zeroday}$. Under $\mathcal{W}_{\FP}$, $\Pbb(\alertvec_t^{(i)} = 0 \mid \mathcal{W}_{\FP}) = 1 - \FPR_i$ and $\Pbb(\alertvec_t^{(j)} = 1 \mid \mathcal{W}_{\FP}) = \FPR_j^{\mathrm{novel}}$. The Bayes factor thus depends on the unknown ratio $\TPR_j^{\zeroday} / \FPR_j^{\mathrm{novel}}$, which is unidentifiable without further assumptions. $\square$
 \end{proof}
 
-\subsection{Assumption Mandate for Alert Attribution 告警归因的假设声明要求}
+\subsection{Assumption Mandate for Alert Attribution }
 
-\begin{corollary}[Assumption Mandate for Alert Attribution 告警归因的假设声明要求]
+\begin{corollary}[Assumption Mandate for Alert Attribution ]
 \label{cor:assumption_mandate}
 Any claim attributing a sensor alert to a false positive or a zero-day attack \textbf{must} be accompanied by explicit, falsifiable assumptions about:
 \begin{enumerate}[label=(\roman*)]
@@ -500,21 +500,21 @@ Any claim attributing a sensor alert to a false positive or a zero-day attack \t
 Without these declarations, alert attribution is logically underdetermined (by Theorem~\ref{thm:fp_zeroday}) and therefore operationally invalid.
 \end{corollary}
 
-\begin{remark}[The Alert Triage Paradox 告警分诊悖论]
+\begin{remark}[The Alert Triage Paradox ]
 \label{rem:triage}
 Theorem~\ref{thm:fp_zeroday} reveals a structural paradox in Security Operations Center (SOC) alert triage: the traffic patterns that most require human analysis — novel, high-novelty alerts that could be zero-day attacks — are precisely the traffic patterns for which sensor error rates are least characterized, making the false-positive vs.\ zero-day ambiguity maximally severe. The honest position is: ``Given our declared assumption that anomaly-based false positives on novel traffic are bounded at $\alpha_{\mathrm{novel}}$, we estimate the posterior probability of a zero-day attack as $P(\zeroday \mid \alert = 1) = \ldots$ Under the alternative assumption that $\alpha_{\mathrm{novel}}$ is higher, this posterior is lower. The analyst should be aware of both answers.''
 \end{remark}
 
 % ======================================================================
-\section{\Cercis{} Score for Intrusion Detection 入侵检测的Cercis评分}
+\section{\Cercis{} Score for Intrusion Detection Cercis}
 \label{sec:cercis}
 % ======================================================================
 
 The \Cercis{} scoring framework ranks sensor configurations along two axes: quality $Q$ (detection accuracy on benchmarks) and novelty $N$ (coverage of attack types and traffic patterns). We adapt it to cybersecurity.
 
-\subsection{Quality Score $Q$: Detection Accuracy 检测准确度}
+\subsection{Quality Score $Q$: Detection Accuracy }
 
-\begin{definition}[Cybersecurity Quality Score 网络安全质量评分]
+\begin{definition}[Cybersecurity Quality Score ]
 \label{def:Q_cyber}
 For sensor $m$ evaluated over a labeled dataset with $T$ traffic windows, the quality score combines detection rate and false-positive control:
 \begin{equation}
@@ -538,7 +538,7 @@ Q_{\FP}(f_m) = 1 - \frac{\FPR_m}{\tau_{\FP}},
 where $\FPR_m = \Pbb(\alertvec_t^{(m)} = 1 \mid r_{\mathrm{benign}})$ and $\tau_{\FP}$ is a tolerance threshold (e.g., $\tau_{\FP} = 10^{-3}$, meaning sensors with FPR below 0.1\% receive a perfect score of 1).
 \end{definition}
 
-\begin{definition}[Attack-Aware Quality 针对攻击的质量]
+\begin{definition}[Attack-Aware Quality ]
 \label{def:Q_attack}
 To prevent sensors from achieving high $Q$ by only detecting easy attack types, we compute per-attack quality:
 \begin{equation}
@@ -548,9 +548,9 @@ Q_{\mathrm{per-attack}}(f_m, r) = \TPR_m(r) + \lambda_{\FP} \cdot \left(1 - \fra
 where $\FPR_m(r)$ is the false-positive rate conditioned on benign traffic that \textit{resembles} attack type $r$ (e.g., benign scanning tools vs.\ malicious port scans).
 \end{definition}
 
-\subsection{Novelty Score $N$: Traffic Pattern Coverage 流量模式覆盖}
+\subsection{Novelty Score $N$: Traffic Pattern Coverage }
 
-\begin{definition}[Traffic Novelty Score 流量新颖度评分]
+\begin{definition}[Traffic Novelty Score ]
 \label{def:N_cyber}
 The novelty score for a sensor configuration on a traffic window $\sensorstate_t$ quantifies how far the traffic deviates from the benign baseline:
 \begin{equation}
@@ -560,7 +560,7 @@ N(\sensorstate_t, \cD_{\mathrm{benign}}) = \min\!\left(1, \frac{D_M(\flowvec_t, 
 where $D_M$ is the Mahalanobis distance (Definition~\ref{def:state}) and $\tau_{\mathrm{novel}}$ is a normalization constant (e.g., the 99th percentile of $D_M$ on benign traffic). Novelty $N$ captures the degree to which a traffic pattern is ``unusual'' relative to the benign baseline.
 \end{definition}
 
-\begin{definition}[\Cercis{} Score for Intrusion Detection 入侵检测的Cercis评分]
+\begin{definition}[\Cercis{} Score for Intrusion Detection Cercis]
 \label{def:cercis_cyber}
 The \Cercis{} score for sensor $m$ at time $t$ is:
 \begin{equation}
@@ -570,7 +570,7 @@ The \Cercis{} score for sensor $m$ at time $t$ is:
 where $\eta \geq 0$ controls the weight of novelty. For attack detection, $\eta$ should be positive (novel traffic is suspicious); for benign traffic classification, $\eta$ should be negative (novelty penalizes scores). The \Cercis{} score framework thus captures the dual role of novelty: it is simultaneously a risk factor for attacks and a challenge for false-positive control.
 \end{definition}
 
-\begin{proposition}[\Cercis{} Monotonicity with Detection Diversity \Cercis评分与检测多样性的单调性]
+\begin{proposition}[\Cercis{} Monotonicity with Detection Diversity \Cercis]
 \label{prop:cercis_monotone}
 For two sensor configurations $\cF$ and $\cF'$ where $\cF \subset \cF'$ (i.e., $\cF'$ adds sensors from a new family to $\cF$), the joint \Cercis{} score satisfies $\Cercis(\cF') \geq \Cercis(\cF)$ provided the added sensors have non-negative individual \Cercis{} scores.
 \end{proposition}
@@ -580,7 +580,7 @@ Adding sensor $m'$ with $\Cercis(f_{m'}) \geq 0$ to the ensemble cannot decrease
 \end{proof}
 
 % ======================================================================
-\section{\Yajie{} Multi-Sensor Consensus 雅洁多传感器共识}
+\section{\Yajie{} Multi-Sensor Consensus }
 \label{sec:yajie}
 % ======================================================================
 
@@ -588,7 +588,7 @@ The \Yajie{} consensus mechanism aggregates alerts from heterogeneous sensors in
 
 \subsection{Consensus Architecture}
 
-\begin{definition}[\Yajie{} Consensus Vector 雅洁共识向量]
+\begin{definition}[\Yajie{} Consensus Vector ]
 \label{def:yajie_vector}
 At time $t$, the \Yajie{} consensus vector is a weighted combination of sensor alerts:
 \begin{equation}
@@ -603,7 +603,7 @@ where the weights $w_m^{(t)}$ satisfy $\sum_{m} w_m^{(t)} = 1$ and are chosen to
 \end{enumerate}
 \end{definition}
 
-\begin{definition}[Dynamic \Yajie{} Weighting 动态雅洁加权]
+\begin{definition}[Dynamic \Yajie{} Weighting ]
 \label{def:dynamic_yajie}
 The weight for sensor $m$ at time $t$ is:
 \begin{equation}
@@ -615,7 +615,7 @@ where $\tau > 0$ is a temperature parameter controlling how sharply the consensu
 
 \subsection{Consensus Properties}
 
-\begin{theorem}[\Yajie{} Consensus False-Positive Bound 雅洁共识误报界]
+\begin{theorem}[\Yajie{} Consensus False-Positive Bound ]
 \label{thm:yajie_fp}
 \rigorFull
 Under the \Yajie{} consensus with dynamic weights defined in Definition~\ref{def:dynamic_yajie}, and assuming conditional independence of cross-family alerts (\assumptionTag{A4}), the probability that the \Yajie{} consensus exceeds a threshold $\theta_{\Yajie} \in (0, 1)$ when the true regime is benign satisfies:
@@ -635,7 +635,7 @@ Under the benign regime, each sensor alert $\alertvec_t^{(m)}$ is a Bernoulli ra
 where the last step uses $\sum_m w_m^2 \leq w_{\max} \sum_m w_m = w_{\max}$ (since $\sum_m w_m = 1$), and further $1 / w_{\max}^2 \geq 1$ for $w_{\max} \leq 1$. The effective multiplicity $M_{\mathrm{eff}}$ replaces $M$ to account for within-family correlation. $\square$
 \end{proof}
 
-\begin{corollary}[Certified Intrusion Verdict 认证入侵裁决]
+\begin{corollary}[Certified Intrusion Verdict ]
 \label{cor:certified_verdict}
 The \Yajie{} consensus produces a certified intrusion verdict:
 \begin{equation}
@@ -650,21 +650,21 @@ The \Yajie{} consensus produces a certified intrusion verdict:
 where $\varepsilon_{\mathrm{cert}} > 0$ is a certification margin chosen to guarantee both false-positive and false-negative error rates below the declared thresholds $\alpha_{\FP}$ and $\alpha_{\FN}$.
 \end{corollary}
 
-\begin{remark}[Why Weighted Consensus Beats Majority Vote 为何加权共识优于多数投票]
+\begin{remark}[Why Weighted Consensus Beats Majority Vote ]
 \label{rem:weighted_consensus}
 Majority vote (equal weights $w_m = 1/M$) is a special case of \Yajie{} consensus with $\tau \to \infty$. However, majority vote ignores sensor quality: a high-FPR Snort instance has the same vote as a well-calibrated anomaly detector. The \Yajie{} weighting scheme automatically down-weights noisy sensors in benign traffic and up-weights them when their signature domain is relevant (e.g., Snort for known CVEs, anomaly detectors for zero-day). This is the operational realization of the SCX principle: ``every expert is heard, weighted by demonstrated quality and contextual relevance.''
 \end{remark}
 
 % ======================================================================
-\section{\Spring{} Gating: Zero-Day Detection as Regime-Shift Testing 零日漏洞检测作为制度变更检验}
+\section{\Spring{} Gating: Zero-Day Detection as Regime-Shift Testing }
 \label{sec:spring}
 % ======================================================================
 
 The \Spring{} gating mechanism applies sequential change-point detection to alert statistics, identifying when the network transitions from the benign regime to an attack regime — including, critically, previously unseen (zero-day) attack patterns.
 
-\subsection{Sequential Alert Process 序贯告警过程}
+\subsection{Sequential Alert Process }
 
-\begin{definition}[Alert Count Process 告警计数过程]
+\begin{definition}[Alert Count Process ]
 \label{def:alert_process}
 For a sensor set $\cF$, define the aggregate alert count at time $t$ as:
 \begin{equation}
@@ -674,7 +674,7 @@ A_t = \sum_{m=1}^{M} \alertvec_t^{(m)} \in \{0, 1, \ldots, M\}.
 Under the benign regime, $A_t$ follows a Poisson-binomial distribution with parameters $(\FPR_1, \ldots, \FPR_M)$, with mean $\mu_0 = \sum_m \FPR_m$ and variance $\sigma_0^2 = \sum_m \FPR_m (1 - \FPR_m)$.
 \end{definition}
 
-\begin{definition}[\Spring{} CUSUM Statistic Spring CUSUM统计量]
+\begin{definition}[\Spring{} CUSUM Statistic Spring CUSUM]
 \label{def:spring_cusum}
 The \Spring{} CUSUM statistic for detecting an upward shift in alert rate is:
 \begin{equation}
@@ -684,7 +684,7 @@ S_0 = 0, \quad S_t = \max(0, S_{t-1} + A_t - \mu_0 - \delta/2), \quad t \geq 1,
 where $\delta > 0$ is the minimum alert-rate increase considered meaningful (the ``detectable shift'' parameter). An alarm is raised when $S_t > h$, where $h$ is a threshold chosen to bound the false-alarm rate.
 \end{definition}
 
-\begin{theorem}[\Spring{} Detection Delay Bound Spring检测延迟界]
+\begin{theorem}[\Spring{} Detection Delay Bound Spring]
 \label{thm:spring_delay}
 \rigorPartial
 Under \assumptionTag{A7} (stationary benign alert process) and \assumptionTag{A4} (conditional independence), the \Spring{} CUSUM achieves:
@@ -704,7 +704,7 @@ The proof follows from standard CUSUM theory~\cite{Page1954, Lorden1971} applied
 
 \subsection{Zero-Day Attack Detection}
 
-\begin{definition}[Zero-Day Detection Protocol 零日漏洞检测协议]
+\begin{definition}[Zero-Day Detection Protocol ]
 \label{def:zeroday_protocol}
 A zero-day attack at time $t$ is declared when:
 \begin{enumerate}[label=(\roman*)]
@@ -716,7 +716,7 @@ A zero-day attack at time $t$ is declared when:
 Conditions (i)--(iii) together establish that an anomalous event is occurring with multi-sensor consensus; condition (iv) establishes that it is not a known attack, hence zero-day.
 \end{definition}
 
-\begin{proposition}[Zero-Day Detection Guarantee 零日漏洞检测保证]
+\begin{proposition}[Zero-Day Detection Guarantee ]
 \label{prop:zeroday_guarantee}
 Under \assumptionTag{A4}--\assumptionTag{A8}, the zero-day detection protocol achieves:
 \begin{itemize}[nosep]
@@ -726,7 +726,7 @@ Under \assumptionTag{A4}--\assumptionTag{A8}, the zero-day detection protocol ac
 \end{proposition}
 
 % ======================================================================
-\section{SIEM Aggregation as the SCX Audit Layer SIEM聚合作为SCX审计层}
+\section{SIEM Aggregation as the SCX Audit Layer SIEMSCX}
 \label{sec:siem}
 % ======================================================================
 
@@ -734,7 +734,7 @@ Standard SIEM (Security Information and Event Management) systems perform rule-b
 
 \subsection{SCX Audit Architecture for Cybersecurity}
 
-\begin{definition}[Cybersecurity Audit Layer 网络安全审计层]
+\begin{definition}[Cybersecurity Audit Layer ]
 \label{def:audit_layer}
 The SCX cybersecurity audit layer comprises four components:
 \begin{enumerate}[label=(\roman*)]
@@ -745,7 +745,7 @@ The SCX cybersecurity audit layer comprises four components:
 \end{enumerate}
 \end{definition}
 
-\begin{proposition}[SIEM Completeness Guarantee SIEM完备性保证]
+\begin{proposition}[SIEM Completeness Guarantee SIEM]
 \label{prop:siem_completeness}
 Under the SCX audit architecture with $M$ sensors from $K \geq 2$ families, the probability that \textit{any} attack — known or zero-day — is missed by both the \Yajie{} consensus and the \Spring{} CUSUM simultaneously is bounded by:
 \begin{equation}
@@ -772,19 +772,19 @@ Certification & Best-effort & Certified with error bounds \\
 \end{tabular}
 \end{center}
 
-\begin{remark}[The Cost of Certification 认证的成本]
+\begin{remark}[The Cost of Certification ]
 \label{rem:cost}
 The SCX audit architecture does not require new sensors or new detection algorithms. It requires (i) deploying sensors from multiple diverse families (not just multiple instances of the same signature engine), (ii) tracking sensor-level performance statistics, and (iii) making explicit the assumptions under which alerts are attributed. The marginal cost is primarily architectural (configuring heterogeneous sensors) and operational (maintaining performance statistics). The benefit is certification: an auditable guarantee that the system's claims about intrusion detection are probabilistically bounded.
 \end{remark}
 
 % ======================================================================
-\section{Experimental Protocol 实验方案}
+\section{Experimental Protocol }
 \label{sec:experiments}
 % ======================================================================
 
 We specify an experimental protocol to validate the SCX cybersecurity framework on standard benchmark datasets.
 
-\subsection{Datasets 数据集}
+\subsection{Datasets }
 
 \begin{enumerate}[label=(\roman*)]
     \item \textbf{CIC-IDS-2017}: 5 days of captured network traffic (Monday--Friday) with labeled benign and attack flows. Attack types include Brute Force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and Infiltration. A total of 2,830,743 flows with 80+ features per flow~\cite{Sharafaldin2018}.
@@ -792,7 +792,7 @@ We specify an experimental protocol to validate the SCX cybersecurity framework 
     \item \textbf{UNSW-NB15}: 2,540,044 records with 49 features, including 9 modern attack families (Fuzzers, Analysis, Backdoors, DoS, Exploits, Generic, Reconnaissance, Shellcode, and Worms)~\cite{Moustafa2015}.
 \end{enumerate}
 
-\subsection{Sensor Configuration 传感器配置}
+\subsection{Sensor Configuration }
 
 We simulate $M$ sensors from $K = 4$ families:
 \begin{itemize}[nosep]
@@ -803,7 +803,7 @@ We simulate $M$ sensors from $K = 4$ families:
 \end{itemize}
 Total: $M = 10$ sensors.
 
-\subsection{Evaluation Metrics 评估指标}
+\subsection{Evaluation Metrics }
 
 \begin{itemize}[nosep]
     \item \textbf{Detection completeness}: $\Pbb(\text{attack detected})$ by \Yajie{} consensus at $\theta_{\Yajie} = 0.5$
@@ -812,7 +812,7 @@ Total: $M = 10$ sensors.
     \item \textbf{Assumption sensitivity}: How verdicts change when declared assumptions are varied
 \end{itemize}
 
-\subsection{Experimental Design 实验设计}
+\subsection{Experimental Design }
 
 \begin{enumerate}[label=\textbf{Experiment \arabic*:}, nosep]
     \item \textbf{Multi-sensor diversity ablation}: Vary $M$, $K$, and within-family correlation $\rho_k$ to measure effect on $M_{\mathrm{eff}}$ and detection completeness. Hypothesis: $\Pbb(E_{\mathrm{miss}})$ decreases exponentially in $M_{\mathrm{eff}}$ as predicted by Theorem~\ref{thm:miss_bound}.
@@ -823,30 +823,30 @@ Total: $M = 10$ sensors.
 \end{enumerate}
 
 % ======================================================================
-\section{Discussion 讨论}
+\section{Discussion }
 \label{sec:discussion}
 % ======================================================================
 
-\subsection{Contributions Summary 贡献总结}
+\subsection{Contributions Summary }
 
 \begin{center}
 \begin{tabular}{lll}
 \toprule
 \textbf{Concept (English)} & \textbf{Chinese} & \textbf{SCX Mapping} \\
 \midrule
-IDS/IPS sensor & 入侵检测/防御传感器 & Expert $m$ \\
-Alert & 告警 & Claim \\
-False positive & 误报 & Noise \\
-Multi-sensor consensus & 多传感器共识 & \Yajie{} \\
-Zero-day detection & 零日漏洞检测 & \Spring{} gating \\
-Intrusion certification & 入侵认证 & Audit layer \\
-Sensor quality score & 传感器质量评分 & \Cercis{} Score \\
-Attack regime & 攻击制度 & Regime $r_t$ \\
+IDS/IPS sensor & / & Expert $m$ \\
+Alert &  & Claim \\
+False positive &  & Noise \\
+Multi-sensor consensus &  & \Yajie{} \\
+Zero-day detection &  & \Spring{} gating \\
+Intrusion certification &  & Audit layer \\
+Sensor quality score &  & \Cercis{} Score \\
+Attack regime &  & Regime $r_t$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{Implications for SOC Operations 对安全运营中心的影响}
+\subsection{Implications for SOC Operations }
 
 The SCX framework has direct operational implications for Security Operations Centers:
 
@@ -857,7 +857,7 @@ The SCX framework has direct operational implications for Security Operations Ce
     \item \textbf{Continuous assumption auditing}: Declared sensor error rates ($\FPR_m$, $\TPR_m$) must be continuously validated against ground-truth labels (from retrospective analysis, incident reports, or red-team exercises). Assumptions that drift outside declared bounds trigger re-certification.
 \end{enumerate}
 
-\subsection{Limitations 局限性}
+\subsection{Limitations }
 
 \limitationTag{3} \textbf{Labeled data requirement}: The \Cercis{} quality score $Q(f_m)$ requires labeled attack data, which may be scarce or unrepresentative for zero-day attacks. In production, quality can be estimated from historical alerts confirmed by SOC analysts.
 
@@ -869,12 +869,12 @@ The SCX framework has direct operational implications for Security Operations Ce
 
 \limitationTag{7} \textbf{Computational cost}: The \Yajie{} dynamic weighting (Definition~\ref{def:dynamic_yajie}) requires per-alert \Cercis{} score computation, including Mahalanobis novelty distance $D_M$ on $d$-dimensional features. For $d = 200$ features at wire speed (10 Gbps), this may exceed real-time budget. Approximate nearest-neighbor or sketching techniques are needed for production deployment.
 
-\subsection{Honest Uncertainty Communication 诚实的不确定性沟通}
+\subsection{Honest Uncertainty Communication }
 
 The framework's most important contribution may be its emphasis on \textbf{honest uncertainty communication} rather than false certainty. Theorem~\ref{thm:fp_zeroday} proves that some ambiguity is fundamental and cannot be resolved by better algorithms or more data. The responsible practice is to declare assumptions and report the range of possible conclusions consistent with those assumptions. This is the SCX principle: ``The audit mandate is not to eliminate uncertainty but to make it explicit and auditable.''
 
 % ======================================================================
-\section{Conclusion 结论}
+\section{Conclusion }
 \label{sec:conclusion}
 % ======================================================================
 
@@ -895,7 +895,7 @@ The framework establishes that intrusion detection should be audited, not merely
 % ======================================================================
 \appendix
 
-\section{Extended Proofs 扩展证明}
+\section{Extended Proofs }
 
 \subsection{Proof of Corollary~\ref{cor:required_M} (Required Sensor Multiplicity)}
 

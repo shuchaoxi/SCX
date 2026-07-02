@@ -99,11 +99,11 @@
 Multi-physics simulation decomposes naturally into domain experts---each physical domain (fluid, structure, thermal, electromagnetic, chemical) deploys its own solver, with coupling interfaces where errors cross-propagate. Neural surrogates---learned reduced-order models (ROMs), physics-informed neural operators, and deep operator networks---promise to accelerate individual domains or the entire coupled system. Yet no formal framework certifies simulation quality across coupled domains, and the coupling interface itself obscures error attribution: when coupled predictions deviate from experiments, which domain is responsible? We present the \SCX{} (Structured Causal eXamination) auditing framework applied to multi-physics simulation, providing per-domain and cross-domain quality guarantees. Core contributions: (i) a per-domain detection guarantee bounding the probability of missing a solver error of magnitude $\Delta$ as $\exp(-2M_d \Delta^2)$ for $M_d$ experts per domain; (ii) a cross-domain error propagation bound showing that error in domain $A$ propagates to domain $B$ through the coupling Lipschitz constant $L_{AB}$, with explicit forms for fluid-structure interaction ($L_{\mathrm{FSI}} \propto \rho_f / \rho_s$) and thermal-mechanical coupling ($L_{\mathrm{TM}} \propto \alpha E / k$); (iii) an unidentifiability theorem establishing that when a coupled simulation disagrees with experiment, the error source---domain solver, coupled-domain solver, or coupling condition---is unidentifiable without declared assumptions, making the coupling interface the strongest application of \ThmSCXHonest; (iv) a \Cercis{} score $S = Q_{\mathrm{per\text{-}domain}} + Q_{\mathrm{coupling}} + \eta N$ ranking multi-physics regimes by combined accuracy and novelty; (v) a multi-domain \Yajie{} consensus mechanism where each domain's solvers vote per-domain, then domain-level consensus propagates through the coupling interface. All theorems are stated with explicit assumptions under the \SCX{} convention, with proofs at \rigorFull, \rigorPartial, and \rigorSketch{} levels.
 
 \medskip
-\noindent\textbf{Keywords:} multi-physics simulation 多物理场, fluid-structure interaction 流固耦合, coupling interface 耦合界面, SCX auditing, error propagation, source unidentifiability, \Cercis{} scoring, \Yajie{} consensus, neural surrogate, certified digital twin
+\noindent\textbf{Keywords:} multi-physics simulation , fluid-structure interaction , coupling interface , SCX auditing, error propagation, source unidentifiability, \Cercis{} scoring, \Yajie{} consensus, neural surrogate, certified digital twin
 \end{abstract}
 
 % ======================================================================
-\section{Introduction 引言}
+\section{Introduction }
 % ======================================================================
 
 Multi-physics simulation---the coupled solution of multiple interacting physical phenomena---underpins modern computational engineering. Aeroelastic flutter in aircraft wings couples Navier-Stokes fluid dynamics with nonlinear structural mechanics. Thermal barrier coatings in gas turbines couple conjugate heat transfer with thermo-mechanical stress. Electromagnetic forming couples Maxwell's equations with plastic structural deformation. Nuclear reactor safety analysis couples neutron transport, thermal hydraulics, and fuel thermo-mechanics. In each case, the simulation is not one monolithic solve but a federation of domain-specific solvers exchanging data across coupling interfaces.
@@ -111,8 +111,8 @@ Multi-physics simulation---the coupled solution of multiple interacting physical
 \textbf{Classic approaches.} Two principal paradigms organize multi-physics coupling:
 
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{Partitioned coupling 分区耦合.} Each physical domain deploys its own solver. Solvers exchange coupling variables iteratively at the domain interface $\Gamma$ until consistency is achieved. For fluid-structure interaction (FSI), a CFD solver computes pressure and shear on $\Gamma$, transfers them to a structural solver as boundary loads, receives the deformed geometry back, and iterates. The Gauss-Seidel or Jacobi fixed-point iteration is standard \cite{Farhat1998,Piperno2001}. Advantages: software modularity, best-in-class solvers per domain, independent mesh refinement. Disadvantages: added-mass instability for incompressible flows with light structures \cite{Causin2005}, slow convergence for strong coupling.
-    \item \textbf{Monolithic coupling 整体耦合.} All physical equations are discretized as a single algebraic system and solved simultaneously. The coupling conditions are embedded in the unified residual. Advantages: unconditional stability, quadratic convergence with Newton methods. Disadvantages: enormous system matrices, loss of software modularity, difficult preconditioning across disparate physics \cite{Heil2008}.
+    \item \textbf{Partitioned coupling .} Each physical domain deploys its own solver. Solvers exchange coupling variables iteratively at the domain interface $\Gamma$ until consistency is achieved. For fluid-structure interaction (FSI), a CFD solver computes pressure and shear on $\Gamma$, transfers them to a structural solver as boundary loads, receives the deformed geometry back, and iterates. The Gauss-Seidel or Jacobi fixed-point iteration is standard \cite{Farhat1998,Piperno2001}. Advantages: software modularity, best-in-class solvers per domain, independent mesh refinement. Disadvantages: added-mass instability for incompressible flows with light structures \cite{Causin2005}, slow convergence for strong coupling.
+    \item \textbf{Monolithic coupling .} All physical equations are discretized as a single algebraic system and solved simultaneously. The coupling conditions are embedded in the unified residual. Advantages: unconditional stability, quadratic convergence with Newton methods. Disadvantages: enormous system matrices, loss of software modularity, difficult preconditioning across disparate physics \cite{Heil2008}.
 \end{enumerate}
 
 \textbf{Neural approaches.} Recent years have seen a surge of interest in neural surrogates for multi-physics:
@@ -137,25 +137,25 @@ The coupling interface is where unidentifiability becomes most powerful.}
 \textbf{Paper structure.} Section~2 formalizes multi-physics as multi-expert prediction. Section~3 proves per-domain detection guarantees. Section~4 bounds cross-domain error propagation. Section~5 proves unidentifiability at coupling interfaces. Section~6 defines the \Cercis{} score for multi-physics. Section~7 presents multi-domain \Yajie{} consensus. Section~8 specifies experimental protocols. Section~9 discusses implications for certified digital twins.
 
 % ======================================================================
-\section{Formalization: Multi-Physics as Multi-Expert Prediction 多物理场作为多专家预测的形式化}
+\section{Formalization: Multi-Physics as Multi-Expert Prediction }
 \label{sec:formulation}
 % ======================================================================
 
-\subsection{Domain Decomposition 领域分解}
+\subsection{Domain Decomposition }
 
 Let the set of physical domains be $\domains = \{d_1, d_2, \ldots, d_D\}$, where each domain $d$ represents a distinct physical regime:
 
 \begin{itemize}
-    \item $\domFluid$: Fluid dynamics (Navier-Stokes equations) 流体力学;
-    \item $\domStruct$: Structural mechanics (elastodynamics) 结构力学;
-    \item $\domThermal$: Heat transfer (Fourier/Boltzmann transport) 热传导;
-    \item $\domEM$: Electromagnetics (Maxwell's equations) 电磁学;
-    \item $\domChem$: Chemical reactions (advection-diffusion-reaction) 化学反应.
+    \item $\domFluid$: Fluid dynamics (Navier-Stokes equations) ;
+    \item $\domStruct$: Structural mechanics (elastodynamics) ;
+    \item $\domThermal$: Heat transfer (Fourier/Boltzmann transport) ;
+    \item $\domEM$: Electromagnetics (Maxwell's equations) ;
+    \item $\domChem$: Chemical reactions (advection-diffusion-reaction) .
 \end{itemize}
 
 Each domain $d$ occupies a spatial region $\Omega^d \subset \R^{n_d}$ ($n_d \in \{1,2,3\}$). Domains interact through shared interfaces $\interface^{AB} = \partial\Omega^A \cap \partial\Omega^B \neq \emptyset$. The union of all interfaces is denoted $\interface = \bigcup_{A,B} \interface^{AB}$.
 
-\begin{definition}[Multi-Physics System 多物理场系统]\label{def:multiphysics}
+\begin{definition}[Multi-Physics System ]\label{def:multiphysics}
 A multi-physics system $\mathcal{M}$ is the tuple:
 \begin{equation}\label{eq:system}
 \mathcal{M} = \left(\domains, \{\Omega^d\}_{d \in \domains}, \{\mathcal{G}^d\}_{d \in \domains}, \{\interface^{AB}\}_{A,B \in \domains}, \{\mathcal{C}^{AB}\}_{A,B}\right),
@@ -168,7 +168,7 @@ where:
 \end{itemize}
 \end{definition}
 
-\subsection{Multi-Expert Solver Ensemble 多专家求解器集合}
+\subsection{Multi-Expert Solver Ensemble }
 
 For each domain $d \in \domains$, we deploy $M_d$ solvers (``experts''):
 \begin{equation}\label{eq:experts}
@@ -184,11 +184,11 @@ where each $f_m^d: \mathcal{X}^d \to \mathcal{Y}^d$ maps domain inputs (boundary
 
 The key requirement is that experts within a domain produce \textit{different} predictions when they err---diversity of inductive bias, discretization, or modeling assumption.
 
-\begin{assumption}[A1: Domain Separability 领域可分性]\label{ass:A1}
+\begin{assumption}[A1: Domain Separability ]\label{ass:A1}
 The multi-physics system $\mathcal{M}$ admits a partitioned solution: for each domain $d$, given coupling inputs $\mathbf{c}_{\mathrm{in}}^d$ from neighboring domains, there exists a well-posed sub-problem $\mathcal{G}^d(\mathbf{u}^d; \mathbf{c}_{\mathrm{in}}^d) = 0$ with unique solution $\mathbf{u}^d \in \mathcal{Y}^d$.
 \end{assumption}
 
-\begin{assumption}[A2: Coupling Well-Posedness 耦合适定性]\label{ass:A2}
+\begin{assumption}[A2: Coupling Well-Posedness ]\label{ass:A2}
 The coupling operators $\Phi^{AB}$ are Lipschitz continuous with constant $L_{AB} < \infty$:
 \begin{equation}
 \norm{\Phi^{AB}(u) - \Phi^{AB}(v)}_{\mathcal{T}_B} \leq L_{AB} \norm{u - v}_{\mathcal{T}_A}, \quad \forall u,v \in \mathcal{T}_A|_\interface.
@@ -199,15 +199,15 @@ The coupling operators $\Phi^{AB}$ are Lipschitz continuous with constant $L_{AB
 For each domain $d$, the solution $\mathbf{u}^d$ is bounded in the relevant norm: $\norm{\mathbf{u}^d}_{\mathcal{Y}^d} \leq B_d < \infty$.
 \end{assumption}
 
-\begin{assumption}[A4: Expert Independence per Domain 每领域专家独立性]\label{ass:A4}
+\begin{assumption}[A4: Expert Independence per Domain ]\label{ass:A4}
 For each domain $d$, the $M_d$ experts are mutually independent conditional on the coupling inputs: their prediction errors $\varepsilon_m^d = \norm{f_m^d(\mathbf{x}) - \mathbf{u}^d_*}_{\mathcal{Y}^d}$ are independent random variables. This holds when experts use independent discretizations, random seeds, or training data subsamples.
 \end{assumption}
 
-\begin{assumption}[A5: Detectable Error Margin 可检测误差边距]\label{ass:A5}
+\begin{assumption}[A5: Detectable Error Margin ]\label{ass:A5}
 For each domain $d$, there exists $\Delta_d > 0$ such that when a solver error of magnitude $\Delta_d$ occurs, at least one expert $m$ satisfies $\varepsilon_m^d > \Delta_d$ and at least one other expert $m'$ satisfies $\varepsilon_{m'}^d \leq \Delta_d/2$.
 \end{assumption}
 
-\subsection{Coupling Iteration and Error Flow 耦合迭代与误差流}
+\subsection{Coupling Iteration and Error Flow }
 
 In partitioned coupling, domains exchange data at the interface through a fixed-point iteration. At coupling iteration $k$, domain $A$ solves with boundary conditions from domain $B$ at iteration $k-1$:
 
@@ -238,7 +238,7 @@ Proposition~\ref{prop:error_flow} captures the fundamental mechanism of error pr
 \end{remark}
 
 % ======================================================================
-\section{Per-Domain Quality Guarantee 每领域质量保证}
+\section{Per-Domain Quality Guarantee }
 \label{sec:per_domain}
 % ======================================================================
 
@@ -253,11 +253,11 @@ D_d(\mathbf{x}^d) = \frac{1}{M_d}\sum_{m=1}^{M_d} \norm{\hat{\mathbf{y}}_m^d - \
 
 A \textbf{domain alarm} is raised if $D_d(\mathbf{x}^d) > \tau_d$ for a domain-specific threshold $\tau_d$.
 
-\begin{definition}[Per-Domain Error Event 每领域错误事件]\label{def:domain_error}
+\begin{definition}[Per-Domain Error Event ]\label{def:domain_error}
 For domain $d$, a solver error of magnitude $\Delta_d$ occurs if there exists at least one expert $m$ such that $\norm{\hat{\mathbf{y}}_m^d - \mathbf{u}_*^d}_{\mathcal{Y}^d} > \Delta_d$, where $\mathbf{u}_*^d$ is the true solution (defined by the governing PDE with converged coupling).
 \end{definition}
 
-\begin{theorem}[Per-Domain Detection Guarantee 每领域检测保证]\label{thm:per_domain}
+\begin{theorem}[Per-Domain Detection Guarantee ]\label{thm:per_domain}
 Under Assumptions~\ref{ass:A1}--\ref{ass:A5}, for domain $d$ with $M_d$ independently-trained experts and effective multiplicity $M_d^{\mathrm{eff}} \leq M_d$, the probability of missing a solver error of magnitude $\Delta_d$ is bounded by:
 \begin{equation}\label{eq:per_domain_bound}
 \Pr[\text{miss}_d \mid \text{error}_d] \leq \exp\left(-2 M_d^{\mathrm{eff}} \cdot \frac{\Delta_d^2}{B_d^2}\right),
@@ -287,7 +287,7 @@ where we lower-bound $p_d - 1/2 \geq \Delta_d/(2B_d)$ via A3 and A5.
 \textbf{Step 4: Correlation correction.} Replacing the idealized independent sample size $M_d$ with the effective multiplicity $M_d^{\mathrm{eff}} = M_d/(1 + (M_d-1)\bar{\rho}_d)$ \cite{Liang1986} accounts for residual correlation, yielding the tighter form with factor 2 in the exponent. $\square$
 \end{proof}
 
-\begin{corollary}[Required Experts per Domain 每领域所需专家数]\label{cor:required_Md}
+\begin{corollary}[Required Experts per Domain ]\label{cor:required_Md}
 To achieve detection confidence $1 - \alpha$ in domain $d$, the required effective multiplicity is:
 \begin{equation}\label{eq:required_Md}
 M_d^{\mathrm{eff}} \geq \frac{B_d^2 \log(1/\alpha)}{2\Delta_d^2}.
@@ -295,12 +295,12 @@ M_d^{\mathrm{eff}} \geq \frac{B_d^2 \log(1/\alpha)}{2\Delta_d^2}.
 For $\alpha = 0.01$, $B_d$ at the scale of the physical quantity (velocity ~$10^2$ m/s, stress ~$10^8$ Pa, temperature ~$10^3$ K), and $\Delta_d$ at engineering accuracy (1\% relative error), $M_d^{\mathrm{eff}} \approx 10$--$50$ experts per domain.
 \end{corollary}
 
-\begin{remark}[Pre-Coupling Detection 耦合前检测]
+\begin{remark}[Pre-Coupling Detection ]
 Theorem~\ref{thm:per_domain} is applied \textbf{before} coupling variables are exchanged. This is critical: if an error is detected in domain $A$ at the per-domain stage, the erroneous output is blocked from propagating to domain $B$ through the coupling interface. The detection acts as a firewall, preventing cascading errors across domains.
 \end{remark}
 
 % ======================================================================
-\section{Cross-Domain Error Propagation Bound 跨领域误差传播界}
+\section{Cross-Domain Error Propagation Bound }
 \label{sec:cross_domain}
 % ======================================================================
 
@@ -310,7 +310,7 @@ Even with per-domain detection, sub-threshold errors ($\varepsilon_A < \tau_A$, 
 
 Consider two coupled domains $A$ and $B$. Domain $A$ produces solution $\tilde{\mathbf{u}}_A = \mathbf{u}_A^* + \boldsymbol{\delta}_A$ with error $\boldsymbol{\delta}_A$. Let $\mathcal{S}_B: \mathcal{T}_B|_\interface \to \mathcal{Y}^B$ be the solution operator for domain $B$, Lipschitz with constant $L_B^{\mathrm{sol}}$.
 
-\begin{assumption}[A6: Solution Operator Lipschitz 求解算子Lipschitz连续性]\label{ass:A6}
+\begin{assumption}[A6: Solution Operator Lipschitz Lipschitz]\label{ass:A6}
 For each domain $d$, the solution operator $\mathcal{S}_d: \mathcal{T}_d|_\interface \to \mathcal{Y}^d$ (mapping coupling boundary conditions to the full domain solution) is Lipschitz continuous:
 \begin{equation}
 \norm{\mathcal{S}_d(\mathbf{c}_1) - \mathcal{S}_d(\mathbf{c}_2)}_{\mathcal{Y}^d} \leq L_d^{\mathrm{sol}} \norm{\mathbf{c}_1 - \mathbf{c}_2}_{\mathcal{T}_d}.
@@ -318,7 +318,7 @@ For each domain $d$, the solution operator $\mathcal{S}_d: \mathcal{T}_d|_\inter
 This holds for linear PDEs by the Lax-Milgram lemma; for nonlinear PDEs, it holds locally by the implicit function theorem when the linearized operator is invertible.
 \end{assumption}
 
-\begin{theorem}[Cross-Domain Error Propagation Bound 跨领域误差传播界]\label{thm:cross_domain}
+\begin{theorem}[Cross-Domain Error Propagation Bound ]\label{thm:cross_domain}
 Under Assumptions~\ref{ass:A1}--\ref{ass:A3} and~\ref{ass:A6}, if domain $A$ incurs error $\varepsilon_A = \norm{\boldsymbol{\delta}_A}_{\mathcal{Y}^A}$, then the propagated error in domain $B$ is bounded by:
 \begin{equation}\label{eq:cross_bound}
 \varepsilon_{A \to B} \leq L_{AB} \cdot L_B^{\mathrm{sol}} \cdot \varepsilon_A,
@@ -354,11 +354,11 @@ By A6 (solution operator Lipschitz):
 \textbf{Step 3: Chain propagation.} For a chain $d_1 \to d_2 \to \cdots \to d_K$, apply induction. Base case $K=2$ is established. For the inductive step, treating $d_1 \to d_{K-1}$ as the source error and $d_{K-1} \to d_K$ as the single hop yields the product bound. $\square$
 \end{proof}
 
-\subsection{Explicit Coupling Lipschitz Constants 显式耦合Lipschitz常数}
+\subsection{Explicit Coupling Lipschitz Constants Lipschitz}
 
 We derive explicit forms of $L_{AB}$ for two canonical multi-physics couplings.
 
-\begin{proposition}[FSI Coupling Lipschitz Constant 流固耦合Lipschitz常数]\label{prop:fsi_lipschitz}
+\begin{proposition}[FSI Coupling Lipschitz Constant Lipschitz]\label{prop:fsi_lipschitz}
 For fluid-structure interaction with incompressible Navier-Stokes fluid (density $\rho_f$, viscosity $\mu_f$) and linear elastic structure (density $\rho_s$, Young's modulus $E_s$, Poisson ratio $\nu_s$) on interface $\interface$:
 \begin{equation}\label{eq:L_FSI}
 L_{\mathrm{FSI}} = \max\left(\frac{\rho_f}{\rho_s} \cdot \frac{1}{\Delta t} \cdot C_{\mathrm{geom}}, \; \frac{\mu_f}{E_s} \cdot \frac{h_f}{h_s^2} \cdot C_{\mathrm{mesh}}\right),
@@ -370,7 +370,7 @@ where $\Delta t$ is the coupling time step, $h_f, h_s$ are mesh sizes, and $C_{\
 The FSI coupling operator consists of two components. \textbf{Traction transfer:} fluid stress on $\interface$ mapped to structural load: $\boldsymbol{\sigma}_f \cdot \mathbf{n} \mapsto \mathbf{t}_s$. The stress scales as $\rho_f U^2$ (dynamic) or $\mu_f U/h_f$ (viscous), and the structural response scales as $E_s \cdot \delta / h_s$. The ratio gives the Lipschitz constant. \textbf{Displacement transfer:} structural displacement $\mathbf{d}_s|_\interface$ mapped to fluid mesh motion. The amplification factor $\rho_f/(\rho_s \Delta t)$ captures the added-mass effect \cite{Causin2005}: when $\rho_f/\rho_s$ is large and $\Delta t$ is small, the structural displacement is amplified in the fluid pressure response, leading to divergence of the fixed-point iteration. Full derivation requires the linearized FSI operator; see Appendix~\ref{sec:app_fsi}. $\square$
 \end{proof}
 
-\begin{proposition}[Thermal-Mechanical Coupling Lipschitz Constant 热力耦合Lipschitz常数]\label{prop:therm_mech_lipschitz}
+\begin{proposition}[Thermal-Mechanical Coupling Lipschitz Constant Lipschitz]\label{prop:therm_mech_lipschitz}
 For thermo-mechanical coupling with heat conduction (conductivity $k$, thermal expansion coefficient $\alpha$) and linear elasticity:
 \begin{equation}\label{eq:L_TM}
 L_{\mathrm{TM}} = \frac{\alpha E_s}{(1-2\nu_s)k} \cdot \frac{h_s^2}{\Delta t} \cdot C_{\mathrm{therm}},
@@ -382,7 +382,7 @@ where $\alpha$ is the coefficient of thermal expansion, and $C_{\mathrm{therm}}$
 The thermal strain is $\boldsymbol{\varepsilon}_{\mathrm{th}} = \alpha \Delta T \mathbf{I}$. By Hooke's law, the thermal stress is $\boldsymbol{\sigma}_{\mathrm{th}} = \frac{E_s}{1-2\nu_s} \alpha \Delta T$. The temperature field satisfies $\partial_t T = (k/\rho c_p) \nabla^2 T$. A temperature error $\delta T$ at the interface propagates with characteristic time $\tau \sim h_s^2 \rho c_p / k$, producing stress error $|\delta \boldsymbol{\sigma}| = \frac{\alpha E_s}{1-2\nu_s} |\delta T|$. The Lipschitz ratio follows. For two-way coupling (including mechanical heating via plastic work), an additional term enters the bound. $\square$
 \end{proof}
 
-\begin{corollary}[Domain Prioritization via Lipschitz Constants 通过Lipschitz常数确定领域优先级]\label{cor:domain_priority}
+\begin{corollary}[Domain Prioritization via Lipschitz Constants Lipschitz]\label{cor:domain_priority}
 In a multi-physics system with multiple coupling interfaces, domains should be audited in order of decreasing \textbf{coupling amplification factor}:
 \begin{equation}\label{eq:amplification}
 A^{A \to B} = L_{AB} \cdot L_B^{\mathrm{sol}}.
@@ -391,13 +391,13 @@ Detecting errors in domain $A$ before they propagate yields the greatest reducti
 \end{corollary}
 
 % ======================================================================
-\section{Unidentifiability at Coupling Interfaces 耦合界面的不可辨识性}
+\section{Unidentifiability at Coupling Interfaces }
 \label{sec:unidentifiability}
 % ======================================================================
 
 The coupling interface is where \ThmSCXHonest{} (the Honest Agent Theorem of \SCX) achieves its most powerful application. When a coupled simulation disagrees with experimental measurements, the error source---domain $A$ solver, domain $B$ solver, or the coupling condition itself---is fundamentally unidentifiable without declared assumptions.
 
-\subsection{The Tripartite Ambiguity 三方模糊性}
+\subsection{The Tripartite Ambiguity }
 
 Consider a coupled FSI simulation compared against wind-tunnel data measuring structural displacement $\mathbf{d}_{\mathrm{exp}}$ and surface pressure $p_{\mathrm{exp}}$ on $\interface$. The simulation output $(\mathbf{d}_{\mathrm{sim}}, p_{\mathrm{sim}})$ deviates from experiment. Three hypotheses compete:
 
@@ -417,7 +417,7 @@ The experimental validation provides a finite set of observables $\mathcal{O} = 
 The coupling condition $\mathcal{C}^{AB}$ is specified up to a parameter vector $\boldsymbol{\theta}_{AB} \in \Theta_{AB}$. The true coupling condition corresponds to some $\boldsymbol{\theta}_{AB}^*$, but the solver uses $\hat{\boldsymbol{\theta}}_{AB}$.
 \end{assumption}
 
-\begin{theorem}[Coupling Interface Unidentifiability 耦合界面不可辨识性]\label{thm:coupling_unidentifiability}
+\begin{theorem}[Coupling Interface Unidentifiability ]\label{thm:coupling_unidentifiability}
 Under Assumptions~\ref{ass:A1}--\ref{ass:A3} and \ref{ass:A7}--\ref{ass:A8}, for any coupled multi-physics system $\mathcal{M}$ with two or more domains, there exist distinct configurations:
 \begin{equation}
 (\varepsilon_A^{(1)}, \varepsilon_B^{(1)}, \boldsymbol{\theta}_{AB}^{(1)}) \neq (\varepsilon_A^{(2)}, \varepsilon_B^{(2)}, \boldsymbol{\theta}_{AB}^{(2)}),
@@ -461,7 +461,7 @@ which is a single linear equation in three unknowns $(\varepsilon_A^{(2)}, \vare
 \textbf{Step 5: Genericity.} The construction is not pathological. In practical multi-physics, the coupling parameter space $\Theta_{AB}$ includes mesh interpolation method (consistent vs.\ conservative), data transfer algorithm (nearest-neighbor, radial basis function, Mortar projection), and interface compatibility enforcement (weak vs.\ strong). Each choice perturbs the solution at the interface, and solver errors in adjacent domains can compensate. The unidentifiability is generic. $\square$
 \end{proof}
 
-\begin{corollary}[Assumption Mandate at Every Coupling Interface 每个耦合界面的假设声明要求]\label{cor:assumption_mandate}
+\begin{corollary}[Assumption Mandate at Every Coupling Interface ]\label{cor:assumption_mandate}
 Any claim attributing coupled simulation error to a specific domain or coupling condition \textbf{must} be accompanied by explicit, falsifiable assumptions about the other two components. For example:
 \begin{itemize}
     \item ``Assuming the structural solver is exact (verified on a cantilever beam benchmark), the residual FSI error is attributed to the fluid solver.''
@@ -470,7 +470,7 @@ Any claim attributing coupled simulation error to a specific domain or coupling 
 Without such declared assumptions, the attribution is logically underdetermined.
 \end{corollary}
 
-\begin{remark}[Why the Coupling Interface is the Strongest Application 为何耦合界面是最强应用]\label{rem:strongest}
+\begin{remark}[Why the Coupling Interface is the Strongest Application ]\label{rem:strongest}
 \ThmSCXHonest{} applies to any learning or simulation system where multiple error sources produce observationally equivalent outputs. In multi-physics, the coupling interface amplifies the unidentifiability in three ways:
 \begin{enumerate}[label=(\roman*)]
     \item \textbf{Compositional ambiguity.} The coupling operator $\Phi^{AB}$ composes domain $A$'s error with domain $B$'s sensitivity, creating error structures that neither domain could produce alone. This expands the space of observationally equivalent configurations.
@@ -481,7 +481,7 @@ These three mechanisms together make the coupling interface the domain where \Th
 \end{remark}
 
 % ======================================================================
-\section{\Cercis{} Score for Multi-Physics Regimes 多物理场Cercis评分}
+\section{\Cercis{} Score for Multi-Physics Regimes Cercis}
 \label{sec:cercis}
 % ======================================================================
 
@@ -525,7 +525,7 @@ S(\mathcal{R}) = Q(\mathcal{R}) + \eta \cdot N(\mathcal{R}),
 where $\eta \geq 0$ is a user-specified novelty-accuracy tradeoff. $\eta = 0$ recovers pure accuracy ranking (safest for engineering design). $\eta > 0$ rewards exploration of novel coupled regimes (relevant for research and method development).
 \end{definition}
 
-\subsection{Multi-Fidelity Hierarchy 多保真度层级}
+\subsection{Multi-Fidelity Hierarchy }
 
 The \Cercis{} score naturally induces a multi-fidelity hierarchy:
 
@@ -566,18 +566,18 @@ At this ceiling, coupling model error dominates, and resources are better spent 
 \end{conjecture}
 
 % ======================================================================
-\section{Multi-Domain \Yajie{} Consensus 多领域Yajie共识}
+\section{Multi-Domain \Yajie{} Consensus Yajie}
 \label{sec:yajie}
 % ======================================================================
 
 \Yajie{} is the \SCX{} game-theoretic consensus mechanism. In the multi-physics setting, consensus operates at two levels: (i) per-domain consensus among solvers within each domain, and (ii) cross-domain consensus aggregating domain-level judgments through the coupling interface.
 
-\subsection{Two-Level Consensus Architecture 双层共识架构}
+\subsection{Two-Level Consensus Architecture }
 
 \begin{definition}[Multi-Domain \Yajie{} Game]\label{def:yajie_mp}
 The multi-domain \Yajie{} game is a hierarchical game:
 
-\textbf{Level 1 --- Per-domain consensus (每领域共识):}
+\textbf{Level 1 --- Per-domain consensus ():}
 \begin{itemize}
     \item \textbf{Players:} $M_d$ solvers within domain $d$.
     \item \textbf{States:} Test inputs $\mathbf{x}_k^d$ (coupling inputs + domain-specific parameters).
@@ -585,7 +585,7 @@ The multi-domain \Yajie{} game is a hierarchical game:
     \item \textbf{Payoff:} $\pi_m^d = \frac{1}{K}\sum_k \ind{\tau_m^d(\mathbf{x}_k^d) \geq \overline{\mathrm{med}}(\boldsymbol{\tau}_{-m}^d(\mathbf{x}_k^d))} \cdot \mathrm{acc}_m^d(\mathbf{x}_k^d)$.
 \end{itemize}
 
-\textbf{Level 2 --- Cross-domain consensus (跨领域共识):}
+\textbf{Level 2 --- Cross-domain consensus ():}
 \begin{itemize}
     \item \textbf{Players:} Domain-level aggregated predictions $\bar{\mathbf{y}}^d$ (weighted by per-domain trust scores).
     \item \textbf{States:} Coupled-system test cases $\mathcal{T}_{\mathrm{coup}}$.
@@ -608,7 +608,7 @@ At Level~1 (per-domain), \Yajie{} equilibrium partitions each domain's test inpu
 At Level~2 (cross-domain), aggregated domain predictions interact through the coupling interface. Let $E_d$ be the event that domain $d$'s consensus prediction is erroneous. The coupled system fails if any domain errs \textit{and} the error propagates to observables. By Theorem~\ref{thm:cross_domain}, error $E_d$ propagates with amplification $A^{d \to \mathrm{coup}}$. By the union bound and independence of per-domain failure events (domains are physically distinct), the decomposition follows. The coupling failure term accounts for errors in $\Phi^{AB}$ itself, which the Level-2 consensus detects when domains agree on their local predictions but the coupled observable deviates from experiment. $\square$
 \end{proof}
 
-\subsection{Ground Truth Integration 地面实况整合}
+\subsection{Ground Truth Integration }
 
 Multi-physics \Yajie{} consensus admits experimental ground truth at the coupled-system level, unavailable in purely computational single-physics auditing.
 
@@ -624,7 +624,7 @@ If for a coupled test case $t$: (i) Level~1 consensus holds for all domains ($\m
 By condition (i) and Theorem~\ref{thm:per_domain}, each domain's prediction is correct with probability at least $1 - \exp(-2 M_d^{\mathrm{eff}} \Delta_d^2 / B_d^2)$. By condition (ii), domains are confident in their coupled predictions. The only remaining error source is the coupling model $\mathcal{C}^{AB}$. By Theorem~\ref{thm:coupling_unidentifiability}, we cannot identify \textit{which} aspect of $\mathcal{C}^{AB}$ is wrong without additional assumptions (A8), but we can conclude with high probability that $\mathcal{C}^{AB}$ is implicated. The joint confidence follows from the independence of per-domain detection events (A4). $\square$
 \end{proof}
 
-\begin{remark}[Wind Tunnel + Strain Gauge Example 风洞+应变片实例]\label{rem:wind_tunnel}
+\begin{remark}[Wind Tunnel + Strain Gauge Example +]\label{rem:wind_tunnel}
 Consider an FSI validation case: wind tunnel measures surface pressure $p_{\mathrm{exp}}$ and laser vibrometry measures structural displacement $\mathbf{d}_{\mathrm{exp}}$. The SCX-audited multi-physics pipeline proceeds as:
 \begin{enumerate}[label=(\roman*)]
     \item \textbf{Per-domain audit:} $M_f$ CFD solvers and $M_s$ FEM solvers are evaluated on single-physics benchmarks. Per-domain consensus (Level~1) identifies any domain-internal failures.
@@ -635,7 +635,7 @@ Consider an FSI validation case: wind tunnel measures surface pressure $p_{\math
 \end{remark}
 
 % ======================================================================
-\section{Experimental Protocol 实验协议}
+\section{Experimental Protocol }
 \label{sec:experiment}
 % ======================================================================
 
@@ -645,34 +645,34 @@ We propose a structured experimental protocol for evaluating SCX-audited multi-p
 
 \begin{enumerate}[label=\textbf{BM\arabic*:},leftmargin=*]
 
-    \item \textbf{ Fluid-Structure Interaction 流固耦合.}
+    \item \textbf{ Fluid-Structure Interaction .}
     \begin{itemize}
         \item \textbf{Turek-Hron benchmark \cite{Turek2006}.} Laminar incompressible flow past a cylinder with an elastic tail in the wake. Parameters: $Re = 20$--$200$, elastic modulus $E = 1.4$--$5.6$ MPa. Metrics: tip displacement time series, lift and drag coefficients, Strouhal number.
         \item \textbf{CSM benchmarks \cite{CSMbenchmarks}.} AGARD 445.6 wing (transonic flutter), NACA 0012 with trailing-edge flap. Metrics: flutter boundary (Mach number vs.\ dynamic pressure), limit cycle oscillation amplitude.
         \item \textbf{Neural surrogate comparison:} POD-ROM coupled FSI \cite{Fresca2021} vs.\ DeepONet-FEM partitioned \cite{Lu2021} vs.\ monolithic PINN \cite{Raissi2019} vs.\ traditional partitioned (OpenFOAM + CalculiX).
     \end{itemize}
 
-    \item \textbf{ Thermal-Mechanical Coupling 热力耦合.}
+    \item \textbf{ Thermal-Mechanical Coupling .}
     \begin{itemize}
         \item \textbf{Nuclear fuel pellet \cite{NuclearFuel}.} UO$_2$ fuel pellet with internal heat generation, thermal expansion, and elastic-plastic cladding contact. Metrics: centerline temperature, pellet-clad gap closure, fission gas release.
         \item \textbf{Turbine blade \cite{TurbineBlade}.} Conjugate heat transfer (external film cooling + internal convection) with thermal stress and creep. Metrics: metal temperature distribution, creep strain after 10,000 hours.
         \item \textbf{Neural surrogate comparison:} FNO for heat conduction \cite{Li2021} + linear elasticity vs.\ fully-coupled PINN vs.\ traditional FEM (Abaqus/ANSYS).
     \end{itemize}
 
-    \item \textbf{ Coupled Aero-Thermal (Hypersonic) 气动热耦合（高超声速）.}
+    \item \textbf{ Coupled Aero-Thermal (Hypersonic) .}
     \begin{itemize}
         \item \textbf{Hollow cylinder flare \cite{HypersonicBenchmark}.} Mach 6--10 flow with aerodynamic heating, surface radiation, and in-depth conduction. Metrics: surface heat flux, wall temperature history, boundary layer transition location.
         \item \textbf{Double cone/wedge.} Shock-shock and shock-boundary layer interaction with thermal protection system response.
         \item \textbf{Neural surrogate comparison:} Multi-fidelity ROM \cite{Hesthaven2016} vs.\ physics-informed DeepONet vs.\ traditional hypersonics CFD (DPLR, LAURA).
     \end{itemize}
 
-    \item \textbf{ Electromagnetic-Mechanical Coupling 电磁力耦合.}
+    \item \textbf{ Electromagnetic-Mechanical Coupling .}
     \begin{itemize}
         \item \textbf{Electromagnetic forming \cite{EMforming}.} Pulsed magnetic field induces eddy currents in a workpiece, generating Lorentz forces that drive high-strain-rate plastic deformation. Metrics: final deformation depth, strain distribution, discharge current waveform.
         \item \textbf{MEMS electrostatic actuation.} Coupled electrostatics (Poisson) and elastodynamics. Metrics: pull-in voltage, resonance frequency shift.
     \end{itemize}
 
-    \item \textbf{ Multi-Domain Coupling (3+ Physics) 三场及以上耦合.}
+    \item \textbf{ Multi-Domain Coupling (3+ Physics) .}
     \begin{itemize}
         \item \textbf{Ablation (fluid + thermal + chemical + moving mesh) \cite{Ablation}.} Hypersonic reentry with surface pyrolysis, char formation, and shape change. Metrics: recession rate, char depth, in-depth temperature profiles.
         \item \textbf{Magnetohydrodynamics + thermal + structural.} Fusion blanket module with liquid metal MHD flow, neutron heating, and thermal stress.
@@ -683,14 +683,14 @@ We propose a structured experimental protocol for evaluating SCX-audited multi-p
 \subsection{Evaluation Protocol}
 
 \begin{algorithm}[htbp]
-\caption{SCX-Audited Multi-Physics Evaluation 多物理场SCX审计评估协议}
+\caption{SCX-Audited Multi-Physics Evaluation SCX}
 \label{alg:evaluation}
 \begin{algorithmic}[1]
 \Require Multi-physics benchmark suite $\{\mathcal{B}_d\}_{d \in \domains} \cup \mathcal{B}_{\mathrm{coup}}$, expert ensembles $\{\mathcal{E}^d\}_{d \in \domains}$, ground truth $\mathcal{G}_{\mathrm{exp}}$
 \Ensure \Cercis{} scores $S(\mathcal{R})$, \Yajie{} consensus flags, error attribution report
 
 \For{each domain $d \in \domains$}
-    \State \textbf{Per-domain audit (per-domain audit 每领域审计):}
+    \State \textbf{Per-domain audit (per-domain audit ):}
     \For{each benchmark $\beta \in \mathcal{B}_d$}
         \For{each expert $m = 1, \ldots, M_d$}
             \State Compute prediction $\hat{\mathbf{y}}_m^d(\beta)$
@@ -704,7 +704,7 @@ We propose a structured experimental protocol for evaluating SCX-audited multi-p
     \State \textbf{Level-1 \Yajie{} consensus:} Compute trust scores $\tau_m^d$, partition into agree/disagree
 \EndFor
 
-\State \textbf{Coupled-system evaluation (coupled-system evaluation 耦合系统评估):}
+\State \textbf{Coupled-system evaluation (coupled-system evaluation ):}
 \For{each coupled benchmark $\beta \in \mathcal{B}_{\mathrm{coup}}$}
     \State \textbf{Coupling iteration:} Exchange aggregated domain predictions via $\Phi^{AB}$ until convergence
     \State Compute coupled prediction $\hat{O}_{\mathrm{coup}}(\beta)$ from aggregated domain outputs
@@ -719,7 +719,7 @@ We propose a structured experimental protocol for evaluating SCX-audited multi-p
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Statistical Reporting Requirements 统计报告要求}
+\subsection{Statistical Reporting Requirements }
 
 All multi-physics SCX audit reports must include:
 
@@ -733,11 +733,11 @@ All multi-physics SCX audit reports must include:
 \end{enumerate}
 
 % ======================================================================
-\section{Discussion 讨论}
+\section{Discussion }
 \label{sec:discussion}
 % ======================================================================
 
-\subsection{Path to Certified Digital Twins 通往认证数字孪生的路径}
+\subsection{Path to Certified Digital Twins }
 
 A \textbf{certified digital twin} \cite{Grieves2017}---a virtual representation of a physical asset that is continuously updated with sensor data and trusted for operational decisions---requires multi-physics simulation with guaranteed quality. The \SCX{} framework provides the certification infrastructure:
 
@@ -748,7 +748,7 @@ A \textbf{certified digital twin} \cite{Grieves2017}---a virtual representation 
     \item \textbf{\SCX{} audit at every coupling interface.} Each interface $\interface^{AB}$ is instrumented with the \Yajie{} Level-2 consensus mechanism. Any breakdown in cross-domain consensus triggers a coupling model review.
 \end{enumerate}
 
-\subsection{Honest Computational Cost Reporting 诚实的计算成本报告}
+\subsection{Honest Computational Cost Reporting }
 
 The \SCX{} auditing paradigm is computationally demanding: fielding $M_d$ experts per domain multiplies the per-domain cost by $M_d$. For $D = 5$ domains with $M_d = 20$ experts each, the auditing overhead is $100\times$ relative to a single-solver-per-domain baseline. We address this honestly:
 
@@ -762,7 +762,7 @@ The \SCX{} auditing paradigm is computationally demanding: fielding $M_d$ expert
     \end{equation}
 \end{enumerate}
 
-\subsection{Limitations 局限性}
+\subsection{Limitations }
 
 \textbf{Assumption A1 (Domain Separability).} Not all multi-physics systems admit clean domain separation. Porous media flow involves fluid and solid at the pore scale; phase-field fracture couples mechanics and damage at the continuum level. For these, the coupling interface is diffuse, and our partitioned analysis requires extension to overlapping domain decomposition \cite{Toselli2005} or volume-coupled formulations.
 
@@ -774,7 +774,7 @@ The \SCX{} auditing paradigm is computationally demanding: fielding $M_d$ expert
 
 \textbf{Unidentifiability is a feature, not a bug.} Theorem~\ref{thm:coupling_unidentifiability} may appear pessimistic---it proves that error attribution is impossible without assumptions. We argue the opposite: \textit{forcing explicit assumption declaration is a methodological improvement over implicit attribution.} Current practice in multi-physics validation often attributes discrepancies to ``turbulence model error'' or ``mesh resolution'' without acknowledging the coupling ambiguity. \SCX{} makes the ambiguity explicit and mandates assumption transparency.
 
-\subsection{Relationship to Existing Methods 与现有方法的关系}
+\subsection{Relationship to Existing Methods }
 
 \textbf{Verification and Validation (V\&V) \cite{Oberkampf2010}.} The ASME V\&V 20 standard provides a framework for code verification (solving equations right) and solution validation (solving right equations). \SCX{} auditing complements V\&V by adding (i) per-expert multiplicity to detect solver-specific errors, (ii) coupling-aware error propagation bounds, and (iii) formal unidentifiability analysis that V\&V's ``total validation uncertainty'' framework \cite{Coleman1999} implicitly acknowledges but does not prove.
 

@@ -1,25 +1,25 @@
 % ===========================================================================
 % Spring: A Self-Evolving Gatekeeper with Provable Convergence
-% —— 严格形式化版本（JMLR 标准）
+% —— JMLR 
 % Target: Journal of Machine Learning Research (JMLR)
 % SCX, 2026
 % ===========================================================================
 %
-% 本版本与初稿 (arXiv) 的关键区别：
-%   1. 每个 Theorem/Proposition/Lemma 均配有 \begin{proof}...\end{proof}
-%   2. SE-1（固定点收敛）和 SE-2（完备界）的完整证明从 self_evolution/
-%      理论库提取并嵌入
-%   3. Lyapunov 函数的严格推导（含"无参考集重放则不可能"的否定性定理）
-%   4. 收敛率分析（强凸、PL 条件、非凸、Polyak 平均）
-%   5. 退火调度定理
-%   6. 诚实标注所有假设的证明状态和未解决问题
+%  (arXiv) 
+%   1.  Theorem/Proposition/Lemma  \begin{proof}...\end{proof}
+%   2. SE-1 SE-2 self_evolution/
+%      
+%   3. Lyapunov ""
+%   4. PL Polyak 
+%   5. 
+%   6. 
 %
 % ===========================================================================
 
 \documentclass[11pt,a4paper]{article}
 
 % ─── Packages ───────────────────────────────────────────────────────────
-\usepackage[UTF8]{ctex}           % 中文支持
+\usepackage[UTF8]{ctex}           % 
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
 \usepackage{bm}
@@ -36,27 +36,27 @@
 
 % ─── Theorem Environments ──────────────────────────────────────────────
 \theoremstyle{plain}
-\newtheorem{theorem}{定理}[section]
-\newtheorem{lemma}[theorem]{引理}
-\newtheorem{corollary}[theorem]{推论}
-\newtheorem{proposition}[theorem]{命题}
-\newtheorem{conjecture}[theorem]{猜想}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
 
 \theoremstyle{definition}
-\newtheorem{definition}[theorem]{定义}
-\newtheorem{assumption}[theorem]{假设}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
 
 \theoremstyle{remark}
-\newtheorem{remark}[theorem]{注记}
-\newtheorem{openproblem}[theorem]{未解决问题}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{openproblem}[theorem]{}
 
 % ─── Proof Status Labels ────────────────────────────────────────────────
 \definecolor{proven}{RGB}{0,100,0}
 \definecolor{conjectured}{RGB}{180,100,0}
 \definecolor{open}{RGB}{180,0,0}
-\newcommand{\provenstatus}{\textcolor{proven}{[已证明]}}
-\newcommand{\conjecturedstatus}{\textcolor{conjectured}{[猜想]}}
-\newcommand{\openstatus}{\textcolor{open}{[未解决]}}
+\newcommand{\provenstatus}{\textcolor{proven}{[]}}
+\newcommand{\conjecturedstatus}{\textcolor{conjectured}{[]}}
+\newcommand{\openstatus}{\textcolor{open}{[]}}
 
 % ─── Custom Math Operators ─────────────────────────────────────────────
 \DeclareMathOperator*{\argmin}{arg\,min}
@@ -81,593 +81,593 @@
 \newcommand{\norm}[1]{\|#1\|}
 
 % ─── Title ──────────────────────────────────────────────────────────────
-\title{\textbf{Spring：一个具有可证收敛性的自进化守门人}\\
-       {\large ——严格形式化版本——}}
+\title{\textbf{Spring}\\
+       {\large ————}}
 
-\author{SCX 研究组}
+\author{SCX }
 
-\date{2026年6月30日}
+\date{2026630}
 
 \begin{document}
 \maketitle
 
 % ===========================================================================
-% 摘要
+% 
 % ===========================================================================
 \begin{abstract}
-我们提出 Spring，一个用于数据质量评估的自进化守门人算法。该算法通过与神经学生模型的迭代共进化，学习"何为好数据"的标准。与固定阈值的噪声检测器不同，Spring 同时演化其评估标准（守门人评分函数 $S_t$）和被评估的模型（NEP 学生 $f_{\theta_t}$），并维持一个单调增长的记忆库 $M_t$，使先前被丢弃的数据得以"复活"。
+ Spring""Spring  $S_t$NEP  $f_{\theta_t}$ $M_t$""
 
-本文提供 Spring 的严格形式化数学基础。我们在标准正则性条件下证明：(1) Spring 几乎必然收敛到一个自洽固定点（定理~Spring-1/SE-1），其完整证明包含 Lyapunov 下降、记忆库稳定化、参数位移消失、以及 Ces\`{a}ro 均值收敛论证；(2) 在物理约束下，系统在有限时间内到达 $\varepsilon$-近似固定点（定理~Spring-2/SE-2）；(3) 通过参考集重放和重要性采样的 Lyapunov 严格下降证明（定理~\ref{thm:lyapunov-proven}），并证明无参考集重放时 Lyapunov 下降在渐近意义上\textbf{形式上不可能}（定理~\ref{thm:impossible}）；(4) $O(t^{-a})$ 收敛率表征，Polyak 平均达到极小极大最优的 $O(t^{-1})$ 率；(5) 退火调度定理确保累积分布偏移有限；(6) 四种规范失败模式的严格刻画。
+ Spring (1) Spring ~Spring-1/SE-1 Lyapunov  Ces\`{a}ro (2)  $\varepsilon$-~Spring-2/SE-2(3)  Lyapunov ~\ref{thm:lyapunov-proven} Lyapunov \textbf{}~\ref{thm:impossible}(4) $O(t^{-a})$ Polyak  $O(t^{-1})$ (5) (6) 
 
-我们对所有假设的证明状态进行诚实标注。条件 C1--C7 下的固定点收敛已证明；Lyapunov 下降要求 C10（参考集重放）和 C11（有界重要性权重），否则定理~\ref{thm:impossible} 证明其不可能；收敛率在强凸/PL 条件下已证明，在一般非凸情况下退化为 $O(t^{-(1-a)})$ 的平稳点收敛；$\varepsilon \to 0$ 极限下的全函数收敛和无限状态空间的相变分析仍为开放问题。
+ C1--C7 Lyapunov  C10 C11~\ref{thm:impossible} /PL  $O(t^{-(1-a)})$ $\varepsilon \to 0$ 
 \end{abstract}
 
 % ===========================================================================
-% 1. 引言
+% 1. 
 % ===========================================================================
-\section{引言}
+\section{}
 
-\subsection{筛选--探索权衡}
+\subsection{--}
 
-现代科学机器学习面临一个根本性困境。一方面，物理科学的数据驱动模型——神经原子间势、材料性质预测器、结构--性质映射——需要大量标注训练数据。另一方面，这些系统的真实标签极为昂贵：密度泛函理论（DFT）计算、实验测量、或专家标注每一项都承载不可忽略的成本。这创造了\textbf{筛选--探索权衡}：
+——--——DFT\textbf{--}
 
 \begin{itemize}[nosep]
-    \item \textbf{筛选}：系统性过滤输入数据质量，拒绝标签噪声和不可靠样本，以维护模型精度。
-    \item \textbf{探索}：接受多样化和具有挑战性的样本，以扩展模型的能力域。
+    \item \textbf{}
+    \item \textbf{}
 \end{itemize}
 
-现有方法以固定的、人工设计的启发式方法处理此权衡。主动学习根据模型不确定性或委员会分歧选择样本，但将预言机视为无误 \citep{settles2009}。贝叶斯优化 \citep{srinivas2010} 构建高斯过程代理以指导昂贵函数评估，但假设观测是干净的。噪声鲁棒训练方法 \citep{natarajan2013} 修改损失函数，但不\textit{学习}数据质量标准。
+ \citep{settles2009} \citep{srinivas2010}  \citep{natarajan2013} \textit{}
 
-\subsection{Spring 算法}
+\subsection{Spring }
 
-Spring（复活之季）是一个自进化守门人，通过与一个学生模型的迭代共进化，\textit{学习自己的评估标准}。在每次迭代 $t$：
+Spring\textit{} $t$
 
 \begin{enumerate}[nosep]
-    \item \textbf{评判}：守门人 $S_t: \X \times \Y \to [0,1]$ 对输入样本 $(x, y)$ 的可靠性进行评分。
-    \item \textbf{存储}：高评分样本进入记忆库 $M_t$，该记忆库\textit{单调增长}——样本永不被删除。
-    \item \textbf{训练}：NEP（噪声等变预测器）学生 $f_{\theta_t}$ 在被接受的样本上训练。
-    \item \textbf{更新}：使用学生的预测和累积证据，精化守门人 $S_{t+1}$。
-    \item \textbf{复活}：先前被丢弃的样本被重新评分；那些现在通过阈值的样本被"复活"并纳入训练。
+    \item \textbf{} $S_t: \X \times \Y \to [0,1]$  $(x, y)$ 
+    \item \textbf{} $M_t$\textit{}——
+    \item \textbf{}NEP $f_{\theta_t}$ 
+    \item \textbf{} $S_{t+1}$
+    \item \textbf{}""
 \end{enumerate}
 
-"Spring"这个名字反映了算法的标志性机制：\textit{``冬天并不杀死——它等待春天。''}低于接受阈值的数据结构不被丢弃。它们在记忆库中休眠，当守门人通过后续训练成熟时，它们被重新评估，可能被复活。
+"Spring"\textit{``——''}
 
-\subsection{本文贡献与诚实声明}
+\subsection{}
 
-本文对 Spring 进行严格的数学形式化，每一定理均提供完整证明。我们诚实地标注：
+ Spring 
 \begin{itemize}[nosep]
-    \item \textbf{已证明}（绿色标注）：在明确陈述的假设下，结果有完整严格证明。
-    \item \textbf{猜想}（橙色标注）：结果有合理的证明思路，但存在当前工具无法闭合的缺口。
-    \item \textbf{未解决}（红色标注）：完全开放的问题。
+    \item \textbf{}
+    \item \textbf{Conjecture}
+    \item \textbf{}
 \end{itemize}
 
-具体贡献：
+
 \begin{enumerate}[nosep]
-    \item \textbf{自进化评估标准}：形式化一个评估准则与被评估模型共进化的耦合动力系统。
-    \item \textbf{可证收敛性}：建立几乎必然收敛到自洽固定点的完整证明（定理~\ref{thm:spring1}），以及物理约束下的有限时间终止（定理~\ref{thm:spring2}）。
-    \item \textbf{完整 Lyapunov 下降证明}：通过参考集重放和重要性采样证明 Lyapunov 严格下降（定理~\ref{thm:lyapunov-proven}），并证明无此机制时下降的形式不可能性（定理~\ref{thm:impossible}）。
-    \item \textbf{收敛率表征}：推导 $O(t^{-a})$ 收敛率，Polyak 平均达到极小极大最优的 $O(t^{-1})$。
-    \item \textbf{退火调度定理}：证明累积分布偏移在退火调度下有限（定理~\ref{thm:annealing}）。
-    \item \textbf{失败模式分类}：形式化四种规范失败模式及其诊断测试。
+    \item \textbf{}
+    \item \textbf{}~\ref{thm:spring1}~\ref{thm:spring2}
+    \item \textbf{ Lyapunov } Lyapunov ~\ref{thm:lyapunov-proven}~\ref{thm:impossible}
+    \item \textbf{} $O(t^{-a})$ Polyak  $O(t^{-1})$
+    \item \textbf{}~\ref{thm:annealing}
+    \item \textbf{}
 \end{enumerate}
 
 % ===========================================================================
-% 2. Spring 自进化循环
+% 2. Spring 
 % ===========================================================================
-\section{Spring 自进化循环}
+\section{Spring }
 
-\subsection{算法}
+\subsection{Algorithm}
 
 \begin{algorithm}[ht]
-\caption{Spring 自进化守门人}
+\caption{Spring }
 \label{alg:spring}
 \begin{algorithmic}[1]
-\State \textbf{输入:} 初始守门人 $S_0$，参考集 $M_0$，验证集 $V_0$，NEP 学生 $f_{\theta_0}$，数据流 $\{\D_t\}_{t \geq 1}$，探索分数 $\varepsilon > 0$
+\State \textbf{:}  $S_0$ $M_0$ $V_0$NEP  $f_{\theta_0}$ $\{\D_t\}_{t \geq 1}$ $\varepsilon > 0$
 \For{$t = 0, 1, 2, \dots$}
-    \State \textbf{记忆更新:} 接受 $(x,y) \in \D_{t}$ 若 $S_t(x,y) \geq \gamma_t$ 或以概率 $\varepsilon$ 随机接受
+    \State \textbf{:}  $(x,y) \in \D_{t}$  $S_t(x,y) \geq \gamma_t$  $\varepsilon$ 
     \State $M_{t+1} = M_t \cup \{(x, y, S_t(x,y)) : \text{accepted}\}$
-    \State \textbf{学生更新（重要性采样）:} 采样 $(x, y) \sim P_{S_t}$，权重 $w = P_0(x)/P_{S_t}(x)$
+    \State \textbf{:}  $(x, y) \sim P_{S_t}$ $w = P_0(x)/P_{S_t}(x)$
     \State $\theta_{t+1} = \theta_t - \alpha_t \cdot w \cdot \nabla_\theta \ell(f_{\theta_t}(x), y)$
-    \State \textbf{守门人更新（参考集重放）:} 在 $M_0$ 上计算 $\text{SCXUpdate}$
+    \State \textbf{:}  $M_0$  $\text{SCXUpdate}$
     \State $S_{t+1} = \Pi_{[0,1]}[S_t + \beta_t (\text{SCXUpdate}(S_t, M_0, f_{\theta_{t+1}}) - S_t)]$
-    \State \textbf{复活:} 对 $M_{t+1}$ 中所有 $s < \gamma_t$ 的 $(x, y, s)$：
-    \State \quad 若 $S_{t+1}(x,y) \geq \gamma_{t+1}$，标记为复活并纳入训练
+    \State \textbf{:}  $M_{t+1}$  $s < \gamma_t$  $(x, y, s)$
+    \State \quad  $S_{t+1}(x,y) \geq \gamma_{t+1}$
 \EndFor
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{核心创新：自进化评估}
+\subsection{}
 
-Spring 与先前工作的关键区别在于评估标准和被评估模型的\textit{共进化}。在主动学习中，查询策略是固定的。在贝叶斯优化中，采集函数具有固定的参数形式。在 AlphaZero 中，游戏规则是不可变的。在 Spring 中，守门人 $S_t$——定义``数据质量''的函数——本身是通过与学生的互动和累积证据来学习和精化的。
+Spring \textit{} AlphaZero  Spring  $S_t$——``''——
 
-复活机制是单调记忆属性 $M_t \subseteq M_{t+1}$ 的直接后果。因为样本永不删除，在时间 $t$ 被拒绝的样本（因为 $S_t(x,y) < \gamma_t$）保留在记忆中，并在时间 $t+1$ 在进化的守门人 $S_{t+1}$ 下重新评估。若 $S_{t+1}(x,y) \geq \gamma_{t+1}$，该样本被复活。此机制防止不可逆的早期错误，允许系统从过早保守主义中恢复。
+ $M_t \subseteq M_{t+1}$  $t$  $S_t(x,y) < \gamma_t$ $t+1$  $S_{t+1}$  $S_{t+1}(x,y) \geq \gamma_{t+1}$
 
-\subsection{双时间尺度结构}
+\subsection{}
 
-Spring 以自然的双时间尺度分离运行。学生 $\theta_t$ 以速率 $\alpha_t$（快时间尺度）更新，守门人 $S_t$ 以速率 $\beta_t$（慢时间尺度）更新。关键条件是：
+Spring  $\theta_t$  $\alpha_t$ $S_t$  $\beta_t$
 
 \begin{equation}\label{eq:twotimescale}
-    \beta_t = o(\alpha_t), \quad \text{即} \quad \lim_{t \to \infty} \frac{\beta_t}{\alpha_t} = 0.
+    \beta_t = o(\alpha_t), \quad \text{} \quad \lim_{t \to \infty} \frac{\beta_t}{\alpha_t} = 0.
 \end{equation}
 
-一个规范的联合可满足调度为 $\alpha_t = t^{-a}$, $\beta_t = t^{-b}$，其中 $\frac{1}{2} < a < 1 < b$（例如 $a = 0.6$, $b = 1.2$）。这确保：
+ $\alpha_t = t^{-a}$, $\beta_t = t^{-b}$ $\frac{1}{2} < a < 1 < b$ $a = 0.6$, $b = 1.2$
 \begin{enumerate}[nosep, label=(\roman*)]
-    \item $\sum \alpha_t = \infty$, $\sum \alpha_t^2 < \infty$（学生的 Robbins-Monro 条件）
-    \item $\sum \beta_t < \infty$（有限总分布偏移）
-    \item $\sum \beta_t^2 < \infty$（方差控制）
-    \item $\beta_t/\alpha_t \to 0$（时间尺度分离）
+    \item $\sum \alpha_t = \infty$, $\sum \alpha_t^2 < \infty$ Robbins-Monro 
+    \item $\sum \beta_t < \infty$
+    \item $\sum \beta_t^2 < \infty$
+    \item $\beta_t/\alpha_t \to 0$
 \end{enumerate}
 
-\textbf{注：}$\sum \beta_t < \infty$ 是一个\textbf{独立的显式条件}，不能从 $\beta_t = o(\alpha_t)$ 结合 $\sum \alpha_t^2 < \infty$ 推出。反例：$\alpha_t = t^{-0.6}$, $\beta_t = 1/(t^{0.6} \log t)$ 满足 $\beta_t = o(\alpha_t)$ 且 $\sum \alpha_t^2 < \infty$，但 $\sum \beta_t = \infty$。
+\textbf{}$\sum \beta_t < \infty$ \textbf{} $\beta_t = o(\alpha_t)$  $\sum \alpha_t^2 < \infty$ $\alpha_t = t^{-0.6}$, $\beta_t = 1/(t^{0.6} \log t)$  $\beta_t = o(\alpha_t)$  $\sum \alpha_t^2 < \infty$ $\sum \beta_t = \infty$
 
 % ===========================================================================
-% 3. 数学框架
+% 3. 
 % ===========================================================================
-\section{数学框架}
+\section{}
 
-\subsection{符号体系}
+\subsection{}
 
 \begin{table}[ht]
 \centering
-\caption{主要符号}
+\caption{}
 \label{tab:notation}
 \begin{tabular}{@{}ll@{}}
 \toprule
-符号 & 含义 \\
+ &  \\
 \midrule
-$\X, \Y$ & 输入空间，标签空间，$|\Y| = K$ \\
-$f^*: \X \to \Y$ & 真实预言机（不可观测） \\
-$\{f_m\}_{m=1}^M$ & $M$ 个在不相交数据上训练的专家模型 \\
-$\ell: \Y \times \Y \to [0, B]$ & 有界损失函数 \\
-$\tau > 0$ & 专家误差阈值 \\
-$C(x) = \frac{1}{M}\sum_m \ind{\ell(f_m(x), y) > \tau}$ & 共识分数 \\
-$S_t: \X \times \Y \to [0,1]$ & 时间 $t$ 的守门人评分函数 \\
-$M_t$ & 时间 $t$ 的记忆库 \\
-$f_{\theta_t}: \X \to \Y$ & 参数为 $\theta_t$ 的 NEP 学生 \\
-$z_t = (S_t, M_t, \theta_t)$ & 进化状态 \\
-$\Phi: \Z \to \Z$ & 自进化更新算子 \\
-$\alpha_t, \beta_t$ & 学生和守门人学习率 \\
-$\gamma_t$ & 接受阈值 \\
-$\eta$ & 全局标签噪声率 \\
-$\varepsilon$ & 随机探索分数 \\
+$\X, \Y$ & $|\Y| = K$ \\
+$f^*: \X \to \Y$ &  \\
+$\{f_m\}_{m=1}^M$ & $M$  \\
+$\ell: \Y \times \Y \to [0, B]$ &  \\
+$\tau > 0$ &  \\
+$C(x) = \frac{1}{M}\sum_m \ind{\ell(f_m(x), y) > \tau}$ &  \\
+$S_t: \X \times \Y \to [0,1]$ &  $t$  \\
+$M_t$ &  $t$  \\
+$f_{\theta_t}: \X \to \Y$ &  $\theta_t$  NEP  \\
+$z_t = (S_t, M_t, \theta_t)$ &  \\
+$\Phi: \Z \to \Z$ &  \\
+$\alpha_t, \beta_t$ &  \\
+$\gamma_t$ &  \\
+$\eta$ &  \\
+$\varepsilon$ &  \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{状态空间与动力学}
+\subsection{}
 
-进化状态空间为 $\Z = \F \times \M \times \Theta$，其中 $\F$ 是 $\X \times \Y \to [0,1]$ 的可测函数空间，$\M$ 是有限标注数据集的空间，$\Theta \subseteq \R^{d_\theta}$ 是参数空间。$\F$ 配备度量 $d_{\F}(S, S') = \E_{(x,y) \sim \D}[|S(x,y) - S'(x,y)|]$，$\Z$ 配备积度量。
+ $\Z = \F \times \M \times \Theta$ $\F$  $\X \times \Y \to [0,1]$ $\M$ $\Theta \subseteq \R^{d_\theta}$ $\F$  $d_{\F}(S, S') = \E_{(x,y) \sim \D}[|S(x,y) - S'(x,y)|]$$\Z$ 
 
-自进化循环是一个离散动力系统：
+
 
 \begin{equation}\label{eq:dynamics}
     z_{t+1} = \Phi(z_t), \quad t = 0, 1, 2, \dots
 \end{equation}
 
-其中 $\Phi = (\Phi_S, \Phi_M, \Phi_\theta)$ 分解为三个因果耦合的分量映射：
-$S_t \xrightarrow{\Phi_M} M_{t+1}$，$(S_t, M_{t+1}) \xrightarrow{\Phi_\theta} \theta_{t+1}$，以及 $(S_t, M_{t+1}, \theta_{t+1}) \xrightarrow{\Phi_S} S_{t+1}$。
+ $\Phi = (\Phi_S, \Phi_M, \Phi_\theta)$ 
+$S_t \xrightarrow{\Phi_M} M_{t+1}$$(S_t, M_{t+1}) \xrightarrow{\Phi_\theta} \theta_{t+1}$ $(S_t, M_{t+1}, \theta_{t+1}) \xrightarrow{\Phi_S} S_{t+1}$
 
-\begin{proposition}[因果结构与块三角 Jacobian]\label{prop:causal}
-在每个时间步内，因果结构是前馈的（无环）；因此，$\Phi$ 的 Jacobian（当其存在时）关于三分量 $(S, M, \theta)$ 是块三角的。
+\begin{proposition}[ Jacobian]\label{prop:causal}
+$\Phi$  Jacobian $(S, M, \theta)$ 
 \end{proposition}
 
 \begin{proof}
-在每个时间步 $t$ 内：
+ $t$ 
 \begin{enumerate}[nosep]
-    \item $M_{t+1}$ 仅依赖于 $S_t$（和 $\D_{t+1}$），不依赖于 $\theta_t$ 或 $M_t$ 的其他部分。
-    \item $\theta_{t+1}$ 依赖于 $S_t$（通过数据选择）和 $\theta_t$，但不直接依赖于 $M_{t+1}$ 的更新过程。
-    \item $S_{t+1}$ 依赖于 $S_t$, $M_{t+1}$, 和 $\theta_{t+1}$。
+    \item $M_{t+1}$  $S_t$ $\D_{t+1}$ $\theta_t$  $M_t$ 
+    \item $\theta_{t+1}$  $S_t$ $\theta_t$ $M_{t+1}$ 
+    \item $S_{t+1}$  $S_t$, $M_{t+1}$,  $\theta_{t+1}$
 \end{enumerate}
-因此偏导数矩阵呈块下三角形式：$\partial \Phi_S / \partial \theta$ 和 $\partial \Phi_\theta / \partial M$ 存在，但 $\partial \Phi_M / \partial \theta = 0$, $\partial \Phi_M / \partial S$ 可能非零。$\partial \Phi_S / \partial M$ 和 $\partial \Phi_S / \partial \theta$, $\partial \Phi_\theta / \partial S$ 构成下三角块。没有循环依赖。
+$\partial \Phi_S / \partial \theta$  $\partial \Phi_\theta / \partial M$  $\partial \Phi_M / \partial \theta = 0$, $\partial \Phi_M / \partial S$ $\partial \Phi_S / \partial M$  $\partial \Phi_S / \partial \theta$, $\partial \Phi_\theta / \partial S$ 
 \end{proof}
 
-\subsection{假设 C1--C11}
+\subsection{ C1--C11}
 
-我们陈述收敛的正则性条件。条件 C1--C7 是核心条件；C8--C11 是 Lyapunov 下降的充分性额外条件。
+ C1--C7 C8--C11  Lyapunov 
 
-\begin{assumption}[C1: 有限覆盖维度]\label{ass:c1}
-特征空间 $\Phi = \phi(\X) \subseteq \R^{d_\phi}$ 具有有限欧几里得维度 $d_\phi < \infty$。
+\begin{assumption}[C1: ]\label{ass:c1}
+ $\Phi = \phi(\X) \subseteq \R^{d_\phi}$  $d_\phi < \infty$
 \end{assumption}
 
-\textbf{注：}C1 替代了不切实际的``$\X$ 有限''假设。通过 C3（Lipschitz 守门人），覆盖数论证实现相同的记忆库稳定化结果：将 $\Phi$ 划分为 $N_\varepsilon = O((L_S/\varepsilon)^{d_\phi})$ 个 $\varepsilon/L_S$-超立方体，每个立方体内的所有点在守门人评分上 $\varepsilon$-等价。可区分记忆库配置数至多为 $2^{N_\varepsilon}$，对任何固定 $\varepsilon > 0$ 是有限的。
+\textbf{}C1 ``$\X$ '' C3Lipschitz  $\Phi$  $N_\varepsilon = O((L_S/\varepsilon)^{d_\phi})$  $\varepsilon/L_S$- $\varepsilon$- $2^{N_\varepsilon}$ $\varepsilon > 0$ 
 
-\begin{assumption}[C2: Lipschitz 学生]\label{ass:c2}
-NEP 学生对 $\theta$ Lipschitz 连续：$\|f_{\theta_1}(x) - f_{\theta_2}(x)\| \leq L_f \|\theta_1 - \theta_2\|$, $\forall x \in \X$。
+\begin{assumption}[C2: Lipschitz ]\label{ass:c2}
+NEP  $\theta$ Lipschitz $\|f_{\theta_1}(x) - f_{\theta_2}(x)\| \leq L_f \|\theta_1 - \theta_2\|$, $\forall x \in \X$
 \end{assumption}
 
-\begin{assumption}[C3: Lipschitz 守门人]\label{ass:c3}
-SCX 更新函数 Lipschitz 连续：$\|\text{SCXUpdate}(S_1, \M, f) - \text{SCXUpdate}(S_2, \M, f)\|_\infty \leq L_S \|S_1 - S_2\|_\infty$。
+\begin{assumption}[C3: Lipschitz ]\label{ass:c3}
+SCX  Lipschitz $\|\text{SCXUpdate}(S_1, \M, f) - \text{SCXUpdate}(S_2, \M, f)\|_\infty \leq L_S \|S_1 - S_2\|_\infty$
 \end{assumption}
 
-\begin{assumption}[C4: 学习率]\label{ass:c4}
-学生率满足 $\sum \alpha_t = \infty$, $\sum \alpha_t^2 < \infty$。守门人率满足 $\sum \beta_t < \infty$, $\sum \beta_t^2 < \infty$。
+\begin{assumption}[C4: ]\label{ass:c4}
+ $\sum \alpha_t = \infty$, $\sum \alpha_t^2 < \infty$ $\sum \beta_t < \infty$, $\sum \beta_t^2 < \infty$
 \end{assumption}
 
-\begin{assumption}[C5: 条件 i.i.d.\ 采样]\label{ass:c5}
-在 $S_t$ 条件下，样本从接受偏置分布中 i.i.d.\ 采样：$P_{S_t}(x,y) \propto S_t(x,y) \cdot P_0(x,y)$。
+\begin{assumption}[C5:  i.i.d.\ ]\label{ass:c5}
+ $S_t$  i.i.d.\ $P_{S_t}(x,y) \propto S_t(x,y) \cdot P_0(x,y)$
 \end{assumption}
 
-\begin{assumption}[C6: 双时间尺度分离]\label{ass:c6}
-$\beta_t = o(\alpha_t)$ 当 $t \to \infty$。
+\begin{assumption}[C6: ]\label{ass:c6}
+$\beta_t = o(\alpha_t)$  $t \to \infty$
 \end{assumption}
 
-\begin{assumption}[C7: 有界守门人更新]\label{ass:c7}
-$\|\text{SCXUpdate}(S, \M, f) - S\|_\infty \leq B_S < \infty$。
+\begin{assumption}[C7: ]\label{ass:c7}
+$\|\text{SCXUpdate}(S, \M, f) - S\|_\infty \leq B_S < \infty$
 \end{assumption}
 
-\begin{assumption}[C8: 退火接受阈值（充分，非必要）]\label{ass:c8}
-$\gamma_t = \gamma_0 + (0.5 - \gamma_0)(1 - e^{-t/\tau_\gamma})$ 其中 $\gamma_0 < 0.5$，故 $\gamma_t \to 0.5$。
+\begin{assumption}[C8: ]\label{ass:c8}
+$\gamma_t = \gamma_0 + (0.5 - \gamma_0)(1 - e^{-t/\tau_\gamma})$  $\gamma_0 < 0.5$ $\gamma_t \to 0.5$
 \end{assumption}
 
-\begin{assumption}[C9: 随机探索（充分，非必要）]\label{ass:c9}
-固定分数 $\varepsilon > 0$ 的被接受样本被均匀随机选择，与 $S_t$ 评分无关。
+\begin{assumption}[C9: ]\label{ass:c9}
+ $\varepsilon > 0$  $S_t$ 
 \end{assumption}
 
-\textbf{注：}C9 要求 $\varepsilon > 0$ 严格成立。这确保重要性权重有界：$\|w\|_\infty \leq 1/\varepsilon < \infty$。若 $\varepsilon = 0$，守门人可以将某些区域中 $S_t(x)$ 置零，使得 $P_{S_t}(x) = 0$ 且 $w(x) = \infty$。
+\textbf{}C9  $\varepsilon > 0$ $\|w\|_\infty \leq 1/\varepsilon < \infty$ $\varepsilon = 0$ $S_t(x)$  $P_{S_t}(x) = 0$  $w(x) = \infty$
 
-\begin{assumption}[C10: 参考集重放（Lyapunov 下降所需）]\label{ass:c10}
-固定的参考集 $M_0$ 和验证集 $V_0$ 在自进化开始前被保留。Lyapunov 函数在这些固定集上评估。
+\begin{assumption}[C10: Lyapunov ]\label{ass:c10}
+ $M_0$  $V_0$ Lyapunov 
 \end{assumption}
 
-\begin{assumption}[C11: 有界重要性权重]\label{ass:c11}
-$\|w\|_\infty \leq W < \infty$ 其中 $w(x) = P_0(x)/P_{S_t}(x)$。在 C9 下，$W \leq 1/\varepsilon$。
+\begin{assumption}[C11: ]\label{ass:c11}
+$\|w\|_\infty \leq W < \infty$  $w(x) = P_0(x)/P_{S_t}(x)$ C9 $W \leq 1/\varepsilon$
 \end{assumption}
 
 % ===========================================================================
-% 4. Lipschitz-几乎处处引理
+% 4. Lipschitz-
 % ===========================================================================
-\section{Lipschitz-几乎处处共识引理}
+\section{Lipschitz-}
 
-一个基础性技术障碍是共识分数 $C(x) = \frac{1}{M}\sum_m \ind{\ell(f_m(x), y) > \tau}$ 使用指示函数，在阈值 $\tau$ 处不连续。以下引理解决此问题。
+ $C(x) = \frac{1}{M}\sum_m \ind{\ell(f_m(x), y) > \tau}$  $\tau$ 
 
-\begin{lemma}[Lipschitz-几乎处处共识]\label{lem:lae}
-在 C5 下，$C$ 不连续的点集具有 $P_{S_t}$-测度零：
+\begin{lemma}[Lipschitz-]\label{lem:lae}
+ C5 $C$  $P_{S_t}$-
 \begin{equation}
     \Pbb_{(x,y) \sim P_{S_t}}\bigl(\exists m: \ell(f_m(x), y) = \tau\bigr) = 0.
 \end{equation}
 \end{lemma}
 
 \begin{proof}
-对每个专家 $m$，学生损失 $\ell(f_m(x), y)$ 是由采样过程诱导的随机变量。在 C5 下，$(x, y)$ 从 $P_{S_t}$ 中抽取，该分布关于基测度具有密度。函数 $g_m(x, y) = \ell(f_m(x), y)$ 在 $(x, y)$ 中连续（连续学生 $f_{\theta_t}$ 和连续损失 $\ell$ 的复合）。对一个连续随机变量，命中任何特定值 $\tau$ 的概率为零：
+ $m$ $\ell(f_m(x), y)$  C5 $(x, y)$  $P_{S_t}$  $g_m(x, y) = \ell(f_m(x), y)$  $(x, y)$  $f_{\theta_t}$  $\ell$  $\tau$ 
 \begin{equation}
     \Pbb(g_m(X, Y) = \tau) = 0.
 \end{equation}
-通过 $M$ 个专家的联合界：
+ $M$ 
 \begin{equation}
     \Pbb(\exists m: \ell(f_m(X), Y) = \tau) \leq \sum_{m=1}^M \Pbb(\ell(f_m(X), Y) = \tau) = 0.
 \end{equation}
-因此，$C(x)$ 几乎必然连续——其不连续集（$M$ 个水平集 $\{\ell(f_m(x), y) = \tau\}$ 的并集）具有概率零。在不连续集的补集上，$C(x)$ 局部常值（分段常数，仅在以测度零概率出现的阈值交叉处跳跃）。因此 $C$ 是 Lipschitz-几乎处处（平凡地，在每个连续区域上 Lipschitz 常数为 0）。\hfill $\square$
+$C(x)$ ——$M$  $\{\ell(f_m(x), y) = \tau\}$ $C(x)$  $C$  Lipschitz- Lipschitz  0\hfill $\square$
 \end{proof}
 
-\textbf{推论：}所有涉及 $\E[C(x)]$ 的期望对不连续集上的修改是不变的。随机逼近的标准理论（Borkar, 2008; Kushner \& Yin, 2003）要求均值场的 Lipschitz 连续性，而非逐点连续性。均值场 $\E_{P_{S_t}}[C(x)]$ 即使当 $C(x)$ 在零测集上有跳跃不连续时，只要分布具有密度，就是 Lipschitz 连续的。
+\textbf{} $\E[C(x)]$ Borkar, 2008; Kushner \& Yin, 2003 Lipschitz  $\E_{P_{S_t}}[C(x)]$  $C(x)$  Lipschitz 
 
-\begin{lemma}[Lipschitz 复合]\label{lem:comp}
-在 C2 下，学生损失函数对 $\theta$ Lipschitz 连续，复合常数为 $L_\ell \cdot L_f$：
+\begin{lemma}[Lipschitz ]\label{lem:comp}
+ C2  $\theta$ Lipschitz  $L_\ell \cdot L_f$
 \begin{equation}
     |\ell(f_{\theta_1}(x), y) - \ell(f_{\theta_2}(x), y)| \leq L_\ell L_f \|\theta_1 - \theta_2\|,
 \end{equation}
-且梯度有界：$\|\nabla_\theta \ell(f_\theta(x), y)\| \leq G = L_\ell L_f$。
+$\|\nabla_\theta \ell(f_\theta(x), y)\| \leq G = L_\ell L_f$
 \end{lemma}
 
 \begin{proof}
-由 C2，$\|f_{\theta_1}(x) - f_{\theta_2}(x)\| \leq L_f \|\theta_1 - \theta_2\|$。损失函数 $\ell(\cdot, y)$ 有 Lipschitz 常数 $L_\ell$（$\ell$ 在 $\R^K$ 上是光滑的）。通过复合：
+ C2$\|f_{\theta_1}(x) - f_{\theta_2}(x)\| \leq L_f \|\theta_1 - \theta_2\|$ $\ell(\cdot, y)$  Lipschitz  $L_\ell$$\ell$  $\R^K$ 
 \begin{equation}
     |\ell(f_{\theta_1}(x), y) - \ell(f_{\theta_2}(x), y)| \leq L_\ell \|f_{\theta_1}(x) - f_{\theta_2}(x)\| \leq L_\ell L_f \|\theta_1 - \theta_2\|.
 \end{equation}
-梯度范数的界由 Lipschitz 常数的定义得到：$\|\nabla_\theta \ell(f_\theta(x), y)\| \leq L_\ell L_f = G$。\hfill $\square$
+ Lipschitz $\|\nabla_\theta \ell(f_\theta(x), y)\| \leq L_\ell L_f = G$\hfill $\square$
 \end{proof}
 
 % ===========================================================================
-% 5. 定理 Spring-1：收敛到固定点
+% 5.  Spring-1
 % ===========================================================================
-\section{定理 Spring-1：收敛到固定点（SE-1）}\label{sec:spring1}
+\section{ Spring-1SE-1}\label{sec:spring1}
 
-\subsection{定理陈述}
+\subsection{}
 
-\begin{theorem}[Spring-1：自进化的收敛性 (质变点定理)]\label{thm:spring1}
-令 $(S_t, \theta_t, M_t)$ 由 Spring 算法（算法~\ref{alg:spring}）在条件 C1--C7 下生成。则：
+\begin{theorem}[Spring-1 ()]\label{thm:spring1}
+ $(S_t, \theta_t, M_t)$  Spring ~\ref{alg:spring} C1--C7 
 \begin{enumerate}[label=(\alph*), nosep]
-    \item \textbf{收敛。}序列 $(S_t, \theta_t)$ 几乎必然收敛到极限 $(S_\infty, \theta_\infty)$。
-    \item \textbf{守门人不动点。}$S_\infty$ 满足自洽方程：
+    \item \textbf{} $(S_t, \theta_t)$  $(S_\infty, \theta_\infty)$
+    \item \textbf{}$S_\infty$ 
     \begin{equation}
         S_\infty = \text{SCXUpdate}(S_\infty, M_\infty, f_{\theta_\infty}).
     \end{equation}
-    \item \textbf{学生平稳点。}$\theta_\infty$ 是极限期望损失的一个平稳点：
+    \item \textbf{}$\theta_\infty$ 
     \begin{equation}
         \nabla_\theta \E_{(x,y) \sim P_{S_\infty}}[\ell(f_{\theta_\infty}(x), y)] = 0.
     \end{equation}
-    \item \textbf{Lyapunov 收敛。}总损失 $\Psi(S_t, \theta_t)$ 几乎必然收敛到一个有限极限 $\Psi_\infty \geq 0$。
-    \item \textbf{梯度消失。}$\|\nabla_\theta L_t(\theta_t)\| \to 0$ 几乎必然；$\frac{1}{T}\sum_{t=1}^{T}\|\Delta S_t\| \to 0$（Ces\`{a}ro 均值收敛）。
+    \item \textbf{Lyapunov } $\Psi(S_t, \theta_t)$  $\Psi_\infty \geq 0$
+    \item \textbf{}$\|\nabla_\theta L_t(\theta_t)\| \to 0$ $\frac{1}{T}\sum_{t=1}^{T}\|\Delta S_t\| \to 0$Ces\`{a}ro 
 \end{enumerate}
 \end{theorem}
 
-\subsection{引理 SE-1.1：Lyapunov 函数非增}
+\subsection{ SE-1.1Lyapunov }
 
-\begin{lemma}[Lyapunov 函数 — 追踪误差形式]\\label{lem:lyapunov-se1}
-在 C10（参考集重放）下，定义参考集上的 Lyapunov 函数为\textbf{追踪误差}：
+\begin{lemma}[Lyapunov  — ]\\label{lem:lyapunov-se1}
+ C10 Lyapunov \textbf{}
 \begin{equation}\label{eq:lyapunov-def}
     \Psi(S_t, \theta_t) = \frac{1}{|M_0|} \sum_{x \in M_0} (S_t(x) - (1 - C_t(x)))^2 + \lambda \cdot \frac{1}{|V_0|} \sum_{(x,y) \in V_0} \ell(f_{\theta_t}(x), y),
 \end{equation}
-其中 $C_t(x) = \frac{1}{M+1}\bigl(\sum_{m=1}^M \ind{\ell(f_m(x), y) > \tau} + \ind{\ell(f_{\theta_t}(x), y) > \tau}\bigr)$ 是\textbf{当前共识}（静态专家 + 当前学生），
-而非固定历史参考。此形式测量守门人 $S_t$ 对当前共识 $C_t$ 的追踪精度：当系统到达固定点时，$S_t = 1 - C_t$，第一项消失。在条件 C2--C7 和 C10 下：
+ $C_t(x) = \frac{1}{M+1}\bigl(\sum_{m=1}^M \ind{\ell(f_m(x), y) > \tau} + \ind{\ell(f_{\theta_t}(x), y) > \tau}\bigr)$ \textbf{} + 
+ $S_t$  $C_t$ $S_t = 1 - C_t$ C2--C7  C10 
 \begin{equation}\label{eq:descent-se1}
     \E[\Psi(S_{t+1}, \theta_{t+1}) \mid \F_t] \leq \Psi(S_t, \theta_t) - \eta_t,
 \end{equation}
-其中 $\eta_t \geq 0$ 满足 $\eta_t = \alpha_t \|\nabla L_0(\theta_t)\|^2 + 2\beta_t \rho_{\text{ideal}} \|\Delta_t^{\text{ideal}}\|_{M_0} \|S_t - (1-C_t)\|_{M_0} + o(\alpha_t + \beta_t)$。
+ $\eta_t \geq 0$  $\eta_t = \alpha_t \|\nabla L_0(\theta_t)\|^2 + 2\beta_t \rho_{\text{ideal}} \|\Delta_t^{\text{ideal}}\|_{M_0} \|S_t - (1-C_t)\|_{M_0} + o(\alpha_t + \beta_t)$
 \end{lemma}
 
-\textbf{诚实标注：}引理~\ref{lem:lyapunov-se1} 的完整严格证明需要 C10（参考集重放）和 C11（有界重要性权重）。\textbf{没有}这些条件时，Lyapunov 下降在渐近意义上被定理~\ref{thm:impossible} 证明为形式上不可能。完整证明推迟到第~\ref{sec:lyapunov} 节。
+\textbf{}~\ref{lem:lyapunov-se1}  C10 C11\textbf{}Lyapunov ~\ref{thm:impossible} ~\ref{sec:lyapunov} 
 
-\begin{proof}[证明概要]
-在 C10 和 C11 下（完整细节见第~\ref{sec:lyapunov} 节定理~\ref{thm:lyapunov-proven}）：
+\begin{proof}[]
+ C10  C11 ~\ref{sec:lyapunov} ~\ref{thm:lyapunov-proven}
 \begin{enumerate}[nosep]
-    \item 学生项：重要性加权 SGD 是 $\nabla L_0(\theta_t)$ 的无偏估计，给出 $-\alpha_t \|\nabla L_0(\theta_t)\|^2 + O(\alpha_t^2 W)$。
-    \item 守门人项：在 $M_0$ 上计算 SCXUpdate 消除对齐偏差，给出 $-\beta_t \cdot 2\rho_{\text{ideal}} \|\Delta_t^{\text{ideal}}\|_{M_0} \|S_t - \hat{C}\|_{M_0} + O(\beta_t^2)$。
-    \item 分布偏移项：$O(\beta_t) = o(\alpha_t)$ 在 C6 下。
-    \item 交叉耦合项：在参考集评估下恰好为零。
+    \item  SGD  $\nabla L_0(\theta_t)$  $-\alpha_t \|\nabla L_0(\theta_t)\|^2 + O(\alpha_t^2 W)$
+    \item  $M_0$  SCXUpdate  $-\beta_t \cdot 2\rho_{\text{ideal}} \|\Delta_t^{\text{ideal}}\|_{M_0} \|S_t - \hat{C}\|_{M_0} + O(\beta_t^2)$
+    \item $O(\beta_t) = o(\alpha_t)$  C6 
+    \item 
     \end{enumerate}
-组合得到声明的不等式。\hfill $\square$
+\hfill $\square$
 \end{proof}
 
-通过 Robbins \& Siegmund (1971) 的上鞅收敛定理，$\Psi_t \to \Psi_\infty$ a.s.\ 且 $\sum_{t=1}^\infty (\alpha_t \|\nabla L_t\|^2 + \beta_t \|\Delta S_t\|^2) < \infty$ a.s.
+ Robbins \& Siegmund (1971) $\Psi_t \to \Psi_\infty$ a.s.\  $\sum_{t=1}^\infty (\alpha_t \|\nabla L_t\|^2 + \beta_t \|\Delta S_t\|^2) < \infty$ a.s.
 
-\subsection{引理 SE-1.2：记忆库稳定化}
+\subsection{ SE-1.2}
 
-\begin{lemma}[有限记忆库配置]\label{lem:memory-stab}
-在 C1（有限覆盖维度）和 C3（Lipschitz 守门人）下：
+\begin{lemma}[]\label{lem:memory-stab}
+ C1 C3Lipschitz 
 \begin{enumerate}[label=(\alph*), nosep]
-    \item 对任何 $\varepsilon > 0$，$\varepsilon$-可区分记忆库配置的数量有限。
-    \item 记忆库单调增长：$M_t \subseteq M_{t+1}$，且对任何 $\varepsilon > 0$ 在有限时间后 $\varepsilon$-稳定。
-    \item 存在有限时间 $T_\varepsilon$ 使得对所有 $t \geq T_\varepsilon$，最多有 $\varepsilon$ 新样本被添加。
+    \item  $\varepsilon > 0$$\varepsilon$-
+    \item $M_t \subseteq M_{t+1}$ $\varepsilon > 0$  $\varepsilon$-
+    \item  $T_\varepsilon$  $t \geq T_\varepsilon$ $\varepsilon$ 
 \end{enumerate}
 \end{lemma}
 
 \begin{proof}
-\textbf{(a) $\varepsilon$-网构造。} 在 C1 下，特征空间 $\Phi = \phi(\X) \subseteq \R^{d_\phi}$。将 $\Phi$ 划分为边长为 $\varepsilon/L_S$ 的超立方体。立方体数量为：
+\textbf{(a) $\varepsilon$-}  C1  $\Phi = \phi(\X) \subseteq \R^{d_\phi}$ $\Phi$  $\varepsilon/L_S$ 
 \begin{equation}
     N_\varepsilon = \left\lceil\frac{\operatorname{diam}(\Phi) \cdot L_S}{\varepsilon}\right\rceil^{d_\phi} = O\left(\left(\frac{L_S}{\varepsilon}\right)^{d_\phi}\right) < \infty.
 \end{equation}
-由 C3，在每个立方体内，守门人评分 $S_t$ 变化至多 $\varepsilon$。因此，立方体内的所有点对守门人是 $\varepsilon$-等价的。
+ C3 $S_t$  $\varepsilon$ $\varepsilon$-
 
-\textbf{(b) 单调性和稳定化。} 由构造，$M_{t+1} = M_t \cup \{\text{被接受的数据}\}$，所以 $M_t \subseteq M_{t+1}$（单调）。记忆库状态完全由哪些立方体被访问和接受决定。由于只有 $N_\varepsilon$ 个立方体，每个立方体要么被访问，要么未访问，可能的内存库配置数至多为 $2^{N_\varepsilon} < \infty$。单调递增序列在有限集中必须稳定：存在 $T_\varepsilon < \infty$ 使得对所有 $t \geq T_\varepsilon$，没有新立方体被添加到记忆库。$\varepsilon$ 精度的细节可能继续被添加，但它们不改变 $\varepsilon$-等价配置。
+\textbf{(b) } $M_{t+1} = M_t \cup \{\text{}\}$ $M_t \subseteq M_{t+1}$ $N_\varepsilon$  $2^{N_\varepsilon} < \infty$ $T_\varepsilon < \infty$  $t \geq T_\varepsilon$$\varepsilon$  $\varepsilon$-
 
-\textbf{注：}$\varepsilon \to 0$ 极限需要额外的紧性条件（Arzel\`{a}-Ascoli），目前为开放问题（见第~\ref{sec:open} 节）。
+\textbf{}$\varepsilon \to 0$ Arzel\`{a}-Ascoli~\ref{sec:open} 
 \end{proof}
 
-\subsection{引理 SE-1.3：参数位移消失}
+\subsection{ SE-1.3}
 
-\begin{lemma}[消失的参数位移]\label{lem:displacement}
-在 C2--C7 下：
+\begin{lemma}[]\label{lem:displacement}
+ C2--C7 
 \begin{equation}
-    \|\theta_{t+1} - \theta_t\| \xrightarrow{a.s.} 0 \quad \text{和} \quad \|S_{t+1} - S_t\|_\infty \xrightarrow{a.s.} 0,
+    \|\theta_{t+1} - \theta_t\| \xrightarrow{a.s.} 0 \quad \text{} \quad \|S_{t+1} - S_t\|_\infty \xrightarrow{a.s.} 0,
 \end{equation}
-当 $t \to \infty$。序列 $(S_t, \theta_t)$ 在积空间 $\F \times \Theta$ 中几乎必然是 Cauchy 的。
+ $t \to \infty$ $(S_t, \theta_t)$  $\F \times \Theta$  Cauchy 
 \end{lemma}
 
 \begin{proof}
-对学生位移，由 C2（引理~\ref{lem:comp}），梯度有界 $\|g_t(\theta_t)\| \leq G$：
+ C2~\ref{lem:comp} $\|g_t(\theta_t)\| \leq G$
 \begin{equation}
     \|\theta_{t+1} - \theta_t\| = \alpha_t \|g_t(\theta_t)\| \leq \alpha_t G.
 \end{equation}
-由 C6，$\alpha_t \to 0$，故 $\|\theta_{t+1} - \theta_t\| \to 0$。
+ C6$\alpha_t \to 0$ $\|\theta_{t+1} - \theta_t\| \to 0$
 
-对守门人位移，由 C7：
+ C7
 \begin{equation}
     \|S_{t+1} - S_t\|_\infty = \beta_t \|\text{SCXUpdate}(S_t, M_t, f_{\theta_t}) - S_t\|_\infty \leq \beta_t B_S.
 \end{equation}
-由 C6，$\beta_t \to 0$，故 $\|S_{t+1} - S_t\|_\infty \to 0$。
+ C6$\beta_t \to 0$ $\|S_{t+1} - S_t\|_\infty \to 0$
 
-对 Cauchy 性质：对任何 $t' > t$，
+ Cauchy  $t' > t$
 \begin{align}
     \|\theta_{t'} - \theta_t\| &\leq \sum_{s=t}^{t'-1} \|\theta_{s+1} - \theta_s\| \leq G \sum_{s=t}^{\infty} \alpha_s, \\
     \|S_{t'} - S_t\|_\infty &\leq \sum_{s=t}^{t'-1} \|S_{s+1} - S_s\|_\infty \leq B_S \sum_{s=t}^{\infty} \beta_s.
 \end{align}
-由于 $\sum \alpha_s < \infty$（事实上 $\sum \alpha_t = \infty$，但这里我们需要更强的收敛条件——由 Lyapunov 下降确保实际上参数的净移动是有限的）和 $\sum \beta_s < \infty$（C4），尾部求和随 $t \to \infty$ 而趋于零。故序列是 Cauchy 的。
+ $\sum \alpha_s < \infty$ $\sum \alpha_t = \infty$—— Lyapunov  $\sum \beta_s < \infty$C4 $t \to \infty$  Cauchy 
 \end{proof}
 
-\subsection{引理 SE-1.4：极限点是固定点}
+\subsection{ SE-1.4}
 
-\begin{lemma}[固定点表征]\label{lem:fixed-point}
-令 $(S_\infty, \theta_\infty)$ 为序列 $(S_t, \theta_t)$（沿子列 $t_k \to \infty$）的任意极限点。则：
+\begin{lemma}[]\label{lem:fixed-point}
+ $(S_\infty, \theta_\infty)$  $(S_t, \theta_t)$ $t_k \to \infty$
 \begin{enumerate}[label=(\alph*), nosep]
-    \item \textbf{守门人不动点。} $S_\infty = \text{SCXUpdate}(S_\infty, M_\infty, f_{\theta_\infty})$。
-    \item \textbf{学生平稳点。} $\nabla_\theta \E_{(x,y) \sim P_{S_\infty}}[\ell(f_{\theta_\infty}(x), y)] = 0$。
-    \item \textbf{交叉一致性。} $(S_\infty, \theta_\infty)$ 是耦合系统 $S = \mathcal{T}_S(S, \theta)$, $\theta = \mathcal{T}_\theta(S, \theta)$ 的联合不动点。
+    \item \textbf{} $S_\infty = \text{SCXUpdate}(S_\infty, M_\infty, f_{\theta_\infty})$
+    \item \textbf{} $\nabla_\theta \E_{(x,y) \sim P_{S_\infty}}[\ell(f_{\theta_\infty}(x), y)] = 0$
+    \item \textbf{} $(S_\infty, \theta_\infty)$  $S = \mathcal{T}_S(S, \theta)$, $\theta = \mathcal{T}_\theta(S, \theta)$ 
 \end{enumerate}
 \end{lemma}
 
 \begin{proof}
-\textbf{(a) 守门人不动点。} 由引理~\ref{lem:lyapunov-se1} 和上鞅收敛定理：
+\textbf{(a) } ~\ref{lem:lyapunov-se1} 
 \begin{equation}
     \sum_{t=1}^\infty \beta_t \|\Delta S_t\|_{M_0}^2 < \infty \quad \text{a.s.}
 \end{equation}
-我们需要证明 $\|\Delta S_t\|_{M_0} \to 0$。这里的关键技术点是：与标准 Robbins-Monro 论证（需要 $\sum \beta_t = \infty$ 才能强制 $\|\Delta S_t\| \to 0$）不同，C4 故意设定 $\sum \beta_t < \infty$ 以控制累积分布偏移。因此，我们转而使用 Ces\`{a}ro 均值收敛。
+ $\|\Delta S_t\|_{M_0} \to 0$ Robbins-Monro  $\sum \beta_t = \infty$  $\|\Delta S_t\| \to 0$C4  $\sum \beta_t < \infty$  Ces\`{a}ro 
 
-由 Cauchy-Schwarz：对任何 $T$，
+ Cauchy-Schwarz $T$
 \begin{equation}
     \frac{1}{T}\sum_{t=1}^{T}\|\Delta S_t\|_{M_0} \leq \left(\frac{1}{T}\sum_{t=1}^{T}\beta_t^{-1}\right)^{1/2} \left(\frac{1}{T}\sum_{t=1}^{T}\beta_t \|\Delta S_t\|_{M_0}^2\right)^{1/2}.
 \end{equation}
-由于 $\beta_t \to 0$，$(1/T)\sum \beta_t^{-1}$ 可能发散。然而，由引理~\ref{lem:displacement}，$(S_t, \theta_t)$ 是 Cauchy 的，故极限点存在。沿收敛的子列 $t_k$，由 SCXUpdate 的连续性（C3）：
+ $\beta_t \to 0$$(1/T)\sum \beta_t^{-1}$ ~\ref{lem:displacement}$(S_t, \theta_t)$  Cauchy  $t_k$ SCXUpdate C3
 \begin{equation}
     \|S_\infty - \text{SCXUpdate}(S_\infty, M_\infty, f_{\theta_\infty})\|_\infty = \lim_{k \to \infty} \|\Delta S_{t_k}\|_\infty = 0.
 \end{equation}
-注意该论证不要求 $\|\Delta S_t\| \to 0$ 沿整个序列；仅需沿收敛到固定点的子列。
+ $\|\Delta S_t\| \to 0$ 
 
-\textbf{(b) 学生平稳点。} 由引理~\ref{lem:lyapunov-se1}：
+\textbf{(b) } ~\ref{lem:lyapunov-se1}
 \begin{equation}
     \sum_{t=1}^\infty \alpha_t \|\nabla L_t(\theta_t)\|^2 < \infty \quad \text{a.s.}
 \end{equation}
-由于 $\sum \alpha_t = \infty$（C4），必须有 $\|\nabla L_t(\theta_t)\| \to 0$ 沿一子列。在极限点 $\theta_\infty$，由梯度的连续性：
+ $\sum \alpha_t = \infty$C4 $\|\nabla L_t(\theta_t)\| \to 0$  $\theta_\infty$
 \begin{equation}
     \nabla_\theta L_\infty(\theta_\infty) = \nabla_\theta \E_{P_{S_\infty}}[\ell(f_{\theta_\infty}(X), Y)] = 0.
 \end{equation}
 
-\textbf{(c) 交叉一致性。} 由引理~\ref{lem:memory-stab}，$M_t$ 在 $M_\infty$ 处 $\varepsilon$-稳定。在极限点处，$S_\infty$ 诱导 $P_{S_\infty}$，$\theta_\infty$ 在 $P_{S_\infty}$ 下极小化损失，且 $S_\infty$ 是关于 $M_\infty$ 的 SCXUpdate 的不动点。这三个条件是互洽的。
+\textbf{(c) } ~\ref{lem:memory-stab}$M_t$  $M_\infty$  $\varepsilon$-$S_\infty$  $P_{S_\infty}$$\theta_\infty$  $P_{S_\infty}$  $S_\infty$  $M_\infty$  SCXUpdate 
 \end{proof}
 
-\subsection{定理 Spring-1 的完整证明}
+\subsection{ Spring-1 }
 
-\begin{proof}[定理~\ref{thm:spring1} 的证明]
-我们组装这些引理为完整证明。
+\begin{proof}[~\ref{thm:spring1} ]
 
-\textbf{步骤 1：Lyapunov 下降（引理~\ref{lem:lyapunov-se1}）。} 在参考集重放（C10）下，$\Psi_t = \Psi(S_t, \theta_t)$ 是一个具有非负漂移的上鞅。由上鞅收敛定理，$\Psi_t \to \Psi_\infty$ a.s.\ 且 $\sum \eta_t < \infty$ a.s.
 
-\textbf{步骤 2：记忆库稳定化（引理~\ref{lem:memory-stab}）。} 在 C1 下，对任何 $\varepsilon > 0$，$\varepsilon$-可区分记忆库配置数有限。由于 $M_t$ 单调，它 $\varepsilon$-稳定：存在 $T_\varepsilon$ 使得对所有 $t \geq T_\varepsilon$，配置不变直到 $\varepsilon$-等价。
+\textbf{ 1Lyapunov ~\ref{lem:lyapunov-se1}} C10$\Psi_t = \Psi(S_t, \theta_t)$ $\Psi_t \to \Psi_\infty$ a.s.\  $\sum \eta_t < \infty$ a.s.
 
-\textbf{步骤 3：位移消失（引理~\ref{lem:displacement}）。} $\|\theta_{t+1} - \theta_t\| \leq \alpha_t G \to 0$ 且 $\|S_{t+1} - S_t\|_\infty \leq \beta_t B_S \to 0$。序列 $(S_t, \theta_t)$ 是 Cauchy 的。
+\textbf{ 2~\ref{lem:memory-stab}}  C1  $\varepsilon > 0$$\varepsilon$- $M_t$  $\varepsilon$- $T_\varepsilon$  $t \geq T_\varepsilon$ $\varepsilon$-
 
-\textbf{步骤 4：$(S_t, \theta_t)$ 的收敛。} Lyapunov 下降（步骤 1）结合消失位移（步骤 3）意味着序列在积空间 $\F \times \Theta$ 中是 Cauchy 的。因此 $(S_t, \theta_t) \to (S_\infty, \theta_\infty)$ a.s.
+\textbf{ 3~\ref{lem:displacement}} $\|\theta_{t+1} - \theta_t\| \leq \alpha_t G \to 0$  $\|S_{t+1} - S_t\|_\infty \leq \beta_t B_S \to 0$ $(S_t, \theta_t)$  Cauchy 
 
-\textbf{步骤 5：极限是不动点（引理~\ref{lem:fixed-point}）。} 已建立收敛性，我们验证极限满足不动点方程。由步骤 2，$M_t$ 在 $M_\infty$ 处稳定。由 SCXUpdate 的连续性和 $\sum \beta_t \|\Delta S_t\|^2 < \infty$，$\|\Delta S_t\| \to 0$ 沿收敛子列，强制 $S_\infty = \text{SCXUpdate}(S_\infty, M_\infty, f_{\theta_\infty})$。对学生，$\nabla L_\infty(\theta_\infty) = 0$ 由 Robbins-Monro 论证（$\sum \alpha_t = \infty$, $\sum \alpha_t^2 < \infty$）推出。
+\textbf{ 4$(S_t, \theta_t)$ } Lyapunov  1 3 $\F \times \Theta$  Cauchy  $(S_t, \theta_t) \to (S_\infty, \theta_\infty)$ a.s.
 
-\textbf{步骤 6：自洽性。} 固定点满足耦合系统 $(S_\infty, \theta_\infty) = (\mathcal{T}_S(S_\infty, \theta_\infty), \mathcal{T}_\theta(S_\infty, \theta_\infty))$，其中 $\mathcal{T}_S, \mathcal{T}_\theta$ 分别是极限守门人和学生更新算子。
+\textbf{ 5~\ref{lem:fixed-point}}  2$M_t$  $M_\infty$  SCXUpdate  $\sum \beta_t \|\Delta S_t\|^2 < \infty$$\|\Delta S_t\| \to 0$  $S_\infty = \text{SCXUpdate}(S_\infty, M_\infty, f_{\theta_\infty})$$\nabla L_\infty(\theta_\infty) = 0$  Robbins-Monro $\sum \alpha_t = \infty$, $\sum \alpha_t^2 < \infty$
+
+\textbf{ 6}  $(S_\infty, \theta_\infty) = (\mathcal{T}_S(S_\infty, \theta_\infty), \mathcal{T}_\theta(S_\infty, \theta_\infty))$ $\mathcal{T}_S, \mathcal{T}_\theta$ 
 \end{proof}
 
-\subsection{四种收敛机制}
+\subsection{}
 
-当条件 C1--C7 被部分违反时，出现四种不同的长期行为：
+ C1--C7 
 
 \begin{table}[ht]
 \centering
-\caption{四种收敛机制}
+\caption{}
 \label{tab:regimes}
 \begin{tabular}{@{}lllll@{}}
 \toprule
-机制 & $\X$ & $\alpha_t, \beta_t$ & $M_t$ 行为 & $S_t$ 极限 \\
+ & $\X$ & $\alpha_t, \beta_t$ & $M_t$  & $S_t$  \\
 \midrule
-1. 经典 & 有限覆盖 & 衰减，RM & 稳定化 & 不动点 $S^*$ \provenstatus \\
-2. 极限环 & 有限覆盖 & 常数 & 周期 & 周期轨道 \provenstatus \\
-3. 永久发现 & 无限支撑 & 任意 & 无界增长 & 不收敛 \conjecturedstatus \\
-4. 发散崩塌 & 任意 & 任意 & 停止增长 & $S_t \approx 0$ \conjecturedstatus \\
+1.  &  & RM &  &  $S^*$ \provenstatus \\
+2.  &  &  &  &  \provenstatus \\
+3.  &  &  &  &  \conjecturedstatus \\
+4.  &  &  &  & $S_t \approx 0$ \conjecturedstatus \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{proof}[机制 2--4 的概要]
-\textbf{机制 2（极限环）。} 若 $\alpha_t = \alpha$, $\beta_t = \beta$（常数），系统变为有噪离散时间动力系统。对充分大的步长，更新 $(\theta, S) \mapsto (\theta - \alpha \nabla L_S(\theta), S + \beta \Delta(S, \theta))$ 可能有周期轨道。通过 C1，$(\theta, S)$ 的状态空间可被划分为有限多个单元；由鸽巢原理，任何有界无限轨迹必须重复一个状态。\hfill $\square$
+\begin{proof}[ 2--4 ]
+\textbf{ 2}  $\alpha_t = \alpha$, $\beta_t = \beta$ $(\theta, S) \mapsto (\theta - \alpha \nabla L_S(\theta), S + \beta \Delta(S, \theta))$  C1$(\theta, S)$ \hfill $\square$
 
-\textbf{机制 3（永久发现）。} 当 $P_0$ 有无限支撑超过记忆容量时，$M_t$ 无界增长。新样本以非消失率添加：$\liminf_{t \to \infty} \frac{1}{t}\sum_{i=1}^t \|M_{i+1} \setminus M_i\| > 0$。在此机制中，守门人在 $\ell^\infty$ 范数下不收敛，期望学生损失受来自分布偏移的不可约误差下界约束。\hfill $\conjecturedstatus$
+\textbf{ 3}  $P_0$ $M_t$ $\liminf_{t \to \infty} \frac{1}{t}\sum_{i=1}^t \|M_{i+1} \setminus M_i\| > 0$ $\ell^\infty$ \hfill $\conjecturedstatus$
 
-\textbf{机制 4（发散崩塌）。} 若存在 $T$ 使得对所有 $t \geq T$ 和所有 $(x,y)$ 有 $S_t(x,y) < \gamma$，守门人拒绝所有数据。$M_t = M_T$ 对所有 $t \geq T$（无新数据），学生在一个有限固定数据集上收敛到平稳点，守门人在 $M_T$ 上收敛到更新方程的不动点。\hfill $\conjecturedstatus$
+\textbf{ 4}  $T$  $t \geq T$  $(x,y)$  $S_t(x,y) < \gamma$$M_t = M_T$  $t \geq T$ $M_T$ \hfill $\conjecturedstatus$
 \end{proof}
 
 % ===========================================================================
-% 6. 定理 Spring-2：完备界
+% 6.  Spring-2
 % ===========================================================================
-\section{定理 Spring-2：完备界（SE-2）}\label{sec:spring2}
+\section{ Spring-2SE-2}\label{sec:spring2}
 
-\subsection{物理约束}
+\subsection{}
 
-Spring 系统在三个使配置空间有限化的普遍物理约束下运行：
+Spring 
 
 \begin{enumerate}[nosep]
-    \item \textbf{有限数据：} 总数据量 $|\D_{\text{total}}| \leq N_{\max} < \infty$。
-    \item \textbf{有限精度：} 所有数值量以机器精度 $\varepsilon_{\text{mach}} > 0$ 存储。
-    \item \textbf{有限参数化：} 守门人和学生由至多 $d$ 个实参数参数化。
+    \item \textbf{}  $|\D_{\text{total}}| \leq N_{\max} < \infty$
+    \item \textbf{}  $\varepsilon_{\text{mach}} > 0$ 
+    \item \textbf{}  $d$ 
 \end{enumerate}
 
-\begin{proposition}[有限配置空间]\label{prop:finite-config}
-在物理约束下，可区分系统状态集 $\mathcal{Q} = \F_{\text{dist}} \times 2^{N_{\max}} \times \Theta_{\text{dist}}$ 是有限的。
+\begin{proposition}[]\label{prop:finite-config}
+ $\mathcal{Q} = \F_{\text{dist}} \times 2^{N_{\max}} \times \Theta_{\text{dist}}$ 
 \end{proposition}
 
 \begin{proof}
-在有限精度下，守门人评分被量子化为 $\varepsilon_{\text{mach}}$ 的倍数：
+ $\varepsilon_{\text{mach}}$ 
 \begin{equation}
     |\F_{\text{dist}}| \leq \left(\left\lfloor \frac{1}{\varepsilon_{\text{mach}}} \right\rfloor + 1\right)^{N_{\max}} < \infty.
 \end{equation}
-记忆库是 $\D_{\text{total}}$ 的子集，故 $|\{M_t\}| \leq 2^{N_{\max}} < \infty$。学生在有限精度下具有有限参数空间：$|\Theta_{\text{dist}}| \leq (1/\varepsilon_{\text{mach}})^{\dim(\Theta)} < \infty$。笛卡尔积是有限的。
+ $\D_{\text{total}}$  $|\{M_t\}| \leq 2^{N_{\max}} < \infty$$|\Theta_{\text{dist}}| \leq (1/\varepsilon_{\text{mach}})^{\dim(\Theta)} < \infty$
 \end{proof}
 
-\subsection{定理陈述与证明}
+\subsection{}
 
-\begin{theorem}[Spring-2：有限时间终止]\label{thm:spring2}
-令 Spring 系统在物理约束（有限数据、有限精度、有限参数化）下运行。假设期望 Lyapunov 函数满足 $\E[\Psi(q_{t+1}) \mid q_t] \leq \Psi(q_t) - \delta_t$，其中只要 $q_t$ 不是一个 $\varepsilon_{\text{mach}}$-固定点，就有 $\delta_t \geq \delta_{\min} > 0$，且 $0 \leq \Psi \leq \Psi_0 < \infty$。则：
+\begin{theorem}[Spring-2]\label{thm:spring2}
+ Spring  Lyapunov  $\E[\Psi(q_{t+1}) \mid q_t] \leq \Psi(q_t) - \delta_t$ $q_t$  $\varepsilon_{\text{mach}}$- $\delta_t \geq \delta_{\min} > 0$ $0 \leq \Psi \leq \Psi_0 < \infty$
 \begin{enumerate}[label=(\alph*), nosep]
-    \item \textbf{期望单调下降。}$\E[\Psi(q_t)]$ 在 $q_t$ 可区分于不动点时严格递减，且 $\E[\Psi(q_t)] \to \Psi_\infty$ 当 $t \to \infty$。
-    \item \textbf{$\varepsilon$-近似不动点。} $\forall \varepsilon > 0$, $\exists T_\varepsilon^* \leq \lceil \Psi_0 / (\varepsilon \delta_{\min}) \rceil < \infty$ 使得对所有 $t \geq T_\varepsilon^*$，$\E[\Psi(q_t)] \leq \Psi_{\text{opt}} + \varepsilon$。
-    \item \textbf{有限时间吸收。} 过程在有限期望时间内到达 $\varepsilon_{\text{mach}}$-不可区分状态集：$\E[T^*] \leq \Psi_0 / \delta_{\min} < \infty$。
+    \item \textbf{}$\E[\Psi(q_t)]$  $q_t$  $\E[\Psi(q_t)] \to \Psi_\infty$  $t \to \infty$
+    \item \textbf{$\varepsilon$-} $\forall \varepsilon > 0$, $\exists T_\varepsilon^* \leq \lceil \Psi_0 / (\varepsilon \delta_{\min}) \rceil < \infty$  $t \geq T_\varepsilon^*$$\E[\Psi(q_t)] \leq \Psi_{\text{opt}} + \varepsilon$
+    \item \textbf{}  $\varepsilon_{\text{mach}}$-$\E[T^*] \leq \Psi_0 / \delta_{\min} < \infty$
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-\textbf{(a) 期望单调下降。} 在有限精度 $\varepsilon_{\text{mach}}$ 下，$\Psi$ 可取的不同的可区分值至多为 $\lceil \Psi_0 / \varepsilon_{\text{mach}} \rceil$。当 $q_t$ 不是一个 $\varepsilon_{\text{mach}}$-不动点（即，更新将产生可区分变化），$\E[\Psi(q_{t+1}) \mid q_t] \leq \Psi(q_t) - \delta_{\min}$。取全期望：
+\textbf{(a) }  $\varepsilon_{\text{mach}}$ $\Psi$  $\lceil \Psi_0 / \varepsilon_{\text{mach}} \rceil$ $q_t$  $\varepsilon_{\text{mach}}$-$\E[\Psi(q_{t+1}) \mid q_t] \leq \Psi(q_t) - \delta_{\min}$
 \begin{equation}
-    \E[\Psi(q_{T})] \leq \Psi_0 - \delta_{\min} \sum_{t=0}^{T-1} \Pbb(q_t \text{ 非不动点}).
+    \E[\Psi(q_{T})] \leq \Psi_0 - \delta_{\min} \sum_{t=0}^{T-1} \Pbb(q_t \text{ }).
 \end{equation}
-由于 $\Psi \geq 0$，非不动点步数的期望值受 $\Psi_0 / \delta_{\min}$ 约束。
+ $\Psi \geq 0$ $\Psi_0 / \delta_{\min}$ 
 
-\textbf{(b) $\varepsilon$-近似不动点。} 对任何 $\varepsilon > 0$，定义 $\mathcal{Q}_\varepsilon = \{q \in \mathcal{Q} : \Psi(q) - \Psi_{\text{opt}} > \varepsilon\}$。由于 $\mathcal{Q}$ 有限，$|\mathcal{Q}_\varepsilon|$ 有限。伸缩论证给出：
+\textbf{(b) $\varepsilon$-}  $\varepsilon > 0$ $\mathcal{Q}_\varepsilon = \{q \in \mathcal{Q} : \Psi(q) - \Psi_{\text{opt}} > \varepsilon\}$ $\mathcal{Q}$ $|\mathcal{Q}_\varepsilon|$ 
 \begin{equation}
     \E[\Psi(q_T)] \leq \Psi_0 - \varepsilon \cdot \sum_{t=0}^{T-1} \Pbb(q_t \in \mathcal{Q}_\varepsilon).
 \end{equation}
-故在 $\mathcal{Q}_\varepsilon$ 中花费的期望步数至多为 $\Psi_0 / \varepsilon$。由马尔可夫不等式，对所有 $t \geq \lceil \Psi_0 / (\varepsilon \delta_{\min}) \rceil$，$\Pbb(\Psi(q_t) > \Psi_{\text{opt}} + \varepsilon) \leq \delta$。
+ $\mathcal{Q}_\varepsilon$  $\Psi_0 / \varepsilon$ $t \geq \lceil \Psi_0 / (\varepsilon \delta_{\min}) \rceil$$\Pbb(\Psi(q_t) > \Psi_{\text{opt}} + \varepsilon) \leq \delta$
 
-\textbf{(c) 有限时间吸收。} 伸缩论证给出：
+\textbf{(c) } 
 \begin{equation}
     \Psi_0 - \Psi_{\text{opt}} \geq \delta_{\min} \cdot \E[T^*],
 \end{equation}
-故 $\E[T^*] \leq (\Psi_0 - \Psi_{\text{opt}}) / \delta_{\min} \leq \Psi_0 / \delta_{\min} < \infty$。通过马尔可夫不等式，吸收到不动点集在有限时间内几乎必然发生。
+ $\E[T^*] \leq (\Psi_0 - \Psi_{\text{opt}}) / \delta_{\min} \leq \Psi_0 / \delta_{\min} < \infty$
 \end{proof}
 
-\subsection{最坏情况界限}
+\subsection{}
 
-一个粗糙但显式的终止时间界限：
+
 \begin{equation}
     T^* \leq |\mathcal{Q}| = |\F_{\text{dist}}| \times 2^{N_{\max}} \times |\Theta| \leq \left( \frac{1}{\varepsilon_{\text{mach}}} + 1 \right)^{N_{\max}} \times 2^{N_{\max}} \times \left( \frac{1}{\varepsilon_{\text{mach}}} \right)^{\dim(\Theta)}.
 \end{equation}
 
-这个界限对现实的 $N_{\max}$（如 $10^6$）是天文数字般巨大的，但它保持\textbf{有限}。在实践中，由于 Lyapunov 结构，收敛速度远快于此；此处的界限是最坏情况的理论保证。
+ $N_{\max}$ $10^6$\textbf{} Lyapunov 
 
-\subsection{定理 Spring-2 不}保证什么}
+\subsection{ Spring-2 }}
 
-诚实标注：
+
 \begin{enumerate}[nosep]
-    \item \textbf{不保证全局最优性：} 不动点在可达配置空间内是最优的，但不一定是全局最优的。
-    \item \textbf{不保证正确性：} 不动点可能是不正确的——守门人可能收敛到将噪声误标为干净（或反之）的评分函数。定理~3 的伴随论文 \citep{scx2026} 证明这在原则上不可避免。
-    \item \textbf{不保证唯一性：} 不动点依赖于初始条件。不同轨迹可能收敛到不同不动点。
-    \item \textbf{不保证速度：} 界限 $T^* \leq \Psi_0/\varepsilon_{\text{mach}}$ 对实际 $\varepsilon_{\text{mach}}$ 极为松弛。实际收敛时间取决于问题依赖的 Lyapunov 下降率。
+    \item \textbf{} 
+    \item \textbf{} ——~3  \citep{scx2026} 
+    \item \textbf{} 
+    \item \textbf{}  $T^* \leq \Psi_0/\varepsilon_{\text{mach}}$  $\varepsilon_{\text{mach}}$  Lyapunov 
 \end{enumerate}
 
-\subsection{G\"{o}del-类似不完备性类比}
+\subsection{G\"{o}del-}
 
-系统不能认证自身的完备性。假设系统 $\mathcal{T}$ 试图证明它已达到完备状态，即其不动点 $S_{T^*}$ 是最优的。这将要求 $\mathcal{T}$ 验证：
+ $\mathcal{T}$  $S_{T^*}$  $\mathcal{T}$ 
 \begin{equation}
-    \forall x \in \X, \; |S_{T^*}(x) - \Pbb(x \text{ 是噪声} \mid \text{所有证据})| \leq \varepsilon.
+    \forall x \in \X, \; |S_{T^*}(x) - \Pbb(x \text{ } \mid \text{})| \leq \varepsilon.
 \end{equation}
-但基本真实 $f^*$ 是不可观测的（根据定义）。系统评估自身完备性的唯一方式是通过其内部一致性度量 $\Psi$，它是系统自身状态的函数。这类似于形式系统试图证明自身一致性：根据 G\"{o}del 第二不完备性定理，一致系统不能证明自身一致性。
+ $f^*$  $\Psi$ G\"{o}del 
 
-\textbf{实际含义：} 周期性外部验证（DFT 计算或物理实验）不仅是工程考虑——它是 Spring 系统逃脱其自身完备性限制的\textit{认识论必要性}。
+\textbf{} DFT —— Spring \textit{}
 
 % ===========================================================================
-% 7. Lyapunov 分析
+% 7. Lyapunov 
 % ===========================================================================
-\section{Lyapunov 下降证明}\label{sec:lyapunov}
+\section{Lyapunov }\label{sec:lyapunov}
 
-本节提供完整的 Lyapunov 下降证明，首先证明无参考集重放时其形式不可能性，然后通过参考集重放和重要性采样解决所有障碍。
+ Lyapunov 
 
-\subsection{选择偏差循环}
+\subsection{}
 
-自进化中固有的一个关键障碍是\textbf{选择偏差循环}：
+\textbf{}
 
 \begin{equation}
-    S_t \xrightarrow{\text{选择}} M_{t+1} \xrightarrow{\text{训练}} f_{\theta_{t+1}} \xrightarrow{\text{反馈}} S_{t+1}.
+    S_t \xrightarrow{\text{}} M_{t+1} \xrightarrow{\text{}} f_{\theta_{t+1}} \xrightarrow{\text{}} S_{t+1}.
 \end{equation}
 
-守门人根据其当前评分函数选择哪些样本进入记忆库。NEP 学生在这个接受偏置的数据集上训练。NEP 的输出反馈以更新守门人。这创造了一个自我强化循环：若 $S_t$ 对某些区域过度自信，它将主要从这些区域接受样本，学生将专门化到这些区域，更新后的守门人将强化原始偏差。
+NEP NEP  $S_t$ 
 
-\subsection{无参考集重放时的不可能性}
+\subsection{}
 
-\begin{theorem}[无参考集重放时 Lyapunov 下降的不可能性 (省定理)]\label{thm:impossible}
-在没有参考集重放（C10）或等效机制时，对任意大的 $t$，Lyapunov 下降 $\E[\Delta\Psi_t \mid \F_t] \leq 0$ 在渐近意义上是\textbf{形式上不可能的}。必要条件为 $D_{\text{joint}}^* + 2B(1-\varepsilon) = 0$，它要求要么 $\varepsilon = 1$（无噪声过滤），要么 $B = 0$（平凡损失）。
+\begin{theorem}[ Lyapunov  ()]\label{thm:impossible}
+C10 $t$Lyapunov  $\E[\Delta\Psi_t \mid \F_t] \leq 0$ \textbf{} $D_{\text{joint}}^* + 2B(1-\varepsilon) = 0$ $\varepsilon = 1$ $B = 0$
 \end{theorem}
 
 \begin{proof}
-将一步 Lyapunov 变化分解为四个项（完整推导见第~\ref{sec:decomp} 节）：
+ Lyapunov ~\ref{sec:decomp} 
 \begin{equation}
     \Delta\Psi_t = \underbrace{\Delta_{\text{student}}}_{\text{(A)}} + \underbrace{\Delta_{\text{gatekeeper}}}_{\text{(B)}} + \underbrace{\Delta_{\text{selection}}}_{\text{(C)}} + \underbrace{\Delta_{\text{cross}}}_{\text{(D)}}.
 \end{equation}
 
-我们分别分析每一项。考虑在无 C10 和 C11 的最紧可能界下的组合界（来自引理~\ref{lem:tightest} 的完整推导）：
+ C10  C11 ~\ref{lem:tightest} 
 
 \begin{align}
     \E[\Delta\Psi_t \mid \F_t] &\leq -\alpha_t \|\nabla L_{S_t}(\theta_t)\|^2 + \frac{L_g \alpha_t^2 G^2}{2} \notag\\
@@ -675,126 +675,126 @@ Spring 系统在三个使配置空间有限化的普遍物理约束下运行：
     &\quad - \beta_t \cdot 2(\rho_{\text{ideal}} - B_S L_{\text{data}}(1-\varepsilon)) \cdot \|\Delta_t\|_{M_0} \cdot \|S_t - \hat{C}\|_{M_0} \notag\\
     &\quad + \beta_t^2 \|\Delta_t\|_{M_0}^2 + \frac{4B \beta_t B_S}{Z_{\min}},
 \end{align}
-其中 $D_{\text{joint}}^* = \min_\theta (\E_{V_0}[\ell(f_\theta)] + \E_{P_{S_t}}[\ell(f_\theta)])$ 是两个分布上最小可达联合损失。
+ $D_{\text{joint}}^* = \min_\theta (\E_{V_0}[\ell(f_\theta)] + \E_{P_{S_t}}[\ell(f_\theta)])$ 
 
-Lyapunov 下降在渐近意义上要求：当 $\|\nabla L_{S_t}\| \to 0$ 且 $\beta_t \to 0$ 当 $t \to \infty$，右侧必须非正。但常数项 $D_{\text{joint}}^* + 2B(1-\varepsilon)$ \textbf{不消失}。令 $t \to \infty$：
+Lyapunov  $\|\nabla L_{S_t}\| \to 0$  $\beta_t \to 0$  $t \to \infty$ $D_{\text{joint}}^* + 2B(1-\varepsilon)$ \textbf{} $t \to \infty$
 \begin{equation}
     \limsup_{t \to \infty} \E[\Delta\Psi_t \mid \F_t] \leq -\lim_{t \to \infty} \alpha_t \|\nabla L_{S_t}(\theta_t)\|^2 + D_{\text{joint}}^* + 2B(1-\varepsilon).
 \end{equation}
-当学生收敛时（$\|\nabla L_{S_t}\| \to 0$），右侧简化为 $D_{\text{joint}}^* + 2B(1-\varepsilon)$。对于 Lyapunov 下降，我们需要：
+$\|\nabla L_{S_t}\| \to 0$ $D_{\text{joint}}^* + 2B(1-\varepsilon)$ Lyapunov 
 \begin{equation}
     D_{\text{joint}}^* + 2B(1-\varepsilon) = 0.
 \end{equation}
-由于所有项非负，这强制：(1) $D_{\text{joint}}^* = 0$——存在一个同时在 $V_0$ 和 $P_{S_t}$ 上极小化损失的参数（完美分布对齐），且 (2) 要么 $\varepsilon = 1$（全面探索——无选择性，即无噪声过滤），要么 $B = 0$（平凡损失函数）。条件 (2) 与守门人的目的矛盾。因此，\textbf{无额外机制时，Lyapunov 下降在渐近意义上不可能}。
+(1) $D_{\text{joint}}^* = 0$—— $V_0$  $P_{S_t}$  (2)  $\varepsilon = 1$—— $B = 0$ (2) \textbf{Lyapunov }
 \end{proof}
 
-\subsection{一步分解}\label{sec:decomp}
+\subsection{}\label{sec:decomp}
 
-我们显式分解参考集 Lyapunov 函数上的一步变化：
+ Lyapunov 
 \begin{equation}\label{eq:lyapunov-full-def}
     \Psi(S_t, \theta_t) = \underbrace{\frac{1}{|M_0|} \sum_{x \in M_0} (S_t(x, y(x)) - \hat{C}(x))^2}_{\Psi_{\text{gate}}(S_t)} + \lambda \cdot \underbrace{\frac{1}{|V_0|} \sum_{(x,y) \in V_0} \ell(f_{\theta_t}(x), y)}_{\Psi_{\text{student}}(\theta_t)}.
 \end{equation}
 
-一步变化 $\Delta\Psi_t = \Psi(S_{t+1}, \theta_{t+1}) - \Psi(S_t, \theta_t)$ 被分解为：
+ $\Delta\Psi_t = \Psi(S_{t+1}, \theta_{t+1}) - \Psi(S_t, \theta_t)$ 
 \begin{align}
-    \Delta_{\text{student}} &= \Psi_{\text{student}}(\theta_{t+1}) - \Psi_{\text{student}}(\theta_t) \quad \text{（$V_0$ 上的 NEP 改进）} \\
-    \Delta_{\text{gatekeeper}} &= \Psi_{\text{gate}}(S_{t+1}) - \Psi_{\text{gate}}(S_t) \quad \text{（$M_0$ 上的 SCX 改进）} \\
-    \Delta_{\text{selection}} &= \text{分布偏移从 $P_{S_t}$ 到 $P_{S_{t+1}}$ 的影响} \\
-    \Delta_{\text{cross}} &= \text{交叉耦合：守门人更新依赖于 $\theta_{t+1}$}
+    \Delta_{\text{student}} &= \Psi_{\text{student}}(\theta_{t+1}) - \Psi_{\text{student}}(\theta_t) \quad \text{$V_0$  NEP } \\
+    \Delta_{\text{gatekeeper}} &= \Psi_{\text{gate}}(S_{t+1}) - \Psi_{\text{gate}}(S_t) \quad \text{$M_0$  SCX } \\
+    \Delta_{\text{selection}} &= \text{ $P_{S_t}$  $P_{S_{t+1}}$ } \\
+    \Delta_{\text{cross}} &= \text{ $\theta_{t+1}$}
 \end{align}
 
-\begin{lemma}[交叉耦合在参考集上消失]\label{lem:cross-zero}
-由于 $\Psi$ 在固定集 $M_0$ 和 $V_0$ 上评估，$\Delta_{\text{cross}} = 0$。
+\begin{lemma}[]\label{lem:cross-zero}
+ $\Psi$  $M_0$  $V_0$ $\Delta_{\text{cross}} = 0$
 \end{lemma}
 
 \begin{proof}
-$\Psi(S, \theta) = \Psi_{\text{gate}}(S) + \lambda \Psi_{\text{student}}(\theta)$ 加性分离。$\Psi_{\text{gate}}(S)$ 仅依赖于 $S$ 和固定的 $\hat{C}$ 在固定的 $M_0$ 上。$\Psi_{\text{student}}(\theta)$ 仅依赖于 $\theta$ 和固定的 $V_0$。因此，改变 $\theta$ 不影响 $\Psi_{\text{gate}}$，且改变 $S$ 不影响 $\Psi_{\text{student}}$。交叉项在参考集评估下\textbf{精确消失}。
+$\Psi(S, \theta) = \Psi_{\text{gate}}(S) + \lambda \Psi_{\text{student}}(\theta)$ $\Psi_{\text{gate}}(S)$  $S$  $\hat{C}$  $M_0$ $\Psi_{\text{student}}(\theta)$  $\theta$  $V_0$ $\theta$  $\Psi_{\text{gate}}$ $S$  $\Psi_{\text{student}}$\textbf{}
 \end{proof}
 
-\subsection{分布偏移控制}
+\subsection{}
 
-\begin{lemma}[分布偏移界]\label{lem:tv-bound}
-在 C6'（$\beta_t = o(\alpha_t)$）和 C7（有界守门人更新）下：
+\begin{lemma}[]\label{lem:tv-bound}
+ C6'$\beta_t = o(\alpha_t)$ C7
 \begin{equation}
     \E[\TV(P_{S_{t+1}}, P_{S_t}) \mid \F_t] \leq \frac{2\beta_t B_S}{Z_{\min} - \beta_t B_S} = O(\beta_t),
 \end{equation}
-其中 $Z_{\min} = \min_t \E_{P_0}[S_t \cdot \ind{S_t \geq \gamma_t}] + \varepsilon \geq \varepsilon$ 在 C9 下。
+ $Z_{\min} = \min_t \E_{P_0}[S_t \cdot \ind{S_t \geq \gamma_t}] + \varepsilon \geq \varepsilon$  C9 
 \end{lemma}
 
 \begin{proof}
-接受偏置分布的变化是因为 $S_t \to S_{t+1}$：
+ $S_t \to S_{t+1}$
 \begin{equation}
     P_{S_{t+1}}(x,y) - P_{S_t}(x,y) = P_0(x,y) \cdot \left(\frac{S_{t+1}(x,y)}{Z_{t+1}} - \frac{S_t(x,y)}{Z_t}\right).
 \end{equation}
-由 C7，$\|S_{t+1} - S_t\|_\infty \leq \beta_t B_S$。归一化常数的变化满足 $|Z_{t+1} - Z_t| \leq \beta_t B_S$。全变差受声明界的约束。
+ C7$\|S_{t+1} - S_t\|_\infty \leq \beta_t B_S$ $|Z_{t+1} - Z_t| \leq \beta_t B_S$
 \end{proof}
 
-由于 $\beta_t = o(\alpha_t)$，每步分布偏移是 $O(\beta_t) = o(\alpha_t)$，相对于学生下降项是渐近可忽略的。
+ $\beta_t = o(\alpha_t)$ $O(\beta_t) = o(\alpha_t)$
 
-\subsection{联合解决：参考集重放}
+\subsection{}
 
-\begin{theorem}[参考集重放下的 Lyapunov 下降——完整证明]\label{thm:lyapunov-proven}
-假设 C1--C11 成立。在参考集重放（C10）和重要性采样（C11）下，Lyapunov 函数的一步期望变化满足：
+\begin{theorem}[ Lyapunov ——]\label{thm:lyapunov-proven}
+ C1--C11 C10C11Lyapunov 
 \begin{equation}\label{eq:lyapunov-final}
     \E[\Delta\Psi_t \mid \F_t] \leq -\alpha_t \|\nabla L_0(\theta_t)\|^2 - \beta_t \cdot 2\rho_{\text{ideal}} \|\Delta_t^{\text{ideal}}\|_{M_0} \|S_t - \hat{C}\|_{M_0} + O(\alpha_t^2 W + \beta_t^2).
 \end{equation}
-对于充分大的 $t$（当 $\alpha_t^2 W \ll \alpha_t$ 和 $\beta_t^2 \ll \beta_t$），除非 $\|\nabla L_0(\theta_t)\| = 0$ \textbf{且} $\|S_t - \hat{C}\|_{M_0} = 0$（联合不动点），Lyapunov 函数在期望意义上严格递减。
+ $t$ $\alpha_t^2 W \ll \alpha_t$  $\beta_t^2 \ll \beta_t$ $\|\nabla L_0(\theta_t)\| = 0$ \textbf{} $\|S_t - \hat{C}\|_{M_0} = 0$Lyapunov 
 \end{theorem}
 
 \begin{proof}
-我们证明~\eqref{eq:lyapunov-final} 的每个分量。
+~\eqref{eq:lyapunov-final} 
 
-\textbf{(A) 通过重要性采样的学生下降。} 重要性加权随机梯度 $w(x,y) \cdot \nabla_\theta \ell(f_{\theta_t}(x), y)$（其中 $w = P_0/P_{S_t}$）是 $\nabla L_0(\theta_t)$ 的无偏估计：
+\textbf{(A) }  $w(x,y) \cdot \nabla_\theta \ell(f_{\theta_t}(x), y)$ $w = P_0/P_{S_t}$ $\nabla L_0(\theta_t)$ 
 \begin{align}
     \E_{(x,y) \sim P_{S_t}}[w(x,y) \nabla_\theta \ell(f_{\theta_t}(x), y)]
     &= \sum_{x,y} P_{S_t}(x,y) \cdot \frac{P_0(x,y)}{P_{S_t}(x,y)} \cdot \nabla_\theta \ell(f_{\theta_t}(x), y) \notag\\
     &= \sum_{x,y} P_0(x,y) \nabla_\theta \ell(f_{\theta_t}(x), y) = \nabla L_0(\theta_t).
 \end{align}
 
-在 C11 下，重要性权重的方差膨胀至多 $W$。从 $L_g$-光滑性（引理~\ref{lem:comp}）：
+ C11  $W$ $L_g$-~\ref{lem:comp}
 \begin{align}
     L_0(\theta_{t+1}) &\leq L_0(\theta_t) + \langle \nabla L_0(\theta_t), \theta_{t+1} - \theta_t \rangle + \frac{L_g}{2}\|\theta_{t+1} - \theta_t\|^2 \\
     &= L_0(\theta_t) - \alpha_t \langle \nabla L_0(\theta_t), w \cdot g_t \rangle + \frac{L_g \alpha_t^2}{2} \|w \cdot g_t\|^2.
 \end{align}
-取条件期望并利用无偏性：
+
 \begin{align}
     \E[L_0(\theta_{t+1}) - L_0(\theta_t) \mid \F_t]
     &\leq -\alpha_t \|\nabla L_0(\theta_t)\|^2 + \frac{L_g \alpha_t^2}{2} \E[\|w \cdot g_t\|^2 \mid \F_t] \notag\\
     &\leq -\alpha_t \|\nabla L_0(\theta_t)\|^2 + \frac{L_g \alpha_t^2 W G^2}{2}.
 \end{align}
-推广差距 $D_{\text{static}}$ 被\textbf{消除}，因为有效训练分布现在是 $P_0$。
+ $D_{\text{static}}$ \textbf{} $P_0$
 
-\textbf{(B) 通过参考重放的守门人下降。} 在 $M_0$ 上计算 SCXUpdate 消除对齐偏差：$\rho_t^{\text{eff}} = \rho_{\text{ideal}} \geq 0$ 由构造。扩展平方：
+\textbf{(B) }  $M_0$  SCXUpdate $\rho_t^{\text{eff}} = \rho_{\text{ideal}} \geq 0$ 
 \begin{align}
     \Psi_{\text{gate}}(S_{t+1}) &= \frac{1}{|M_0|} \sum_{M_0} (S_t + \beta_t \Delta_t^{\text{ideal}} - \hat{C})^2 \notag\\
     &= \Psi_{\text{gate}}(S_t) + \frac{2\beta_t}{|M_0|} \sum_{M_0} (S_t - \hat{C}) \cdot \Delta_t^{\text{ideal}} + \frac{\beta_t^2}{|M_0|} \sum_{M_0} (\Delta_t^{\text{ideal}})^2.
 \end{align}
-当在 $M_0$ 上计算 SCXUpdate 时，对齐是完美的（$\rho_{\text{ideal}} \geq 0$）：
+ $M_0$  SCXUpdate $\rho_{\text{ideal}} \geq 0$
 \begin{equation}
     \langle S_t - \hat{C}, \Delta_t^{\text{ideal}} \rangle_{M_0} \leq -\rho_{\text{ideal}} \cdot \|\Delta_t^{\text{ideal}}\|_{M_0} \cdot \|S_t - \hat{C}\|_{M_0}.
 \end{equation}
-因此：
+
 \begin{equation}
     \E[\Delta_{\text{gatekeeper}} \mid \F_t] \leq -\beta_t \cdot 2\rho_{\text{ideal}} \|\Delta_t^{\text{ideal}}\|_{M_0} \|S_t - \hat{C}\|_{M_0} + \beta_t^2 \|\Delta_t^{\text{ideal}}\|_{M_0}^2.
 \end{equation}
 
-\textbf{(C) 分布偏移。} 由引理~\ref{lem:tv-bound}，$\E[\TV(P_{S_{t+1}}, P_{S_t}) \mid \F_t] = O(\beta_t)$。损失变化受 $B \cdot \TV$ 约束，给出 $|\Delta_{\text{selection}}| = O(\beta_t) = o(\alpha_t)$。
+\textbf{(C) } ~\ref{lem:tv-bound}$\E[\TV(P_{S_{t+1}}, P_{S_t}) \mid \F_t] = O(\beta_t)$ $B \cdot \TV$  $|\Delta_{\text{selection}}| = O(\beta_t) = o(\alpha_t)$
 
-\textbf{(D) 交叉耦合。} 由引理~\ref{lem:cross-zero}，$\Delta_{\text{cross}} = 0$。
+\textbf{(D) } ~\ref{lem:cross-zero}$\Delta_{\text{cross}} = 0$
 
-\textbf{组装。} 组合项 (A)--(D)：
+\textbf{}  (A)--(D)
 \begin{equation}
     \E[\Delta\Psi_t \mid \F_t] \leq -\alpha_t \|\nabla L_0(\theta_t)\|^2 + \frac{L_g \alpha_t^2 W G^2}{2} - \beta_t \cdot 2\rho_{\text{ideal}} \|\Delta_t^{\text{ideal}}\|_{M_0} \|S_t - \hat{C}\|_{M_0} + \beta_t^2 \|\Delta_t^{\text{ideal}}\|_{M_0}^2 + O(\beta_t).
 \end{equation}
-对于远离不动点的充分大的 $t$：$\alpha_t^2 W \leq \frac{\alpha_t}{2}\|\nabla L_0\|^2$ 且 $\beta_t^2 \ll \beta_t$。右侧严格为负，除非 $\|\nabla L_0(\theta_t)\| = 0$ 且 $\|S_t - \hat{C}\|_{M_0} = 0$。
+ $t$$\alpha_t^2 W \leq \frac{\alpha_t}{2}\|\nabla L_0\|^2$  $\beta_t^2 \ll \beta_t$ $\|\nabla L_0(\theta_t)\| = 0$  $\|S_t - \hat{C}\|_{M_0} = 0$
 \end{proof}
 
-\subsection{最紧可能组合界}\label{sec:tightest}
+\subsection{}\label{sec:tightest}
 
-为完备起见，我们陈述无额外机制时最紧的可能界。
 
-\begin{lemma}[无额外假设的最紧 Lyapunov 界]\label{lem:tightest}
-在 C1'--C9 下，无 C10 和 C11 时，一步期望变化满足：
+
+\begin{lemma}[ Lyapunov ]\label{lem:tightest}
+ C1'--C9  C10  C11 
 \begin{align}
     \E[\Delta\Psi_t \mid \F_t] &\leq -\alpha_t \|\nabla L_{S_t}(\theta_t)\|^2 + \frac{L_g \alpha_t^2 G^2}{2} \notag\\
     &\quad + \alpha_t \cdot L_\ell L_f G \cdot (1 - \varepsilon) + D_{\text{joint}}^* + 2B(1-\varepsilon) \notag\\
@@ -804,409 +804,409 @@ $\Psi(S, \theta) = \Psi_{\text{gate}}(S) + \lambda \Psi_{\text{student}}(\theta)
 \end{lemma}
 
 \begin{proof}
-来自第~\ref{sec:decomp} 节分解和领域自适应理论 (Ben-David et al., 2010) 的直接组合。推广差距 $D_{\text{static}}$ 受 $D_{\text{joint}}^* + 2B(1-\varepsilon)$ 约束（在 C9 下 $\TV(V_0, P_{S_t}) \leq 1 - \varepsilon$）。对齐系数变为 $\rho_t^{\text{eff}} = \rho_{\text{ideal}} - B_S L_{\text{data}}(1-\varepsilon)$，其符号\textbf{未确定}。
+~\ref{sec:decomp}  (Ben-David et al., 2010)  $D_{\text{static}}$  $D_{\text{joint}}^* + 2B(1-\varepsilon)$  C9  $\TV(V_0, P_{S_t}) \leq 1 - \varepsilon$ $\rho_t^{\text{eff}} = \rho_{\text{ideal}} - B_S L_{\text{data}}(1-\varepsilon)$\textbf{}
 \end{proof}
 
 % ===========================================================================
-% 8. 收敛率分析
+% 8. 
 % ===========================================================================
-\section{收敛率分析}\label{sec:rates}
+\section{}\label{sec:rates}
 
-\subsection{强凸性下的学生率}
+\subsection{}
 
-\begin{theorem}[强凸性下的学生收敛率]\label{thm:rate-student}
-假设极限损失 $\bar{L}(\theta) = \E_{(x,y) \sim P_{S^*}}[\ell(f_\theta(X), Y)]$ 在 $\theta^*$ 的邻域内是 $\mu$-强凸的。在 C2 和 C4 下，取 $\alpha_t = \alpha_0 t^{-a}$ ($a \in (0.5, 1]$)：
+\begin{theorem}[]\label{thm:rate-student}
+ $\bar{L}(\theta) = \E_{(x,y) \sim P_{S^*}}[\ell(f_\theta(X), Y)]$  $\theta^*$  $\mu$- C2  C4  $\alpha_t = \alpha_0 t^{-a}$ ($a \in (0.5, 1]$)
 \begin{equation}
     \E[\|\theta_t - \theta^*\|^2] \leq C_1 \cdot t^{-a} + C_2 \cdot t^{-2a} = O(t^{-a}),
 \end{equation}
-其中 $C_1 = 2\sigma_\xi^2 \alpha_0 / \mu$，$C_2 = 4 G^2 \alpha_0^2 / \mu^2$。
+ $C_1 = 2\sigma_\xi^2 \alpha_0 / \mu$$C_2 = 4 G^2 \alpha_0^2 / \mu^2$
 \end{theorem}
 
 \begin{proof}
-令 $V_t = \E[\|\theta_t - \theta^*\|^2]$。从 SGD 更新：
+ $V_t = \E[\|\theta_t - \theta^*\|^2]$ SGD 
 \begin{align}
     V_{t+1} &= V_t - 2\alpha_t \E[\langle \theta_t - \theta^*, g_t(\theta_t) \rangle] + \alpha_t^2 \E[\|g_t(\theta_t)\|^2] \\
     &\leq V_t - 2\alpha_t \E[\langle \theta_t - \theta^*, \nabla \bar{L}(\theta_t) \rangle] + \alpha_t^2 G^2.
 \end{align}
-由 $\mu$-强凸性：$\langle \theta_t - \theta^*, \nabla \bar{L}(\theta_t) \rangle \geq \mu \|\theta_t - \theta^*\|^2$。因此：
+ $\mu$-$\langle \theta_t - \theta^*, \nabla \bar{L}(\theta_t) \rangle \geq \mu \|\theta_t - \theta^*\|^2$
 \begin{equation}
     V_{t+1} \leq (1 - 2\mu\alpha_t) V_t + \alpha_t^2 G^2.
 \end{equation}
-取 $\alpha_t = \alpha_0 t^{-a}$，此递推解为 $V_t = O(t^{-a})$。精确常数来自具有多项式衰减步长的随机逼近理论 (Polyak \& Juditsky, 1992; Bach \& Moulines, 2011)。展开递推：
+ $\alpha_t = \alpha_0 t^{-a}$ $V_t = O(t^{-a})$ (Polyak \& Juditsky, 1992; Bach \& Moulines, 2011)
 \begin{align}
     V_t &\leq V_0 \prod_{i=0}^{t-1} (1 - 2\mu\alpha_i) + G^2 \sum_{i=0}^{t-1} \alpha_i^2 \prod_{j=i+1}^{t-1} (1 - 2\mu\alpha_j) \\
     &\approx V_0 \exp\left(-2\mu \alpha_0 \sum_{i=0}^{t-1} i^{-a}\right) + G^2 \alpha_0^2 \sum_{i=0}^{t-1} i^{-2a} \exp\left(-2\mu \alpha_0 \sum_{j=i+1}^{t-1} j^{-a}\right).
 \end{align}
-对 $a \in (0.5, 1)$，$\sum_{i=0}^{t-1} i^{-a} = \Theta(t^{1-a})$，而 $\sum_{i=0}^{t-1} i^{-2a} = O(1)$（当 $a > 0.5$）。主导项来自方差积累，在渐近意义上给出 $V_t \sim \frac{2\sigma_\xi^2 \alpha_0}{\mu} t^{-a}$。
+ $a \in (0.5, 1)$$\sum_{i=0}^{t-1} i^{-a} = \Theta(t^{1-a})$ $\sum_{i=0}^{t-1} i^{-2a} = O(1)$ $a > 0.5$ $V_t \sim \frac{2\sigma_\xi^2 \alpha_0}{\mu} t^{-a}$
 \end{proof}
 
-\begin{corollary}[Polyak-Ruppert 平均]\label{cor:polyak}
-取 Polyak-Ruppert 平均 $\bar{\theta}_t = \frac{1}{t}\sum_{i=1}^t \theta_i$，收敛率改进为：
+\begin{corollary}[Polyak-Ruppert ]\label{cor:polyak}
+ Polyak-Ruppert  $\bar{\theta}_t = \frac{1}{t}\sum_{i=1}^t \theta_i$
 \begin{equation}
     \E[\|\bar{\theta}_t - \theta^*\|^2] = O(t^{-1}),
 \end{equation}
-对\textbf{任何} $a \in (0.5, 1)$，达到极小极大最优率 $\Omega(t^{-1})$ 而无需精确学习率调谐。
+\textbf{} $a \in (0.5, 1)$ $\Omega(t^{-1})$ 
 \end{corollary}
 
 \begin{proof}
-这是 Polyak \& Juditsky (1992) 的标准结果，直接适用于 Spring 学生。平均化平滑了来自衰减步长的渐近方差，无论 $a$ 值为何均达到 $O(t^{-1})$ 率。下界匹配来自 Agarwal et al. (2012) 的极小极大界。
+ Polyak \& Juditsky (1992)  Spring  $a$  $O(t^{-1})$  Agarwal et al. (2012) 
 \end{proof}
 
-\subsection{Polyak-{\L}ojasiewicz 条件下的率}
+\subsection{Polyak-{\L}ojasiewicz }
 
-\begin{theorem}[PL 条件下的学生率]\label{thm:rate-pl}
-在 Polyak-{\L}ojasiewicz 条件下，有常数 $\mu_{PL} > 0$，取 $\alpha_t = \alpha_0 t^{-a}$：
+\begin{theorem}[PL ]\label{thm:rate-pl}
+ Polyak-{\L}ojasiewicz  $\mu_{PL} > 0$ $\alpha_t = \alpha_0 t^{-a}$
 \begin{equation}
     \E[\bar{L}(\theta_t) - \bar{L}(\theta^*)] \leq C_{PL} \cdot t^{-a},
 \end{equation}
-其中 $C_{PL} = L_g G^2 \alpha_0 / (2\mu_{PL})$。
+ $C_{PL} = L_g G^2 \alpha_0 / (2\mu_{PL})$
 \end{theorem}
 
 \begin{proof}
-PL 条件陈述为 $\frac{1}{2}\|\nabla \bar{L}(\theta)\|^2 \geq \mu_{PL} (\bar{L}(\theta) - \bar{L}(\theta^*))$。从 $L_g$-光滑性：
+PL  $\frac{1}{2}\|\nabla \bar{L}(\theta)\|^2 \geq \mu_{PL} (\bar{L}(\theta) - \bar{L}(\theta^*))$ $L_g$-
 \begin{align}
     \E[\bar{L}(\theta_{t+1})] &\leq \bar{L}(\theta_t) - \alpha_t \|\nabla \bar{L}(\theta_t)\|^2 + \frac{L_g \alpha_t^2 G^2}{2} \\
     &\leq \bar{L}(\theta_t) - 2\mu_{PL}\alpha_t (\bar{L}(\theta_t) - \bar{L}^*) + \frac{L_g \alpha_t^2 G^2}{2}.
 \end{align}
-令 $\delta_t = \E[\bar{L}(\theta_t) - \bar{L}^*]$。则：
+ $\delta_t = \E[\bar{L}(\theta_t) - \bar{L}^*]$
 \begin{equation}
     \delta_{t+1} \leq (1 - 2\mu_{PL}\alpha_t) \delta_t + \frac{L_g \alpha_t^2 G^2}{2}.
 \end{equation}
-该递推在 $\alpha_t = \alpha_0 t^{-a}$ 时解为 $\delta_t = O(t^{-a})$，具有如声明的常数。
+ $\alpha_t = \alpha_0 t^{-a}$  $\delta_t = O(t^{-a})$
 \end{proof}
 
-\textbf{注：}PL 条件对神经网络比强凸性更现实 (Karimi et al., 2016)。它是保证线性收敛到全局最小值的最弱条件之一。
+\textbf{}PL  (Karimi et al., 2016)
 
-\subsection{非凸情况下的平稳点收敛}
+\subsection{}
 
-\begin{theorem}[非凸平稳性率]\label{thm:rate-nonconvex}
-在 C2 和 C4 下（无需凸性），取 $\alpha_t = \alpha_0 t^{-a}$，$a \in (0.5, 1)$：
+\begin{theorem}[]\label{thm:rate-nonconvex}
+ C2  C4  $\alpha_t = \alpha_0 t^{-a}$$a \in (0.5, 1)$
 \begin{equation}
     \min_{0 \leq i \leq t} \E[\|\nabla \bar{L}(\theta_i)\|^2] \leq \frac{C_{nc}}{t^{1-a}} = O(t^{-(1-a)}),
 \end{equation}
-其中 $C_{nc} = (\bar{L}(\theta_0) - \bar{L}_{\inf} + \frac{L_g G^2}{2} \sum_{i=0}^\infty \alpha_i^2) / \alpha_0$。
+ $C_{nc} = (\bar{L}(\theta_0) - \bar{L}_{\inf} + \frac{L_g G^2}{2} \sum_{i=0}^\infty \alpha_i^2) / \alpha_0$
 \end{theorem}
 
 \begin{proof}
-从 $L_g$-光滑性：
+ $L_g$-
 \begin{equation}
     \E[\bar{L}(\theta_{t+1})] \leq \bar{L}(\theta_t) - \alpha_t \|\nabla \bar{L}(\theta_t)\|^2 + \frac{L_g \alpha_t^2 G^2}{2}.
 \end{equation}
-伸缩并重排：
+
 \begin{align}
     \sum_{i=0}^t \alpha_i \E[\|\nabla \bar{L}(\theta_i)\|^2] &\leq \bar{L}(\theta_0) - \bar{L}_{\inf} + \frac{L_g G^2}{2} \sum_{i=0}^t \alpha_i^2 \\
     &\leq \bar{L}(\theta_0) - \bar{L}_{\inf} + \frac{L_g G^2}{2} \sum_{i=0}^\infty \alpha_i^2.
 \end{align}
-由于 $\sum_{i=0}^t \alpha_i = \Theta(t^{1-a})$ 对 $\alpha_i = \alpha_0 i^{-a}$，最小值至多为加权平均：
+ $\sum_{i=0}^t \alpha_i = \Theta(t^{1-a})$  $\alpha_i = \alpha_0 i^{-a}$
 \begin{equation}
     \min_{0 \leq i \leq t} \E[\|\nabla \bar{L}(\theta_i)\|^2] \leq \frac{\sum_{i=0}^t \alpha_i \E[\|\nabla \bar{L}(\theta_i)\|^2]}{\sum_{i=0}^t \alpha_i} \leq \frac{C_{nc}}{t^{1-a}}.
 \end{equation}
-这确保梯度范数以 $O(t^{-(1-a)})$ 率收敛到零——收敛到\textit{某个}平稳点，但不一定是最优值。
+ $O(t^{-(1-a)})$ ——\textit{}
 \end{proof}
 
-\subsection{守门人收敛率}
+\subsection{}
 
-\begin{theorem}[守门人收敛率]\label{thm:rate-gatekeeper}
-在 C3（Lipschitz 守门人）和对共识的收缩性（$L_S < 1$）下，取 $\beta_t = \beta_0 t^{-b}$：
+\begin{theorem}[]\label{thm:rate-gatekeeper}
+ C3Lipschitz $L_S < 1$ $\beta_t = \beta_0 t^{-b}$
 \begin{equation}
     \E[\|S_t - S^*\|_{M_0}^2] \leq C_S \cdot t^{-b} = O(t^{-b}),
 \end{equation}
-其中 $C_S = 2 B_S^2 \beta_0 / (1 - L_S^2)$。
+ $C_S = 2 B_S^2 \beta_0 / (1 - L_S^2)$
 \end{theorem}
 
 \begin{proof}
-当 SCXUpdate 是向共识的收缩时（$L_S < 1$），$\|S_{t+1} - \hat{C}\|_{M_0} \leq (1 - \beta_t(1 - L_S)) \|S_t - \hat{C}\|_{M_0} + \beta_t \|噪声\|$。在 $M_0$ 上评估 SCXUpdate 时（C10），对齐是完美的，递推以声明的率解出。
+ SCXUpdate $L_S < 1$$\|S_{t+1} - \hat{C}\|_{M_0} \leq (1 - \beta_t(1 - L_S)) \|S_t - \hat{C}\|_{M_0} + \beta_t \|\|$ $M_0$  SCXUpdate C10
 \end{proof}
 
-\subsection{耦合率}
+\subsection{}
 
-在双时间尺度条件 $\beta_t = o(\alpha_t)$ 下，$t^{-b} = o(t^{-a})$。学生率主导：总收敛率为 $O(t^{-a})$。在 Polyak 平均下，整个系统达到最优的 $O(t^{-1})$ 率。
+ $\beta_t = o(\alpha_t)$ $t^{-b} = o(t^{-a})$ $O(t^{-a})$ Polyak  $O(t^{-1})$ 
 
-\subsection{参数依赖性}
+\subsection{}
 
 \begin{table}[ht]
 \centering
-\caption{收敛率常数的参数依赖性}
+\caption{}
 \label{tab:params}
 \begin{tabular}{@{}lll@{}}
 \toprule
-参数 & 对常数的影响 & 对指数的影响 \\
+ &  &  \\
 \midrule
-$L_f$（Lipschitz） & $C \propto L_f^3$ & 无 \\
-$\alpha_t = t^{-a}$ & $C \propto \alpha_0$ & 率 $= t^{-a}$ \\
-$d_\phi$（特征维度） & $C \propto 1 + \gamma d_\phi \log t$ & 无（对数级） \\
-$\eta$（噪声率） & $C \propto 1/\Delta_{\min}^2(\eta)$ & 无 \\
-$\mu$（曲率） & $C \propto 1/\mu$ & 无 \\
+$L_f$Lipschitz & $C \propto L_f^3$ &  \\
+$\alpha_t = t^{-a}$ & $C \propto \alpha_0$ &  $= t^{-a}$ \\
+$d_\phi$ & $C \propto 1 + \gamma d_\phi \log t$ &  \\
+$\eta$ & $C \propto 1/\Delta_{\min}^2(\eta)$ &  \\
+$\mu$ & $C \propto 1/\mu$ &  \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{极小极大最优性}
+\subsection{}
 
-\begin{theorem}[极小极大下界]\label{thm:minimax-lower}
-对任何使用方差 $\sigma_\xi^2 > 0$ 的随机梯度更新 $\theta_t$ 的算法，在 $\mu$-强凸性下：
+\begin{theorem}[]\label{thm:minimax-lower}
+ $\sigma_\xi^2 > 0$  $\theta_t$  $\mu$-
 \begin{equation}
     \E[\|\theta_t - \theta^*\|^2] \geq \frac{\sigma_\xi^2}{\mu^2} \cdot \frac{1}{t}.
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-来自随机凸优化的标准极小极大下界 (Agarwal et al., 2012; Raginsky \& Rakhlin, 2011)。序列估计的 Cram\'{e}r-Rao 界给出 $\Omega(1/t)$。
+ (Agarwal et al., 2012; Raginsky \& Rakhlin, 2011) Cram\'{e}r-Rao  $\Omega(1/t)$
 \end{proof}
 
-在最优调谐（$a = 1$，Polyak 平均）下，学生率在常数因子内匹配极小极大下界。
+$a = 1$Polyak 
 
 % ===========================================================================
-% 9. 退火调度定理
+% 9. 
 % ===========================================================================
-\section{退火调度定理}\label{sec:annealing}
+\section{}\label{sec:annealing}
 
-\begin{theorem}[退火调度下的有限累积分布偏移]\label{thm:annealing}
-在 C6'（$\beta_t = o(\alpha_t)$）和 C7（有界守门人更新）下，采用联合调度 $\alpha_t = t^{-a}$, $\beta_t = t^{-b}$ 且 $\frac{1}{2} < a < 1 < b$：累积全变差偏移是有限的：
+\begin{theorem}[]\label{thm:annealing}
+ C6'$\beta_t = o(\alpha_t)$ C7 $\alpha_t = t^{-a}$, $\beta_t = t^{-b}$  $\frac{1}{2} < a < 1 < b$
 \begin{equation}
     \sum_{t=1}^\infty \TV(P_{S_{t+1}}, P_{S_t}) \leq \frac{2 B_S}{Z_{\min}} \sum_{t=1}^\infty \beta_t = \frac{2 B_S}{Z_{\min}} \cdot \zeta(b) < \infty,
 \end{equation}
-其中 $\zeta(b) = \sum_{t=1}^\infty t^{-b}$ 是黎曼 zeta 函数（对 $b > 1$ 有限）。
+ $\zeta(b) = \sum_{t=1}^\infty t^{-b}$  zeta  $b > 1$ 
 \end{theorem}
 
 \begin{proof}
-由引理~\ref{lem:tv-bound}，每步分布偏移满足 $\TV(P_{S_{t+1}}, P_{S_t}) \leq \frac{2\beta_t B_S}{Z_{\min} - \beta_t B_S}$。对充分大的 $t$（$\beta_t B_S \leq Z_{\min}/2$），这受 $\frac{4\beta_t B_S}{Z_{\min}}$ 约束。累积偏移：
+~\ref{lem:tv-bound} $\TV(P_{S_{t+1}}, P_{S_t}) \leq \frac{2\beta_t B_S}{Z_{\min} - \beta_t B_S}$ $t$$\beta_t B_S \leq Z_{\min}/2$ $\frac{4\beta_t B_S}{Z_{\min}}$ 
 \begin{equation}
     \sum_{t=1}^\infty \TV(P_{S_{t+1}}, P_{S_t}) \leq C + \frac{4 B_S}{Z_{\min}} \sum_{t=t_0}^\infty \beta_t = C + \frac{4 B_S}{Z_{\min}} \sum_{t=t_0}^\infty t^{-b} < \infty,
 \end{equation}
-因为 $b > 1$ 确保 $\sum t^{-b}$ 收敛。有限累积偏移对学生的渐近收敛至关重要：它确保训练分布收敛到极限 $P_{S_\infty}$，使得标准 SGD 分析适用。
+ $b > 1$  $\sum t^{-b}$  $P_{S_\infty}$ SGD 
 \end{proof}
 
-\begin{corollary}[联合可满足性]
-条件 $\sum \alpha_t = \infty$, $\sum \alpha_t^2 < \infty$, $\sum \beta_t < \infty$, $\sum \beta_t^2 < \infty$, 且 $\beta_t = o(\alpha_t)$ 是联合可满足的。规范示例：
+\begin{corollary}[]
+ $\sum \alpha_t = \infty$, $\sum \alpha_t^2 < \infty$, $\sum \beta_t < \infty$, $\sum \beta_t^2 < \infty$,  $\beta_t = o(\alpha_t)$ 
 \begin{equation}
     \alpha_t = t^{-0.6}, \quad \beta_t = t^{-1.2},
 \end{equation}
-满足所有五个条件。重要的是，$\sum \beta_t < \infty$ 是\textbf{独立条件}——它不能从 $\beta_t = o(\alpha_t)$ 和 $\sum \alpha_t^2 < \infty$ 推导出来（见第~2.3 节的反例）。
+$\sum \beta_t < \infty$ \textbf{}—— $\beta_t = o(\alpha_t)$  $\sum \alpha_t^2 < \infty$ ~2.3 
 \end{corollary}
 
 \begin{proof}
-对 $a = 0.6$, $b = 1.2$：
+ $a = 0.6$, $b = 1.2$
 \begin{itemize}[nosep]
-    \item $\sum t^{-0.6} = \infty$（指数 $< 1$ 的调和级数）
-    \item $\sum t^{-1.2} < \infty$（学生的 Robbins-Monro）
-    \item $\sum t^{-1.2} < \infty$（有限总分布偏移——显式条件）
-    \item $\sum t^{-2.4} < \infty$（守门人的方差控制）
-    \item $t^{-1.2} / t^{-0.6} = t^{-0.6} \to 0$（时间尺度分离）
+    \item $\sum t^{-0.6} = \infty$ $< 1$ 
+    \item $\sum t^{-1.2} < \infty$ Robbins-Monro
+    \item $\sum t^{-1.2} < \infty$——
+    \item $\sum t^{-2.4} < \infty$
+    \item $t^{-1.2} / t^{-0.6} = t^{-0.6} \to 0$
 \end{itemize}
 \end{proof}
 
-\begin{remark}[退火接受阈值的作用]
-C8（退火接受阈值 $\gamma_t \to 0.5$）补充了学习率退火。阈值从 $\gamma_0 < 0.5$（宽容）开始，增加到 $0.5$（中性）。这防止了早期过度自信，同时随着守门人改进允许提高选择性。结合 C9（随机探索），C8 确保 $Z_{\min} \geq \varepsilon/2 > 0$，为引理~\ref{lem:tv-bound} 中的分布偏移界提供了非零分母。
+\begin{remark}[]
+C8 $\gamma_t \to 0.5$ $\gamma_0 < 0.5$ $0.5$ C9C8  $Z_{\min} \geq \varepsilon/2 > 0$~\ref{lem:tv-bound} 
 \end{remark}
 
 % ===========================================================================
-% 10. 失败模式
+% 10. 
 % ===========================================================================
-\section{边缘情况与失败模式}\label{sec:failure}
+\section{}\label{sec:failure}
 
-我们刻画四种具有形式条件、效应和缓解策略的规范失败模式。
 
-\subsection{模式 1：过早收敛（守门人冻结）}
 
-\begin{theorem}[冻结条件]\label{thm:freeze}
-在 C6' 和 C7 下，取 $\beta_t = \beta_0 t^{-b}$。若 $\beta_t \cdot B_S \leq \varepsilon_{\text{mach}}$，守门人在时间 $t_{\text{freeze}} \leq (\beta_0 B_S / \varepsilon_{\text{mach}})^{1/b}$ 处冻结。
+\subsection{ 1}
+
+\begin{theorem}[]\label{thm:freeze}
+ C6'  C7  $\beta_t = \beta_0 t^{-b}$ $\beta_t \cdot B_S \leq \varepsilon_{\text{mach}}$ $t_{\text{freeze}} \leq (\beta_0 B_S / \varepsilon_{\text{mach}})^{1/b}$ 
 \end{theorem}
 
 \begin{proof}
-由 C7，$\|\Delta S_t\|_\infty \leq \beta_t B_S$。当此界低于机器精度时，更新在数值上为零。解 $\beta_0 t^{-b} B_S = \varepsilon_{\text{mach}}$ 得到冻结时间。
+ C7$\|\Delta S_t\|_\infty \leq \beta_t B_S$ $\beta_0 t^{-b} B_S = \varepsilon_{\text{mach}}$ 
 \end{proof}
 
-\textbf{过早冻结条件：} 若 $t_{\text{freeze}} < t_{\text{converge}}$（学生需要的时间），冻结是过早的。在强凸性下，$t_{\text{converge}} = (C_1/\varepsilon_{\text{target}})^{1/a}$。
+\textbf{}  $t_{\text{freeze}} < t_{\text{converge}}$$t_{\text{converge}} = (C_1/\varepsilon_{\text{target}})^{1/a}$
 
-\textbf{缓解：} 维持最小学习率 $\beta_{\min} > 0$，使用循环学习率，或采用带有学习率提升的平台检测。
+\textbf{}  $\beta_{\min} > 0$
 
-\subsection{模式 2：积压问题（记忆过载）}
+\subsection{ 2}
 
-\begin{theorem}[积压不稳定性]\label{thm:backlog}
-若数据到达率 $r_{\text{in}} > r_{\text{score}} = C_{\text{compute}} / (M + K_S + d_\phi)$，积压无界增长，系统变得不稳定：记忆库包含基于陈旧守门人 $S_{t-\tau}$ 的样本，延迟 $\tau \to \infty$。
+\begin{theorem}[]\label{thm:backlog}
+ $r_{\text{in}} > r_{\text{score}} = C_{\text{compute}} / (M + K_S + d_\phi)$ $S_{t-\tau}$  $\tau \to \infty$
 \end{theorem}
 
 \begin{proof}
-每样本评分延迟为 $\tau = B(t)/r_{\text{score}}$。当 $r_{\text{in}} > r_{\text{score}}$ 时，$B(t) = (r_{\text{in}} - r_{\text{score}})t \to \infty$ 且 $\tau \to \infty$。用于样本 $x_i$ 的守门人是 $S_{t_i}$，其中 $t_i = i - \tau_i$。当 $\tau \to \infty$ 时，评分使用的守门人版本变得任意陈旧。
+ $\tau = B(t)/r_{\text{score}}$ $r_{\text{in}} > r_{\text{score}}$ $B(t) = (r_{\text{in}} - r_{\text{score}})t \to \infty$  $\tau \to \infty$ $x_i$  $S_{t_i}$ $t_i = i - \tau_i$ $\tau \to \infty$ 
 \end{proof}
 
-\textbf{缓解：} 最近邻近似评分（误差 $L_S \cdot \varepsilon$），批量评分，优先级队列，或守门人蒸馏。
+\textbf{}  $L_S \cdot \varepsilon$
 
-\subsection{模式 3：校准崩溃（客户端分歧）}
+\subsection{ 3}
 
-\begin{theorem}[多个不动点]\label{thm:multi-fp}
-Spring 动力学可能存在多个不动点。具有不同初始条件或数据流的两个客户端可能收敛到不同的、不可调和的不动点。
+\begin{theorem}[]\label{thm:multi-fp}
+Spring 
 \end{theorem}
 
-\begin{proof}[构造性证明]
-考虑两个自洽不动点：
+\begin{proof}[]
+
 \begin{itemize}[nosep]
-    \item \textbf{保守不动点 A：}$S_A^*(x,y) \approx 0.3$。守门人保守，拒绝大多数样本。记忆库小，仅包含最高置信度样本。学生在这个小的干净子集上训练。自洽：保守守门人仅接受评分为 $> 0.3$ 的样本，学生预测维持保守校准。
-    \item \textbf{宽容不动点 B：}$S_B^*(x,y) \approx 0.7$。守门人宽容，接受大多数样本。记忆库大而多样，包含一些噪声。学生在这个更大的带噪数据集上训练。自洽：宽容守门人接受大多数样本，多样化训练维持宽容校准。
+    \item \textbf{ A}$S_A^*(x,y) \approx 0.3$ $> 0.3$ 
+    \item \textbf{ B}$S_B^*(x,y) \approx 0.7$
 \end{itemize}
-两者都是动力学的有效不动点，但在约 40\% 的决策上存在分歧。
+ 40\% 
 \end{proof}
 
-\textbf{缓解：} 联邦守门人平均，共享参考集 $M_0$，分歧检测配合协调重置。
+\textbf{}  $M_0$
 
-\subsection{模式 4：对抗投毒（守门人腐化）}
+\subsection{ 4}
 
-\begin{proposition}[Lipschitz 鲁棒性证书]\label{prop:robust-cert}
-在 C3 下，对任何扰动 $\delta$：
+\begin{proposition}[Lipschitz ]\label{prop:robust-cert}
+ C3  $\delta$
 \begin{equation}
     |S_t(x + \delta, y) - S_t(x, y)| \leq L_S \cdot L_\phi \cdot \|\delta\|.
 \end{equation}
-守门人对满足 $\|\delta\| \leq |S_t(x,y) - \gamma|/(L_S L_\phi)$ 的扰动具有证书鲁棒性。
+ $\|\delta\| \leq |S_t(x,y) - \gamma|/(L_S L_\phi)$ 
 \end{proposition}
 
 \begin{proof}
-由 C3 和特征映射的 Lipschitz 性质直接推出。
+ C3  Lipschitz 
 \end{proof}
 
-\textbf{缓解：} 专家中位数聚合，异常检测，Lipschitz 正则化，离群值抵抗损失函数。
+\textbf{} Lipschitz 
 
 % ===========================================================================
-% 11. 数值验证
+% 11. 
 % ===========================================================================
-\section{数值验证}
+\section{}
 
-我们在一个具有受控参数的合成标签噪声检测基准上验证 Spring。完整实验细节见补充材料。
+ Spring
 
-\subsection{实验设置}
+\subsection{}
 
-我们模拟一个标签噪声检测问题：$K = 10$ 类，$M = 10$ 个专家模型，每个状态误差率 $\mu_s \in [0.05, 0.25]$，全局噪声率 $\eta = 0.3$，状态分离间隙 $\Delta_{\min} = 0.15$。初始守门人 $S_0$ 为 SCX 共识分数。学生为一个 3 层神经网络，$d_\theta \approx 10^5$ 参数。学习率遵循规范调度 $\alpha_t = 0.1 \cdot t^{-0.6}$, $\beta_t = 0.05 \cdot t^{-1.2}$。
+$K = 10$ $M = 10$  $\mu_s \in [0.05, 0.25]$ $\eta = 0.3$ $\Delta_{\min} = 0.15$ $S_0$  SCX  3 $d_\theta \approx 10^5$  $\alpha_t = 0.1 \cdot t^{-0.6}$, $\beta_t = 0.05 \cdot t^{-1.2}$
 
-\subsection{结果}
+\subsection{}
 
-四个关键指标确认理论预测：
+
 
 \begin{enumerate}[nosep]
-    \item \textbf{Lyapunov 下降。} Lyapunov 函数 $\Psi_t$ 在 $10^4$ 次迭代中单调下降，从 $\Psi_0 \approx 0.42$ 到 $\Psi_{10^4} \approx 0.08$，与 $O(t^{-a})$ 率预测一致（在 $t = 10^4$ 处 $t^{-0.6} \approx 0.004$）。
-    \item \textbf{守门人--学生一致性。} 一致性分数（守门人与学生在保留数据上的一致率）从 $0.72$ 上升到 $0.94$。
-    \item \textbf{复活。} 在初始低于接受阈值的样本中，$12.3\%$ 在迭代 $t = 5000$ 时被复活，验证了复活机制。
-    \item \textbf{对噪声率的鲁棒性。} 检测 F1 分数从 $\eta = 0.1$ 时的 $0.91$ 优雅退化到 $\eta = 0.5$ 时的 $0.83$，与理论噪声率依赖性 $C \propto 1/\Delta_{\min}^2(\eta)$ 一致。
+    \item \textbf{Lyapunov } Lyapunov  $\Psi_t$  $10^4$  $\Psi_0 \approx 0.42$  $\Psi_{10^4} \approx 0.08$ $O(t^{-a})$  $t = 10^4$  $t^{-0.6} \approx 0.004$
+    \item \textbf{--}  $0.72$  $0.94$
+    \item \textbf{} $12.3\%$  $t = 5000$ 
+    \item \textbf{}  F1  $\eta = 0.1$  $0.91$  $\eta = 0.5$  $0.83$ $C \propto 1/\Delta_{\min}^2(\eta)$ 
 \end{enumerate}
 
 % ===========================================================================
-% 12. 讨论
+% 12. 
 % ===========================================================================
-\section{讨论}
+\section{}
 
-\subsection{Spring 在算法光谱中的定位}
+\subsection{Spring }
 
-Spring 在理论光谱中占据独特位置。与 AlphaZero \citep{silver2017} 不同，它处理真实物理数据（非合成）和未知环境动力学，同时提供显式收敛保证。与贝叶斯优化 \citep{srinivas2010} 不同，它在状态层面操作（非逐点），处理多专家，并解决自认证的认识论限制。与主动学习 \citep{settles2009} 不同，它使用具有多专家聚合的状态级认证，并提供针对标签噪声的保证——这是其主要设计目标。与 Solomonoff 归纳 \citep{solomonoff1964} 不同，它在计算上可处理并在有限时间内收敛，代价是不保证收敛到真理。
+Spring  AlphaZero \citep{silver2017}  \citep{srinivas2010}  \citep{settles2009} —— Solomonoff  \citep{solomonoff1964} 
 
-最精确的特征描述是：\textbf{Spring 是 Solomonoff 归纳的一个受限域、计算可处理的近似，通过在类主动学习聚类发现的状态空间上进行贝叶斯优化启发的采集来操作化，由 AlphaZero 启发的单调改进稳定化，并具有形式 Lyapunov 保证。}
+\textbf{Spring  Solomonoff  AlphaZero  Lyapunov }
 
-\subsection{局限性与未解决问题}\label{sec:open}
+\subsection{}\label{sec:open}
 
-\subsubsection{已证明部分的诚实总结}
+\subsubsection{}
 
 \begin{table}[ht]
 \centering
-\caption{声明及其证明状态}
+\caption{}
 \label{tab:proof-status}
 \begin{tabular}{@{}lll@{}}
 \toprule
-声明 & 状态 & 条件 \\
+ &  &  \\
 \midrule
-定理 Spring-1：收敛到不动点 & \provenstatus & C1--C7 \\
-Lyapunov 下降（有参考集重放） & \provenstatus & C1--C11 \\
-Lyapunov 下降（无参考集重放） & \textbf{已证不可能} & 定理~\ref{thm:impossible} \\
-定理 Spring-2：有限时间终止 & \provenstatus & 物理约束 + 下降 \\
-学生率（强凸） & \provenstatus & $\mu > 0$ \\
-学生率（PL） & \provenstatus & $\mu_{PL} > 0$ \\
-学生平稳率（非凸） & \provenstatus & 不需要凸性 \\
-Polyak 最优 $O(t^{-1})$ 率 & \provenstatus & 标准结果 \\
-退火调度定理 & \provenstatus & 调度约束 \\
-分布偏移控制 & \provenstatus & C6', C7 \\
-冻结条件 & \provenstatus & C7 + 精度 \\
-积压不稳定性 & \provenstatus & 吞吐量计算 \\
-多不动点存在性 & \provenstatus & 构造性证明 \\
-Lipschitz 鲁棒性证书 & \provenstatus & C3 \\
+ Spring-1 & \provenstatus & C1--C7 \\
+Lyapunov  & \provenstatus & C1--C11 \\
+Lyapunov  & \textbf{} & ~\ref{thm:impossible} \\
+ Spring-2 & \provenstatus &  +  \\
+ & \provenstatus & $\mu > 0$ \\
+PL & \provenstatus & $\mu_{PL} > 0$ \\
+ & \provenstatus &  \\
+Polyak  $O(t^{-1})$  & \provenstatus &  \\
+ & \provenstatus &  \\
+ & \provenstatus & C6', C7 \\
+ & \provenstatus & C7 +  \\
+ & \provenstatus &  \\
+ & \provenstatus &  \\
+Lipschitz  & \provenstatus & C3 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{table}[ht]
 \centering
-\caption{猜想与未解决问题}
+\caption{}
 \label{tab:open}
 \begin{tabular}{@{}lll@{}}
 \toprule
-问题 & 状态 & 障碍 \\
+ &  &  \\
 \midrule
-无穷 $\X$ 的全函数收敛（$\varepsilon \to 0$） & \openstatus & 需要 Arzel\`{a}-Ascoli 紧性 \\
-永久发现机制的形式率界 & \conjecturedstatus & 分布的尾行为未知 \\
-机制 1--3 之间的相变 & \openstatus & 无严格相变表征 \\
-耦合率（强凸下） & \conjecturedstatus & 跟踪误差积累 \\
-守门人收敛率 & \conjecturedstatus & 收缩性 $L_S < 1$ 未保证 \\
-有限时间守门人界 & \conjecturedstatus & 统计率 vs 迭代精化 \\
-最优率分配 $b = a + \varepsilon$ & \conjecturedstatus & 时间尺度约束 \\
-针对神经网络的投毒放大 & \conjecturedstatus & 非线性梯度动力学 \\
-客户端分歧的吸引盆结构 & \conjecturedstatus & 耦合 SA 的吸引盆 \\
-量子不可区分性 & \openstatus & 定理~3 限于经典概率 \\
+ $\X$ $\varepsilon \to 0$ & \openstatus &  Arzel\`{a}-Ascoli  \\
+ & \conjecturedstatus &  \\
+ 1--3  & \openstatus &  \\
+ & \conjecturedstatus &  \\
+ & \conjecturedstatus &  $L_S < 1$  \\
+ & \conjecturedstatus &  vs  \\
+ $b = a + \varepsilon$ & \conjecturedstatus &  \\
+ & \conjecturedstatus &  \\
+ & \conjecturedstatus &  SA  \\
+ & \openstatus & ~3  \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsubsection{关键局限性的详细讨论}
+\subsubsection{}
 
 \begin{enumerate}[nosep]
-    \item \textbf{假设 C1（有限覆盖维度）。} 覆盖数论证以弱得多的有限覆盖维度条件替代了不切实际的``$\X$ 有限''假设。然而，$\varepsilon \to 0$ 极限下的全函数收敛需要额外的紧性条件（如 Arzel\`{a}-Ascoli），这仍为开放问题。实际含义：在双精度（$\varepsilon_{\text{mach}} \approx 10^{-16}$）下，对任何实际维度 $d_\phi$，配置空间是有限的。理论上的 $\varepsilon \to 0$ 极限与物理计算无关，但对数学完备性是重要的。
+    \item \textbf{ C1} ``$\X$ ''$\varepsilon \to 0$  Arzel\`{a}-Ascoli$\varepsilon_{\text{mach}} \approx 10^{-16}$ $d_\phi$ $\varepsilon \to 0$ 
 
-    \item \textbf{非凸学生损失。} 我们的收敛率结果假设强凸性或 PL 条件。对于一般非凸神经网络，最佳保证是收敛到平稳点，率为 $O(t^{-(1-a)})$。这保证梯度范数收敛到零，但不保证参数收敛或最优性。
+    \item \textbf{}  PL  $O(t^{-(1-a)})$
 
-    \item \textbf{专家相关性（A2 违反）。} 共识分数的集中界依赖于专家误差的条件独立性。在实践中，共享归纳偏差引入相关性 $\bar{\rho} \approx 0.1$--$0.3$，将有效专家数降低到 $M_{\text{eff}} = M/(1 + (M-1)\bar{\rho})$。所有随 $M$ 缩放的结果在 $M \mapsto M_{\text{eff}}$ 替换下结构上保持有效，但定量率按比例变慢。
+    \item \textbf{A2 }  $\bar{\rho} \approx 0.1$--$0.3$ $M_{\text{eff}} = M/(1 + (M-1)\bar{\rho})$ $M$  $M \mapsto M_{\text{eff}}$ 
 
-    \item \textbf{重要性权重方差。} 重要性采样权重 $w(x) = P_0(x)/P_{S_t}(x)$ 将梯度方差膨胀至多 $W \leq 1/\varepsilon$。小的探索分数可能在实践中引起高方差。这对小 $\varepsilon$ 造成收敛速度与鲁棒性之间的实际权衡。
+    \item \textbf{}  $w(x) = P_0(x)/P_{S_t}(x)$  $W \leq 1/\varepsilon$ $\varepsilon$ 
 
-    \item \textbf{量子物理系统。} 不可区分性定理（伴随论文的定理~3 \citep{scx2026}）适用于经典概率。对于具有叠加的量子系统，经典状态空间可能无法捕获所有相关结构，对应的量子不可区分性仍为开放问题。
+    \item \textbf{} ~3 \citep{scx2026}
 \end{enumerate}
 
-\subsection{与 SCX（论文 1）的联系}
+\subsection{ SCX 1}
 
-Spring 建立在伴随论文 \citep{scx2026} 中提出的 SCX（状态条件化专家）框架之上。SCX 提供静态保证：一个基于多专家共识的固定守门人，其标签噪声检测 F1 分数的下界为 $1 - \frac{1}{\eta}\sum_s \rho_s \exp(-2M\Delta_s^2)$（定理~1），以及弱特征的基本极限（定理~2）和噪声-难度不可区分性（定理~3）。Spring 将此静态框架扩展为一个自进化动力系统，守门人利用累积证据和学生反馈迭代精化其评分函数。
+Spring  \citep{scx2026}  SCXSCX  F1  $1 - \frac{1}{\eta}\sum_s \rho_s \exp(-2M\Delta_s^2)$~1~2-~3Spring 
 
-关键区别：SCX 的定理~1 提供了一个\textit{静态}界，成立于任何固定时间点，无论自进化如何。Spring 增加了\textit{动态}保证——系统随时间改进，界收紧为 $O(t^{-a})$，且系统收敛到一个不动点。
+SCX ~1 \textit{}Spring \textit{}—— $O(t^{-a})$
 
-\subsection{未来工作}
+\subsection{}
 
-直接方向包括：
+
 \begin{enumerate}[nosep]
-    \item 使用 Arzel\`{a}-Ascoli 紧性闭合定理~Spring-2 的 $\varepsilon \to 0$ 极限。
-    \item 为耦合系统推导非渐近收敛率，具有显式常数。
-    \item 通过 {\L}ojasiewicz 不等式将 Lyapunov 分析扩展到非凸损失。
-    \item 刻画化学空间探索的量子扩展。
-    \item 在具有真实 DFT 反馈的材料发现流水线上进行大规模部署。
+    \item  Arzel\`{a}-Ascoli ~Spring-2  $\varepsilon \to 0$ 
+    \item 
+    \item  {\L}ojasiewicz  Lyapunov 
+    \item 
+    \item  DFT 
 \end{enumerate}
 
-\subsection{诚实的认识论声明}
+\subsection{}
 
-我们做出以下诚实的认识论声明：
+
 
 \begin{enumerate}[nosep]
-    \item \textbf{Spring 不能认证自身的正确性。} 如第~\ref{sec:spring2} 节所讨论，无外部验证时，系统不能区分"我已收敛到真理"与"我已收敛到一个自洽但不正确的固定点"。周期性物理验证是认识论上必要的。
+    \item \textbf{Spring } ~\ref{sec:spring2} """"
 
-    \item \textbf{收敛性 $\neq$ 正确性。} 定理~Spring-1 保证收敛到一个不动点。定理~Spring-2 保证在有限时间内到达。但没有定理保证该不动点是正确的。噪声-难度不可区分性（伴随论文的定理~3）证明这一限制是根本性的：即使有无限数据，完美的噪声检测在原则上也是不可能的。
+    \item \textbf{ $\neq$ } ~Spring-1 ~Spring-2 -~3
 
-    \item \textbf{假设不是免费的。} C1--C11 中的每一个都代表一个可能在实际中被违反的正则性条件。当一个假设被违反时，我们已诚实地标注了后果（例如，无 C10 则无 Lyapunov 下降）。
+    \item \textbf{} C1--C11  C10  Lyapunov 
 
-    \item \textbf{收敛率是最坏情况界。} 声明的 $O(t^{-a})$ 和 $O(t^{-1})$ 率是理论上界。实际收敛可能更快，但对病态问题也可能更慢。
+    \item \textbf{}  $O(t^{-a})$  $O(t^{-1})$ 
 
-    \item \textbf{常数很重要，且未被严格表征。} 虽然我们提供常数的参数依赖性（例如 $C \propto L_f^3$），但这些是渐近缩放关系，而非精确值。精确常数是问题依赖的，需要经验性地确定。
+    \item \textbf{}  $C \propto L_f^3$
 \end{enumerate}
 
 % ===========================================================================
-% 参考文献
+% 
 % ===========================================================================
 \begin{thebibliography}{99}
 
 \bibitem{scx2026}
-SCX 研究组 (2026).
+SCX  (2026).
 \emph{State-Conditioned eXpertise: A Complete Theory of Label Noise Detection via Multi-Expert Consistency}.
-arXiv 预印本。（论文 1，伴随）。
+arXiv  1
 
 \bibitem{robbins1951}
 Robbins, H. \& Monro, S. (1951).
