@@ -196,8 +196,9 @@ define the quantum audit channel $\cN_{\text{audit}}$ and prove its capacity
 theorem: the maximum rate of reliable audit information transmission is bounded
 by the Holevo quantity $\chi(\cN_{\text{audit}})$, which for a depolarizing
 channel with noise parameter $p$ is
-$C_Q = 1 - H_2(2p/3)$ for the depolarizing channel with noise parameter $p$,
-where $H_2$ is the binary entropy function.
+$C_Q = 1 - H_2(2p/3)$
+where $H_2$ is the binary entropy function and $p$ is the depolarizing
+probability.
 
 \textbf{(4) Practical Feasibility} (Section~\ref{sec:practical}): We analyze
 hardware requirements, existing quantum network infrastructure, and a phased
@@ -490,6 +491,11 @@ that encodes \Mt, or $\bot$ (abort on detected eavesdropping).
         $Q = \frac{\text{\# mismatches in sample}}{k}$.
   \item \textbf{Abort condition:} If $Q > Q_{\max}$ (typically
         $Q_{\max} \approx 11\%$), abort the protocol — eavesdropping detected.
+        The value $Q_{\max}$ is set such that the secret-key rate remains positive:
+        $1 - 2H_2(Q_{\max}) > 0$, which holds for $Q_{\max} \lesssim 11.0\%$
+        under one-way error correction. (Note: $Q$ denotes the quantum bit
+        error rate, which is distinct from the depolarizing-channel parameter
+        $p$ used in channel-capacity analysis.)
   \item Discard the $k$ revealed bits.
 
   \medskip
@@ -564,8 +570,12 @@ For any attack strategy by Eve, the secret key rate $R$ satisfies:
 R \geq 1 - 2H_2(Q)
 \]
 where $H_2(Q) = -Q\log_2 Q - (1-Q)\log_2(1-Q)$ is the binary entropy
-function and $Q$ is the QBER. The protocol is secure (positive key rate)
-whenever $Q < 11\%$ (since $1 - 2H_2(0.11) > 0$).
+function and $Q$ is the QBER. Under one-way post-processing, the secret-key
+rate is strictly positive whenever $Q \lesssim 11.0\%$, since
+$1 - 2H_2(Q) > 0$ for $Q < 11.0\%$. With two-way classical post-processing
+(this is the commonly cited $\sim$11\% threshold), higher $Q$ values can still
+yield positive key rate (up to $\sim$12.4\% for BB84 under Cascade-type
+reconciliation).
 \end{theorem}
 
 \begin{bilingual}
@@ -1142,10 +1152,17 @@ channel use) satisfies:
 R_{\text{audit}} \leq C_Q(p) = 1 - H_2\!\left(\frac{2p}{3}\right).
 \]
 For a noiseless channel ($p=0$): $R_{\text{audit}} \leq 1$ bit/qubit
-(the maximum possible). For the security threshold ($p=11\%$):
-$C_Q(0.11) \approx 0.633$ bits/qubit. The channel capacity
+(the maximum possible). For a moderately noisy channel ($p=10\%$):
+$C_Q(0.10) \approx 0.648$ bits/qubit. For a severely noisy channel
+($p=25\%$): $C_Q(0.25) \approx 0.350$ bits/qubit. The channel capacity
 vanishes ($C_Q \leq 0$) when $p \geq 3/4$, at which point the
 channel becomes completely depolarizing.
+
+\textbf{Important:} The depolarizing parameter $p$ is distinct from the
+BB84 QBER $Q$. For a depolarizing channel, $Q \approx 2p/3$, so the
+BB84 abort threshold $Q_{\max} \approx 11\%$ corresponds to a much
+more favorable channel condition ($p \approx 16.5\%$), at which
+$C_Q(0.165) \approx 0.488$ bits/qubit.
 \end{corollary}
 
 \subsection{Quantum Capacity (Audit Entanglement Transmission)}
@@ -1161,10 +1178,12 @@ entanglement distribution.
 \begin{theorem}[Quantum Capacity of the Depolarizing Channel]
 For the depolarizing channel $\cN_p^{\text{depol}}$:
 \[
-Q(p) \geq 1 - H_2(p) - p\log_2 3 - H_2(p) \quad \text{(coherent information lower bound)}.
+Q(p) \geq \max\{0,\, 1 - H_2(p) - p\log_2 3\} \quad \text{(coherent information lower bound)}.
 \]
 The exact quantum capacity is not known for all $p$, but it is zero
-for $p \geq 1/3$ (when the channel becomes entanglement-breaking).
+for $p \geq 1/2$ (when the channel becomes entanglement-breaking;
+the condition in this parameterization~$\cN_p(\rho) = (1-p)\rho + \frac{p}{3}\sum_{\sigma\in\{X,Y,Z\}}\sigma\rho\sigma$
+reduces to $\lambda < 1/3$ with $\lambda = 1 - 4p/3$, giving $p \geq 1/2$).
 \end{theorem}
 
 \subsection{Quantum Channel Model for SCX Audit Pipeline}
@@ -1539,9 +1558,12 @@ $\lambda$ (number of qubits transmitted).
 \begin{proof}[Proof Sketch]
 \textbf{(i)} $\Mt$ is transmitted via BB84 (Protocol~\ref{prot:bb84_mt}).
 By Theorem~\ref{thm:unconditional}, BB84 provides information-theoretic
-security: any eavesdropping introduces $Q \geq Q_{\max} \approx 11\%$.
-With $\lambda$ photons, the detection probability is $1 - e^{-\Omega(\lambda)}$
-by Hoeffding concentration.
+security: any eavesdropping attempt that extracts non-negligible
+information introduces an elevated QBER. The protocol aborts when the
+observed QBER exceeds $Q_{\max} \approx 11\%$; for intercept-resend
+attacks the expected QBER is $25\%$ (Theorem~\ref{thm:intercept_resend}),
+and the detection probability is $1 - e^{-\Omega(\lambda)}$ by
+Hoeffding concentration.
 
 \textbf{(ii)} The authentication tag binds $\AuditResult_t$ to three
 independent quantum-derived keys ($k_S$, $k_Y$, $k_{\text{OTP}}$). To
