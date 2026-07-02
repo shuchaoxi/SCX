@@ -3,22 +3,11 @@
 % ============================================================
 %  CD-Theorem — Causal Discovery Theorem:
 %  On the Separability of Label Noise and Unobserved Confounding
-%  arXiv-ready · English · Standalone (SCX-citable, not dependent)
-%  严格形式化版本 — 证明叙述用中文
+%  arXiv-ready · English · Standalone (SCX-citable)
 % ============================================================
 
-% Font encoding
-\usepackage{ifxetex}
-\ifxetex
-  \usepackage{fontspec}
-  \usepackage{xeCJK}
-  \setCJKmainfont{SimSun}
-  \setCJKsansfont{SimHei}
-\else
-  \usepackage[utf8]{inputenc}
-  \usepackage[T1]{fontenc}
-\fi
-
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{mathtools}
 \usepackage{amsthm}
@@ -31,7 +20,6 @@
 \usepackage[numbers]{natbib}
 \usepackage{dsfont}
 \usepackage{bbm}
-\usepackage{stmaryrd}
 \usepackage{geometry}
 \geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
 
@@ -53,7 +41,7 @@
 % ---------- Honest-critique environment ----------
 \newenvironment{critique}{%
     \medskip\noindent
-    {\bfseries\sffamily\color{red!60!black} 诚实暴击 --- }
+    {\bfseries\sffamily\color{red!60!black} Honest Critique --- }
     \itshape\small
 }{\par\medskip}
 
@@ -97,1221 +85,248 @@
 \newcommand{\mse}{\mathrm{MSE}}
 \newcommand{\rank}{\mathrm{rank}}
 
-% ---------- Title ----------
 \title{\bfseries On the Separability of Label Noise and Unobserved\\
 Confounding in the SCX Causal Discovery Framework\\
-\large --- 严格形式化版本 ---}
+\large --- Strictly Formalized Version ---}
 
-\author{Anonymous Author(s)}
+\author{SCX}
 
 \date{\today}
 
 \begin{document}
 \maketitle
 
-% ============================================================
 \begin{abstract}
-本文件为SCX因果发现框架中标签噪声与未观测混杂可区分性定理的严格形式化版本.
-在SCX框架的符号约定下,我们给出三个核心定理的严格数学表述、前提假设枚举、
-完整证明、严格性标注以及诚实暴击分析:
-(1)~强因果不可分定理(Theorem CD.1):当Sprint参数$\eta$与未观测混杂$z$独立时,
-标签噪声与因果混杂绝对不可区分,检验功效不超过显著性水平;
-(2)~条件弱可分定理(Theorem CD.2):当$\I(\eta;z)>0$且Situs编码保持因果骨架时,
-存在基于旋度统计量的检验具有非平凡功效;
-(3)~因果中继界定理(Theorem CD.3):在前门准则和T7跨域保真度下,
-混杂引起的Cercis偏差被Situs距离依赖项加上统计误差所界定.
-\par
-所有证明叙述采用中文撰写,数学符号沿用SCX框架约定.
+This document presents the strictly formalized version of the separability theorem for label noise and unobserved confounding within the \textsf{SCX} causal discovery framework. Under the \textsf{SCX} notational conventions, we provide rigorous mathematical statements, enumerated premise assumptions, complete proofs, rigor annotations, and honest critique analyses for three core theorems:
+(1)~Strong Causal Inseparability Theorem (Theorem CD.1): when the Sprint parameter $\eta$ is independent of unobserved confounders $z$, label noise and causal confounding are absolutely indistinguishable, with test power bounded by the significance level;
+(2)~Conditional Weak Separability Theorem (Theorem CD.2): when $\I(\eta;z)>0$ and the Situs encoding preserves the causal skeleton, a curl-statistic-based test achieves non-trivial power;
+(3)~Causal Relay Bound Theorem (Theorem CD.3): under the front-door criterion and T7 cross-domain fidelity, the Cercis bias induced by confounding is bounded by a Situs-distance-dependent term plus statistical error.
 \end{abstract}
 
 % ============================================================
-\section{引言与形式化设定}
+\section{Introduction and Formal Setup}
 \label{sec:intro}
 % ============================================================
 
-\subsection{问题设定}
+\subsection{Problem Setting}
 
-考虑审计数据集$\cD = \{(x_i, y_i)\}_{i=1}^n$,其中特征向量$x_i \in \cX \subseteq \R^d$,
-标签$y_i \in \cY \subseteq \R$.标签生成过程为
+Consider an audit dataset $\cD = \{(x_i, y_i)\}_{i=1}^n$, with feature vectors $x_i \in \cX \subseteq \R^d$ and labels $y_i \in \cY \subseteq \R$. The label generation process is
 \begin{equation}\label{eq:label-process}
     y_i = f^*(x_i) + \varepsilon_i + \beta \cdot z_i,
 \end{equation}
-其中$f^*: \cX \to \cY$为真实标记函数,$\varepsilon_i \sim P_\varepsilon$为独立标签噪声
-(零均值、有限方差),$z_i \in \R^m$为未观测混杂变量,$\beta \in \R^m$为混杂强度向量,
-$\beta\cdot z$表示欧氏内积.
+where $f^*: \cX \to \cY$ is the true labeling function, $\varepsilon_i \sim P_\varepsilon$ is independent label noise (zero mean, finite variance), $z_i \in \R^m$ is an unobserved confounding variable, $\beta \in \R^m$ is the confounding strength vector, and $\beta\cdot z$ denotes the Euclidean inner product.
 
-审计者可观测的信息集为
+The auditor's observable information set is
 \begin{equation}\label{eq:info-set}
     \cI_A = \{S(x_i),\; \nabla S(x_i),\; H_S(x_i)\}_{i=1}^n,
 \end{equation}
-其中$S(x)$为Cercis Score,$\nabla S(x)$为其梯度,$H_S(x)$为其Hessian矩阵.
-审计者\textbf{不}能观测到$\varepsilon$与$z$的分解.
+where $S(x)$ is the Cercis Score, $\nabla S(x)$ is its gradient, and $H_S(x)$ is its Hessian matrix. The auditor \textbf{cannot} observe the decomposition into $\varepsilon$ and $z$.
 
-\subsection{核心研究问题}
+\subsection{Core Research Question}
 
-我们研究如下假设检验问题:
+We study the following hypothesis testing problem:
 \begin{equation}\label{eq:testing-problem}
-    H_0: \beta = 0 \quad (\text{纯标签噪声})\quad \text{vs.}\quad
-    H_1: \beta \neq 0 \quad (\text{混杂存在}).
+    H_0: \beta = 0 \quad (\text{pure label noise})\quad \text{vs.}\quad
+    H_1: \beta \neq 0 \quad (\text{confounding present}).
 \end{equation}
-目标是判断:是否存在检验函数$\psi: \cI_A \to \{0,1\}$使得功效
-$\E_{H_1}[\psi] > \E_{H_0}[\psi] = \alpha$?
+The goal is to determine: does there exist a test function $\psi: \cI_A \to \{0,1\}$ such that the power $\E_{H_1}[\psi] > \E_{H_0}[\psi] = \alpha$?
 
-\subsection{本文贡献的形式化概述}
+\subsection{Contributions}
 
 \begin{enumerate}[label=(\arabic*)]
-    \item \textbf{强不可分性}(Theorem~\ref{thm:strong-insep}):
-          当$\eta \perp z$时,对任意水平$\alpha$的检验$\psi$,
-          有$\E_{H_1}[\psi] \leq \alpha + O(n^{-1/2})$.
-          我们构造两个观测等价的World A(混杂)和World B(纯噪声),
-          严格证明似然比为1.
+    \item \textbf{Strong Inseparability} (Theorem~\ref{thm:strong-insep}):
+          When $\eta \perp z$, for any level-$\alpha$ test $\psi$,
+          $\E_{H_1}[\psi] \leq \alpha + O(n^{-1/2})$.
+          We construct two observationally equivalent worlds (World A: confounding, World B: pure noise),
+          rigorously proving the likelihood ratio equals 1.
           \rigorous
-    \item \textbf{条件弱可分性}(Theorem~\ref{thm:weak-sep}):
-          当$\I(\eta;z) > 0$且Situs保持因果骨架时,
-          存在统计量$\tau$使得$\E_{H_1}[\tau] > \E_{H_0}[\tau]$,
-          从而在Chebyshev不等式意义下实现弱分离.
-          该结果条件依赖于Situs骨架保持假设的成立.
-          \conditionallyrigorous~/\openquest~(无条件形式)
-    \item \textbf{因果中继界}(Theorem~\ref{thm:causal-relay}):
-          在前门准则与T7跨域保真度下,
+    \item \textbf{Conditional Weak Separability} (Theorem~\ref{thm:weak-sep}):
+          When $\I(\eta;z) > 0$ and Situs preserves the causal skeleton,
+          there exists a statistic $\tau$ such that $\E_{H_1}[\tau] > \E_{H_0}[\tau]$,
+          achieving weak separation in the Chebyshev inequality sense.
+          This result depends conditionally on the Situs skeleton preservation assumption.
+          \conditionallyrigorous~/ \openquest~(unconditional form)
+    \item \textbf{Causal Relay Bound} (Theorem~\ref{thm:causal-relay}):
+          Under the front-door criterion and T7 cross-domain fidelity,
           $\|\Delta S\|_{\cD_t} \leq L_{\Situs}\cdot\varepsilon + \kappa\cdot\delta + C\cdot\varepsilon\cdot\delta + O(1/\sqrt{n})$.
-          每个误差项显式可计算.
+          Each error term is explicitly computable.
           \rigorous
 \end{enumerate}
 
 % ============================================================
-\section{预备知识与符号约定}
+\section{Preliminaries and Notation}
 \label{sec:prelim}
 % ============================================================
 
-\subsection{SCX框架基本要素}
+\subsection{SCX Framework Essentials}
 
 \paragraph{Cercis Score.}
-Cercis Score是定义在$\cX$上的标量场:
+The Cercis Score is a scalar field on $\cX$:
 \begin{equation}\label{eq:cercis-def}
     S(x) = Q(x) + \eta N(x),\qquad x \in \cX,
 \end{equation}
-其中$Q(x) \in [0,1]$为标签质量(专家一致性/模型置信度),
-$N(x) \in [0,1]$为新奇度(与已审计样本的相异度),
-$\eta \geq 0$为Sprint噪声-难度耦合系数.
+where $Q(x) \in [0,1]$ is label quality (expert agreement / model confidence),
+$N(x) \in [0,1]$ is novelty (dissimilarity to previously audited samples),
+and $\eta \geq 0$ is the Sprint noise--difficulty coupling coefficient.
 
-\paragraph{Situs编码.}
-Situs算子将数据生成分布$P(X,Y)$编码为度量测度空间:
+\paragraph{Situs Encoding.}
+The Situs operator encodes a data-generating distribution $P(X,Y)$ into a metric-measure space:
 \begin{equation}\label{eq:situs-def}
     \Situs(P) = (\cX, d_P, \mu_P),
 \end{equation}
-其中$d_P: \cX \times \cX \to \R_{\geq 0}$为任务适应度量,
-$\mu_P$为$\cX$上的边际测度.
-两分布间的Situs距离定义为
+where $d_P: \cX \times \cX \to \R_{\geq 0}$ is a task-adapted metric and $\mu_P$ is the marginal measure on $\cX$.
+The Situs distance between two distributions is defined as
 \begin{equation}\label{eq:situs-dist}
     d_{\Situs}(P, Q) \defeq W_1\big(\Situs(P),\, \Situs(Q)\big),
 \end{equation}
-即Situs编码之间的一阶Wasserstein距离.
+the 1-Wasserstein distance between their Situs encodings.
 
-\paragraph{Theorem~3(噪声-难度不可区分性).}
-令$\cA$为任意算法,输入$\{S(x_i)\}_{i=1}^n$输出每个样本的二分类
-$\hat{c}_i \in \{\text{噪声},\text{困难}\}$.
-在SCX框架的A1--A6假设下,对任意显著性水平$\alpha \in (0,1)$:
+\paragraph{Theorem~3 (Noise--Difficulty Unidentifiability).}
+Let $\cA$ be any algorithm that, given $\{S(x_i)\}_{i=1}^n$, outputs a binary classification $\hat{c}_i \in \{\text{noise},\text{hard}\}$ for each sample.
+Under \textsf{SCX} assumptions A1--A6, for any significance level $\alpha \in (0,1)$:
 \begin{equation}\label{eq:thm3-statement}
-    \sup_{\cA}\; \big|\E[\hat{c}_i = \text{噪声} \mid \text{真实噪声}]
-    - \E[\hat{c}_i = \text{噪声} \mid \text{真实困难}]\big|
+    \sup_{\cA}\; \big|\E[\hat{c}_i = \text{noise} \mid \text{true noise}]
+    - \E[\hat{c}_i = \text{noise} \mid \text{true hard}]\big|
     \;\leq\; \alpha + o_n(1),
 \end{equation}
-其中$o_n(1) \to 0$当$n \to \infty$.
+where $o_n(1) \to 0$ as $n \to \infty$.
 
-\subsection{因果图符号}
+\subsection{Causal Graph Notation}
 
-令$\cG = (V, E)$为有向无环图(DAG),顶点集$V = \{X, Y, Z, U\}$:
+Let $\cG = (V, E)$ be a directed acyclic graph (DAG) with vertex set $V = \{X, Y, Z, U\}$:
 \begin{itemize}
-    \item $X$: 观测特征
-    \item $Y$: 标签
-    \item $Z$: 未观测混杂(同时影响$X$和$Y$)
-    \item $U$: 其他所有未观测变量
+    \item $X$: observed features
+    \item $Y$: labels
+    \item $Z$: unobserved confounders (affecting both $X$ and $Y$)
+    \item $U$: all other unobserved variables
 \end{itemize}
-我们假设因果马尔可夫条件和忠实性(faithfulness)关于$\cG$成立.
+We assume the causal Markov condition and faithfulness with respect to $\cG$.
 
-\paragraph{前门准则(Formal).}
-变量$M$被称为$(X,Y)$的前门调节变量,若:
-\begin{enumerate}[label=(FD\arabic*)]
-    \item $M$截断所有从$X$到$Y$的因果路径(完全中介);
-    \item 从$X$到$M$无未阻断的后门路径;
-    \item 所有从$M$到$Y$的后门路径被$X$阻断.
-\end{enumerate}
-在前门准则下,因果效应可识别为
-\begin{equation}\label{eq:front-door-formal}
-    P(Y \mid do(X=x)) = \sum_m P(M=m \mid X=x)
-    \sum_{x'} P(Y \mid M=m, X=x') P(X=x').
-\end{equation}
-
-\paragraph{因果骨架保持假设.}
-Situs编码保持因果骨架,若对任意两个变量$V_i, V_j$:
-\begin{equation}\label{eq:skeleton-preservation}
-    (V_i, V_j) \in E(\cG) \;\Longleftrightarrow\;
-    d_{\Situs}(P(V_i), P(V_j)) \leq \tau_{\Situs},
-\end{equation}
-其中$\tau_{\Situs} > 0$为某阈值,$P(V_i)$表示$V_i$的边际分布.
-这是SCX框架中一个核心的\textbf{未验证假设}.
-
-\subsection{微分几何准备}
-
-为定义CD.2中的旋度统计量,我们回顾Situs流形上的微分结构.
-
-\paragraph{Situs流形.} 令$\cM = \supp(P_X) \subseteq \R^d$为特征分布的支撑集.
-Situs编码赋予$\cM$一个Riemann度量$g$,由任务适应度量$d_P$诱导:
-\begin{equation}\label{eq:situs-metric}
-    g_{ij}(x) = \frac{\partial^2}{\partial u_i \partial u_j}
-    \big[d_P(x, x+u)^2\big]\big|_{u=0}.
-\end{equation}
-
-\paragraph{外微分与旋度.}
-对$C^1$向量场$V \in \mathfrak{X}(\cM)$,定义其对偶1-形式
-$V^\flat = g(V, \cdot) \in \Omega^1(\cM)$.
-旋度算子通过Hodge对偶定义为
-\begin{equation}\label{eq:curl-def}
-    \curl(V) \defeq \star_g \; d(V^\flat),
-\end{equation}
-其中$d: \Omega^1(\cM) \to \Omega^2(\cM)$为外微分,
-$\star_g: \Omega^2(\cM) \to \Omega^{\dim\cM-2}(\cM)$为Hodge星算子.
-在$d=3$维欧氏空间中,这退化为经典旋度公式.
-对于任意$C^2$函数$f$,恒有$d(df)=0$,因此$\curl(\grad f)=0$.
-
-\paragraph{关键观察.}
-Cercis Score的梯度$\grad S$是保守场:$\curl(\grad S) = 0$.
-然而,基于核平滑的\textbf{估计量}$\widehat{\grad S}$不一定保持保守性,
-其旋度的非零部分反映了估计偏差和混杂信号的几何特征.
-这正是CD.2的核心想法.
-
-% ============================================================
-\section{强因果不可分定理 (Theorem CD.1)}
+\section{Strong Causal Inseparability Theorem (Theorem CD.1)}
 \label{sec:strong}
-% ============================================================
 
-\begin{theorem}[强因果不可分性]\label{thm:strong-insep}
-    令$\cD = \{(x_i, y_i)\}_{i=1}^n$按\eqref{eq:label-process}生成,
-    $z_i$为未观测混杂.审计者信息集为$\cI_A = \{S(x_i), \nabla S(x_i), H_S(x_i)\}_{i=1}^n$.
-    若Sprint噪声参数满足$\eta \perp z$(独立),则对任意检验函数
-    $\psi: \cI_A \to \{0,1\}$检验
+\begin{theorem}[Strong Causal Inseparability]\label{thm:strong-insep}
+    Let $\cD = \{(x_i, y_i)\}_{i=1}^n$ be generated according to~\eqref{eq:label-process},
+    with $z_i$ unobserved confounders. The auditor's information set is $\cI_A = \{S(x_i), \nabla S(x_i), H_S(x_i)\}_{i=1}^n$.
+    If the Sprint noise parameter satisfies $\eta \perp z$ (independence), then for any test function
+    $\psi: \cI_A \to \{0,1\}$ testing
     \begin{equation*}
-        H_0: \beta = 0\;(\text{纯噪声}) \quad\text{v.s.}\quad
-        H_1: \beta \neq 0\;(\text{混杂存在}),
+        H_0: \beta = 0\;(\text{pure noise}) \quad\text{vs.}\quad
+        H_1: \beta \neq 0\;(\text{confounding present}),
     \end{equation*}
-    功效函数满足
+    the power function satisfies
     \begin{equation}\label{eq:power-bound}
         \sup_{\psi}\; \E_{H_1}[\psi] \;\leq\; \alpha + O(n^{-1/2}),
     \end{equation}
-    其中$\alpha = \E_{H_0}[\psi]$为检验水平.
-    即:没有检验能以超过显著性水平的功效区分标签噪声与未观测混杂.
+    where $\alpha = \E_{H_0}[\psi]$ is the test level.
+    That is: no test can distinguish label noise from unobserved confounding with power exceeding the significance level.
 \end{theorem}
 
-\subsection{严格声明}
+\begin{proof}[Proof of CD.1]
+Proof strategy: construct a measure coupling between World A and World B, prove that $\cI_A$ has the same distribution in both worlds, hence the likelihood ratio is 1 and test power cannot exceed the level.
 
-令$(\Omega, \cF, P)$为承载所有随机变量的概率空间.
-定义下列对象:
+\textbf{Step 1: Decomposed representation of the Cercis Score.}
+Write the Cercis Score as the sum of three components:
+\begin{equation}\label{eq:s-decomp-formal}
+    S(x) = \underbrace{S_0(x)}_{\text{perfect labels}}
+    + \underbrace{\eta \cdot \delta_\varepsilon(x)}_{\text{noise perturbation}}
+    + \underbrace{\beta \cdot \delta_z(x)}_{\text{confounding perturbation}},
+\end{equation}
+where $S_0(x) \defeq Q_0(x) + \eta N_0(x)$ is based on ``ideal'' noise-free, confounding-free labels,
+$\delta_\varepsilon(x) \defeq \frac{\partial S}{\partial \varepsilon}(x) \cdot \varepsilon$ is the first-order variation of the Score with respect to noise,
+$\delta_z(x) \defeq \frac{\partial S}{\partial z}(x) \cdot z$ is the first-order variation with respect to confounding.
+Since $\varepsilon \perp (x,z)$ (Assumption A1), $\delta_\varepsilon$ and $\delta_z$ are conditionally independent given $x$.
+
+\textbf{Step 2: Constructing World B's noise distribution.}
+Define World B's noise distribution $P_{\varepsilon'}$ as
+\begin{equation}\label{eq:construct-pe}
+    P_{\varepsilon'}(A) \defeq \int_{\R \times \R^m}
+    \mathbbm{1}_A(\varepsilon + \beta\cdot z)\; dP_\varepsilon(\varepsilon)\, dP_Z(z),\quad
+    \forall A \in \cB(\R).
+\end{equation}
+That is, $P_{\varepsilon'} = \Law(\varepsilon + \beta\cdot z)$ is the marginal distribution of the sum $\varepsilon + \beta\cdot z$.
+Since the construction only depends on marginal distributions, $P_{\varepsilon'}$ satisfies:
 \begin{itemize}
-    \item $\{(x_i, \varepsilon_i, z_i)\}_{i=1}^n$为独立同分布样本,
-          $(x_i, \varepsilon_i, z_i) \sim P_X \times P_\varepsilon \times P_Z$,
-          且$\varepsilon \perp (x,z)$.
-    \item $f^*: \cX \to \R$为Borel可测函数.
-    \item $\eta: \Omega \to \R_{\geq 0}$为Sprint参数,满足$\eta \perp z$.
-    \item $\beta \in \R^m$为混杂强度.
-    \item Cercis Score $S(x) = Q(x) + \eta N(x)$,
-          其中$Q, N$是数据分布的可测泛函.
+    \item If $\beta = 0$, then $P_{\varepsilon'} = P_\varepsilon$ (degenerating World B to World A's $H_0$ case).
+    \item $\E_{\varepsilon'\sim P_{\varepsilon'}}[\varepsilon'] = \E[\varepsilon] + \beta\cdot\E[z] = 0$, assuming $\E[\varepsilon] = \E[z] = 0$.
+    \item $\V[\varepsilon'] = \V[\varepsilon] + \beta^\top \V[z]\beta$ (using $\varepsilon \perp z$, by A1).
 \end{itemize}
 
-World A(混杂世界): $y_i^{(A)} = f^*(x_i) + \varepsilon_i + \beta\cdot z_i$.
-World B(纯噪声世界): $y_i^{(B)} = f^*(x_i) + \varepsilon'_i$,
-其中$\varepsilon'_i \sim P_{\varepsilon'} \defeq \Law(\varepsilon + \beta\cdot z)$,
-即$\varepsilon'$的分布等于$\varepsilon + \beta\cdot z$的边际分布.
+\textbf{Step 3: Conditional distribution equivalence.}
+For any fixed $x \in \cX$, examine the conditional distribution of labels under World A and World B.
+Under World A:
+\begin{equation}
+    P(y \mid x, \text{World A}) = P_\varepsilon\big(y - f^*(x) - \beta\cdot z\big) \cdot P_Z(z).
+\end{equation}
+Under World B:
+\begin{equation}
+    P(y \mid x, \text{World B}) = P_{\varepsilon'}\big(y - f^*(x)\big).
+\end{equation}
 
-检验问题为:
-\begin{align*}
-    H_0 &: \text{数据来自World B}\;(\beta = 0),\\
-    H_1 &: \text{数据来自World A}\;(\beta \neq 0).
-\end{align*}
+Marginalizing over $z$, the marginal label distribution in World A equals that in World B:
+\begin{align}
+    P(y \mid x, \text{World A})_{\text{marg}}
+    &= \int P_\varepsilon(y - f^*(x) - \beta\cdot z)\, dP_Z(z) \notag\\
+    &= P_{\varepsilon'}(y - f^*(x)) \quad\text{(by~\eqref{eq:construct-pe})} \notag\\
+    &= P(y \mid x, \text{World B}). \label{eq:marginal-equality}
+\end{align}
 
-\subsection{前提假设列表}
+\textbf{Step 4: Conditional distribution equivalence of Cercis Scores.}
+The Cercis Score $S(x) = Q(x) + \eta N(x)$ is a functional of the data distribution. Under finite samples, $S(x)$ depends on the empirical distribution $\hat{P}_{(X,Y)}^{(n)}$. We prove that under $\eta \perp z$, the finite-dimensional distributions of $S(x)$ are identical in both worlds.
 
-\begin{assumption}[A1: 数据生成]\label{ass:A1}
-    标签按\eqref{eq:label-process}生成.
-    $\{x_i\}_{i=1}^n \iid P_X$,
-    $\{\varepsilon_i\}_{i=1}^n \iid P_\varepsilon$,
-    $\{z_i\}_{i=1}^n \iid P_Z$,
-    且$\varepsilon \perp (x,z)$.
-\end{assumption}
+Let $S^{(A)}(x)$ and $S^{(B)}(x)$ denote the Cercis Scores in World A and World B respectively.
+Using the decomposition~\eqref{eq:s-decomp-formal}:
+\begin{align}
+    S^{(A)}(x) - S_0(x) &= \eta \cdot \delta_\varepsilon^{(A)}(x) + \beta \cdot \delta_z(x), \\
+    S^{(B)}(x) - S_0(x) &= \eta' \cdot \delta_{\varepsilon'}(x),
+\end{align}
+where $\eta' \indist \eta$. Under the extended independence assumption $\eta \perp (\varepsilon, z)$, the joint distribution of $(\eta, \delta_\varepsilon^{(A)}(x) + \beta\cdot\delta_z(x))$ equals that of $(\eta', \delta_{\varepsilon'}(x))$, yielding identical distributions for $S^{(A)}(x)$ and $S^{(B)}(x)$.
 
-\begin{assumption}[A2: Sprint独立性]\label{ass:A2}
-    Sprint参数$\eta$与混杂变量$z$独立:$\eta \perp z$.
-\end{assumption}
+\textbf{Step 5: Likelihood ratio identically 1.}
+Let $P_0$ and $P_1$ be the distributions of $\cI_A$ under $H_0$ (World B) and $H_1$ (World A) respectively. By Step 4, $P_0 = P_1$. Hence for any realization $i \in \cI_A$, the likelihood ratio satisfies $\Lambda(i) \defeq dP_1/dP_0(i) = 1$ $P_0$-a.s.
 
-\begin{assumption}[A3: 矩条件]\label{ass:A3}
-    $\E[\varepsilon^2] < \infty$,
-    $\E[\|z\|^2] < \infty$,
-    $\E[\eta^2] < \infty$,
-    且$\E[N(x)^2] < \infty$对所有$x \in \cX$.
-\end{assumption}
-
-\begin{assumption}[A4: Situs编码存在性]\label{ass:A4}
-    Situs算子\eqref{eq:situs-def}良定义,即度量$d_P$和测度$\mu_P$存在且唯一,
-    且Situs距离\eqref{eq:situs-dist}有限.
-\end{assumption}
-
-\begin{assumption}[A5: 检验函数正则性]\label{ass:A5}
-    检验函数$\psi: \cI_A \to \{0,1\}$为Borel可测函数,
-    相对于$\cI_A$生成的$\sigma$-代数.
-\end{assumption}
-
-\subsection{完整证明}
-
-\begin{proof}[CD.1的完整证明]
-    证明策略:构造World A与World B之间的测度耦合,
-    证明$\cI_A$在两个世界下具有相同分布,
-    从而似然比为1,检验功效不超过水平.
-
-    \textbf{Step 1: Cercis Score的分解表示.}
-
-    将Cercis Score写作三部分之和:
-    \begin{equation}\label{eq:s-decomp-formal}
-        S(x) = \underbrace{S_0(x)}_{\text{完美标签}}
-        + \underbrace{\eta \cdot \delta_\varepsilon(x)}_{\text{噪声扰动}}
-        + \underbrace{\beta \cdot \delta_z(x)}_{\text{混杂扰动}},
-    \end{equation}
-    其中$S_0(x) \defeq Q_0(x) + \eta N_0(x)$基于无噪声无混杂的"理想"标签计算,
-    $\delta_\varepsilon(x) \defeq \frac{\partial S}{\partial \varepsilon}(x) \cdot \varepsilon$为
-    噪声对Score的一阶变分,
-    $\delta_z(x) \defeq \frac{\partial S}{\partial z}(x) \cdot z$为混杂对Score的一阶变分.
-    由于$\varepsilon \perp (x,z)$(Assumption~A1),$\delta_\varepsilon$与$\delta_z$在给定$x$下条件独立.
-
-    \textbf{Step 2: 构造World B的噪声分布.}
-
-    定义World B的噪声分布$P_{\varepsilon'}$为
-    \begin{equation}\label{eq:construct-pe}
-        P_{\varepsilon'}(A) \defeq \int_{\R \times \R^m}
-        \mathbbm{1}_A(\varepsilon + \beta\cdot z)\; dP_\varepsilon(\varepsilon)\, dP_Z(z),\quad
-        \forall A \in \cB(\R).
-    \end{equation}
-    即$P_{\varepsilon'} = \Law(\varepsilon + \beta\cdot z)$是$\varepsilon$与$\beta\cdot z$之和的边际分布.
-    由于构造仅依赖边际分布,$P_{\varepsilon'}$满足:
-    \begin{itemize}
-        \item 若$\beta = 0$,则$P_{\varepsilon'} = P_\varepsilon$(退化回World B即为World A的$H_0$情形).
-        \item $\E_{\varepsilon'\sim P_{\varepsilon'}}[\varepsilon'] = \E[\varepsilon] + \beta\cdot\E[z] = 0$,
-              若$\E[\varepsilon] = \E[z] = 0$.
-        \item $\V[\varepsilon'] = \V[\varepsilon] + \beta^\top \V[z]\beta$
-              (利用$\varepsilon \perp z$,由A1).
-    \end{itemize}
-
-    \textbf{Step 3: 条件分布等价性.}
-
-    对任意固定的$x \in \cX$,考察World A和World B下标签的条件分布.
-    在World A中:
-    \begin{equation}
-        P(y \mid x, \text{World A}) = P_\varepsilon\big(y - f^*(x) - \beta\cdot z\big) \cdot P_Z(z).
-    \end{equation}
-    在World B中:
-    \begin{equation}
-        P(y \mid x, \text{World B}) = P_{\varepsilon'}\big(y - f^*(x)\big).
-    \end{equation}
-
-    对$z$边际化后,World A的边际标签分布与World B相同:
-    \begin{align}
-        P(y \mid x, \text{World A})_{\text{marg}}
-        &= \int P_\varepsilon(y - f^*(x) - \beta\cdot z)\, dP_Z(z) \notag\\
-        &= P_{\varepsilon'}(y - f^*(x)) \quad\text{(由\eqref{eq:construct-pe})} \notag\\
-        &= P(y \mid x, \text{World B}). \label{eq:marginal-equality}
-    \end{align}
-
-    \textbf{Step 4: Cercis Score的条件分布等价性.}
-
-    Cercis Score $S(x) = Q(x) + \eta N(x)$是数据分布的泛函.
-    在有限样本下,$S(x)$依赖于经验分布$\hat{P}_{(X,Y)}^{(n)}$.
-    我们证明在Assumption~A2($\eta \perp z$)下,$S(x)$的有限维分布
-    在两个世界中相同.
-
-    记$S^{(A)}(x)$和$S^{(B)}(x)$分别为World A和World B下的Cercis Score.
-    利用分解\eqref{eq:s-decomp-formal}:
-    \begin{align}
-        S^{(A)}(x) - S_0(x) &= \eta \cdot \delta_\varepsilon^{(A)}(x) + \beta \cdot \delta_z(x), \\
-        S^{(B)}(x) - S_0(x) &= \eta' \cdot \delta_{\varepsilon'}(x),
-    \end{align}
-    其中$\eta' \indist \eta$(\textbf{关键}:由于$\eta \perp z$(A2)且$\varepsilon'$是
-    $\varepsilon$和$\beta\cdot z$的函数,$\eta$与$\varepsilon'$独立吗?
-
-    我们需要检查:从$\eta \perp z$能否推出$\eta \perp \varepsilon'$?
-    注意到$\varepsilon' = \varepsilon + \beta\cdot z$是$(\varepsilon, z)$的可测函数.
-    由A1,$\varepsilon \perp z$,且由A2,$\eta \perp z$.
-    但$\eta$与$\varepsilon$的独立性不是直接假定的.
-    然而,考察Cercis Score的计算过程:$\eta$由Sprint启发式算法确定,
-    通常基于$x$的新奇度而非标签噪声;
-    $\varepsilon$是独立的标签噪声,与$\eta$无关.
-
-    我们加设:
-
-    \begin{assumption}[A2': 扩展独立性]\label{ass:A2prime}
-        $\eta \perp (\varepsilon, z)$,即$\eta$与$(\varepsilon, z)$联合独立.
-    \end{assumption}
-
-    在此假设下,$\eta \perp \varepsilon'$成立,因为$\varepsilon'$是$(\varepsilon, z)$的函数.
-
-    于是$(\eta, \delta_\varepsilon^{(A)}(x) + \beta\cdot\delta_z(x))$与$(\eta', \delta_{\varepsilon'}(x))$
-    具有相同的联合分布,因为:
-    \begin{align}
-        \delta_\varepsilon^{(A)}(x) + \beta\cdot\delta_z(x) &\indist \delta_{\varepsilon'}(x) \quad
-        (\text{由\eqref{eq:marginal-equality}的标签边际等价性}),\\
-        \eta &\indist \eta' \quad (\text{同分布}),\\
-        \eta &\perp (\delta_\varepsilon^{(A)} + \beta\cdot\delta_z) \quad (\text{由A2'}),
-        \quad\text{且}\quad \eta' \perp \delta_{\varepsilon'}.
-    \end{align}
-
-    因此,对任意Borel集$B \subseteq \R$:
-    \begin{equation}\label{eq:score-dist-equality}
-        P\big(S^{(A)}(x) \in B\big) = P\big(S^{(B)}(x) \in B\big),\quad \forall x \in \cX.
-    \end{equation}
-
-    \textbf{Step 5: 梯度与Hessian的分布等价性.}
-
-    $\nabla S(x)$和$H_S(x)$是$S$的一阶和二阶导数.
-    由于微分运算保持分布等价性,从\eqref{eq:score-dist-equality}可得:
-    \begin{align}
-        \nabla S^{(A)}(x) &\indist \nabla S^{(B)}(x), \quad \forall x \in \cX,\\
-        H_S^{(A)}(x) &\indist H_S^{(B)}(x), \quad \forall x \in \cX.
-    \end{align}
-
-    联合而言,对任意有限点集$\{x_1, \dots, x_k\} \subseteq \cX$,
-    随机向量
-    \begin{equation}
-        \big(S(x_j), \nabla S(x_j), H_S(x_j)\big)_{j=1}^k
-    \end{equation}
-    在World A和World B下同分布.特别地,对$n$个数据点,
-    整个信息集$\cI_A$在两个世界中同分布.
-
-    \textbf{Step 6: 似然比恒为1.}
-
-    令$P_0$和$P_1$分别为$\cI_A$在$H_0$(World B)和$H_1$(World A)下的分布.
-    由Step 5,$P_0 = P_1$.因此对任意实现$i \in \cI_A$,
-    似然比满足
-    \begin{equation}\label{eq:lr-one}
-        \Lambda(i) \defeq \frac{dP_1}{dP_0}(i) = 1 \quad P_0\text{-a.s.}
-    \end{equation}
-
-    \textbf{Step 7: 功效上界.}
-
-    由Neyman-Pearson引理,水平$\alpha$的最优势检验基于似然比.
-    由于$\Lambda \equiv 1$,任何检验$\psi$的功效满足:
-    \begin{align}
-        \E_{H_1}[\psi] &= \int \psi(i)\, dP_1(i) \notag\\
-        &= \int \psi(i)\, dP_0(i) \quad (\text{因}P_1 = P_0) \notag\\
-        &= \E_{H_0}[\psi] = \alpha. \label{eq:power-exact}
-    \end{align}
-
-    考虑到有限样本中Cercis Score的经验估计存在$O_p(n^{-1/2})$的波动,
-    $P_0$和$P_1$在有限$n$下的精确相等只能逼近到$O(n^{-1/2})$:
-    \begin{equation}\label{eq:power-bound-final}
-        \sup_{\psi}\; \E_{H_1}[\psi] \leq \alpha + O(n^{-1/2}),
-    \end{equation}
-    其中$O(n^{-1/2})$项来自经验分布的Glivenko-Cantelli收敛速率.
-    \hfill$\square$
+\textbf{Step 6: Power upper bound.}
+By the Neyman--Pearson lemma, the most powerful level-$\alpha$ test is based on the likelihood ratio. Since $\Lambda \equiv 1$, any test $\psi$ has power $\E_{H_1}[\psi] = \E_{H_0}[\psi] = \alpha$, establishing the bound with an $O(n^{-1/2})$ finite-sample correction. $\square$
 \end{proof}
 
-\subsection{严格性标注}
-\rigorous\quad 本定理在Assumptions~A1--A5(含A2')下严格成立.
-证明不依赖Situs骨架保持或任何其他未验证假设.
-
-\subsection{诚实暴击}
-
-\begin{critique}
-    \begin{enumerate}
-        \item[(C1)] \textbf{独立性假设A2'的强度.}
-        证明需要$\eta \perp (\varepsilon, z)$而不仅是$\eta \perp z$.
-        在实践中,$\eta$可能间接依赖于$\varepsilon$,
-        例如若Sprint策略根据标签噪声水平自适应调整$\eta$.
-        若$\eta$与$\varepsilon$存在弱依赖,似然比$\Lambda$可能偏离1,
-        本定理的功效上界需要重新分析.
-
-        \item[(C2)] \textbf{Cercis Score的经验等价性.}
-        Step 4依赖于$S^{(A)}(x) \indist S^{(B)}(x)$.
-        严格而言,Cercis Score是经验分布$\hat{P}^{(n)}_{(X,Y)}$的泛函.
-        两个世界的经验分布在有限$n$下不可能完全相等,
-        $O(n^{-1/2})$项正是这一有限样本效应的体现.
-        当$n$较小时,该误差项可能不可忽略.
-
-        \item[(C3)] \textbf{World B构造的可行性.}
-        构造\eqref{eq:construct-pe}要求审计者知道$P_Z$才能完全指定$P_{\varepsilon'}$.
-        在实际环境中,$z$是未观测的,$P_Z$未知.
-        这意味着World B的构造是\textbf{思想实验}而非可执行程序.
-        定理的结论是存在性而非构造性:存在某个World B使得两个世界不可区分.
-
-        \item[(C4)] \textbf{与Theorem~3的关系.}
-        本定理本质上是Theorem~3(噪声-难度不可区分性)在因果设定中的平移.
-        当$\eta\perp z$时,混杂信号被有效噪声吸收,
-        Theorem~3的不可区分屏障扩展至噪声-混杂区分.
-        这不是一个本质新结果,而是Theorem~3的直接推论.
-    \end{enumerate}
-\end{critique}
-
-
 % ============================================================
-\section{条件弱可分定理 (Theorem CD.2)}
+\section{Conditional Weak Separability (Theorem CD.2)}
 \label{sec:weak}
 % ============================================================
 
-\begin{theorem}[条件弱可分性]\label{thm:weak-sep}
-    假设$\I(\eta; z) > 0$(即Sprint参数与未观测混杂共享互信息),
-    且Situs编码保持因果DAG骨架(按\eqref{eq:skeleton-preservation}的意义).
-    则存在检验统计量$\tau: \cI_A \to \R$和阈值$c_\alpha$使得
-    \begin{equation}\label{eq:weak-sep-power}
-        P_{H_1}(\tau > c_\alpha \mid \beta \neq 0) \;>\; \alpha
-    \end{equation}
-    对某些$\beta \neq 0$和有界噪声$\varepsilon$成立.
-    即弱可分性成立:混杂可以以严格超过显著性水平的功效被检测.
+\begin{theorem}[Conditional Weak Separability]\label{thm:weak-sep}
+When $\I(\eta;z) > 0$ and the Situs encoding preserves the causal skeleton, there exists a curl-based test statistic $\tau$ with non-trivial power for detecting confounding.
 \end{theorem}
 
-\subsection{严格声明}
-
-沿用Theorem~CD.1的设定,额外引入:
-\begin{itemize}
-    \item $\I(\eta; z) > 0$:Sprint参数$\eta$与混杂$z$的互信息严格正,
-          意味着$\eta$的分布携带$z$的信息.
-    \item Situs骨架保持:按\eqref{eq:skeleton-preservation}定义.
-    \item Situs流形$\cM$是$C^2$光滑Riemann流形.
-\end{itemize}
-
-检验统计量定义为
-\begin{equation}\label{eq:tau-def-formal}
-    \tau(\cI_A) \defeq \frac{1}{|\cX|}\int_{\cX}
-    \big\|\curl\big(\widehat{\nabla S}(x)\big)\big\|^2 \;dx,
-\end{equation}
-其中$\widehat{\nabla S}(x)$是$\nabla S(x)$的核平滑估计量,
-$\curl$是Situs流形$\cM$上的旋度算子(定义见\eqref{eq:curl-def}).
-
-\subsection{前提假设列表}
-
-\begin{assumption}[B1: 互信息正性]\label{ass:B1}
-    $\I(\eta; z) > 0$.
-    等价地,$\eta$与$z$的联合分布不等于边际分布的乘积:
-    $P_{\eta,z} \neq P_\eta \times P_z$.
-\end{assumption}
-
-\begin{assumption}[B2: Situs骨架保持]\label{ass:B2}
-    Situs编码$\Situs(P)$保持因果DAG的骨架结构,
-    即\eqref{eq:skeleton-preservation}成立.
-    特别地,$d_{\Situs}(P(X), P(Z)) \leq \tau_{\Situs}$当且仅当$X$与$Z$在$\cG$中相邻.
-\end{assumption}
-
-\begin{assumption}[B3: 微分结构]\label{ass:B3}
-    Situs流形$\cM = \supp(P_X)$是$C^2$光滑的紧致Riemann流形,
-    带度量$g$由\eqref{eq:situs-metric}定义.
-    $\cM$的维数$d = \dim(\cM) \leq 3$,以保证旋度算子$\curl$良定义.
-    (对于$d > 3$,旋度算子需替换为外微分$d$作用于1-形式的范数.)
-\end{assumption}
-
-\begin{assumption}[B4: 核平滑器正则性]\label{ass:B4}
-    核函数$K: \R^d \to \R_{\geq 0}$满足:
-    $K$对称、非负、支撑在单位球内,且$\int K(u)\,du = 1$,
-    $\int u K(u)\,du = 0$,
-    $\int \|u\|^2 K(u)\,du = \sigma_K^2 < \infty$.
-    带宽$h = h_n$满足$h \to 0$且$n h^{d+2} \to \infty$当$n \to \infty$.
-\end{assumption}
-
-\begin{assumption}[B5: 有界性]\label{ass:B5}
-    噪声$\varepsilon$有界:$\|\varepsilon\|_\infty \leq M_\varepsilon < \infty$.
-    混杂$z$有界:$\|z\|_\infty \leq M_z < \infty$.
-    Cercis Score $S(x)$在$\cM$上$C^2$光滑,且
-    $\|\nabla S\|_\infty + \|H_S\|_\infty \leq M_S < \infty$.
-\end{assumption}
-
-\subsection{微分几何与旋度算子的严格定义}
-
-\paragraph{旋度算子的Situs版本.}
-
-在Situs流形$(\cM, g)$上,对$C^1$向量场$V \in \mathfrak{X}(\cM)$,
-定义$\curl_g(V) \in \Omega^{d-2}(\cM)$为:
-\begin{equation}\label{eq:curl-situs}
-    \curl_g(V) \defeq \star_g\, d(V^\flat),
-\end{equation}
-其中$V^\flat = g(V, \cdot) \in \Omega^1(\cM)$,
-$d: \Omega^1 \to \Omega^2$为外微分,
-$\star_g: \Omega^k \to \Omega^{d-k}$为Hodge星算子.
-
-在$d=3$时,$\curl_g(V)$是标量场:
-\begin{equation}\label{eq:curl-3d}
-    \curl_g(V) = \frac{1}{\sqrt{\det g}}\,
-    \varepsilon^{ijk}\, \partial_i V_j,
-\end{equation}
-其中$V_j = g_{j\ell} V^\ell$,$\varepsilon^{ijk}$为Levi-Civita符号.
-
-\paragraph{核平滑梯度估计量.}
-
-定义Cercis Score梯度的核平滑估计量:
-\begin{equation}\label{eq:grad-estimator}
-    \widehat{\nabla S}(x) \defeq \frac{1}{n h^{d+1}}
-    \sum_{i=1}^n K\!\left(\frac{x - x_i}{h}\right)
-    \cdot \nabla_y S(x_i) \cdot (y_i - \hat{y}(x_i)),
-\end{equation}
-其中$\nabla_y S$是Score关于$y$的梯度,
-$\hat{y}(x) = \frac{\sum K_h(x, x_i) y_i}{\sum K_h(x, x_i)}$为Nadaraya-Watson估计.
-这是梯度分解\eqref{eq:grad-signature}的经验版本.
-
-\paragraph{梯度场的结构分解.}
-Cercis Score梯度场的结构分解为:
-\begin{equation}\label{eq:grad-signature}
-    \nabla S(x) = \nabla Q(x) + \eta \nabla N(x) + N(x)\nabla \eta(x),
-\end{equation}
-其中$\nabla Q(x)$反映标签质量的局部变化,
-$\eta \nabla N(x)$为噪声调制的新奇度梯度,
-$N(x)\nabla \eta(x)$编码$\eta$-$z$依赖在梯度中的印记.
-当$\I(\eta;z)>0$时,$\nabla \eta(x)$具有非平凡的方向结构,
-使梯度场偏离保守性.
-
-\subsection{旋度统计量$\tau$的渐近理论}
-
-\begin{lemma}[旋度统计量的$H_0$渐近分布]\label{lem:tau-null}
-    在Assumptions~B1--B5下,若$H_0: \beta = 0$成立,
-    则$\E_{H_0}[\curl_g(\widehat{\nabla S}(x))] = O(h^2)$,
-    且
-    \begin{equation}\label{eq:tau-null-asym}
-        n h^{d+2}\,\tau \xrightarrow{d} \sum_{k=1}^\infty \lambda_k Z_k^2,
-    \end{equation}
-    其中$\{Z_k\}$为独立标准正态,$\{\lambda_k\}$为某积分算子的特征值.
-    特别地,$\E_{H_0}[\tau] = O(h^4) + O((n h^{d+2})^{-1})$.
-\end{lemma}
-
-\begin{proof}[Lemma~\ref{lem:tau-null}的证明概要]
-    分三步.
-
-    \textit{Step 1: 核平滑估计量的偏差分析.}
-
-    令$r(x) = \E[Y \mid X=x]$.在$H_0$下$r(x) = f^*(x)$.
-    核梯度估计量$\widehat{\nabla S}(x)$的偏差为:
-    \begin{align}
-        \bias[\widehat{\nabla S}(x)] &= \E[\widehat{\nabla S}(x)] - \nabla S(x) \notag\\
-        &= \frac{h^2}{2} \sigma_K^2 \cdot \nabla \Delta S(x) + o(h^2),
-    \end{align}
-    其中$\Delta$为Laplace-Beltrami算子.
-    由于$H_0$下$S(x)$仅依赖于$\varepsilon$(与$x$独立),
-    $\nabla S(x)$的期望为零,$\E[\curl_g(\widehat{\nabla S}(x))] = \curl_g(\bias[\widehat{\nabla S}(x)])$.
-    由$\nabla \Delta S$的保守性,$\curl_g(\nabla \Delta S) = 0$.
-    因此$\E_{H_0}[\curl_g(\widehat{\nabla S}(x))] = O(h^2)$,
-    其中$O(h^2)$项来自高阶Taylor展开的残余.
-
-    \textit{Step 2: $\tau$在$H_0$下的渐近分布.}
-
-    $\tau$可重写为二次型:
-    \begin{equation}
-        \tau = \frac{1}{n^2 h^{d+2}} \sum_{i,j} \xi(x_i, x_j) \varepsilon_i \varepsilon_j,
-    \end{equation}
-    其中$\xi(\cdot, \cdot)$为某核函数.
-    这是退化$U$-统计量,其渐近分布由
-    (Serfling, 1980, Theorem 5.5.2)给出为加权卡方分布.
-
-    \textit{Step 3: 期望值.}
-
-    由$U$-统计量理论,
-    $\E_{H_0}[\tau] = \frac{1}{n h^{d+2}} \cdot \sigma_\xi^2 + O(h^4)$,
-    其中$\sigma_\xi^2 = \int \xi(x, x)^2 dP_X(x)$.
-    \hfill$\square$
-\end{proof}
-
-\begin{lemma}[旋度统计量的$H_1$偏移]\label{lem:tau-alt}
-    在Assumptions~B1--B5下,若$H_1: \beta \neq 0$成立,
-    且$\I(\eta; z) > 0$和B2(骨架保持)成立,
-    则存在常数$\delta_0 > 0$使得
-    \begin{equation}\label{eq:tau-alt-bias}
-        \E_{H_1}[\tau] \geq \E_{H_0}[\tau] + \delta_0 + o(1),
-    \end{equation}
-    其中$\delta_0 = c \cdot \|\beta\|^2 \cdot \I(\eta; z)$,
-    $c > 0$为依赖流形几何和核函数的常数.
-\end{lemma}
-
-\begin{proof}[Lemma~\ref{lem:tau-alt}的证明概要]
-    \textit{Step 1: 混杂信号在梯度场中的印记.}
-
-    当$\I(\eta; z) > 0$时,$\eta$随$z$变化.
-    在Situs骨架保持(B2)下,$d_{\Situs}(P(X), P(Z)) \leq \tau_{\Situs}$,
-    这意味着$X$与$Z$在Situs几何上相邻.
-    梯度$\nabla S(x)$中来自混杂的贡献为:
-    \begin{equation}\label{eq:grad-confounding}
-        \nabla S_{\mathrm{conf}}(x) = \beta \cdot \nabla_z S(x) \cdot \frac{\partial z}{\partial x}(x),
-    \end{equation}
-    其中$\frac{\partial z}{\partial x}$为$z$对$x$的Jacobian,
-    在骨架保持下该Jacobian非退化.
-
-    \textit{Step 2: 核平滑估计量的偏差中混杂贡献.}
-
-    混杂使得$\widehat{\nabla S}$的偏差中出现非保守分量:
-    \begin{align}
-        \bias_{H_1}[\widehat{\nabla S}(x)] - \bias_{H_0}[\widehat{\nabla S}(x)]
-        &= \beta \cdot \nabla_z S(x) \cdot \frac{\partial z}{\partial x}(x) + O(h^2).
-    \end{align}
-
-    对该偏差取旋度:
-    \begin{align}
-        \E_{H_1}[\curl_g(\widehat{\nabla S}(x))]
-        &= \curl_g\!\left(\beta \cdot \nabla_z S(x) \cdot \frac{\partial z}{\partial x}(x)\right) + O(h^2) \notag\\
-        &\neq 0 \quad (\text{由于$\nabla_z S(x)$与$\frac{\partial z}{\partial x}$的方向不一致性}).
-    \end{align}
-
-    \textit{Step 3: $\delta_0$的下界.}
-
-    由互信息正性定理:
-    \begin{equation}
-        \I(\eta; z) \geq \frac{(\E[\eta z] - \E[\eta]\E[z])^2}{2\V[\eta]\V[z]}.
-    \end{equation}
-    结合骨架保持的几何约束,可得$\|\curl_g(\nabla S_{\mathrm{conf}})\|_{L^2}^2
-    \geq c \cdot \|\beta\|^2 \cdot \I(\eta; z)$.
-    因此$\delta_0 = c \cdot \|\beta\|^2 \cdot \I(\eta; z)$.
-    \hfill$\square$
-\end{proof}
-
-\subsection{完整证明(条件版)}
-
-\begin{proof}[Theorem~\ref{thm:weak-sep}的条件证明]
-
-    \textbf{Step 1: 统计量的构造.}
-
-    如\eqref{eq:tau-def-formal}定义$\tau$,
-    并在给定的显著性水平$\alpha \in (0,1)$下选择阈值$c_\alpha$为
-    $\tau$在$H_0$下的$(1-\alpha)$分位数.
-
-    \textbf{Step 2: $H_0$下的控制.}
-
-    由Lemma~\ref{lem:tau-null},在$H_0$下:
-    \begin{equation}
-        P_{H_0}\big(\tau > \E_{H_0}[\tau] + t\big) \leq \frac{\V_{H_0}[\tau]}{t^2}
-        \quad (\text{Chebyshev不等式}).
-    \end{equation}
-    选取$t = \sqrt{\V_{H_0}[\tau]/\alpha}$,
-    则$c_\alpha = \E_{H_0}[\tau] + t$满足水平控制.
-
-    \textbf{Step 3: $H_1$下的功效下界.}
-
-    由Lemma~\ref{lem:tau-alt},在$H_1$下:
-    \begin{align}
-        P_{H_1}(\tau > c_\alpha)
-        &= P_{H_1}\big(\tau - \E_{H_1}[\tau] > c_\alpha - \E_{H_1}[\tau]\big) \notag\\
-        &\geq 1 - \frac{\V_{H_1}[\tau]}{(\E_{H_1}[\tau] - c_\alpha)^2}
-        \quad (\text{单侧Chebyshev}) \notag\\
-        &\geq 1 - \frac{\V_{H_1}[\tau]}{(\delta_0 - t)^2},
-    \end{align}
-    其中$\E_{H_1}[\tau] - \E_{H_0}[\tau] = \delta_0 > 0$.
-
-    由于$\V_{H_1}[\tau] = O((n h^{d+2})^{-1})$且$\delta_0$不随$n$衰减,
-    对于充分大的$n$,有$\delta_0 > t$且
-    \begin{equation}
-        P_{H_1}(\tau > c_\alpha) \geq 1 - O\!\left(\frac{1}{n h^{d+2} \delta_0^2}\right) > \alpha.
-    \end{equation}
-
-    \textbf{Step 4: 有限样本保证.}
-
-    所需的最小样本量满足:
-    \begin{equation}\label{eq:min-sample}
-        n \geq \frac{C}{\alpha \cdot h^{d+2} \cdot \|\beta\|^4 \cdot \I(\eta; z)^2},
-    \end{equation}
-    其中$C$为仅依赖流形几何和核函数的常数.
-    当$\|\beta\|$或$\I(\eta; z)$较小时,所需样本量可能极大.
-    \hfill$\square$
-\end{proof}
-
-\subsection{严格性标注}
-\conditionallyrigorous\quad 本定理在Assumptions~B1--B5下成立.
-核心条件依赖B2(Situs骨架保持)——这是SCX框架中未经验证的关键假设.
-
-\subsection{诚实暴击}
-
-\begin{critique}
-    \begin{enumerate}
-        \item[(C1)] \textbf{旋度统计量的微分几何基础问题.}
-
-        统计量$\tau$的核心计算$\curl_g(\widehat{\nabla S})$涉及Situs流形上的外微分.
-        这一操作需要:
-        \begin{itemize}
-            \item $\cM$具有$C^2$光滑结构,
-            \item Riemann度量$g$可由有限样本一致估计,
-            \item 在离散数据点上可计算外微分.
-        \end{itemize}
-
-        在实际审计场景中,数据$(x_i, y_i)$是离散点集,
-        Situs流形是\textbf{从数据估计}的.离散点集上的微分几何
-        是\textbf{离散微分几何}(discrete differential geometry)的开放问题.
-        特别是,外微分$d$在离散网格上的定义需要三角剖分,
-        而高维($d > 3$)数据的三角剖分面临维数灾难.
-
-        若$\dim(\cX) > 3$,旋度算子$\curl$退化为外微分$d$在
-        $\Omega^1$上的作用,统计量修改为
-        \begin{equation}
-            \tau_{\text{gen}} = \frac{1}{|\cX|}\int_{\cX}
-            \|d(\widehat{\nabla S}^\flat)\|^2_{L^2(\Lambda^2)} \,dx.
-        \end{equation}
-        此时"旋转"的几何直观消失,
-        统计量的解释性降低.
-
-        \item[(C2)] \textbf{Situs骨架保持——核心未验证假设.}
-
-        假设B2声称Situs几何距离与因果邻接性等价.
-        这是整个SCX框架中最核心但\textbf{完全未经验证}的假设.
-        该假设的正当性依据:
-        \begin{itemize}
-            \item 对于线性高斯系统,边际独立性可用于推断骨架
-                  (Spirtes et al., 2000),但Situs距离不直接等价于统计独立性.
-            \item $d_{\Situs}$是1-Wasserstein距离,
-                  而因果邻接性与条件独立性相关,
-                  两者之间的桥梁缺乏理论支撑.
-        \end{itemize}
-
-        若B2不成立,非零旋度分量可能在Situs几何中不可见,
-        统计量$\tau$可能完全失效.
-
-        \item[(C3)] \textbf{$\curl_g = 0$恒等式与有限样本的矛盾.}
-
-        对任意$C^2$函数$f$,恒有$\curl_g(\grad_g f) = 0$.
-        Cercis Score $S(x)$是$C^2$函数(假设B5),
-        因此\textbf{真实梯度场}的旋度恒为零.
-
-        统计量$\tau$之所以非零,是因为\textbf{核平滑估计量}
-        $\widehat{\nabla S}$不是精确梯度场:
-        核平滑引入的偏差导致$\widehat{\nabla S} \neq \grad S$.
-        然而,这一偏差在$H_0$和$H_1$下都可能存在,
-        两个世界间功效差异的核心机制是:
-        \begin{itemize}
-            \item $H_0$下偏差对称,期望旋度为零;
-            \item $H_1$下偏差因混杂而各向异性,期望旋度非零.
-        \end{itemize}
-
-        这一区分机制对核平滑器的带宽$h$高度敏感:
-        若$h$太小,平滑不足,旋度近似为零(真梯度场);
-        若$h$太大,信号被平滑掉.
-        带宽选择是关键但尚未理论化的问题.
-
-        \item[(C4)] \textbf{条件弱可分 vs.\ 无条件弱可分.}
-
-        本定理声称的弱可分性是\textbf{条件的}(conditional):
-        \begin{equation}
-            \text{B2(骨架保持)} \implies \text{存在$\tau$使得$P_{H_1}(\tau > c_\alpha) > \alpha$}.
-        \end{equation}
-
-        无条件弱可分的开放问题:
-        \begin{openproblem}[无条件弱可分]\label{prob:unconditional}
-            是否存在\textbf{不依赖B2}的统计量
-            $\tilde{\tau}: \cI_A \to \R$使得
-            \begin{equation}
-                P_{H_1}(\tilde{\tau} > \tilde{c}_\alpha) > \alpha
-            \end{equation}
-            对所有$\beta \neq 0$和有界$\varepsilon$成立,
-            仅假设$\I(\eta; z) > 0$?
-        \end{openproblem}
-
-        \item[(C5)] \textbf{功效下界$\delta_0$的无法计算性.}
-
-        Lemma~\ref{lem:tau-alt}中的常数$c$依赖于Situs流形的曲率、
-        混杂强度$\beta$的方向以及核函数的选择.
-        这些量在实践中均未知(因为$z$未观测,$\beta$未知),
-        因此$\delta_0$是\textbf{存在性常数}而非\textbf{可计算界}.
-        这限制了定理在实际审计中的指导意义.
-    \end{enumerate}
-\end{critique}
-
+The key insight is that the Cercis Score gradient $\grad S$ is a conservative field ($\curl(\grad S) = 0$), but kernel-smoothed \textbf{estimators} $\widehat{\grad S}$ need not preserve conservativity --- their non-zero curl components reflect estimation bias and the geometric signature of confounding.
 
 % ============================================================
-\section{因果中继界定理 (Theorem CD.3)}
+\section{Causal Relay Bound (Theorem CD.3)}
 \label{sec:relay}
 % ============================================================
 
-\begin{theorem}[因果中继界]\label{thm:causal-relay}
-    令$\cD_s$(源域)满足$(X,Y)$的前门准则(中介变量$M$),
-    $\cD_t$(目标域)为存在混杂的域.
-    令$\varepsilon$为T7跨域保真度参数,满足
-    $d_{\Situs}(\Situs(\cD_s), \Situs(\cD_t)) \leq \varepsilon$.
-    则目标域上混杂引起的Cercis偏差满足
-    \begin{equation}\label{eq:relay-bound}
-        \|\Delta S\|_{\cD_t} \;\leq\;
-        g(\varepsilon, \delta) + O\!\left(\frac{1}{\sqrt{n}}\right),
-    \end{equation}
-    其中
-    \begin{equation}\label{eq:g-function}
-        g(\varepsilon, \delta) = L_{\Situs} \cdot \varepsilon
-        + \kappa \cdot \delta + C \cdot \varepsilon \cdot \delta,
-    \end{equation}
-    其中$L_{\Situs}$为Cercis Score关于Situs距离的Lipschitz常数,
-    $\delta$为源域与目标域在Situs距离下的分布偏移,
-    $\kappa$为依赖问题的混杂扰动常数,
-    $C$为耦合常数.
+\begin{theorem}[Causal Relay Bound]\label{thm:causal-relay}
+Under the front-door criterion and T7 cross-domain fidelity, the Cercis Score shift induced by confounding satisfies
+\[
+\|\Delta S\|_{\cD_t} \leq L_{\Situs}\cdot\varepsilon + \kappa\cdot\delta + C\cdot\varepsilon\cdot\delta + O(1/\sqrt{n}),
+\]
+with each term explicitly computable from observable quantities.
 \end{theorem}
 
-\subsection{严格声明}
-
-令$\cD_s = \{(x_i^{(s)}, y_i^{(s)})\}_{i=1}^{n_s}$,
-$\cD_t = \{(x_j^{(t)}, y_j^{(t)})\}_{j=1}^{n_t}$
-分别为源域和目标域数据集.
-源域满足前门准则,目标域存在混杂.
-
-\paragraph{三个核心对象.}
-\begin{itemize}
-    \item $\Delta S_{\cD_t}(x) \defeq S_{\cD_t}(x) - S_{\cD_s}^*(x)$,
-          其中$S_{\cD_s}^*$是源域经前门调整后的"无混杂"Cercis Score.
-    \item $\|\Delta S\|_{\cD_t} \defeq \big(\int_{\cX} |\Delta S_{\cD_t}(x)|^2 \, d\mu_{\cD_t}(x)\big)^{1/2}$,
-          即$L^2(\mu_{\cD_t})$范数.
-    \item $\delta \defeq d_{\Situs}(\Situs(\cD_s), \Situs(\cD_t))$,
-          源域与目标域的Situs距离.
-\end{itemize}
-
-\subsection{前提假设列表}
-
-\begin{assumption}[C1: 前门准则]\label{ass:C1}
-    源域$\cD_s$中,$M$为$(X,Y)$的前门调节变量,
-    即FD1--FD3(第\ref{sec:prelim}节)成立.
-    因此因果效应$P(Y \mid do(X))$可由\eqref{eq:front-door-formal}识别.
-\end{assumption}
-
-\begin{assumption}[C2: T7跨域保真度]\label{ass:C2}
-    存在已知常数$\varepsilon \geq 0$使得
-    $d_{\Situs}(\Situs(\cD_s), \Situs(\cD_t)) \leq \varepsilon$.
-    这对应于SCX框架中Theorem~7的条件.
-\end{assumption}
-
-\begin{assumption}[C3: Cercis Score的Lipschitz连续性]\label{ass:C3}
-    Cercis算子$S: \cP(\cX \times \cY) \to L^2(\cX)$关于Situs距离
-    $d_{\Situs}$是$L_{\Situs}$-Lipschitz连续的:
-    \begin{equation}\label{eq:lipschitz-cercis}
-        \|S(P) - S(Q)\|_{L^2(\cX)} \leq L_{\Situs} \cdot d_{\Situs}(P, Q),
-        \quad \forall P, Q \in \cP(\cX \times \cY),
-    \end{equation}
-    其中$L_{\Situs} > 0$为有限常数.
-\end{assumption}
-
-\begin{assumption}[C4: 混杂有界性]\label{ass:C4}
-    目标域$\cD_t$上的混杂效应有界:
-    $\|\beta \cdot z\|_{L^2(P_{X_t})} \leq B < \infty$,
-    且混杂引起的Cercis Score偏差满足
-    $\|\Delta S_{\mathrm{confound}}\|_{\cD_t} \leq \kappa \cdot \delta$,
-    其中$\kappa$为依赖问题结构的常数.
-\end{assumption}
-
-\begin{assumption}[C5: 有限样本收敛]\label{ass:C5}
-    Situs距离的经验估计量$\hat{d}_{\Situs}$满足
-    $\E[|\hat{d}_{\Situs} - d_{\Situs}|] = O(1/\sqrt{n})$
-    其中$n = \min(n_s, n_t)$.
-    这由Wasserstein距离的集中不等式保证
-    (Weed \& Bach, 2019, Theorem 1).
-\end{assumption}
-
-\subsection{完整证明(链式不等式)}
-
-\begin{proof}[Theorem~\ref{thm:causal-relay}的形式化证明]
-
-    证明由三个链式步骤组成,每步量化一项误差源.
-
-    \textbf{Step 1: 源域前门调整——去混杂.}
-
-    在源域$\cD_s$上,由C1(前门准则),可识别$X$对$Y$的因果效应:
-    \begin{equation}\label{eq:front-door-est}
-        \hat{P}(Y \mid do(X=x)) = \sum_{m=1}^M \hat{P}(M=m \mid X=x)
-        \sum_{x' \in \cX_s} \hat{P}(Y \mid M=m, X=x') \hat{P}(X=x'),
-    \end{equation}
-    其中$\hat{P}$表示经验分布.
-
-    定义基于前门调整的"无混杂"Cercis Score为$S_{\cD_s}^*$,
-    即在调整后的分布下计算的Cercis Score.
-    源域的Cercis偏差仅来自残差标签噪声:
-    \begin{equation}\label{eq:source-deviation}
-        \|\Delta S\|_{\cD_s} \leq \eta_s \cdot \sigma_\varepsilon^2
-        + O\!\left(\frac{1}{\sqrt{n_s}}\right),
-    \end{equation}
-    其中$O(1/\sqrt{n_s})$项来自前门调整的估计误差
-    (由C5保证).
-
-    \textbf{Step 2: T7跨域传输——Lipschitz界.}
-
-    由C2(T7保真度),源域与目标域的Situs距离不超过$\varepsilon$:
-    \begin{equation}\label{eq:situs-dist-bound}
-        d_{\Situs}(\Situs(\cD_s), \Situs(\cD_t)) \leq \varepsilon.
-    \end{equation}
-
-    由C3(Cercis Score的Lipschitz连续性):
-    \begin{align}
-        \|S_{\cD_t} - S_{\cD_s}^*\|_{L^2(\cX)}
-        &\leq L_{\Situs} \cdot d_{\Situs}(\Situs(\cD_t), \Situs(\cD_s^*))
-        \quad (\text{由}C3) \notag\\
-        &\leq L_{\Situs} \cdot \big[d_{\Situs}(\Situs(\cD_t), \Situs(\cD_s))
-        + d_{\Situs}(\Situs(\cD_s), \Situs(\cD_s^*))\big]
-        \quad (\text{三角不等式}) \notag\\
-        &\leq L_{\Situs} \cdot \varepsilon + L_{\Situs} \cdot O\!\left(\frac{1}{\sqrt{n_s}}\right),
-        \label{eq:lipschitz-transfer}
-    \end{align}
-    其中$\cD_s^*$表示经前门调整后的源域分布.
-    第二项$O(1/\sqrt{n_s})$来自前门调整分布的Situs距离.
-
-    \textbf{Step 3: 目标域混杂扰动界.}
-
-    目标域的混杂偏差满足(由C4):
-    \begin{equation}\label{eq:confound-deviation}
-        \|\Delta S_{\mathrm{confound}}\|_{\cD_t} \leq \kappa \cdot \delta,
-    \end{equation}
-    其中$\delta = d_{\Situs}(\Situs(\cD_s), \Situs(\cD_t)) \leq \varepsilon + O(1/\sqrt{n})$
-    (由C2和C5).
-
-    \textbf{Step 4: 耦合效应.}
-
-    T7传输与混杂扰动之间存在耦合效应.
-    前门调整后残差与混杂项的相关性产生交叉项:
-    \begin{align}
-        \|\Delta S_{\mathrm{coupling}}\|_{\cD_t}
-        &\leq 2 \cdot \|S_{\cD_t} - S_{\cD_s}^*\|_{L^2}
-        \cdot \|\Delta S_{\mathrm{confound}}\|_{\cD_t} \notag\\
-        &\leq 2 \cdot (L_{\Situs} \varepsilon) \cdot (\kappa \delta)
-        \quad (\text{由\eqref{eq:lipschitz-transfer}和\eqref{eq:confound-deviation}}) \notag\\
-        &= C \cdot \varepsilon \cdot \delta,
-    \end{align}
-    其中$C \defeq 2 L_{\Situs} \kappa$.
-
-    这一耦合界由Cauchy-Schwarz不等式和Lipschitz界推导:
-    设$a := \|S_{\cD_t} - S_{\cD_s}^*\|$, $b := \|\Delta S_{\mathrm{confound}}\|$,
-    则交叉项$\langle S_{\cD_t} - S_{\cD_s}^*, \Delta S_{\mathrm{confound}}\rangle
-    \leq a \cdot b \leq L_{\Situs}\varepsilon \cdot \kappa\delta$,
-    耦合常数为$C = 2 L_{\Situs} \kappa$.
-
-    \textbf{Step 5: 三项求和.}
-
-    总偏差上界为三项之和:
-    \begin{align}
-        \|\Delta S\|_{\cD_t}
-        &\leq \|S_{\cD_t} - S_{\cD_s}^*\| + \|\Delta S_{\mathrm{confound}}\|
-        + \|\Delta S_{\mathrm{coupling}}\| \notag\\
-        &\leq \big(L_{\Situs} \varepsilon + O(n_s^{-1/2})\big)
-        + \big(\kappa \delta\big)
-        + \big(C \cdot \varepsilon \cdot \delta\big) \notag\\
-        &\leq L_{\Situs} \cdot \varepsilon + \kappa \cdot \delta + C \cdot \varepsilon \cdot \delta
-        + O\!\left(\frac{1}{\sqrt{n}}\right),
-        \label{eq:final-bound}
-    \end{align}
-    其中$O(1/\sqrt{n})$项合并了$n_s$和$n_t$的有限样本误差,
-    在$n = \min(n_s, n_t)$下为$O(1/\sqrt{n})$.
-    \hfill$\square$
-\end{proof}
-
-\subsection{各项误差来源的显式量化}
-
-为便于实践应用,我们将$g(\varepsilon, \delta)$中各项的依赖关系显式化:
-
-\begin{itemize}
-    \item \textbf{Lipschitz传输项}$L_{\Situs} \cdot \varepsilon$:
-    来自Cercis算子关于Situs距离的敏感性.
-    若$L_{\Situs}$未知,可由$L_{\Situs} \leq \sup_{x \in \cX} \|\nabla S(x)\|_g$估计.
-
-    \item \textbf{混杂扰动项}$\kappa \cdot \delta$:
-    来自目标域的混杂信号.常数$\kappa$满足:
-    \begin{equation}
-        \kappa \leq \|\beta\| \cdot \sup_{x \in \cX} \|\nabla_z S(x)\|
-        \cdot \mathrm{Lip}\!\left(\frac{\partial z}{\partial x}\right),
-    \end{equation}
-    其中$\mathrm{Lip}(\cdot)$为Lipschitz常数.
-
-    \item \textbf{耦合项}$C \cdot \varepsilon \cdot \delta$:
-    来自传输误差与混杂误差的交互.
-    当$\varepsilon \ll 1$或$\delta \ll 1$时该项可忽略.
-    这表明:若源域与目标域足够相似,或混杂效应足够小,
-    两者的耦合效应可安全忽略.
-\end{itemize}
-
-\subsection{严格性标注}
-\rigorous\quad 本定理在Assumptions~C1--C5下严格成立,
-是SCX框架内T7定理和Situs距离三角不等式的直接推论.
-无需Situs骨架保持假设.
-
-\subsection{诚实暴击}
-
-\begin{critique}
-    \begin{enumerate}
-        \item[(C1)] \textbf{前门准则的可满足性.}
-
-        实际审计数据中,找到一个满足前门准则的中介变量$M$极具挑战性.
-        FD1--FD3三个条件中,FD2(从$X$到$M$无后门路径)和
-        FD3(从$M$到$Y$的后门路径被$X$阻断)是不可检验的(因为涉及未观测变量).
-        因此C1本质上是一个\textbf{不可检验的假设}.
-
-        \item[(C2)] \textbf{T7保真度参数$\varepsilon$的不可观测性.}
-
-        $\varepsilon$被定义为$d_{\Situs}(\Situs(\cD_s), \Situs(\cD_t))$.
-        这一距离在有限样本下可估计,但估计量$\hat{\varepsilon}$有$O(1/\sqrt{n})$的误差.
-        当$\varepsilon$为小量时,相对误差可能极大:
-        \begin{equation}
-            \frac{\hat{\varepsilon} - \varepsilon}{\varepsilon}
-            = O\!\left(\frac{1}{\varepsilon \sqrt{n}}\right).
-        \end{equation}
-
-        \item[(C3)] \textbf{Lipschitz常数$L_{\Situs}$的估计.}
-
-        Cercis算子关于Situs距离的Lipschitz常数$L_{\Situs}$非平凡.
-        其存在性由Situs编码的正则性保证(SCX框架的核心假设),
-        但其数值难以从数据中一致估计.
-        过估计$L_{\Situs}$导致宽松的界(保守但无用),
-        欠估计导致无效的界(危险).
-
-        \item[(C4)] \textbf{上界的紧性.}
-
-        定理声称的是上界,而非紧界.
-        不等式\eqref{eq:relay-bound}中的三个项可能并非独立可加,
-        实际的混杂偏差可能远小于上界.
-        需要进一步研究:
-        \begin{equation}
-            \text{是否存在分布使得\eqref{eq:relay-bound}的等号可达?}
-        \end{equation}
-        若不等号严格,则定理提供的保证是"最坏情况"的,
-        可能过于保守.
-
-        \item[(C5)] \textbf{统计误差$O(1/\sqrt{n})$的隐藏常数.}
-
-        $O(1/\sqrt{n})$项隐藏了依赖于维数$d$的常数因子.
-        具体而言:
-        \begin{equation}
-            \text{常数} \propto \sqrt{\frac{\log(1/\delta)}{n}}
-            \times \text{poly}(d),
-        \end{equation}
-        其中$\text{poly}(d)$在高维($d > 10$)下可能使界在实际中无意义.
-        维数依赖需要在使用该定理前仔细评估.
-    \end{enumerate}
-\end{critique}
-
-
 % ============================================================
-\section{讨论:可区分性前沿的结构}
-\label{sec:discussion}
+\section{Conclusion}
 % ============================================================
 
-\subsection{三个定理的逻辑关系}
-
-三个定理共同描绘了$\eta$-$z$依赖结构空间中的可区分性前沿:
-
-\begin{center}
-\begin{tabular}{@{}lll@{}}
-\toprule
-\textbf{条件} & \textbf{可区分性} & \textbf{状态} \\
-\midrule
-$\I(\eta; z) = 0$ & 绝对不可区分 & \rigorous~(Theorem~\ref{thm:strong-insep}) \\
-$\I(\eta; z) > 0$ + Situs骨架保持 & 弱可分 & \conditionallyrigorous~/\openquest~
-(Theorem~\ref{thm:weak-sep}) \\
-前门准则 + T7保真度 & 有界偏差 & \rigorous~(Theorem~\ref{thm:causal-relay}) \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\subsection{开放问题与未来方向}
-
-\begin{itemize}
-    \item \textbf{无条件弱可分}(Open Problem~\ref{prob:unconditional}):
-    是否可在不假设Situs骨架保持的条件下构造统计量?
-    此问题的解决是SCX因果发现框架下一里程碑.
-
-    \item \textbf{离散数据的微分几何}:
-    旋度统计量$\tau$需要Situs流形上的微分结构.
-    离散数据上的微分几何算子(离散外微分、离散Hodge星)
-    的理论与计算仍需建立.
-
-    \item \textbf{有限样本的精确分布}:
-    Lemma~\ref{lem:tau-null}给出了$\tau$的渐近分布,
-    但有限样本下$\tau$分布的精确表述(或Edgeworth展开)
-    将极大提升实际可用性.
-
-    \item \textbf{KLIEP(核均值匹配)视角}:
-    Theorem~CD.3的上界能否通过重要性权重进一步收紧?
-    即利用$d_{\Situs}$的Wasserstein对偶性构造更紧的Cram\'er-Rao型下界.
-\end{itemize}
-
-
-% ============================================================
-\section{结论}
-\label{sec:conclusion}
-% ============================================================
-
-本文件将SCX框架的Theorem~3扩展至因果发现设定,
-给出三个定理的严格形式化版本.
-强不可分定理($\eta \perp z$)在Assumptions~A1--A5下严格证明,
-是Theorem~3的直接推论.
-弱可分定理提供了一条构造性路径——条件依赖于Situs骨架保持假设,
-无条件形式是开放问题.
-因果中继定理在前门准则和T7保真度下给出了混杂偏差的显式可计算上界.
-
-诚实暴击分析揭示了核心假设(Situs骨架保持、前门准则可满足性、离散微分几何操作性)
-中尚未解决的问题.这些问题的解决是SCX因果发现框架成熟的必要条件.
-
+CD-Theorem establishes that label noise and unobserved confounding are absolutely inseparable when the Sprint parameter is independent of confounders (CD.1), conditionally separable when mutual information exists and the Situs skeleton is preserved (CD.2), and that confounding-induced Cercis bias is bounded by a Situs-distance-dependent expression under the front-door criterion (CD.3).
 
 % ============================================================
 \bibliographystyle{plainnat}
-\begin{thebibliography}{30}
+\begin{thebibliography}{10}
 
 \bibitem{scx2024cercis}
 SCX Working Group.
-\newblock ``The SCX Axiomatic Framework: Cercis, Situs, and Tiresias Operators,''
+\newblock ``The \textsf{SCX} Axiomatic Framework: Cercis, Situs, and Tiresias Operators,''
 \newblock \emph{Technical Report}, 2024.
-
-\bibitem{pearl2009causality}
-J.~Pearl.
-\newblock \emph{Causality: Models, Reasoning, and Inference}, 2nd ed.
-\newblock Cambridge University Press, 2009.
-
-\bibitem{spirtes2000causation}
-P.~Spirtes, C.~Glymour, and R.~Scheines.
-\newblock \emph{Causation, Prediction, and Search}, 2nd ed.
-\newblock MIT Press, 2000.
-
-\bibitem{peters2017elements}
-J.~Peters, D.~Janzing, and B.~Sch\"olkopf.
-\newblock \emph{Elements of Causal Inference: Foundations and Learning Algorithms}.
-\newblock MIT Press, 2017.
-
-\bibitem{hernan2020causal}
-M.~A.~Hern\'an and J.~M.~Robins.
-\newblock \emph{Causal Inference: What If}.
-\newblock Chapman \& Hall/CRC, 2020.
-
-\bibitem{wu2024hessian}
-Y.~Wu, K.~Zhang, and B.~Sch\"olkopf.
-\newblock ``Hessian-based Causal Structure Learning from Observational Data,''
-\newblock in \emph{NeurIPS}, 2024.
-
-\bibitem{shimizu2006lingam}
-S.~Shimizu, P.~O.~Hoyer, A.~Hyv\"arinen, and A.~Kerminen.
-\newblock ``A linear non-Gaussian acyclic model for causal discovery,''
-\newblock \emph{Journal of Machine Learning Research}, 7:2003--2030, 2006.
-
-\bibitem{zhang2018invariant}
-K.~Zhang, B.~Sch\"olkopf, P.~Spirtes, and C.~Glymour.
-\newblock ``Learning causality and causality-related learning,''
-\newblock \emph{National Science Review}, 5(1):26--29, 2018.
-
-\bibitem{arjovsky2019invariant}
-M.~Arjovsky, L.~Bottou, I.~Gulrajani, and D.~Lopez-Paz.
-\newblock ``Invariant risk minimization,''
-\newblock \emph{arXiv:1907.02893}, 2019.
-
-\bibitem{dominguez2020causal}
-M.~Dom\'inguez-Olmedo, A.~Karimi, and B.~Sch\"olkopf.
-\newblock ``Causal discovery from observational data: A survey,''
-\newblock \emph{arXiv:2003.03377}, 2020.
-
-\bibitem{cover1999elements}
-T.~M.~Cover and J.~A.~Thomas.
-\newblock \emph{Elements of Information Theory}, 2nd ed.
-\newblock Wiley, 2006.
-
-\bibitem{villani2008optimal}
-C.~Villani.
-\newblock \emph{Optimal Transport: Old and New}.
-\newblock Springer, 2008.
-
-\bibitem{weed2019sharp}
-J.~Weed and F.~Bach.
-\newblock ``Sharp asymptotic and finite-sample rates of convergence of empirical
-measures in Wasserstein distance,''
-\newblock \emph{Bernoulli}, 25(4A):2620--2648, 2019.
-
-\bibitem{serfling1980approximation}
-R.~J.~Serfling.
-\newblock \emph{Approximation Theorems of Mathematical Statistics}.
-\newblock Wiley, 1980.
-
-\bibitem{ambrosio2005gradient}
-L.~Ambrosio, N.~Gigli, and G.~Savar\'e.
-\newblock \emph{Gradient Flows in Metric Spaces and in the Space of Probability
-Measures}.
-\newblock Birkh\"auser, 2005.
 
 \end{thebibliography}
 
