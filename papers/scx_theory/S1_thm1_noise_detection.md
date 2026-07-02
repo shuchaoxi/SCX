@@ -63,13 +63,10 @@ lemmas.
 4. [**(A4)**] **(Uniform independent noise).**
 5. [**(A5)**] **(State homogeneity).**
 6. [**(A6)**] **(Balanced error distribution).** The error imbalance constant C_{\mathrm{bal}} \geq 1$ bounds the ratio of maximum to minimum per-class expert error rates within each state: $\max_{c \in \mathcal{Y}} \mathbb{P}(f_m(x) 
-eq y^* \mid y^* = c, x \in s) \leq C_C_{\mathrm{bal}} \cdot \min_{c \in \mathcal{Y}} \mathbb{P}(f_m(x) 
+eq y^* \mid y^* = c, x \in s) \leq C_{\mathrm{bal}} \cdot \min_{c \in \mathcal{Y}} \mathbb{P}(f_m(x) 
 eq y^* \mid y^* = c, x \in s)$. When expert errors are uniformly distributed across classes, C_{\mathrm{bal}} = 1$; larger values indicate class-dependent error asymmetry.
-7. [**(A2')**] **(Bounded conditional correlation).** A relaxation of (A2): the expert error indicators $\{e_m\}$ are conditionally independent given $x$ only up to bounded pairwise correlation $ar{ho} \geq 0$. When $ar{ho} = 0$, (A2') reduces to (A2). When $ar{ho} > 0$, the effective independent expert count is $M_{\mathrm{eff}} = M / (1 + (M-1)ar{ho})$, which replaces $M$ in all concentration bounds. Assumption (A2') is standard in the generalized estimating equations literature (Liang \& Zeger, 1986).
-ho \geq 0$. When $ar
-ho = 0$, (A2') reduces to (A2). When $ar
-ho > 0$, the effective independent expert count is M_{\mathrm{eff}} = M/(1+(M-1)ar
-ho)$, which replaces $ in all concentration bounds. Assumption (A2') is standard in the generalized estimating equations literature (Liang \& Zeger, 1986).
+7. [**(A2')**] **(Bounded conditional correlation).** A relaxation of (A2): the expert error indicators $\{e_m\}$ are conditionally independent given $x$ only up to bounded pairwise correlation $\bar{\rho} \geq 0$. When $\bar{\rho} = 0$, (A2') reduces to (A2). When $\bar{\rho} > 0$, the effective independent expert count is $M_{\mathrm{eff}} = M / (1 + (M-1)\bar{\rho})$, which replaces $M$ in all concentration bounds. Assumption (A2') is standard in the generalized estimating equations literature (Liang \& Zeger, 1986).
+
 
 ### Lemma 1: Mean Separation
 <!-- label: sec:thm1:lemma1 -->

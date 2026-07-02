@@ -17,7 +17,7 @@ This result has a constructive corollary: it tells us exactly what additional st
 Under these six assumptions, we prove that multi-expert consistency provides a noise detector with provable guarantees. Let $M$ experts be trained on disjoint data subsets. For each sample, define the **consistency score** $C(x)$ as the fraction of experts that fail to predict the given label. The detection rule is simple: flag a sample as noisy if $C(x)$ exceeds a state-dependent threshold $\theta$. We prove (**Theorem 1**, SI~S1):
 
 $$
-\mathrm{F1} \geq 1 - \frac{1}\sum_{s} \rho_s \exp\bigl(-2M\Delta_s^2\bigr),
+\mathrm{F1} \geq 1 - \frac{1}{\eta}\sum_{s} \rho_s \exp\bigl(-2M\Delta_s^2\bigr),
 $$
 
 where $\eta$ is the noise rate, $\rho_s$ is the fraction of data in state $s$, and $\Delta_s$ is the separation gap between the expected consistency score on clean samples and the detection threshold. The F1 score converges to 1 exponentially in the number of experts $M$. The weakest assumption in our framework is A2' (bounded expert error correlation). When this correlation is zero, we recover the original independent-experts bound. When it is non-zero, the effective number of independent experts degrades from $M$ to $M/(1+(M-1)\bar)$. We provide a procedure for estimating $\bar$ from data in SI~S1.
