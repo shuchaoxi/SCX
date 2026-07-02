@@ -26,7 +26,7 @@ The central theoretical result governing Situs deployment is:
 
 > **Theorem:** [Information-Theoretic Criterion, Theorem~2.2.1 in  [cite]]
 > <!-- label: thm:criterion -->
-> Let $S$, $P$, $Y$ denote the state atom, physical position, and label random variables. A necessary (and, with sufficient encoding capacity, sufficient) condition for Situs to improve detection margin $\Delta_s$ is:
+> Let $S$, $P$, $Y$ denote the state atom, physical position, and label random variables. A sufficient condition (under the Bayes-optimal classifier restriction) for Situs to improve detection margin $\Delta_s$ is:
 > 
 > $$
 > \boxed{I(Y; P \mid S) > 0}

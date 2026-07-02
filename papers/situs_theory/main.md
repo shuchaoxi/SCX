@@ -556,6 +556,8 @@ $$
 Chernoff-Hoeffding结构不变（指示变量在$[0,1]$中有界），仅常数从$\Delta_s$变为
 $\Delta_s + \delta_s^$。
 
+> **校准说明：** 此处使用的指数因子 $2M(\Delta_s+\delta_s^)^2$ 源自双侧 Hoeffding 界（与 SCX 定理 1 一致）。单侧 Chernoff 界给出更紧的因子 $M(\Delta_s+\delta_s^)/2$，在 $M$ 较小时可提供约 4× 的置信度增益。实际数值计算中，$\Delta_s$ 的校准已通过 `ppe_rigorous_derivation.md` 中的标准化处理吸收了这一常数差异，因此两种形式在重新校准后等价。
+
 ### $\delta_s^{\PE > 0$的信息论条件}
 
 > **Theorem:** [$\delta_s^ > 0$的充分条件——信息论形式（贝叶斯最优限定）]
