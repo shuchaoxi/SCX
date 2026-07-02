@@ -16,7 +16,7 @@ You don't need courage to resist pressure from superiors. You need to understand
 
 2. **Theorem 2 — Scale Invariance of Guilt / 勿以恶小而为之 (§4):** For any two deceptions $\delta_1, \delta_2$ exceeding the noise threshold $\tau$, $\mathbb{P}(\text{detection} \mid \delta_1) = \mathbb{P}(\text{detection} \mid \delta_2)$. A small lie and a big lie face identical detection odds. Liu Bei's (刘备) deathbed maxim is proved as a mathematical identity.
 
-3. **Theorem 3 — Honesty as Strictly Dominant (§5):** Under SCX conditions with $M \geq M_{\min} = \lceil \ln(\kappa/(\kappa-b)) / \ln(L/\tau) \rceil$, the expected payoff of honesty strictly dominates any dishonest strategy: $\mathbb{E}[u \mid \text{honest}] = 0 > \mathbb{E}[u \mid \text{dishonest}]$ for all $\delta > 0$. The threshold $M_{\min}$ is computable from observable parameters $(b, \kappa, L/\tau)$.
+3. **Theorem 3 — Honesty as Strictly Dominant (§5):** Under SCX conditions with $M \geq M_ = \lceil \ln(\kappa/(\kappa-b)) / \ln(L/\tau) \rceil$, the expected payoff of honesty strictly dominates any dishonest strategy: $\mathbb{E}[u \mid \text{honest}] = 0 > \mathbb{E}[u \mid \text{dishonest}]$ for all $\delta > 0$. The threshold $M_$ is computable from observable parameters $(b, \kappa, L/\tau)$.
 
 4. **Theorem 4 — Irreversibility of Evidence (§6):** Under Spring's monotonic memory, $\mathbb{P}(D_t \mid a_\tau = \text{dishonest}) \geq \mathbb{P}(D_\tau \mid a_\tau = \text{dishonest})$ for all $t > \tau$. Evidence never decays. Detection probability is non-decreasing over time. There is no statute of limitations.
 
@@ -26,7 +26,7 @@ You don't need courage to resist pressure from superiors. You need to understand
 |------|-------------|---------|
 | A0   | Motivating gap: no prior computable game-theoretic proof for individual honesty dominance | §1 |
 | A1   | Scalar data model (generalizes to $\mathbb{R}^d$) | §2 |
-| A2   | Bounded observation noise: $\|\hat{\theta}_j - \theta\| \leq L$ | §2 |
+| A2   | Bounded observation noise: $\|\hat_j - \theta\| \leq L$ | §2 |
 | A3   | Uniform noise distribution: $\varepsilon_j \sim \text{Uniform}[-L, L]$ | §2 |
 | A4   | Auditor independence: $\varepsilon_j \perp\!\!\!\perp \varepsilon_k$ | §2 |
 | A5   | Any-auditor detection rule (single flag triggers investigation) | §2 |
@@ -55,7 +55,7 @@ You don't need courage to resist pressure from superiors. You need to understand
 | §2 | Formal Model — Agent in Repeated Audit Game (10 assumptions declared) |
 | §3 | Theorem 1 — Detection Inevitability (full proof, 3 cases, Hoeffding connection) |
 | §4 | Theorem 2 — Scale Invariance of Guilt / 勿以恶小而为之 (Liu Bei formalized, full proof) |
-| §5 | Theorem 3 — Honesty as Strictly Dominant (full proof, $M_{\min}$ derivation, numerical examples) |
+| §5 | Theorem 3 — Honesty as Strictly Dominant (full proof, $M_$ derivation, numerical examples) |
 | §6 | Theorem 4 — Irreversibility of Evidence / Spring's Monotonicity (full proof) |
 | §7 | The Personal Corollary — What This Means for You (你不需要勇气, 上级不是审计者, Spring永不遗忘) |
 | §8 | Discussion — Dual Role (agent + auditor), Symmetric Equilibrium, Convergence, Open Problems |
@@ -67,7 +67,7 @@ You don't need courage to resist pressure from superiors. You need to understand
 - **Not political:** Pure game theory with formal proofs — no political commentary
 - **Honest:** Explicitly states SCX cannot protect against pre-detection retaliation
 - **Historical grounding:** Liu Bei's (刘备) 勿以恶小而为之 quoted and proved as Theorem 2
-- **Computable:** $M_{\min}$ derived as a function of observable parameters
+- **Computable:** $M_$ derived as a function of observable parameters
 
 ## Mathematical Tools
 
@@ -80,9 +80,9 @@ You don't need courage to resist pressure from superiors. You need to understand
 ## Numerical Example
 
 With $\kappa = 10b$ (penalty = 10× benefit) and $L/\tau = 5$ (auditor noise = 5× detection tolerance):
-$M_{\min} = \lceil \ln(10/9) / \ln(5) \rceil = \lceil 0.0655 \rceil = 1$. **One auditor suffices.**
+$M_ = \lceil \ln(10/9) / \ln(5) \rceil = \lceil 0.0655 \rceil = 1$. **One auditor suffices.**
 
-Conservative scenario: $\kappa = 1.5b$, $L/\tau = 2$: $M_{\min} = \lceil \ln(3) / \ln(2) \rceil = 2$. Two auditors suffice.
+Conservative scenario: $\kappa = 1.5b$, $L/\tau = 2$: $M_ = \lceil \ln(3) / \ln(2) \rceil = 2$. Two auditors suffice.
 
 ## Building
 

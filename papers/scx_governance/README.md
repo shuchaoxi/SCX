@@ -15,15 +15,15 @@ We formalize governance as a signaling game with multi-expert audit under the SC
 
 ### Theorem 1: Transparency Dominance 透明度优势 (§3)
 Under SCX audit with $M$ independent auditors each having detection power $\Delta$, the government's expected payoff from honest reporting ($m = \theta$) strictly dominates any misreporting strategy when $M > M^*(\Delta, \kappa)$, where:
-$$M^* = \left\lceil \frac{2\bar{\sigma}^2 \log(\kappa / (L_B \varepsilon))}{(\delta_{\min} - \varepsilon)^2 - 2\bar{\sigma}^2 \bar{\rho} \log(\kappa / (L_B \varepsilon))} \right\rceil$$
+$$M^* = \left\lceil \frac{2\bar^2 \log(\kappa / (L_B \varepsilon))}{(\delta_ - \varepsilon)^2 - 2\bar^2 \bar \log(\kappa / (L_B \varepsilon))} \right\rceil$$
 
-Proof via Hoeffding concentration + correlation-adjusted effective multiplicity $M_{\mathrm{eff}} = M/(1 + (M-1)\bar{\rho})$.
+Proof via Hoeffding concentration + correlation-adjusted effective multiplicity $M_{\mathrm{eff}} = M/(1 + (M-1)\bar)$.
 
 ### Theorem 2: Opacity Detection Bound 不透明性检测界 (§4)
-When the government publishes $K_{\mathrm{pub}}$ out of $K_{\min}$ required statistics, the probability that $M$ auditors collectively detect the opacity exceeds:
-$$\mathbb{P}(\text{detection}) \geq 1 - \exp\left(-2M \left(1 - \frac{K_{\mathrm{pub}}}{K_{\min}}\right)^2\right)$$
+When the government publishes $K_{\mathrm{pub}}$ out of $K_$ required statistics, the probability that $M$ auditors collectively detect the opacity exceeds:
+$$\mathbb{P}(\text{detection}) \geq 1 - \exp\left(-2M \left(1 - \frac{K_{\mathrm{pub}}}{K_}\right)^2\right)$$
 
-The government's best response is full publication: $K_{\mathrm{pub}}^* = K_{\min}$.
+The government's best response is full publication: $K_{\mathrm{pub}}^* = K_$.
 
 ### Theorem 3: Policy Unidentifiability 政策不可辨识性 (§5)
 When policy outcome $Y$ deviates from prediction $\hat{Y}$, the cause among {design error, implementation failure, external shock, measurement error} is observationally equivalent. Four distinct attributions produce identical observed outcomes, making cause attribution unidentifiable without declared causal assumptions.
@@ -65,7 +65,7 @@ When policy outcome $Y$ deviates from prediction $\hat{Y}$, the cause among {des
 
 ### Governance as Signaling Game
 - Government $G$: private information $\theta$, publishes claim $m$
-- Auditor community $\mathcal{A} = \{A_1, \ldots, A_M\}$: independent estimates from survey, satellite, administrative, third-party data
+- Auditor community $\mathcal{A} = \{A_1, ..., A_M\}$: independent estimates from survey, satellite, administrative, third-party data
 - Yajie NPE payoff: $u_G = B(m) - \kappa \cdot \mathbf{1}[\|m - c\|_\infty > \varepsilon]$
 
 ### Yajie Multi-Expert Consensus
@@ -150,7 +150,7 @@ Standard LaTeX distribution with XeLaTeX for CJK support:
 
 ## Key Insight
 
-Governance transparency is not a normative preference but a **game-theoretic equilibrium property** under sufficient multi-expert audit. The Yajie payoff structure transforms the government's private information advantage into a strategic liability: when enough independent auditors can cross-verify statistics, misreporting is probabilistically detectable. The mathematics identifies the exact conditions: auditor multiplicity $M > M^*$, meaningful penalties $\kappa > L_B \delta_{\min}$, low auditor correlation $\bar{\rho} \ll 1$, and publication completeness $K_{\mathrm{pub}} \to K_{\min}$. When these conditions fail, the framework predicts exactly what must change to restore equilibrium transparency.
+Governance transparency is not a normative preference but a **game-theoretic equilibrium property** under sufficient multi-expert audit. The Yajie payoff structure transforms the government's private information advantage into a strategic liability: when enough independent auditors can cross-verify statistics, misreporting is probabilistically detectable. The mathematics identifies the exact conditions: auditor multiplicity $M > M^*$, meaningful penalties $\kappa > L_B \delta_$, low auditor correlation $\bar \ll 1$, and publication completeness $K_{\mathrm{pub}} \to K_$. When these conditions fail, the framework predicts exactly what must change to restore equilibrium transparency.
 
 ## References
 

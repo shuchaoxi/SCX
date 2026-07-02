@@ -39,7 +39,7 @@ For $K=2$, $\ln 2 \approx 0.693$, and the bound can become *negative* whenever $
 
 The Fano inequality bounds the error of estimating a random variable $S$ from an observation $\phi(X)$, where the estimator $\hat{S}$ is a function of $\phi(X)$ alone. In SCX's state discovery, $\hat{S}$ is the output of k-means clustering on the **entire dataset** $\{\phi(x_i)\}_{i=1}^n$. For a specific sample $x_i$, the cluster assignment $\hat{S}(x_i)$ depends not only on $\phi(x_i)$ but on all other $\phi(x_j)$ through the cluster centers.
 
-The Fano inequality applies only if $\hat{S}_i$ is a deterministic function of $\phi(X_i)$ **conditionally on the clustering algorithm's output**, which itself is a function of all data points. Formally, there exists a function $g: \Phi^n \times \Phi \to \mathcal{S}$ such that $\hat{S}_i = g(\phi(X_1), \dots, \phi(X_n), \phi(X_i))$. The mutual information $I(\phi(X_i); S_i)$ does **not** generally bound the performance of an estimator that uses $n$ samples, because the effective information available is $I(\phi(X_1), \dots, \phi(X_n); S_i) \gg I(\phi(X_i); S_i)$.
+The Fano inequality applies only if $\hat{S}_i$ is a deterministic function of $\phi(X_i)$ **conditionally on the clustering algorithm's output**, which itself is a function of all data points. Formally, there exists a function $g: \Phi^n \times \Phi \to \mathcal{S}$ such that $\hat{S}_i = g(\phi(X_1), ..., \phi(X_n), \phi(X_i))$. The mutual information $I(\phi(X_i); S_i)$ does **not** generally bound the performance of an estimator that uses $n$ samples, because the effective information available is $I(\phi(X_1), ..., \phi(X_n); S_i) \gg I(\phi(X_i); S_i)$.
 
 To see why: suppose $n$ samples come from two well-separated states. Even if a single $\phi(X_i)$ carries negligible information about $S_i$ (small $I(\phi(X_i); S_i)$), the aggregate of $n$ samples may enable reliable state recovery. The Fano bound as stated ignores this **sample amplification** effect.
 
@@ -60,7 +60,7 @@ Theorem 2's main result depends on the Fano bound to argue that when $\delta$ is
 
 The bound in Lemma 2 is:
 
-$$\mathbb{E}[|C(\hat{S}) - C(S)|] \leq 2 \cdot P(\hat{S} \neq S) + O(1/\sqrt{n_{\min}})$$
+$$\mathbb{E}[|C(\hat{S}) - C(S)|] \leq 2 \cdot P(\hat{S} \neq S) + O(1/\sqrt{n_})$$
 
 This uses the inequality $|C(\hat{S}) - C(S)| \leq 2$ when $\hat{S} \neq S$, which is correct but extremely loose (uses the full range $[0,2]$ rather than the actual difference). The factor of 2 propagates the Fano bound directly into the performance bound, but the actual $C(\hat{S})$ could be close to $C(S)$ even when $\hat{S} \neq S$, if the incorrectly assigned samples happen to have similar consistency scores. The bound does not account for this possibility.
 
@@ -102,7 +102,7 @@ This creates a logical loop: Theorem 2 uses the DPI chain (which assumes A4/A5) 
 
 **Severity**: MODERATE (the DPI chain embeds modeling assumptions that are precisely the conditions for identifiability — this is not a logical contradiction but should be made explicit).
 
-**Issue 2.2: The DPI application $\hat{Z} \to \dots \to Z$ direction is reversed.**
+**Issue 2.2: The DPI application $\hat{Z} \to ... \to Z$ direction is reversed.**
 
 The document's DPI application in the proof (Step 3) states:
 
@@ -126,11 +126,11 @@ where $P_{\text{pred}}$ is the push-forward of $P$ under the map $x \mapsto (\ha
 
 The bound:
 
-$$TV(P(\cdot|Z=1), \tilde{P}(\cdot|Z=1)) \leq \frac{TV(P, \tilde{P})}{\eta}$$
+$$TV(P(\cdot|Z=1), \tilde{P}(\cdot|Z=1)) \leq \frac{TV(P, \tilde{P})}$$
 
 derives from:
 
-$$|P(A|Z=1) - \tilde{P}(A|Z=1)| = \frac{|P(A \cap \{Z=1\}) - \tilde{P}(A \cap \{Z=1\})|}{\eta}$$
+$$|P(A|Z=1) - \tilde{P}(A|Z=1)| = \frac{|P(A \cap \{Z=1\}) - \tilde{P}(A \cap \{Z=1\})|}$$
 
 This requires $P(Z=1) = \tilde{P}(Z=1) = \eta$. The document states: "Since $\tilde{P}$ preserves $P(Z=1) = \eta$" (Verification Checks, line 237). But $\tilde{P}$ is constructed by replacing $P(\phi, S)$ with $P(\phi)P(S)$ while preserving everything else. Does this preserve the marginal $P(Z=1)$?
 
@@ -371,11 +371,11 @@ $$P(\hat{S} \neq S) \geq \frac{H(S) - \delta - \log 2}{\log K}$$
 
 depends explicitly on $K$. For large $K$, the denominator grows, making the bound tighter (larger). For small $K$, the bound weakens. But the final Theorem 2 performance bound (AUC, F1) does **not** depend on $K$:
 
-$$AUC(h_{\text{SCX}}) \leq AUC_{\text{base}} + \sqrt{\frac{\delta}{2}} \cdot \left(\frac{1}{\eta} + \frac{1}{1-\eta}\right)$$
+$$AUC(h_{\text{SCX}}) \leq AUC_{\text{base}} + \sqrt{\frac{2}} \cdot \left(\frac{1} + \frac{1}{1-\eta}\right)$$
 
 The $K$-dependence from Fano disappears. This is because Lemma 2's bound:
 
-$$\mathbb{E}[|C(\hat{S}) - C(S)|] \leq 2 \cdot P(\hat{S} \neq S) + O(1/\sqrt{n_{\min}})$$
+$$\mathbb{E}[|C(\hat{S}) - C(S)|] \leq 2 \cdot P(\hat{S} \neq S) + O(1/\sqrt{n_})$$
 
 uses the loose bound of $2$ for the case $\hat{S} \neq S$ — which is independent of $K$. But the actual impact of state misestimation on SCX performance should depend on $K$: with more states, misassigning a sample causes less damage to the per-state consistency estimate. The bound's $K$-independence suggests it is loose for large $K$.
 
@@ -409,7 +409,7 @@ This is an admission that one of the three performance bounds in Theorem 2 is no
 
 The document claims $C_F \leq 2$ in the "typical operating range" where precision, recall $\geq 0.1$. The derivation (Section 5.2 of `02_weak_feature_failure.md`) gives:
 
-$$C_F \leq \frac{2}{p_{\min}^2}, \quad p_{\min} = \min(2TP+FP+FN)$$
+$$C_F \leq \frac{2}{p_^2}, \quad p_ = \min(2TP+FP+FN)$$
 
 with a subsequent note that "when $Precision, Recall \geq 0.1$, $C_F \leq 3$" and "when $Precision, Recall \geq 0.5$, $C_F \leq 1$". But the claimed bound $C_F \leq 2$ in the theorem statement does not match these ranges. The derivation shows $C_F$ could be up to 3 when precision and recall are as low as 0.1. The document's own constant does not support the claimed value.
 

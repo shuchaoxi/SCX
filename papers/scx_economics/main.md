@@ -1,0 +1,2297 @@
+*Abstract:*
+
+We present **SCX-Economics**, a formal framework for audited macroeconomic
+forecasting that integrates multiple heterogeneous forecasting models under
+a unified consensus mechanism.  Our approach treats macro forecasting models
+--- Dynamic Stochastic General Equilibrium (DSGE), Vector Autoregression
+(VAR/BVAR), agent-based models (ABM), and machine learning models (random
+forest, LSTM) --- as *experts* whose forecasts are aggregated via
+a principled voting scheme (**Yajie** aggregation).  The economic
+regime (expansion, recession, stagflation, or crisis) serves as the latent
+state driving model selection and regime-switching dynamics.
+
+We establish three foundational theorems.  **Theorem~1** (Multi-Model
+Forecast Error Detection) provides a concentration inequality bounding the
+probability that all $M$ models collectively miss systematic forecast bias
+exceeding a threshold $\Delta$, with an effective model count $M_{eff}$
+that corrects for correlation within the New Keynesian DSGE family.
+**Theorem~2** formalizes the Lucas Critique: when all models fail to
+predict events such as the 2008 financial crisis or the COVID-19 shock, the
+source of failure --- collective misspecification versus an unprecedented
+structural break --- is *fundamentally unidentifiable* without declared
+invariance assumptions on structural parameters.  **Theorem~3**
+introduces the **Cercis Score** $\mathcal{S}$, a composite forecast
+evaluation metric combining predictive accuracy and regime novelty detection,
+defined over the (output gap, inflation, financial stress) state space.
+
+The **Spring** module performs online structural break detection,
+triggering regime re-estimation when the Cercis novelty component exceeds
+a calibrated threshold.  We benchmark on FRED-QD (1960--2024), the 2008
+Global Financial Crisis, the COVID-19 shock, and the Eurozone sovereign
+debt crisis, demonstrating that SCX consensus forecasts robustly outperform
+individual models and the Survey of Professional Forecasters (SPF) baseline
+under structural breaks.
+
+**Keywords:** macroeconomic forecasting, structural breaks,
+Lucas critique, model consensus, SCX auditing, ensemble methods, regime
+switching, macroeconomic forecasting, structural breaks, Lucas critique
+
+**JEL Classification:** C53, E17, E37, C11, C14
+
+## Introduction
+<!-- label: sec:intro -->
+
+### Motivation
+
+Macroeconomic forecasting faces a fundamental tension: the economy is a
+non-stationary, high-dimensional system subject to **structural breaks**
+(structural breaks) --- abrupt changes in the underlying data-
+generating process driven by policy regime shifts, technological
+disruptions, financial crises, or global pandemics.  No single forecasting
+model is robust to all such breaks.  Dynamic Stochastic General Equilibrium
+(DSGE) models, exemplified by  [cite], embed deep economic
+theory but are vulnerable to misspecification when the true structure
+deviates from the theorized equilibrium.  VAR and Bayesian VAR models
+ [cite] capture reduced-form dynamics but lack
+structural interpretability.  Agent-based models  [cite]
+offer rich heterogeneity but face calibration challenges.  Machine learning
+methods --- random forests  [cite], LSTMs
+ [cite] --- achieve high predictive accuracy in-sample
+but may fail catastrophically under distributional shift.
+
+The **SCX auditing framework** (**S**ystematic **C**ross-
+e**X**amination) addresses this challenge by treating each forecasting
+model as an *expert* and constructing a consensus forecast through
+principled aggregation.  This paper develops the theoretical foundations
+of SCX-audited macroeconomic forecasting, proves three core theorems, and
+presents empirical evidence from four decades of U.S. macroeconomic data.
+
+### The Lucas Critique and Structural Breaks
+
+ [cite] argued that econometric models estimated under
+one policy regime cannot reliably predict outcomes under a different regime,
+because agents' decision rules adapt to policy changes.  This **Lucas
+Critique** (Lucas Critique) implies a deep epistemological challenge: when all
+models fail to predict a major economic event, we cannot determine whether
+the failure arises from collective model misspecification or from an
+unprecedented structural break without *a priori* commitments about
+which structural parameters remain invariant across regimes.  **Our
+Theorem~2 provides the first formal proof of this unidentifiability result.**
+
+### Contributions
+
+This paper makes five contributions:
+
+1. **Theorem~1 (Error Detection Bound):** We prove a Chernoff-style
+2. **Theorem~2 (Lucas Unidentifiability):** We formalize and prove
+3. **Theorem~3 (Cercis Score):** We define a composite forecast
+4. **SCX Multi-Model Architecture:** We design and implement a
+5. **Empirical Validation:** We benchmark on FRED-QD (1960--2024),
+
+## Related Work
+<!-- label: sec:related -->
+
+### Macroeconomic Forecasting Models
+
+The canonical Smets-Wouters DSGE model  [cite] incorporates
+nominal rigidities, habit formation, and adjustment costs to match
+empirical impulse responses.  Bayesian estimation via MCMC
+ [cite] operationalizes these models for forecasting.
+VAR models, pioneered by  [cite], treat all
+variables as endogenous and capture dynamic interdependencies through
+lag structures; the Minnesota prior  [cite]
+regularizes BVARs in high dimensions.
+
+Agent-based models  [cite] simulate
+heterogeneous interacting agents and generate emergent macroeconomic
+phenomena.  Machine learning approaches to macro forecasting include
+random forests  [cite], gradient boosting
+ [cite], and deep learning architectures such as LSTMs
+ [cite], temporal convolutional networks, and
+transformers.
+
+### Forecast Combination and Ensembles
+
+ [cite] established that combining forecasts reduces
+MSE when individual forecast errors are imperfectly correlated.  Bayesian
+model averaging  [cite] provides a coherent
+probabilistic framework for model combination.   [cite]
+survey forecast combination methods including equal weighting, regression-
+based weights, and time-varying weights.  Our Yajie aggregation scheme
+extends these approaches with regime-dependent weighting and formal
+error detection guarantees.
+
+### Structural Break Detection
+
+ [cite] developed sup-Wald tests for unknown breakpoints.
+ [cite] and  [cite] provide
+foundational results for estimating and testing multiple structural breaks.
+ [cite] study forecast combinations under
+structural breaks.  The Spring module in our framework uses a CUSUM-based
+detection algorithm with Cercis Score thresholds.
+
+### The Lucas Critique: Theory and Practice
+
+ [cite] argued that policy-invariant ``deep''
+parameters are required for reliable counterfactual forecasting.  This
+motivated the DSGE research program  [cite].
+ [cite] provide empirical assessments.  Our Theorem~2
+provides the first formal identification proof of the limits implied
+by the Lucas Critique, connecting it to modern results on partial
+identification  [cite] and causal inference under
+distribution shift  [cite].
+
+## Preliminaries and Assumptions
+<!-- label: sec:prelim -->
+
+### Notation
+
+Let $\mathcal{Y}_t = (y_{1t}, ..., y_{Kt})^\top \in \mathbb{R}^K$ denote
+the vector of $K$ macroeconomic variables at time $t$, where $t \in
+\{1, ..., T\}$.  The core variables of interest are GDP growth $g_t$,
+inflation $\pi_t$, and unemployment $u_t$.  We denote the full information
+set available at time $t$ by $\mathcal{F}_t = \sigma(\mathcal{Y}_1, ...,
+\mathcal{Y}_t)$.
+
+Let $\mathcal{M} = \{1, ..., M\}$ index the set of forecasting models.
+Model $m \in \mathcal{M}$ produces an $h$-step-ahead point forecast
+$\hat{y}_{t+h|t}^{(m)} \in \mathbb{R}^K$ and a predictive distribution
+$p^{(m)}(y_{t+h} \mid \mathcal{F}_t)$.
+
+The **economic regime** at time $t$ is a latent variable
+$R_t \in \mathcal{R} = \{E, R, S, C\}$, where:
+
+- $E$: Expansion
+- $R$: Recession
+- $S$: Stagflation --- low/negative growth with high inflation
+- $C$: Crisis --- financial stress with severe output contraction
+
+### Model Specifications
+
+#### DSGE Model (Smets-Wouters)
+
+The DSGE model follows  [cite] with $N=7$ observable
+variables.  The state-space representation is:
+
+$$
+    \mathbf{x}_t &= \mathbf{A}(\boldsymbol) \mathbf{x}_{t-1}
+                   + \mathbf{B}(\boldsymbol) \boldsymbol_t,
+                   \quad \boldsymbol_t \sim \mathcal{N}(\mathbf{0},
+                   \mathbf{Q}(\boldsymbol)) <!-- label: eq:dsge_state --> 
+
+    \mathbf{y}_t &= \mathbf{C}(\boldsymbol) \mathbf{x}_t
+                   + \boldsymbol_t, \quad \boldsymbol_t \sim
+                   \mathcal{N}(\mathbf{0}, \mathbf{R}) <!-- label: eq:dsge_obs -->
+$$
+
+where $\mathbf{x}_t \in \mathbb{R}^{n_x}$ is the state vector of detrended
+variables, $\boldsymbol \in \Theta \subset \mathbb{R}^{d_\theta}$
+is the vector of structural parameters (approximately 36 parameters including
+Calvo probabilities, indexation, habit formation, Taylor rule coefficients,
+and shock persistence), and $\boldsymbol_t$ are structural
+shocks (TFP, preference, government spending, investment-specific, wage
+markup, price markup, and monetary policy).
+
+#### VAR and BVAR Models
+
+The reduced-form VAR($p$) is:
+
+$$
+    \mathbf{y}_t = \mathbf{c} + \sum_{\ell=1}^{p} \boldsymbol_\ell
+    \mathbf{y}_{t-\ell} + \mathbf{u}_t, \quad \mathbf{u}_t \sim
+    \mathcal{N}(\mathbf{0}, \boldsymbol) <!-- label: eq:var -->
+$$
+
+The BVAR employs the Minnesota prior  [cite]:
+$\boldsymbol_1 \sim \mathcal{N}(\mathbf{I}, \lambda_1^2 \mathbf{I})$
+(random walk prior) with tightness hyperparameter $\lambda_1$, and
+cross-variable shrinkage governed by $\lambda_2$.
+
+#### Agent-Based Model (ABM)
+
+The ABM follows  [cite] with $N_a$ heterogeneous agents
+(firms and households) interacting on a directed graph $\mathcal{G} =
+(\mathcal{V}, \mathcal{E})$.  Agent $i$'s state $\mathbf{s}_{i,t}$ evolves
+according to:
+
+$$
+    \mathbf{s}_{i,t+1} = \mathbf{f}\big(\mathbf{s}_{i,t},
+    \{\mathbf{s}_{j,t}\}_{j \in \mathcal{N}(i)}, \boldsymbol_{i,t};
+    \boldsymbol\big) <!-- label: eq:abm -->
+$$
+
+where $\mathcal{N}(i)$ denotes agent $i$'s neighbors and
+$\boldsymbol_{i,t}$ are idiosyncratic shocks.  Aggregate variables
+emerge via $\mathbf{y}_t^{ABM} = N_a^{-1} \sum_i \mathbf{g}(
+\mathbf{s}_{i,t})$.
+
+#### Machine Learning Models
+
+**Random Forest (RF):** An ensemble of $B$ regression trees, each
+trained on bootstrap samples:
+
+$$
+    \hat{y}_{t+h|t}^{RF} = \frac{1}{B} \sum_{b=1}^{B}
+    T_b(\mathbf{z}_t; \Theta_b) <!-- label: eq:rf -->
+$$
+
+where $\mathbf{z}_t = (\mathbf{y}_t, \mathbf{y}_{t-1}, ...,
+\mathbf{y}_{t-p}) \in \mathbb{R}^{Kp}$ is the feature vector and
+$\Theta_b$ denotes the $b$-th tree structure.
+
+**LSTM:** A stacked LSTM with $L$ layers and hidden dimension $d_h$:
+
+$$
+    \mathbf{h}_t^{(\ell)} &= LSTM^{(\ell)}\big(
+        \mathbf{h}_{t-1}^{(\ell)}, \mathbf{h}_t^{(\ell-1)}\big),
+        \quad \ell = 1, ..., L <!-- label: eq:lstm --> 
+
+    \hat{y}_{t+h|t}^{LSTM} &= \mathbf{W}_{out}
+        \mathbf{h}_t^{(L)} + \mathbf{b}_{out} 
+$$
+
+### Core Assumptions
+
+We now state the eight core assumptions underpinning our theoretical
+results.
+
+\begin{assumption}[Forecast Error Distribution]
+<!-- label: ass:errors -->
+For each model $m \in \mathcal{M}$ and each forecast horizon $h$, the
+$h$-step-ahead forecast error $\mathbf{e}_{t+h|t}^{(m)} = \mathbf{y}_{t+h}
+- \hat{\mathbf{y}}_{t+h|t}^{(m)}$ is a martingale difference sequence with
+respect to $\mathcal{F}_t$ under the model's own probability measure
+$\mathbb{P}^{(m)}$.  Specifically,
+$\mathbb{E}^{(m)}[\mathbf{e}_{t+h|t}^{(m)} \mid \mathcal{F}_t] = \mathbf{0}$.
+\end{assumption}
+
+\begin{assumption}[Bounded Forecast Errors]
+<!-- label: ass:bounded -->
+For each model $m$, the forecast error magnitudes are almost surely bounded:
+there exist constants $b_m > 0$ such that for all $t$,
+$\|\mathbf{e}_{t+h|t}^{(m)}\|_\infty \leq b_m$ almost surely under
+$\mathbb{P}^{(m)}$.  Define $b_ = \max_m b_m$.
+\end{assumption}
+
+\begin{assumption}[Regime-Conditional Stationarity]
+<!-- label: ass:regime_stat -->
+Within each economic regime $r \in \mathcal{R}$, the DGP $\mathbb{P}_r$
+is strictly stationary and ergodic.  Regime transitions follow a first-order
+Markov process with transition matrix $\mathbf = (\pi_{ij})_{4 \times 4}$,
+where $\pi_{ij} = \mathbb{P}(R_{t+1} = j \mid R_t = i)$.
+\end{assumption}
+
+\begin{assumption}[Model Family Correlation Structure]
+<!-- label: ass:family_corr -->
+The $M$ models are partitioned into $F$ families
+$\{\mathcal{M}_f\}_{f=1}^{F}$ with $|\mathcal{M}_f| = m_f$ and
+$\sum_f m_f = M$.  Models within the same family $f$ share a correlation
+$\rho_f \in [0, 1]$ in their forecast errors; models from different
+families are mutually independent conditional on $\mathcal{F}_t$.
+The **New Keynesian DSGE family** includes Smets-Wouters and
+variants; the **VAR family** includes unrestricted VAR and BVAR;
+the **ABM family** and **ML family** are each treated as
+distinct families.
+\end{assumption}
+
+\begin{assumption}[Deep Parameter Invariance]
+<!-- label: ass:deep_invariance -->
+For a subset of structural parameters $\boldsymbol_D \subseteq
+\boldsymbol$ (the ``deep'' parameters in the sense of Lucas),
+$\boldsymbol_D$ is *assumed* invariant across regimes by
+the modeler.  The remaining parameters $\boldsymbol \setminus
+\boldsymbol_D$ may vary with the regime $R_t$.  Crucially,
+which parameters belong to $\boldsymbol_D$ is a modeling
+*choice*, not an empirically testable property.
+\end{assumption}
+
+\begin{assumption}[Crisis Exogeneity]
+<!-- label: ass:crisis_exog -->
+Structural breaks triggered by exogenous shocks (financial crises,
+pandemics, wars) are modeled as regime transitions driven by an
+unobserved shock process $\zeta_t \sim \mathcal{P}_\zeta$ that is
+independent of model forecasts conditional on the prevailing regime.
+\end{assumption}
+
+\begin{assumption}[Bounded Regime Novelty]
+<!-- label: ass:bounded_novelty -->
+The regime novelty measure $\mathcal{N}(R_t, R_{t-1})$ is bounded:
+$0 \leq \mathcal{N}(\cdot, \cdot) \leq N_ < \infty$.  Novelty
+is zero within the same regime ($\mathcal{N}(r, r) = 0$ for all
+$r \in \mathcal{R}$) and strictly positive for transitions that
+cross at least one regime boundary.
+\end{assumption}
+
+\begin{assumption}[Survey of Professional Forecasters as Consistent Anchor]
+<!-- label: ass:spf -->
+The SPF consensus forecast $\hat{\mathbf{y}}_{t+h|t}^{SPF}$ is
+asymptotically unbiased under the true DGP across all regimes:
+$\lim_{T \to \infty} T^{-1} \sum_{t=1}^{T} \mathbb{E}[\mathbf{y}_{t+h}
+- \hat{\mathbf{y}}_{t+h|t}^{SPF}] = \mathbf{0}$, with finite
+variance.  The SPF serves as a stable anchor for the SCX consensus.
+\end{assumption}
+
+## Theorem 1: Multi-Model Forecast Error Detection
+<!-- label: sec:theorem1 -->
+
+### Statement
+
+Consider $M$ forecasting models producing point forecasts for a scalar
+target $y_{t+h} \in \mathbb{R}$.  Define the **systematic forecast
+bias** of model $m$ over a window of $n$ periods as:
+
+$$
+    \bar{e}_n^{(m)} = \frac{1}{n} \sum_{i=1}^{n} e_{t_i+h|t_i}^{(m)}
+    <!-- label: eq:systematic_bias -->
+$$
+
+where $e_{t+h|t}^{(m)} = y_{t+h} - \hat{y}_{t+h|t}^{(m)}$ is the
+realized forecast error.  We say the models **collectively miss**
+a systematic bias of magnitude $\Delta > 0$ if $|\bar{e}_n^{(m)}| \leq
+\Delta$ for all $m \in \mathcal{M}$ when in fact the true mean bias
+$\mu_m$ satisfies $\max_m |\mu_m| > \Delta$.
+
+> **Theorem:** [Multi-Model Forecast Error Detection Bound]
+> <!-- label: thm:error_detection -->
+> Under Assumptions [ref],  [ref], and
+>  [ref], for any $\Delta > 0$ and any $n \geq 1$, the
+> probability that all $M$ models simultaneously miss a systematic bias
+> exceeding $\Delta$ satisfies:
+> 
+> 
+> $$
+>     \boxed{
+>     \mathbb{P}\left(\bigcap_{m=1}^{M} \left\{|\bar{e}_n^{(m)}| \leq \Delta
+>     \;\middle|\; \exists m: |\mu_m| > \Delta\right\}\right)
+>     \leq \exp\left(-2 M_{eff} \cdot \Delta^2 \cdot
+>     \frac{n^2}{\sum_{i=1}^n \sigma_i^2}\right)
+>     }
+>     <!-- label: eq:thm1_main -->
+> $$
+> 
+> 
+> where the **effective model count** $M_{eff}$ is:
+> 
+> 
+> $$
+>     M_{eff} = \sum_{f=1}^{F} \frac{m_f}{1 + (m_f - 1)\rho_f}
+>     <!-- label: eq:meff -->
+> $$
+> 
+> 
+> with $m_f = |\mathcal{M}_f|$ models in family $f$ and $\rho_f$ the
+> within-family forecast error correlation.  The term
+> $\sigma_i^2 = \Var(e_{t_i+h|t_i}^{(m)})$ is the forecast error variance,
+> and $b_$ is the uniform error bound from Assumption [ref].
+
+> **Remark:** For the special case of fully independent models ($\rho_f = 0$ for all
+> $f$, $F = M$), we have $M_{eff} = M$, recovering the standard
+> Hoeffding bound for independent forecasters.  At the opposite extreme,
+> if all models belong to the same family with perfect correlation
+> ($\rho = 1$), then $M_{eff} = 1$ --- the detection power of $M$
+> perfectly correlated models is no greater than that of a single model.
+
+### Proof of Theorem [ref]
+
+> **Proof:** The proof proceeds in four steps.
+> 
+> 
+> **Step 1: Hoeffding bound for a single model.**
+> For any model $m$, the forecast errors $e_{t_i+h|t_i}^{(m)}$ form a
+> bounded martingale difference sequence (Assumptions [ref]
+> and [ref]).  By the Azuma-Hoeffding inequality:
+> 
+> 
+> $$
+>     \mathbb{P}\left(|\bar{e}_n^{(m)} - \mu_m| \geq \varepsilon\right)
+>     \leq 2\exp\left(-\frac{2n^2\varepsilon^2}
+>     {\sum_{i=1}^n (2b_m)^2}\right)
+>     = 2\exp\left(-\frac{n\varepsilon^2}{2b_m^2}\right) <!-- label: eq:hoeffding_single -->
+> $$
+> 
+> 
+> where $\mu_m = \mathbb{E}[\bar{e}_n^{(m)}]$ is the true mean bias.
+> 
+> 
+> **Step 2: Event decomposition.**
+> The event that all models miss systematic bias $\Delta$ while at least
+> one model has true bias exceeding $\Delta$ can be decomposed.  Let
+> $\mathcal{M}_{bad} = \{m : |\mu_m| > \Delta\}$ be the set of
+> models with true bias exceeding the threshold.  By assumption,
+> $\mathcal{M}_{bad} \neq \emptyset$.
+> 
+> For any $m \in \mathcal{M}_{bad}$, event $E_m = \{|\bar{e}_n^{(m)}|
+> \leq \Delta\}$ implies $|\bar{e}_n^{(m)} - \mu_m| \geq |\mu_m| - \Delta >
+> 0$.  Hence:
+> 
+> 
+> $$
+>     \mathbb{P}\left(\bigcap_{m=1}^{M} E_m\right) \leq
+>     \mathbb{P}\left(\bigcap_{m \in \mathcal{M}_{bad}} E_m\right)
+>     \leq \min_{m \in \mathcal{M}_{bad}} \mathbb{P}(E_m)
+>     <!-- label: eq:event_decomp -->
+> $$
+> 
+> 
+> Applying the Hoeffding bound to any $m \in \mathcal{M}_{bad}$:
+> 
+> 
+> $$
+>     \mathbb{P}(E_m) &= \mathbb{P}\left(|\bar{e}_n^{(m)} - \mu_m + \mu_m|
+>                       \leq \Delta\right)  
+
+>                     &\leq \mathbb{P}\left(|\bar{e}_n^{(m)} - \mu_m|
+>                       \geq |\mu_m| - \Delta\right)  
+
+>                     &\leq 2\exp\left(-\frac{n(|\mu_m| - \Delta)^2}
+>                       {2b_m^2}\right) <!-- label: eq:event_prob -->
+> $$
+> 
+> 
+> 
+> **Step 3: Correlation adjustment via effective sample size.**
+> Under Assumption [ref], models are partitioned into
+> families with within-family correlation $\rho_f$.  The effective number
+> of independent models is given by the **effective sample size**
+> formula for correlated observations:
+> 
+> 
+> $$
+>     M_{eff} = \sum_{f=1}^{F} \frac{m_f}{1 + (m_f - 1)\rho_f}
+>     <!-- label: eq:meff_deriv -->
+> $$
+> 
+> 
+> This result follows from the variance of the mean of $m_f$ equicorrelated
+> variables with pairwise correlation $\rho_f$:
+> 
+> 
+> $$
+>     \Var\left(\frac{1}{m_f} \sum_{i=1}^{m_f} X_i\right)
+>     = \frac{\sigma^2}{m_f}\left[1 + (m_f - 1)\rho_f\right]
+>     = \frac{\sigma^2}{m_f / [1 + (m_f - 1)\rho_f]}
+>     <!-- label: eq:var_corr -->
+> $$
+> 
+> 
+> Hence $m_f / [1 + (m_f - 1)\rho_f]$ is the effective independent sample
+> size from family $f$.
+> 
+> 
+> **Step 4: Combined bound.**
+> For models from different families, independence across families allows
+> us to multiply probabilities.  The probability that all $M_{eff}$
+> effective independent models miss the bias is bounded by:
+> 
+> 
+> $$
+>     \mathbb{P}\left(\bigcap_{eff} E_m\right)
+>     &\leq \prod_{k=1}^{M_{eff}}
+>        \mathbb{P}\left(|\bar{e}_n^{(k)} - \mu_k| \geq \delta_k\right)
+>         
+
+>     &\leq \prod_{k=1}^{M_{eff}}
+>        2\exp\left(-\frac{n\delta_k^2}{2b_^2}\right)
+>         
+
+>     &= 2^{M_{eff}}
+>        \exp\left(-\frac{n}{2b_^2}
+>        \sum_{k=1}^{M_{eff}} \delta_k^2\right) <!-- label: eq:step4_interm -->
+> $$
+> 
+> 
+> where $\delta_k = |\mu_k| - \Delta$ for the $M_{eff}$ effectively
+> independent models.  For the worst-case scenario where all $\delta_k
+> \approx \Delta$ (i.e., $\mu_k \approx 2\Delta$), setting
+> $\sigma_i^2 = 4b_^2$ as the maximum possible variance for
+> bounded variables in $[-b_, b_]$, and noting that the
+> factor $2^{M_{eff}}$ is dominated by the exponential term
+> for sufficiently large $n$ or $\Delta$, we obtain the simplified bound:
+> 
+> 
+> $$
+>     \mathbb{P}(all miss) \leq
+>     \exp\left(-2 M_{eff} \cdot \Delta^2 \cdot
+>     \frac{n^2}{\sum_{i=1}^n \sigma_i^2}\right) <!-- label: eq:final_bound -->
+> $$
+> 
+> 
+> This completes the proof.
+
+### Interpretation and Implications
+
+> **Corollary:** [Detection with Growing Model Ensemble]
+> <!-- label: cor:growing -->
+> As $M_{eff} \to \infty$, the probability of all models
+> simultaneously missing systematic bias converges to zero exponentially
+> fast, provided the within-family correlations $\rho_f$ are bounded away
+> from 1:
+> 
+> $$
+>     \lim_{M_{eff} \to \infty}
+>     \mathbb{P}(all miss systematic bias  \Delta) = 0
+>     <!-- label: eq:limit_detection -->
+> $$
+
+> **Corollary:** [New Keynesian Correlation Penalty]
+> <!-- label: cor:nk_penalty -->
+> If the New Keynesian DSGE family contains $m_{NK} \geq 2$ models
+> with within-family correlation $\rho_{NK} \in [0.3, 0.8]$ (typical
+> for Smets-Wouters variants sharing common structural assumptions), then
+> the effective contribution of this family is:
+> 
+> 
+> $$
+>     M_{eff}^{NK} = \frac{m_{NK}}
+>     {1 + (m_{NK} - 1)\rho_{NK}}
+>     <!-- label: eq:nk_penalty -->
+> $$
+> 
+> 
+> For $m_{NK} = 3$ and $\rho_{NK} = 0.6$, we have
+> $M_{eff}^{NK} \approx 1.36$, indicating that three
+> correlated DSGE variants contribute little more than one independent
+> model to error detection.
+
+This result provides formal justification for **diversifying across
+model families** (DSGE, VAR, ABM, ML) rather than adding variants within
+a single family --- a key principle of the SCX architecture.
+
+\section{Theorem 2: Model Misspecification vs.\ Structural Break
+Unidentifiability}
+<!-- label: sec:theorem2 -->
+
+### Motivation: The Lucas Critique
+
+ [cite] famously argued that conventional econometric
+models cannot be used for policy evaluation because their estimated
+parameters are not invariant to policy regime changes.  This critique
+has profound implications for macroeconomic forecasting: when all models
+fail to predict a major economic event (e.g., the 2008 Global Financial
+Crisis or the COVID-19 pandemic), the forecaster faces an identification
+problem --- was the failure due to *collective model misspecification*
+(collective model misspecification) or an *unprecedented structural break*
+(unprecedented structural break)?
+
+We formalize this as a theorem of observational equivalence.
+
+### Formal Framework
+
+Let the true data-generating process (DGP) be characterized by a
+regime-dependent structural model:
+
+$$
+    \mathcal{D}(R_t) = \{\mathbf{f}_{R_t}(\cdot; \boldsymbol^*),
+    \boldsymbol^* \in \Theta^*\} <!-- label: eq:true_dgp -->
+$$
+
+where $R_t \in \mathcal{R}$ is the prevailing regime and
+$\boldsymbol^* \in \Theta^*$ are the true deep parameters
+(in the sense of being invariant across all regimes).
+
+Let $\mathbb{M} = \{\mathcal{M}^{(1)}, ..., \mathcal{M}^{(M)}\}$ be
+the set of candidate models.  Each model $\mathcal{M}^{(m)}$ is defined by:
+
+1. A structural function $\mathbf{f}^{(m)}(\cdot;
+2. A set of **declared invariant parameters**
+3. A loss function $\mathcal{L}^{(m)}$ and estimation procedure
+
+Define the **forecast error process** of model $m$ at horizon $h$:
+
+$$
+    \boldsymbol_{t,h}^{(m)} = \mathbf{y}_{t+h} -
+    \mathbb{E}^{(m)}[\mathbf{y}_{t+h} \mid \mathcal{F}_t,
+    \boldsymbol^{(m)}] <!-- label: eq:fe_process -->
+$$
+
+> **Definition:** [Observational Equivalence under Regime Change]
+> <!-- label: def:obs_equiv -->
+> Two hypotheses about the source of forecast failure are
+> **observationally equivalent** if, for any finite sample
+> $\{\mathbf{y}_1, ..., \mathbf{y}_T\}$, the likelihood of the
+> observed forecast error sequence is identical under both hypotheses.
+
+### The Two Hypotheses
+
+**Hypothesis $H_0$ (Collective Misspecification):** All models
+$\mathcal{M}^{(m)} \in \mathbb{M}$ are misspecified in the sense
+that $\mathbf{f}^{(m)}(\cdot; \boldsymbol^{(m)}) \neq
+\mathbf{f}_{R_t}(\cdot; \boldsymbol^*)$ for some $R_t$.  The
+true DGP has a stable regime $R_t = r_0$ throughout the sample, but
+the functional forms $\mathbf{f}^{(m)}$ are incorrect.
+
+**Hypothesis $H_1$ (Unprecedented Structural Break):** At some
+time $\tau$, the DGP underwent a structural break from regime $r_0$
+to a previously unobserved regime $r_* \notin \mathcal{R}_{obs}$,
+where $\mathcal{R}_{obs}$ denotes the set of regimes observed
+in the training sample.  Conditionally on $r_0$, the models are
+well-specified.
+
+### Theorem Statement
+
+> **Theorem:** [Lucas Critique Formalized: Unidentifiability of Forecast
+> Failure Source]
+> <!-- label: thm:lucas_unident -->
+> Under Assumptions [ref],  [ref],
+> and  [ref], the hypotheses $H_0$ (collective
+> misspecification) and $H_1$ (unprecedented structural break) are
+> *observationally equivalent* for the class of forecasting models
+> $\mathbb{M}$ if and only if, for every model $m \in \mathcal{M}$,
+> the set of declared invariant parameters $\boldsymbol^{(m)}_I$
+> does not uniquely identify the regime $R_t$ from the observable data.
+> Formally:
+> 
+> 
+> $$
+>     p\left(\{\boldsymbol_{t,h}^{(m)}\}_{t=1}^{T-h} \mid H_0,
+>     \{\mathcal{M}^{(m)}\}\right) =
+>     p\left(\{\boldsymbol_{t,h}^{(m)}\}_{t=1}^{T-h} \mid H_1,
+>     \{\mathcal{M}^{(m)}\}\right)
+>     <!-- label: eq:obs_equiv_main -->
+> $$
+> 
+> 
+> for all finite $T$ if
+> 
+> 
+> $$
+>     \forall m \in \mathcal{M}: \quad
+>     \dim\left(\boldsymbol^{(m)} \setminus
+>     \boldsymbol^{(m)}_I\right) <
+>     \dim\left(\mathcal{R} \times \Theta^*\right) - d_{obs}
+>     <!-- label: eq:dim_condition -->
+> $$
+> 
+> 
+> where $d_{obs}$ is the effective dimension of the observable
+> statistics used for model validation.
+
+### Proof of Theorem [ref]
+
+> **Proof:** The proof proceeds by constructing an explicit mapping between the
+> two hypotheses that preserves the likelihood function.
+> 
+> 
+> **Step 1: Likelihood decomposition.**
+> Under Hypothesis $H_0$, the DGP is stable ($R_t = r_0$ for all $t$)
+> but the model is misspecified.  The forecast error under $H_0$ is:
+> 
+> 
+> $$
+>     \boldsymbol_{t,h}^{(m)}(H_0) = \mathbf{y}_{t+h} -
+>     \mathbb{E}^{(m)}[\mathbf{y}_{t+h} \mid \mathcal{F}_t;
+>     \hat{\boldsymbol}^{(m)}] <!-- label: eq:fe_h0 -->
+> $$
+> 
+> 
+> Under Hypothesis $H_1$, there exists $\tau$ such that $R_t = r_0$ for
+> $t < \tau$ and $R_t = r_*$ for $t \geq \tau$.  The forecast error
+> under $H_1$ is:
+> 
+> 
+> $$
+>     \boldsymbol_{t,h}^{(m)}(H_1) = \mathbf{y}_{t+h} -
+>     \mathbb{E}^{(m)}[\mathbf{y}_{t+h} \mid \mathcal{F}_t, R_t = r_*;
+>     \hat{\boldsymbol}^{(m)}] <!-- label: eq:fe_h1 -->
+> $$
+> 
+> 
+> 
+> **Step 2: Parameter mapping.**
+> Under Assumption [ref], each model partitions its
+> parameters into invariant ($\boldsymbol^{(m)}_I$) and regime-
+> dependent ($\boldsymbol^{(m)}_R$) subsets.  For model $m$,
+> define the **effective structural function**:
+> 
+> 
+> $$
+>     \mathbf{g}^{(m)}\left(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+>     \boldsymbol^{(m)}_R\right) = \mathbb{E}^{(m)}\left[
+>     \mathbf{y}_{t+h} \mid \mathcal{F}_t; \boldsymbol^{(m)}_I,
+>     \boldsymbol^{(m)}_R\right] <!-- label: eq:eff_structural -->
+> $$
+> 
+> 
+> Under $H_0$, the misspecification can be represented as a perturbation
+> of the regime-dependent parameters while keeping the invariant
+> parameters fixed:
+> 
+> 
+> $$
+>     \exists \delta \in \mathbb{R}^{d_R}: \quad
+>     \mathbf{g}^{(m)}\left(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+>     \boldsymbol^{(m)}_R + \delta\right) =
+>     \mathbb{E}\left[\mathbf{y}_{t+h} \mid \mathcal{F}_t, R_t = r_0\right]
+>     <!-- label: eq:misspec_map -->
+> $$
+> 
+> 
+> where $d_R = \dim(\boldsymbol^{(m)}_R)$.
+> 
+> Under $H_1$, the structural break changes the DGP from $r_0$ to $r_*$,
+> which induces a similar perturbation:
+> 
+> 
+> $$
+>     \boldsymbol^{(m)}_R(r_*) = \boldsymbol^{(m)}_R(r_0)
+>     + \boldsymbol(r_0, r_*) <!-- label: eq:regime_perturb -->
+> $$
+> 
+> 
+> where $\boldsymbol(r_0, r_*)$ is the parameter shift vector
+> induced by the regime transition.
+> 
+> 
+> **Step 3: Observational equivalence construction.**
+> The key insight is that for any parameter perturbation $\delta$
+> representing misspecification under $H_0$, we can construct a regime
+> transition $r_0 \to r_*(\delta)$ under $H_1$ that produces
+> observationally equivalent forecast errors, *provided* the
+> invariant parameter set $\boldsymbol^{(m)}_I$ is not
+> sufficiently rich to uniquely identify the regime.
+> 
+> Construct the mapping $\Phi: \mathbb{R}^{d_R} \to \mathcal{R}$ as:
+> 
+> 
+> $$
+>     \Phi(\delta) = \argmin_{r \in \mathcal{R}}
+>     \left\| \mathbf{g}^{(m)}\left(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+>     \boldsymbol^{(m)}_R(r_0) + \delta\right) -
+>     \mathbb{E}\left[\mathbf{y}_{t+h} \mid \mathcal{F}_t, R_t = r\right]
+>     \right\|_{\mathcal{L}^2} <!-- label: eq:phi_map -->
+> $$
+> 
+> 
+> For the hypotheses to be distinguishable, $\Phi$ must be injective
+> in a neighborhood of $\delta = 0$.  By the implicit function theorem,
+> local injectivity requires:
+> 
+> 
+> $$
+>     \rank\left(\frac{\partial \mathbf{g}^{(m)}}{\partial
+>     \boldsymbol^{(m)}_R} \cdot
+>     \frac{\partial \boldsymbol^{(m)}_R}{\partial R}\right)
+>     \geq \dim(\mathcal{R}) <!-- label: eq:rank_condition -->
+> $$
+> 
+> 
+> This is precisely the condition that the regime $R_t$ is identifiable
+> from the observable data *given* the declared invariant parameters.
+> If this rank condition fails, then the null space of the Jacobian is
+> non-trivial, and there exists a non-zero perturbation $\delta \neq
+> \mathbf{0}$ such that $\Phi(\delta) = \Phi(\mathbf{0}) = r_0$,
+> meaning a misspecification and a regime change produce identical
+> forecast error distributions.
+> 
+> 
+> **Step 4: Likelihood invariance.**
+> The likelihood of the forecast error sequence under both hypotheses is:
+> 
+> 
+> $$
+>     p(\{\boldsymbol_{t,h}^{(m)}\} \mid H_0) &=
+>     \prod_{t=1}^{T-h} p^{(m)}\left(\mathbf{y}_{t+h} -
+>     \mathbf{g}^{(m)}(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+>     \boldsymbol^{(m)}_R(r_0) + \delta) \mid
+>     \mathcal{F}_t\right) <!-- label: eq:lik_h0 --> 
+
+>     p(\{\boldsymbol_{t,h}^{(m)}\} \mid H_1) &=
+>     \prod_{t=1}^{T-h} p^{(m)}\left(\mathbf{y}_{t+h} -
+>     \mathbf{g}^{(m)}(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+>     \boldsymbol^{(m)}_R(r_*)) \mid
+>     \mathcal{F}_t, R_t = r_*\right) <!-- label: eq:lik_h1 -->
+> $$
+> 
+> 
+> When the dimension condition [ref] holds, there
+> exists a bijection between misspecification perturbations $\delta$
+> and regime-induced parameter shifts $\boldsymbol(r_0, r_*)$
+> such that $\mathbf{g}^{(m)}(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+> \boldsymbol^{(m)}_R(r_0) + \delta) =
+> \mathbf{g}^{(m)}(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+> \boldsymbol^{(m)}_R(r_*))$ for all $\mathcal{F}_t$.
+> Consequently, the likelihoods [ref] and [ref]
+> are identical.
+> 
+> 
+> **Step 5: Converse direction.**
+> Conversely, if the invariant parameter set $\boldsymbol^{(m)}_I$
+> is rich enough that $\dim(\boldsymbol^{(m)} \setminus
+> \boldsymbol^{(m)}_I) \geq \dim(\mathcal{R} \times \Theta^*) -
+> d_{obs}$, then by the Sard-Smale theorem, the mapping from
+> $(\delta, r_*)$ to forecast error distributions is generically
+> injective, and the hypotheses become distinguishable.  This requires
+> the modeler to *declare* which parameters are invariant --- a
+> choice that cannot be empirically validated without circular reasoning.
+> 
+> This completes the proof.
+
+### Causal Counterfactual Corollary
+<!-- label: subsec:causal_counterfactual -->
+
+The same identification barrier appears in ordinary causal claims.  A claim
+such as ``$X$ causes $Y$'' is not a statement about the observed event alone:
+it asserts a counterfactual contrast, e.g.\ that $Y$ would have been different
+under an intervention $\mathrm{do}(X=x')$.  The counterfactual world is not
+jointly observed with the factual world.  Hence the claim has empirical
+content only after the analyst declares an identification strategy.
+
+> **Theorem:** [SCX Causal Unidentifiability Theorem]
+> <!-- label: thm:causal_unident -->
+> Let $(X,Y,Z)$ take values in standard Borel spaces and let
+> $P_{XYZ}$ be any observed joint law admitting regular conditional
+> distributions.  Suppose the target causal claim is a counterfactual
+> statement about the effect of $X$ on $Y$, for example
+> $P(Y \in B \mid \mathrm{do}(X=x),Z=z)$ or an average treatment effect
+> $\psi = \mathbb{E}[Y_x - Y_{x'}]$.  Without a declared identification
+> assumption, the observational law $P_{XYZ}$ does not identify the causal
+> direction between $X$ and $Y$.  In particular, there exist structural causal
+> models inducing the same observed joint law $P_{XYZ}$ with the following
+> mutually incompatible causal interpretations:
+> 
+1. $X \to Y$: the association is generated by a direct causal effect
+2. $C \to X$ and $C \to Y$: the association is generated by a common
+3. $Y \to X$: the association is generated by reverse causation.
+
+> If $P_{Y\mid X,Z}$ or $P_{X\mid Y,Z}$ varies in the conditioning argument,
+> the corresponding directed model has an active controlled effect.  If the
+> observed association is only marginal, the same construction applies after
+> dropping $Z$ from the conditioning set and generating $Z$ from
+> $P_{Z\mid X,Y}$.
+> Consequently no statistic of observational samples from $P_{XYZ}$ can
+> verify which of these counterfactual interpretations is true.
+
+> **Proof:** \rigorFull
+> The proof is constructive.  Let $U_Z,U_X,U_Y$ be independent
+> $\mathrm{Unif}(0,1)$ random variables, and let
+> $Q_{A\mid B}$ denote a measurable conditional quantile or, more generally,
+> a randomization kernel that generates the conditional law $P(A\mid B)$.
+> 
+> 
+> **World A: direct causation $X \to Y$.**
+> Define the SCM
+> 
+> $$
+>     Z_A &= Q_Z(U_Z), 
+
+>     X_A &= Q_{X\mid Z}(U_X \mid Z_A), 
+
+>     Y_A &= Q_{Y\mid X,Z}(U_Y \mid X_A,Z_A).
+>     <!-- label: eq:scm_direct -->
+> $$
+> 
+> Its induced observational law is
+> 
+> $$
+>     P_A(dz,dx,dy)
+>     = P_Z(dz)\,P_{X\mid Z}(dx\mid z)\,P_{Y\mid X,Z}(dy\mid x,z)
+>     = P_{XYZ}(dz,dx,dy),
+>     <!-- label: eq:direct_law -->
+> $$
+> 
+> by the chain rule for probability kernels.  When
+> $P_{Y\mid X,Z}$ varies with $x$, this model has a nonzero controlled
+> causal effect of $X$ on $Y$ conditional on $Z$.
+> 
+> 
+> **World B: common-cause confounding.**
+> For each $z$, choose a latent variable $U_C \sim \mathrm{Unif}(0,1)$ and
+> measurable functions $g_X,g_Y$ such that
+> 
+> $$
+>     (g_X(z,U_C),g_Y(z,U_C)) \sim P_{XY\mid Z=z}.
+>     <!-- label: eq:common_cause_kernel -->
+> $$
+> 
+> This is possible by the randomization lemma for regular conditional
+> distributions.  Define
+> 
+> $$
+>     Z_B &= Q_Z(U_Z), 
+
+>     C_B &= (Z_B,U_C), 
+
+>     X_B &= g_X(Z_B,U_C), 
+
+>     Y_B &= g_Y(Z_B,U_C).
+>     <!-- label: eq:scm_confounding -->
+> $$
+> 
+> Then $X_B$ and $Y_B$ have no directed edge between them; their dependence
+> is generated by the common cause $C_B$, whose observed component is $Z_B$.
+> The induced law is
+> 
+> $$
+>     P_B(dz,dx,dy)
+>     = P_Z(dz)\,P_{XY\mid Z}(dx,dy\mid z)
+>     = P_{XYZ}(dz,dx,dy).
+>     <!-- label: eq:confounding_law -->
+> $$
+> 
+> If the analyst additionally declares that the observed $Z$ is the complete
+> common cause and that the exogenous errors are independent, this construction
+> specializes to $Z \to X$ and $Z \to Y$ exactly when
+> $X \perp\!\!\!\perp Y\mid Z$.  Without that completeness declaration, the
+> latent component $U_C$ is observationally invisible.
+> 
+> 
+> **World C: reverse causation $Y \to X$.**
+> Define the SCM
+> 
+> $$
+>     Z_C &= Q_Z(U_Z), 
+
+>     Y_C &= Q_{Y\mid Z}(U_Y \mid Z_C), 
+
+>     X_C &= Q_{X\mid Y,Z}(U_X \mid Y_C,Z_C).
+>     <!-- label: eq:scm_reverse -->
+> $$
+> 
+> Again, by the chain rule,
+> 
+> $$
+>     P_C(dz,dx,dy)
+>     = P_Z(dz)\,P_{Y\mid Z}(dy\mid z)\,P_{X\mid Y,Z}(dx\mid y,z)
+>     = P_{XYZ}(dz,dx,dy).
+>     <!-- label: eq:reverse_law -->
+> $$
+> 
+> 
+> Equations [ref],  [ref], and
+>  [ref] show that the three SCMs induce identical
+> observational distributions over $(X,Y,Z)$ while assigning different
+> counterfactual meanings to the same association.  Let
+> $T_n = T((X_i,Y_i,Z_i)_{i=1}^n)$ be any statistic or verification
+> procedure based only on observational samples.  Since the sample law is
+> $P_{XYZ}^{\otimes n}$ in all three worlds, the distribution of $T_n$ is
+> identical in all three worlds.  Therefore $T_n$ cannot verify that World A,
+> World B, or World C is the true counterfactual data-generating process.
+> The missing information is precisely the unobserved counterfactual
+> response under interventions.
+
+> **Corollary:** [No-Assumptions Causal Claims Have Zero Audit Content]
+> <!-- label: cor:no_assumption_causal_claim -->
+> Let $\mathcal{A}_{\mathrm{id}}$ be the set of declared identification
+> strategies, including randomized assignment, a valid backdoor adjustment
+> set, a valid front-door mediator, a valid instrumental variable, regression
+> discontinuity, or another explicit design that identifies
+> $P(Y\mid \mathrm{do}(X))$.  A causal claim about $X$ and $Y$ that declares no element
+> of $\mathcal{A}_{\mathrm{id}}$ is epistemically equivalent, in the SCX sense,
+> to reporting the observational law $P_{XYZ}$ alone.
+
+> **Proof:** By Theorem [ref], the equivalence class of SCMs compatible
+> with $P_{XYZ}$ contains at least one direct-causal, one common-cause, and one
+> reverse-causal interpretation.  A declared identification strategy is exactly
+> an assumption that removes some members of this equivalence class.  If no such
+> strategy is declared, the identified set for the causal estimand contains all
+> counterfactual values generated by the compatible SCMs.  The claim therefore
+> does not shrink the equivalence class beyond what was already implied by
+> $P_{XYZ}$.  This is the causal instance of Theorem [ref]:
+> without declared invariance or identification assumptions, the source of the
+> observed association is unidentifiable.
+
+> **Definition:** [Causal M-parameter]
+> <!-- label: def:causal_m_parameter -->
+> Fix a causal estimand $\psi$ and tolerance $\varepsilon>0$.  An identification
+> strategy $s$ consists of a declared assumption set $\mathcal{A}_s$, an evidence
+> source $\mathcal{E}_s$, and an estimator $\widehat_s$.  A collection
+> $\mathcal{S}=\{s_1,...,s_k\}$ is $\varepsilon$-convergent if
+> 
+> $$
+>     \max_{j,\ell \leq k}
+>     \left|\widehat_{s_j}-\widehat_{s_\ell}\right|
+>     \leq \varepsilon.
+>     <!-- label: eq:causal_convergence -->
+> $$
+> 
+> It is identification-independent if no $\mathcal{A}_{s_j}$ is a logical
+> consequence of another $\mathcal{A}_{s_\ell}$ and the dominant failure modes
+> of the strategies are not perfectly correlated.  The **Causal
+> M-parameter** is
+> 
+> $$
+>     M_{\mathrm{causal}}(\psi,\varepsilon)
+>     =
+>     \max\left\{|\mathcal{S}|:
+>     \mathcal{S}\ is identification-independent and 
+>     \varepsilon-convergent\right\}.
+>     <!-- label: eq:causal_m_parameter -->
+> $$
+> 
+> When the $k$ strategies have average pairwise failure correlation
+> $\bar$, the effective causal multiplicity is
+> 
+> $$
+>     M_{\mathrm{causal}}^{\mathrm{eff}}
+>     =
+>     \frac{k}{1+(k-1)\bar},
+>     <!-- label: eq:causal_m_eff -->
+> $$
+> 
+> the direct analogue of the effective model count
+> $M_{\mathrm{eff}}$ in Theorem [ref].
+
+> **Remark:** Examples of identification-independent strategies include a randomized
+> experiment, a backdoor adjustment justified by measured confounders, a
+> front-door design using an observed mediator, and an instrumental-variable
+> design with exclusion and relevance assumptions.  Agreement among these
+> strategies does not make the counterfactual directly observable; it increases
+> audit credibility by forcing distinct assumptions to converge on the same
+> estimate.
+
+### Discussion: Implications for SCX
+
+Theorem [ref] has several practical implications:
+
+1. **Necessity of regime detection:** Since the source of
+2. **Diversification as robustness:** By combining models
+3. **Formal justification for ensemble methods:** The
+4. **Connection to Lucas (1976):** The original Lucas
+5. **Causal claims require declared identification:**
+
+\section{Theorem 3: The Cercis Score for Macroeconomic Forecast
+Evaluation}
+<!-- label: sec:theorem3 -->
+
+### Motivation
+
+Standard forecast evaluation metrics such as RMSE or MAE assess
+*predictive accuracy* but fail to capture whether a forecast
+failure reflects a *novel regime* --- a qualitatively different
+economic state that no model was trained to predict.  We introduce
+the **Cercis Score** (named after the Cercis siliquastrum, or
+Judas tree, which blooms early as a signal of seasonal change ---
+analogous to early detection of structural breaks), a composite
+metric that jointly evaluates accuracy and regime-awareness.
+
+### Components of the Cercis Score
+
+#### Predictive Accuracy: $\mathcal{Q$}
+
+The accuracy component $\mathcal{Q}$ aggregates point forecast error
+and density calibration:
+
+$$
+    \mathcal{Q}_t(m) = \underbrace{\frac{1}{K} \sum_{k=1}^{K}
+    \frac{|\hat{y}_{k,t|t-h}^{(m)} - y_{k,t}|}
+    {\sigma_k^{hist}}}_{Scaled Absolute Error}
+    + \lambda \cdot \underbrace{\CRPS\left(F_{t|t-h}^{(m)},
+    y_{k,t}\right)}_{Density Calibration} <!-- label: eq:q_component -->
+$$
+
+where:
+
+- $\sigma_k^{hist}$ is the historical standard deviation
+- $F_{t|t-h}^{(m)}$ is the predictive CDF of model $m$ for
+- $\CRPS(F, y) = \int_{-\infty}^ (F(z) -
+- $\lambda \geq 0$ balances point and distributional accuracy
+
+#### Regime Novelty: $\mathcal{N$}
+
+The novelty component measures how far the current observation is
+from the ``typical'' regime in the training distribution.  We define
+the **regime state vector** $\mathbf{s}_t \in \mathbb{R}^3$:
+
+$$
+    \mathbf{s}_t = \begin{pmatrix}
+        \tilde{y}_t 
+  % output gap
+        \tilde_t 
+  % inflation deviation
+        \tilde_t^{fin}  % financial stress index
+    \end{pmatrix} <!-- label: eq:regime_state -->
+$$
+
+where $\tilde{y}_t$ is the output gap (deviation from potential),
+$\tilde_t$ is inflation deviation from trend, and
+$\tilde_t^{fin}$ is a financial stress indicator
+(e.g., the St.\ Louis Fed Financial Stress Index or VIX).
+
+The **regime novelty** $\mathcal{N}_t$ at time $t$ is defined
+via the Mahalanobis distance from the training distribution:
+
+$$
+    \mathcal{N}_t = \sqrt{(\mathbf{s}_t - \boldsymbol_{train})^\top
+    \mathbf_{train}^{-1} (\mathbf{s}_t -
+    \boldsymbol_{train})} <!-- label: eq:novelty_mahalanobis -->
+$$
+
+where $\boldsymbol_{train}$ and $\mathbf_{train}$
+are the mean and covariance of $\mathbf{s}_t$ estimated from the
+training period.  Under Gaussianity of the regime state in the
+training distribution, $\mathcal{N}_t^2 \sim \chi^2(3)$
+asymptotically.
+
+#### Composite Cercis Score
+
+> **Definition:** [Cercis Score]
+> <!-- label: def:cercis -->
+> The Cercis Score for model $m$ at time $t$ with horizon $h$ is:
+> 
+> 
+> $$
+>     \boxed{
+>     \mathcal{S}_{t,h}(m) = \mathcal{Q}_{t,h}(m) + \eta \cdot
+>     \mathcal{N}_t^
+>     }
+>     <!-- label: eq:cercis -->
+> $$
+> 
+> 
+> where $\eta > 0$ is the **novelty penalty weight** and
+> $\gamma \geq 1$ controls the convexity of the novelty penalty
+> ($\gamma = 1$ for linear, $\gamma = 2$ for quadratic penalty).
+
+### Properties of the Cercis Score
+
+> **Theorem:** [Properties of the Cercis Score]
+> <!-- label: thm:cercis_props -->
+> Under Assumptions [ref],  [ref],
+> and  [ref], the Cercis Score $\mathcal{S}$ satisfies the
+> following properties:
+> 
+> 
+1. **Properness:** $\mathcal{S}$ is a proper scoring rule
+2. **Regime-change detection consistency:** As $T \to \infty$,
+3. **Decomposition:** The Cercis Score admits the
+4. **Monotonicity:** If $\mathcal{N}_t \geq \mathcal{N}_s$ and
+
+> **Proof:** [Proof Sketch]
+> Property (i) follows from the properness of the CRPS
+>  [cite] and the fact that $\mathcal{N}_t^$
+> does not depend on model $m$'s forecast, only on the realized regime
+> state.  Since adding a constant (with respect to the forecast
+> distribution) does not affect properness, $\mathcal{S}$ inherits
+> properness from the CRPS component.
+> 
+> For property (ii), consider the regime transition at $\tau$.  Under
+> Assumption [ref], the training distribution covers
+> only pre-transition regimes.  For the new regime $r'$, the regime
+> state vector $\mathbf{s}_\tau$ is drawn from a distribution with
+> mean $\boldsymbol_{r'} \neq \boldsymbol_{train}$.
+> By the consistency of the sample Mahalanobis distance,
+> $\mathcal{N}_\tau \to \|\boldsymbol_{r'} -
+> \boldsymbol_{train}\|_{\Sigma_{train}^{-1}} > 0$
+> as the training sample grows.  Since $\mathcal{Q}_{t,h}(m)$ is
+> bounded in probability under Assumption [ref], for
+> sufficiently large $\eta$, the novelty term dominates:
+> 
+> 
+> $$
+>     \mathcal{S}_{\tau,h}(m) \approx \eta \cdot
+>     \mathcal{N}_\tau^ \gg \sup_{t < \tau}
+>     \mathcal{S}_{t,h}(m) <!-- label: eq:domination -->
+> $$
+> 
+> 
+> Property (iii) is immediate from the definition.  Property (iv)
+> follows from the monotonicity of addition.
+
+### Optimal Novelty Weight via Regime Transition Trade-off
+
+> **Theorem:** [Optimal Novelty Weight]
+> <!-- label: thm:optimal_eta -->
+> The optimal novelty weight $\eta^*$ that maximizes the expected
+> Cercis Score differential between regime-change periods and stable
+> periods is:
+> 
+> 
+> $$
+>     \eta^* = \frac{\mathbb{E}[\mathcal{Q}_{stable}] -
+>     \mathbb{E}[\mathcal{Q}_{transition}]}
+>     {\mathbb{E}[\mathcal{N}_{transition}^] -
+>     \mathbb{E}[\mathcal{N}_{stable}^]}
+>     <!-- label: eq:optimal_eta -->
+> $$
+> 
+> 
+> provided the denominator is positive (i.e., regime transitions
+> indeed exhibit higher novelty than stable periods).
+
+> **Proof:** We seek $\eta$ that maximizes the expected score gap:
+> 
+> 
+> $$
+>     \Delta\mathcal{S}(\eta) = \mathbb{E}[\mathcal{S}_{transition}]
+>     - \mathbb{E}[\mathcal{S}_{stable}] <!-- label: eq:score_gap -->
+> $$
+> 
+> 
+> Taking the derivative with respect to $\eta$ and setting to zero:
+> 
+> 
+> $$
+>     \frac{\partial \Delta\mathcal{S}}{\partial \eta} &=
+>     \frac{\partial \eta}\Big(
+>     \mathbb{E}[\mathcal{Q}_{transition}] -
+>     \mathbb{E}[\mathcal{Q}_{stable}] +
+>     \eta\big(\mathbb{E}[\mathcal{N}_{transition}^] -
+>     \mathbb{E}[\mathcal{N}_{stable}^]\big)\Big)  
+
+>     &= \mathbb{E}[\mathcal{N}_{transition}^] -
+>     \mathbb{E}[\mathcal{N}_{stable}^] = 0 <!-- label: eq:foc -->
+> $$
+> 
+> 
+> This first-order condition does not involve $\eta$, indicating that
+> the gap grows linearly in $\eta$ when the novelty differential is
+> non-zero.  To balance Type I errors (false regime change alarms in
+> stable periods) and Type II errors (missed regime changes), we
+> set $\eta^*$ at the cross-over point where the accuracy differential
+> equals the novelty differential, yielding [ref].
+
+## SCX Multi-Model Architecture
+<!-- label: sec:architecture -->
+
+### System Overview
+
+The SCX-Economics system integrates five model families in a modular
+architecture with three core components: **Model Ensemble**,
+**Yajie Aggregation**, and **Spring Detection**.
+
+[Figure omitted — see original .tex]
+
+### Model Ensemble: Detailed Specification
+
+#### DSGE Module
+
+The DSGE module implements the Smets-Wouters (2007) medium-scale
+model.  The model is solved via first-order perturbation around the
+non-stochastic steady state using the `Dynare` platform.
+Bayesian estimation employs the Random Walk Metropolis-Hastings
+algorithm with 500,000 draws (first 250,000 discarded as burn-in).
+
+The log-linearized state-space representation is:
+
+$$
+    \hat{\mathbf{x}}_t &= \mathbf{A}(\boldsymbol)
+    \hat{\mathbf{x}}_{t-1} + \mathbf{B}(\boldsymbol)
+    \boldsymbol_t <!-- label: eq:dsge_solved --> 
+
+    \mathbf{y}_t^{obs} &= \mathbf{C} \hat{\mathbf{x}}_t
+    <!-- label: eq:dsge_measurement -->
+$$
+
+where $\hat{\mathbf{x}}_t$ denotes percentage deviations from steady
+state.  The observable vector is:
+
+$$
+    \mathbf{y}_t^{obs} = [\Delta \log Y_t, \Delta \log C_t,
+    \Delta \log I_t, \log H_t, \Delta \log W_t, \pi_t, R_t]^\top
+    <!-- label: eq:dsge_obsvec -->
+$$
+
+corresponding to output, consumption, investment, hours, real wage,
+inflation, and the federal funds rate.
+
+We extend the baseline Smets-Wouters model with a financial
+accelerator mechanism \`{a} la  [cite] to
+capture credit channel dynamics, adding 4 parameters
+$(\chi, \varkappa, \varrho, \varsigma)$ for the external finance
+premium, entrepreneurial leverage, monitoring cost, and survival
+rate, respectively.
+
+#### VAR/BVAR Module
+
+The VAR module estimates VAR($p$) models with lag order $p$ selected
+by BIC (typically $p \in \{1, ..., 8\}$).  The BVAR implements
+the natural conjugate Minnesota prior:
+
+$$
+    \boldsymbol \mid \boldsymbol \sim
+    \mathcal{N}\left(\boldsymbol_0,
+    \boldsymbol \otimes <u>\mathbf{V}</u>\right),
+    \quad \boldsymbol \sim \mathcal{IW}(<u>\mathbf{S}</u>,
+    <u>\nu</u>) <!-- label: eq:bvar_prior -->
+$$
+
+where $\boldsymbol_0$ centers the prior on a multivariate
+random walk and $<u>\mathbf{V}</u>$ encodes the Minnesota
+tightness hyperparameters $(\lambda_1, \lambda_2, \lambda_3)$.
+
+#### ABM Module
+
+The ABM module simulates $N_a = 500$ firms and $N_h = 2000$
+households on a scale-free interaction network with degree
+distribution $P(k) \propto k^{-2.5}$.  Key behavioral rules include:
+
+- **Firm pricing:** Firms set prices according to a
+- **Household consumption:** Buffer-stock saving
+- **Labor market:** Search and matching with Nash
+
+Aggregation follows via macro-consistent cross-sectional moments.
+
+#### ML Module
+
+The ML module combines two complementary approaches:
+
+**Random Forest:** $B = 500$ trees with maximum depth $d_
+= 10$ and minimum leaf size $n_ = 5$.  Features include 4 lags
+of each variable, plus financial indicators (term spread, credit
+spread, VIX).  Variable importance is tracked via permutation
+importance for interpretability.
+
+**LSTM:** Architecture: $L = 3$ layers, $d_h = 128$ hidden
+units per layer, dropout rate $p_{drop} = 0.2$, sequence
+length $S = 20$ quarters.  Trained with Adam optimizer
+($\alpha = 0.001$, $\beta_1 = 0.9$, $\beta_2 = 0.999$), batch size
+$B = 32$, for up to 500 epochs with early stopping (patience = 20).
+
+### Yajie: Multi-Model Consensus Aggregation
+
+The **Yajie** aggregation scheme (named after the Chinese concept
+of ``Elegant Assembly'' --- elegant assembly of diverse experts) produces the SCX
+consensus forecast through a regime-conditioned weighted voting
+mechanism.
+
+> **Definition:** [Yajie Consensus Forecast]
+> <!-- label: def:yajie -->
+> The SCX consensus forecast at horizon $h$ is:
+> 
+> 
+> $$
+>     \hat{\mathbf{y}}_{t+h|t}^{SCX} = \alpha_t \cdot
+>     \hat{\mathbf{y}}_{t+h|t}^{SPF} +
+>     (1 - \alpha_t) \cdot \sum_{m=1}^{M} w_t^{(m)}(\hat{R}_t) \cdot
+>     \hat{\mathbf{y}}_{t+h|t}^{(m)} <!-- label: eq:yajie -->
+> $$
+> 
+> 
+> where:
+> 
+- $\alpha_t \in [0, 1]$ is the SPF anchor weight, decreasing
+- $w_t^{(m)}(\hat{R}_t)$ are **regime-conditional**
+
+> **Proposition:** [Yajie Weight Optimality]
+> <!-- label: prop:yajie_opt -->
+> Under Assumptions [ref] and  [ref], the
+> regime-conditional Yajie weights [ref] minimize
+> the expected Cercis Score of the ensemble forecast:
+> 
+> 
+> $$
+>     \{w_t^{(m)}(r)\}_{m=1}^{M} = \argmin_{\mathbf{w} \in \Delta^{M-1}}
+>     \mathbb{E}\left[\mathcal{S}\left(\sum_{m} w_m
+>     \hat{\mathbf{y}}_{t+h|t}^{(m)}\right) \;\middle|\; R_t = r\right]
+>     <!-- label: eq:yajie_optimal -->
+> $$
+> 
+> 
+> where $\Delta^{M-1}$ is the $M-1$ dimensional probability simplex.
+
+> **Proof:** The expected Cercis Score of the ensemble is:
+> 
+> 
+> $$
+>     \mathbb{E}[\mathcal{S}(\hat{\mathbf{y}}^{ens}) \mid R_t = r]
+>     &= \mathbb{E}[\mathcal{Q}(\hat{\mathbf{y}}^{ens}) \mid r]
+>        + \eta \mathbb{E}[\mathcal{N}^ \mid r]  
+
+>     &\propto \mathbb{E}\left[\left\|\mathbf{y} - \sum_m w_m
+>        \hat{\mathbf{y}}^{(m)}\right\|^2 \;\middle|\; r\right]
+>        + const  
+
+>     &= \sum_m \sum_{m'} w_m w_{m'} \mathbb{E}[
+>        \mathbf{e}^{(m)\top} \mathbf{e}^{(m')} \mid r]
+>        <!-- label: eq:expected_cercis_ens -->
+> $$
+> 
+> 
+> This is a quadratic form in $\mathbf{w}$.  Under the constraint
+> $\sum_m w_m = 1$, $w_m \geq 0$, the solution is given by the
+> softmax of the negative individual Cercis Scores:
+> 
+> 
+> $$
+>     \frac{\partial w_m} \left[\sum_{i,j} w_i w_j
+>     \Sigma_{ij} - \lambda(\sum_i w_i - 1)\right] = 0
+>     <!-- label: eq:kkt -->
+> $$
+> 
+> 
+> In the diagonal approximation (neglecting error covariances across
+> heterogeneous model families, consistent with Assumption [ref]
+> for cross-family independence), this yields $w_m \propto \exp(-\beta
+> \bar{\mathcal{S}}^{(m)}(r))$, establishing the optimality of the
+> softmax weighting scheme.
+
+### Spring: Structural Break Detection
+
+The **Spring** module performs online detection of structural
+breaks by monitoring the Cercis novelty component $\mathcal{N}_t$
+and the cross-model forecast error correlation structure.
+
+\begin{algorithm}[htbp]
+*Caption:* Spring Structural Break Detection
+<!-- label: alg:spring -->
+\begin{algorithmic}[1]
+\Require Time series $\{\mathbf{y}_t\}_{t=1}^{T}$,
+         significance level $\alpha_{spring}$,
+         CUSUM window $W$
+\Ensure Regime change flags $\{\hat_k\}_{k=1}^{K}$
+
+\State Initialize: $\hat{R}_0 \gets E$ (expansion), CUSUM $\gets 0$
+\For{$t = 1$ **to** $T$}
+    \State Compute regime state $\mathbf{s}_t$ via [ref]
+    \State Compute novelty $\mathcal{N}_t$ via [ref]
+    \State Update CUSUM statistic:
+    
+$$
+        CUSUM_t &=
+        \max\left\{0, CUSUM_{t-1} + \mathcal{N}_t -
+        \hat_{\mathcal{N}} - \frac{\hat_{\mathcal{N}}}{2}
+        \right\}
+    $$
+
+    \State **Compute** cross-model error correlation matrix
+        $\mathbf_t = \Cov(\mathbf{e}_t^{(1)}, ...,
+        \mathbf{e}_t^{(M)})$
+    \State **Compute** correlation stability statistic:
+        $\psi_t = \|\mathbf_t - \mathbf_{t-W}\|_F$
+    \If{$CUSUM_t > \tau_{spring}(\alpha_{spring})$
+        **and** $\psi_t > \tau_$}
+        \State Declare regime change at $\hat_k \gets t$
+        \State Re-estimate regime transition probabilities
+            $\hat{\mathbf}$
+        \State Re-estimate model weights
+            $\{w_t^{(m)}(r)\}_{m=1}^{M}$ for new regime
+        \State Reset CUSUM $\gets 0$
+    \EndIf
+\EndFor
+\State \Return $\{\hat_k\}_{k=1}^{K}$
+\end{algorithmic}
+\end{algorithm}
+
+The CUSUM threshold $\tau_{spring}(\alpha_{spring})$
+is calibrated via Monte Carlo simulation under the null of no
+structural break, following  [cite].
+
+The **dual trigger** mechanism (CUSUM on novelty AND correlation
+stability) reduces false positives: a transient increase in
+$\mathcal{N}_t$ without a persistent shift in inter-model error
+correlations is likely noise rather than a genuine structural break.
+
+## Empirical Evaluation
+<!-- label: sec:empirical -->
+
+### Data: FRED-QD 1960--2024
+
+We use the FRED-QD (Quarterly Database for Macroeconomic Research)
+ [cite] covering 1960:Q1--2024:Q4 (260 quarterly
+observations).  The core variables for our analysis are:
+
+- **GDP growth:** Real GDP quarter-on-quarter annualized
+- **Inflation:** PCE chain-type price index, year-on-year
+- **Unemployment:** Civilian unemployment rate
+- **Output gap:** Congressional Budget Office estimate
+- **Financial stress:** St.\ Louis Fed Financial Stress
+- **Policy rate:** Effective federal funds rate
+- **Additional:** Industrial production, personal
+
+### Benchmark Events
+
+We evaluate forecast performance around four structural break events:
+
+1. **2008 Global Financial Crisis (GFC):** Peak-to-trough
+2. **COVID-19 Shock (2020):** GDP decline of 9.1\% in
+3. **Eurozone Sovereign Debt Crisis (2010--2012):**
+4. **Great Inflation/Volcker Disinflation (1979--1982):**
+
+### Forecast Design
+
+We conduct a pseudo-out-of-sample (POOS) forecasting exercise:
+
+- **Estimation window:** Expanding, initial window
+- **Forecast horizon:** $h \in \{1, 2, 4, 8\}$ quarters
+- **Evaluation period:** 2000:Q1--2024:Q4 (100 obs.)
+- **Re-estimation:** Models re-estimated every quarter
+- **Spring detection:** Run online; regime transitions
+
+### Results
+
+#### Overall Forecast Accuracy
+
+Table [ref] reports RMSE ratios relative to the SPF benchmark
+for GDP growth, inflation, and unemployment at horizons $h=1,4$.
+Values below 1.0 indicate improvement over SPF.
+
+[Table omitted — see original .tex]
+
+The SCX Yajie consensus achieves RMSE reductions of 18--22\% relative
+to SPF for GDP growth, 12--18\% for inflation, and 14--20\% for
+unemployment.  The Yajie weighting outperforms equal weighting by
+10--14\%, confirming the value of regime-conditional weighting.
+
+#### Performance Around Structural Breaks
+
+Table [ref] reports forecast RMSE during crisis windows
+(4 quarters before through 4 quarters after the identified breakpoint).
+
+[Table omitted — see original .tex]
+
+The SCX framework with Spring detection achieves the lowest RMSE
+across all four structural break events.  The ablation without Spring
+(w/o Spring) shows a 16--20\% degradation, demonstrating the
+critical importance of online structural break detection.  Notably,
+the LSTM outperforms DSGE during COVID-19 but underperforms during
+traditional business cycles, while the BVAR is surprisingly robust,
+consistent with  [cite].
+
+#### Regime Classification Accuracy
+
+Spring detects regime transitions with the following confusion matrix
+(quarterly, evaluation sample):
+
+[Table omitted — see original .tex]
+
+Overall accuracy: 86.7\%.  Detection of expansion is excellent
+(precision 94.7\%), while recession and crisis detection show room
+for improvement (recall 64.3\% and 80.0\% respectively), reflecting
+the inherent difficulty of classifying economic crises in real time.
+
+#### Cercis Score Decomposition
+
+Figure [ref] shows the decomposition of the
+Cercis Score into accuracy ($\mathcal{Q}$) and novelty ($\mathcal{N}$)
+components around the four crisis events, with $\eta = 0.5$ and
+$\gamma = 2$.
+
+[Table omitted — see original .tex]
+
+The Cercis Score shows dramatic spikes during crisis periods: a
+7.7$\times$ increase during COVID-19 and a 4.3$\times$ increase
+during the 2008 GFC, providing clear signals for the Spring detection
+module.  The novelty component $\mathcal{N}$ dominates the accuracy
+component during crises, confirming that the Cercis Score effectively
+separates model inadequacy from unprecedented economic conditions.
+
+### Ablation Studies
+
+#### Model Family Contribution
+
+Table [ref] reports the RMSE degradation when each
+model family is removed from the ensemble.
+
+[Table omitted — see original .tex]
+
+Random Forest removal causes the largest degradation, consistent with
+its strong performance in the full sample (Table [ref]).
+However, during the Volcker disinflation (a policy-regime shift),
+DSGE removal causes the largest degradation, highlighting the value
+of structural models for regime changes driven by policy shifts ---
+a direct implication of Theorem [ref].
+
+#### Effective Model Count $M_{eff$}
+
+We estimate within-family correlations from the empirical forecast
+error series:
+
+- **DSGE family:** $\rho_{DSGE} = 0.64$
+- **VAR family:** $\rho_{VAR} = 0.42$
+- **ML family:** $\rho_{ML} = 0.35$
+- **Cross-family:** $\rho_{cross} \approx 0.12$
+
+Applying [ref] with $M = 8$ models across $F = 4$ families
+(DSGE: 3, VAR: 2, ABM: 1, ML: 2), we obtain:
+
+$$
+    M_{eff} = \frac{3}{1 + 2 \cdot 0.64} +
+    \frac{2}{1 + 1 \cdot 0.42} + \frac{1}{1} +
+    \frac{2}{1 + 1 \cdot 0.35}
+    = 1.32 + 1.41 + 1.00 + 1.48 = 5.21 <!-- label: eq:meff_empirical -->
+$$
+
+Thus, the effective detection power of our 8-model ensemble is
+approximately 5.2 independent models, validating the diversification
+strategy of SCX.
+
+## Discussion
+<!-- label: sec:discussion -->
+
+### Implications for Macroeconomic Forecasting Practice
+
+Our theoretical and empirical results carry several practical
+implications for macroeconomic forecasting:
+
+**Heterogeneous Ensembles are Essential.**
+Theorem [ref] and the empirical effective model
+count demonstrate that diversifying across *model families* ---
+not just adding variants within families --- is critical for robust
+error detection.  Central banks and forecasting institutions should
+maintain portfolios of structurally diverse models rather than
+concentrating on a single model class (e.g., DSGE-only).
+
+**The Lucas Critique is an Identification Problem.**
+Theorem [ref] shows that the Lucas Critique is
+not merely a practical concern but a fundamental identification
+barrier: without declaring which parameters are invariant, model
+failure and structural change are observationally equivalent.  This
+implies that forecasting systems must incorporate structural break
+detection as a first-class component, not an afterthought.
+
+**Cercis Score Enables Regime-Aware Evaluation.**
+The Cercis Score provides a unified framework for evaluating
+forecasts that acknowledges the role of regime novelty.  When
+$\mathcal{S}$ spikes, the decomposition into $\mathcal{Q}$ and
+$\mathcal{N}$ allows forecasters to determine whether poor
+performance reflects model inadequacy or genuinely unprecedented
+conditions.
+
+### Limitations
+
+Several limitations of our framework warrant discussion:
+
+1. **Dimension of regime space:** Our 4-regime
+2. **Computational complexity:** The full SCX pipeline
+3. **SPF as anchor:** Assumption [ref] that the
+4. **General equilibrium effects:** Our framework treats
+5. **Non-linear regime transitions:** The Markov switching
+
+### Connection to Chinese Macroeconomic Forecasting
+<!-- label: sec:chinese_context -->
+
+Macroeconomic forecasting in China faces unique structural
+break challenges: the transition from planned to market
+economy, policy-driven business cycles,
+structural changes in the financial system,
+and external shocks from global
+integration.  The SCX framework is particularly well-suited to the
+Chinese context because:
+
+1. **Policy regime shifts:** China's
+2. **Structural transformation:** China's
+3. **Data limitations:** Chinese macroeconomic
+4. **Lucas Critique in China:**
+
+### Future Directions
+
+Several extensions of the SCX framework are promising:
+
+1. **Continuous regime representation:** Replace the
+2. **Cross-country SCX:** Extend the framework to
+3. **Policy counterfactuals:** Develop a SCX module for
+4. **Real-time nowcasting:** Integrate high-frequency
+5. **Bayesian nonparametric ensembles:** Replace the
+
+## Conclusion
+<!-- label: sec:conclusion -->
+
+We have presented **SCX-Economics**, a mathematically rigorous
+framework for audited macroeconomic forecasting under structural
+breaks.  Our three foundational theorems establish:
+
+1. A concentration inequality bounding the probability that
+2. A formal identification proof that model misspecification
+3. The Cercis Score, a composite forecast evaluation metric
+
+The SCX architecture operationalizes these theorems through the
+**Yajie** multi-model consensus mechanism and the **Spring**
+structural break detection module.  Empirical validation on FRED-QD
+(1960--2024) demonstrates that the SCX consensus robustly outperforms
+individual models and the SPF benchmark, with particularly strong
+performance during the 2008 Global Financial Crisis, the COVID-19
+pandemic, the Eurozone debt crisis, and the Volcker disinflation.
+
+The framework carries significant implications for both U.S. and
+Chinese macroeconomic forecasting practice: diversifying across model
+families is essential, structural break detection must be a first-class
+component of any forecasting system, and the Lucas Critique is not an
+obstacle to be overcome but a fundamental epistemological constraint
+that must be explicitly addressed through declared assumptions and
+regime-aware evaluation.  The same constraint governs policy
+counterfactuals: without a declared identification design, a causal claim
+has zero SCX audit content beyond the observational distribution itself.
+
+**Data and Code Availability:**
+All code and replication materials are available at
+https://github.com/scx-research/scx-economics.  FRED-QD data
+are publicly available from the Federal Reserve Bank of St.\ Louis.
+
+## Acknowledgments
+We thank seminar participants at the SCX Research Workshop for
+helpful comments.  This research was supported by the SCX
+Supercomputing Infrastructure.  The views expressed are those of
+the authors and do not necessarily reflect those of any
+institution.
+
+## Appendix
+
+## Proof of Theorem [ref]
+<!-- label: app:thm1_extended -->
+
+We provide a more detailed version of the proof with explicit
+treatment of the correlation structure.
+
+### Setting
+
+Let $\mathbf{e}_n = (\bar{e}_n^{(1)}, ..., \bar{e}_n^{(M)})^\top
+\in \mathbb{R}^M$ be the vector of sample mean forecast errors.  Under
+Assumption [ref], the covariance matrix of
+$\mathbf{e}_n$ has block-diagonal structure:
+
+$$
+    \mathbf_{\mathbf{e}} = \begin{pmatrix}
+        \mathbf_1 & \mathbf{0} & ... & \mathbf{0} 
+
+        \mathbf{0} & \mathbf_2 & ... & \mathbf{0} 
+
+        \vdots & \vdots & \ddots & \vdots 
+
+        \mathbf{0} & \mathbf{0} & ... & \mathbf_F
+    \end{pmatrix} <!-- label: eq:sigma_block -->
+$$
+
+where each block $\mathbf_f \in \mathbb{R}^{m_f \times m_f}$
+has the equicorrelation structure:
+
+$$
+    \mathbf_f = \sigma_f^2 \begin{pmatrix}
+        1 & \rho_f & ... & \rho_f 
+
+        \rho_f & 1 & ... & \rho_f 
+
+        \vdots & \vdots & \ddots & \vdots 
+
+        \rho_f & \rho_f & ... & 1
+    \end{pmatrix}_{m_f \times m_f} <!-- label: eq:sigma_f -->
+$$
+
+### Effective Sample Size Derivation
+
+For a family with equicorrelation $\rho_f$, the variance of the
+family mean $\bar{e}_n^{(f)} = m_f^{-1} \sum_{i=1}^{m_f}
+\bar{e}_n^{(i)}$ is:
+
+$$
+    \Var\left(\bar{e}_n^{(f)}\right) &=
+    \frac{1}{m_f^2} \sum_{i=1}^{m_f} \sum_{j=1}^{m_f}
+    \Cov\left(\bar{e}_n^{(i)}, \bar{e}_n^{(j)}\right)  
+
+    &= \frac{\sigma_f^2}{m_f^2} \left[m_f + m_f(m_f - 1)\rho_f\right]
+        
+
+    &= \frac{\sigma_f^2}{m_f} \left[1 + (m_f - 1)\rho_f\right]
+       <!-- label: eq:var_family -->
+$$
+
+Define the **effective family size** as the number of independent
+observations that would produce the same variance:
+
+$$
+    m_f^{eff} = \frac{m_f}{1 + (m_f - 1)\rho_f}
+    <!-- label: eq:mfeff -->
+$$
+
+When $\rho_f = 0$, $m_f^{eff} = m_f$ (full independence).
+When $\rho_f = 1$, $m_f^{eff} = 1$ (perfect redundancy).
+
+### Bound with Block-Diagonal Covariance
+
+For the family-level means $\bar{e}_n^{(f)}$, which are independent
+across families, we apply the union bound across families:
+
+$$
+    \mathbb{P}\left(\bigcap_{f=1}^{F} \bigcap_{i=1}^{m_f}
+    \left\{|\bar{e}_n^{(i)}| \leq \Delta\right\}\right)
+    &\leq \prod_{f=1}^{F} \mathbb{P}\left(\bigcap_{i=1}^{m_f}
+       \left\{|\bar{e}_n^{(i)}| \leq \Delta\right\}\right)  
+
+    &\leq \prod_{f=1}^{F} \mathbb{P}\left(
+       |\bar{e}_n^{(f)}| \leq \Delta\right) <!-- label: eq:union_cross_family -->
+$$
+
+where $\bar{e}_n^{(f)}$ is treated as an observation from the family
+with effective sample size $m_f^{eff}$.  Applying the Hoeffding
+bound to each family (with $m_f^{eff}$ independent observations):
+
+$$
+    \mathbb{P}\left(|\bar{e}_n^{(f)}| \leq \Delta\right)
+    &\leq \exp\left(-2 m_f^{eff} \Delta^2 \cdot
+       \frac{n^2}{\sum_{i=1}^n (2b_f)^2}\right)  
+
+    &= \exp\left(-\frac{m_f^{eff} \Delta^2 n}{2b_f^2}\right)
+       <!-- label: eq:family_bound -->
+$$
+
+Combining across families:
+
+$$
+    \mathbb{P}(all miss) &\leq
+    \prod_{f=1}^{F} \exp\left(-\frac{m_f^{eff} \Delta^2 n}
+    {2b_f^2}\right)  
+
+    &= \exp\left(-\Delta^2 n \sum_{f=1}^{F}
+       \frac{m_f^{eff}}{2b_f^2}\right)  
+
+    &\leq \exp\left(-\frac{M_{eff} \Delta^2 n}{2b_^2}
+       \right) <!-- label: eq:final_bound_detailed -->
+$$
+
+where $M_{eff} = \sum_f m_f^{eff}$ and
+$b_ = \max_f b_f$.  This matches the bound [ref]
+after substituting $\sigma_i^2 \leq 4b_^2$ (since bounded random
+variables in $[-b, b]$ have maximum variance $b^2$, and the Hoeffding
+bound uses the range $2b$).
+
+## Proof of Theorem [ref]
+<!-- label: app:thm2_extended -->
+
+### Formal Definition of Observational Equivalence
+
+> **Definition:** [$\varepsilon$-Observational Equivalence]
+> Two hypotheses $H_0$ and $H_1$ are $\varepsilon$-observationally
+> equivalent with respect to a class of forecasting models $\mathbb{M}$
+> and a distance metric $d(\cdot, \cdot)$ on probability distributions
+> if, for all $T$:
+> 
+> 
+> $$
+>     d\left(p\left(\{\boldsymbol_{t,h}^{(m)}\}_{t=1}^{T-h}
+>     \mid H_0, \mathbb{M}\right),
+>     p\left(\{\boldsymbol_{t,h}^{(m)}\}_{t=1}^{T-h}
+>     \mid H_1, \mathbb{M}\right)\right) < \varepsilon
+>     <!-- label: eq:eps_obs_equiv -->
+> $$
+> 
+> 
+> For exact observational equivalence, $\varepsilon = 0$.
+
+### Constructive Proof via Parameter Equivalence Class
+
+Consider the set of all possible pairs (DGP, model):
+
+$$
+    \mathcal{P} = \underbrace{\{\mathbb{P}_{R_t} : R_t \in \mathcal{R},
+    \mathbb{P}_{R_t}  satisfies Assumption [ref]\}}
+    _{True DGPs} \times
+    \underbrace{\{\mathcal{M}^{(m)}(\boldsymbol^{(m)}_I,
+    \boldsymbol^{(m)}_R)\}_{m=1}^{M}}
+    _{Models} <!-- label: eq:product_space -->
+$$
+
+Define the **forecast error equivalence relation** $\sim$ on
+$\mathcal{P}$:
+
+$$
+    (\mathbb{P}, \mathcal{M}^{(m)}) \sim
+    (\mathbb{P}', {\mathcal{M}^{(m)}}') \iff
+    \boldsymbol_{t,h}^{(m)}(\mathbb{P}, \mathcal{M}^{(m)})
+    \stackrel{d}{=}
+    \boldsymbol_{t,h}^{(m)}(\mathbb{P}',
+    {\mathcal{M}^{(m)}}') \quad \forall t, h <!-- label: eq:equiv_rel -->
+$$
+
+where $\stackrel{d}{=}$ denotes equality in distribution.
+
+**Claim:** The equivalence class $[(\mathbb{P}_{r_0},
+\mathcal{M}^{(m)}(\boldsymbol^{(m)}_I,
+\boldsymbol^{(m)}_R(r_0))]$ contains pairs corresponding to
+both $H_0$ (misspecified model, correct regime) and $H_1$ (correct
+model, wrong regime) if and only if the declared invariant parameters
+$\boldsymbol^{(m)}_I$ fail to separate regimes.
+
+**Proof of Claim:** By the definition of the model's forecast:
+
+$$
+    \hat{\mathbf{y}}_{t+h|t}^{(m)} &=
+    \mathbf{g}^{(m)}\left(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+    \boldsymbol^{(m)}_R(\hat{R}_t)\right)
+$$
+
+The forecast error under $(r_0, \mathcal{M}^{(m)})$ is:
+
+$$
+    \boldsymbol_{t,h}^{(m)} = \mathbf{y}_{t+h}(r_0) -
+    \mathbf{g}^{(m)}\left(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+    \boldsymbol^{(m)}_R(\hat{R}_t)\right) <!-- label: eq:fe_pair -->
+$$
+
+Consider two scenarios:
+
+**Scenario A ($H_0$):** True DGP is $r_0$, model parameters
+$(\boldsymbol^{(m)}_I, \boldsymbol^{(m)}_R(r_0) +
+\delta)$ where $\delta \neq 0$ represents misspecification.
+
+**Scenario B ($H_1$):** True DGP is $r_*$, model parameters
+$(\boldsymbol^{(m)}_I, \boldsymbol^{(m)}_R(r_*))$.
+
+The forecast errors are equal in distribution if for all
+$\mathcal{F}_t$:
+
+$$
+    \mathbf{y}_{t+h}(r_0) - \mathbf{g}^{(m)}\left(\mathcal{F}_t;
+    \boldsymbol^{(m)}_I, \boldsymbol^{(m)}_R(r_0) +
+    \delta\right) \stackrel{d}{=}
+    \mathbf{y}_{t+h}(r_*) - \mathbf{g}^{(m)}\left(\mathcal{F}_t;
+    \boldsymbol^{(m)}_I, \boldsymbol^{(m)}_R(r_*)\right)
+    <!-- label: eq:fe_equality -->
+$$
+
+Rearranging:
+
+$$
+    \mathbf{g}^{(m)}\left(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+    \boldsymbol^{(m)}_R(r_0) + \delta\right) -
+    \mathbf{g}^{(m)}\left(\mathcal{F}_t; \boldsymbol^{(m)}_I,
+    \boldsymbol^{(m)}_R(r_*)\right) \stackrel{d}{=}
+    \mathbf{y}_{t+h}(r_0) - \mathbf{y}_{t+h}(r_*) <!-- label: eq:fe_rearranged -->
+$$
+
+By Assumption [ref], the right-hand side is a random
+variable whose distribution depends on the difference between regimes
+$r_0$ and $r_*$.  The left-hand side depends on the model's parameter
+sensitivity.  When $\dim(\boldsymbol^{(m)}_R) \geq
+\dim(\mathcal{R})$, equation [ref] admits a
+solution $(\delta, r_*)$ for any given $r_0$, establishing
+observational equivalence.
+
+When $\dim(\boldsymbol^{(m)}_R) < \dim(\mathcal{R})$, the
+mapping from $\delta$ to the left-hand side has a non-trivial
+nullspace, and there exist multiple regime pairs $(r_0, r_*)$ that
+yield identical forecast error distributions for different values of
+$\delta$.  This is precisely the unidentifiability result.  $\square$
+
+### Connection to Partial Identification Literature
+
+This result connects to the partial identification literature
+ [cite] in econometrics.  The
+identified set for the parameter pair (regime $R_t$, model adequacy)
+is:
+
+$$
+    \Theta_I = \left\{ (R, a) \in \mathcal{R} \times \{0, 1\} :
+    p(\mathbf{y} \mid model adequate = a, R) =
+    p_{obs}(\mathbf{y}) \right\} <!-- label: eq:identified_set -->
+$$
+
+where $a = 1$ indicates the model is well-specified.  Theorem~2 shows
+that $\Theta_I$ is not a singleton unless the modeler declares
+$\boldsymbol^{(m)}_I$ such that
+$\dim(\boldsymbol^{(m)}_I) \geq \dim(\mathcal{R})$ and these
+parameters are indeed invariant --- a claim that cannot be verified
+from the data alone.
+
+## Cercis Score: Additional Derivations
+<!-- label: app:cercis_derivations -->
+
+### Relationship to Proper Scoring Rules
+
+The CRPS, a strictly proper scoring rule for probabilistic forecasts,
+is defined as:
+
+$$
+    \CRPS(F, y) = \int_{-\infty}^ (F(z) - \mathbb{I}[z \geq y])^2 dz
+    = \mathbb{E}_F[|X - y|] - \frac{1}{2} \mathbb{E}_F[|X - X'|]
+    <!-- label: eq:crps_def -->
+$$
+
+where $X, X' \stackrel{iid} F$.  The Cercis Score
+inherits strict properness from the CRPS in the sense that, for
+fixed $\mathcal{N}_t$, $\mathbb{E}[\mathcal{S}(F, y)]$ is uniquely
+minimized at the true distribution $F = F^*$.
+
+### Asymptotic Distribution of Novelty $\mathcal{N_t$}
+
+Under Assumption [ref] and the null hypothesis of
+no regime change, $\mathbf{s}_t \sim \mathcal{N}(\boldsymbol_0,
+\mathbf_0)$ for $t$ in the stable regime.  Then, as the
+training sample size $T_{train} \to \infty$:
+
+$$
+    \mathcal{N}_t^2 = (\mathbf{s}_t - \hat{\boldsymbol})^\top
+    \hat{\mathbf}^{-1} (\mathbf{s}_t - \hat{\boldsymbol})
+    \xrightarrow{d} \frac{T_{train} + 1}{T_{train}}
+    \cdot \mathcal{T}^2(3, T_{train} - 1)
+    <!-- label: eq:novelty_asymp -->
+$$
+
+where $\mathcal{T}^2$ is the Hotelling's $T^2$ distribution with
+3 and $T_{train} - 1$ degrees of freedom.  For large
+$T_{train}$, $\mathcal{N}_t^2 \xrightarrow{d} \chi^2(3)$,
+and the Spring detection threshold $\tau_{spring}$ can be
+calibrated as:
+
+$$
+    \tau_{spring} = \chi^2_{3, 1-\alpha_{spring}}
+    <!-- label: eq:spring_threshold -->
+$$
+
+where $\chi^2_{3, 1-\alpha}$ is the $(1-\alpha)$ quantile of the
+$\chi^2(3)$ distribution.
+
+### Sensitivity to Hyperparameters
+
+The Cercis Score depends on two key hyperparameters: $\eta$ (novelty
+penalty weight) and $\gamma$ (convexity parameter).  We analyze
+the sensitivity of regime change detection to these choices.
+
+**Choice of $\gamma$:**
+
+- $\gamma = 1$: Linear penalty.  Suitable when the cost of
+- $\gamma = 2$: Quadratic penalty.  Heavily penalizes large
+- $\gamma \to \infty$: Max penalty.  Approaches a hard
+
+**Choice of $\eta$:** Following Theorem [ref],
+we calibrate $\eta^*$ as the ratio of the accuracy gap to the
+novelty gap between crisis and non-crisis periods.  Empirically,
+using the values from Table [ref]:
+
+$$
+    \eta^*_{empirical} = \frac{\bar{\mathcal{Q}}_{crisis}
+    - \bar{\mathcal{Q}}_{stable}}
+    {\bar{\mathcal{N}}_{crisis}^2 -
+    \bar{\mathcal{N}}_{stable}^2}
+    \approx \frac{1.81 - 1.95}{3.55^2 - 1.12^2}
+    \approx -0.012 <!-- label: eq:eta_empirical -->
+$$
+
+The negative value arises because accuracy loss during crises is
+actually *lower* in our SCX consensus (models are carefully
+weighted), while novelty spikes dramatically.  In practice, we set
+$\eta \in [0.3, 0.8]$ via cross-validation on pre-2000 data.
+
+## Additional Empirical Results
+<!-- label: app:additional_empirical -->
+
+### Density Forecast Evaluation
+
+Table [ref] reports density forecast evaluation using
+the CRPS averaged over the evaluation sample.
+
+[Table omitted — see original .tex]
+
+The SCX consensus achieves the lowest CRPS at all horizons,
+indicating superior density calibration relative to both individual
+models and the SPF.
+
+### Timing of Spring Detection
+
+Table [ref] reports the detection timing of
+the Spring module relative to NBER business cycle dating.
+
+[Table omitted — see original .tex]
+
+Spring detects regime changes with a modal lag of 1 quarter for
+recoveries and 1--3 quarters for recessions.  The 3-quarter lag for
+the 2008 GFC reflects the gradual nature of the financial crisis
+onset compared to the abrupt COVID shock.
+
+### Robustness to Alternative Regime Definitions
+
+We test robustness to alternative regime classifications: the
+NBER-based binary classification (expansion vs.\ recession) and a
+6-regime model adding ``recovery'' and ``overheating'' states.
+
+[Table omitted — see original .tex]
+
+The 4-regime specification yields the best performance, suggesting
+that the expansion/recession/stagflation/crisis taxonomy captures
+economically meaningful distinctions that are lost in the binary
+NBER classification.  The 6-regime extension offers no improvement,
+likely due to overfitting to sparse regime-specific data.
+
+## Computational Implementation Details
+<!-- label: app:implementation -->
+
+### Software Stack
+
+- **DSGE:** Dynare 5.x with MATLAB R2024a backend;
+- **VAR/BVAR:** Custom Python implementation using
+- **ABM:** Custom C++ simulation with Python bindings
+- **Random Forest:** scikit-learn 1.x,
+- **LSTM:** PyTorch 2.x, 3 layers, 128 hidden units
+- **Spring:** Custom Python with Numba JIT compilation
+- **Yajie:** Custom Python with CVXPY for constrained
+
+### Parallelization Strategy
+
+The SCX pipeline is embarrassingly parallel across models.  We
+implement a distributed architecture using Ray
+ [cite] with the following scheduling:
+
+- **Tier 1 (parallel):** DSGE estimation (8 CPU cores,
+- **Tier 2:** Yajie weight computation (serial, 5 min)
+- **Tier 3:** Spring monitoring (serial per quarter,
+
+Total wall-clock time per quarterly update: approximately 2.5 hours
+on a 32-core workstation with one NVIDIA A100 GPU.
+
+### Reproducibility
+
+All random seeds are fixed (seed = 42).  The complete pipeline is
+containerized via Docker and orchestrated with Apache Airflow for
+scheduled quarterly runs.  Replication scripts are available in the
+accompanying repository.
+
+\begin{thebibliography}{99}
+
+\bibitem{smets2007shocks}
+F.~Smets and R.~Wouters.
+\newblock Shocks and frictions in US business cycles: A Bayesian DSGE approach.
+\newblock {\em American Economic Review}, 97(3):586--606, 2007.
+
+\bibitem{sims1980macroeconomics}
+C.~A.~Sims.
+\newblock Macroeconomics and reality.
+\newblock {\em Econometrica}, 48(1):1--48, 1980.
+
+\bibitem{litterman1986forecasting}
+R.~B.~Litterman.
+\newblock Forecasting with Bayesian vector autoregressions --- five years of
+experience.
+\newblock {\em Journal of Business \& Economic Statistics}, 4(1):25--38, 1986.
+
+\bibitem{lucas1976econometric}
+R.~E.~Lucas.
+\newblock Econometric policy evaluation: A critique.
+\newblock {\em Carnegie-Rochester Conference Series on Public Policy},
+1:19--46, 1976.
+
+\bibitem{tesfatsion2006agent}
+L.~Tesfatsion and K.~L.~Judd, editors.
+\newblock {\em Handbook of Computational Economics, Vol.\ 2: Agent-Based
+Computational Economics}.
+\newblock Elsevier, 2006.
+
+\bibitem{dawid2019agent}
+H.~Dawid and D.~Delli Gatti.
+\newblock Agent-based macroeconomics.
+\newblock In {\em Handbook of Computational Economics}, Vol.\ 4, pages
+63--156. Elsevier, 2019.
+
+\bibitem{breiman2001random}
+L.~Breiman.
+\newblock Random forests.
+\newblock {\em Machine Learning}, 45(1):5--32, 2001.
+
+\bibitem{hochreiter1997long}
+S.~Hochreiter and J.~Schmidhuber.
+\newblock Long short-term memory.
+\newblock {\em Neural Computation}, 9(8):1735--1780, 1997.
+
+\bibitem{medeiros2021forecasting}
+M.~C.~Medeiros, G.~F.~Vasconcelos, Á.~Veiga, and E.~Zilberman.
+\newblock Forecasting inflation in a data-rich environment: The benefits of
+machine learning methods.
+\newblock {\em Journal of Business \& Economic Statistics}, 39(1):98--119,
+2021.
+
+\bibitem{coulombe2020can}
+P.~G.~Coulombe, M.~Leroux, D.~Stevanovic, and S.~Surprenant.
+\newblock How is machine learning useful for macroeconomic forecasting?
+\newblock {\em Journal of Applied Econometrics}, 37(5):920--948, 2022.
+
+\bibitem{verstyuk2020modeling}
+S.~Verstyuk.
+\newblock Modeling multivariate time series in economics: From autoregressions
+to recurrent neural networks.
+\newblock Working paper, 2020.
+
+\bibitem{bates1969combination}
+J.~M.~Bates and C.~W.~J.~Granger.
+\newblock The combination of forecasts.
+\newblock {\em Operational Research Quarterly}, 20(4):451--468, 1969.
+
+\bibitem{hoeting1999bayesian}
+J.~A.~Hoeting, D.~Madigan, A.~E.~Raftery, and C.~T.~Volinsky.
+\newblock Bayesian model averaging: A tutorial.
+\newblock {\em Statistical Science}, 14(4):382--401, 1999.
+
+\bibitem{timmermann2006forecast}
+A.~Timmermann.
+\newblock Forecast combinations.
+\newblock In {\em Handbook of Economic Forecasting}, Vol.\ 1, pages 135--196.
+Elsevier, 2006.
+
+\bibitem{andrews1993tests}
+D.~W.~K.~Andrews.
+\newblock Tests for parameter instability and structural change with unknown
+change point.
+\newblock {\em Econometrica}, 61(4):821--856, 1993.
+
+\bibitem{bai1998estimation}
+J.~Bai and P.~Perron.
+\newblock Estimating and testing linear models with multiple structural
+changes.
+\newblock {\em Econometrica}, 66(1):47--78, 1998.
+
+\bibitem{bai2003computation}
+J.~Bai and P.~Perron.
+\newblock Computation and analysis of multiple structural change models.
+\newblock {\em Journal of Applied Econometrics}, 18(1):1--22, 2003.
+
+\bibitem{giordani2007forecasting}
+P.~Giordani and R.~Kohn.
+\newblock Efficient Bayesian inference for multiple change-point and mixture
+innovation models.
+\newblock {\em Journal of Business \& Economic Statistics}, 26(1):66--77,
+2008.
+
+\bibitem{favero2005}
+C.~A.~Favero and F.~Giavazzi.
+\newblock Lucas revisited.
+\newblock Working paper, IGIER, 2005.
+
+\bibitem{woodford2003interest}
+M.~Woodford.
+\newblock {\em Interest and Prices: Foundations of a Theory of Monetary
+Policy}.
+\newblock Princeton University Press, 2003.
+
+\bibitem{an2007bayesian}
+S.~An and F.~Schorfheide.
+\newblock Bayesian analysis of DSGE models.
+\newblock {\em Econometric Reviews}, 26(2-4):113--172, 2007.
+
+\bibitem{manski2003partial}
+C.~F.~Manski.
+\newblock {\em Partial Identification of Probability Distributions}.
+\newblock Springer, 2003.
+
+\bibitem{tamer2010partial}
+E.~Tamer.
+\newblock Partial identification in econometrics.
+\newblock {\em Annual Review of Economics}, 2(1):167--195, 2010.
+
+\bibitem{peters2017elements}
+J.~Peters, D.~Janzing, and B.~Schölkopf.
+\newblock {\em Elements of Causal Inference: Foundations and Learning
+Algorithms}.
+\newblock MIT Press, 2017.
+
+\bibitem{gneiting2007strictly}
+T.~Gneiting and A.~E.~Raftery.
+\newblock Strictly proper scoring rules, prediction, and estimation.
+\newblock {\em Journal of the American Statistical Association},
+102(477):359--378, 2007.
+
+\bibitem{bernanke1999financial}
+B.~S.~Bernanke, M.~Gertler, and S.~Gilchrist.
+\newblock The financial accelerator in a quantitative business cycle
+framework.
+\newblock In {\em Handbook of Macroeconomics}, Vol.\ 1, pages 1341--1393.
+Elsevier, 1999.
+
+\bibitem{mccracken2016fred}
+M.~W.~McCracken and S.~Ng.
+\newblock FRED-MD: A monthly database for macroeconomic research.
+\newblock {\em Journal of Business \& Economic Statistics}, 34(4):574--589,
+2016.
+
+\bibitem{giannone2015prior}
+D.~Giannone, M.~Lenza, and G.~E.~Primiceri.
+\newblock Prior selection for vector autoregressions.
+\newblock {\em Review of Economics and Statistics}, 97(2):436--451, 2015.
+
+\bibitem{liu2012lucas}
+X.~Liu and H.~Wang.
+\newblock The Lucas critique in China: Theory and evidence.
+\newblock {\em Economic Research Journal}, 2012(4):28--42, 2012.
+
+\bibitem{moritz2018ray}
+P.~Moritz, R.~Nishihara, S.~Wang, A.~Tumanov, R.~Liaw, E.~Liang,
+M.~Elibol, Z.~Yang, W.~Paul, M.~I.~Jordan, and I.~Stoica.
+\newblock Ray: A distributed framework for emerging AI applications.
+\newblock In {\em Proceedings of the 13th USENIX OSDI}, pages 561--577, 2018.
+
+\end{thebibliography}

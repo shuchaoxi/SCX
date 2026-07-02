@@ -1,17 +1,23 @@
-# Spring Algorithm (春季算法)
+\section{Spring Algorithm
+(春季算法)}<!-- label: spring-algorithm-ux6625ux5b63ux7b97ux6cd5 -->
 
 > **Formal name**: Spring Self-Evolving Gatekeeper (SSEG)
-> **Abbreviation**: Spring
-> **Location**: /g/Xiaogan_Supercomputing_data/SCX/theory/self_evolution/
-> **Paper target**: Nature Computational Science (Paper 2 of two-paper strategy)
+> **Abbreviation**: Spring **Location**:
+> /g/Xiaogan\_Supercomputing\_data/SCX/theory/self\_evolution/
+> **Paper target**: Nature Computational Science (Paper 2 of
+> two-paper strategy)
 
----
+<div align="center">
 
-## Why "Spring"
+\rule{0.5\linewidth}{0.5pt}
+
+</div>
+
+### Why ``Spring''<!-- label: why-spring -->
 
 Spring is the season of **resurrection** (复苏).
 
-```
+\begin{verbatim}
 Nature's Spring  →  SCX Spring Algorithm
 
   Winter dormancy     →  Structures below threshold τ_keep — dormant, not dead
@@ -20,15 +26,20 @@ Nature's Spring  →  SCX Spring Algorithm
   Each spring cycle   →  Each iteration: S_t re-evaluates M_t
   Perennial growth    →  Memory bank M_t grows monotonically, never pruned
   Deeper roots        →  DFT/experimental ground truth (physical anchor prevents drift)
-```
+\end{verbatim}
 
-**Tagline**: *"Winter does not kill — it waits for spring. Every discarded structure carries the seed of its own resurrection."*
+**Tagline**: *``Winter does not kill --- it waits for spring.
+Every discarded structure carries the seed of its own resurrection.''*
 
----
+<div align="center">
 
-## Algorithm Sketch
+\rule{0.5\linewidth}{0.5pt}
 
-```
+</div>
+
+### Algorithm Sketch<!-- label: algorithm-sketch -->
+
+\begin{verbatim}
 Spring(S_0, M_0, D_stream):
   for t = 0, 1, 2, ...:
     // Judge: score incoming data
@@ -48,24 +59,78 @@ Spring(S_0, M_0, D_stream):
       if new_score >= τ_keep:
         RESURRECT(x, y)                    // spring brings it back to life
         train_NEP(x, y)
-```
+\end{verbatim}
 
----
+<div align="center">
 
-## Core Theorems
+\rule{0.5\linewidth}{0.5pt}
 
-| Theorem | Statement | Status |
-|---------|-----------|--------|
-| **Spring-1** (Convergence) | Under C1-C7, (S_t, θ_t) → (S*, θ*) a.s. — the gatekeeper converges to a self-consistent fixed point | Formalized in `06_fixed_point_convergence.md` |
-| **Spring-2** (Completeness) | Under physical constraints (finite data, finite precision, finite compute), ∃ finite T* such that system reaches ε-approximate fixed point | Formalized in `07_completeness.md` |
+</div>
 
----
+### Core Theorems<!-- label: core-theorems -->
 
-## Two-Paper Strategy
+\begin{longtable}[]{@{}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3214}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3929}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2857}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]
+Theorem
+\end{minipage} & \begin{minipage}[b]
+Statement
+\end{minipage} & \begin{minipage}[b]
+Status
+\end{minipage} 
 
-| | Paper 1: SCX | Paper 2: Spring |
-|------|------|------|
-| **Title** | *State-Conditioned Expertise: A Complete Theory of Label Noise Detection* | *Spring: A Self-Evolving Gatekeeper with Provable Convergence* |
-| **Core** | Thm 1, 2, 3 | Spring-1, Spring-2 |
-| **Target** | JMLR / TMLR | Nature Computational Science |
-| **Story** | "Noise detection needs state-conditioning — we prove necessity + sufficiency" | "An AI that learns what 'good data' means — and brings discarded data back to life" |
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+**Spring-1** (Convergence) & Under C1-C7, (S\_t, θ\_t) → (S*,
+θ*) a.s. --- the gatekeeper converges to a self-consistent fixed point &
+Formalized in `06\_fixed\_point\_convergence.md` 
+
+**Spring-2** (Completeness) & Under physical constraints (finite
+data, finite precision, finite compute), ∃ finite T* such that system
+reaches ε-approximate fixed point & Formalized in
+`07\_completeness.md` 
+
+\end{longtable}
+
+<div align="center">
+
+\rule{0.5\linewidth}{0.5pt}
+
+</div>
+
+### Two-Paper Strategy<!-- label: two-paper-strategy -->
+
+\begin{longtable}[]{@{}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]
+\end{minipage} & \begin{minipage}[b]
+Paper 1: SCX
+\end{minipage} & \begin{minipage}[b]
+Paper 2: Spring
+\end{minipage} 
+
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+**Title** & *State-Conditioned Expertise: A Complete Theory of
+Label Noise Detection* & *Spring: A Self-Evolving Gatekeeper with
+Provable Convergence* 
+
+**Core** & Thm 1, 2, 3 & Spring-1, Spring-2 
+
+**Target** & JMLR / TMLR & Nature Computational Science 
+
+**Story** & ``Noise detection needs state-conditioning --- we prove
+necessity + sufficiency'' & ``An AI that learns what `good data' means
+--- and brings discarded data back to life'' 
+
+\end{longtable}

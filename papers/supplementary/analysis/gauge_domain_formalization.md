@@ -192,7 +192,7 @@ $$S = \sum_{(v,w) \in E} (R_v R_w - U_{vw})^2 = \sum_{(v,w) \in E} 2\left(1 - R_
 
 **(b) 部分：** 设 $W_f \neq I$。若局部规范变换可将所有 plaquette 和乐变为 $I$，则联络必然是平坦的，矛盾。因此至少一个 plaquette 的非平凡和乐必须保持，且无法被任何局部变换消除。这是 O(d) 主丛上非零曲率的基本性质。$\square$
 
-**(c) 部分：** 由 O(d) 的 Cartan 分解：任意 $W \in O(d)$ 可写为 $W = R \cdot S$，其中 $R \in SO(d)$（旋转），$S$ 为反射（若 $\det W = -1$）。旋转部分 $R$ 的特征值为 $\{e^{\pm i\theta_1}, \dots, e^{\pm i\theta_k}, 1\}$（若 $d$ 为奇数则加一个 1）。定义 $\theta_f = \max_i |\theta_i|$ 为最大旋转角。该角度度量了"标架扭曲的最大程度"。$\square$
+**(c) 部分：** 由 O(d) 的 Cartan 分解：任意 $W \in O(d)$ 可写为 $W = R \cdot S$，其中 $R \in SO(d)$（旋转），$S$ 为反射（若 $\det W = -1$）。旋转部分 $R$ 的特征值为 $\{e^{\pm i\theta_1}, ..., e^{\pm i\theta_k}, 1\}$（若 $d$ 为奇数则加一个 1）。定义 $\theta_f = \max_i |\theta_i|$ 为最大旋转角。该角度度量了"标架扭曲的最大程度"。$\square$
 
 **(d) 部分：** 此部分目前为**推测**而非定理。面积律/周长律的严格证明需要以下条件：
 - 在大图上定义概率测度（随机 O(d) 联络）
@@ -357,7 +357,7 @@ $G = \mathbb{Z}_2$，$b_1 = 1$（圆图）。$\pi_1 \cong \mathbb{Z}$。$\operat
 
 **(b) 部分：** Lens space 的构造：$L(p, q) = S^3/\mathbb{Z}_p$，其中 $\mathbb{Z}_p$ 作用于 $S^3 \subset \mathbb{C}^2$，生成元 $T(z_1, z_2) = (e^{2\pi i/p} z_1, e^{2\pi i q/p} z_2)$。所有 $L(p, q)$ 有相同同调：$H_0 = \mathbb{Z}, H_1 = \mathbb{Z}_p, H_2 = 0, H_3 = \mathbb{Z}$，但 DW 不变量可以区分 $q$ 的不同值（当选取 $G = \mathbb{Z}_p$ 时）。在 SCX 2-复形中，类似的"扭曲"可能由专家环路间的非平凡关系产生。$\square$
 
-**(c) 部分：** 当 $\omega = 1$，$\prod_f \omega(\cdots) = 1$，求和为 $Z_1 = |G|^{-|V|} |G|^{|E|} = |G|^{|E|-|V|}$。当 $\omega$ 非平凡，和乐表示不同的 $\pi_1 \to G$ 获得不同权重，配分函数捕获表示论信息。调和分量 $\ker(L_1)$ 仅计数平坦联络的数量（不加权），因此丢失了"扭曲程度"信息。$\square$
+**(c) 部分：** 当 $\omega = 1$，$\prod_f \omega(...) = 1$，求和为 $Z_1 = |G|^{-|V|} |G|^{|E|} = |G|^{|E|-|V|}$。当 $\omega$ 非平凡，和乐表示不同的 $\pi_1 \to G$ 获得不同权重，配分函数捕获表示论信息。调和分量 $\ker(L_1)$ 仅计数平坦联络的数量（不加权），因此丢失了"扭曲程度"信息。$\square$
 
 **(d) 部分：** 这是审计解释的自然推广——若两个审计拓扑不等价，存在深层差异。需要建立从 $Z_\omega$ 值差异到审计断言（"存在不可消除的系统性偏差"）的严格映射。$\square$
 
@@ -449,13 +449,13 @@ $$D_{KL}(p_\theta \| p_{\theta'}) = \psi(\theta') - \psi(\theta) - \nabla\psi(\t
 
 其中 $\psi(\theta)$ 是对数配分函数（log-partition function），$D_\psi$ 是以 $\psi$ 为势的 Bregman 散度。
 
-**定义 3.3 (Spring 训练作为"体"梯度流).** Spring 训练动力学生活在增广空间 $\tilde{\Theta} = \Theta \times \mathbb{R}_{\geq 0}$（"体" = 参数空间 + 训练时间）。"边界"在 $t = T$（训练终点）给出 Cercis Score。Spring 的 Lyapunov 函数 $L: \tilde{\Theta} \to \mathbb{R}$ 定义了体的度量结构。
+**定义 3.3 (Spring 训练作为"体"梯度流).** Spring 训练动力学生活在增广空间 $\tilde = \Theta \times \mathbb{R}_{\geq 0}$（"体" = 参数空间 + 训练时间）。"边界"在 $t = T$（训练终点）给出 Cercis Score。Spring 的 Lyapunov 函数 $L: \tilde \to \mathbb{R}$ 定义了体的度量结构。
 
 **定义 3.4 (Cercis Score 的几何解释).** 在已做规范固定（$\sum \mathbf{g}_m = 0$）后，Cercis Score 衡量所有专家预测差异向量的总范数：
 
-$$\text{Cercis} = \frac{1}{M} \sum_{m=1}^M \|\mathbf{g}_m\| = \frac{1}{M} \sum_{m=1}^M \|\hat{\theta}_m - \bar{\theta}\|$$
+$$\text{Cercis} = \frac{1}{M} \sum_{m=1}^M \|\mathbf{g}_m\| = \frac{1}{M} \sum_{m=1}^M \|\hat_m - \bar\|$$
 
-在指数族设定下，每个专家 $m$ 的预测对应自然参数的估计 $\hat{\theta}_m \in \Theta$。$\bar{\theta} = \frac{1}{M} \sum \hat{\theta}_m$ 为规范固定后的均值（规范固定条件 $\sum \mathbf{g}_m = 0$ 蕴含 $\bar{\theta}$ 是固定点）。
+在指数族设定下，每个专家 $m$ 的预测对应自然参数的估计 $\hat_m \in \Theta$。$\bar = \frac{1}{M} \sum \hat_m$ 为规范固定后的均值（规范固定条件 $\sum \mathbf{g}_m = 0$ 蕴含 $\bar$ 是固定点）。
 
 ---
 
@@ -465,27 +465,27 @@ $$\text{Cercis} = \frac{1}{M} \sum_{m=1}^M \|\mathbf{g}_m\| = \frac{1}{M} \sum_{
 **定理陈述 / Theorem Statement.**
 
 > **Theorem 3.1 (Cercis–Fisher–Geodesic Equivalence for Exponential Families).**
-> 设 $\mathcal{M} = (\Theta, g)$ 为指数族 $p_\theta$ 的 Fisher-Rao 统计流形。设专家预测给出自然参数 $\hat{\theta}_1, \dots, \hat{\theta}_M \in \Theta$。定义 $\bar{\theta} = \frac{1}{M}\sum_m \hat{\theta}_m$ 为规范固定后的参考点。$\Delta\theta_m = \hat{\theta}_m - \bar{\theta}$（满足 $\sum_m \Delta\theta_m = 0$，即规范固定条件）。则：
+> 设 $\mathcal{M} = (\Theta, g)$ 为指数族 $p_\theta$ 的 Fisher-Rao 统计流形。设专家预测给出自然参数 $\hat_1, ..., \hat_M \in \Theta$。定义 $\bar = \frac{1}{M}\sum_m \hat_m$ 为规范固定后的参考点。$\Delta\theta_m = \hat_m - \bar$（满足 $\sum_m \Delta\theta_m = 0$，即规范固定条件）。则：
 >
 > **(a) KL 散度的二阶逼近（Second-Order KL Approximation）：**
 >
-> $$D_{KL}(p_{\bar{\theta}} \| p_{\hat{\theta}_m}) = \frac{1}{2} \|\Delta\theta_m\|_g^2 + O(\|\Delta\theta_m\|^3)$$
+> $$D_{KL}(p_{\bar} \| p_{\hat_m}) = \frac{1}{2} \|\Delta\theta_m\|_g^2 + O(\|\Delta\theta_m\|^3)$$
 >
-> 其中 $\|\Delta\theta\|_g^2 = g_{ij}(\bar{\theta}) \Delta\theta^i \Delta\theta^j$ 是在参考点 $\bar{\theta}$ 处度量的 Fisher 范数。
+> 其中 $\|\Delta\theta\|_g^2 = g_{ij}(\bar) \Delta\theta^i \Delta\theta^j$ 是在参考点 $\bar$ 处度量的 Fisher 范数。
 >
 > **(b) 平方 Cercis 与平均 KL 散度成正比（Cercis² ∝ Mean KL）：**
 >
 > $$\text{Cercis}^2 = \frac{1}{M^2} \sum_{m=1}^M \|\Delta\theta_m\|^2 \;\propto\; \frac{1}{M} \sum_{m=1}^M \|\Delta\theta_m\|_g^2 + O(\max_m \|\Delta\theta_m\|^3)$$
 >
-> $$= \frac{2}{M} \sum_{m=1}^M D_{KL}(p_{\bar{\theta}} \| p_{\hat{\theta}_m}) + O(\max_m \|\Delta\theta_m\|^3)$$
+> $$= \frac{2}{M} \sum_{m=1}^M D_{KL}(p_{\bar} \| p_{\hat_m}) + O(\max_m \|\Delta\theta_m\|^3)$$
 >
 > **(c) Fisher 测地距离与 Cercis 的关系（Fisher Geodesic Bound）：**
 >
-> $$d_{FR}(\bar{\theta}, \hat{\theta}_m) = \|\Delta\theta_m\|_g + O(\|\Delta\theta_m\|^2)$$
+> $$d_{FR}(\bar, \hat_m) = \|\Delta\theta_m\|_g + O(\|\Delta\theta_m\|^2)$$
 >
 > 因此：
 >
-> $$\text{Cercis}^2 \approx \frac{1}{M^2} \sum_{m=1}^M d_{FR}^2(\bar{\theta}, \hat{\theta}_m)$$
+> $$\text{Cercis}^2 \approx \frac{1}{M^2} \sum_{m=1}^M d_{FR}^2(\bar, \hat_m)$$
 >
 > **即：Cercis² 近似等于所有专家到规范固定点的 Fisher 测地距离的均方。**
 >
@@ -497,20 +497,20 @@ $$\text{Cercis} = \frac{1}{M} \sum_{m=1}^M \|\mathbf{g}_m\| = \frac{1}{M} \sum_{
 
 | 编号 | 假设 | 必要性 |
 |------|------|--------|
-| A3.1.1 | 专家预测 $p_{\hat{\theta}_m}$ 属于同一指数族 | 若不属于，Fisher 度量无全局定义，定理需逐对推广 |
-| A3.1.2 | $\hat{\theta}_m$ 接近 $\bar{\theta}$（$\|\Delta\theta_m\|$ 小） | 二阶逼近需要。若差异大，需完整 Fisher-Rao 距离（无闭式） |
-| A3.1.3 | $\bar{\theta}$ 处的 Fisher 度量 $g_{ij}(\bar{\theta})$ 满秩 | 非奇异统计模型 |
+| A3.1.1 | 专家预测 $p_{\hat_m}$ 属于同一指数族 | 若不属于，Fisher 度量无全局定义，定理需逐对推广 |
+| A3.1.2 | $\hat_m$ 接近 $\bar$（$\|\Delta\theta_m\|$ 小） | 二阶逼近需要。若差异大，需完整 Fisher-Rao 距离（无闭式） |
+| A3.1.3 | $\bar$ 处的 Fisher 度量 $g_{ij}(\bar)$ 满秩 | 非奇异统计模型 |
 | A3.1.4 | 规范固定条件 $\sum \mathbf{g}_m = 0$ 已施加 | Cercis 的定义前提 |
 
 **证明框架 / Proof Sketch.**
 
-**(a) 部分：** 对 KL 散度做 Taylor 展开（以 $\bar{\theta}$ 为中心）：
+**(a) 部分：** 对 KL 散度做 Taylor 展开（以 $\bar$ 为中心）：
 
-$$D_{KL}(p_{\bar{\theta}} \| p_{\hat{\theta}_m}) = D_{KL}(p_{\bar{\theta}} \| p_{\bar{\theta} + \Delta\theta_m})$$
+$$D_{KL}(p_{\bar} \| p_{\hat_m}) = D_{KL}(p_{\bar} \| p_{\bar + \Delta\theta_m})$$
 
-首先，$D_{KL}(p_{\bar{\theta}} \| p_{\bar{\theta}}) = 0$。一阶导数：
+首先，$D_{KL}(p_{\bar} \| p_{\bar}) = 0$。一阶导数：
 
-$$\frac{\partial}{\partial\theta^i} D_{KL}(p_\theta \| p_{\theta'})\Big|_{\theta=\theta'} = 0$$
+$$\frac{\partial\theta^i} D_{KL}(p_\theta \| p_{\theta'})\Big|_{\theta=\theta'} = 0$$
 
 因为 $\theta = \theta'$ 时 KL 最小（为 0）。二阶导数给出 Fisher 度量：
 
@@ -518,7 +518,7 @@ $$\frac{\partial^2}{\partial\theta^i \partial\theta^j} D_{KL}(p_\theta \| p_{\th
 
 因此：
 
-$$D_{KL}(p_{\bar{\theta}} \| p_{\bar{\theta} + \Delta\theta}) = \frac{1}{2} g_{ij}(\bar{\theta}) \Delta\theta^i \Delta\theta^j + O(\|\Delta\theta\|^3)$$
+$$D_{KL}(p_{\bar} \| p_{\bar + \Delta\theta}) = \frac{1}{2} g_{ij}(\bar) \Delta\theta^i \Delta\theta^j + O(\|\Delta\theta\|^3)$$
 
 这是信息几何中的标准结果（Amari & Nagaoka, 2000, §2.4）。$\square$
 
@@ -528,11 +528,11 @@ $$\text{Cercis}^2 = \frac{1}{M^2} \sum_m \|\Delta\theta_m\|_{\text{Euc}}^2$$
 
 （使用 Euclidean 范数，因为 $\mathbf{g}_m \in \mathbb{R}^d$ 是原始位移向量。）
 
-对于 Fisher 范数 $\|\Delta\theta\|_g^2 = \Delta\theta^T g(\bar{\theta}) \Delta\theta$，在 $\bar{\theta}$ 附近，Euclidean 范数与 Fisher 范数相差一个线性变换：
+对于 Fisher 范数 $\|\Delta\theta\|_g^2 = \Delta\theta^T g(\bar) \Delta\theta$，在 $\bar$ 附近，Euclidean 范数与 Fisher 范数相差一个线性变换：
 
 $$\|\Delta\theta\|_g^2 = \|\Delta\theta\|_{\text{Euc}}^2 \cdot \frac{\Delta\theta^T g \Delta\theta}{\Delta\theta^T \Delta\theta}$$
 
-此比值在 $\Delta\theta \to 0$ 时有界（$g$ 的最小和最大特征值之间）。因此 Cercis²（Euclidean）与平均 KL 散度（Fisher）成比例：比例常数由 $g(\bar{\theta})$ 的特征值范围确定。
+此比值在 $\Delta\theta \to 0$ 时有界（$g$ 的最小和最大特征值之间）。因此 Cercis²（Euclidean）与平均 KL 散度（Fisher）成比例：比例常数由 $g(\bar)$ 的特征值范围确定。
 
 精确而言：
 
@@ -540,11 +540,11 @@ $$\text{Cercis}^2 = \frac{1}{M^2} \sum_m \|\Delta\theta_m\|_{\text{Euc}}^2 = \fr
 
 其中 $\|\Delta\theta\|_{\text{Euc}}^2 / (2 D_{KL}) \to 1/\lambda_{\text{avg}}(g)$ 当 $\Delta\theta \to 0$。$\square$
 
-**(c) 部分：** Fisher-Rao 距离沿测地线 $\gamma(s)$（$\gamma(0) = \bar{\theta}$，$\gamma(1) = \hat{\theta}_m$）定义为：
+**(c) 部分：** Fisher-Rao 距离沿测地线 $\gamma(s)$（$\gamma(0) = \bar$，$\gamma(1) = \hat_m$）定义为：
 
-$$d_{FR}(\bar{\theta}, \hat{\theta}_m) = \int_0^1 \sqrt{g_{ij}(\gamma(s)) \dot{\gamma}^i(s) \dot{\gamma}^j(s)} \, ds$$
+$$d_{FR}(\bar, \hat_m) = \int_0^1 \sqrt{g_{ij}(\gamma(s)) \dot^i(s) \dot^j(s)} \, ds$$
 
-在短距离极限（$\|\Delta\theta\|$ 小），测地线近似为直线：$\gamma(s) \approx \bar{\theta} + s \Delta\theta_m$，且 $g_{ij}(\gamma(s)) \approx g_{ij}(\bar{\theta})$。因此：
+在短距离极限（$\|\Delta\theta\|$ 小），测地线近似为直线：$\gamma(s) \approx \bar + s \Delta\theta_m$，且 $g_{ij}(\gamma(s)) \approx g_{ij}(\bar)$。因此：
 
 $$d_{FR} \approx \|\Delta\theta_m\|_g + O(\|\Delta\theta_m\|^2)$$
 
@@ -552,9 +552,9 @@ $$d_{FR} \approx \|\Delta\theta_m\|_g + O(\|\Delta\theta_m\|^2)$$
 
 **(d) 部分：** 此部分陈述 Spring 训练动力学的性质，而非可直接证明的定理。需要以下条件：
 
-- Spring 实际使用自然梯度下降（$\dot{\theta} = -\eta g^{-1}(\theta) \nabla L(\theta)$）
+- Spring 实际使用自然梯度下降（$\dot = -\eta g^{-1}(\theta) \nabla L(\theta)$）
 - 自然梯度轨迹是对 Lyapunov 函数 $L$ 的 Riemannian 梯度流的离散化
-- 轨迹长度 $\int_0^T \|\dot{\theta}(t)\|_g dt$ 与 Cercis 有关
+- 轨迹长度 $\int_0^T \|\dot(t)\|_g dt$ 与 Cercis 有关
 
 **此部分目前为推测（见阻塞声明）。** $\square$
 
@@ -563,7 +563,7 @@ $$d_{FR} \approx \|\Delta\theta_m\|_g + O(\|\Delta\theta_m\|^2)$$
 | 阻塞 | 严重性 | 缺失的数学结果 |
 |------|--------|----------------|
 | B3.1.1 | 中等 | 部分 (d) 要求 Spring 动力学是 Fisher 自然梯度流。当前 Spring 使用的是 Euclidean 梯度下降还是自然梯度？需要验证或修改 Spring 的实现。 |
-| B3.1.2 | 中等 | Cercis 的 Euclidean 范数与 Fisher 范数之间的比例常数取决于 $g(\bar{\theta})$ 的条件数。在大差异（强不一致）时，线性逼近失效，需要完整的 Fisher-Rao 测地线计算（通常无解析解）。 |
+| B3.1.2 | 中等 | Cercis 的 Euclidean 范数与 Fisher 范数之间的比例常数取决于 $g(\bar)$ 的条件数。在大差异（强不一致）时，线性逼近失效，需要完整的 Fisher-Rao 测地线计算（通常无解析解）。 |
 | B3.1.3 | 低 | 定理假定所有专家预测属于同一指数族。对于 ACE 模型的输出（通常是回归值而非分布），需要定义从模型输出到概率分布的嵌入映射（例如：用 Gaussian 预测分布 $p_{\theta_m}(y|x) = \mathcal{N}(f_m(x), \sigma^2)$）。 |
 
 ---
@@ -582,15 +582,15 @@ $$d_{FR} \approx \|\Delta\theta_m\|_g + O(\|\Delta\theta_m\|^2)$$
 >
 > **(a) 广义 Cercis（Generalized Cercis）：** 定义信息几何推广的 Cercis Score：
 >
-> $$\text{Cercis}_{IG} = \frac{1}{M} \sqrt{\sum_{m=1}^M D_\psi(\hat{\theta}_m \| \bar{\theta})}$$
+> $$\text{Cercis}_{IG} = \frac{1}{M} \sqrt{\sum_{m=1}^M D_\psi(\hat_m \| \bar)}$$
 >
 > 当专家预测差异小时，$\text{Cercis}_{IG}$ 与原始 Cercis 等价（依二阶逼近）。
 >
 > **(b) 三角形的 Bregman 等式（Bregman's Triangle Equality）：**
 >
-> $$D_\psi(\hat{\theta}_m \| \hat{\theta}_n) = D_\psi(\hat{\theta}_m \| \bar{\theta}) + D_\psi(\bar{\theta} \| \hat{\theta}_n) - (\nabla\psi(\hat{\theta}_m) - \nabla\psi(\bar{\theta}))^T (\bar{\theta} - \hat{\theta}_n)$$
+> $$D_\psi(\hat_m \| \hat_n) = D_\psi(\hat_m \| \bar) + D_\psi(\bar \| \hat_n) - (\nabla\psi(\hat_m) - \nabla\psi(\bar))^T (\bar - \hat_n)$$
 >
-> 此等式将 **专家对之间的差异**（$D_\psi(\hat{\theta}_m \| \hat{\theta}_n)$）分解为：每个专家到共识点的差异 + 一个交叉项。在边界 $t = T$，该交叉项度量了"Spring 训练动力学的不可逆信息损失"。
+> 此等式将 **专家对之间的差异**（$D_\psi(\hat_m \| \hat_n)$）分解为：每个专家到共识点的差异 + 一个交叉项。在边界 $t = T$，该交叉项度量了"Spring 训练动力学的不可逆信息损失"。
 
 **假设 / Assumptions.**
 
@@ -598,11 +598,11 @@ $$d_{FR} \approx \|\Delta\theta_m\|_g + O(\|\Delta\theta_m\|^2)$$
 |------|------|--------|
 | A3.2.1 | 同 A3.1.1–A3.1.3 | 指数族 + 满秩 Fisher 度量 |
 | A3.2.2 | $\psi$ 严格凸且光滑 | Bregman 散度的标准条件 |
-| A3.2.3 | $\bar{\theta}$ 是规范固定点（可由 $\sum \mathbf{g}_m = 0$ 或 Bregman 重心定义） | 参考点选取 |
+| A3.2.3 | $\bar$ 是规范固定点（可由 $\sum \mathbf{g}_m = 0$ 或 Bregman 重心定义） | 参考点选取 |
 
 **证明框架 / Proof Sketch.**
 
-**(a) 部分：** 由 Theorem 3.1(a) 可得 $D_\psi(\hat{\theta}_m \| \bar{\theta}) \approx \frac{1}{2} \|\Delta\theta_m\|_g^2$。原始 Cercis $= \frac{1}{M} \sqrt{\sum \|\Delta\theta_m\|_{\text{Euc}}^2}$。在小差异极限下，$\text{Cercis}_{IG} = \frac{1}{M} \sqrt{\sum D_\psi} \approx \frac{1}{M} \sqrt{\sum \frac{1}{2}\|\Delta\theta_m\|_g^2}$，与原始 Cercis 比例等价。$\square$
+**(a) 部分：** 由 Theorem 3.1(a) 可得 $D_\psi(\hat_m \| \bar) \approx \frac{1}{2} \|\Delta\theta_m\|_g^2$。原始 Cercis $= \frac{1}{M} \sqrt{\sum \|\Delta\theta_m\|_{\text{Euc}}^2}$。在小差异极限下，$\text{Cercis}_{IG} = \frac{1}{M} \sqrt{\sum D_\psi} \approx \frac{1}{M} \sqrt{\sum \frac{1}{2}\|\Delta\theta_m\|_g^2}$，与原始 Cercis 比例等价。$\square$
 
 **(b) 部分：** Bregman 三角形的等式：
 
@@ -610,7 +610,7 @@ $$D_\psi(a \| c) = D_\psi(a \| b) + D_\psi(b \| c) - (\nabla\psi(a) - \nabla\psi
 
 是 Bregman 散度定义的直接代数结果：代入 $D_\psi$ 的定义并在两侧展开 $\psi$ 即可验证。$\square$
 
-**注 3.1 (体-边界的信息解释).** 交叉项 $(\nabla\psi(\hat{\theta}_m) - \nabla\psi(\bar{\theta}))^T(\bar{\theta} - \hat{\theta}_n)$ 编码了 Spring 训练动力学中的"非互易性"——专家 $m$ 与专家 $n$ 之间的信息差不等同于各自与共识点距离的简单加法。在体的语言中，这对应于 $\Theta \times [0,T]$ 中的"曲率"：不同训练路径之间测地偏差。
+**注 3.1 (体-边界的信息解释).** 交叉项 $(\nabla\psi(\hat_m) - \nabla\psi(\bar))^T(\bar - \hat_n)$ 编码了 Spring 训练动力学中的"非互易性"——专家 $m$ 与专家 $n$ 之间的信息差不等同于各自与共识点距离的简单加法。在体的语言中，这对应于 $\Theta \times [0,T]$ 中的"曲率"：不同训练路径之间测地偏差。
 
 ---
 
@@ -661,8 +661,8 @@ $$D_\psi(a \| c) = D_\psi(a \| b) + D_\psi(b \| c) - (\nabla\psi(a) - \nabla\psi
 | **G3** | 4 | SCX 专家图的 2-复形精确定义（Theorem 2.2 的前置条件） | **严重** | 定义面的粘合映射；验证三角剖分的一致性；定义边的定向约定 |
 | **G4** | 4 | DW cocycle $\omega$ 的审计物理解释（Theorem 2.2d） | **严重** | 需要物理/审计论证：$\omega$ 的不同选择对应什么？若无回答，DW 是数学玩具 |
 | **G5** | 4 | 李群连续极限中的计数→维数过渡（Theorem 2.1c） | 中等 | 通过 Riemannian 体积形式：$|G| \to \operatorname{Vol}(G)$，需要紧化或截断 |
-| **G6** | 5 | Spring 动力学是否为自然梯度流（Theorem 3.1d） | 中等 | 验证/修改 Spring 实现以使用自然梯度；或证明 Euclidean 梯度流在 $\bar{\theta}$ 附近近似自然梯度 |
-| **G7** | 5 | Cercis Euclidean→Fisher 范数转换的条件数依赖性（Theorem 3.1b） | 低 | 若 $g(\bar{\theta})$ 条件数大（各向异性强），转换常数大。需在实际数据上估计条件数 |
+| **G6** | 5 | Spring 动力学是否为自然梯度流（Theorem 3.1d） | 中等 | 验证/修改 Spring 实现以使用自然梯度；或证明 Euclidean 梯度流在 $\bar$ 附近近似自然梯度 |
+| **G7** | 5 | Cercis Euclidean→Fisher 范数转换的条件数依赖性（Theorem 3.1b） | 低 | 若 $g(\bar)$ 条件数大（各向异性强），转换常数大。需在实际数据上估计条件数 |
 | **G8** | 跨域 | Fisher 曲率对 O(d) 和乐的贡献（Theorem X.2） | **严重** | 要求 $\dim\Theta = d(d-1)/2$ 且非平凡曲率耦合。通用 SCX 不满足。此方向仅对特定统计模型可行——可能应标记为 SPECULATIVE |
 
 ---
@@ -687,8 +687,8 @@ $$D_\psi(a \| c) = D_\psi(a \| b) + D_\psi(b \| c) - (\nabla\psi(a) - \nabla\psi
 | $\psi(\theta)$ | 对数配分函数 | 5 |
 | $D_\psi$ | Bregman 散度 | 5 |
 | $d_{FR}$ | Fisher-Rao 测地距离 | 5 |
-| $\hat{\theta}_m$ | 专家 $m$ 的自然参数 | 5 |
-| $\bar{\theta}$ | 规范固定后的参考点 | 5 |
+| $\hat_m$ | 专家 $m$ 的自然参数 | 5 |
+| $\bar$ | 规范固定后的参考点 | 5 |
 | $\text{Cercis}_{IG}$ | 信息几何推广的 Cercis | 5 |
 
 ---

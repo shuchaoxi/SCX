@@ -25,7 +25,7 @@
 
 Navier-Stokes 方程是流体动力学的基石，描述了从茶杯中的漩涡到大气环流到星系形成的一切流体运动。其不可压缩形式为：
 
-$$\frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla)\mathbf{u} = -\frac{1}{\rho}\nabla p + \nu \nabla^2 \mathbf{u} + \mathbf{f}, \quad \nabla \cdot \mathbf{u} = 0$$
+$$\frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla)\mathbf{u} = -\frac{1}\nabla p + \nu \nabla^2 \mathbf{u} + \mathbf{f}, \quad \nabla \cdot \mathbf{u} = 0$$
 
 然而，**Navier-Stokes 的数学地位是断裂的**：
 
@@ -112,7 +112,7 @@ Navier-Stokes 的计算实践为这三个问题提供了极其丰富的案例。
 
 将 N-S 方程进行 Reynolds 分解 $\mathbf{u} = \bar{\mathbf{u}} + \mathbf{u}'$，得到 RANS 方程：
 
-$$\frac{\partial \bar{u}_i}{\partial t} + \bar{u}_j \frac{\partial \bar{u}_i}{\partial x_j} = -\frac{1}{\rho}\frac{\partial \bar{p}}{\partial x_i} + \nu \frac{\partial^2 \bar{u}_i}{\partial x_j \partial x_j} - \frac{\partial \overline{u_i' u_j'}}{\partial x_j}$$
+$$\frac{\partial \bar{u}_i}{\partial t} + \bar{u}_j \frac{\partial \bar{u}_i}{\partial x_j} = -\frac{1}\frac{\partial \bar{p}}{\partial x_i} + \nu \frac{\partial^2 \bar{u}_i}{\partial x_j \partial x_j} - \frac{\partial \overline{u_i' u_j'}}{\partial x_j}$$
 
 **Reynolds 应力张量** $\tau_{ij} = -\rho \overline{u_i' u_j'}$ 是未知的——这是湍流的封闭问题。RANS 方程本身是精确的（由 N-S 严格导出），但 $\tau_{ij}$ 引入了 6 个新的未知函数。系统不再封闭。
 
@@ -139,13 +139,13 @@ $$\nu_t = l_m^2 \left|\frac{\partial \bar{u}}{\partial y}\right|$$
 - **g=0 验证**：$l_m$ 必须针对每个流动重新标定——不存在普适的 g=0
 
 #### 3.3.2 **一方程模型（Spalart-Allmaras）**
-$$\frac{\partial \tilde{\nu}}{\partial t} + \bar{u}_j \frac{\partial \tilde{\nu}}{\partial x_j} = P - D + \text{diffusion}$$
-- **规范选择**：引入一个输运标量 $\tilde{\nu}$（"规范玻色子"的类比）来传播涡粘信息
+$$\frac{\partial \tilde}{\partial t} + \bar{u}_j \frac{\partial \tilde}{\partial x_j} = P - D + \text{diffusion}$$
+- **规范选择**：引入一个输运标量 $\tilde$（"规范玻色子"的类比）来传播涡粘信息
 - **规范参数 g**：产生项 P 和破坏项 D 的经验函数形式
 - **g=0 验证**：SA 模型的校准依赖特定基准流（平板边界层、翼型尾流）
 
 #### 3.3.3 **两方程模型（k-ε, k-ω, k-ω SST）**
-$$\frac{\partial k}{\partial t} + \bar{u}_j \frac{\partial k}{\partial x_j} = \mathcal{P}_k - \varepsilon + \frac{\partial}{\partial x_j}\left[(\nu + \nu_t/\sigma_k)\frac{\partial k}{\partial x_j}\right]$$
+$$\frac{\partial k}{\partial t} + \bar{u}_j \frac{\partial k}{\partial x_j} = \mathcal{P}_k - \varepsilon + \frac{\partial x_j}\left[(\nu + \nu_t/\sigma_k)\frac{\partial k}{\partial x_j}\right]$$
 - **规范选择**：引入两个输运方程（"非阿贝尔规范场的类比"——两个方程耦合）
 - **规范参数 g**：封闭系数 $C_\mu, C_{\varepsilon 1}, C_{\varepsilon 2}, \sigma_k, \sigma_\varepsilon$ 构成一个 5 维规范参数空间
 - **g=0 验证**：标准系数 $C_\mu = 0.09$ 来自壁面湍流的平衡假设——这不是一个被证明为 g=0 的值，而是一个"在实践中有效"的拟合值

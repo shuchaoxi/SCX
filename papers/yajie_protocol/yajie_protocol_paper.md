@@ -44,7 +44,7 @@ The paper proceeds as follows. Section 2 provides a technical overview of the Ya
 
 The Yajie Protocol is a computational framework for assessing the quality of structured and semi-structured datasets through multi-expert consistency analysis. At its core, Yajie operationalizes a simple but powerful principle: when multiple independent audit procedures, each designed to detect distinct categories of data defect, converge on a quality assessment, the probability that the assessment is correct increases multiplicatively. Conversely, when auditors diverge, the pattern of divergence carries diagnostic information about the nature and location of quality failures.
 
-Formally, let $\mathcal{D}$ be a target dataset consisting of $n$ records, each characterized by a feature vector $\mathbf{x}_i \in \mathbb{R}^d$ and, where applicable, a label $y_i$. Let $\mathcal{A} = \{A_1, A_2, \ldots, A_k\}$ be an ensemble of $k$ audit modules, where each $A_j: \mathcal{D} \rightarrow \mathcal{R}_j$ maps the dataset to a structured audit report $\mathcal{R}_j = (\mathbf{q}_j, \mathbf{a}_j, \mathbf{c}_j)$ comprising:
+Formally, let $\mathcal{D}$ be a target dataset consisting of $n$ records, each characterized by a feature vector $\mathbf{x}_i \in \mathbb{R}^d$ and, where applicable, a label $y_i$. Let $\mathcal{A} = \{A_1, A_2, ..., A_k\}$ be an ensemble of $k$ audit modules, where each $A_j: \mathcal{D} \rightarrow \mathcal{R}_j$ maps the dataset to a structured audit report $\mathcal{R}_j = (\mathbf{q}_j, \mathbf{a}_j, \mathbf{c}_j)$ comprising:
 
 - A quality score vector $\mathbf{q}_j \in [0,1]^m$ across $m$ quality dimensions (e.g., completeness, accuracy, consistency, timeliness, uniqueness);
 - An anomaly register $\mathbf{a}_j = \{(i, \tau, s)\}$ recording the index $i$ of each flagged record, the anomaly type $\tau$, and a severity score $s \in [0,1]$;
@@ -52,7 +52,7 @@ Formally, let $\mathcal{D}$ be a target dataset consisting of $n$ records, each 
 
 The protocol's aggregation function $\Phi: \prod_{j=1}^k \mathcal{R}_j \rightarrow \mathcal{R}^*$ synthesizes the ensemble outputs into a unified audit report $\mathcal{R}^*$ through a weighted consensus mechanism:
 
-$$\Phi(\mathcal{R}_1, \ldots, \mathcal{R}_k) = \left( \sum_{j=1}^k w_j \mathbf{q}_j, \; \bigcup_{j=1}^k \mathbf{a}_j \setminus \mathcal{F}, \; \prod_{j=1}^k \text{diag}(\mathbf{c}_j) \right)$$
+$$\Phi(\mathcal{R}_1, ..., \mathcal{R}_k) = \left( \sum_{j=1}^k w_j \mathbf{q}_j, \; \bigcup_{j=1}^k \mathbf{a}_j \setminus \mathcal{F}, \; \prod_{j=1}^k \text{diag}(\mathbf{c}_j) \right)$$
 
 where $w_j$ are dynamic weights derived from each auditor's historical calibration performance, $\mathcal{F}$ is a false-positive filter trained on previously adjudicated anomalies, and the confidence aggregation employs element-wise multiplication to reflect the multiplicative reduction in uncertainty when independent auditors concur.
 
@@ -62,11 +62,11 @@ $$\mathcal{E}_t = \bigcup_{\tau=0}^{t} \{\mathcal{R}^*_\tau, \mathcal{J}_\tau, \
 
 where $\mathcal{J}_\tau$ is the set of human-adjudicated judgments from audit cycle $\tau$, and $\Delta\mathcal{P}_\tau$ represents parameter updates derived from those judgments. The CEC serves three functions: (i) it provides training data for the false-positive filter $\mathcal{F}$; (ii) it enables dynamic recalibration of auditor weights $w_j$; and (iii) it accumulates a growing library of dataset-specific quality fingerprints that accelerate future audits of similar or related datasets.
 
-The CEC grows with each audit cycle. Let $g(t)$ denote the cumulative number of audits conducted by time $t$. Each audit contributes, on average, $\bar{\alpha}$ new anomaly instances and $\bar{\beta}$ new calibration data points to the CEC. The protocol's accuracy $\theta(t)$—measured as the F1 score of its anomaly detection relative to ground truth—improves as a function of CEC size:
+The CEC grows with each audit cycle. Let $g(t)$ denote the cumulative number of audits conducted by time $t$. Each audit contributes, on average, $\bar$ new anomaly instances and $\bar$ new calibration data points to the CEC. The protocol's accuracy $\theta(t)$—measured as the F1 score of its anomaly detection relative to ground truth—improves as a function of CEC size:
 
-$$\theta(t) = \theta_{\max} - (\theta_{\max} - \theta_0) e^{-\gamma \cdot |\mathcal{E}_t|}$$
+$$\theta(t) = \theta_ - (\theta_ - \theta_0) e^{-\gamma \cdot |\mathcal{E}_t|}$$
 
-where $\theta_{\max}$ is the asymptotic accuracy ceiling, $\theta_0$ is the initial accuracy, and $\gamma$ is a learning rate parameter. This functional form captures diminishing returns to additional data, consistent with the empirical scaling literature (Kaplan et al., 2020), while ensuring that the incumbent's accuracy advantage over a zero-CEC entrant grows monotonically with cumulative audit volume.
+where $\theta_$ is the asymptotic accuracy ceiling, $\theta_0$ is the initial accuracy, and $\gamma$ is a learning rate parameter. This functional form captures diminishing returns to additional data, consistent with the empirical scaling literature (Kaplan et al., 2020), while ensuring that the incumbent's accuracy advantage over a zero-CEC entrant grows monotonically with cumulative audit volume.
 
 ### 2.2 Technology Lock-in: Classical Mechanisms and Their Limits
 
@@ -102,7 +102,7 @@ What remains absent is a *standardized, cumulative, and cross-domain* methodolog
 
 ### 3.1 Model Setup
 
-We consider a world with $N$ jurisdictions (which may be nations, regulatory blocs, or large organizations capable of developing audit infrastructure). Each jurisdiction $i \in \{1, \ldots, N\}$ faces a binary choice: *Develop* ($D$) an independent data audit protocol, or *Adopt* ($A$) the incumbent protocol (Yajie). The choice is made simultaneously by all jurisdictions; we examine the Nash equilibria of this one-shot game.
+We consider a world with $N$ jurisdictions (which may be nations, regulatory blocs, or large organizations capable of developing audit infrastructure). Each jurisdiction $i \in \{1, ..., N\}$ faces a binary choice: *Develop* ($D$) an independent data audit protocol, or *Adopt* ($A$) the incumbent protocol (Yajie). The choice is made simultaneously by all jurisdictions; we examine the Nash equilibria of this one-shot game.
 
 Let the incumbent protocol be indexed as $j=1$, with an accumulated CEC of size $|\mathcal{E}|$. An entrant protocol developed by jurisdiction $i$ would begin with an empty CEC, implying an accuracy penalty $\delta(|\mathcal{E}|) = \theta(|\mathcal{E}|) - \theta(0)$, where $\theta(\cdot)$ follows the functional form specified in Section 2.1. For any non-trivial $|\mathcal{E}|$, $\delta(|\mathcal{E}|) > 0$, and $\delta'(|\mathcal{E}|) > 0$ (the accuracy gap widens with cumulative audits).
 
@@ -185,15 +185,15 @@ $$\pi_i(D, \mathbf{a}_{-i}) = V[\theta(0)] - c^{\text{develop}} - \kappa \cdot (
 
 where $n_D = \sum_{j \neq i} \mathbb{I}[a_j = D]$ is the number of other jurisdictions that develop.
 
-The universal adoption equilibrium $(A, A, \ldots, A)$ is Nash when, for every jurisdiction:
+The universal adoption equilibrium $(A, A, ..., A)$ is Nash when, for every jurisdiction:
 
 $$\Delta_A \geq \lambda - \kappa$$
 
 The term $\lambda - \kappa$ reflects a subtle tension: fragmentation cost $\lambda$ discourages unilateral deviation, but the *relief* from mutual proliferation costs $\kappa$ (if no one else develops, the lone developer avoids $\kappa$) encourages it. The equilibrium is stable when $\lambda > \kappa$—that is, when the public-bads cost of fragmentation exceeds the private cost of being the only proliferator.
 
-A key result emerges: the stability of the non-proliferation equilibrium is *monotonically increasing* in $|\mathcal{E}|$, because $\Delta_A$ grows without bound (up to its asymptotic ceiling) while $\lambda - \kappa$ is fixed. There exists a critical CEC size $|\mathcal{E}|^*$ such that for all $|\mathcal{E}| > |\mathcal{E}|^*$, $(A, A, \ldots, A)$ is the unique Nash equilibrium:
+A key result emerges: the stability of the non-proliferation equilibrium is *monotonically increasing* in $|\mathcal{E}|$, because $\Delta_A$ grows without bound (up to its asymptotic ceiling) while $\lambda - \kappa$ is fixed. There exists a critical CEC size $|\mathcal{E}|^*$ such that for all $|\mathcal{E}| > |\mathcal{E}|^*$, $(A, A, ..., A)$ is the unique Nash equilibrium:
 
-$$|\mathcal{E}|^* = \frac{1}{\gamma} \ln\left( \frac{\theta_{\max} - \theta_0}{\theta_{\max} - \theta(|\mathcal{E}|^*)} \right)$$
+$$|\mathcal{E}|^* = \frac{1} \ln\left( \frac{\theta_ - \theta_0}{\theta_ - \theta(|\mathcal{E}|^*)} \right)$$
 
 where $\theta(|\mathcal{E}|^*)$ is the accuracy level that satisfies $\Delta_A(|\mathcal{E}|^*) = \lambda - \kappa$.
 
@@ -474,9 +474,9 @@ Because each audit cycle enriches the CEC—improving accuracy for all users, in
 
 However, once the protocol reaches Stages 3–4, the pricing dynamic inverts. The accuracy gap becomes so large that organizations cannot credibly threaten to switch to a competing protocol or revert to internal audit processes. At this point, the protocol operator can raise prices, capturing a portion of the value generated by the protocol's accuracy advantage. The theoretical maximum price is:
 
-$$P_{\max} = V[\theta(|\mathcal{E}|)] - \max\{V[\theta(0)], V_{\text{internal}}\}$$
+$$P_ = V[\theta(|\mathcal{E}|)] - \max\{V[\theta(0)], V_{\text{internal}}\}$$
 
-where $V_{\text{internal}}$ is the value an organization could derive from its own internal audit processes. As $|\mathcal{E}|$ grows, $P_{\max}$ increases.
+where $V_{\text{internal}}$ is the value an organization could derive from its own internal audit processes. As $|\mathcal{E}|$ grows, $P_$ increases.
 
 This pricing trajectory—predatory low pricing followed by rent extraction—mirrors the standard narrative of platform monopolization (Khan, 2017). However, there is an important difference: the Yajie Protocol's early low pricing is not predatory in the antitrust sense, because it is not aimed at driving competitors out of the market (there are no competitors to drive out) but at accelerating CEC accumulation. The pricing is *developmental* rather than *exclusionary*. This distinction matters for competition policy, as we discuss in Section 6.
 
@@ -622,7 +622,7 @@ The preceding sections developed a theoretical framework for understanding the m
 
 The theoretical architecture of the Yajie Protocol rests on two theorems introduced in Sections 2 and 3: Theorem 1, which bounds the false-positive probability of multi-expert consensus, and Theorem 2, which establishes the equilibrium conditions for non-proliferation. We now formalize a third theorem that is foundational to both results—and that provides the mathematical basis for the deterrence structure analyzed throughout this paper.
 
-**Theorem 3 (SCX Uncertainty Principle).** Any organization that deploys the Yajie Protocol for data quality assessment renders its assessment results *unconditionally verifiable* by any independent third party. Formally, for any dataset $\mathcal{D}$, any ensemble of audit modules $\mathcal{A} = \{A_1, \ldots, A_k\}$, and any audit report $\mathcal{R}^*$ produced by the protocol's aggregation function $\Phi$, there exists a verification procedure $\mathcal{V}$ such that:
+**Theorem 3 (SCX Uncertainty Principle).** Any organization that deploys the Yajie Protocol for data quality assessment renders its assessment results *unconditionally verifiable* by any independent third party. Formally, for any dataset $\mathcal{D}$, any ensemble of audit modules $\mathcal{A} = \{A_1, ..., A_k\}$, and any audit report $\mathcal{R}^*$ produced by the protocol's aggregation function $\Phi$, there exists a verification procedure $\mathcal{V}$ such that:
 
 (i) $\mathcal{V}(\mathcal{D}, \mathcal{A}, \mathcal{R}^*) \to \{\text{CONFIRMED}, \text{DISPUTED}\}$, where DISPUTED indicates that $\mathcal{R}^*$ is inconsistent with the multi-expert consensus that $\Phi$ would produce given $\mathcal{D}$ and $\mathcal{A}$;
 
@@ -981,4 +981,3 @@ Zhang, Y., & Andrew, J. (2014). Financialisation and the conceptual framework. *
 *Declaration of Interests: The authors are affiliated with the development of the Yajie Protocol. This paper was subjected to independent peer review, and the authors received no external funding for this research.*
 
 *Data Availability: This is a theoretical paper; no empirical data were generated or analyzed. The game-theoretic model parameters are specified in the text and can be reproduced with standard computational tools.*
-

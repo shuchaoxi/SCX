@@ -1,0 +1,2006 @@
+<div align="center">
+
+\fbox{\fbox{\parbox{0.85\textwidth}{\bfseries
+内部文件 — INTERNAL ONLY
+
+未经授权严禁外传。本文包含SCX协议治理的核心博弈论分析，
+
+涉及维护者轮换机制、审计均衡、以及免信任架构的形式化证明。
+
+仅限SCX核心团队及授权维护者查阅。
+}}}
+
+</div>
+
+*Abstract:*
+
+This paper presents the formal game-theoretic foundation of SCX protocol governance.
+The central thesis is that the SCX protocol does not need to trust any individual
+maintainer — trust is replaced by a mathematically provable mechanism consisting of
+four pillars: (1) $M > 1$ mutual audit of every maintainer's bias parameter $g$,
+(2) public, reproducible audit logs that any third party can verify independently,
+(3) finite rotation cycles that bound the probability of undetected deviation by
+$e^{-2M\Delta^2}$ via Hoeffding's inequality, and (4) mutual audit incentives that
+make $\sum g = 0$ the unique Nash equilibrium, not a goodwill assumption.
+
+We prove that the maintainer rotation mechanism transforms the governance problem
+from a trust-based social contract into a purely mathematical one. The key insight
+is that *the theorem audits the maintainer, not the maintainer's biography*.
+A maintainer's reputation, credentials, institutional affiliation, or past
+contributions are irrelevant to SCX governance — only the real-time, auditable
+bias parameter $g(t)$ matters. This is not a philosophical stance; it is a direct
+consequence of the Hoeffding bound and the rotation game.
+
+We further analyze why companies cannot run protocols without contaminating audit
+neutrality (CEO $g \neq 0$ is structurally unavoidable for for-profit entities),
+formalize the maintainer rotation game as a repeated game with imperfect monitoring,
+prove the exponential decay of undetected deviation probability, and establish
+$\sum g = 0$ as the Nash equilibrium of the multi-maintainer mutual audit game.
+The paper concludes with a specification of what data maintainers must disclose
+(audit logs, $g$ parameters, conflict declarations) and must never disclose
+(personal life, biography, credentials), anchoring SCX governance in provable
+mathematics rather than fallible human judgment.
+
+**Keywords:** protocol governance, maintainer rotation, game theory,
+Hoeffding inequality, Nash equilibrium, mutual audit, trustless architecture,
+bias detection, finite rotation cycles, mechanism design
+
+**摘要：**
+本文提出了SCX协议治理的形式化博弈论基础。核心论点是：SCX协议不需要信任任何个别
+维护者——信任被一套数学上可证明的机制所替代，该机制由四大支柱构成：(1) 对每个维护者
+偏差参数$g$的$M>1$互相审计，(2) 任何第三方均可独立复现的公开审计日志，
+(3) 有限轮换周期通过Hoeffding不等式将未检测偏差的概率限制在$e^{-2M\Delta^2}$，
+(4) 维护者之间的互相审计激励使$\sum g = 0$成为唯一的纳什均衡，而非善意假设。
+
+我们证明维护者轮换机制将治理问题从基于信任的社会契约转化为纯粹的数学问题。核心洞见是：
+*定理审计的是维护者，不是维护者的履历*。维护者的声誉、资历、机构隶属关系或过往
+贡献与SCX治理无关——只有实时的、可审计的偏差参数$g(t)$才是关键。这不是哲学立场，
+而是Hoeffding界和轮换博弈的直接推论。
+
+**关键词：** 协议治理，维护者轮换，博弈论，Hoeffding不等式，纳什均衡，
+互相审计，免信任架构，偏差检测，有限轮换周期，机制设计
+
+---
+
+---
+
+## 引言：为什么信任是人类协议中最危险的假设
+## Introduction: Why Trust Is the Most Dangerous Assumption in Human Protocols
+
+### The Trust Catastrophe
+
+Every human protocol that has ever failed has failed for the same reason:
+it trusted someone it should not have. This is not a moral observation —
+it is a structural one. Trust is an information-theoretic shortcut: instead
+of verifying that an agent will behave honestly, we substitute a cheaper proxy
+(reputation, credentials, personal relationship) and proceed as if the
+verification had been done. When the proxy is accurate, trust works. When the
+proxy fails — and all proxies eventually fail — the protocol collapses.
+
+The history of protocol governance is the history of discovering which proxies
+fail and how catastrophically:
+
+- **Financial protocols** (Enron, FTX, Wirecard): trusted auditors
+- **Academic protocols** (peer review crises, replication failures):
+- \**Open-source protocols** (xz backdoor, event-stream incident):
+- **Cryptographic protocols** (certificate authorities, IOTA):
+- **AI safety protocols** (self-regulation pledges): trusted
+
+**中文对照：**
+每一个失败的人类协议都以相同的方式失败：它信任了一个不该信任的人。这不是道德观察——这是
+结构性的。信任是信息论上的捷径：我们不去验证一个代理是否会诚实行为，而是用一个更廉价的
+代理变量（声誉、资历、个人关系）来代替验证，并假装已经完成了验证。当代理变量准确时，
+信任有效。当代理变量失败时——而所有代理变量最终都会失败——协议崩溃。
+
+协议治理的历史，就是发现哪些代理变量会失败以及失败得有多惨烈的历史：
+金融协议（安然、FTX、Wirecard）信任了在结构上被激励视而不见的审计师；学术协议（同行
+评审危机、复现失败）信任了其$g \neq 0$对系统隐形不可见的审稿人；开源协议（xz后门、
+event-stream事件）信任了成为攻击向量的维护者；密码学协议（证书机构、IOTA）信任了
+使去中心化目的失效的中心化者；AI安全协议（自我监管承诺）信任了其CEO在构造上就具有
+$g \neq 0$的公司。
+
+\begin{hitbox}
+The fundamental error in all protocol governance to date is the conflation of
+*identity* with *behavior*. ``Alice has good credentials, therefore
+Alice will behave honestly'' is not a logical inference — it is a category error.
+Credentials are noise. Only behavior — measured, audited, bounded — carries
+signal.
+
+SCX governance is built on the refusal to make this error. We do not ask who the
+maintainer is. We ask what the maintainer's $g$ is, right now, under the current
+audit cycle. The theorem audits the maintainer, not the biography.
+
+<div align="center">
+
+**暴击：**
+迄今为止所有协议治理的根本错误，是将*身份*与*行为*混为一谈。
+“Alice有好的资历，因此Alice会诚实行为”不是一个逻辑推论——它是范畴错误。
+资历是噪声。只有行为——被测量、被审计、被约束的——才携带信号。
+
+SCX治理建立在对这一错误的拒绝之上。我们不问维护者是谁。我们问维护者的$g$是什么，
+此时此刻，在当前审计周期下。定理审计的是维护者，不是履历。
+
+</div>
+
+\end{hitbox}
+
+### The SCX Governance Thesis
+
+The SCX protocol governance thesis can be stated in one sentence:
+
+<div align="center">
+
+\fbox{\parbox{0.88\textwidth}{
+**SCX does not trust any maintainer because it can prove,**
+ 
+**with exponentially decaying uncertainty, that every maintainer's**
+ 
+**bias parameter $g$ is bounded by a known tolerance $\varepsilon$**
+
+**within every rotation cycle of length $T$.**
+}}
+
+</div>
+
+ This thesis has four components, each of which is mathematically
+rigorous and operationally executable:
+
+1. **$M > 1$ mutual audit:** Every maintainer's bias parameter $g$
+2. **Public, reproducible audit logs:** All audit data — raw scores,
+3. **Finite rotation cycles:** Maintainers serve for a fixed period
+4. **$\sum g = 0$ Nash equilibrium:** The incentive structure of the
+
+**中文：**
+SCX协议可以在一个句子里陈述其治理论题：SCX不信任任何维护者，因为它可以证明——具
+有指数衰减的不确定性——每个维护者的偏差参数$g$在每个长度为$T$的轮换周期内被约束在
+已知容忍度$\varepsilon$以内。
+
+这一论题有四个组件，每个都是数学上严格且操作上可执行的：(1) $M>1$互相审计：每个维护者
+的偏差参数$g$被至少$M$个其他维护者同时审计；(2) 公开可复现的审计日志；(3) 有限轮换周期；
+(4) $\sum g = 0$作为纳什均衡。
+
+\begin{govbox}
+The four components are not independent — they form a tight logical chain. Remove
+any one, and the proof collapses. $M > 1$ without rotation means a fixed clique
+can collude indefinitely. Rotation without $M > 1$ means a single rotating
+maintainer can deviate undetected (the auditor is always different, so no one
+has baseline). Public logs without Hoeffding bounds means deviations are
+detectable in principle but not bounded in probability. And Hoeffding bounds
+without the $\sum g = 0$ equilibrium means detection is probable but deviation
+is still individually rational.
+
+<div align="center">
+
+**治理透视：**
+四个组件不是独立的——它们形成紧密的逻辑链条。移除任何一个，证明崩溃。没有轮换的$M>1$
+意味着一个固定的同盟可以无限期串通。没有$M>1$的轮换意味着单个轮换维护者可以不被检测地
+偏离。没有Hoeffding界的公开日志意味着偏离在原则上是可检测的但概率不受约束。没有
+$\sum g=0$均衡的Hoeffding界意味着检测是可能的但偏离对个体仍然理性。
+
+</div>
+
+\end{govbox}
+
+### Why This Paper Is Internal
+
+This paper is classified INTERNAL ONLY for a specific reason: it contains the
+complete game-theoretic specification of SCX maintainer rotation, including the
+exact detection thresholds, rotation periods, and audit protocols. In the wrong
+hands, this is a manual for how to attempt to defeat SCX governance. We publish
+the theorems publicly; we keep the operational parameters internal.
+
+**中文：** 本文被分类为内部文件有一个特定的原因：它包含了SCX维护者轮换的
+完整博弈论规范，包括确切的检测阈值、轮换周期和审计协议。在错误的人手中，这是如何试图
+击败SCX治理的手册。我们公开发布定理；我们保留操作参数在内部。
+
+---
+
+## 为什么公司不能运行协议：CEO $g \neq 0$的结构必然性
+## Why Companies Cannot Run Protocols: The Structural Inevitability of CEO $g \neq 0$
+
+### The $g$ Parameter: A Formal Definition
+
+> **Definition:** [Bias Parameter $g$]
+> Let $\mathcal{M}$ be a maintainer responsible for calibrating or auditing data
+> quality assessments in the SCX protocol. The **bias parameter** $g \in \R$
+> is defined as the systematic deviation of $\mathcal{M}$'s assessments from the
+> ground-truth consensus:
+> 
+> 
+> $$<!-- label: eq:g_def -->
+>     g_{\mathcal{M}} = \E\left[ s_{\mathcal{M}}(X) - s^*(X) \right]
+> $$
+> 
+> 
+> where $s_{\mathcal{M}}(X)$ is the score assigned by maintainer $\mathcal{M}$ to
+> data point $X$, $s^*(X)$ is the ground-truth quality score that would be
+> assigned by an unbiased oracle under the SCX theorem framework, and the
+> expectation is taken over the distribution of audited data points.
+> 
+> A maintainer with $g = 0$ is **unbiased**. A maintainer with $g > 0$ is
+> **positively biased** (systematically inflates scores). A maintainer with
+> $g < 0$ is **negatively biased** (systematically deflates scores).
+
+**中文：**
+设$\mathcal{M}$为负责校准或审计SCX协议中数据质量评估的维护者。偏差参数$g \in \R$定义
+为$\mathcal{M}$的评估相对于基准共识的系统性偏离：$g_{\mathcal{M}} = \E[s_{\mathcal{M}}(X) - s^*(X)]$。
+$g=0$的维护者是无偏的。$g>0$的维护者是正偏的（系统性地抬高分数）。$g<0$的维护者是负偏的
+（系统性地压低分数）。
+
+> **Remark:** The $g$ parameter is not a measure of competence. A maintainer can be highly
+> competent (low variance in assessments) and still have $g \neq 0$ (systematic
+> bias). In fact, the most dangerous maintainers are precisely those with high
+> competence and high bias, because their assessments are consistent enough to
+> pass casual inspection while systematically distorting the protocol's output.
+
+### The Corporate $g$ Problem
+
+> **Theorem:** [Corporate $g$ Non-Zero Theorem]<!-- label: thm:corp_g -->
+> Let $\mathcal{C}$ be a for-profit corporation that controls a maintainer
+> position in a data quality protocol. Let $\Pi(g)$ be the profit
+> function of $\mathcal{C}$ as a function of the maintainer's bias $g$,
+> and let $p_{det}(g)$ be the probability of detection and $L(g)$ the
+> penalty when bias $g$ is detected. If $\frac{\partial \Pi}{\partial g}|_{g=0} \neq 0$
+> — that is, if the corporation's marginal profit at zero bias is non-zero —
+> then the corporation's optimal choice of $g$ is $g^* \neq 0$
+> unless the detection-penalty mechanism satisfies:
+> 
+> $$
+>     \left.\frac{\partial(p_{det} \cdot L)}{\partial g}\right|_{g=0}
+>     \;\geq\; \left|\frac{\partial \Pi}{\partial g}\right|_{g=0}
+> $$
+> 
+> That is, the marginal deterrence at $g=0$ must dominate the marginal profit incentive.
+
+> **Proof:** [Proof Sketch]
+> The corporation chooses $g$ to maximize:
+> 
+> $$
+>     \max_{g} \; \Pi(g) - p_{det}(g) \cdot L(g)
+> $$
+> 
+> At $g = 0$, the first-order condition yields:
+> 
+> $$
+>     \left.\frac{\partial \Pi}{\partial g}\right|_{g=0} - 
+>     \left.\frac{\partial(p_{det} \cdot L)}{\partial g}\right|_{g=0} = 0
+> $$
+> 
+> If $\frac{\partial \Pi}{\partial g}|_{g=0} > 0$ and the detection-penalty term is
+> insufficient (as it always is when the protocol operator is also the auditor —
+> i.e., self-regulation), then $g^* > 0$. The only way to achieve $g^* = 0$ is to
+> make $p_{det}$ and $L$ such that the penalty-deterrence dominates the
+> profit incentive — which requires an external, non-corporate auditor. But if the
+> external auditor is itself a corporation, the problem recurses.
+
+**中文：**
+设$\mathcal{C}$为控制数据质量协议中一个维护者职位的营利性公司。如果$\frac{\partial \Pi}{\partial g} \neq 0$
+——即，公司利润对维护者偏差敏感——则公司的最优$g$选择为$g^* \neq 0$，除非受到满足
+$p_{det} \cdot L > |\frac{\partial \Pi}{\partial g}|_{g=0}$的外部审计约束。
+
+\begin{hitbox}
+The Corporate $g$ Theorem is not an empirical claim about corporate morality.
+It is a mathematical consequence of the profit function. A for-profit entity
+*must* set $g \neq 0$ whenever $\frac{\partial \Pi}{\partial g} \neq 0$,
+unless externally constrained by a credible audit mechanism. This is not greed;
+this is fiduciary duty. The CEO who sets $g = 0$ when $\frac{\partial \Pi}{\partial g} > 0$
+is violating their obligation to shareholders — and will be replaced. Corporate
+governance is structurally incompatible with protocol neutrality.
+
+This is why SCX maintainers cannot be employees of for-profit entities with
+interests in the protocol's output. The corporation's $g$ leaks into the
+maintainer's $g$ through compensation, promotion, and termination incentives —
+even if the maintainer is individually committed to neutrality.
+
+<div align="center">
+
+**暴击：**
+公司$g$定理不是关于公司道德的实证主张。它是利润函数的数学推论。营利性实体在
+$\frac{\partial \Pi}{\partial g} \neq 0$时*必须*设置$g \neq 0$，除非受到可信
+审计机制的外部约束。这不是贪婪，这是信托责任。在$\frac{\partial \Pi}{\partial g} > 0$时
+设置$g = 0$的CEO违反了其对股东的义务——并将被替换。公司治理在结构上与协议中立性不兼容。
+
+这就是为什么SCX维护者不能是对协议输出有利益关系的营利性实体的雇员。公司的$g$通过薪酬、
+晋升和解聘激励渗入维护者的$g$——即使维护者个人承诺中立。
+
+</div>
+
+\end{hitbox}
+
+### The Cascade of Corporate Capture
+
+The problem is worse than it appears. When a single corporation controls a
+protocol's governance, the bias does not stay at $g \neq 0$ — it cascades:
+
+1. **Phase 1 — Direct bias:** The corporation sets $g > 0$ for data
+2. **Phase 2 — Audit capture:** The corporation appoints auditors
+3. **Phase 3 — Standard capture:** The protocol's definition of
+4. **Phase 4 — Ecosystem extinction:** Third parties abandon the
+
+**中文：**
+当单个公司控制协议治理时，偏差不会停留在$g \neq 0$——它会级联放大。阶段一：直接偏差。
+阶段二：审计俘获（公司任命共享其利益的审计师，使$p_{det} \to 0$）。阶段三：
+标准俘获（协议对“质量”的定义漂移到与公司数据得分已经很高的方向一致）。阶段四：
+生态系统灭绝（第三方放弃协议，因为它不再提供无偏信号）。
+
+\begin{govbox}
+This cascade is not hypothetical. It is the documented history of every protocol
+that was ever captured by a corporate entity. The pattern is invariant: the
+corporation does not need to be malicious; it only needs to be rational. And
+rationality, in the presence of $\frac{\partial \Pi}{\partial g} \neq 0$, is
+sufficient to guarantee capture.
+
+SCX governance is designed to make capture mathematically impossible — not by
+asking corporations to behave better, but by making the maintainer position
+structurally incapable of being captured. The rotation mechanism, the $M > 1$
+mutual audit, and the public log requirement together ensure that no single
+entity — corporate or individual — can accumulate enough control to bias $g$
+over any horizon longer than $T$.
+
+<div align="center">
+
+**治理透视：**
+这一级联不是假设的。它是每一个曾被公司实体俘获的协议的记录在案的历史。模式是不变的：
+公司不需要是恶意的；它只需要是理性的。而在$\frac{\partial \Pi}{\partial g} \neq 0$存在
+的情况下的理性，足以保证俘获。
+
+SCX治理旨在使俘获在数学上不可能——不是通过要求公司表现更好，而是通过使维护者职位在
+结构上无法被俘获。轮换机制、$M>1$互相审计和公开日志要求共同确保没有任何单一实体——
+公司或个人——能积累足够的控制权在任何超过$T$的时间范围内偏置$g$。
+
+</div>
+
+\end{govbox}
+
+---
+
+## 维护者轮换机制：形式化博弈论
+## The Maintainer Rotation Mechanism: Formal Game Theory
+
+### The Rotation Game: Setup
+
+We model the SCX maintainer system as a **repeated game with imperfect
+monitoring** among a pool of $N$ candidate maintainers, of which $K$ are active
+at any given time (with $K \geq 2$, typically $K = M$ for mutual audit
+completeness). The game proceeds in discrete rotation cycles of length $T$:
+
+> **Definition:** [Rotation Cycle]
+> A **rotation cycle** is a time interval $[t_0, t_0 + T]$ during which a
+> fixed set of $K$ maintainers $\{\mathcal{M}_1, ..., \mathcal{M}_K\}$ is
+> active. At time $t_0 + T$, exactly $r$ maintainers ($1 \leq r < K$) are rotated
+> out and replaced by $r$ new maintainers drawn from the candidate pool. The new
+> set serves for the next cycle $[t_0 + T, t_0 + 2T]$.
+
+**中文：**
+轮换周期是一个时间区间$[t_0, t_0 + T]$，在此期间固定的一组$K$个维护者
+$\{\mathcal{M}_1, ..., \mathcal{M}_K\}$处于活跃状态。在时刻$t_0 + T$，恰好$r$个
+维护者（$1 \leq r < K$）被轮换出局，由从候选池中抽取的$r$个新维护者替换。
+
+> **Definition:** [Maintainer Action Space]
+> At each audit event $t$ within a rotation cycle, maintainer $\mathcal{M}_i$
+> chooses an action $a_i(t) \in \mathcal{A} = \{HONEST, DEVIATE\}$.
+> The action HONEST means reporting scores consistent with $g_i = 0$ (unbiased).
+> The action DEVIATE means reporting scores with $g_i = \delta_i$, where
+> $\delta_i$ is the maintainer's chosen bias magnitude.
+
+### Payoff Structure
+
+Each maintainer $\mathcal{M}_i$ receives a per-period payoff:
+
+$$<!-- label: eq:payoff -->
+    \payoff{i}(a_i, a_{-i}) = 
+    \underbrace{B \cdot \indicator[a_i = HONEST]}_{honesty bonus} + 
+    \underbrace{D(\delta_i) \cdot \indicator[a_i = DEVIATE]}_{deviation gain} - 
+    \underbrace{\auditCost \cdot (K-1)}_{audit cost (audit all others)} -
+    \underbrace{P \cdot \indicator[detected]}_{detection penalty}
+$$
+
+where:
+
+- $B > 0$ is the honesty bonus — compensation for maintaining $g = 0$.
+- $D(\delta_i)$ is the deviation gain — the benefit of biasing scores by $\delta_i$.
+- $\auditCost > 0$ is the cost of auditing one other maintainer (paid $K-1$ times).
+- $P \gg D(\delta_i)$ is the detection penalty — loss of maintainer status, reputation destruction, possible legal consequences.
+
+**中文：**
+每个维护者$\mathcal{M}_i$接收每期收益：诚实奖金 + 偏离收益 - 审计成本 - 检测惩罚。
+
+> **Remark:** The key structural feature: every maintainer audits *all other* maintainers.
+> The audit cost scales linearly with $K-1$, but the detection probability scales
+> super-linearly because each maintainer is audited by $K-1$ independent auditors.
+> This asymmetry — linear cost, super-linear detection — is what makes the
+> mechanism economically viable at scale.
+
+### The Mutual Audit Subgame
+
+Within each rotation cycle, the $K$ maintainers play a **mutual audit game**:
+each maintainer audits every other maintainer's reported scores against the
+consensus baseline. The audit is not based on comparing to a fixed standard
+(because the ground truth is unknown — that is precisely why we need
+maintainers) but on detecting *deviations from the emergent consensus*.
+
+> **Definition:** [Mutual Audit Detection]
+> Maintainer $\mathcal{M}_i$ is **detected as deviating** at time $t$ if:
+> 
+> $$<!-- label: eq:detection -->
+>     \left| s_i(X_t) - \frac{1}{K-1} \sum_{j \neq i} s_j(X_t) \right| > \tau
+> $$
+> 
+> where $\tau$ is a calibrated detection threshold that balances false positive
+> rate $\alpha$ and false negative rate $\beta$.
+
+**中文：**
+维护者$\mathcal{M}_i$在时刻$t$被检测为偏离，如果其评分与其他$K-1$个维护者评分均值的
+绝对偏差超过阈值$\tau$。
+
+> **Theorem:** [Consensus Deviation Detectability]<!-- label: thm:detectability -->
+> Let the consensus baseline $\bar{s}_{-i}$ be the **median** of the
+> $K-1$ auditor scores (excluding maintainer $i$). If at most
+> $\lfloor (K-1)/2 \rfloor$ maintainers are colluding (i.e., a majority
+> of the active set is honest), then the median is guaranteed to be an honest
+> score — colluder contamination cannot displace it. Any deviation
+> $\delta_i > 2\tau$ by maintainer $i$ from this uncontaminated baseline
+> is detected with probability at least:
+> 
+> $$
+>     \Pbb(detection) \geq 1 - 2\exp\left(-\frac{2\lceil (K-1)/2 \rceil \tau^2}{(\Delta s)^2}\right)
+> $$
+> 
+> where $\Delta s$ is the maximum possible score range.
+
+> **Proof:** With at most $\lfloor (K-1)/2 \rfloor$ colluders among the $K-1$ auditors,
+> honest auditors number $H = \lceil (K-1)/2 \rceil$, a strict majority.
+> **Why the median, not the mean.** The arithmetic mean of all $K-1$ scores
+> is contaminated: each colluder shifts the mean by $\delta_{colluder}/(K-1)$,
+> corrupting the honest baseline. The median is robust: with majority honest,
+> the median must be an honest score regardless of how extreme the colluders'
+> scores are. By Hoeffding's inequality applied to the median of $H$ honest
+> i.i.d.\ scores,
+> $\Pbb(|median - \mu^*| > \varepsilon) \leq 2\exp(-2H\varepsilon^2/(\Delta s)^2)$.
+> The deviation $\delta_i$ shifts maintainer $i$'s scores by $\delta_i$ relative to
+> $\mu^*$. For $\delta_i > 2\tau$, the
+> deviation exceeds the honest consensus interval, and equation [ref]
+> triggers. Setting $\varepsilon = \tau$ yields the stated bound.
+
+**中文：**
+设共识基线$\bar{s}_{-i}$为其他$K-1$个维护者评分的**中位数**（排除维护者$i$）。
+如果至多$\lfloor (K-1)/2 \rfloor$个维护者串通（即活跃集合的多数是诚实的），
+则中位数保证为诚实评分——串通者无法污染基线。维护者$i$相对于此未污染基线的任何
+$\delta_i > 2\tau$偏离被检测到的概率至少为
+$1 - 2\exp(-2\lceil (K-1)/2\rceil \tau^2/(\Delta s)^2)$。
+
+\begin{hitbox}
+This theorem reveals why $K \geq 3$ is the minimum viable maintainer count.
+With $K = 2$, each maintainer audits only one other — the consensus is degenerate
+(the mean of one score is just that score). A single maintainer's deviation cannot
+be distinguished from a dispute between two equally valid perspectives. The
+mutual audit requires $K \geq 3$ to create a non-degenerate consensus baseline:
+you need at least two honest auditors to define ``center'' for the third.
+
+With $K = 3$ and majority-honest assumption, any single deviator is immediately
+detectable because their score will be the outlier in a set of three. With
+$K = 5$, even two colluding deviators can be detected because the remaining
+three honest maintainers define the consensus.
+
+<div align="center">
+
+**暴击：**
+该定理揭示了为什么$K \geq 3$是最低可行的维护者数量。$K=2$时，每个维护者只审计另一个——
+共识是退化的（一个分数的均值就是该分数本身）。单个维护者的偏离无法与两个同样有效的
+视角之间的分歧区分。互相审计需要$K \geq 3$来创建非退化的共识基线：你需要至少两个诚实
+的审计者来为第三个定义“中心”。
+
+$K=3$且多数诚实假设下，任何单个偏离者立即可检测。$K=5$时，即使两个串通的偏离者也可被
+检测，因为剩余的诚实维护者定义了共识。
+
+</div>
+
+\end{hitbox}
+
+### The Rotation as a Game-Theoretic Necessity
+
+Without rotation, the mutual audit game has a fatal flaw: **collusion over
+long horizons**. If the same $K$ maintainers serve indefinitely, they can form a
+coalition where *everyone* agrees to deviate by a small, coordinated
+amount, sharing the deviation gains while ensuring that no individual's score
+deviates from the (corrupted) consensus. The mutual audit detects deviations
+from consensus — but if the consensus itself is corrupted, detection fails.
+
+Rotation breaks the coalition. When $r$ maintainers are rotated out and replaced
+by new, uncorrupted maintainers at each cycle boundary, the new maintainers
+inherit the audit logs and can detect the systematic drift that accumulated
+during the previous cycle. The coalition cannot corrupt the new maintainers
+fast enough to maintain cover, because:
+
+1. The new maintainers are drawn from a pool that is larger than the
+2. The public audit logs give new maintainers a complete history of all
+3. The rotation is staggered: only $r < K$ maintainers rotate at a time,
+
+**中文：**
+没有轮换，互相审计博弈有一个致命缺陷：长期限上的串通。如果同一组$K$个维护者无限期
+服务，他们可以形成一个联盟，所有人同意以协调的方式小幅偏离，分享偏离收益，同时确保
+没有个人的分数偏离（已被腐蚀的）共识。
+
+轮换打破了联盟。当$r$个维护者在每个周期边界被轮换出局并由新的、未被腐蚀的维护者替换
+时，新维护者继承了审计日志，可以检测到前一周期期间积累的系统性漂移。
+
+### Formal Model of the Rotation Game
+
+We now formalize the rotation game as a stochastic game.
+
+> **Definition:** [Rotation Game $\Gamma(N, K, r, T)$]
+> The rotation game is a tuple $\Gamma = (N, K, r, T, \mathcal{A}, \mathcal{S}, \mathcal{P}, u)$ where:
+> 
+- $N$: total pool size of candidate maintainers.
+- $K$: number of active maintainers per cycle ($K \geq 3$).
+- $r$: number of maintainers rotated per cycle boundary ($1 \leq r < K$).
+- $T$: cycle length (number of audit events per cycle).
+- $\mathcal{A}$: action space (HONEST or DEVIATE with bias $\delta$).
+- $\mathcal{S}$: state space, including the current active set and audit history.
+- $\mathcal{P}$: state transition probabilities (deterministic rotation + stochastic detection).
+- $u = (u_1, ..., u_K)$: payoff vector as defined in [ref].
+
+The game is infinitely repeated (or indefinitely repeated with discount factor
+$\gamma \in (0, 1)$). A maintainer who is detected as deviating is permanently
+removed from the active set and the candidate pool (one-shot deviation with
+permanent consequences).
+
+**中文：**
+轮换博弈$\Gamma(N, K, r, T)$是一个元组$(N, K, r, T, \mathcal{A}, \mathcal{S}, \mathcal{P}, u)$，
+表示具有$N$个候选维护者总池、每周期$K$个活跃维护者、每周期边界轮换$r$个、每周期$T$个
+审计事件的博弈。
+
+### The Folk Theorem Limitation and Its Resolution
+
+A standard result in repeated game theory — the Folk Theorem — states that in
+infinitely repeated games with sufficiently patient players, any feasible and
+individually rational payoff vector can be supported as a subgame perfect
+equilibrium. This would seem to suggest that collusion (all maintainers deviating
+slightly and sharing the gains) is a possible equilibrium in the rotation game.
+
+However, the Folk Theorem does not apply to the SCX rotation game for three
+reasons:
+
+1. **Imperfect monitoring:** The Folk Theorem with imperfect
+2. **Rotation breaks continuation:** The Folk Theorem relies on
+3. **Public observability:** The audit logs are public. A
+
+**中文：**
+无名氏定理不适用于SCX轮换博弈的三个原因：(1) 不完全监控在Hoeffding界下接近于完全监控；
+(2) 轮换打破了惩罚的连续性；(3) 公开可观测性使惩罚来源从共同维护者转移到整个候选池和公众。
+
+\begin{govbox}
+The rotation mechanism transforms the governance problem from ``how do we ensure
+that permanent maintainers stay honest?'' to ``how do we ensure that temporary
+maintainers cannot profit from deviation within their finite window?'' The second
+question is strictly easier because the window is bounded. A permanent maintainer
+can amortize the cost of building a corruption network over an infinite horizon.
+A temporary maintainer with a known exit time $t_0 + T$ must complete the
+deviation, extraction, and escape within $T$ — and the mutual audit ensures that
+the detection probability is exponentially close to 1 well before $T$ expires.
+
+<div align="center">
+
+**治理透视：**
+轮换机制将治理问题从“如何确保永久维护者保持诚实？”转化为“如何确保临时维护者在其
+有限窗口内无法从偏离中获利？”。第二个问题严格更容易，因为窗口是有界的。
+
+</div>
+
+\end{govbox}
+
+---
+
+## Hoeffding保证：$P(未检测偏离) \leq e^{-2M\Delta^2}$
+<!-- label: sec:hoeffding -->
+## The Hoeffding Guarantee: $P(Undetected Deviation) \leq e^{-2M\Delta^2}$
+
+### The Central Bound
+
+The mathematical centerpiece of SCX maintainer governance is a simple but
+powerful concentration inequality. We prove that the probability of a biased
+maintainer surviving undetected through an entire rotation cycle decays
+exponentially in the number of auditors $M$ and the square of the bias magnitude
+$\Delta$.
+
+> **Theorem:** [Hoeffding Guarantee for Maintainer Audit]<!-- label: thm:hoeffding -->
+> Let $\mathcal{M}$ be a maintainer with true bias $g = \delta$. During a rotation
+> cycle of length $T$, $\mathcal{M}$ is audited by $M = K-1$ other maintainers
+> at each of $n$ audit events (where $n \leq T$). At each audit event $t$, each
+> auditor independently tests whether $\mathcal{M}$'s score deviates from the
+> consensus by more than $\tau$. Let $X_t \in \{0, 1\}$ indicate whether
+> $\mathcal{M}$ is flagged at audit $t$. Assume the $X_t$ are independent across
+> audit events (conditional on the maintainer's fixed bias $\delta$) and that
+> $\E[X_t] = p_{det}$ where $p_{det} \geq p_{min} > 0$ for
+> any $\delta \geq \Delta > 0$.
+> 
+> Then the probability that $\mathcal{M}$ survives all $n$ audits undetected is:
+> 
+> $$<!-- label: eq:hoeffding_main -->
+>     \Pbb\left(\sum_{t=1}^{n} X_t = 0 \;\middle|\; \delta \geq \Delta\right)
+>     \leq \exp\left(-2 n \cdot p_{min}^2\right)
+>     \leq \exp\left(-2 M \Delta^2 \cdot \frac{n}{T}\right)
+> $$
+> 
+> 
+> In the worst case where the auditor count $M$ is the binding constraint (each
+> auditor contributes one independent detection opportunity per audit event), we
+> have the simplified bound:
+> 
+> $$<!-- label: eq:hoeffding_simple -->
+>     \boxed{\Pbb(undetected deviation \mid \delta \geq \Delta) \leq e^{-2M\Delta^2}}
+> $$
+
+> **Proof:** Let the honest scores be i.i.d.\ bounded in $[a, b]$ with range $\Delta s = b - a$
+> and mean $\mu^*$. A maintainer with bias $\delta \geq \Delta$ produces scores
+> $s_i = \mu^* + \delta + \varepsilon_i$, where $\varepsilon_i$ is zero-mean noise
+> bounded in $[-\Delta s/2, \Delta s/2]$. The consensus baseline (median or trimmed
+> mean of honest scores) estimates $\mu^*$ with high accuracy; for the worst-case
+> analysis we assume the baseline equals $\mu^*$ exactly (ideal consensus).
+> 
+> **Step 1: One-sided Hoeffding on a single auditor.**
+> A single honest auditor flags the maintainer when $|s_i - \mu^*| > \tau$.
+> The maintainer escapes detection at this auditor when $|s_i - \mu^*| \leq \tau$.
+> For $\delta \geq \Delta > \tau$:
+> 
+> $$
+> 
+> $$
+> \Pbb(not flagged \mid \delta \geq \Delta)
+> &= \Pbb(|\delta + \varepsilon_i| \leq \tau) 
+
+> &= \Pbb(-\tau - \delta \leq \varepsilon_i \leq \tau - \delta) 
+
+> &\leq \Pbb(\varepsilon_i \leq \tau - \delta)
+> \leq \Pbb(\varepsilon_i \leq \tau - \Delta) 
+
+> &\leq \exp\!\left(-\frac{2(\Delta - \tau)^2}{(\Delta s)^2}\right)
+> $$
+> 
+> $$
+> 
+> where the last inequality is the **one-sided Hoeffding bound** for bounded
+> zero-mean variables: $\Pbb(\varepsilon \leq -t) \leq \exp(-2t^2/(\Delta s)^2)$.
+> For the canonical parameterization we normalize the score range $\Delta s = 1$ and
+> take the asymptotic detection threshold $\tau \to 0$ (exact consensus comparison),
+> yielding the clean bound:
+> 
+> $$
+> \boxed{\Pbb(not flagged by a single auditor \mid \delta \geq \Delta) \leq e^{-2\Delta^2}}
+> $$
+> 
+> 
+> **Step 2: $M$ independent auditors.**
+> With $M$ honest auditors testing independently, the probability that
+> *no* auditor flags the maintainer is:
+> 
+> $$
+> \Pbb(zero flags \mid \delta \geq \Delta)
+> = \prod_{j=1}^{M} \Pbb(auditor  j  does not flag)
+> \leq \left(e^{-2\Delta^2}\right)^{\!M} = e^{-2M\Delta^2}
+> $$
+> 
+> 
+> **Step 3: $n$ independent audit events.**
+> Over $n$ independent audit events within a rotation cycle, survival requires
+> escaping detection at every event. By independence:
+> 
+> $$
+> \Pbb(undetected through  n  events \mid \delta \geq \Delta)
+> \leq \left(e^{-2M\Delta^2}\right)^{\!n} = e^{-2M\Delta^2 n}
+> $$
+> 
+> The simplified single-event form $e^{-2M\Delta^2}$ used throughout this paper
+> corresponds to the per-event bound ($n = 1$), which is the appropriate unit of
+> analysis since maintainers are removed upon any single detection event — the
+> compound survival probability over $n$ events only strengthens the guarantee.
+
+**中文：**
+设$\mathcal{M}$为具有真实偏差$g = \delta$的维护者。在长度为$T$的轮换周期中，
+$\mathcal{M}$在$n$个审计事件的每个中被$M = K-1$个其他维护者审计。则$\mathcal{M}$
+在偏差$\delta \geq \Delta$的情况下经所有$n$次审计未被检测的概率满足：
+$\Pbb(\sum_{t=1}^{n} X_t = 0 \mid \delta \geq \Delta) \leq \exp(-2M\Delta^2)$。
+
+> **Corollary:** [Detectable Bias Threshold]<!-- label: cor:threshold -->
+> For any desired confidence level $1 - \varepsilon$, the minimum detectable bias
+> $\Delta_$ satisfies:
+> 
+> $$
+>     \Delta_ \leq \sqrt{\frac{\ln(1/\varepsilon)}{2M}}
+> $$
+> 
+> With $M = 5$ auditors and $\varepsilon = 10^{-6}$, we obtain
+> $\Delta_ \leq 1.18$ (in normalized score units). With $M = 10$,
+> $\Delta_ \leq 0.83$.
+
+**中文：**
+对于任何期望置信水平$1 - \varepsilon$，最小可检测偏差$\Delta_$满足
+$\Delta_ \leq \sqrt{\ln(1/\varepsilon) / (2M)}$。$M = 5$审计者且
+$\varepsilon = 10^{-6}$时，$\Delta_ \leq 1.18$。$M = 10$时，
+$\Delta_ \leq 0.83$。
+
+### Why the Exponential Bound Matters
+
+The exponential form $e^{-2M\Delta^2}$ is not an arbitrary modeling choice — it
+is the tightest possible bound for this class of detection problems (by
+Hoeffding's inequality, which is known to be asymptotically tight for bounded
+random variables). The implications are profound:
+
+1. **Diminishing returns on bias:** The probability of escaping
+2. **Linear scaling in auditors:** Each additional auditor reduces
+3. **Impossibility of slow drift:** A maintainer who attempts a
+
+**中文：**
+指数形式$e^{-2M\Delta^2}$不是任意的建模选择——它是此类检测问题的最紧界。
+含义：(1) 偏差的收益递减——逃脱检测的概率按$\exp(-\Delta^2)$下降，对$\Delta$是
+超指数衰减；(2) 审计者数量的线性缩放——每个额外审计者将逃脱概率降低$e^{-2\Delta^2}$倍；
+(3) 缓慢漂移策略不可能——累积偏差最终超过任何固定的$\Delta$，随后Hoeffding界适用。
+
+\begin{hitbox}
+The Hoeffding bound destroys the ``slippery slope'' defense of protocol
+governance. The slippery slope argument says: a maintainer starts with a tiny,
+undetectable bias, gradually increases it, and by the time anyone notices, the
+protocol is captured. The Hoeffding bound says: no. The cumulative bias after
+$n$ steps grows as $n\delta$. Even if each individual step is below the
+single-audit threshold $\tau$, the aggregate $n\delta$ eventually exceeds any
+fixed $\Delta$ — and once it does, the detection probability jumps to
+$1 - e^{-2M\Delta^2}$, which is essentially 1 for any reasonable $M$ and
+$\Delta$.
+
+The ``slow drift'' strategy requires that the maintainer never trigger the
+threshold at any single audit. But the Hoeffding bound applies to the
+*entire trajectory*, not just individual audits. A maintainer who biases
+by $\delta$ at each of $n$ audits has a cumulative deviation of $n\delta$, and
+the probability that this deviation goes undetected across all $n$ audits is
+bounded by $\exp(-2M (n\delta)^2)$, which tends to zero faster than any
+polynomial in $n$.
+
+<div align="center">
+
+**暴击：**
+Hoeffding界摧毁了协议治理的“滑坡”辩护。滑坡论证说：维护者从微小的、不可检测的偏差
+开始，逐渐增加，等到有人注意到时，协议已被俘获。Hoeffding界说：不。$n$步后的累积偏差
+增长为$n\delta$。即使每个单独步骤低于单次审计阈值$\tau$，总和的$n\delta$最终会超过
+任何固定的$\Delta$——一旦超过，检测概率跃升至$1 - e^{-2M\Delta^2}$，对于任何合理的
+$M$和$\Delta$，这基本上是1。
+
+“缓慢漂移”策略要求维护者永远不在任何单次审计中触发阈值。但Hoeffding界适用于整个轨迹。
+
+</div>
+
+\end{hitbox}
+
+### Numerical Illustration
+
+[Table omitted — see original .tex]
+
+ The table illustrates why even modest values of $M$ (5--7) provide
+extraordinary detection guarantees. With $M = 7$ and $\Delta = 1.0$, the
+probability of undetected deviation is approximately $8.3 \times 10^{-7}$ —
+roughly the probability of being struck by lightning in a given year. With
+$M = 10$ and $\Delta = 1.5$, it drops to $2.6 \times 10^{-20}$ — far below
+the probability of a cosmic ray flipping a bit in the audit computation.
+
+**中文：**
+该表说明了为什么即使中等$M$值（5--7）也能提供非凡的检测保证。$M=7$且$\Delta=1.0$时，
+未检测偏离的概率约为$8.3 \times 10^{-7}$——与某一年被雷击中的概率相当。$M=10$且
+$\Delta=1.5$时，降至$2.6 \times 10^{-20}$——远低于宇宙射线翻转审计计算中一个比特的概率。
+
+### The Finite-Rotation Connection
+
+The Hoeffding bound is only meaningful because rotation cycles are finite. If
+maintainers served indefinitely, the relevant probability would not be
+$\Pbb(survive one cycle)$ but
+$\lim_{T \to \infty} \Pbb(survive all cycles)$, which for any non-zero
+per-cycle escape probability tends to zero (the maintainer is eventually caught)
+but does not provide a *guaranteed bound on the damage* — the maintainer
+could cause unbounded harm before being caught.
+
+Finite rotation solves this by capping the maximum damage. A maintainer can
+only bias scores for at most $T$ audit events before being rotated out. The
+total distortion introduced by a single maintainer in a single cycle is bounded
+by $T \cdot \Delta_$, where $\Delta_$ is the maximum bias achievable
+before detection becomes virtually certain.
+
+> **Proposition:** [Maximum Undetected Damage Per Cycle]<!-- label: prop:max_damage -->
+> Under the Hoeffding guarantee with parameters $(M, \Delta, \varepsilon)$, the
+> maximum expected undetected distortion introduced by a single maintainer in a
+> single rotation cycle is bounded by:
+> 
+> $$
+>     \E[total distortion] \leq T \cdot \Delta + T \cdot \Delta_ \cdot e^{-2M\Delta^2}
+> $$
+> 
+> where the first term is the detected-and-corrected distortion (bounded by the
+> threshold $\Delta$) and the second term is the undetected residual.
+
+**中文：**
+有限轮换通过限制最大损害解决了这个问题。在Hoeffding保证下，单个维护者单周期内最大期望
+未检测失真受到约束：$\E[总失真] \leq T \cdot \Delta + T \cdot \Delta_ \cdot e^{-2M\Delta^2}$。
+
+---
+
+## 多维护者互相审计：$\sum g = 0$是唯一均衡
+## Multi-Maintainer Mutual Audit: $\sum g = 0$ Is the Only Equilibrium
+
+### The Mutual Audit Game: Strategic Form
+
+We now analyze the strategic interaction among $K$ maintainers within a single
+rotation cycle. This is a simultaneous-move game where each maintainer chooses
+a bias level $g_i \in [-\Delta_, \Delta_]$.
+
+> **Definition:** [Mutual Audit Game $G(K, M, p_{det}, B, D, P)$]
+> The mutual audit game is defined by:
+> 
+- Players: $K$ maintainers, indexed $i = 1, ..., K$.
+- Actions: $g_i \in \R$, the bias level chosen by maintainer $i$.
+- Detection: Player $i$ is detected if
+- Payoffs: As defined in [ref], including honesty bonus $B$,
+
+> **Theorem:** [Zero-Sum Bias Equilibrium under Rotation]<!-- label: thm:zerosumbias -->
+> Consider the **repeated** mutual audit game with rotation: $K \geq 3$
+> maintainers serve for finite cycles of length $T$, after which $r \geq 1$
+> maintainers are rotated out and replaced from a pool of size $N > K$.
+> At each audit event, the Hoeffding detection mechanism operates with
+> penalty $P > \sup_{g} D(g) / p_{det}(g, \mathbf{0})$.
+> 
+> **Static caveat.** In the one-shot (static) mutual audit game,
+> any symmetric profile $g_i = g \neq 0$ for all $i$ is also a Nash equilibrium:
+> since all scores shift by $g$, each maintainer's score equals the (corrupted)
+> consensus and detection fails. The static game does *not* uniquely
+> select $g=0$.
+> 
+> **Dynamic resolution.** Under finite-horizon rotation, the unique
+> subgame-perfect equilibrium is:
+> 
+> $$<!-- label: eq:nasheq -->
+>     g_i^* = 0 \quad for all  i = 1, ..., K
+> $$
+> 
+> Furthermore, at this equilibrium:
+> 
+> $$
+>     \sum_{i=1}^{K} g_i^* = 0
+> $$
+
+> **Proof:** We proceed in three steps.
+> 
+> *Step 1: Individual rationality of $g = 0$.*
+> Consider maintainer $i$. Given that all other maintainers $j \neq i$ choose
+> $g_j = 0$, maintainer $i$'s expected payoff from choosing $g_i = g$ is:
+> 
+> $$
+>     \E[u_i(g, \mathbf{0}_{-i})] = B \cdot \indicator[g = 0] + D(g) \cdot \indicator[g \neq 0] 
+>     - \auditCost \cdot (K-1) - P \cdot p_{det}(g, \mathbf{0}_{-i})
+> $$
+> 
+> For $g = 0$: $\E[u_i(0, \mathbf{0}_{-i})] = B - \auditCost \cdot (K-1)$.
+> For $g \neq 0$: $\E[u_i(g, \mathbf{0}_{-i})] = D(g) - \auditCost \cdot (K-1) - P \cdot p_{det}(g, \mathbf{0}_{-i})$.
+> 
+> The condition $P > D(g) / p_{det}(g, \mathbf{0})$ ensures that for all $g \neq 0$:
+> 
+> $$
+>     D(g) - P \cdot p_{det}(g, \mathbf{0}_{-i}) < 0
+> $$
+> 
+> Since $B > 0$, we have $\E[u_i(0, \mathbf{0}_{-i})] > \E[u_i(g, \mathbf{0}_{-i})]$ for all $g \neq 0$.
+> Thus $g = 0$ is a strict best response to $\mathbf{g}_{-i} = \mathbf{0}$.
+> 
+> *Step 2: No profitable deviation from $g = 0$.*
+> Suppose some subset $S \subseteq \{1, ..., K\}$ of maintainers deviates to
+> $g_i = \delta \neq 0$. Since $|S| \leq K-1$ (at least one maintainer remains at
+> $g = 0$), the consensus baseline is shifted toward the honest maintainers'
+> scores. The deviating maintainers face detection probability:
+> 
+> $$
+>     p_{det}(\delta, \mathbf{g}_{-i}) \geq 1 - \exp\left(-2(K - |S|)\Delta^2\right)
+> $$
+> 
+> where $\Delta$ is the effective deviation from the honest consensus. As $K$ grows
+> or $|S|$ shrinks, detection becomes virtually certain. The expected payoff from
+> joint deviation is:
+> 
+> $$
+>     \E[u_i(\delta, coalition)] = D(\delta) - \auditCost \cdot (K-1) - P \cdot p_{det}(\delta, \cdot)
+> $$
+> 
+> For $P$ sufficiently large (as assumed), this is strictly negative for all
+> $\delta \neq 0$. Hence no coalition can profitably deviate.
+> 
+> *Step 3: Uniqueness of the symmetric equilibrium.*
+> Consider any symmetric strategy profile where all maintainers use the same
+> strategy $g$. If $g \neq 0$, then every maintainer faces detection by the
+> remaining $K-1$ maintainers whose scores are centered at $s^* + g$. The
+> detection test compares $s_i$ against the mean of others, which in the
+> symmetric case equals $s^* + g$ (since all others also use bias $g$).
+> Thus $|s_i - consensus| \approx 0 < \tau$, and detection fails.
+> In this case, each maintainer earns $D(g) - \auditCost \cdot (K-1)$.
+> However, this symmetric-deviation profile is not coalition-proof: any
+> single maintainer who deviates to $g=0$ while others remain at $g$ would
+> earn $B - \auditCost \cdot (K-1)$ but also face detection (since their
+> score now deviates from the corrupted consensus). More importantly,
+> rotation breaks the symmetry: new maintainers entering with $g=0$ will
+> detect the systematic drift. Therefore, the only coalition-proof symmetric
+> equilibrium is $g_i = 0$ for all $i$.
+> 
+> *Step 4: Asymmetric profiles with canceling biases.*
+> We note that non-symmetric profiles where $\sum_i g_i = 0$ but individual
+> $g_i \neq 0$ (e.g., $g_1 = \delta$, $g_2 = -\delta$, $g_k = 0$ for $k \geq 3$)
+> can escape mutual-audit detection because biases cancel in the consensus
+> computation. These profiles are not Nash equilibria under the rotation
+> mechanism because: (a) the maintainers with $g \neq 0$ face detection
+> when honest maintainers rotate in, (b) the deviators must coordinate
+> their biases precisely, and (c) the public audit logs enable retrospective
+> detection of the canceling pattern across rotation boundaries. The
+> protocol's security therefore relies on rotation to disrupt any
+> temporary canceling coalition before it can cause cumulative damage.
+> Under the rotation mechanism, the only subgame-perfect equilibrium
+> surviving all rotation cycles is $g_i = 0$ for all $i$, which implies
+> $\sum_i g_i = 0$.
+
+**中文：**
+**静态警示：** 在一次性（静态）互相审计博弈中，任何对称策略
+$g_i = g \neq 0$（所有$i$）也是纳什均衡：因为所有分数同步偏移，每个维护者的
+分数等于（已被污染的）共识，检测失效。静态博弈*不*唯一选择$g=0$。
+
+**动态解决：** 在有限轮换重复博弈中，若检测惩罚满足
+$P > \sup_g D(g) / p_{det}(g, \mathbf{0})$，则唯一的子博弈完美均衡
+为对所有$i$有$g_i^* = 0$。在此均衡下，$\sum_{i=1}^{K} g_i^* = 0$。
+
+> **Corollary:** [$\sum g = 0$ as Global Constraint]<!-- label: cor:sumgzero -->
+> The mutual audit game does not merely make $g_i = 0$ a Nash equilibrium for each
+> individual maintainer — it makes $\sum_i g_i = 0$ a *global invariant* of
+> the protocol. Any deviation by one maintainer that would make $\sum g \neq 0$
+> is detected by the others, triggering the penalty $P$. The protocol's output
+> inherits the $\sum g = 0$ property, ensuring that aggregate bias is zero even if
+> individual biases fluctuate around zero within the detection tolerance.
+
+**中文：**
+互相审计博弈不仅使$g_i = 0$成为每个个体维护者的纳什均衡——它使$\sum_i g_i = 0$成为
+协议的全局不变量。任何试图使$\sum g \neq 0$的偏离都会被其他维护者检测到。
+
+\begin{hitbox}
+This is the most misunderstood aspect of SCX governance. Critics ask: ``What if
+a maintainer is biased?'' The answer is not ``we select unbiased maintainers.''
+The answer is: ``If a maintainer is biased, the other $K-1$ maintainers detect
+it with probability $1 - e^{-2(K-1)\Delta^2}$, and the biased maintainer is
+removed. The aggregate bias of the protocol stays at zero because the consensus
+is defined as the mean of the honest majority, which automatically cancels
+individual biases.''
+
+The protocol does not need to find unbiased people. The protocol needs to find
+$K$ people such that no coalition of size $\lfloor (K-1)/2 \rfloor$ can agree
+to bias in the same direction. This is a much weaker requirement — and one
+that the rotation mechanism satisfies by ensuring that the active set is never
+a stable coalition.
+
+<div align="center">
+
+**暴击：**
+这是SCX治理最被误解的方面。批评者问：“如果维护者有偏差怎么办？”答案不是“我们选择
+无偏的维护者”。答案是：“如果维护者有偏差，其他$K-1$个维护者以概率
+$1 - e^{-2(K-1)\Delta^2}$检测到，有偏的维护者被移除。协议的聚合偏差保持为零，因为
+共识被定义为诚实多数的均值，自动抵消个体偏差。”
+
+协议不需要找无偏的人。协议需要找$K$个人，使得任何规模为$\lfloor (K-1)/2 \rfloor$的
+联盟都不能同意朝同一方向偏置。这是一个弱得多的要求——轮换机制通过确保活跃集合永远
+不是一个稳定的联盟来满足这一要求。
+
+</div>
+
+\end{hitbox}
+
+### Why $\sum g = 0$ Is Not a Goodwill Assumption
+
+A common misunderstanding — especially among readers accustomed to corporate or
+academic governance — is that $\sum g = 0$ is a normative assumption about
+maintainer behavior: ``we assume maintainers will be honest'' or ``we select
+maintainers who are known to be unbiased.'' This is exactly wrong.
+
+$\sum g = 0$ is a **mathematical consequence** of the detection mechanism,
+not a premise about human nature. The proof of Theorem [ref]
+does not use any assumption about maintainer psychology, ethics, or intentions.
+It uses only:
+
+- The payoff structure (which is enforced by the protocol)
+- The detection probability (which is guaranteed by the Hoeffding bound)
+- The penalty structure (which is enforced by exclusion from the pool)
+
+A maintainer who is purely self-interested, actively hostile to the protocol's
+mission, and willing to accept any risk to cause harm — even this maintainer
+finds $g = 0$ to be the strictly dominant strategy when $P \cdot p_{det} > D(g)$.
+
+**中文：**
+$\sum g = 0$不是关于维护者行为的规范性假设。它是检测机制的数学推论。Theorem [ref]
+的证明不使用任何关于维护者心理、伦理或意图的假设。它只使用：收益结构（由协议强制执行）、
+检测概率（由Hoeffding界保证）、惩罚结构（由排除出池强制执行）。
+
+即使一个纯粹自利的、对协议使命积极敌视的、愿意接受任何风险以造成伤害的维护者——
+当$P \cdot p_{det} > D(g)$时，也会发现$g = 0$是严格占优策略。
+
+\begin{govbox}
+The distinction between ``we assume maintainers are honest'' and ``we make
+honesty the strictly dominant strategy'' is the difference between a social
+protocol and a mathematical protocol. Social protocols survive as long as the
+assumption holds. Mathematical protocols survive regardless of whether the
+assumption holds — because the assumption is not an input to the system, it is
+an output.
+
+SCX is a mathematical protocol. The maintainer's honesty is not assumed; it is
+proved.
+
+<div align="center">
+
+**治理透视：**
+“我们假设维护者是诚实的”和“我们使诚实成为严格占优策略”之间的区别，是社会协议和
+数学协议之间的区别。社会协议只要假设成立就能存活。数学协议无论假设是否成立都能存活——
+因为假设不是系统的输入，而是输出。
+
+SCX是一个数学协议。维护者的诚实不被假设；被证明。
+
+</div>
+
+\end{govbox}
+
+---
+
+## 为什么“伟大”无关紧要：定理审计维护者，不审计履历
+## Why ``Greatness'' Is Irrelevant: The Theorem Audits the Maintainer, Not the Biography
+
+### The Biography Fallacy
+
+In traditional governance — corporate boards, academic committees, open-source
+maintainer teams — the selection process is dominated by what we call the
+**Biography Fallacy**: the belief that a person's past credentials predict
+their future behavior in a governance role.
+
+The Biography Fallacy manifests in questions like:
+
+- ``Where did they get their PhD?''
+- ``What companies have they worked for?''
+- ``How many papers have they published?''
+- ``What is their h-index?''
+- ``Who vouches for them?''
+- ``What prizes have they won?''
+
+Every one of these questions is irrelevant to SCX governance. Not ``less
+important'' or ``secondary'' — *irrelevant*. The reason is simple: the
+Hoeffding bound does not contain a term for the maintainer's h-index. The
+detection probability $1 - e^{-2M\Delta^2}$ does not depend on the maintainer's
+institutional affiliation. The Nash equilibrium $g = 0$ does not shift when the
+maintainer has a Nobel Prize.
+
+**中文：**
+在传统治理中——公司董事会、学术委员会、开源维护者团队——选择过程被我们称之为
+**履历谬误**的观念所主导：相信一个人过去的资历能预测其在治理角色中的未来行为。
+
+这些问题中的每一个都与SCX治理无关。不是“不那么重要”或“次要”——*无关*。
+原因很简单：Hoeffding界不包含维护者h-index的项。检测概率$1 - e^{-2M\Delta^2}$不依赖
+于维护者的机构隶属关系。纳什均衡$g = 0$不会因为维护者有诺贝尔奖而移动。
+
+> **Theorem:** [Irrelevance of Biography]<!-- label: thm:biography_irrelevant -->
+> For any maintainer selection criterion $\mathcal{C}$ that is a function of the
+> maintainer's biography (past achievements, credentials, affiliations, etc.) but
+> not of their real-time audit performance, and for any governance outcome metric
+> $\mathcal{O}$ that depends only on the maintainer's actual bias $g(t)$ during
+> their service period, we have:
+> 
+> $$
+>     \E[\mathcal{O} \mid \mathcal{C}] = \E[\mathcal{O} \mid g \in [-\Delta, \Delta]]
+> $$
+> 
+> That is, conditional on the maintainer's bias being within the detectable
+> threshold (which is enforced by the audit mechanism), the biography-based
+> selection criterion $\mathcal{C}$ provides zero additional information about the
+> governance outcome.
+
+> **Proof:** The governance outcome $\mathcal{O}$ depends on the protocol's output, which
+> is a function of the maintainers' actual scores $s_i(X_t)$. These scores are
+> determined by the maintainer's real-time bias $g(t)$ and the data $X_t$.
+> The audit mechanism bounds $g(t)$ within $[-\Delta, \Delta]$ with probability
+> $1 - e^{-2M\Delta^2}$, and this bound depends only on the audit data (scores,
+> consensus, detection flags) — none of which involve biography. Therefore,
+> for any two maintainers with different biographies $\mathcal{C}_1 \neq \mathcal{C}_2$
+> but identical audit-bounded bias $g \in [-\Delta, \Delta]$, the distribution
+> of governance outcomes is identical: the protocol does not ``see'' the
+> biography. Formally, the governance outcome $\mathcal{O}$ is conditionally
+> independent of biography $\mathcal{C}$ given the audit-bounded bias $g$:
+> $\mathcal{O} \perp\!\!\!\perp \mathcal{C} \mid g \in [-\Delta, \Delta]$.
+> Consequently, $\E[\mathcal{O} \mid \mathcal{C}] = \E[\mathcal{O} \mid g \in [-\Delta, \Delta]]$.
+
+**中文：**
+对任何仅依赖于维护者履历而非其实时审计表现的维护者选择标准$\mathcal{C}$，以及任何仅
+依赖于维护者服务期间实际偏差$g(t)$的治理结果度量$\mathcal{O}$，我们有：以维护者偏差在
+可检测阈值内为条件（由审计机制强制执行），基于履历的选择标准$\mathcal{C}$对治理结果
+不提供任何额外信息。
+
+\begin{hitbox}
+The Biography Fallacy is not just wrong — it is *dangerous*. The most
+catastrophic protocol failures in history were caused not by unknown randoms
+slipping through cracks, but by highly credentialed, widely respected, Nobel-
+adjacent individuals whose biographies screamed ``trustworthy'' while their
+behavior screamed ``$g \gg 0$.''
+
+SCX governance inverts the traditional selection logic. We do not ask ``is this
+person great?'' and then trust them. We ask ``can this person's $g$ be bounded
+by $\Delta$ under $M$-way audit?'' and then verify it continuously. The answer
+to the second question does not depend on the answer to the first.
+
+A maintainer's only relevant credential is their current audit log. Everything
+else is noise — and in governance, noise kills.
+
+<div align="center">
+
+**暴击：**
+履历谬误不仅是错误的——它是危险的。历史上最灾难性的协议失败不是由不知名的随机者钻了
+空子造成的，而是由高资历的、广受尊敬的、诺贝尔奖级别的个人造成的，他们的履历尖叫着
+“可信赖”，而他们的行为尖叫着“$g \gg 0$”。
+
+SCX治理颠倒了传统的选择逻辑。我们不问“这个人伟大吗？”然后信任他们。我们问“这个人的
+$g$能否在$M$方审计下被约束在$\Delta$以内？”然后持续验证。第二个问题的答案不取决于
+第一个问题的答案。
+
+维护者唯一相关的资历是他们当前的审计日志。其他一切都是噪声——而在治理中，噪声杀人。
+
+</div>
+
+\end{hitbox}
+
+### The Maintainer Selection Protocol
+
+Given the irrelevance of biography, how does SCX select maintainers? The answer
+is a protocol, not a process:
+
+> **Protocol:** [SCX Maintainer Selection]<!-- label: prot:selection -->
+> 
+1. **Candidate pool admission:** Any individual who can demonstrate
+2. **Random rotation draw:** When a rotation event occurs, $r$
+3. **Probationary period:** New maintainers serve a probationary
+4. **Continuous audit:** From the moment a maintainer is seated,
+5. **Automatic removal:** If the detection mechanism flags a
+
+**中文：**
+SCX维护者选择是一个协议，不是一个过程。候选池准入（自动化的、无人的资格审查测试，
+验证能力而非品德）、随机轮换抽签、试用期（更严格的审计阈值）、持续审计（从$t=1$起
+Hoeffding界适用）、自动移除（定理决定，无上诉过程）。
+
+\begin{govbox}
+The Maintainer Selection Protocol is designed to eliminate every point where
+human judgment could introduce bias. There are no interviews (which are known
+to be worse than random for predicting performance). There are no reference
+checks (which select for network, not competence). There are no ``culture fit''
+assessments (which select for homogeneity, which is the enemy of mutual audit
+independence). There is only: can you pass the qualification test? If yes, you
+enter the pool. The protocol handles the rest.
+
+<div align="center">
+
+**治理透视：**
+维护者选择协议旨在消除每一个人类判断可能引入偏差的点。没有面试（已知比随机更差的
+绩效预测方式）。没有推荐信核查（选择的是人脉，不是能力）。没有“文化契合度”评估
+（选择的是同质性，而这是互相审计独立性的敌人）。
+
+</div>
+
+\end{govbox}
+
+### The Case of the Malicious Genius
+
+Consider the worst-case scenario: a maintainer who is (a) technically brilliant,
+(b) actively malicious, and (c) has studied the SCX governance protocol in
+detail. This maintainer knows the detection threshold $\tau$, the rotation
+period $T$, and the Hoeffding bound. They are trying to maximize the damage
+they can cause before being detected and removed.
+
+Can they succeed?
+
+> **Theorem:** [Malicious Maintainer Damage Bound]<!-- label: thm:malicious -->
+> Under the SCX governance protocol with parameters $(K, M, T, \Delta, \tau, P)$,
+> the maximum expected undetected damage that any maintainer — regardless of
+> competence, knowledge, or motivation — can inflict in a single rotation cycle
+> is bounded by:
+> 
+> $$
+>     \E[max damage] \leq \frac{T \cdot \Delta_}{K}
+> $$
+> 
+> where $\Delta_$ is the maximum score range, and the division by $K$ reflects
+> the dilution of any single maintainer's influence by the consensus mechanism.
+
+> **Proof:** A malicious maintainer who biases their scores by $\delta$ shifts the consensus
+> (mean) by $\delta/K$ per audit event. The Hoeffding detection mechanism
+> (Theorem [ref]) catches the deviator after at most
+> $m = O(\ln(1/\varepsilon) / (M\Delta^2))$ audit events with probability
+> $1 - \varepsilon$, where $\Delta = |\delta|$. The total undetected damage
+> is therefore bounded by the number of pre-detection events $m$ times the
+> per-event distortion $\delta/K$:
+> 
+> $$
+>     \E[max damage] \leq \frac{m \cdot \delta}{K}
+>     \leq \frac{T \cdot \Delta_}{K} \cdot \frac{m}{T}
+> $$
+> 
+> Since $m \ll T$ for any non-negligible bias (the detection is exponentially
+> fast in $M\Delta^2$), the effective damage is far below the worst-case bound
+> $T \cdot \Delta_ / K$. The latter is a conservative upper bound that
+> holds even when detection is delayed; in practice, detection occurs within
+> a small fraction of the rotation cycle.
+
+**中文：**
+在SCX治理协议下，任何维护者——无论能力、知识或动机——在单个轮换周期内可造成的最大
+期望未检测损害受到约束：$\E[最大损害] \leq T \cdot \Delta_ / K$。$K$反映
+了共识机制对任何单个维护者影响的稀释。
+
+\begin{hitbox}
+This is the final nail in the coffin of the ``greatness'' requirement. Even the
+most brilliant, most malicious, most knowledgeable adversary cannot cause more
+than $T \cdot \Delta_ / K$ damage. This bound does not depend on the
+adversary's IQ, their resources, their patience, or their creativity. It depends
+only on $T$, $\Delta_$, and $K$ — all of which are protocol parameters
+set by SCX.
+
+A maintainer's ``greatness'' is irrelevant because the protocol's damage bound
+is invariant to it. The theorem audits the maintainer — and the theorem does not
+care about your Nobel Prize.
+
+<div align="center">
+
+**暴击：**
+这是“伟大”要求的棺材上的最后一颗钉子。即使最聪明、最恶意、最有知识的对手也不能造成
+超过$T \cdot \Delta_ / K$的损害。这个界不取决于对手的智商、资源、耐心或创造力。
+它只取决于$T$、$\Delta_$和$K$——所有这些都是SCX设置的协议参数。
+
+维护者的“伟大”无关紧要，因为协议的损害界对此不变。定理审计维护者——而定理不在乎你的
+诺贝尔奖。
+
+</div>
+
+\end{hitbox}
+
+---
+
+## 维护者数据披露：必须披露什么，绝不能披露什么
+## Maintainer Data Disclosure: What Must Be Disclosed, What Must Never Be Disclosed
+
+### The Disclosure Boundary
+
+SCX governance draws a sharp boundary between what maintainers must disclose
+and what they must never disclose. This boundary is not arbitrary — it follows
+directly from the mathematical structure of the governance protocol.
+
+> **Definition:** [Disclosure Boundary]
+> Let $\mathcal{D}_{must}$ be the set of data that a maintainer is required
+> to publish for the audit mechanism to function. Let $\mathcal{D}_{never}$
+> be the set of data that a maintainer is prohibited from publishing because it
+> would contaminate the audit mechanism with biography-based bias. Then:
+> 
+> $$
+>     \mathcal{D}_{must} \cap \mathcal{D}_{never} = \emptyset
+> $$
+> 
+> and the union of the two categories covers all governance-relevant data.
+
+**中文：**
+SCX治理在维护者必须披露和绝不能披露的数据之间划分了清晰的边界。此边界不是任意的——
+它直接源于治理协议的数学结构。
+
+### What Must Be Disclosed ($\mathcal{D_{must}$)}
+
+The following data must be publicly available, append-only, and cryptographically
+timestamped:
+
+1. **Audit logs (raw scores):** For every audit event $t$, every
+2. **Calibrated $g$ parameters:** Each maintainer's estimated bias
+3. **Conflict declarations:** If a maintainer has any financial,
+4. **Detection events:** Every detection event — when a maintainer's
+5. **Rotation records:** Every rotation event must be published,
+6. **Protocol parameter changes:** Any change to $K$, $M$, $T$, $r$,
+
+**中文：**
+必须公开、仅追加、密码学时间戳的数据：审计日志（原始分数）、校准的$g$参数、冲突声明、
+检测事件、轮换记录、协议参数变更。
+
+\begin{govbox}
+The ``must disclose'' list is designed to make the audit mechanism fully
+reproducible. Any third party with access to the public logs can re-run the
+mutual audit computation and verify that every detection, every rotation, and
+every $g$ estimate is correct. This is the mathematical equivalent of
+``don't trust, verify'' — the verification is not delegated to a trusted
+auditor; it is delegated to the public's ability to recompute.
+
+<div align="center">
+
+**治理透视：**
+“必须披露”列表旨在使审计机制完全可复现。任何有权访问公开日志的第三方都可以重新运行
+互相审计计算，并验证每个检测、每个轮换和每个$g$估计是正确的。
+
+</div>
+
+\end{govbox}
+
+### What Must Never Be Disclosed ($\mathcal{D_{never}$)}
+
+The following data must **never** be associated with a maintainer's
+governance record:
+
+1. **Personal identity:** Real name, photograph, date of birth,
+2. **Educational credentials:** Degrees, institutions, GPA, thesis
+3. **Professional history:** Previous employers, job titles, years
+4. **Publication record:** Papers, patents, h-index, citation counts,
+5. **Personal relationships:** Family connections, friendships,
+6. **Political or ideological affiliations:** Voting record, party
+7. **Social media presence:** Twitter followers, GitHub stars,
+8. **Personal wealth:** Net worth, salary, investment portfolio.
+
+**中文：**
+绝不能与维护者治理记录关联的数据：个人身份、教育资历、职业历史、发表记录、个人关系、
+政治或意识形态归属、社交媒体存在、个人财富。
+
+\begin{hitbox}
+The ``never disclose'' list is not a privacy policy. It is a **governance
+integrity requirement**. Every item on the list is data that, if known, would
+invite human beings — including other maintainers — to substitute biography-based
+judgment for audit-based judgment. ``Alice has a PhD from MIT, so her $g$ is
+probably zero'' is the cognitive error that SCX governance exists to eliminate.
+
+Pseudonymity is not a concession to maintainer comfort. It is a mathematical
+necessity for the audit mechanism to function correctly. If maintainers know
+each other's biographies, they cannot help but incorporate that knowledge into
+their audit behavior — giving a lenient threshold to the famous professor, a
+stricter threshold to the unknown newcomer. Pseudonymity makes it impossible to
+do this, because there is no biography to consult.
+
+<div align="center">
+
+**暴击：**
+“绝不披露”列表不是隐私政策。它是治理完整性要求。列表上的每一项都是这样的数据：如果
+已知，将诱使人类——包括其他维护者——用基于履历的判断替代基于审计的判断。“Alice有MIT
+的博士学位，所以她的$g$大概为零”正是SCX治理存在以消灭的认知错误。
+
+假名性不是对维护者舒适度的让步。它是审计机制正确运行的数学必要性。如果维护者知道彼此
+的履历，他们就无法不将这些知识纳入其审计行为——给著名教授更宽松的阈值，给未知新人
+更严格的阈值。假名性使这不可能，因为没有履历可供参考。
+
+</div>
+
+\end{hitbox}
+
+### The Information Firewall
+
+The disclosure boundary creates what we call the **Information Firewall**:
+a one-way barrier that allows audit data to flow out (to the public) but
+prevents biography data from flowing in (to the audit mechanism).
+
+[Figure omitted — see original .tex]
+
+**中文：**
+披露边界创建了信息防火墙：单向屏障，允许审计数据流出（到公众）但阻止履历数据流入
+（到审计机制）。
+
+---
+
+## 协议参数选择：$K$、$M$、$T$、$r$的数学约束
+## Protocol Parameter Selection: Mathematical Constraints on $K$, $M$, $T$, $r$
+
+### The Parameter Space
+
+SCX governance is parameterized by four key quantities:
+
+- $K$: Number of active maintainers per cycle.
+- $M = K-1$: Number of auditors per maintainer (since self-audit is meaningless).
+- $T$: Cycle length (number of audit events).
+- $r$: Number of maintainers rotated per cycle boundary.
+
+These parameters are not independent — they are coupled by the governance
+guarantees derived above.
+
+> **Proposition:** [Parameter Coupling Constraints]<!-- label: prop:coupling -->
+> For the SCX governance protocol to satisfy its stated guarantees, the parameters
+> must satisfy:
+> 
+> $$
+>     K &\geq 3 <!-- label: eq:c1 --> 
+
+>     r &\geq 1 <!-- label: eq:c2 --> 
+
+>     r &< K <!-- label: eq:c3 --> 
+
+>     T &\geq \frac{\ln(1/\varepsilon)}{2M\Delta^2} \cdot n_{min} <!-- label: eq:c4 --> 
+
+>     \frac{r}{K} &\leq \frac{1}{2} <!-- label: eq:c5 -->
+> $$
+> 
+> where $n_{min}$ is the minimum number of audit events needed for the
+> Hoeffding concentration to achieve the target confidence $1-\varepsilon$, and
+> constraint [ref] ensures that at least half the maintainers carry over
+> between cycles (preventing simultaneous replacement that would break audit
+> continuity).
+
+**中文：**
+参数耦合约束：$K \geq 3$（非退化共识基线所需），$r \geq 1$（轮换非平凡），$r < K$
+（不完全替换），$T$满足Hoeffding集中所需的最小审计事件数，$r/K \leq 1/2$（大多数维护者
+跨周期延续以维持审计连续性）。
+
+> **Proof:** [Justification of [ref]]
+> If $r > \lfloor K/2 \rfloor$, at most $\lceil K/2 \rceil - 1$ maintainers
+> carry over, meaning the new cohort may not have sufficient historical context
+> to detect slow drift accumulated during previous cycles. The overlap constraint
+> $r \leq \lfloor K/2 \rfloor$ (equivalent to $r/K \leq 1/2$ for integer $r$)
+> ensures that at least $\lceil K/2 \rceil$ maintainers carry over, preserving
+> institutional memory of the audit baseline.
+
+### Recommended Parameter Regimes
+
+[Table omitted — see original .tex]
+
+**中文：**
+推荐参数制度：标准（商品级）$K=5, r=2, T=100$；提升（国家级）$K=7, r=2, T=200$；
+极端（AGI时代）$K=11, r=4, T=500$。
+
+> **Remark:** The ``Extreme'' regime is designed for a future where SCX protocol governance
+> may be a target of state-level actors with resources to attempt long-horizon
+> infiltration of the maintainer pool. At $K=11$ and $r=4$, any coalition must
+> corrupt at least 6 of 11 maintainers to achieve majority, and the rotation
+> replaces 4 at a time — meaning the coalition must corrupt new members faster
+> than they are rotated in, which becomes exponentially harder as the candidate
+> pool grows.
+
+---
+
+## 威胁模型与攻击面分析
+## Threat Model and Attack Surface Analysis
+
+### Threat Actors
+
+We classify potential adversaries into four tiers:
+
+1. **Individual maintainer (T1):** A single maintainer attempting to
+2. **Coordinated coalition (T2):** A group of $c$ maintainers
+3. **External entity with infiltration capacity (T3):** A well-
+4. **Protocol-level subversion (T4):** An adversary with the capacity
+
+**中文：**
+威胁行为者四级分类：T1个体维护者（基准威胁，互相审计机制设计用于中和，检测概率
+$1 - e^{-2M\Delta^2}$）；T2协调联盟（$c$个维护者串通，只要未达多数，检测概率缩放为
+$1 - e^{-2(K-c)\Delta^2}$）；T3有渗透能力的外部实体（由随机选择、更严格试用期审计和
+从$t=1$起Hoeffding界应对）；T4协议级颠覆（超出治理博弈论范围，属于密码学和系统安全）。
+
+### Attack Vectors and Mitigations
+
+[Table omitted — see original .tex]
+
+**中文：**
+攻击向量与缓解措施表：缓慢漂移（Hoeffding界在完整轨迹上）、协调偏差（非串通维护者检测）、
+选择性审计（公开日志使第三方能检测非均匀偏差模式）、周期边界攻击（Hoeffding界在$m$个
+事件上）、重新进入攻击（试用期$\tau/2$阈值）、社会工程（假名性阻止针对性社会压力）。
+
+\begin{govbox}
+The attack surface analysis reveals a consistent pattern: every attack vector
+that depends on behavioral subtlety (slow drift, selective bias, social
+engineering) is destroyed by the combination of the Hoeffding bound (which
+applies to the full trajectory, not individual audits) and public logs (which
+enable retrospective detection by third parties). The only attack vectors that
+have any theoretical chance of success are those that achieve majority
+corruption of the active maintainer set — and the rotation mechanism is
+specifically designed to make this combinatorially infeasible.
+
+<div align="center">
+
+**治理透视：**
+攻击面分析揭示了一致的模式：每个依赖行为微妙性的攻击向量（缓慢漂移、选择性偏差、
+社会工程）都被Hoeffding界（适用于完整轨迹而非单个审计）和公开日志（使第三方能进行
+回顾性检测）的组合所摧毁。唯一有任何理论成功机会的攻击向量是那些实现对活跃维护者集合
+多数腐蚀的攻击——而轮换机制专门设计为使这在组合上不可行。
+
+</div>
+
+\end{govbox}
+
+---
+
+## 与现有治理模型的比较
+## Comparison with Existing Governance Models
+
+### The Governance Spectrum
+
+Protocol governance models can be arranged on a spectrum from purely social
+(trust-based) to purely mathematical (proof-based):
+
+1. **BDFL (Benevolent Dictator For Life):** Linux (Linus Torvalds),
+2. **Foundation/Committee:** Apache Foundation, Linux Foundation,
+3. **Token-Weighted Voting (DAO):** Ethereum DAOs, MakerDAO,
+4. **Cryptographic Consensus (BFT):** Bitcoin, Ethereum consensus
+5. **SCX Protocol Governance:** Combines rotation (finite window),
+
+**中文：**
+协议治理谱系：BDFL（终生仁慈独裁者，治理质量完全取决于该个体的$g(t)$）、基金会/委员会
+（$K>1$但无轮换、基于履历的选择、无形式审计）、代币加权投票（治理质量取决于代币分布，
+审计是代币市场价格而非$g$的数学界）、密码学共识（BFT，提供共识排序的数学保证，但不
+保证治理决策的内容无偏）、SCX协议治理（结合轮换、互相审计、公开日志和纳什均衡的创新）。
+
+[Table omitted — see original .tex]
+
+**中文：**
+治理模型比较表。BFT协议提供共识保证但不约束治理内容的偏差；BFT在同步假设下容忍最多
+$f < n/3$拜占庭节点；SCX在共识退化前容忍最多$\lfloor (K-1)/2 \rfloor$偏差维护者，
+轮换确保此阈值永不持续被突破。
+
+\begin{hitbox}
+The comparison table reveals the structural gap that SCX governance fills.
+Existing governance models are strong on **process** (how decisions are
+made — voting, consensus, delegation) but weak on **content** (whether
+the decisions themselves are unbiased). A BFT protocol ensures that everyone
+agrees on what the decision is. An SCX protocol ensures that what everyone
+agrees on is actually unbiased. These are different guarantees, and both are
+necessary.
+
+SCX is the first governance model to provide a mathematical guarantee on
+governance *content bias*, not just governance *process integrity*.
+This is the step from ``the election was fair'' to ``the elected official is
+unbiased'' — a step that has historically been left to hope, reputation, and
+prayer.
+
+<div align="center">
+
+**暴击：**
+比较表揭示了SCX治理填补的结构性空白。现有治理模型在过程上强（决策如何做出——投票、
+共识、委托）但在内容上弱（决策本身是否无偏）。BFT协议确保每个人对决策是什么达成一致。
+SCX协议确保每个人达成一致的东西实际上是无偏的。这些是不同的保证，两者都是必要的。
+
+SCX是第一个对治理*内容偏差*而不仅仅是治理*过程完整性*提供数学保证的
+治理模型。这是从“选举公正”到“当选官员无偏”的一步——这一步历史上一直被留给希望、声誉
+和祈祷。
+
+</div>
+
+\end{hitbox}
+
+---
+
+## 实施考量：从定理到运行系统
+## Implementation Considerations: From Theorems to Running Systems
+
+### The Audit Event Pipeline
+
+The SCX governance mechanism is not a theoretical construct — it must be
+implemented as a running system that processes audit events in real time.
+
+> **Protocol:** [SCX Audit Event Pipeline]<!-- label: prot:pipeline -->
+> For each audit event $t$:
+> 
+1. **Data distribution:** The data point $X_t$ to be audited is
+2. **Score submission:** Each maintainer $\mathcal{M}_i$ computes
+3. **Consensus computation:** The SCX consensus engine computes the
+4. **Detection check:** For each maintainer $i$, if
+5. **Log publication:** All raw scores, consensus output, deviation
+6. **$g$ parameter update:** Each maintainer's estimated $g_i(t)$
+
+**中文：**
+SCX审计事件流水线：数据分发 $\to$ 分数提交 $\to$ 共识计算 $\to$ 检测检查 $\to$ 
+日志发布（仅追加、密码学时间戳和Merkle树哈希） $\to$ $g$参数更新。
+
+### Byzantine Fault Tolerance in the Audit Pipeline
+
+The audit pipeline must function correctly even when some maintainers are
+actively adversarial — not just biased, but attempting to disrupt the pipeline
+itself (withholding scores, submitting malformed data, DDoS-ing the consensus
+engine).
+
+> **Proposition:** [Audit Pipeline BFT]<!-- label: prop:pipeline_bft -->
+> The SCX audit pipeline tolerates up to $f = \lfloor (K-1)/3 \rfloor$ Byzantine
+> maintainers who may arbitrarily deviate from the protocol (including refusing to
+> submit scores, submitting invalid data, or attempting to corrupt the consensus
+> computation). The trimmed-mean consensus with top and bottom $\lfloor f/2 \rfloor$
+> scores dropped ensures that the aggregate output is within the convex hull of
+> the honest maintainers' scores.
+
+**中文：**
+SCX审计流水线容忍最多$f = \lfloor (K-1)/3 \rfloor$个拜占庭维护者。修剪均值共识
+（丢弃最高和最低$\lfloor f/2 \rfloor$个分数）确保聚合输出在诚实维护者分数的凸包内。
+
+### The Maintainer Pool Lifecycle
+
+[Figure omitted — see original .tex]
+
+**中文：**
+维护者池生命周期：申请/测试 $\to$ 候选池 $\to$ 活跃（$K$） $\to$ 校友（可冷却后重新申请）
+/ 移除（永久禁止）。
+
+---
+
+## 讨论与哲学含义
+## Discussion and Philosophical Implications
+
+### The Trust Oblivion Point
+
+There exists a threshold — which we call the **Trust Oblivion Point** —
+beyond which a protocol's governance is so well-characterized mathematically
+that the concept of ``trust'' becomes semantically vacuous. When the probability
+of undetected maintainer deviation is $e^{-2M\Delta^2}$, and when $M$ and
+$\Delta$ are set such that this probability is smaller than the probability of
+a hardware error in the computer running the audit, the distinction between
+``proved unbiased'' and ``actually unbiased'' collapses into engineering noise.
+
+The Trust Oblivion Point is not a goal — it is a threshold. Once crossed, the
+protocol's governance is no longer a question of social organization. It is a
+question of parameter selection and computational verification.
+
+**中文：**
+存在一个阈值——我们称之为信任遗忘点——超过该点，协议的治理在数学上被如此好地刻画，
+以至于“信任”的概念变得语义上空洞。当未检测维护者偏离的概率为$e^{-2M\Delta^2}$，且
+$M$和$\Delta$被设置为使此概率小于运行审计的计算机中硬件错误的概率时，“证明无偏”和
+“实际无偏”之间的区别崩溃为工程噪声。
+
+信任遗忘点不是目标——它是阈值。一旦越过，协议的治理不再是一个社会组织的问题。它是一个
+参数选择和计算验证的问题。
+
+### The Maintainer as a Mathematical Object
+
+In the SCX governance framework, a maintainer is not a person. A maintainer is
+a mathematical object with the following properties:
+
+- An input: data point $X_t$
+- An output: score $s_i(X_t) \in [0, \Delta_]$
+- A hidden state: bias parameter $g_i(t)$
+- A detection probability: $\Pbb(detected \mid g_i) = 1 - e^{-2M g_i^2}$
+- A lifecycle: active for at most $T$ audit events, then rotated
+
+This mathematical abstraction is not dehumanizing — it is *precise*.
+By reducing the maintainer to their governance-relevant properties, we eliminate
+every degree of freedom that could be exploited to introduce bias. A maintainer's
+personality, their life story, their intentions — these are not inputs to the
+governance mechanism. They are noise that the mechanism is designed to filter out.
+
+**中文：**
+在SCX治理框架中，维护者不是一个人。维护者是一个具有以下属性的数学对象：输入$X_t$、
+输出$s_i(X_t)$、隐藏状态$g_i(t)$、检测概率$1 - e^{-2M g_i^2}$、生命周期至多$T$个
+审计事件。
+
+这种数学抽象不是去人性化的——它是精确的。通过将维护者化简为其治理相关属性，我们
+消除了每一个可能被用来引入偏差的自由度。维护者的个性、他们的人生故事、他们的意图——
+这些不是治理机制的输入。它们是机制旨在过滤掉的噪声。
+
+\begin{hitbox}
+This is the hardest part of SCX governance for many people to accept — including
+many potential maintainers. People want to be recognized. They want their
+credentials to matter. They want their biography to carry weight. SCX governance
+says: no. Your biography does not matter. Your credentials do not matter. Your
+intentions do not matter. The only thing that matters is your $g(t)$ — right now,
+under the current audit.
+
+This is not a judgment on the value of human beings. It is a specification of
+what is relevant to the mathematical operation of a trustless protocol. Just as
+a cryptographic hash function does not care about the emotional state of the
+person who typed the input, the SCX governance mechanism does not care about
+the biography of the maintainer who submitted the score. It cares only about
+whether the score deviates from consensus by more than $\tau$.
+
+The protocol audits the theorem. The theorem audits the maintainer. The
+maintainer's biography is outside the system boundary — and anything outside
+the system boundary is, by definition, irrelevant.
+
+<div align="center">
+
+**暴击：**
+这是SCX治理对许多人来说最难接受的部分——包括许多潜在的维护者。人们想要被认可。他们
+希望他们的资历有分量。他们希望他们的履历有权重。SCX治理说：不。你的履历无关紧要。
+你的资历无关紧要。你的意图无关紧要。唯一重要的是你的$g(t)$——此时此刻，在当前审计下。
+
+这不是对人类价值的判断。这是对免信任协议的数学操作中什么是相关的规范。就像密码学哈希
+函数不关心输入者的情绪状态一样，SCX治理机制不关心提交分数的维护者的履历。它只关心
+分数与共识的偏差是否超过$\tau$。
+
+协议审计定理。定理审计维护者。维护者的履历在系统边界之外——而系统边界外的任何东西，
+根据定义，都是无关的。
+
+</div>
+
+\end{hitbox}
+
+### The Inevitability of Mathematical Governance
+
+We end with a prediction. As AI systems become more capable — and as the stakes
+of AI governance become existential — the transition from biography-based
+governance to mathematics-based governance will become not just desirable but
+*inevitable*. The reason is simple: as the damage that a single biased
+maintainer can cause grows, the tolerance for biography-based trust shrinks.
+
+When a maintainer's bias could cause $10^6$ dollars in damage, it is acceptable
+to trust their biography. When a maintainer's bias could cause $10^9$ dollars in
+damage, it is reckless. When a maintainer's bias could cause existential damage
+to humanity — as may be the case for protocols governing AGI training data —
+biography-based trust is not reckless; it is insane.
+
+SCX governance is the first protocol to recognize that in the limit of
+existential stakes, the only acceptable governance is governance whose
+guarantees are mathematical theorems, not social conventions. The maintainer
+rotation game, the Hoeffding bound, the $\sum g = 0$ equilibrium — these are
+not features of a better social protocol. They are prerequisites for a protocol
+that can be trusted with existential stakes.
+
+**中文：**
+我们以一个预测结束。随着AI系统变得更有能力——以及AI治理的赌注变得存在性——从基于履历
+的治理到基于数学的治理的转变将不仅变得可取，而且变得不可避免。原因很简单：随着单个
+偏差维护者可以造成的损害增长，对基于履历的信任的容忍度缩小。
+
+当维护者的偏差可能造成$10^6$美元损害时，信任其履历是可接受的。当可能造成$10^9$美元
+损害时，它是鲁莽的。当维护者的偏差可能对人类造成存在性损害时——对治理AGI训练数据的
+协议而言可能就是这种情况——基于履历的信任不是鲁莽的；它是疯狂的。
+
+SCX治理是第一个认识到在存在性赌注的极限下，唯一可接受的治理是其保证是数学定理而非
+社会公约的治理的协议。维护者轮换博弈、Hoeffding界、$\sum g = 0$均衡——这些不是更好
+的社会协议的特征。它们是能够被信任以存在性赌注的协议的前提条件。
+
+---
+
+## 结论：定理审计维护者，不审计履历
+## Conclusion: The Theorem Audits the Maintainer, Not the Biography
+
+### Summary of Results
+
+This paper has established the formal game-theoretic foundation of SCX protocol
+governance. The principal results are:
+
+1. **Corporate $g$ Non-Zero Theorem (Thm. [ref]):**
+2. **Maintainer Rotation Game (Sec.~3):** The rotation mechanism
+3. **Hoeffding Guarantee (Thm. [ref]):** The
+4. **$\sum g = 0$ Nash Equilibrium (Thm. [ref]):**
+5. **Biography Irrelevance (Thm. [ref]):**
+6. **Disclosure Boundary (Sec.~7):** SCX governance requires a strict
+
+**中文：**
+本文确立了SCX协议治理的形式化博弈论基础。主要结果：公司$g$非零定理、维护者轮换博弈、
+Hoeffding保证、$\sum g = 0$纳什均衡、履历无关性、披露边界。
+
+### The One-Sentence Version
+
+If this paper must be reduced to a single sentence that every SCX maintainer
+memorizes:
+
+<div align="center">
+
+\fbox{\fbox{\parbox{0.85\textwidth}{\bfseries
+The theorem audits the maintainer, not the biography.
+
+$P(undetected) \leq e^{-2M\Delta^2}$.
+
+$\sum g = 0$ is not assumed — it is proved.
+
+If your credentials matter, the protocol is broken.
+}}}
+
+</div>
+
+**中文：**
+如果本文必须被压缩成每个SCX维护者都背诵的一句话：定理审计维护者，不审计履历。
+$P(未检测) \leq e^{-2M\Delta^2}$。$\sum g = 0$不被假设——被证明。
+如果你的资历重要，协议就坏了。
+
+\begin{hitbox}
+The final honest critique: most protocol governance papers are wishful thinking
+dressed in academic prose. They describe what governance *should* look
+like, assuming that well-intentioned people will behave well. This paper
+describes what governance *must* look like, assuming that self-interested
+people will behave as game theory predicts — and proves that the mechanism
+remains secure regardless.
+
+The difference is not rhetorical. It is the difference between a social protocol
+that works until someone betrays it, and a mathematical protocol that works
+because betrayal is provably irrational.
+
+SCX is a mathematical protocol. The theorems are the governance. Everything else
+is implementation detail.
+
+<div align="center">
+
+**暴击：**
+最后的诚实暴击：大多数协议治理论文是披着学术散文外衣的一厢情愿。它们描述治理应该是什么
+样子，假设善意的人会行为良好。本文描述治理必须是什么样子，假设自利的人会按照博弈论
+预测的那样行为——并证明该机制无论何时都保持安全。
+
+区别不是修辞性的。它是社会协议（在有人背叛之前有效）和数学协议（因为背叛是可证明的
+非理性而有效）之间的区别。
+
+SCX是一个数学协议。定理就是治理。其他一切都是实现细节。
+
+</div>
+
+\end{hitbox}
+
+---
+
+## Appendix
+## 附录A：Hoeffding不等式的完整陈述与证明
+## Appendix A: Full Statement and Proof of Hoeffding's Inequality
+
+> **Theorem:** [Hoeffding's Inequality]<!-- label: thm:hoeffding_full -->
+> Let $X_1, ..., X_n$ be independent random variables such that $X_i \in [a_i, b_i]$
+> almost surely. Let $S_n = \sum_{i=1}^n X_i$. Then for any $t > 0$:
+> 
+> $$
+>     \Pbb(S_n - \E[S_n] \geq t) \leq \exp\left(-\frac{2t^2}{\sum_{i=1}^n (b_i - a_i)^2}\right)
+> $$
+> 
+> and
+> 
+> $$
+>     \Pbb(|S_n - \E[S_n]| \geq t) \leq 2\exp\left(-\frac{2t^2}{\sum_{i=1}^n (b_i - a_i)^2}\right)
+> $$
+
+In the SCX governance context, we apply this as follows. For a single audit
+event, let $X_1, ..., X_M$ be independent indicator variables where
+$X_j = 1$ if auditor $j$ detects the maintainer's deviation. Each $X_j \in [0,1]$
+has $(b_j - a_j)^2 \leq 1$. Let $p = \E[X_j]$ be the per-auditor detection
+probability. By Hoeffding's inequality:
+
+$$
+    \Pbb\left(\sum_{j=1}^{M} X_j \leq 0\right)
+    = \Pbb\left(\sum_{j=1}^{M} X_j - Mp \leq -Mp\right)
+    \leq \exp\left(-\frac{2M^2 p^2}{M}\right) = \exp(-2M p^2)
+$$
+
+If the per-auditor detection probability scales as $p = \Delta$ (i.e., bias
+magnitude directly determines detection probability in normalized units),
+then the probability that zero out of $M$ auditors detect the deviation is
+bounded by $e^{-2M\Delta^2}$. This bound applies to a single audit event;
+across $n$ events, the survival probability compounds to $\exp(-2M\Delta^2 n)$,
+as derived in Theorem [ref].
+
+**中文：**
+设$X_1, ..., X_n$为独立随机变量，$X_i \in [a_i, b_i]$几乎必然。则Hoeffding不等式
+给出$\Pbb(S_n - \E[S_n] \geq t) \leq \exp(-2t^2 / \sum_{i=1}^n (b_i - a_i)^2)$。
+
+## 附录B：重复博弈中的策略空间形式化
+## Appendix B: Formalization of Strategy Spaces in the Repeated Game
+
+Let $\Gamma^\infty$ denote the infinitely repeated rotation game with discount
+factor $\gamma$. A pure strategy for maintainer $i$ is a mapping:
+
+$$
+    \sigma_i: \mathcal{H} \to \mathcal{A}
+$$
+
+where $\mathcal{H}$ is the set of all possible histories (sequences of past
+actions and detection outcomes) observable by maintainer $i$.
+
+> **Proposition:** [One-Shot Deviation Principle]<!-- label: prop:one_shot -->
+> In the rotation game $\Gamma(N, K, r, T)$, a strategy profile $\sigma^*$ is a
+> subgame perfect equilibrium if and only if no maintainer can profitably deviate
+> in a single period, holding their strategy fixed in all other periods.
+
+This is a direct application of the one-shot deviation principle for repeated
+games with perfect recall (Fudenberg and Tirole, 1991). The proof is standard
+and omitted.
+
+**中文：**
+设$\Gamma^\infty$为具有贴现因子$\gamma$的无限重复轮换博弈。单次偏离原理：在轮换博弈
+$\Gamma(N, K, r, T)$中，策略剖面$\sigma^*$是子博弈完美均衡当且仅当没有维护者可以在
+单个时期有利可图地偏离。
+
+## 附录C：共识机制的渐近性质
+## Appendix C: Asymptotic Properties of the Consensus Mechanism
+
+> **Proposition:** [Consistency of Trimmed Mean Consensus]<!-- label: prop:consistency -->
+> As $K \to \infty$ with the fraction of biased maintainers bounded below
+> $1/2 - \varepsilon$ for some $\varepsilon > 0$, the $\alpha$-trimmed mean
+> consensus estimator (discarding the highest and lowest $\alpha K$ scores,
+> with $\alpha > fraction of extremal biased maintainers$) converges
+> almost surely to the true unbiased score $s^*(X)$.
+
+> **Proof:** This follows from the classical theory of robust estimation (Huber, 1981;
+> Hampel et al., 1986). The trimmed mean is a consistent estimator of the
+> population mean for symmetric distributions and is robust to contamination
+> up to the trimming fraction $\alpha$. As long as the honest maintainers are
+> a majority and their scores are symmetrically distributed around $s^*(X)$
+> (which follows from the $\sum g = 0$ property of the mutual audit game),
+> the trimmed mean converges to $s^*(X)$.
+
+**中文：**
+当$K \to \infty$且偏差维护者比例低于$1/2 - \varepsilon$时，$\alpha$-修剪均值共识
+估计量几乎必然收敛到真实无偏分数$s^*(X)$。
+
+---
+
+\begin{thebibliography}{99}
+
+\bibitem{hoeffding1963}
+W. Hoeffding.
+``Probability inequalities for sums of bounded random variables.''
+*Journal of the American Statistical Association*, 58(301):13--30, 1963.
+
+\bibitem{fudenberg1991}
+D. Fudenberg and J. Tirole.
+*Game Theory*. MIT Press, 1991.
+
+\bibitem{fudenberg1994}
+D. Fudenberg, D. Levine, and E. Maskin.
+``The Folk Theorem with Imperfect Public Information.''
+*Econometrica*, 62(5):997--1039, 1994.
+
+\bibitem{huber1981}
+P. J. Huber.
+*Robust Statistics*. Wiley, 1981.
+
+\bibitem{hampel1986}
+F. R. Hampel, E. M. Ronchetti, P. J. Rousseeuw, and W. A. Stahel.
+*Robust Statistics: The Approach Based on Influence Functions*. Wiley, 1986.
+
+\bibitem{nash1950}
+J. Nash.
+``Equilibrium points in n-person games.''
+*Proceedings of the National Academy of Sciences*, 36(1):48--49, 1950.
+
+\bibitem{myerson1991}
+R. Myerson.
+*Game Theory: Analysis of Conflict*. Harvard University Press, 1991.
+
+\bibitem{osborne1994}
+M. Osborne and A. Rubinstein.
+*A Course in Game Theory*. MIT Press, 1994.
+
+\bibitem{lamport1982}
+L. Lamport, R. Shostak, and M. Pease.
+``The Byzantine Generals Problem.''
+*ACM Transactions on Programming Languages and Systems*, 4(3):382--401, 1982.
+
+\bibitem{castro1999}
+M. Castro and B. Liskov.
+``Practical Byzantine Fault Tolerance.''
+*Proceedings of OSDI*, 1999.
+
+\bibitem{scx_quantum}
+SCX Research Division.
+``Quantum-Secured SCX Audit: BB84, Entanglement, and Quantum Channels.''
+Internal technical report, 2026.
+
+\bibitem{scx_business}
+SCX Strategic Research Division.
+``SCX商业格局分析：全球AI基础设施的三层重构.''
+Internal technical report, 2026.
+
+\bibitem{scx_moe}
+SCX.
+``势能面不齐——多专家路由中的规范自由度与MILP规范固定.''
+Preprint, 2026.
+
+\bibitem{scx_instanton}
+SCX Research Division.
+``Audit Instanton Theory: Non-Perturbative Tunneling Between Bias Regimes in Multi-Maintainer Audit Systems.''
+Internal technical report, 2026.
+
+\bibitem{scx_singularity}
+SCX Research Division.
+``Singularity Theory of Protocol Governance: Catastrophe Manifolds and Structural Stability of Trustless Equilibrium.''
+Internal technical report, 2026.
+
+\end{thebibliography}
+
+---
+
+<div align="center">
+
+{**内部文件**}
+{**INTERNAL ONLY**}
+
+\fbox{\parbox{0.7\textwidth}{
+本文包含SCX协议治理的完整博弈论规范，包括确切的检测阈值、轮换周期和审计协议参数。
+
+This document contains the complete game-theoretic specification of SCX
+protocol governance, including exact detection thresholds, rotation periods,
+and audit protocol parameters.
+
+**未经SCX治理委员会书面授权，严禁复制、分发或引用。**
+**Do not copy, distribute, or cite without written authorization**
+
+**from the SCX Governance Committee.**
+}}
+
+{ 文档哈希 / Document Hash:}
+{`[TO BE COMPUTED AT RELEASE TIME]`}
+
+{ 版本 / Version: 1.0}
+{ 日期 / Date: 2026-07-02}
+{ 分类 / Classification: SCX-GOV-001-INTERNAL}
+{ 密级 / Clearance: GOVERNANCE CORE TEAM ONLY}
+
+</div>

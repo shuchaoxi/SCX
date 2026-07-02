@@ -1,0 +1,110 @@
+*Abstract:*
+
+All machine learning depends on data quality, yet the field lacks a rigorous understanding of when data errors can be detected at all. Here we prove a fundamental impossibility: distinguishing mislabeled samples from intrinsically difficult-but-correct samples is mathematically impossible from observational data alone. We identify the minimal set of structural assumptions that break this impossibility---disjoint expert training, uniform noise, and state-homogeneous error rates---and prove that under these conditions, multi-expert consistency detects label noise with an exponential convergence rate that is minimax optimal, including the exact asymptotic constant. The theoretical bounds are empirically tight: on a materials science benchmark, the predicted detection limit matches the observed F1 score exactly. Our results establish that every data-cleaning method makes implicit assumptions that must be stated for its claims to be scientifically meaningful, and provide both the necessary conditions and the optimal algorithm for the problem.
+
+## Main Text
+
+The quality of training data determines the quality of machine learning models [cite]. When training data contains label errors---samples whose given labels differ from the true labels---model performance degrades predictably and substantially [cite]. A large industry of data-cleaning methods has emerged to address this: loss-based filtering, confidence learning [cite], multi-annotator consensus, and active label correction, among others. These methods share an implicit premise: that data errors can be distinguished from genuinely difficult samples by some observable signal.
+
+We show that this premise is false in the absence of additional structural assumptions. The problem of distinguishing label noise from sample difficulty is fundamentally unidentifiable from observational data.
+
+To see why, consider two worlds. In World A, a dataset contains mislabeled samples: 10\% of the labels in certain regions of the input space have been randomly flipped, while expert models trained on clean data achieve 85\% accuracy in those regions. In World B, the same dataset has perfectly correct labels, but 10\% of the samples in those regions belong to a different ground-truth class than the remaining 90\%, and expert models---trained on what they perceive as conflicting data---genuinely struggle, again achieving 85\% accuracy on that subset.
+
+We prove that the joint distribution of inputs, observed labels, and multi-expert predictions is mathematically identical in both worlds. No test, no algorithm, and no amount of data can distinguish them. This is an identifiability theorem in the sense of classical statistics [cite]: the noise rate and the difficulty rate are not separately identifiable from the observable marginal distribution. We term this the **The Honest Person Theorem** (Theorem 3 in Supplementary Information).
+
+This result has a constructive corollary: it tells us exactly what additional structure is required to break the ambiguity. We identify six assumptions---(1) experts trained on disjoint data subsets, (2) bounded correlation of expert errors given the state, (3) bounded loss, (4) uniform label noise independent of the input, (5) state-homogeneous expert error rates, and (6) balanced error distribution across classes---that together form a **minimal sufficient set** for identifiability. Each assumption corresponds to a specific path out of the unidentifiability trap. Removing any one of them restores the ambiguity for some data distribution.
+
+Under these six assumptions, we prove that multi-expert consistency provides a noise detector with provable guarantees. Let $M$ experts be trained on disjoint data subsets. For each sample, define the **consistency score** $C(x)$ as the fraction of experts that fail to predict the given label. The detection rule is simple: flag a sample as noisy if $C(x)$ exceeds a state-dependent threshold $\theta$. We prove (**Theorem 1**, SI~S1):
+
+$$
+\mathrm{F1} \geq 1 - \frac{1}\sum_{s} \rho_s \exp\bigl(-2M\Delta_s^2\bigr),
+$$
+
+where $\eta$ is the noise rate, $\rho_s$ is the fraction of data in state $s$, and $\Delta_s$ is the separation gap between the expected consistency score on clean samples and the detection threshold. The F1 score converges to 1 exponentially in the number of experts $M$. The weakest assumption in our framework is A2' (bounded expert error correlation). When this correlation is zero, we recover the original independent-experts bound. When it is non-zero, the effective number of independent experts degrades from $M$ to $M/(1+(M-1)\bar)$. We provide a procedure for estimating $\bar$ from data in SI~S1.
+
+The exponential rate $2M\Delta_s^2$ is not arbitrary. Using the Chernoff-Stein lemma and Bahadur-Rao exact large-deviation asymptotics, we prove a matching minimax lower bound (**Theorem 4**, SI~S4): for *any* noise detection algorithm,
+
+$$
+\liminf_{M\to\infty} e^{M\kappa} \sqrt{2\pi M} \cdot (1 - \mathrm{F1}) \geq \frac{C_},
+$$
+
+where $\kappa = \mathrm{KL}(\theta^* \| p_0)$ is the Chernoff information between the clean and noisy expert-error distributions, and $C_$ is an explicit constant depending only on the noise rate and the geometry of the two distributions at the optimal decision threshold. Our adaptive-threshold SCX detector achieves this lower bound with equality, establishing that it is **exact constant minimax optimal**---no algorithm can achieve a smaller error constant, even asymptotically.
+
+The method has a detectable failure mode. When the features used for state discovery carry insufficient information about the true data structure, performance degrades gracefully to that of a simple loss-threshold baseline. We quantify this through the mutual information $\delta = I(\phi(X); S)$ between features and true states, proving (**Theorem 2**, SI~S2):
+
+$$
+\mathrm{F1}_{\mathrm{SCX}} \leq \mathrm{F1}_{\mathrm{base}} + C_F \sqrt{\frac{2}}.
+$$
+
+This provides a practical diagnostic: estimate $\delta$ before running the full method. If $\delta / \log K < 0.2$, the features are sufficiently informative. If the ratio exceeds 0.5, the method will not outperform simpler approaches, and effort should be directed toward better feature engineering rather than hyperparameter tuning.
+
+We validate the theory on the AlN machine-learned interatomic potential (MLIP) dataset (AlN v3, SCX; see Data Availability), a materials science benchmark where 53 of 534 frames carry label noise from thermal and molecular dynamics simulations. Training $M=12$ expert models on disjoint subsets yields a theoretical F1 bound of $0.87$ (range $0.77$--$0.86$ depending on state proportions), consistent with the empirical F1 of $0.87$. The bound is empirically tight: the theory neither overpromises nor underdelivers.
+
+Cross-domain validation on CIFAR-10 image classification and DermaMNIST medical imaging confirms the predicted behavior. On CIFAR-10 with ResNet-18 features ($\delta / \log K \approx 0.15$), SCX achieves $\mathrm{F1}=0.62$ versus a loss baseline of $0.45$ at 10\% noise. On DermaMNIST with weak SimpleCNN features ($\delta / \log K \approx 0.52$), SCX degrades to baseline performance ($\mathrm{F1}=0.101$ vs.\ $0.105$), exactly as Theorem~2 predicts.
+
+Three implications follow. **First**, every data-cleaning method makes implicit assumptions. Our unidentifiability theorem proves that no method can claim to detect label errors without stating its structural assumptions. **Second**, the optimal detection strategy under our assumptions---multi-expert consistency with an adaptive threshold---is computationally practical: it requires training $M \geq 8$ models on data subsets, which is feasible on standard hardware for datasets up to millions of samples. **Third**, the feature-strength diagnostic provides a decision rule for when to apply the method, preventing wasted computation on datasets where it cannot help.
+
+**SCX Ecosystem.** The theoretical framework presented here is operationalized through a family of co-designed components spanning the full data quality pipeline. **Yajie** (audit engine) implements the multi-expert consistency detection protocol with provable exponential convergence (Theorem~1) and exact constant minimax optimality (Theorem~4'), serving as the computational core of noise detection [cite]. **Spring** (self-evolving gating) provides a monotonically growing memory bank $M_t$ with guaranteed Robbins-Monro convergence, enabling the periodic resurrection of previously discarded samples as the gatekeeper's discrimination improves [cite]. **Situs** (physical positional encoding) augments state representations with geometry-anchored coordinates when the information-theoretic condition $I(Y;P \mid S) > 0$ holds, distinguishing physical position as a causal variable from statistical token embeddings [cite]. **Cercis Score** integrates these signals into a unified quality metric $S = Q + \eta N$, where $Q$ is the base quality from multi-expert consensus and $\eta N$ is a time-decaying novelty bonus that ensures continued exploration at the noise-difficulty boundary [cite]. Together, these components form a complete pipeline from state crystallization through multi-expert auditing to self-evolving quality assessment.
+
+The theory points to several open questions. The exact constant optimality proof uses the Bahadur-Rao theorem for i.i.d.\ Bernoulli observations; extending it to non-identical expert error rates (heterogeneous expert quality) requires a generalized large-deviation principle. The six identifiability assumptions are sufficient but their individual necessity has been established only for the symmetric two-class case. And the feature-strength bound uses Pinsker's inequality, which is conservative; sharper information-theoretic bounds using strong data-processing inequalities may tighten the diagnostic.
+
+Data quality is widely acknowledged as the dominant factor in machine learning performance [cite]. Our results provide the first rigorous mathematical foundation for understanding when and how data errors can be detected. The unidentifiability theorem establishes a hard boundary; the detection guarantee and matching lower bound establish what is achievable within that boundary; the feature-strength diagnostic tells practitioners which side of the boundary they are on.
+
+\begin{flushleft}
+\end{flushleft}
+
+**Intellectual Property Statement.**
+The SCX software framework, including all algorithms, implementations, and experiment scripts described in this paper, was independently developed by the author and is released . Commercial use, proprietary deployment, and integration into production systems are subject to separate licensing terms available from the author. The mathematical theorems and proofs presented herein are in the public domain and cannot be the subject of patent claims. The AlN interatomic potential function and associated DFT reference data used in the materials science case study were provided by the SCX and are used with permission; these data remain the intellectual property of the SCX.
+
+**Data Availability.**
+The AlN v3 dataset was provided by the SCX and is available upon reasonable request and with permission of the data owner. CIFAR-10, DermaMNIST, and MedMNIST are publicly available benchmark datasets. DrugBank is available from go.drugbank.com.
+
+**Code Availability.**
+The SCX core framework is available at [repository] . Experiment reproduction scripts are included in the repository.
+
+**Competing Interests.**
+The author declares the following competing interests: the SCX software framework may be commercialized through a future entity. The author has no competing interests with respect to the AlN data, which belong to the SCX.
+
+\begin{thebibliography}{20}
+
+\bibitem{northcutt2021} Northcutt, C. G., Jiang, L. \& Chuang, I. L. Confident learning: Estimating uncertainty in dataset labels. *Journal of Artificial Intelligence Research* **70**, 1373--1411 (2021).
+
+\bibitem{sambasivan2021} Sambasivan, N., Kapania, S., Highfill, H., Akrong, D., Paritosh, P. \& Aroyo, L. M. ``Everyone wants to do the model work, not the data work'': Data cascades in high-stakes AI. *Proc. CHI* (2021).
+
+\bibitem{floridi2018} Floridi, L., Cowls, J., Beltrametti, M., et al. AI4People---An ethical framework for a good AI society. *Minds and Machines* **28**(4), 689--707 (2018).
+
+\bibitem{casella2002} Casella, G. \& Berger, R. L. *Statistical Inference*. Duxbury, 2nd ed. (2002).
+
+\bibitem{chernoff1952} Chernoff, H. A measure of asymptotic efficiency for tests of a hypothesis based on the sum of observations. *Annals of Mathematical Statistics* **23**(4), 493--507 (1952).
+
+\bibitem{hoeffding1963} Hoeffding, W. Probability inequalities for sums of bounded random variables. *Journal of the American Statistical Association* **58**(301), 13--30 (1963).
+
+\bibitem{bahadur1960} Bahadur, R. R. \& Rao, R. R. On deviations of the sample mean. *Annals of Mathematical Statistics* **31**(4), 1015--1027 (1960).
+
+\bibitem{cover2006} Cover, T. M. \& Thomas, J. A. *Elements of Information Theory*. Wiley, 2nd ed. (2006).
+
+\bibitem{krizhevsky2009} Krizhevsky, A. \& Hinton, G. Learning multiple layers of features from tiny images. Technical Report, University of Toronto (2009).
+
+\bibitem{yang2023medmnist} Yang, J., Shi, R., Wei, D., Liu, Z., Zhao, L., Ke, B., Pfister, H. \& Ni, B. MedMNIST v2---A large-scale lightweight benchmark for 2D and 3D biomedical image classification. *Scientific Data* **10**, 41 (2023).
+
+\bibitem{wishart2008drugbank} Wishart, D. S., Knox, C., Guo, A. C., et al. DrugBank: a knowledgebase for drugs, drug actions and drug targets. *Nucleic Acids Research* **36**(Database issue), D901--D906 (2008).
+
+\bibitem{xi2025scx} SCX. A Fundamental Impossibility in Data Quality: Distinguishing Label Noise from Sample Difficulty is Provably Unsolvable Without Explicit Assumptions. arXiv preprint (2025).
+
+\bibitem{spring_config} SCX. Spring: A Self-Evolving Gatekeeper with Provable Convergence. Working paper (2026).
+
+\bibitem{situs_theory} SCX. Situs: Physics-Anchored Positional Encoding for State-Conditioned Expertise. Working paper (2026).
+
+\bibitem{taxonomic_nn} SCX. A Taxonomic Theory of Neural Networks: Derivation of Known Machine Learning Phenomena from the SCX Axiom System. Working paper (2026).
+
+\end{thebibliography}
+
+## Supplementary Information
+\input{S1_thm1_noise_detection}
+\input{S2_thm2_weak_features}
+\input{S3_thm3_unidentifiability}
+\input{S4_thm4_exact_constant_minimax}
+\input{S5_thm5_cluster_consistency}
+\input{S6_prop6_bootstrap_stability}
+\input{S7_experimental_details}
+\input{S8_numerical_verification}

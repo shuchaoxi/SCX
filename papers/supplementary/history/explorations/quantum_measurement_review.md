@@ -33,7 +33,7 @@ But the measurement problem *is* the problem of deriving the Born rule from unit
 
 **Severity: TECHNICAL ERROR (moderate).**
 
-Theorem 1(ii) applies Hoeffding's inequality to the indicator variables $\mathbf{1}\{o_m = o\}$. This requires that the $M$ observers perform *independent* measurements on *identically prepared* states $\ket{\psi}^{\otimes M}$. But in quantum mechanics, if the $M$ observers measure the *same* system (not $M$ copies), their measurements are not independent — measurement $m$ disturbs the state for measurement $m+1$. The paper's Definition 2 specifies "identically prepared states $\ket{\psi}^{\otimes M}$," which is fine mathematically, but this setup is *not* the measurement problem.
+Theorem 1(ii) applies Hoeffding's inequality to the indicator variables $\mathbf{1}\{o_m = o\}$. This requires that the $M$ observers perform *independent* measurements on *identically prepared* states $\ket^{\otimes M}$. But in quantum mechanics, if the $M$ observers measure the *same* system (not $M$ copies), their measurements are not independent — measurement $m$ disturbs the state for measurement $m+1$. The paper's Definition 2 specifies "identically prepared states $\ket^{\otimes M}$," which is fine mathematically, but this setup is *not* the measurement problem.
 
 The measurement problem asks: what happens when one system is measured by one (or more) observers? The $M$-copy setup is a *different* problem — it is the problem of quantum state tomography, not wavefunction collapse. The paper conflates these two.
 
@@ -45,7 +45,7 @@ The measurement problem asks: what happens when one system is measured by one (o
 
 Theorem 2(ii) claims $F^{(M)} \geq (1 - g^2 \Var[\hat{A}]/(4\sigma^2))^M$. This is the fidelity for a *product* of independent single-shot channels, assuming each weak measurement acts on a *fresh copy*. But if the $M$ measurements are on the *same* system (as weak measurements typically are), the fidelity does not factorize. The correct expression involves the $M$-fold composition of the weak measurement channel $\mathcal{E}_g$:
 
-$$F^{(M)} = \braket{\psi | \mathcal{E}_g^{\circ M}(\ket{\psi}\bra{\psi}) | \psi}$$
+$$F^{(M)} = \braket{\psi | \mathcal{E}_g^{\circ M}(\ket\bra) | \psi}$$
 
 For a depolarizing-like channel, this decays as $\sim e^{-\gamma M}$ with $\gamma \propto g^2$, which matches the paper's expression. But the inequality sign is wrong: the fidelity is $\leq$ the product bound, not $\geq$. The product bound is an *upper* bound on the fidelity of a composition, because composition cannot increase distinguishability (data processing inequality).
 
@@ -105,7 +105,7 @@ But the $M=1$ case is the *standard* measurement problem. The fact that SCX only
 
 **Severity: OVERCLAIMED.**
 
-Section 4 (Theorem 3) claims that Quantum Darwinism "is structurally identical to Spring's permanent memory." The claimed identity consists of a five-item bullet list of analogies (environment fragments = memory entries, redundant encoding = multiple copies, etc.). No mathematical isomorphism is proved. No mapping between the Hilbert space structure of quantum Darwinism and the data structure of Spring memory is provided. The redundancy formula $R_{\min}$ is derived from Hoeffding (classical probability), not from the quantum mutual information structure that defines Quantum Darwinism.
+Section 4 (Theorem 3) claims that Quantum Darwinism "is structurally identical to Spring's permanent memory." The claimed identity consists of a five-item bullet list of analogies (environment fragments = memory entries, redundant encoding = multiple copies, etc.). No mathematical isomorphism is proved. No mapping between the Hilbert space structure of quantum Darwinism and the data structure of Spring memory is provided. The redundancy formula $R_$ is derived from Hoeffding (classical probability), not from the quantum mutual information structure that defines Quantum Darwinism.
 
 A genuine structural identity would require proving that the quantum mutual information $I(\mathcal{S}:\mathcal{E}_j)$ satisfies the same axioms as the Spring memory retrieval function, under a well-defined mapping. The paper does not attempt this.
 
@@ -126,7 +126,7 @@ I evaluate this paper on one criterion: does it make any prediction that differs
 Every quantitative formula in this paper is derivable from standard quantum mechanics without SCX:
 - Theorem 1: $\Pbb(\text{agreement}) = \sum p_o^M$ — this is the Born rule + probability theory
 - Theorem 2: $\brak{\hat{A}}_{\text{weak}} = \braket{\psi|\hat{A}|\psi} \pm \sigma/\sqrt{M}$ — this is standard weak measurement theory (Aharonov et al. 1988)
-- Theorem 3: $R_{\min} = \lceil \ln(1-\theta) / 2(1/2-\delta)^2 \rceil$ — this is classical Hoeffding applied to Zurek's redundancy concept
+- Theorem 3: $R_ = \lceil \ln(1-\theta) / 2(1/2-\delta)^2 \rceil$ — this is classical Hoeffding applied to Zurek's redundancy concept
 - Theorem 4: $S_{\text{QM}} = 2\sqrt{2} > 2$ — this is Bell's theorem (1964)
 
 If SCX makes no new predictions, it is not a theory of physics — it is a *narrative*. Narratives can be valuable (Copenhagen is also a narrative), but they should not be presented as if they contain novel mathematical physics.
@@ -153,7 +153,7 @@ These cannot be simultaneously satisfied for any $g$ if $\brak{\hat{A}}^2 \ll \V
 
 **Severity: CONCEPTUAL ERROR.**
 
-The paper treats $M$ observers as measuring "identically prepared states $\ket{\psi}^{\otimes M}$." But in the measurement problem, we care about *one* system. If I have $M$ copies, I can do quantum state tomography and determine $\ket{\psi}$ to arbitrary precision (with $M \to \infty$). This *is* a consensus phenomenon, but it is not the measurement problem.
+The paper treats $M$ observers as measuring "identically prepared states $\ket^{\otimes M}$." But in the measurement problem, we care about *one* system. If I have $M$ copies, I can do quantum state tomography and determine $\ket$ to arbitrary precision (with $M \to \infty$). This *is* a consensus phenomenon, but it is not the measurement problem.
 
 The paper conflates:
 1. **State estimation (tomography):** $M$ copies, measure each, estimate the state. Consensus is about the *state*, not about individual outcomes.

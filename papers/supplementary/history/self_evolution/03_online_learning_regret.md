@@ -1,428 +1,712 @@
-# Online Learning Regret Analysis of SCX Gatekeeper
+\section{Online Learning Regret Analysis of SCX
+Gatekeeper}<!-- label: online-learning-regret-analysis-of-scx-gatekeeper -->
 
-> **Version**: 2026-06-28 | **Status**: Theoretical development | **Audit**: Pre-verification
-> **Purpose**: Analyze the SCX gatekeeper's online learning regret under delayed feedback from the NEP student, derive regret bounds using standard online convex optimization tools, and discuss the impact of the growing memory bank.
-> **Prerequisites**: Document 01 (Symbol System and Problem Setup)
+> **Version**: 2026-06-28 |{} **Status**: Theoretical
+> development |{} **Audit**: Pre-verification
+> **Purpose**: Analyze the SCX gatekeeper's online learning regret
+> under delayed feedback from the NEP student, derive regret bounds using
+> standard online convex optimization tools, and discuss the impact of the
+> growing memory bank. **Prerequisites**: Document 01 (Symbol System
+> and Problem Setup)
 
----
+<div align="center">
 
-## Table of Contents
+\rule{0.5\linewidth}{0.5pt}
 
-1. [Problem Formulation](#1-problem-formulation)
-2. [Per-Round Loss and Regret Definition](#2-per-round-loss-and-regret-definition)
-3. [Baseline: Online Gradient Descent Without Delay](#3-baseline-online-gradient-descent-without-delay)
-4. [Delayed Feedback Analysis](#4-delayed-feedback-analysis)
-5. [Memory Bank Effect](#5-memory-bank-effect)
-6. [Comparison to Standard Online Learning Bounds](#6-comparison-to-standard-online-learning-bounds)
-7. [Lower Bounds and Optimality](#7-lower-bounds-and-optimality)
-8. [Summary of Proven vs. Conjectured Claims](#8-summary-of-proven-vs-conjectured-claims)
+</div>
 
----
+### Table of Contents<!-- label: table-of-contents -->
 
-## 1. Problem Formulation
+1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+7. 
+8. 
 
-### 1.1 Online Learning Setup
+<div align="center">
+
+\rule{0.5\linewidth}{0.5pt}
+
+</div>
+
+### 1. Problem Formulation<!-- label: problem-formulation -->
+
+#### 1.1 Online Learning Setup<!-- label: online-learning-setup -->
 
 The SCX gatekeeper operates in an online fashion:
 
-At each round $t = 1, 2, \dots, T$:
-1. Nature draws a sample $(x_t, y_t) \sim \mathcal{D}$ independently.
-2. The gatekeeper $S_t$ observes $x_t$ and produces a reliability score $S_t(x_t, y_t)$.
-3. The gatekeeper makes a decision: $\hat{z}_t = \mathbf{1}\{S_t(x_t, y_t) < \delta_{\text{noise}}\}$ (1 = noise, 0 = clean).
-4. At time $t + d_t$ (where $d_t$ is a delay), the NEP student provides feedback $r_t \in \{0, 1\}$ indicating whether the sample was genuinely noisy ($r_t = 1$) or clean ($r_t = 0$).
+At each round \(t = 1, 2, ..., T\): 1. Nature draws a sample
+\((x_t, y_t) \sim \mathcal{D}\) independently. 2. The gatekeeper \(S_t\)
+observes \(x_t\) and produces a reliability score \(S_t(x_t, y_t)\). 3.
+The gatekeeper makes a decision:
+\(\hat{z}_t = \mathbf{1}\{S_t(x_t, y_t) < \delta_{noise}\}\) (1 =
+noise, 0 = clean). 4. At time \(t + d_t\) (where \(d_t\) is a delay),
+the NEP student provides feedback \(r_t \in \{0, 1\}\) indicating
+whether the sample was genuinely noisy (\(r_t = 1\)) or clean
+(\(r_t = 0\)).
 
-The goal is to minimize cumulative loss relative to the best fixed gatekeeper in hindsight.
+The goal is to minimize cumulative loss relative to the best fixed
+gatekeeper in hindsight.
 
-### 1.2 Key Assumptions for Regret Analysis
+\subsubsection{1.2 Key Assumptions for Regret
+Analysis}<!-- label: key-assumptions-for-regret-analysis -->
 
 We make the following assumptions (some inherited from Document 01):
 
-| Assumption | Statement | Justification |
-|------------|-----------|---------------|
-| **B4** (Lipschitz) | $|S_t(x,y) - S_t(x,y')| \leq L_S \cdot \|y - y'\|$ | Gives smoothness in predictions |
-| **B5** (Bounded gradient) | $\|\nabla_w \ell_t(S_t)\|_2 \leq G$ | Standard OGD requirement |
-| **B6** (Bounded delay) | $d_t \leq D_{\max} < \infty$ a.s. | Realistic for batch NEP training |
-| **C1** (Convexity) | The per-round loss $\ell_t(S)$ is convex in $S$ for all $t$ | Holds for logistic/linear models |
-| **C2** (IID data) | $\{(x_t, y_t)\}_{t=1}^T$ are i.i.d. from $\mathcal{D}$ | Standard online learning setting |
-| **C3** (Bounded domain) | $\|w\|_2 \leq R$ for all parameters of $S$ | Weight regularization |
+\begin{longtable}[]{@{}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3158}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2895}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3947}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]
+Assumption
+\end{minipage} & \begin{minipage}[b]
+Statement
+\end{minipage} & \begin{minipage}[b]
+Justification
+\end{minipage} 
 
-**Assumption C1 requires elaboration.** The per-round loss for a logistic gatekeeper $S(x,y) = \sigma(w^\top \psi(x,y))$ with cross-entropy loss is:
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+**B4** (Lipschitz) &
+\(|S_t(x,y) - S_t(x,y')| \leq L_S \cdot \|y - y'\|\) & Gives smoothness
+in predictions 
 
-$$\ell_t(S) = -z_t \cdot \log\sigma(w^\top \psi(x_t, y_t)) - (1-z_t) \cdot \log(1 - \sigma(w^\top \psi(x_t, y_t)))$$
+**B5** (Bounded gradient) & \(\|\nabla_w \ell_t(S_t)\|_2 \leq G\) &
+Standard OGD requirement 
 
-This is the standard logistic regression loss, which is convex in $w$. In the general case where $S_t$ is a neural network, the loss is not convex, and our regret bounds become approximate (see Section 6).
+**B6** (Bounded delay) & \(d_t \leq D_ < \infty\) a.s. &
+Realistic for batch NEP training 
 
-### 1.3 Feedback Model
+**C1** (Convexity) & The per-round loss \(\ell_t(S)\) is convex in
+\(S\) for all \(t\) & Holds for logistic/linear models 
 
-The feedback $r_t$ is generated by the NEP student:
+**C2** (IID data) & \(\{(x_t, y_t)\}_{t=1}^T\) are i.i.d. from
+\(\mathcal{D}\) & Standard online learning setting 
 
-$$r_t = \begin{cases}
-1 & \text{if the NEP classifies } (x_t, y_t) \text{ as noisy} \\
-0 & \text{if the NEP classifies } (x_t, y_t) \text{ as clean} \\
-\varnothing & \text{if the NEP abstains (confidence too low)}
-\end{cases}$$
+**C3** (Bounded domain) & \(\|w\|_2 \leq R\) for all parameters of
+\(S\) & Weight regularization 
 
-When $r_t = \varnothing$, no feedback is provided and the round does not contribute to the regret.
+\end{longtable}
 
-**Definition 25 (Feedback Quality).** The feedback quality at time $t$ is:
+**Assumption C1 requires elaboration.** The per-round loss for a
+logistic gatekeeper \(S(x,y) = \sigma(w^\top \psi(x,y))\) with
+cross-entropy loss is:
 
-$$q_t = \mathbb{P}(r_t = z_t \mid \text{feedback provided})$$
+\[\ell_t(S) = -z_t \cdot \log\sigma(w^\top \psi(x_t, y_t)) - (1-z_t) \cdot \log(1 - \sigma(w^\top \psi(x_t, y_t)))\]
 
-i.e., the probability that the NEP's feedback matches the true noise status. We assume $q_t \geq q_{\min} > 1/2$ for all sufficiently large $t$ (the NEP is better than random).
+This is the standard logistic regression loss, which is convex in \(w\).
+In the general case where \(S_t\) is a neural network, the loss is not
+convex, and our regret bounds become approximate (see Section 6).
 
----
+#### 1.3 Feedback Model<!-- label: feedback-model -->
 
-## 2. Per-Round Loss and Regret Definition
+The feedback \(r_t\) is generated by the NEP student:
 
-### 2.1 Per-Round Loss
+\[r_t = \begin{cases}
+1 & if the NEP classifies  (x_t, y_t)  as noisy 
 
-**Definition 26 (Per-Round Gatekeeper Loss).** For round $t$, the gatekeeper incurs loss:
+0 & if the NEP classifies  (x_t, y_t)  as clean 
 
-$$\ell_t(S_t) = L\bigl(S_t(x_t, y_t), r_t\bigr)$$
+\varnothing & if the NEP abstains (confidence too low)
+\end{cases}\]
 
-where $L: [0,1] \times \{0,1\} \to \mathbb{R}_{\geq 0}$ is a loss function. We consider two canonical choices:
+When \(r_t = \varnothing\), no feedback is provided and the round does
+not contribute to the regret.
+
+**Definition 25 (Feedback Quality).** The feedback quality at time
+\(t\) is:
+
+\[q_t = \mathbb{P}(r_t = z_t \mid feedback provided)\]
+
+i.e., the probability that the NEP's feedback matches the true noise
+status. We assume \(q_t \geq q_ > 1/2\) for all sufficiently large
+\(t\) (the NEP is better than random).
+
+<div align="center">
+
+\rule{0.5\linewidth}{0.5pt}
+
+</div>
+
+\subsection{2. Per-Round Loss and Regret
+Definition}<!-- label: per-round-loss-and-regret-definition -->
+
+#### 2.1 Per-Round Loss<!-- label: per-round-loss -->
+
+**Definition 26 (Per-Round Gatekeeper Loss).** For round \(t\), the
+gatekeeper incurs loss:
+
+\[\ell_t(S_t) = L\bigl(S_t(x_t, y_t), r_t\bigr)\]
+
+where \(L: [0,1] \times \{0,1\} \to \mathbb{R}_{\geq 0}\) is a loss
+function. We consider two canonical choices:
 
 **Cross-entropy loss**:
 
-$$\ell_t^{\text{CE}}(S_t) = -r_t \cdot \log(1 - S_t(x_t, y_t)) - (1-r_t) \cdot \log S_t(x_t, y_t)$$
+\[\ell_t^{CE}(S_t) = -r_t \cdot \log(1 - S_t(x_t, y_t)) - (1-r_t) \cdot \log S_t(x_t, y_t)\]
 
 **Square loss**:
 
-$$\ell_t^{\text{SQ}}(S_t) = \bigl( S_t(x_t, y_t) - (1 - r_t) \bigr)^2$$
+\[\ell_t^{SQ}(S_t) = \bigl( S_t(x_t, y_t) - (1 - r_t) \bigr)^2\]
 
-The cross-entropy is the more natural choice as it corresponds to maximum likelihood estimation of the correctness probability.
+The cross-entropy is the more natural choice as it corresponds to
+maximum likelihood estimation of the correctness probability.
 
-### 2.2 Regret
+#### 2.2 Regret<!-- label: regret -->
 
-**Definition 27 (Cumulative Regret).** The cumulative regret after $T$ rounds is:
+**Definition 27 (Cumulative Regret).** The cumulative regret after
+\(T\) rounds is:
 
-$$\text{Regret}_T = \sum_{t=1}^T \ell_t(S_t) - \min_{S \in \mathcal{H}} \sum_{t=1}^T \ell_t(S)$$
+\[Regret_T = \sum_{t=1}^T \ell_t(S_t) - \min_{S \in \mathcal{H}} \sum_{t=1}^T \ell_t(S)\]
 
-where $\mathcal{H} \subseteq \mathcal{F}$ is a hypothesis class of gatekeeper functions.
+where \(\mathcal{H} \subseteq \mathcal{F}\) is a hypothesis class of
+gatekeeper functions.
 
-**Static regret**: Comparator is the best **fixed** gatekeeper in hindsight.
-**Dynamic regret**: Comparator can change over time (not considered here).
+**Static regret**: Comparator is the best **fixed** gatekeeper
+in hindsight. **Dynamic regret**: Comparator can change over time
+(not considered here).
 
-For the SCX setup, the relevant hypothesis class is the set of gatekeepers parameterized by $w \in \mathbb{R}^{d_w}$ with $\|w\|_2 \leq R$:
+For the SCX setup, the relevant hypothesis class is the set of
+gatekeepers parameterized by \(w \in \mathbb{R}^{d_w}\) with
+\(\|w\|_2 \leq R\):
 
-$$\mathcal{H}_R = \bigl\{ S_w(x,y) = \sigma(w^\top \psi(x,y)) : \|w\|_2 \leq R \bigr\}$$
+\[\mathcal{H}_R = \bigl\{ S_w(x,y) = \sigma(w^\top \psi(x,y)) : \|w\|_2 \leq R \bigr\}\]
 
-### 2.3 Regret with Delayed Feedback
+\subsubsection{2.3 Regret with Delayed
+Feedback}<!-- label: regret-with-delayed-feedback -->
 
-When feedback arrives at time $t + d_t$, the loss $\ell_t(S_t)$ is not observable until time $t + d_t$. The learner must make decisions without knowing the current round's loss. This leads to the **delayed feedback regret**:
+When feedback arrives at time \(t + d_t\), the loss \(\ell_t(S_t)\) is
+not observable until time \(t + d_t\). The learner must make decisions
+without knowing the current round's loss. This leads to the
+**delayed feedback regret**:
 
-$$\text{Regret}_T^{\text{delay}} = \sum_{t=1}^T \ell_t(S_t) - \min_{S \in \mathcal{H}} \sum_{t=1}^T \ell_t(S)$$
+\[Regret_T^{delay} = \sum_{t=1}^T \ell_t(S_t) - \min_{S \in \mathcal{H}} \sum_{t=1}^T \ell_t(S)\]
 
-where the sum is over the same $T$ rounds but the sequence of $S_t$'s is generated without immediate feedback for rounds $t$ whose feedback is still pending.
+where the sum is over the same \(T\) rounds but the sequence of
+\(S_t\)'s is generated without immediate feedback for rounds \(t\) whose
+feedback is still pending.
 
----
+<div align="center">
 
-## 3. Baseline: Online Gradient Descent Without Delay
+\rule{0.5\linewidth}{0.5pt}
 
-### 3.1 Algorithm: OGD for Gatekeeper Update
+</div>
 
-We first analyze the case with **no delay** ($d_t = 0$ for all $t$). The gatekeeper update is:
+\subsection{3. Baseline: Online Gradient Descent Without
+Delay}<!-- label: baseline-online-gradient-descent-without-delay -->
 
-$$w_{t+1} = \Pi_{B_2(R)}\bigl( w_t - \eta_t \nabla \ell_t(S_{w_t}) \bigr)$$
+\subsubsection{3.1 Algorithm: OGD for Gatekeeper
+Update}<!-- label: algorithm-ogd-for-gatekeeper-update -->
 
-where $\Pi_{B_2(R)}$ is projection onto the Euclidean ball of radius $R$, and $\eta_t > 0$ is the learning rate.
+We first analyze the case with **no delay** (\(d_t = 0\) for all
+\(t\)). The gatekeeper update is:
 
-### 3.2 Standard Regret Bound
+\[w_{t+1} = \Pi_{B_2(R)}\bigl( w_t - \eta_t \nabla \ell_t(S_{w_t}) \bigr)\]
 
-**Theorem 7 (OGD Regret Bound for Gatekeeper).** Under Assumptions B4, B5, C1, C2, C3, if the gatekeeper is updated by OGD with learning rate $\eta_t = \eta/\sqrt{t}$ for a suitable $\eta$, then:
+where \(\Pi_{B_2(R)}\) is projection onto the Euclidean ball of radius
+\(R\), and \(\eta_t > 0\) is the learning rate.
 
-$$\text{Regret}_T \leq \frac{3}{2} GR \sqrt{T} + \frac{R^2}{2\eta} \sqrt{T}$$
+#### 3.2 Standard Regret Bound<!-- label: standard-regret-bound -->
 
-For the optimal tuning $\eta = R/(G\sqrt{T})$, this simplifies to:
+**Theorem 7 (OGD Regret Bound for Gatekeeper).** Under Assumptions
+B4, B5, C1, C2, C3, if the gatekeeper is updated by OGD with learning
+rate \(\eta_t = \eta/\sqrt{t}\) for a suitable \(\eta\), then:
 
-$$\boxed{\;\text{Regret}_T \leq 2GR\sqrt{T}\;}$$
+\[Regret_T \leq \frac{3}{2} GR \sqrt{T} + \frac{R^2}{2\eta} \sqrt{T}\]
+
+For the optimal tuning \(\eta = R/(G\sqrt{T})\), this simplifies to:
+
+\[\boxed{\;Regret_T \leq 2GR\sqrt{T}\;}\]
 
 Equivalently, the average regret satisfies:
 
-$$\frac{1}{T} \text{Regret}_T \leq \frac{2GR}{\sqrt{T}} = O\bigl(1/\sqrt{T}\bigr)$$
+\[\frac{1}{T} Regret_T \leq \frac{2GR}{\sqrt{T}} = O\bigl(1/\sqrt{T}\bigr)\]
 
-*Proof.* This is the standard Online Gradient Descent bound (Zinkevich, 2003). The key steps:
+*Proof.* This is the standard Online Gradient Descent bound
+(Zinkevich, 2003). The key steps:
 
-1. **Update inequality**: By convexity of $\ell_t$ and the projection step:
-   $$\|w_{t+1} - w^*\|_2^2 \leq \|w_t - w^*\|_2^2 - 2\eta_t(\ell_t(w_t) - \ell_t(w^*)) + \eta_t^2 G^2$$
+1. 
+2. 
+3. 
 
-2. **Telescoping**: Summing over $t$:
-   $$2\sum_{t=1}^T \eta_t(\ell_t(w_t) - \ell_t(w^*)) \leq \|w_1 - w^*\|_2^2 + G^2\sum_{t=1}^T \eta_t^2 \leq 4R^2 + G^2\sum_{t=1}^T \eta_t^2$$
+\subsubsection{3.3 Implication for
+Gatekeeper}<!-- label: implication-for-gatekeeper -->
 
-3. **Tuning**: Choosing $\eta_t = R/(G\sqrt{t})$ gives:
-   $$\sum_{t=1}^T \eta_t(\ell_t(w_t) - \ell_t(w^*)) \leq 2R^2 + G^2 \cdot \frac{R^2}{G^2} \sum_{t=1}^T \frac{1}{t}$$
-   which leads to $\text{Regret}_T \leq 2GR\sqrt{T}$.
+**Corollary 4 (Gatekeeper Convergence).** Under the conditions of
+Theorem 7, the average gatekeeper excess loss converges to zero at rate
+\(O(1/\sqrt{T})\):
 
-   The refined constant $3/2$ in the bound comes from the time-varying learning rate analysis (also standard). $\square$
+\[\frac{1}{T} \sum_{t=1}^T \mathbb{E}[\ell_t(S_t)] - \min_{S \in \mathcal{H}} \mathbb{E}[\ell(S)] \leq \frac{2GR}{\sqrt{T}}\]
 
-### 3.3 Implication for Gatekeeper
+*Proof.* Apply Theorem 7 and divide by \(T\). The expectation is
+taken over the randomness of the data. \(\square\)
 
-**Corollary 4 (Gatekeeper Convergence).** Under the conditions of Theorem 7, the average gatekeeper excess loss converges to zero at rate $O(1/\sqrt{T})$:
+<div align="center">
 
-$$\frac{1}{T} \sum_{t=1}^T \mathbb{E}[\ell_t(S_t)] - \min_{S \in \mathcal{H}} \mathbb{E}[\ell(S)] \leq \frac{2GR}{\sqrt{T}}$$
+\rule{0.5\linewidth}{0.5pt}
 
-*Proof.* Apply Theorem 7 and divide by $T$. The expectation is taken over the randomness of the data. $\square$
+</div>
 
----
+\subsection{4. Delayed Feedback
+Analysis}<!-- label: delayed-feedback-analysis -->
 
-## 4. Delayed Feedback Analysis
+#### 4.1 The Delayed Setting<!-- label: the-delayed-setting -->
 
-### 4.1 The Delayed Setting
+In the SCX self-evolution loop, feedback is **delayed** because the
+NEP student requires batch training on \(M_t\) before it can provide
+judgments. The delay \(d_t\) for sample \((x_t, y_t)\) is:
 
-In the SCX self-evolution loop, feedback is **delayed** because the NEP student requires batch training on $M_t$ before it can provide judgments. The delay $d_t$ for sample $(x_t, y_t)$ is:
+\[d_t = time until NEP is retrained on a memory bank containing  (x_t, y_t)\]
 
-$$d_t = \text{time until NEP is retrained on a memory bank containing } (x_t, y_t)$$
+This delay is typically: - **Upper bounded** by \(D_\) (time
+between NEP retraining rounds) - **Variable** (depends on when the
+memory bank accumulates enough samples to trigger NEP retraining)
 
-This delay is typically:
-- **Upper bounded** by $D_{\max}$ (time between NEP retraining rounds)
-- **Variable** (depends on when the memory bank accumulates enough samples to trigger NEP retraining)
+\subsubsection{4.2 Delay-Regret
+Decomposition}<!-- label: delay-regret-decomposition -->
 
-### 4.2 Delay-Regret Decomposition
+**Theorem 8 (Delayed OGD Regret for Gatekeeper).** Under
+Assumptions B4, B5, B6, C1, C2, C3, with delays bounded by
+\(d_t \leq D_\), the OGD update with delay-tolerant learning
+rates:
 
-**Theorem 8 (Delayed OGD Regret for Gatekeeper).** Under Assumptions B4, B5, B6, C1, C2, C3, with delays bounded by $d_t \leq D_{\max}$, the OGD update with delay-tolerant learning rates:
-
-$$w_{t+1} = \Pi_{B_2(R)}\bigl( w_t - \eta_t \sum_{s: t = s + d_s} \nabla \ell_s(w_s) \bigr)$$
+\[w_{t+1} = \Pi_{B_2(R)}\bigl( w_t - \eta_t \sum_{s: t = s + d_s} \nabla \ell_s(w_s) \bigr)\]
 
 achieves:
 
-$$\boxed{\;\text{Regret}_T^{\text{delay}} \leq 2GR\sqrt{T} + G^2 D_{\max} \sqrt{T}\;}$$
+\[\boxed{\;Regret_T^{delay} \leq 2GR\sqrt{T} + G^2 D_ \sqrt{T}\;}\]
 
 Equivalently:
 
-$$\text{Regret}_T^{\text{delay}} \leq O\bigl( \sqrt{T} + D_{\max} \sqrt{T} \bigr) = O\bigl( D_{\max} \sqrt{T} \bigr)$$
+\[Regret_T^{delay} \leq O\bigl( \sqrt{T} + D_ \sqrt{T} \bigr) = O\bigl( D_ \sqrt{T} \bigr)\]
 
-*Proof.* Following the delayed OGD analysis (Langford et al., 2009; Quanrud & Khashabi, 2015):
+*Proof.* Following the delayed OGD analysis (Langford et al., 2009;
+Quanrud \& Khashabi, 2015):
 
-1. **Modified update analysis**: When gradient arrives at time $t + d_t$, it is applied to the current iterate $w_{t+d_t}$ rather than $w_t$. This creates a "gradient mismatch" because the gradient was computed at $w_t$, not $w_{t+d_t}$.
+1. 
+2. 
+3. 
+4. 
 
-2. **Bounding the mismatch**: By Lipschitz continuity of the gradient (B4 implies the gradient is $L_S$-Lipschitz):
-   $$\|\nabla \ell_s(w_s) - \nabla \ell_s(w_{s+d_s})\|_2 \leq L_S \cdot \|w_s - w_{s+d_s}\|_2$$
+\subsubsection{4.3 Optimality of the Delay-Affected
+Bound}<!-- label: optimality-of-the-delay-affected-bound -->
 
-3. **Cumulative drift bound**: The parameter drift over $D_{\max}$ steps is bounded by:
-   $$\mathbb{E}[\|w_s - w_{s+d_s}\|_2] \leq D_{\max} \cdot \eta_{\max} \cdot G$$
-   where $\eta_{\max}$ is the maximum learning rate.
+**Theorem 9 (Delay Lower Bound).** For any online learning
+algorithm operating under delays \(d_t\) with
+\(\max_t d_t \geq D_\), there exists a sequence of losses such
+that:
 
-4. **Regret decomposition**:
-   $$\text{Regret}_T^{\text{delay}} = \underbrace{\text{Regret}_T^{0\text{-delay}}}_{\text{(A)}} + \underbrace{\sum_{t=1}^T \langle \nabla \ell_t(w_t), w_t - w_{t+d_t} \rangle}_{\text{(B)}}$$
-   
-   Term (A) is bounded by $2GR\sqrt{T}$ (Theorem 7).
-   Term (B) is the extra cost of delayed gradients:
-   $$|\text{(B)}| \leq \sum_{t=1}^T G \cdot \|w_t - w_{t+d_t}\|_2 \leq T \cdot G \cdot D_{\max} \cdot \eta_{\max} \cdot G = G^2 D_{\max} \sqrt{T}$$
-   using $\eta_{\max} = R/(G\sqrt{1})$ for the step size schedule $\eta_t = R/(G\sqrt{t})$, so $\eta_{\max} = R/G$, giving $\|w_t - w_{t+d_t}\|_2 \leq D_{\max} \cdot (R/G) \cdot G = D_{\max} R$.
+\[Regret_T^{delay} = \Omega\bigl( \sqrt{T} + D_ \bigr)\]
 
-   Wait — this estimate needs refinement. Let us use the more careful analysis:
+*Proof.* Standard lower bound for online convex optimization
+(Abernethy et al., 2008). The delay introduces an additive penalty that
+is linear in \(D_\) for worst-case sequences. The
+\(\Omega(\sqrt{T})\) term is the standard OCO lower bound. \(\square\)
 
-   From the standard delayed OGD proof (e.g., Joulani et al., 2016, Theorem 1):
-   
-   $$\text{Regret}_T^{\text{delay}} \leq 2GR\sqrt{T} + \frac{G^2}{2} \sum_{t=1}^T \eta_t d_t$$
-   
-   With $d_t \leq D_{\max}$ and $\eta_t = R/(G\sqrt{t})$:
-   $$\frac{G^2}{2} \sum_{t=1}^T \frac{R}{G\sqrt{t}} D_{\max} = \frac{G R D_{\max}}{2} \sum_{t=1}^T \frac{1}{\sqrt{t}} \leq G R D_{\max} \sqrt{T}$$
-   
-   This gives the claimed bound. $\square$
+**Comparison**: The upper bound \(O(D_\sqrt{T})\) matches the
+lower bound \(\Omega(D_)\) up to the \(\sqrt{T}\) factor. The gap
+is due to the stochastic (non-adversarial) nature of the delays in SCX
+--- the worst-case adversarial delay gives
+\(\Omega(D_ \sqrt{T})\), while the SCX setting typically has
+\(d_t\) determined by the memory growth dynamics, which is stochastic.
 
-### 4.3 Optimality of the Delay-Affected Bound
+\subsubsection{4.4 Delay Distribution
+Model}<!-- label: delay-distribution-model -->
 
-**Theorem 9 (Delay Lower Bound).** For any online learning algorithm operating under delays $d_t$ with $\max_t d_t \geq D_{\max}$, there exists a sequence of losses such that:
+For SCX, the delay \(d_t\) is better modeled as a stochastic process
+than a worst-case bound.
 
-$$\text{Regret}_T^{\text{delay}} = \Omega\bigl( \sqrt{T} + D_{\max} \bigr)$$
+**Definition 28 (Delay Distribution).** Assume \(d_t \sim D\) where
+\(D\) is a distribution with mean \(\mu_D\) and variance \(\sigma_D^2\),
+independent across rounds.
 
-*Proof.* Standard lower bound for online convex optimization (Abernethy et al., 2008). The delay introduces an additive penalty that is linear in $D_{\max}$ for worst-case sequences. The $\Omega(\sqrt{T})$ term is the standard OCO lower bound. $\square$
+**Corollary 5 (Expected Regret Under Stochastic Delay).** Under the
+conditions of Theorem 8 but with \(d_t \sim D\) i.i.d. with
+\(\mathbb{E}[d_t] = \mu_D\), the expected regret satisfies:
 
-**Comparison**: The upper bound $O(D_{\max}\sqrt{T})$ matches the lower bound $\Omega(D_{\max})$ up to the $\sqrt{T}$ factor. The gap is due to the stochastic (non-adversarial) nature of the delays in SCX — the worst-case adversarial delay gives $\Omega(D_{\max} \sqrt{T})$, while the SCX setting typically has $d_t$ determined by the memory growth dynamics, which is stochastic.
+\[\mathbb{E}[Regret_T^{delay}] \leq 2GR\sqrt{T} + G^2 \mu_D \sqrt{T} \cdot (1 + o(1))\]
 
-### 4.4 Delay Distribution Model
+*Proof sketch.* Follow the same proof as Theorem 8 but replace
+\(D_\) with \(\mu_D\) in the expectation, using Wald's identity
+for the cumulative drift. The \(o(1)\) term captures the probability
+that any individual delay exceeds a large threshold. \(\square\)
 
-For SCX, the delay $d_t$ is better modeled as a stochastic process than a worst-case bound.
+<div align="center">
 
-**Definition 28 (Delay Distribution).** Assume $d_t \sim D$ where $D$ is a distribution with mean $\mu_D$ and variance $\sigma_D^2$, independent across rounds.
+\rule{0.5\linewidth}{0.5pt}
 
-**Corollary 5 (Expected Regret Under Stochastic Delay).** Under the conditions of Theorem 8 but with $d_t \sim D$ i.i.d. with $\mathbb{E}[d_t] = \mu_D$, the expected regret satisfies:
+</div>
 
-$$\mathbb{E}[\text{Regret}_T^{\text{delay}}] \leq 2GR\sqrt{T} + G^2 \mu_D \sqrt{T} \cdot (1 + o(1))$$
+### 5. Memory Bank Effect<!-- label: memory-bank-effect -->
 
-*Proof sketch.* Follow the same proof as Theorem 8 but replace $D_{\max}$ with $\mu_D$ in the expectation, using Wald's identity for the cumulative drift. The $o(1)$ term captures the probability that any individual delay exceeds a large threshold. $\square$
+\subsubsection{5.1 Memory as Training Data
+Accumulation}<!-- label: memory-as-training-data-accumulation -->
 
----
+The memory bank \(M_t\) provides an increasingly rich training set for
+both the gatekeeper and the NEP student. This can be viewed as a form of
+**experience replay** or **growing batch learning**.
 
-## 5. Memory Bank Effect
-
-### 5.1 Memory as Training Data Accumulation
-
-The memory bank $M_t$ provides an increasingly rich training set for both the gatekeeper and the NEP student. This can be viewed as a form of **experience replay** or **growing batch learning**.
-
-**Proposition 16 (Memory-Enhanced Regret Bound).** Suppose the gatekeeper is updated via OGD on both:
-- The current online loss $\ell_t(S_t)$ (with delayed feedback)
-- A replay loss on the memory bank: $\ell_t^{\text{replay}}(S) = \frac{1}{N_t} \sum_{(x_i,y_i) \in M_t} \ell(S(x_i, y_i), r_i)$
+**Proposition 16 (Memory-Enhanced Regret Bound).** Suppose the
+gatekeeper is updated via OGD on both: - The current online loss
+\(\ell_t(S_t)\) (with delayed feedback) - A replay loss on the memory
+bank:
+\(\ell_t^{replay}(S) = \frac{1}{N_t} \sum_{(x_i,y_i) \in M_t} \ell(S(x_i, y_i), r_i)\)
 
 Then the cumulative regret satisfies:
 
-$$\boxed{\;\text{Regret}_T^{\text{mem}} \leq \text{Regret}_T^{\text{delay}} - \Delta_{\text{mem}}\;}$$
+\[\boxed{\;Regret_T^{mem} \leq Regret_T^{delay} - \Delta_{mem}\;}\]
 
-where $\Delta_{\text{mem}} \geq 0$ is the improvement from memory replay, bounded below by:
+where \(\Delta_{mem} \geq 0\) is the improvement from memory
+replay, bounded below by:
 
-$$\Delta_{\text{mem}} \geq \frac{\lambda_{\text{mem}}}{2} \sum_{t=1}^T \bigl\| \nabla \hat{L}_{\text{gate}}(S_t; M_t) \bigr\|_2^2$$
+\[\Delta_{mem} \geq \frac{\lambda_{mem}}{2} \sum_{t=1}^T \bigl\| \nabla \hat{L}_{gate}(S_t; M_t) \bigr\|_2^2\]
 
-for some $\lambda_{\text{mem}} > 0$ depending on the replay frequency.
+for some \(\lambda_{mem} > 0\) depending on the replay frequency.
 
-*Proof sketch.* Memory replay provides additional gradient steps in the direction of the empirical risk on past data. This reduces the variance of the gradient estimate, effectively improving the regret bound by the variance reduction term. The standard analysis of experience replay in online learning (e.g., Zhang & Sutton, 2017) gives the $\Delta_{\text{mem}}$ term proportional to the squared gradient norm on the memory buffer. $\square$
+*Proof sketch.* Memory replay provides additional gradient steps in
+the direction of the empirical risk on past data. This reduces the
+variance of the gradient estimate, effectively improving the regret
+bound by the variance reduction term. The standard analysis of
+experience replay in online learning (e.g., Zhang \& Sutton, 2017) gives
+the \(\Delta_{mem}\) term proportional to the squared gradient
+norm on the memory buffer. \(\square\)
 
-*Status: **Conjecture** for the general case. A rigorous proof for the specific form of $\Delta_{\text{mem}}$ requires additional assumptions on the replay schedule and the relationship between the memory and current distributions.*
+*Status: **Conjecture** for the general case. A rigorous proof
+for the specific form of \(\Delta_{mem}\) requires additional
+assumptions on the replay schedule and the relationship between the
+memory and current distributions.*
 
-### 5.2 Regret with Growing Training Set
+\subsubsection{5.2 Regret with Growing Training
+Set}<!-- label: regret-with-growing-training-set -->
 
-A unique feature of the SCX setting is that the **training set grows over time**. This gives a form of **sample complexity improvement** that is not captured by standard online learning bounds.
+A unique feature of the SCX setting is that the **training set
+grows over time**. This gives a form of **sample complexity
+improvement** that is not captured by standard online learning bounds.
 
-**Proposition 17 (Sample Complexity from Memory Growth).** Let $\mathcal{E}_T = \min_{S \in \mathcal{H}} \hat{L}_{\text{gate}}(S; M_T)$ be the minimal achievable empirical loss on the memory bank after $T$ rounds. Under Assumption B1 (monotonicity) and standard uniform convergence bounds:
+**Proposition 17 (Sample Complexity from Memory Growth).** Let
+\(\mathcal{E}_T = \min_{S \in \mathcal{H}} \hat{L}_{gate}(S; M_T)\)
+be the minimal achievable empirical loss on the memory bank after \(T\)
+rounds. Under Assumption B1 (monotonicity) and standard uniform
+convergence bounds:
 
-$$\mathcal{E}_T \leq L_{\text{gate}}^*(S^*) + \tilde{O}\left( \sqrt{\frac{\text{VC}(\mathcal{H})}{N_T}} \right)$$
+\[\mathcal{E}_T \leq L_{gate}^*(S^*) + \tilde{O}\left( \sqrt{\frac{VC(\mathcal{H})}{N_T}} \right)\]
 
-where $N_T$ is the size of the memory bank at time $T$, $\text{VC}(\mathcal{H})$ is the VC dimension of the hypothesis class, and $L_{\text{gate}}^*(S^*)$ is the minimal achievable expected loss.
+where \(N_T\) is the size of the memory bank at time \(T\),
+\(VC(\mathcal{H})\) is the VC dimension of the hypothesis class,
+and \(L_{gate}^*(S^*)\) is the minimal achievable expected loss.
 
-*Proof.* Standard empirical risk minimization bound: with probability $1 - \delta$,
+*Proof.* Standard empirical risk minimization bound: with
+probability \(1 - \delta\),
 
-$$\min_{S \in \mathcal{H}} L_{\text{gate}}^*(S) - \min_{S \in \mathcal{H}} \hat{L}_{\text{gate}}(S; M_T) \leq C \sqrt{\frac{\text{VC}(\mathcal{H}) + \log(1/\delta)}{N_T}}$$
+\[\min_{S \in \mathcal{H}} L_{gate}^*(S) - \min_{S \in \mathcal{H}} \hat{L}_{gate}(S; M_T) \leq C \sqrt{\frac{VC(\mathcal{H}) + \log(1/\delta)}{N_T}}\]
 
-where $C$ depends on the loss function's Lipschitz constant and range. As $N_T \to \infty$, the excess risk converges to zero. $\square$
+where \(C\) depends on the loss function's Lipschitz constant and range.
+As \(N_T \to \infty\), the excess risk converges to zero. \(\square\)
 
-**Corollary 6 (Effective Regret with Growing Memory).** As $N_T$ grows, the comparator $\min_{S \in \mathcal{H}} \sum_{t=1}^T \ell_t(S)$ improves. The effective regret, measured against the optimal fixed gatekeeper given all data up to time $T$, is:
+**Corollary 6 (Effective Regret with Growing Memory).** As \(N_T\)
+grows, the comparator
+\(\min_{S \in \mathcal{H}} \sum_{t=1}^T \ell_t(S)\) improves. The
+effective regret, measured against the optimal fixed gatekeeper given
+all data up to time \(T\), is:
 
-$$\text{Regret}_T^{\text{eff}} = \sum_{t=1}^T \ell_t(S_t) - \min_{S \in \mathcal{H}} \sum_{t=1}^T \mathbb{E}[\ell_t(S) \mid M_T] \leq \text{Regret}_T^{\text{delay}} + O\left( T \cdot \sqrt{\frac{\text{VC}(\mathcal{H})}{N_T}} \right)$$
+\[Regret_T^{eff} = \sum_{t=1}^T \ell_t(S_t) - \min_{S \in \mathcal{H}} \sum_{t=1}^T \mathbb{E}[\ell_t(S) \mid M_T] \leq Regret_T^{delay} + O\left( T \cdot \sqrt{\frac{VC(\mathcal{H})}{N_T}} \right)\]
 
-*Proof.* The second term arises because the comparator changes as $M_T$ grows; the original regret compares to the best fixed $S$ for the entire sequence, while the effective regret compares to the best $S$ given knowledge of $M_T$. The gap is bounded by the uniform convergence bound. $\square$
+*Proof.* The second term arises because the comparator changes as
+\(M_T\) grows; the original regret compares to the best fixed \(S\) for
+the entire sequence, while the effective regret compares to the best
+\(S\) given knowledge of \(M_T\). The gap is bounded by the uniform
+convergence bound. \(\square\)
 
-### 5.3 Memory Saturation and Asymptotic Regret
+\subsubsection{5.3 Memory Saturation and Asymptotic
+Regret}<!-- label: memory-saturation-and-asymptotic-regret -->
 
-**Proposition 18 (Asymptotic No-Regret).** If the memory bank saturates ($\lim_{T\to\infty} N_T = \infty$), then:
+**Proposition 18 (Asymptotic No-Regret).** If the memory bank
+saturates (\(\lim_{T\to\infty} N_T = \infty\)), then:
 
-$$\lim_{T\to\infty} \frac{1}{T} \text{Regret}_T^{\text{eff}} = 0$$
+\[\lim_{T\to\infty} \frac{1}{T} Regret_T^{eff} = 0\]
 
 i.e., the system achieves **no-regret** in the limit.
 
-*Proof.* From Corollary 6, the average effective regret is bounded by $O(1/\sqrt{T}) + O\bigl( \sqrt{\text{VC}(\mathcal{H})/N_T} \bigr)$. Since $N_T \to \infty$, the second term vanishes. The first term $1/\sqrt{T} \to 0$. $\square$
+*Proof.* From Corollary 6, the average effective regret is bounded
+by \(O(1/\sqrt{T}) + O\bigl( \sqrt{VC(\mathcal{H})/N_T} \bigr)\).
+Since \(N_T \to \infty\), the second term vanishes. The first term
+\(1/\sqrt{T} \to 0\). \(\square\)
 
----
+<div align="center">
 
-## 6. Comparison to Standard Online Learning Bounds
+\rule{0.5\linewidth}{0.5pt}
 
-### 6.1 Summary of Bounds
+</div>
 
-| Setting | Bound | Rate | Key Assumptions |
-|---------|-------|------|----------------|
-| Standard OGD (no delay) | $2GR\sqrt{T}$ | $O(\sqrt{T})$ | Convex, Lipschitz, bounded domain |
-| Hedge (experts) | $\sqrt{T \log N}$ | $O(\sqrt{T})$ | $N$ experts, bounded loss |
-| FTRL (general) | $O(\sqrt{T})$ | $O(\sqrt{T})$ | Strongly convex regularizer |
-| OMD (general) | $O(\sqrt{T})$ | $O(\sqrt{T})$ | Bregman divergence |
-| **OGD + delay (Thm 8)** | $2GR\sqrt{T} + G^2 D_{\max}\sqrt{T}$ | $O(D_{\max}\sqrt{T})$ | + bounded delay |
-| **OGD + delay + memory (Prop 16)** | $2GR\sqrt{T} + G^2 D_{\max}\sqrt{T} - \Delta_{\text{mem}}$ | Same rate, improved constant | + replay |
-| **SCX effective (Cor 6)** | $2GR\sqrt{T} + G^2 D_{\max}\sqrt{T} + O(T\sqrt{\text{VC}/N_T})$ | $O(\sqrt{T}) + o(T)$ | + growing memory |
+\subsection{6. Comparison to Standard Online Learning
+Bounds}<!-- label: comparison-to-standard-online-learning-bounds -->
 
-### 6.2 Comparison to Hedge
+#### 6.1 Summary of Bounds<!-- label: summary-of-bounds -->
 
-**Hedge algorithm** (Freund & Schapire, 1997) achieves $\text{Regret}_T \leq \sqrt{T \log N}$ for $N$ experts. This is relevant if the gatekeeper selects among $N$ discrete expert models rather than using a continuous parameterization.
+\begin{longtable}[]{@{}
+  >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2368}}
+  >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1842}}
+  >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1579}}
+  >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4211}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]
+Setting
+\end{minipage} & \begin{minipage}[b]
+Bound
+\end{minipage} & \begin{minipage}[b]
+Rate
+\end{minipage} & \begin{minipage}[b]
+Key Assumptions
+\end{minipage} 
 
-**Proposition 19 (Gatekeeper as Expert Selection).** If the gatekeeper operates by selecting among $M$ expert models (weighted voting), the problem reduces to prediction with expert advice:
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Standard OGD (no delay) & \(2GR\sqrt{T}\) & \(O(\sqrt{T})\) & Convex,
+Lipschitz, bounded domain 
 
-$$\text{Regret}_T^{\text{Hedge}} \leq \sqrt{T \log M}$$
+Hedge (experts) & \(\sqrt{T \log N}\) & \(O(\sqrt{T})\) & \(N\) experts,
+bounded loss 
 
-This bound does **not** depend on $D_{\max}$ because the Hedge algorithm can incorporate delayed feedback via the delayed Hedge variant (Joulani et al., 2016, Theorem 1):
+FTRL (general) & \(O(\sqrt{T})\) & \(O(\sqrt{T})\) & Strongly convex
+regularizer 
 
-$$\text{Regret}_T^{\text{Hedge, delay}} \leq \sqrt{T \log M} + D_{\max} \log M$$
+OMD (general) & \(O(\sqrt{T})\) & \(O(\sqrt{T})\) & Bregman
+divergence 
 
-The delay penalty for Hedge is additive $O(D_{\max})$ rather than multiplicative $O(D_{\max}\sqrt{T})$, which is better for large $D_{\max}$.
+**OGD + delay (Thm 8)** & \(2GR\sqrt{T} + G^2 D_\sqrt{T}\) &
+\(O(D_\sqrt{T})\) & + bounded delay 
 
-**Comparison**: OGD gives $O(\sqrt{T})$ but suffers multiplicative $D_{\max}$ penalty; Hedge gives $O(\sqrt{T})$ with additive $D_{\max}$ penalty. For SCX, if the gatekeeper is a linear combination of experts, OGD is appropriate. If it selects among discrete expert decisions, Hedge is more suitable.
+**OGD + delay + memory (Prop 16)** &
+\(2GR\sqrt{T} + G^2 D_\sqrt{T} - \Delta_{mem}\) & Same
+rate, improved constant & + replay 
 
-### 6.3 Comparison to FTRL/OMD
+**SCX effective (Cor 6)** &
+\(2GR\sqrt{T} + G^2 D_\sqrt{T} + O(T\sqrt{VC/N_T})\) &
+\(O(\sqrt{T}) + o(T)\) & + growing memory 
 
-**Follow-the-Regularized-Leader (FTRL)** and **Online Mirror Descent (OMD)** are more general frameworks that subsume OGD.
+\end{longtable}
 
-**Proposition 20 (FTRL for SCX Gatekeeper).** Using FTRL with regularizer $\mathcal{R}(w) = \frac{1}{2\eta}\|w\|_2^2$, the regret bound is identical to OGD:
+#### 6.2 Comparison to Hedge<!-- label: comparison-to-hedge -->
 
-$$\text{Regret}_T^{\text{FTRL}} \leq 2GR\sqrt{T}$$
+**Hedge algorithm** (Freund \& Schapire, 1997) achieves
+\(Regret_T \leq \sqrt{T \log N}\) for \(N\) experts. This is
+relevant if the gatekeeper selects among \(N\) discrete expert models
+rather than using a continuous parameterization.
+
+**Proposition 19 (Gatekeeper as Expert Selection).** If the
+gatekeeper operates by selecting among \(M\) expert models (weighted
+voting), the problem reduces to prediction with expert advice:
+
+\[Regret_T^{Hedge} \leq \sqrt{T \log M}\]
+
+This bound does **not** depend on \(D_\) because the Hedge
+algorithm can incorporate delayed feedback via the delayed Hedge variant
+(Joulani et al., 2016, Theorem 1):
+
+\[Regret_T^{Hedge, delay} \leq \sqrt{T \log M} + D_ \log M\]
+
+The delay penalty for Hedge is additive \(O(D_)\) rather than
+multiplicative \(O(D_\sqrt{T})\), which is better for large
+\(D_\).
+
+**Comparison**: OGD gives \(O(\sqrt{T})\) but suffers
+multiplicative \(D_\) penalty; Hedge gives \(O(\sqrt{T})\) with
+additive \(D_\) penalty. For SCX, if the gatekeeper is a linear
+combination of experts, OGD is appropriate. If it selects among discrete
+expert decisions, Hedge is more suitable.
+
+#### 6.3 Comparison to FTRL/OMD<!-- label: comparison-to-ftrlomd -->
+
+**Follow-the-Regularized-Leader (FTRL)** and **Online Mirror
+Descent (OMD)** are more general frameworks that subsume OGD.
+
+**Proposition 20 (FTRL for SCX Gatekeeper).** Using FTRL with
+regularizer \(\mathcal{R}(w) = \frac{1}{2\eta}\|w\|_2^2\), the regret
+bound is identical to OGD:
+
+\[Regret_T^{FTRL} \leq 2GR\sqrt{T}\]
 
 Under delayed feedback, the FTRL bound becomes:
 
-$$\text{Regret}_T^{\text{FTRL, delay}} \leq 2GR\sqrt{T} + G^2 D_{\max} \sqrt{T}$$
+\[Regret_T^{FTRL, delay} \leq 2GR\sqrt{T} + G^2 D_ \sqrt{T}\]
 
-which matches the OGD delay bound. FTRL does not offer an advantage over OGD for this specific setup.
+which matches the OGD delay bound. FTRL does not offer an advantage over
+OGD for this specific setup.
 
-### 6.4 When the Loss is Not Convex
+\subsubsection{6.4 When the Loss is Not
+Convex}<!-- label: when-the-loss-is-not-convex -->
 
-**Conjecture 4 (Non-Convex Gatekeeper Regret).** If the gatekeeper is a neural network (non-convex loss), the OGD regret bound degrades to:
+**Conjecture 4 (Non-Convex Gatekeeper Regret).** If the gatekeeper
+is a neural network (non-convex loss), the OGD regret bound degrades to:
 
-$$\text{Regret}_T \leq O(T^{3/4})$$
+\[Regret_T \leq O(T^{3/4})\]
 
-under the assumption of gradient dominance (Polyak-Lojasiewicz condition) and with suitable restart strategies.
+under the assumption of gradient dominance (Polyak-Lojasiewicz
+condition) and with suitable restart strategies.
 
-*Status: **Conjecture**. The $O(T^{3/4})$ rate is typical for non-convex online learning with $O(1/\sqrt{t})$ step sizes. The specific rate depends on the gradient concentration properties of the neural network.*
+*Status: **Conjecture**. The \(O(T^{3/4})\) rate is typical
+for non-convex online learning with \(O(1/\sqrt{t})\) step sizes. The
+specific rate depends on the gradient concentration properties of the
+neural network.*
 
----
+<div align="center">
 
-## 7. Lower Bounds and Optimality
+\rule{0.5\linewidth}{0.5pt}
 
-### 7.1 Minimax Lower Bound
+</div>
 
-**Theorem 10 (Minimax Lower Bound for Gatekeeper Online Learning).** For any online learning algorithm for the gatekeeper, there exists a data-generating distribution $\mathcal{D}$ and a sequence of feedbacks satisfying Assumptions B4, B5, C1 such that:
+\subsection{7. Lower Bounds and
+Optimality}<!-- label: lower-bounds-and-optimality -->
 
-$$\mathbb{E}[\text{Regret}_T] \geq \frac{GR}{2} \sqrt{T}$$
+#### 7.1 Minimax Lower Bound<!-- label: minimax-lower-bound -->
 
-*Proof.* Standard minimax lower bound for online convex optimization (Abernethy et al., 2008). Construct a two-point loss set at the boundary of the domain: $\ell_t(w) = G \cdot \langle w, \xi_t \rangle$ for $\xi_t \in \{\pm 1\}^{d_w}$ with $\|\xi_t\|_2 = 1$. The optimal strategy against any algorithm is to choose $\xi_t$ adversarially, yielding regret $\Omega(GR\sqrt{T})$. $\square$
+**Theorem 10 (Minimax Lower Bound for Gatekeeper Online
+Learning).** For any online learning algorithm for the gatekeeper, there
+exists a data-generating distribution \(\mathcal{D}\) and a sequence of
+feedbacks satisfying Assumptions B4, B5, C1 such that:
 
-### 7.2 Optimality Gap
+\[\mathbb{E}[Regret_T] \geq \frac{GR}{2} \sqrt{T}\]
 
-Comparing the upper bound ($2GR\sqrt{T}$) and lower bound ($GR\sqrt{T}/2$), there is a constant factor gap of $4\times$. This gap is typical for OGD and can be closed by using adaptive learning rates or more sophisticated algorithms (e.g., AdaGrad).
+*Proof.* Standard minimax lower bound for online convex
+optimization (Abernethy et al., 2008). Construct a two-point loss set at
+the boundary of the domain:
+\(\ell_t(w) = G \cdot \langle w, \xi_t \rangle\) for
+\(\xi_t \in \{\pm 1\}^{d_w}\) with \(\|\xi_t\|_2 = 1\). The optimal
+strategy against any algorithm is to choose \(\xi_t\) adversarially,
+yielding regret \(\Omega(GR\sqrt{T})\). \(\square\)
 
-**Corollary 7 (Optimality of OGD for Gatekeeper).** OGD achieves the optimal $O(\sqrt{T})$ rate for gatekeeper online learning, up to constant factors.
+#### 7.2 Optimality Gap<!-- label: optimality-gap -->
 
-### 7.3 Lower Bound with Delay
+Comparing the upper bound (\(2GR\sqrt{T}\)) and lower bound
+(\(GR\sqrt{T}/2\)), there is a constant factor gap of \(4\times\). This
+gap is typical for OGD and can be closed by using adaptive learning
+rates or more sophisticated algorithms (e.g., AdaGrad).
 
-**Theorem 11 (Delay Lower Bound, Matching).** Under delays $d_t \in [0, D_{\max}]$, there exists a problem instance such that:
+**Corollary 7 (Optimality of OGD for Gatekeeper).** OGD achieves
+the optimal \(O(\sqrt{T})\) rate for gatekeeper online learning, up to
+constant factors.
 
-$$\mathbb{E}[\text{Regret}_T^{\text{delay}}] \geq \frac{GR}{2} \sqrt{T} + \frac{G^2 D_{\max}}{8} \sqrt{T}$$
+#### 7.3 Lower Bound with Delay<!-- label: lower-bound-with-delay -->
 
-*Proof sketch.* Combine the standard OCO lower bound with a construction that forces the algorithm to commit to $D_{\max}$ steps without feedback. For each delay period, construct losses that are adversarially chosen based on the algorithm's previous commits, yielding an additional $\Omega(G^2 D_{\max}\sqrt{T})$ term. $\square$
+**Theorem 11 (Delay Lower Bound, Matching).** Under delays
+\(d_t \in [0, D_]\), there exists a problem instance such that:
 
-The upper bound $O(D_{\max}\sqrt{T})$ matches the lower bound in terms of the $D_{\max}\sqrt{T}$ scaling, confirming that the delay dependence is tight.
+\[\mathbb{E}[Regret_T^{delay}] \geq \frac{GR}{2} \sqrt{T} + \frac{G^2 D_}{8} \sqrt{T}\]
 
----
+*Proof sketch.* Combine the standard OCO lower bound with a
+construction that forces the algorithm to commit to \(D_\) steps
+without feedback. For each delay period, construct losses that are
+adversarially chosen based on the algorithm's previous commits, yielding
+an additional \(\Omega(G^2 D_\sqrt{T})\) term. \(\square\)
 
-## 8. Summary of Proven vs. Conjectured Claims
+The upper bound \(O(D_\sqrt{T})\) matches the lower bound in terms
+of the \(D_\sqrt{T}\) scaling, confirming that the delay
+dependence is tight.
 
-| Claim | Status | Evidence |
-|-------|--------|----------|
-| Theorem 7 (OGD without delay) | **Proven** | Standard Zinkevich (2003) bound |
-| Corollary 4 (gatekeeper convergence) | **Proven** | Direct from Theorem 7 |
-| Theorem 8 (delayed OGD) | **Proven** | Standard delayed OGD analysis |
-| Theorem 9 (delay lower bound) | **Proven** | Standard OCO lower bound |
-| Corollary 5 (stochastic delay) | **Rigorous sketch** | Uses Wald's identity |
-| Proposition 16 (memory-enhanced regret) | **Sketch** | Requires formal replay analysis |
-| Proposition 17 (sample complexity) | **Proven** | Standard ERM bound |
-| Corollary 6 (effective regret) | **Proven** | From Propositions 16 and 17 |
-| Proposition 18 (asymptotic no-regret) | **Proven** | From Corollary 6 |
-| Proposition 19 (Hedge comparison) | **Proven** | Standard Hedge bound |
-| Proposition 20 (FTRL comparison) | **Proven** | Standard FTRL bound |
-| Theorem 10 (minimax lower bound) | **Proven** | Standard OCO lower bound |
-| Theorem 11 (delay lower bound, matching) | **Proven** | Construction-based proof |
-| **Conjecture 4** (non-convex regret) | **Conjecture** | Depends on Polyak-Lojasiewicz condition |
+<div align="center">
 
----
+\rule{0.5\linewidth}{0.5pt}
 
-## References
+</div>
 
-1. Zinkevich, M. (2003). "Online convex programming and generalized infinitesimal gradient ascent." *ICML 2003*, 928-936. — Foundation of OGD regret bounds.
-2. Hazan, E. (2016). "Introduction to online convex optimization." *Foundations and Trends in Optimization*, 2(3-4), 157-325. — Comprehensive survey.
-3. Shalev-Shwartz, S. (2012). "Online learning and online convex optimization." *Foundations and Trends in Machine Learning*, 4(2), 107-194. — Standard reference.
-4. Langford, J., et al. (2009). "Slow learners are fast." *NIPS 2009*, 233-241. — Delayed feedback in online learning.
-5. Joulani, P., et al. (2016). "Online learning under delayed feedback." *JMLR*, 17(1), 1-54. — Comprehensive delay analysis.
-6. Quanrud, K., & Khashabi, D. (2015). "Online learning with adversarial delays." *NIPS 2015*, 2071-2079. — Delay-regret tradeoffs.
-7. Freund, Y., & Schapire, R. E. (1997). "A decision-theoretic generalization of on-line learning and an application to boosting." *Journal of Computer and System Sciences*, 55(1), 119-139. — Hedge algorithm.
-8. Abernethy, J., et al. (2008). "Optimal strategies and minimax lower bounds for online convex games." *COLT 2008*, 415-424. — Minimax lower bounds for OCO.
-9. Cesa-Bianchi, N., & Lugosi, G. (2006). *Prediction, Learning, and Games*. Cambridge University Press. — Comprehensive online learning reference.
-10. Zhang, S., & Sutton, R. S. (2017). "A deeper look at experience replay." *arXiv:1712.01275*. — Experience replay in online learning.
-11. Duchi, J., et al. (2011). "Adaptive subgradient methods for online learning and stochastic optimization." *JMLR*, 12, 2121-2159. — AdaGrad for adaptive learning rates.
-12. McMahan, H. B., & Streeter, M. (2010). "Adaptive bound optimization for online convex optimization." *COLT 2010*, 189-202. — Improved OGD bounds.
+\subsection{8. Summary of Proven vs.~Conjectured
+Claims}<!-- label: summary-of-proven-vs.-conjectured-claims -->
 
----
+\begin{longtable}[]{@{}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2800}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3200}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]
+Claim
+\end{minipage} & \begin{minipage}[b]
+Status
+\end{minipage} & \begin{minipage}[b]
+Evidence
+\end{minipage} 
 
-*End of Document 03: Online Learning Regret Analysis of SCX Gatekeeper*
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Theorem 7 (OGD without delay) & **Proven** & Standard Zinkevich
+(2003) bound 
+
+Corollary 4 (gatekeeper convergence) & **Proven** & Direct from
+Theorem 7 
+
+Theorem 8 (delayed OGD) & **Proven** & Standard delayed OGD
+analysis 
+
+Theorem 9 (delay lower bound) & **Proven** & Standard OCO lower
+bound 
+
+Corollary 5 (stochastic delay) & **Rigorous sketch** & Uses Wald's
+identity 
+
+Proposition 16 (memory-enhanced regret) & **Sketch** & Requires
+formal replay analysis 
+
+Proposition 17 (sample complexity) & **Proven** & Standard ERM
+bound 
+
+Corollary 6 (effective regret) & **Proven** & From Propositions 16
+and 17 
+
+Proposition 18 (asymptotic no-regret) & **Proven** & From Corollary
+6 
+
+Proposition 19 (Hedge comparison) & **Proven** & Standard Hedge
+bound 
+
+Proposition 20 (FTRL comparison) & **Proven** & Standard FTRL
+bound 
+
+Theorem 10 (minimax lower bound) & **Proven** & Standard OCO lower
+bound 
+
+Theorem 11 (delay lower bound, matching) & **Proven** &
+Construction-based proof 
+
+**Conjecture 4** (non-convex regret) & **Conjecture** &
+Depends on Polyak-Lojasiewicz condition 
+
+\end{longtable}
+
+<div align="center">
+
+\rule{0.5\linewidth}{0.5pt}
+
+</div>
+
+### References<!-- label: references -->
+
+1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+7. 
+8. 
+9. 
+10. 
+11. 
+12. 
+
+<div align="center">
+
+\rule{0.5\linewidth}{0.5pt}
+
+</div>
+
+*End of Document 03: Online Learning Regret Analysis of SCX
+Gatekeeper*

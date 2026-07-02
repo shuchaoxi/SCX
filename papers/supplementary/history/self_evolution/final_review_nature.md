@@ -1,15 +1,18 @@
-# Nature Comp Sci 审稿报告：SCX in Space
+\section{Nature Comp Sci 审稿报告：SCX in
+Space}<!-- label: nature-comp-sci-ux5ba1ux7a3fux62a5ux544ascx-in-space -->
 
 保存日期：2026-06-29
 
-## 判定：Major Revision
+### 判定：Major Revision<!-- label: ux5224ux5b9amajor-revision -->
 
-### 必须修
-1. "12个独立专家" → 有效独立维度 ≈ 3-5。算法共享组件，参考基因组共同致盲
-2. 医学影像 δ_s^PE 自相矛盾：配准误差 dominant failure vs "Small-Med.↑"
-3. 海洋学排除论据不严谨：忽略区域差异和卫星数据
-4. TCAD/OPC：M_eff≈1.2 仍宣称有意义
-5. 13场景中11个无实验数据，应以更突出方式标注
+#### 必须修<!-- label: ux5fc5ux987bux4fee -->
 
-### 诚实度赞扬
+1. 
+2. 
+3. 
+4. 
+5. 
+
+#### 诚实度赞扬<!-- label: ux8bdaux5b9eux5ea6ux8d5eux626c -->
+
 气候场景的 CMIP6 家谱标注是全文最诚实的部分

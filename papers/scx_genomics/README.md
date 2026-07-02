@@ -31,9 +31,9 @@ The paper addresses a fundamental challenge in clinical genomics: when multiple 
 
 ### Theorem 1: Multi-Predictor Systematic Error Detection
 
-With $`M`$ correlated predictors of effective multiplicity $`M_{\text{eff}} = M / (1 + (M-1)\bar{\rho})`$, systematic annotation errors exceeding a consensus-margin threshold are detectable with probability at least $`1 - \exp(-2M_{\text{eff}}\varepsilon^2)`$.
+With $`M`$ correlated predictors of effective multiplicity $`M_{\text{eff}} = M / (1 + (M-1)\bar)`$, systematic annotation errors exceeding a consensus-margin threshold are detectable with probability at least $`1 - \exp(-2M_{\text{eff}}\varepsilon^2)`$.
 
-**Minimum detectable bias:** $`\tau_{\min} \approx 1.36 / \sqrt{M_{\text{eff}}}`$ at 95% confidence.
+**Minimum detectable bias:** $`\tau_ \approx 1.36 / \sqrt{M_{\text{eff}}}`$ at 95% confidence.
 
 ### Theorem 3: Unidentifiability
 
@@ -41,7 +41,7 @@ Without an explicit declaration of distributional assumptions connecting trainin
 
 ### Key Insight
 
-> The effective multiplicity $`M_{\text{eff}}`$ has a finite upper bound of $`1/\bar{\rho}`$ as $`M \to \infty`$ — adding more correlated predictors yields diminishing returns.
+> The effective multiplicity $`M_{\text{eff}}`$ has a finite upper bound of $`1/\bar`$ as $`M \to \infty`$ — adding more correlated predictors yields diminishing returns.
 
 ## Cercis Score
 

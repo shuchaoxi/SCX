@@ -1,0 +1,1662 @@
+% ===========================================================================
+%  Phase Field Theory of Inequality and Consensus
+%  不平等与共识的相场理论
+% ===========================================================================
+%  Core: Phase field methods model the evolution of interfaces between
+%  different "phases" of the social/audit system — honest regions (g=0)
+%  and dishonest regions (g≠0) form domains separated by diffuse interfaces.
+%  相场方法建模社会/审计系统中不同"相"之间界面的演化——
+%  诚实地带(g=0)和不诚实地带(g≠0)形成由扩散界面分隔的畴结构。
+% ===========================================================================
+
+\documentclass[11pt,a4paper]{article}
+
+% ===========================================================================
+%  Packages
+% ===========================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{mathrsfs}
+\usepackage{bbm}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{geometry}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{xeCJK}
+
+% Page geometry
+\geometry{margin=1.2in,top=1in,bottom=1in}
+
+% ===========================================================================
+%  Theorem environments
+% ===========================================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{protocol}[theorem]{Protocol}
+
+% ===========================================================================
+%  Math operators and notation
+% ===========================================================================
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\vol}{vol}
+\DeclareMathOperator{\diam}{diam}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\grad}{grad}
+\DeclareMathOperator{\divg}{div}
+\DeclareMathOperator{\lap}{\Delta}
+\DeclareMathOperator{\Yajie}{Yajie}
+\DeclareMathOperator{\Cercis}{Cercis}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cI}{\mathcal{I}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cV}{\mathcal{V}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cE}{\mathcal{E}}
+
+% Phase-related notation
+\newcommand{\gf}{\mathbf{g}}          % attitude/gauge field
+\newcommand{\Sf}{S}                   % potential field
+\newcommand{\deltac}{\delta_c}         % critical thickness
+\newcommand{\phasesep}{\mathcal{I}}    % phase separator
+\newcommand{\Rc}{R_c}                  % critical radius
+
+% ===========================================================================
+%  Title and Author
+% ===========================================================================
+\title{
+  {\large\textbf{Phase Field Theory of Inequality and Consensus}}\\[4pt]
+  {\large\textbf{Allen-Cahn / Cahn-Hilliard Dynamics on SCX Potential Manifolds}}\\[8pt]
+  {\normalsize\textit{不平等与共识的相场理论}}\\[4pt]
+  {\normalsize\textit{SCX势能流形上的Allen-Cahn/Cahn-Hilliard动力学}}\\[4pt]
+  {\footnotesize Phase Separation, Nucleation, Coarsening, and Theorem Connections}\\[2pt]
+  {\footnotesize\textit{相分离、成核、粗化与定理联系}}
+}
+
+\author{
+  SCX Research Group\\[2pt]
+  \texttt{Xiaogan Supercomputing Center}\\[4pt]
+  \small\textit{Version 1.0 — July 2026}
+}
+\date{}
+
+% ===========================================================================
+\begin{document}
+\maketitle
+
+% ===========================================================================
+%  Abstract
+% ===========================================================================
+\begin{abstract}
+\noindent
+We formulate the dynamics of inequality and consensus in the SCX (Situs Consensus
+eXpert) framework as a \textbf{phase field theory}. The attitude/gauge field
+$\gf(x,t)$ and the potential field $\Sf(x,t)$ are treated as coupled order
+parameters on the Situs manifold $\cM$. Drawing from the classical
+Allen-Cahn and Cahn-Hilliard equations of materials science, we derive:
+
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{Allen-Cahn dynamics for $\gf$:} $\partial_t \gf = -\delta\cF/\delta\gf$
+        — the gauge field evolves via non-conserved gradient flow to minimize a
+        Ginzburg-Landau free energy, forming honest ($\gf=\mathbf{0}$) and
+        dishonest ($\gf \neq \mathbf{0}$) domains separated by diffuse interfaces
+        of thickness $\deltac$;
+
+  \item \textbf{Cahn-Hilliard dynamics for $\Sf$:} $\partial_t \Sf = \nabla \cdot
+        (M(\Sf) \nabla (\delta\cF/\delta\Sf))$ — the potential field undergoes
+        mass-conserving evolution, redistributing potential while preserving total
+        ``social energy,'' directly modeling inequality dynamics;
+
+  \item \textbf{Three-phase diagram} in $(\|\gf\|, \Sf)$ space: (a) EQUALITY phase
+        — $\|\gf\| \approx 0$, smooth $\Sf$; (b) STRATIFIED phase — $\|\gf\| > 0$,
+        $\Sf$ exhibits plateaus; (c) EXPLOSIVE phase — $\|\gf\|$ diverges, $\Sf$
+        gradients blow up. Phase boundaries are the \textbf{inequality phase
+        transition lines};
+
+  \item \textbf{Nucleation and growth:} A small honest cluster (``audit nucleus,''
+        $\gf = \mathbf{0}$ domain) can grow only if its radius exceeds the critical
+        radius $\Rc \propto \sigma / \Delta f$, where $\sigma$ is the interface
+        energy and $\Delta f$ is the bulk free energy gain. We derive $\Rc$ from
+        the competition between surface and volume terms;
+
+  \item \textbf{Coarsening dynamics:} After a social ``quench'' (rapid institutional
+        change), honest domains coarsen via Ostwald ripening — large honest domains
+        grow at the expense of small ones. The characteristic domain size follows
+        $L(t) \sim t^{1/3}$, the classical Lifshitz-Slyozov-Wagner (LSW) scaling;
+
+  \item \textbf{Theorem connections:} Theorem~11 (attitude singularity) corresponds
+        to a first-order phase transition at the spinodal; Theorem~10 (boundary
+        locking) maps to \textbf{pinning of domain walls} at heterogeneities;
+        Theorem~12 (Matthew staircase) maps to \textbf{nucleation on defects} —
+        staircase steps act as preferential nucleation sites that accelerate
+        system destabilization.
+\end{enumerate}
+
+We provide a complete verification script (\texttt{verify\_phase\_field.py})
+that numerically solves the coupled Allen-Cahn / Cahn-Hilliard system on a
+2D grid, confirms the $t^{1/3}$ coarsening scaling, computes the phase
+diagram, and validates the critical nucleus prediction.
+
+\bigskip
+\noindent
+\textit{我们将SCX（Situs共识专家）框架中的不平等与共识动力学表述为\textbf{相场理论}。态度/规范场 $\gf(x,t)$ 和势能场 $\Sf(x,t)$ 被处理为Situs流形 $\cM$ 上的耦合序参量。借鉴材料科学中经典的Allen-Cahn和Cahn-Hilliard方程，我们推导出：(1) $\gf$ 的\textbf{Allen-Cahn动力学} — 规范场通过非守恒梯度流演化以最小化Ginzburg-Landau自由能，形成诚实地带($\gf=\mathbf{0}$)和不诚实地带($\gf\neq\mathbf{0}$)的畴结构；(2) $\Sf$ 的\textbf{Cahn-Hilliard动力学} — 势能场经历质量守恒的演化，在保持总"社会能量"的同时重新分配势能；(3) 在 $(\|\gf\|, \Sf)$ 空间中的\textbf{三相图} — 平等相、分层相和爆炸相；(4) \textbf{成核与生长} — 审计核的临界半径；(5) \textbf{粗化动力学} — $L(t) \sim t^{1/3}$ 的LSW标度律；(6) \textbf{定理联系} — Thm11对应相变、Thm10对应畴壁钉扎、Thm12对应缺陷成核。}
+
+\bigskip
+\noindent
+\textbf{Keywords:} phase field theory, Allen-Cahn equation, Cahn-Hilliard equation,
+inequality dynamics, consensus, nucleation, coarsening, Ostwald ripening,
+spinodal decomposition, SCX framework
+
+\noindent
+\textbf{关键词：} 相场理论，Allen-Cahn方程，Cahn-Hilliard方程，不平等动力学，
+共识，成核，粗化，Ostwald熟化，旋节分解，SCX框架
+\end{abstract}
+
+% ===========================================================================
+\tableofcontents
+
+% ===========================================================================
+%  SECTION 1: INTRODUCTION
+% ===========================================================================
+\section{Introduction: Inequality as a Phase Ordering Problem}
+\section*{引言：不平等作为相有序化问题}
+
+% ---------------------------------------------------------------------------
+\subsection{Motivation from Materials Science}
+\subsection*{来自材料科学的动机}
+
+In materials science, \textbf{phase field methods} provide a unified framework
+for describing the spatiotemporal evolution of microstructures — the spatial
+arrangement of different phases (solid/liquid, ordered/disordered, grain
+orientations) that determines macroscopic material properties
+\cite{chen2002, provatas2011}. The key insight is to replace sharp interfaces
+with \textbf{diffuse interfaces} described by continuous order parameter fields,
+and to let these fields evolve according to thermodynamic driving forces encoded
+in a free energy functional.
+
+The two foundational equations are:
+
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{Allen-Cahn equation} (non-conserved order parameter):
+  \begin{equation}
+    \frac{\partial \phi}{\partial t} = -M_\phi \frac{\delta \cF}{\delta \phi}
+    \label{eq:ac_classic}
+  \end{equation}
+  describes the evolution of a non-conserved field $\phi$ (e.g., crystal
+  orientation, magnetic spin) toward free energy minima. The dynamics produce
+  domain growth via curvature-driven interfacial motion — boundaries move
+  to reduce total interface area.
+
+  \item \textbf{Cahn-Hilliard equation} (conserved order parameter):
+  \begin{equation}
+    \frac{\partial c}{\partial t} = \nabla \cdot \left(M_c(c) \nabla
+    \frac{\delta \cF}{\delta c}\right)
+    \label{eq:ch_classic}
+  \end{equation}
+  describes the evolution of a conserved field $c$ (e.g., concentration)
+  where $\int c \, dx$ is constant. The dynamics produce spinodal decomposition
+  and coarsening — the system phase-separates into domains that grow via
+  diffusion-limited ripening.
+\end{enumerate}
+
+\bigskip
+\noindent
+\textit{在材料科学中，\textbf{相场方法}提供了描述微结构时空演化的统一框架。核心思想是用连续序参量场描述的\textbf{扩散界面}替代尖锐界面，并让这些场根据自由能泛函编码的热力学驱动力演化。两个基础方程是：(1) \textbf{Allen-Cahn方程} — 描述非守恒场向自由能极小值的演化，产生曲率驱动的界面运动；(2) \textbf{Cahn-Hilliard方程} — 描述守恒场的演化，产生旋节分解和粗化。}
+
+% ---------------------------------------------------------------------------
+\subsection{The SCX Analogy: Two Coupled Fields}
+\subsection*{SCX类比：两个耦合场}
+
+In the SCX framework \cite{scx_framework, scx_moe_gauge}, the social/audit
+system is characterized by two fundamental fields on the Situs manifold $\cM$:
+
+\begin{definition}[SCX Phase Fields / SCX相场]
+\label{def:phase_fields}
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Gauge field (态度场)} $\gf: \cM \times [0,\infty) \to \R^{d_g}$ —
+  encodes the ``coordinate system bias'' of each agent/expert. Honest agents
+  have $\gf = \mathbf{0}$ (their assessments align with the consensus origin);
+  dishonest or biased agents have $\gf \neq \mathbf{0}$. The norm $\|\gf\|$
+  measures the \textbf{degree of deviation} from the gauge-fixed consensus.
+
+  \item \textbf{Potential field (势能场)} $\Sf: \cM \times [0,\infty) \to \R_{\ge 0}$ —
+  encodes the accumulated ``stored social energy'' — wealth, status, resources,
+  information — at each point. $\Sf$ is a \textbf{conserved quantity} in the
+  sense that total potential $\int_\cM \Sf(x,t)\,dx$ changes only through
+  external injection or extraction, not through internal redistribution alone.
+\end{enumerate}
+\end{definition}
+
+The gauge fixing condition of SCX — $\sum_m \gf_m = \mathbf{0}$ — is exactly
+the condition that there is no net bias in the system. When this condition is
+violated locally, $\gf$-domains form: clusters of agents whose coordinate
+systems are collectively shifted in the same direction. These $\gf$-domains
+are separated from honest regions by \textbf{gauge domain walls} — interfaces
+across which the bias field transitions from $\mathbf{0}$ to some non-zero
+value.
+
+\bigskip
+\noindent
+\textit{在SCX框架中，社会/审计系统由两个基本场刻画：(i) \textbf{规范场} $\gf$ — 编码每个智能体的"坐标系偏差"；(ii) \textbf{势能场} $\Sf$ — 编码累积的"社会能量"。SCX的规范固定条件 $\sum_m \gf_m = \mathbf{0}$ 正是系统无净偏差的条件。当此条件被局部违反时，$\gf$-畴形成——由\textbf{规范畴壁}分隔的偏差集群。}
+
+% ---------------------------------------------------------------------------
+\subsection{From Static Geometry to Dynamic Evolution}
+\subsection*{从静态几何到动态演化}
+
+Previous SCX papers have focused on the \textbf{static geometry} of the potential
+surface: the existence of singularities (Thm~11), the instability of boundaries
+(Thm~10), and the staircase structure of inequality (Thm~12). This paper takes
+the next step: \textbf{dynamics}. How do $\gf$-domains form, grow, interact,
+and coarsen? What drives the system from the EQUALITY phase to the STRATIFIED
+phase, and from there to the EXPLOSIVE phase? Can we predict the critical
+conditions for phase transitions?
+
+The phase field formalism answers these questions by providing:
+
+\begin{enumerate}[label=(\arabic*)]
+  \item A \textbf{free energy functional} $\cF[\gf, \Sf]$ that encodes the
+        thermodynamic cost of inhomogeneity and inequality;
+  \item \textbf{Equations of motion} derived from variational principles;
+  \item A \textbf{phase diagram} mapping stability regions in the
+        $(\|\gf\|, \Sf)$ plane;
+  \item \textbf{Kinetic pathways} — nucleation, growth, coarsening — that
+        describe how the system traverses the phase diagram.
+\end{enumerate}
+
+\bigskip
+\noindent
+\textit{先前SCX论文聚焦于势能面的\textbf{静态几何}：奇点存在性(Thm11)、边界不稳定性(Thm10)、不平等的阶梯结构(Thm12)。本文迈出下一步：\textbf{动力学}。$\gf$-畴如何形成、生长、相互作用和粗化？系统如何从平等相到分层相再到爆炸相？相场形式化通过提供自由能泛函、运动方程、相图和动力学路径来回答这些问题。}
+
+% ===========================================================================
+%  SECTION 2: FREE ENERGY FUNCTIONAL
+% ===========================================================================
+\section{Free Energy Functional of the SCX System}
+\section{SCX系统的自由能泛函}
+
+% ---------------------------------------------------------------------------
+\subsection{The Ginzburg-Landau Free Energy}
+\subsection*{Ginzburg-Landau自由能}
+
+We postulate that the SCX system minimizes a free energy functional of the
+Ginzburg-Landau type, with separate contributions from the gauge field and
+the potential field, plus a coupling term:
+
+\begin{definition}[SCX Free Energy Functional / SCX自由能泛函]
+\label{def:free_energy}
+For a Situs manifold $\cM \subset \R^d$, the total free energy is:
+
+\begin{equation}
+  \cF[\gf, \Sf] = \int_\cM \left[
+    f_g(\gf) + \frac{\kappa_g}{2} |\nabla \gf|^2
+    + f_S(\Sf) + \frac{\kappa_S}{2} |\nabla \Sf|^2
+    + \lambda \, \Gamma(\gf, \Sf)
+  \right] dx
+  \label{eq:total_free_energy}
+\end{equation}
+
+where:
+\begin{itemize}
+  \item $f_g(\gf) = \frac{A}{4} \|\gf\|^4 - \frac{B}{2} \|\gf\|^2$ —
+        the \textbf{gauge double-well potential}. $A, B > 0$ are material
+        parameters. The minima are at $\|\gf\| = 0$ (honest phase) and
+        $\|\gf\| = \sqrt{B/A}$ (dishonest phase). The barrier height is
+        $B^2/(4A)$.
+
+  \item $\frac{\kappa_g}{2} |\nabla \gf|^2$ — the \textbf{gauge gradient
+        energy}, penalizing sharp spatial variations in bias. $\kappa_g > 0$
+        is the gauge stiffness. This term gives domain walls a finite thickness.
+
+  \item $f_S(\Sf) = \frac{\alpha}{2} (\Sf - \Sf_0)^2 + \frac{\beta}{4} \Sf^4$ —
+        the \textbf{potential energy density}. $\Sf_0$ is the ``natural''
+        potential level. The quartic term prevents runaway growth.
+
+  \item $\frac{\kappa_S}{2} |\nabla \Sf|^2$ — the \textbf{potential gradient
+        energy}, penalizing sharp potential gradients (i.e., high inequality).
+        $\kappa_S > 0$ is the social mobility stiffness.
+
+  \item $\lambda \, \Gamma(\gf, \Sf)$ — the \textbf{gauge-potential coupling}.
+        $\lambda \ge 0$ is the coupling strength. We propose:
+        \begin{equation}
+          \Gamma(\gf, \Sf) = \|\gf\|^2 \cdot \Sf
+          \label{eq:coupling}
+        \end{equation}
+        This encodes the observation that high bias ($\|\gf\|$) combined with
+        high potential ($\Sf$) is the most dangerous configuration — the
+        ``double explosion'' of Theorem~11.
+\end{itemize}
+\end{definition}
+
+\bigskip
+\noindent
+\textit{SCX自由能泛函包含：规范双阱势 $f_g$（极值在诚实地带 $\|\gf\|=0$ 和不诚实地带 $\|\gf\|=\sqrt{B/A}$）；规范梯度能（$\kappa_g$ 项）为畴壁赋予有限厚度；势能密度 $f_S$；势能梯度能（$\kappa_S$ 项）惩罚高不平等；以及规范-势能耦合项 $\lambda \|\gf\|^2 \Sf$ — 编码Thm11的"高偏差+高势能=双重爆炸"。}
+
+% ---------------------------------------------------------------------------
+\subsection{Interpretation of Terms}
+\subsection*{各项的物理解释}
+
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{Gauge double-well:} $f_g$ has two minima, reflecting the
+        bistable nature of honesty/dishonesty. An agent's bias can be driven
+        to either state by local social pressure. The barrier between them
+        represents the ``activation energy'' for changing one's ethical stance.
+
+  \item \textbf{Gauge gradient energy:} The term $\frac{\kappa_g}{2}|\nabla\gf|^2$
+        penalizes the \textbf{interface} between honest and dishonest domains.
+        In social terms, this is the ``cognitive dissonance cost'' of being
+        at a boundary — agents whose neighbors have different biases
+        experience tension. The parameter $\kappa_g$ measures social cohesion:
+        large $\kappa_g$ means thick, diffuse boundaries (tolerant society);
+        small $\kappa_g$ means sharp boundaries (polarized society).
+
+  \item \textbf{Potential free energy:} $f_S$ encodes that there is an
+        ``optimal'' potential level $\Sf_0$, with quadratic penalties for
+        deviation. The quartic term $\frac{\beta}{4}\Sf^4$ ensures that
+        extreme wealth concentration has super-linear social cost.
+
+  \item \textbf{Coupling:} $\lambda \|\gf\|^2 \Sf$ is the crucial term that
+        links bias and inequality. High bias \textit{and} high potential is
+        explosive; high bias with low potential is less dangerous; low bias
+        with high potential is benign. This is the phase-field encoding of
+        the ``attitude-potential double explosion'' from Theorem~11.
+\end{enumerate}
+
+\bigskip
+\noindent
+\textit{规范双阱势反映诚实/不诚实的双稳态。规范梯度能编码"认知失调成本"——$\kappa_g$ 大意味着容忍社会（厚扩散边界），$\kappa_g$ 小意味着极化社会（尖锐边界）。势能自由能确保极端财富集中具有超线性的社会成本。耦合项 $\lambda \|\gf\|^2 \Sf$ 是连接偏差与不平等的关键——高偏差+高势能=爆炸。}
+
+% ===========================================================================
+%  SECTION 3: ALLEN-CAHN DYNAMICS FOR THE GAUGE FIELD
+% ===========================================================================
+\section{Allen-Cahn Dynamics for the Gauge Field}
+\section{规范场的Allen-Cahn动力学}
+
+% ---------------------------------------------------------------------------
+\subsection{Equation of Motion}
+\subsection*{运动方程}
+
+The gauge field $\gf$ is a \textbf{non-conserved} order parameter — there is
+no conservation law for total ``bias'' in the system. Honest agents can become
+dishonest and vice versa without any global constraint. Therefore $\gf$ evolves
+via \textbf{Allen-Cahn (Model A)} dynamics — gradient descent on the free
+energy:
+
+\begin{definition}[Gauge Allen-Cahn Equation / 规范Allen-Cahn方程]
+\label{def:gauge_ac}
+\begin{equation}
+  \frac{\partial \gf}{\partial t} = -M_g \frac{\delta \cF}{\delta \gf}
+  = -M_g \left[
+    \left(A \|\gf\|^2 - B\right) \gf
+    - \kappa_g \lap \gf
+    + 2\lambda \Sf \, \gf
+  \right]
+  \label{eq:gauge_ac}
+\end{equation}
+where $M_g > 0$ is the gauge mobility (rate at which agents adjust their bias).
+\end{definition}
+
+The variational derivative is computed component-wise:
+\begin{equation}
+  \frac{\delta \cF}{\delta \gf} = \frac{\partial f_g}{\partial \gf}
+  - \kappa_g \lap \gf + \lambda \frac{\partial \Gamma}{\partial \gf}
+  = (A\|\gf\|^2 - B)\gf - \kappa_g \lap \gf + 2\lambda \Sf \gf
+  \label{eq:variational_g}
+\end{equation}
+
+\bigskip
+\noindent
+\textit{规范场 $\gf$ 是非守恒序参量——系统中"偏差"总量没有守恒律。因此 $\gf$ 通过Allen-Cahn (Model A) 动力学演化：梯度下降于自由能。运动方程包含三个驱动力：双阱势的体积力 $(A\|\gf\|^2-B)\gf$、扩散项 $\kappa_g\lap\gf$、以及耦合项 $2\lambda\Sf\gf$。}
+
+% ---------------------------------------------------------------------------
+\subsection{Interface Structure: The Gauge Domain Wall}
+\subsection*{界面结构：规范畴壁}
+
+Consider a one-dimensional stationary interface between an honest domain
+($\gf=0$ at $x \to -\infty$) and a dishonest domain ($\|\gf\|=\sqrt{B/A}$
+at $x \to +\infty$), with $\Sf$ held constant. The equilibrium profile
+satisfies:
+
+\begin{equation}
+  \kappa_g \frac{d^2 \gf}{dx^2} = \frac{\partial f_g^{\text{eff}}}{\partial \gf}
+  \label{eq:equilibrium_wall}
+\end{equation}
+
+where $f_g^{\text{eff}}(\gf) = f_g(\gf) + \lambda \|\gf\|^2 \Sf$. In the
+decoupled limit ($\lambda \to 0$), the solution is the classical
+Allen-Cahn kink:
+
+\begin{equation}
+  \|\gf(x)\| = \sqrt{\frac{B}{A}} \cdot
+  \frac{1}{2}\left[1 + \tanh\left(\frac{x - x_0}{\deltac}\right)\right]
+  \label{eq:kink_profile}
+\end{equation}
+
+where the \textbf{domain wall thickness} is:
+\begin{equation}
+  \deltac = \sqrt{\frac{2\kappa_g}{B}}
+  \label{eq:wall_thickness}
+\end{equation}
+
+The \textbf{interface energy} (energy per unit area of domain wall) is:
+\begin{equation}
+  \sigma_g = \int_{-\infty}^{\infty} \left[
+    f_g(\gf(x)) + \frac{\kappa_g}{2} \left|\frac{d\gf}{dx}\right|^2
+  \right] dx = \frac{2\sqrt{2\kappa_g}}{3} \cdot \frac{B^{3/2}}{A}
+  \label{eq:interface_energy}
+\end{equation}
+
+\bigskip
+\noindent
+\textit{一维稳态畴壁的解是经典的Allen-Cahn扭结：$\|\gf(x)\| = \sqrt{B/A} \cdot \frac{1}{2}[1+\tanh((x-x_0)/\deltac)]$。畴壁厚度 $\deltac = \sqrt{2\kappa_g/B}$。界面能 $\sigma_g = \frac{2\sqrt{2\kappa_g}}{3} B^{3/2}/A$。社会解释：$\deltac$ 大意味着模糊的道德边界（容忍的社会），$\deltac$ 小意味着尖锐的道德边界（极化社会）。}
+
+% ---------------------------------------------------------------------------
+\subsection{Curvature-Driven Domain Wall Motion}
+\subsection*{曲率驱动的畴壁运动}
+
+For a curved domain wall in 2D or 3D, the Allen-Cahn dynamics reduce to
+\textbf{mean curvature flow} in the sharp-interface limit ($\deltac \to 0$):
+
+\begin{theorem}[Curvature-Driven Wall Motion / 曲率驱动畴壁运动]
+\label{thm:curvature_motion}
+Let $\Gamma(t)$ be the interface (domain wall) between honest and dishonest
+domains. In the sharp-interface limit, the normal velocity of the interface is:
+\begin{equation}
+  v_n = -M_g \sigma_g \, \kappa
+  \label{eq:curvature_flow}
+\end{equation}
+where $\kappa$ is the mean curvature of $\Gamma(t)$. The interface moves toward
+its center of curvature, reducing total interface length (area).
+\end{theorem}
+
+This is the well-known Allen-Cahn $ \to $ mean curvature flow convergence
+\cite{evans1992, ilmanen1993}. Social interpretation: \textbf{isolated dishonest
+clusters shrink and disappear} (their convex boundary moves inward), while
+\textbf{large dishonest domains are metastable} (low curvature), explaining
+why corruption clusters tend to either collapse quickly or persist indefinitely.
+
+\bigskip
+\noindent
+\textit{在尖锐界面极限下，Allen-Cahn动力学约化为\textbf{平均曲率流}：界面以正比于局部曲率的速度向曲率中心运动。社会解释：孤立的不诚实集群缩小并消失，而大的不诚实域因低曲率而亚稳——解释了为什么腐败集群要么迅速崩溃，要么无限期持续。}
+
+% ===========================================================================
+%  SECTION 4: CAHN-HILLIARD DYNAMICS FOR THE POTENTIAL FIELD
+% ===========================================================================
+\section{Cahn-Hilliard Dynamics for the Potential Field}
+\section{势能场的Cahn-Hilliard动力学}
+
+% ---------------------------------------------------------------------------
+\subsection{Mass-Conserving Evolution}
+\subsection*{质量守恒的演化}
+
+The potential field $\Sf$ is a \textbf{conserved} order parameter — total
+potential $\int_\cM \Sf(x,t)\,dx$ is (approximately) conserved on the
+timescales of interest. Wealth, status, and resources are not created or
+destroyed by redistribution; they are moved. Therefore $\Sf$ evolves via
+\textbf{Cahn-Hilliard (Model B)} dynamics:
+
+\begin{definition}[Cahn-Hilliard Equation for Potential / 势能Cahn-Hilliard方程]
+\label{def:potential_ch}
+\begin{equation}
+  \frac{\partial \Sf}{\partial t} = \nabla \cdot \left(
+    M_S(\Sf) \, \nabla \frac{\delta \cF}{\delta \Sf}
+  \right)
+  \label{eq:potential_ch}
+\end{equation}
+where $M_S(\Sf) \ge 0$ is the \textbf{potential mobility} — the rate at which
+potential can flow. We take $M_S(\Sf) = M_0 (1 + \gamma \Sf)$ to model the
+Matthew effect: higher potential regions have higher mobility (the rich get
+richer faster).
+\end{definition}
+
+The variational derivative (chemical potential) is:
+\begin{equation}
+  \mu_S \equiv \frac{\delta \cF}{\delta \Sf}
+  = \alpha(\Sf - \Sf_0) + \beta \Sf^3 - \kappa_S \lap \Sf + \lambda \|\gf\|^2
+  \label{eq:chemical_potential}
+\end{equation}
+
+\bigskip
+\noindent
+\textit{势能场是\textbf{守恒}序参量——总势能在感兴趣的时间尺度上守恒。因此 $\Sf$ 通过\textbf{Cahn-Hilliard (Model B)} 动力学演化。迁移率 $M_S(\Sf) = M_0(1+\gamma\Sf)$ 编码马太效应：高势能区流动性更高。化学势 $\mu_S$ 包含线性恢复力、非线性饱和、扩散平滑和规范耦合四项。}
+
+% ---------------------------------------------------------------------------
+\subsection{Spinodal Decomposition of Inequality}
+\subsection*{不平等的旋节分解}
+
+The Cahn-Hilliard equation with a non-convex free energy $f_S$ exhibits
+\textbf{spinodal decomposition}: a homogeneous state with $\Sf(x) = \bar{\Sf}$
+is unstable to infinitesimal perturbations when $f_S''(\bar{\Sf}) < 0$.
+
+\begin{theorem}[Spinodal Instability of Equal Distribution / 平等分布的旋节不稳定性]
+\label{thm:spinodal}
+Consider the decoupled Cahn-Hilliard system ($\lambda = 0$) with a spatially
+uniform state $\Sf(x) = \bar{\Sf}$. Linear stability analysis gives the
+growth rate of a perturbation of wavenumber $k$:
+\begin{equation}
+  \omega(k) = -M_S k^2 \left[ f_S''(\bar{\Sf}) + \kappa_S k^2 \right]
+  \label{eq:dispersion}
+\end{equation}
+The system is unstable ($\omega(k) > 0$) when $f_S''(\bar{\Sf}) < 0$ and
+$k^2 < -f_S''(\bar{\Sf})/\kappa_S$. The fastest-growing mode is at
+$k_{\max} = \sqrt{-f_S''(\bar{\Sf})/(2\kappa_S)}$, setting the
+characteristic domain size at early times.
+\end{theorem}
+
+The condition $f_S''(\bar{\Sf}) < 0$ defines the \textbf{spinodal region}:
+$\bar{\Sf}^2 > \alpha/(3\beta) - \Sf_0\alpha/(3\beta\bar{\Sf})$ for the
+quartic potential. This is the phase-field encoding of the critical inequality
+threshold beyond which the equal distribution becomes intrinsically unstable.
+
+\bigskip
+\noindent
+\textit{Cahn-Hilliard方程与非凸自由能 $f_S$ 产生\textbf{旋节分解}：当 $f_S''(\bar{\Sf}) < 0$ 时均匀态不稳定。色散关系 $\omega(k) = -M_S k^2[f_S''(\bar{\Sf}) + \kappa_S k^2]$ 给出最快增长模 $k_{\max}$。旋节条件定义了临界不平等阈值——超过此阈值，平等分布本质上不稳定。}
+
+% ---------------------------------------------------------------------------
+\subsection{Coupling Effects: Bias-Induced Redistribution}
+\subsection*{耦合效应：偏差诱导的再分配}
+
+When $\lambda > 0$, the coupling term $\lambda\|\gf\|^2$ enters the chemical
+potential $\mu_S$. This creates a \textbf{bias-driven potential current}:
+
+\begin{equation}
+  \mathbf{J}_{\text{coupling}} = -M_S \nabla (\lambda \|\gf\|^2)
+  \label{eq:coupling_current}
+\end{equation}
+
+Potential flows \textbf{away} from high-bias regions and \textbf{toward}
+low-bias regions. This is the phase-field encoding of a deep social mechanism:
+dishonest actors ($\|\gf\|$ large) repel resources — the ``honesty dividend''
+where trustworthy systems attract investment and talent.
+
+Conversely, in the gauge equation, the coupling term $2\lambda\Sf\gf$ has the
+opposite sign: high potential \textbf{amplifies} bias. This creates a positive
+feedback loop: $\Sf \uparrow \implies \|\gf\| \uparrow \implies \Sf$
+redistribution $\implies$ concentration of $\Sf$ in honest regions
+$\implies$ further amplification at dishonest margins. The coupled system
+can exhibit \textbf{runaway} behavior — the EXPLOSIVE phase.
+
+\bigskip
+\noindent
+\textit{当 $\lambda>0$，耦合产生\textbf{偏差驱动的势能流}：势能从高偏差区流向低偏差区——"诚实红利"。在规范方程中，耦合项 $2\lambda\Sf\gf$ 有相反符号：高势能\textbf{放大}偏差。这产生正反馈环：$\Sf\uparrow \implies \|\gf\|\uparrow \implies$ 势能再分配 $\implies$ 在诚实区集中 $\implies$ 不诚实边缘进一步放大。耦合系统可表现出\textbf{失控}行为——爆炸相。}
+
+% ===========================================================================
+%  SECTION 5: THREE-PHASE DIAGRAM
+% ===========================================================================
+\section{The Three-Phase Diagram of Social Order}
+\section{社会秩序的三相图}
+
+% ---------------------------------------------------------------------------
+\subsection{Phase Space Coordinates}
+\subsection*{相空间坐标}
+
+The state of the SCX system at any time can be characterized by two scalar
+order parameters:
+
+\begin{definition}[Macroscopic Order Parameters / 宏观序参量]
+\label{def:order_params}
+\begin{align}
+  \bar{g} &\equiv \frac{1}{|\cM|} \int_\cM \|\gf(x)\| \, dx
+  \quad \text{(mean bias magnitude / 平均偏差幅度)}
+  \label{eq:mean_bias} \\
+  \bar{S} &\equiv \frac{1}{|\cM|} \int_\cM \Sf(x) \, dx
+  \quad \text{(mean potential / 平均势能)}
+  \label{eq:mean_potential}
+\end{align}
+\end{definition}
+
+We also define the \textbf{potential variance} (inequality measure):
+\begin{equation}
+  \Delta_S^2 \equiv \frac{1}{|\cM|} \int_\cM (\Sf(x) - \bar{S})^2 \, dx
+  \label{eq:potential_variance}
+\end{equation}
+
+The phase diagram is constructed in the $(\bar{g}, \bar{S})$ plane (or
+equivalently $(\bar{g}, \Delta_S^2)$).
+
+\bigskip
+\noindent
+\textit{SCX系统的状态可由两个标量序参量表征：平均偏差幅度 $\bar{g}$ 和平均势能 $\bar{S}$。相图在 $(\bar{g}, \bar{S})$ 平面上构建。}
+
+% ---------------------------------------------------------------------------
+\subsection{Phase I: EQUALITY Phase (平等相)}
+\subsection*{相I：平等相}
+
+\begin{definition}[EQUALITY Phase]
+The system is in the \textbf{EQUALITY phase} when:
+\begin{equation}
+  \bar{g} < g_{\text{crit}}^{(1)}, \quad \Delta_S^2 < \Delta_{\text{crit}}^2
+  \label{eq:equality_condition}
+\end{equation}
+where $g_{\text{crit}}^{(1)} \approx 0.2 \sqrt{B/A}$ and
+$\Delta_{\text{crit}}^2 \approx \alpha \Sf_0^2 / \beta$.
+\end{definition}
+
+\textbf{Characteristics:}
+\begin{itemize}
+  \item $\|\gf(x)\| \approx 0$ everywhere — most agents are close to honest.
+  \item $\Sf(x)$ is smooth and nearly uniform — low inequality, high social
+        mobility, potential gradients are small.
+  \item Domain walls are absent or extremely diffuse ($\deltac$ large).
+  \item The system is \textbf{linearly stable}: small perturbations decay.
+  \item Free energy is at or near its global minimum.
+\end{itemize}
+
+\textbf{Social interpretation:} A well-functioning, high-trust society with
+functioning institutions, low corruption, and relatively equal distribution
+of opportunity and resources. The system is in the ``single-phase'' region
+of the phase diagram — no phase separation.
+
+\bigskip
+\noindent
+\textit{\textbf{平等相}：$\bar{g}$ 小，$\Delta_S^2$ 小。大多数智能体接近诚实($\|\gf\|\approx0$)，势能光滑均匀，无畴壁。系统线性稳定，处于自由能全局极小附近。社会解释：运转良好、高信任、低腐败、机会和资源相对平等的社会。相图中处于"单相区"——无相分离。}
+
+% ---------------------------------------------------------------------------
+\subsection{Phase II: STRATIFIED Phase (分层相)}
+\subsection*{相II：分层相}
+
+\begin{definition}[STRATIFIED Phase]
+The system enters the \textbf{STRATIFIED phase} when:
+\begin{equation}
+  \bar{g} \ge g_{\text{crit}}^{(1)} \quad \text{or} \quad
+  \Delta_S^2 \ge \Delta_{\text{crit}}^2
+  \label{eq:stratified_condition}
+\end{equation}
+but $\bar{g} < g_{\text{crit}}^{(2)}$ where $g_{\text{crit}}^{(2)} \gg g_{\text{crit}}^{(1)}$.
+\end{definition}
+
+\textbf{Characteristics:}
+\begin{itemize}
+  \item \textbf{Gauge phase separation:} Honest ($\|\gf\| \approx 0$) and
+        dishonest ($\|\gf\| \approx \sqrt{B/A}$) domains coexist, separated
+        by gauge domain walls of thickness $\deltac$.
+  \item \textbf{Potential stratification:} $\Sf(x)$ develops plateaus —
+        high-potential regions (wealthy enclaves) and low-potential regions
+        (impoverished zones), separated by sharp potential gradients.
+  \item \textbf{Metastability:} The system can persist in this phase for
+        long times, but it is not the true equilibrium. Domain walls store
+        interfacial energy.
+  \item \textbf{Coarsening:} Over time, larger domains grow at the expense
+        of smaller ones (Ostwald ripening, see Section~7).
+  \item \textbf{Free energy is above global minimum} but trapped in a local
+        minimum by kinetic barriers.
+\end{itemize}
+
+\textbf{Social interpretation:} A stratified society with entrenched
+inequality — wealthy and poor regions coexist, corruption is localized
+but persistent. The system is \textbf{metastable}: it can survive for
+generations, but the stored interfacial energy makes it vulnerable to
+perturbations. This is the ``normal'' state of most historical societies.
+
+\bigskip
+\noindent
+\textit{\textbf{分层相}：$\bar{g}$ 中等或 $\Delta_S^2$ 中等。诚实与不诚实地带共存，由畴壁分隔。$\Sf$ 出现平台——高势能区和低势能区，由尖锐梯度分隔。系统可长期存续于此相，但非真正平衡——畴壁存储界面能使之\textbf{亚稳}。社会解释：不平等固化的分层社会。}
+
+% ---------------------------------------------------------------------------
+\subsection{Phase III: EXPLOSIVE Phase (爆炸相)}
+\subsection*{相III：爆炸相}
+
+\begin{definition}[EXPLOSIVE Phase]
+The system enters the \textbf{EXPLOSIVE phase} when:
+\begin{equation}
+  \bar{g} \ge g_{\text{crit}}^{(2)} \quad \text{and} \quad
+  \|\nabla \Sf\|_{\max} \ge G_{\text{crit}}
+  \label{eq:explosive_condition}
+\end{equation}
+where $g_{\text{crit}}^{(2)}$ is the coupling-induced instability threshold
+and $G_{\text{crit}}$ is the critical potential gradient.
+\end{definition}
+
+\textbf{Characteristics:}
+\begin{itemize}
+  \item \textbf{Runaway coupling:} The $\lambda$ coupling term dominates.
+        High $\Sf$ amplifies $\|\gf\|$, which drives $\Sf$ redistribution,
+        which further concentrates $\Sf$ and amplifies $\|\gf\|$ at boundaries.
+  \item \textbf{Gradient blowup:} $\|\nabla \Sf\| \to \infty$ at the interfaces
+        between high-$\Sf$/high-$\|\gf\|$ domains and low-$\Sf$/low-$\|\gf\|$
+        domains. The sharp-interface approximation breaks down.
+  \item \textbf{Domain wall collapse:} The $\deltac \to 0$ limit —
+        domain walls become infinitely sharp, interface energy diverges.
+  \item \textbf{System detonation:} The stored free energy is released
+        catastrophically — social revolution, institutional collapse,
+        audit system failure.
+  \item This is the phase-field encoding of \textbf{Theorem~11's attack
+        inevitability} at the macroscopic scale.
+\end{itemize}
+
+\textbf{Social interpretation:} Revolutionary situation — inequality has
+reached a critical threshold, bias is rampant, and the system can no longer
+contain the interfacial tension. The phase transition from STRATIFIED to
+EXPLOSIVE is the ``tipping point'' beyond which peaceful resolution is
+impossible.
+
+\bigskip
+\noindent
+\textit{\textbf{爆炸相}：$\bar{g}$ 大且 $\|\nabla\Sf\|_{\max}$ 大。耦合项主导，正反馈导致梯度爆炸，畴壁塌缩。存储的自由能灾难性释放——社会革命、制度崩溃。这是\textbf{定理11攻击必然性}在宏观尺度的相场编码。从分层相到爆炸相的转变是不可逆的"引爆点"。}
+
+% ---------------------------------------------------------------------------
+\subsection{Phase Boundaries and Transition Lines}
+\subsection*{相边界与转变线}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.2]
+  % Axes
+  \draw[->] (0,0) -- (7,0) node[right] {$\bar{g}$ (mean bias / 平均偏差)};
+  \draw[->] (0,0) -- (0,5) node[above] {$\Delta_S^2$ (inequality / 不平等)};
+
+  % Phase regions
+  \fill[blue!10] (0,0) rectangle (2.5,2.5);
+  \fill[yellow!15] (2.5,0) rectangle (5.5,3.5);
+  \fill[red!15] (5.5,0) rectangle (7,4.8);
+
+  % Labels
+  \node at (1.25,1.25) {\textbf{EQUALITY}};
+  \node at (1.25,0.8) {\textbf{平等相}};
+  \node[font=\footnotesize] at (1.25,0.3) {(stable / 稳定)};
+
+  \node at (4.0,1.75) {\textbf{STRATIFIED}};
+  \node at (4.0,1.25) {\textbf{分层相}};
+  \node[font=\footnotesize] at (4.0,0.7) {(metastable / 亚稳)};
+
+  \node at (6.25,2.4) {\textbf{EXPLOSIVE}};
+  \node at (6.25,1.9) {\textbf{爆炸相}};
+  \node[font=\footnotesize] at (6.25,1.3) {(unstable / 不稳)};
+
+  % Phase boundaries
+  \draw[thick, dashed] (2.5,0) -- (2.5,2.5);
+  \draw[thick, dashed] (5.5,0) -- (5.5,3.5);
+  \draw[thick, dashed] (2.5,2.5) -- (5.5,3.5);
+
+  % Labels on boundaries
+  \node[font=\footnotesize, rotate=90] at (2.3,1.5) {Spinodal};
+  \node[font=\footnotesize, rotate=90] at (2.0,1.5) {旋节线};
+  \node[font=\footnotesize, rotate=90] at (5.7,2.0) {Detonation};
+  \node[font=\footnotesize, rotate=90] at (5.4,2.0) {引爆线};
+
+  % Critical point
+  \fill (2.5,2.5) circle (2pt) node[above right, font=\footnotesize] {critical point / 临界点};
+  \fill (5.5,3.5) circle (2pt) node[above right, font=\footnotesize] {tricritical?};
+
+  % Arrows for coarsening
+  \draw[->, thick, blue!60] (4.0,2.0) -- (3.2,1.6);
+  \node[font=\footnotesize, blue!60] at (4.5,2.1) {coarsening / 粗化};
+  \draw[->, thick, red!60] (5.2,2.2) -- (5.8,2.8);
+  \node[font=\footnotesize, red!60] at (5.2,2.8) {runaway / 失控};
+\end{tikzpicture}
+\caption{Three-phase diagram of the SCX phase field system in the
+$(\bar{g}, \Delta_S^2)$ plane. The EQUALITY phase (blue) is globally stable.
+The STRATIFIED phase (yellow) is metastable — coarsening drives the system
+slowly toward larger domains but it can survive long times. The EXPLOSIVE
+phase (red) is where runaway coupling destroys the system. Phase boundaries:
+the spinodal line marks the onset of phase separation; the detonation line
+marks the onset of irreversible runaway.}
+\label{fig:phase_diagram}
+\end{figure}
+
+% ===========================================================================
+%  SECTION 6: NUCLEATION AND GROWTH OF AUDIT DOMAINS
+% ===========================================================================
+\section{Nucleation and Growth of Audit Domains}
+\section{审计畴的成核与生长}
+
+% ---------------------------------------------------------------------------
+\subsection{The Nucleation Problem}
+\subsection*{成核问题}
+
+How does an honest domain appear in a dishonest ``sea''? In the phase field
+language, this is the \textbf{nucleation problem}: a small spherical (in 3D)
+or circular (in 2D) region of the honest phase ($\|\gf\|=0$) must overcome
+a free energy barrier to grow.
+
+Consider a system quenched from the EQUALITY phase into the STRATIFIED
+phase — e.g., a society that experiences rapid institutional decay or
+corruption shock. The system is now in a \textbf{metastable} state: the
+homogeneous dishonest phase has higher free energy than a phase-separated
+state, but a small honest cluster cannot grow unless it exceeds a
+\textbf{critical size}.
+
+\bigskip
+\noindent
+\textit{诚实畴如何在不诚实的"海洋"中出现？这是\textbf{成核问题}。系统从平等相淬火进入分层相后——例如经历快速制度衰败或腐败冲击——处于\textbf{亚稳}态：均匀不诚实相的自由能高于相分离态，但小诚实簇无法生长，除非超过\textbf{临界尺寸}。}
+
+% ---------------------------------------------------------------------------
+\subsection{Classical Nucleation Theory for Audit Domains}
+\subsection*{审计畴的经典成核理论}
+
+Consider a spherical nucleus of radius $R$ in $d$ dimensions, with $\|\gf\|=0$
+inside (honest) and $\|\gf\| = g_{\text{eq}} = \sqrt{B/A}$ outside (dishonest).
+The excess free energy relative to the uniform dishonest state is:
+
+\begin{equation}
+  \Delta \cF(R) = -\Delta f \cdot V_d(R) + \sigma_g \cdot A_d(R)
+  \label{eq:nucleation_energy}
+\end{equation}
+
+where:
+\begin{itemize}
+  \item $\Delta f = f_g(g_{\text{eq}}) - f_g(0) = B^2/(4A)$ —
+        the \textbf{bulk free energy gain} per unit volume for converting
+        dishonest to honest material.
+  \item $\sigma_g$ — the \textbf{interface energy} per unit area (Eq.~\ref{eq:interface_energy}).
+  \item $V_d(R) = \frac{\pi^{d/2}}{\Gamma(d/2+1)} R^d$ — volume of $d$-ball.
+  \item $A_d(R) = \frac{2\pi^{d/2}}{\Gamma(d/2)} R^{d-1}$ — surface area.
+\end{itemize}
+
+In 2D (the most relevant case for social systems):
+\begin{equation}
+  \Delta \cF_2(R) = -\pi R^2 \Delta f + 2\pi R \sigma_g
+  \label{eq:nucleation_2d}
+\end{equation}
+
+In 3D:
+\begin{equation}
+  \Delta \cF_3(R) = -\frac{4\pi}{3} R^3 \Delta f + 4\pi R^2 \sigma_g
+  \label{eq:nucleation_3d}
+\end{equation}
+
+\bigskip
+\noindent
+\textit{考虑半径为 $R$ 的球形诚实核，内部 $\|\gf\|=0$，外部 $\|\gf\|=g_{\text{eq}}$。超额自由能 $\Delta\cF(R) = -\Delta f \cdot V_d(R) + \sigma_g \cdot A_d(R)$：体积项（增益）与面积项（代价）的竞争。}
+
+% ---------------------------------------------------------------------------
+\subsection{Critical Nucleus Size}
+\subsection*{临界核尺寸}
+
+\begin{theorem}[Critical Nucleus Radius for Audit Domains / 审计畴的临界核半径]
+\label{thm:critical_nucleus}
+The function $\Delta \cF(R)$ has a maximum at the critical radius $\Rc$.
+Nuclei with $R < \Rc$ shrink and disappear; nuclei with $R > \Rc$ grow
+spontaneously.
+
+In $d$ dimensions:
+\begin{equation}
+  \Rc^{(d)} = \frac{(d-1)\sigma_g}{\Delta f}
+  \label{eq:Rc_general}
+\end{equation}
+
+Specifically:
+\begin{align}
+  \Rc^{(2)} &= \frac{\sigma_g}{\Delta f}
+  = \frac{8\sqrt{2\kappa_g}}{3} \cdot \frac{\sqrt{B}}{A^{1/2}}
+  \label{eq:Rc_2d} \\[4pt]
+  \Rc^{(3)} &= \frac{2\sigma_g}{\Delta f}
+  = \frac{16\sqrt{2\kappa_g}}{3} \cdot \frac{\sqrt{B}}{A^{1/2}}
+  \label{eq:Rc_3d}
+\end{align}
+
+The \textbf{nucleation barrier} (activation energy) is:
+\begin{equation}
+  \Delta \cF^* \equiv \Delta \cF(\Rc) =
+  \begin{cases}
+    \pi \sigma_g \Rc & d=2 \\[4pt]
+    \dfrac{16\pi}{3} \dfrac{\sigma_g^3}{(\Delta f)^2} & d=3
+  \end{cases}
+  \label{eq:nucleation_barrier}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Differentiate $\Delta \cF_d(R)$ with respect to $R$ and set to zero:
+$\partial_R \Delta \cF_d = -d \cdot c_d R^{d-1} \Delta f + (d-1) \cdot s_d R^{d-2} \sigma_g = 0$
+where $c_d, s_d$ are the volume/surface coefficients. Solving gives
+$R = (d-1)\sigma_g/\Delta f$. The Hessian at this point is negative,
+confirming a maximum.
+\end{proof}
+
+\textbf{Social interpretation:} A small group of honest actors (whistleblowers,
+reformers, audit nuclei) cannot effect change unless their ``radius of
+influence'' exceeds $\Rc$. Below $\Rc$, the social pressure (interface energy)
+overwhelms the benefit of honesty (bulk free energy gain), and the honest
+cluster is reabsorbed into the dishonest majority. Above $\Rc$, the honest
+domain becomes self-sustaining and grows — a ``reform avalanche.''
+
+The critical radius depends on the competition between $\sigma_g$ (social
+cohesion — how much it costs to be different from your neighbors) and
+$\Delta f$ (the benefit of being honest). Societies with high $\sigma_g$
+(strong conformity pressure) have large $\Rc$ — reform is hard. Societies
+with large $\Delta f$ (high payoff for honesty) have small $\Rc$ — reform
+is easy.
+
+\bigskip
+\noindent
+\textit{临界半径 $\Rc = (d-1)\sigma_g/\Delta f$。$R<\Rc$ 的核缩小消失；$R>\Rc$ 的核自发生长。社会解释：小群诚实行动者（举报人、改革者、审计核）无法产生变化，除非其"影响半径"超过 $\Rc$。$\Rc$ 依赖于 $\sigma_g$（社会从众压力）与 $\Delta f$（诚实收益）的竞争。高 $\sigma_g$（强从众）= 大 $\Rc$（改革难）；大 $\Delta f$ = 小 $\Rc$（改革易）。}
+
+% ---------------------------------------------------------------------------
+\subsection{Nucleation Rate}
+\subsection*{成核率}
+
+The nucleation rate (number of supercritical nuclei formed per unit volume
+per unit time) follows the Arrhenius form:
+
+\begin{equation}
+  J = J_0 \exp\left(-\frac{\Delta \cF^*}{k_B T_{\text{social}}}\right)
+  \label{eq:nucleation_rate}
+\end{equation}
+
+where $k_B T_{\text{social}}$ is an effective ``social temperature''
+measuring the intensity of random fluctuations (scandals, information
+leaks, leadership changes, external shocks). High social temperature
+reduces the effective barrier, increasing the nucleation rate.
+
+This connects to the observation that \textbf{crises create reform
+opportunities}: a scandal (high $T_{\text{social}}$) lowers the effective
+barrier for honest domain nucleation, allowing smaller honest clusters
+to surpass $\Rc$ and grow.
+
+\bigskip
+\noindent
+\textit{成核率 $J = J_0 \exp(-\Delta\cF^*/k_B T_{\text{social}})$ 遵循Arrhenius形式。高"社会温度"（丑闻、信息泄露、领导层变动）降低有效势垒，增加成核率——\textbf{危机创造改革机会}。}
+
+% ===========================================================================
+%  SECTION 7: COARSENING DYNAMICS
+% ===========================================================================
+\section{Coarsening Dynamics: Ostwald Ripening of Honest Domains}
+\section{粗化动力学：诚实畴的Ostwald熟化}
+
+% ---------------------------------------------------------------------------
+\subsection{The Late-Stage Coarsening Regime}
+\subsection*{晚期粗化区}
+
+After nucleation has produced a population of honest domains, and after the
+initial growth phase where domains consume the surrounding dishonest
+``matrix,'' the system enters the \textbf{late-stage coarsening regime}.
+In this regime, the volume fraction of each phase is close to its equilibrium
+value, and further evolution occurs via \textbf{interface reduction} — the
+total domain wall area is minimized.
+
+The dominant mechanism is \textbf{Ostwald ripening} (also called
+\textbf{Lifshitz-Slyozov-Wagner (LSW) coarsening}) \cite{lifshitz1961,
+wagner1961}: larger domains grow at the expense of smaller ones because
+the chemical potential at a curved interface depends on curvature via the
+Gibbs-Thomson effect.
+
+\bigskip
+\noindent
+\textit{成核产生了一批诚实畴后，系统进入\textbf{晚期粗化区}。主导机制是\textbf{Ostwald熟化}（LSW粗化）：大畴以牺牲小畴为代价生长，因为弯曲界面的化学势依赖于曲率（Gibbs-Thomson效应）。}
+
+% ---------------------------------------------------------------------------
+\subsection{Gibbs-Thomson Effect for Gauge Domain Walls}
+\subsection*{规范畴壁的Gibbs-Thomson效应}
+
+\begin{theorem}[Gibbs-Thomson for Gauge Interfaces / 规范界面的Gibbs-Thomson效应]
+\label{thm:gibbs_thomson}
+For a gauge domain wall with local mean curvature $\kappa$, the local
+equilibrium value of $\|\gf\|$ at the interface is shifted from its
+planar value:
+\begin{equation}
+  \|\gf\|_{\text{eq}}(\kappa) = g_{\text{eq}} \left(1 - \frac{d_0}{R}\right)
+  \label{eq:gibbs_thomson}
+\end{equation}
+where $g_{\text{eq}} = \sqrt{B/A}$, $R = 1/\kappa$ is the local radius of
+curvature, and $d_0 = \sigma_g/(2\Delta f)$ is the \textbf{capillary length}.
+The shift implies that the ``honesty pressure'' is higher outside small
+domains (high curvature) than outside large domains (low curvature), driving
+a diffusive flux from small to large domains.
+\end{theorem}
+
+\bigskip
+\noindent
+\textit{规范畴壁的Gibbs-Thomson效应：局部平衡值 $\|\gf\|_{\text{eq}}(\kappa) = g_{\text{eq}}(1 - d_0/R)$。小畴（高曲率）外的"诚实压力"高于大畴（低曲率），驱动从小畴向大畴的扩散流。}
+% ---------------------------------------------------------------------------
+\subsection{LSW Scaling Law}
+\subsection*{LSW标度律}
+
+\begin{theorem}[Coarsening of Honest Domains / 诚实畴的粗化]
+\label{thm:coarsening}
+In the late-stage coarsening regime, for the coupled Allen-Cahn /
+Cahn-Hilliard system with finite volume fraction of the honest phase,
+the characteristic domain size $L(t)$ grows as:
+\begin{equation}
+  L(t) \sim t^{1/3}
+  \label{eq:lsw_scaling}
+\end{equation}
+This is the classical LSW $t^{1/3}$ scaling for diffusion-limited coarsening.
+The domain size distribution approaches a universal scaling form
+$P(R/\langle R \rangle)$ independent of initial conditions.
+\end{theorem}
+
+\begin{proof}[Sketch]
+The growth law follows from dimensional analysis of the diffusion-limited
+ripening process. The flux between domains is driven by the curvature
+difference: $J \sim D \cdot \Delta \mu \sim D \cdot \sigma_g / (R L)$,
+where $D$ is the effective diffusivity of ``honesty'' through the
+dishonest matrix. The growth rate $dR/dt \sim J/R^2 \sim D\sigma_g/(R^3 L)$.
+Conservation of the honest phase volume fraction gives $L \sim R$.
+Then $dL/dt \sim D\sigma_g / L^2$, which integrates to $L(t) \sim
+(D\sigma_g t)^{1/3}$. For rigorous derivation, see LSW theory
+\cite{lifshitz1961, wagner1961}.
+\end{proof}
+
+\textbf{Social interpretation:} After a social ``quench'' (major reform,
+revolution, or institutional reset), honest domains coarsen with the
+$t^{1/3}$ law. Initially many small honest clusters exist; over time,
+larger, more established honest institutions absorb smaller ones.
+The timescale for the system to reach a ``mature'' coarsened state
+grows as $t \sim L^3$ — meaning that achieving large-scale institutional
+integrity is a \textbf{cubic} function of the desired honest domain size.
+Doubling the characteristic scale of honest governance requires an
+8-fold increase in time.
+
+\bigskip
+\noindent
+\textit{晚期粗化区中特征畴尺寸 $L(t) \sim t^{1/3}$（LSW标度律）。社会解释：社会"淬火"（重大改革或革命）后，诚实畴以 $t^{1/3}$ 律粗化。达到大规模制度诚信所需时间是诚实畴目标尺度的\textbf{三次方}函数——将诚实治理的特征尺度翻倍需要8倍的时间。}
+
+% ---------------------------------------------------------------------------
+\subsection{Coupled Coarsening: Gauge + Potential}
+\subsection*{耦合粗化：规范+势能}
+
+When both $\gf$ and $\Sf$ coarsen simultaneously ($\lambda > 0$), the
+coarsening dynamics become richer. The gauge domains and potential domains
+are \textbf{correlated}: high-$\Sf$ regions tend to coincide with
+low-$\|\gf\|$ regions (the ``honesty dividend''), and vice versa.
+
+This correlation creates a \textbf{coarsening cascade}:
+\begin{enumerate}[label=(\arabic*)]
+  \item Gauge domains coarsen, reducing total $\|\gf\|$ domain wall area;
+  \item Reduced $\|\gf\|$ gradients reduce the coupling current
+        $\mathbf{J}_{\text{coupling}}$;
+  \item $\Sf$ redistributes toward honest domains, increasing their
+        ``honesty dividend'';
+  \item Higher $\Sf$ in honest domains amplifies $\|\gf\|$ at boundaries
+        (coupling term), accelerating gauge coarsening.
+\end{enumerate}
+
+This positive feedback can lead to \textbf{accelerated coarsening} — the
+effective exponent may deviate from $1/3$ during the coupled regime.
+However, at very late times, when honest and dishonest domains have fully
+segregated, the classical $t^{1/3}$ scaling is recovered.
+
+\bigskip
+\noindent
+\textit{当 $\gf$ 和 $\Sf$ 同时粗化时（$\lambda>0$），规范畴和势能畴是\textbf{关联}的：高$\Sf$ 区倾向于低$\|\gf\|$ 区（"诚实红利"）。这种关联产生\textbf{粗化级联}：规范畴粗化 $\to$ 减少耦合流 $\to$ $\Sf$ 流向诚实地带 $\to$ 进一步加速规范粗化。可能出现加速粗化，但极晚期恢复经典 $t^{1/3}$ 标度。}
+
+% ===========================================================================
+%  SECTION 8: CONNECTIONS TO SCX THEOREMS
+% ===========================================================================
+\section{Connections to SCX Theorems}
+\section{与SCX定理的联系}
+
+% ---------------------------------------------------------------------------
+\subsection{Theorem 11 (Attitude Singularity) as a Phase Transition}
+\subsection*{定理11（态度奇点）作为相变}
+
+\textbf{Theorem 11} states that when an entity simultaneously possesses high
+potential $\Sf$ and high attitude $\|\gf\|$, the probability of attack
+escalates exponentially: $\mathbb{P}(\text{attack}) \geq 1 - \exp(-M e^{-\beta/\delta^2})$.
+
+In the phase field framework, this corresponds to a \textbf{first-order phase
+transition} at the spinodal line:
+
+\begin{enumerate}[label=(\arabic*)]
+  \item The ``attitude singularity'' is a \textbf{local fluctuation} where
+        $\|\gf\|$ exceeds the spinodal threshold in a region of high $\Sf$.
+
+  \item The coupling term $\lambda \|\gf\|^2 \Sf$ makes this fluctuation
+        \textbf{self-amplifying}: higher $\Sf$ $\implies$ faster growth of
+        $\|\gf\|$ $\implies$ higher coupling energy $\implies$ larger
+        driving force.
+
+  \item The \textbf{double explosion} ($\Sf \uparrow + \|\gf\| \uparrow$)
+        is the phase-field analog of \textbf{spinodal decomposition} triggered
+        by a strong local fluctuation. The system locally crosses the spinodal
+        line and phase-separates violently.
+
+  \item The exponential attack probability reflects the \textbf{nucleation
+        rate}: $J \propto \exp(-\Delta\cF^*/k_B T_{\text{social}})$, where
+        the barrier $\Delta\cF^*$ decreases as $\Sf$ increases (coupling
+        reduces the effective barrier).
+\end{enumerate}
+
+\begin{theorem}[Thm11 Phase Transition Correspondence / Thm11相变对应]
+\label{thm:thm11_phase}
+In the coupled Allen-Cahn / Cahn-Hilliard system, the condition for
+Theorem~11's attack inevitability is equivalent to the system crossing
+from the STRATIFIED phase into the EXPLOSIVE phase:
+\begin{equation}
+  \|\gf\| \cdot \Sf > \frac{\kappa_g}{2\lambda \deltac^2}
+  \label{eq:thm11_threshold}
+\end{equation}
+where the left side is the ``attitude-potential product'' and the right
+side is the threshold set by gauge stiffness and wall thickness.
+\end{theorem}
+
+\bigskip
+\noindent
+\textit{定理11在相场框架中对应于在旋节线处的一级相变。"态度奇点"是高 $\Sf$ 区中 $\|\gf\|$ 超过旋节阈值的局部涨落。"双重爆炸"是由强局部涨落触发的旋节分解。攻击的指数概率反映成核率 $J \propto \exp(-\Delta\cF^*/k_B T)$，其中势垒 $\Delta\cF^*$ 随 $\Sf$ 增大而降低。}
+
+% ---------------------------------------------------------------------------
+\subsection{Theorem 10 (Boundary Locking) as Domain Wall Pinning}
+\subsection*{定理10（边界锁定）作为畴壁钉扎}
+
+\textbf{Theorem 10} states that when a group is confined to a low-potential
+region by an impermeable boundary, the pressure at the boundary accumulates
+as $P_\Gamma = \rho_\Gamma \cdot \Delta_\Gamma$, leading to inevitable
+destabilization at $T_{\text{crit}} \propto 1/\Delta_\Gamma$.
+
+In the phase field framework, this is \textbf{domain wall pinning} at a
+heterogeneity:
+
+\begin{enumerate}[label=(\arabic*)]
+  \item The ``boundary'' $\Gamma$ in Thm10 is a \textbf{pinning site} for
+        the gauge domain wall — a region where the free energy landscape
+        has a local minimum that traps the interface.
+
+  \item In materials science, domain walls pinned at defects require a
+        finite driving force (the \textbf{depinning threshold}) to move.
+        This is exactly the pressure $P_\Gamma$ in Thm10.
+
+  \item When the accumulated ``pressure'' (free energy difference across
+        the interface) exceeds the pinning force, the wall \textbf{depins}
+        and moves rapidly — this is the Thm10 ``detonation.''
+
+  \item The detonation time $T_{\text{crit}} \propto 1/\Delta_\Gamma$ is
+        the time for the driving force to reach the depinning threshold:
+        $F_{\text{drive}}(t) = \Delta_\Gamma \cdot t$ reaches the pinning
+        force $F_{\text{pin}}$ at $t = F_{\text{pin}}/\Delta_\Gamma$.
+\end{enumerate}
+
+\begin{theorem}[Thm10 Pinning Correspondence / Thm10钉扎对应]
+\label{thm:thm10_pinning}
+Let $\gf$-domain walls have a pinning force $F_{\text{pin}}$ at the
+social boundary $\Gamma$. The Thm10 accumulation-and-release cycle
+corresponds to:
+\begin{equation}
+  \frac{d x_{\text{wall}}}{dt} =
+  \begin{cases}
+    0 & \text{if } |F_{\text{drive}}| < F_{\text{pin}} \\
+    M_g (F_{\text{drive}} - F_{\text{pin}} \cdot \text{sgn}(F_{\text{drive}}))
+    & \text{if } |F_{\text{drive}}| \ge F_{\text{pin}}
+  \end{cases}
+  \label{eq:pinning_dynamics}
+\end{equation}
+The characteristic ``stick'' time (Thm10's $T_{\text{crit}}$) is
+$T_{\text{crit}} = F_{\text{pin}} / (M_g \Delta_\Gamma)$.
+\end{theorem}
+
+\textbf{Social interpretation:} Institutional barriers (legal segregation,
+class boundaries, glass ceilings) act as pinning sites for social mobility
+domain walls. The wall stays pinned until the accumulated pressure exceeds
+the institutional resistance, at which point rapid change occurs — a
+``revolutionary moment.'' This explains why social change often appears
+\textbf{episodic}: long periods of stasis (wall pinned) punctuated by
+rapid transformation (wall depinning).
+
+\bigskip
+\noindent
+\textit{定理10在相场框架中是畴壁在异质处的\textbf{钉扎}。"边界" $\Gamma$ 是规范畴壁的钉扎位点。当累积"压力"超过钉扎力，畴壁\textbf{脱钉}并快速移动——即Thm10的"引爆"。这解释了社会变革的\textbf{间歇性}：长静期（畴壁钉扎）被快速转变（畴壁脱钉）打断。}
+
+% ---------------------------------------------------------------------------
+\subsection{Theorem 12 (Matthew Staircase) as Nucleation on Defects}
+\subsection*{定理12（马太阶梯）作为缺陷成核}
+
+\textbf{Theorem 12} describes the Matthew effect: $\partial_t \Sf \propto \Sf$,
+leading to a staircase potential surface $\Sf(x) = \sum_k h_k \mathbb{1}_{\Omega_k}(x)$,
+where each step $\Delta_k$ is a delayed-detonation instability with
+characteristic time $T_k \propto 1/\Delta_k^2$.
+
+In the phase field framework, the staircase structure provides
+\textbf{heterogeneous nucleation sites}:
+
+\begin{enumerate}[label=(\arabic*)]
+  \item Each step $\Delta_k$ in the Matthew staircase is a \textbf{line defect}
+        (in 2D) or \textbf{surface defect} (in 3D) in the $\Sf$ field — a
+        locus where $\nabla \Sf$ is singular.
+
+  \item In classical nucleation theory, defects reduce the nucleation barrier
+        because part of the interface energy is ``paid for'' by the pre-existing
+        defect. The effective barrier becomes:
+        \begin{equation}
+          \Delta \cF^*_{\text{defect}} = \Delta \cF^* \cdot f(\theta)
+          \label{eq:defect_barrier}
+        \end{equation}
+        where $f(\theta) \le 1$ is a geometric factor depending on the
+        contact angle $\theta$ at the defect.
+
+  \item Each Matthew staircase step therefore acts as a \textbf{preferential
+        nucleation site} for explosive $\|\gf\|$ domains. The larger the step
+        $\Delta_k$, the smaller the effective barrier, and the shorter the
+        ``fuse'' $T_k$.
+
+  \item The $T_k \propto 1/\Delta_k^2$ scaling emerges from nucleation theory:
+        $\Delta \cF^*_{\text{defect}} \propto 1/\Delta_k^2$ (barrier decreases
+        quadratically with step height), so the nucleation rate
+        $J_k \propto \exp(-c/\Delta_k^2)$, and the characteristic time
+        $T_k = 1/J_k \propto \exp(c/\Delta_k^2)$. For large $\Delta_k$,
+        the exponential can be expanded to give the leading $1/\Delta_k^2$
+        scaling.
+\end{enumerate}
+
+\begin{theorem}[Thm12 Nucleation Correspondence / Thm12成核对应]
+\label{thm:thm12_nucleation}
+Let the Matthew staircase have steps $\{\Delta_k\}$ at positions $\{x_k\}$.
+Then each step is a nucleation site with characteristic activation time:
+\begin{equation}
+  T_k = T_0 \exp\left(\frac{16\pi}{3} \frac{\sigma_g^3}{(\Delta f)^2}
+  \cdot \frac{f(\theta_k)}{k_B T_{\text{social}}}\right)
+  \label{eq:thm12_time}
+\end{equation}
+where $\theta_k$ is the effective contact angle determined by $\Delta_k$.
+For $\Delta_k \gg \sigma_g$, $f(\theta_k) \to 0$, making $T_k$ extremely
+short — the step acts as an ``already nucleated'' defect.
+\end{theorem}
+
+\textbf{Social interpretation:} The Matthew effect does not merely create
+inequality — it \textbf{manufactures instability}. Each rung of the
+staircase is a nucleation site where the next crisis will nucleate.
+The staircase is self-reinforcing: more inequality creates more nucleation
+sites, each of which is more potent (shorter fuse) than the last. The
+system becomes a ``minefield'' of latent instabilities, exactly as
+Theorem~12 predicts.
+
+\bigskip
+\noindent
+\textit{定理12在相场框架中提供\textbf{异质成核位点}。每个马太阶梯 $\Delta_k$ 是 $\Sf$ 场中的线/面缺陷，降低成核势垒 $f(\theta)$。$T_k \propto 1/\Delta_k^2$ 标度来自成核理论：势垒以 $\Delta_k^2$ 方式降低。社会解释：马太效应不仅制造不平等——它\textbf{制造不稳定性}。每一级台阶都是下一次危机成核的位点。}
+
+% ===========================================================================
+%  SECTION 9: NUMERICAL METHODS
+% ===========================================================================
+\section{Numerical Methods and Verification}
+\section{数值方法与验证}
+
+% ---------------------------------------------------------------------------
+\subsection{Discretization}
+\subsection*{离散化}
+
+The coupled Allen-Cahn / Cahn-Hilliard system is solved on a uniform 2D
+grid with spacing $\Delta x$. We use a semi-implicit Fourier spectral method
+for the linear terms and explicit time-stepping for the nonlinear terms:
+
+\begin{align}
+  \frac{\gf^{n+1} - \gf^n}{\Delta t} &=
+  -M_g \left[ (A(\gf^n)^2 - B)\gf^n \right]^{\text{explicit}}
+  + M_g \kappa_g \lap \gf^{n+1}
+  - M_g \cdot 2\lambda \Sf^n \gf^n \\
+  \frac{\Sf^{n+1} - \Sf^n}{\Delta t} &=
+  \nabla \cdot \left( M_S(\Sf^n) \nabla \left[
+    \alpha(\Sf^{n+1} - \Sf_0) - \kappa_S \lap \Sf^{n+1}
+  \right] \right)
+  + \nabla \cdot \left( M_S(\Sf^n) \nabla \left[
+    \beta(\Sf^n)^3 + \lambda \|\gf^n\|^2
+  \right] \right)
+\end{align}
+
+The linear terms ($\lap \gf^{n+1}$, $\lap \Sf^{n+1}$, and $\Sf^{n+1}$)
+are treated implicitly using the Fourier transform:
+$\widehat{\lap u} = -k^2 \hat{u}$.
+
+This semi-implicit scheme is stable for large time steps and is the
+standard approach for phase field simulations \cite{chen2002}.
+
+\bigskip
+\noindent
+\textit{耦合Allen-Cahn/Cahn-Hilliard系统在均匀2D网格上使用半隐式Fourier谱方法求解。线性项隐式处理（通过Fourier变换 $\widehat{\lap u} = -k^2\hat{u}$），非线性项显式处理。此方案对大时间步稳定，是相场模拟的标准方法。}
+
+% ---------------------------------------------------------------------------
+\subsection{Verification Script}
+\subsection*{验证脚本}
+
+A complete Python verification script \texttt{verify\_phase\_field.py}
+accompanies this paper. The script:
+
+\begin{enumerate}[label=(\arabic*)]
+  \item Solves the 1D Allen-Cahn equation and verifies the $\tanh$ kink
+        profile against the analytical solution;
+  \item Solves the coupled 2D Allen-Cahn / Cahn-Hilliard system;
+  \item Constructs the phase diagram by scanning $(\bar{g}, \bar{S})$
+        parameter space;
+  \item Computes the domain size $L(t)$ and confirms the $t^{1/3}$
+        coarsening scaling via log-log regression;
+  \item Tests the critical nucleus prediction by initializing nuclei
+        of varying radius and measuring the growth/shrinkage threshold;
+  \item Verifies the Gibbs-Thomson curvature-chemical potential relation;
+  \item Demonstrates domain wall pinning and depinning at heterogeneities
+        (Thm10 connection);
+  \item Demonstrates nucleation at staircase defects (Thm12 connection).
+\end{enumerate}
+
+Dependencies: \texttt{numpy}, \texttt{scipy}, \texttt{matplotlib}.
+Total runtime: approximately 3--5 minutes on a standard laptop.
+
+\bigskip
+\noindent
+\textit{完整Python验证脚本 \texttt{verify\_phase\_field.py} 随本文提供。验证：1D Allen-Cahn扭结解析解、2D耦合系统求解、相图构建、$t^{1/3}$ 粗化标度、临界核预测、Gibbs-Thomson效应、畴壁钉扎/脱钉（Thm10）、阶梯缺陷成核（Thm12）。}
+
+% ===========================================================================
+%  SECTION 10: DISCUSSION
+% ===========================================================================
+\section{Discussion}
+\section{讨论}
+
+% ---------------------------------------------------------------------------
+\subsection{Implications for Social Dynamics}
+\subsection*{对社会动力学的启示}
+
+The phase field framework provides several novel insights into social
+dynamics:
+
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{Inequality as phase separation:} Inequality is not merely a
+        statistical distribution — it is a \textbf{thermodynamic phase
+        separation}. The same physics that drives oil and water to separate
+        drives rich and poor to segregate: the minimization of interfacial
+        free energy.
+
+  \item \textbf{Reform as nucleation:} Institutional reform requires
+        \textbf{nucleation} of honest domains. Below the critical size,
+        reform efforts are inevitably reabsorbed. Above the critical size,
+        reform becomes self-sustaining. This explains why most reform
+        movements fail — they never reach $\Rc$.
+
+  \item \textbf{Time scales are cubic:} The $L \sim t^{1/3}$ coarsening law
+        implies that building large-scale institutional integrity is a
+        generational project. Doubling the scale of honest governance
+        requires 8 times the duration.
+
+  \item \textbf{Metastability is dangerous:} The STRATIFIED phase is
+        metastable, not stable. A society that appears ``stable'' while
+        highly stratified is storing elastic energy in its domain walls.
+        The longer the metastable period, the more catastrophic the
+        eventual phase transition.
+
+  \item \textbf{The Matthew effect as defect factory:} Theorem~12's staircase
+        is literally a \textbf{manufacturing process for nucleation sites}.
+        Each new rung of inequality creates a new weak point where the
+        next crisis will initiate.
+\end{enumerate}
+
+\bigskip
+\noindent
+\textit{相场框架提供了几点新洞察：(1) 不平等不是统计分布——它是\textbf{热力学相分离}；(2) 制度改革需要诚实畴的\textbf{成核}，低于临界尺寸必然失败；(3) $L\sim t^{1/3}$ 意味着大规模制度诚信是跨代项目；(4) 分层相是\textbf{亚稳}的——表面"稳定"的高度分层社会正在畴壁中储存弹性能；(5) 马太效应是\textbf{成核位点工厂}——每一级不平等都是下一次危机的弱点。}
+
+% ---------------------------------------------------------------------------
+\subsection{Limitations and Open Problems}
+\subsection*{局限性与开放问题}
+
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{Homogeneous mobility:} We have assumed spatially uniform
+        mobility $M_g$, $M_S$. In reality, mobility depends on local
+        institutional quality, information access, and social network
+        topology. Heterogeneous mobility can produce
+        \textbf{pinning-depinning} dynamics even without explicit defects.
+
+  \item \textbf{Noise:} We have worked with deterministic equations. Adding
+        stochastic noise (Langevin terms) would enable the study of
+        \textbf{fluctuation-driven nucleation} and \textbf{noise-induced
+        phase transitions}, connecting to the ``social temperature''
+        concept.
+
+  \item \textbf{Network topology:} The Situs manifold's connectivity
+        structure (who audits whom, who influences whom) is encoded in
+        the graph Laplacian. Generalizing $\lap$ to the graph Laplacian
+        $\lap_{\cM}$ would connect phase field dynamics directly to the
+        SCX discrete Hodge framework.
+
+  \item \textbf{External driving:} Real social systems are driven by
+        external ``forcing'' (technological change, demographic shifts,
+        resource discoveries). Adding time-dependent terms to $\cF$
+        would model \textbf{driven phase transitions}.
+
+  \item \textbf{Multi-component extensions:} The current model has two
+        ``phases'' (honest/dishonest). A multi-component order parameter
+        (vector-valued $\gf$ with $N > 1$ components) would describe
+        societies with multiple competing value systems — a promising
+        direction.
+\end{enumerate}
+
+\bigskip
+\noindent
+\textit{局限性：(1) 假设了空间均匀的迁移率；(2) 使用了确定性方程——加入随机噪声可研究涨落驱动成核；(3) Situs流形的连通性结构可用图拉普拉斯编码；(4) 外部驱动可建模受驱相变；(5) 多分量序参量可描述多价值观系统的竞争。}
+
+% ===========================================================================
+%  SECTION 11: CONCLUSION
+% ===========================================================================
+\section{Conclusion}
+\section{结论}
+
+We have formulated the dynamics of inequality and consensus in the SCX
+framework as a \textbf{phase field theory}, providing the first unified
+dynamical treatment of:
+
+\begin{itemize}
+  \item \textbf{Gauge field} $\gf$ evolution via Allen-Cahn dynamics,
+        producing honest/dishonest domain formation and curvature-driven
+        coarsening;
+
+  \item \textbf{Potential field} $\Sf$ evolution via Cahn-Hilliard dynamics,
+        producing spinodal decomposition of inequality and diffusion-limited
+        redistribution;
+
+  \item \textbf{Coupling} between $\gf$ and $\Sf$ via the $\lambda\|\gf\|^2\Sf$
+        term, encoding the ``double explosion'' mechanism of Theorem~11;
+
+  \item A \textbf{three-phase diagram} mapping the EQUALITY, STRATIFIED,
+        and EXPLOSIVE phases as functions of mean bias $\bar{g}$ and
+        inequality $\Delta_S^2$;
+
+  \item \textbf{Nucleation theory} for honest domains, with critical radius
+        $\Rc \propto \sigma_g/\Delta f$ and Arrhenius nucleation rate;
+
+  \item \textbf{Coarsening} with the classical $L(t) \sim t^{1/3}$ LSW
+        scaling, providing testable predictions for post-reform institutional
+        consolidation timescales;
+
+  \item Explicit \textbf{theorem connections}: Thm11 $\leftrightarrow$ spinodal
+        phase transition, Thm10 $\leftrightarrow$ domain wall pinning,
+        Thm12 $\leftrightarrow$ defect-mediated nucleation.
+\end{itemize}
+
+The phase field formalism unifies the static geometry of previous SCX work
+(Theorems~10--12) with the dynamical processes (nucleation, growth, coarsening,
+phase transitions) that determine \textit{how} and \textit{when} those
+geometric instabilities manifest. It provides a predictive, quantitative
+framework for understanding the evolution of social inequality and
+institutional integrity.
+
+\textbf{Final thought:} In materials science, phase field theory taught us
+that microstructural evolution is governed by universal principles —
+curvature-driven motion, diffusion-limited growth, nucleation barriers —
+that transcend the details of specific materials. In social science, the
+same universality may hold. The Allen-Cahn and Cahn-Hilliard equations
+do not care whether the order parameter is atomic concentration or
+social bias. The mathematics of phase ordering is universal.
+
+\bigskip
+\noindent
+\textit{我们将SCX框架中的不平等与共识动力学表述为\textbf{相场理论}，提供了对规范场演化（Allen-Cahn）、势能场演化（Cahn-Hilliard）、耦合、三相图、成核理论、粗化标度律和定理联系的统一动力学处理。相场形式化将先前SCX工作的静态几何（定理10--12）与决定这些几何不稳定性如何及何时显现的动力学过程统一起来。最后思考：相场理论教会我们，微结构演化由超越具体材料细节的普适原理支配——曲率驱动运动、扩散限制生长、成核势垒。社会科学中同样的普适性可能成立。Allen-Cahn和Cahn-Hilliard方程不关心序参量是原子浓度还是社会偏差。相有序化的数学是普适的。}
+
+% ===========================================================================
+%  APPENDIX
+% ===========================================================================
+\appendix
+
+\section{Phase Field Parameters and SCX Interpretation}
+\section{相场参数与SCX解释}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{0.22\textwidth} p{0.35\textwidth} p{0.35\textwidth}}
+\toprule
+\textbf{Parameter / 参数} & \textbf{Physical Meaning / 物理意义} & \textbf{SCX Interpretation / SCX解释} \\
+\midrule
+$A$ & Quartic coefficient in $f_g$ & Dishonesty saturation strength / 不诚实饱和强度 \\
+$B$ & Quadratic coefficient in $f_g$ & Propensity for bias / 偏差倾向性 \\
+$\kappa_g$ & Gauge gradient stiffness & Social cohesion / conformity pressure / 社会凝聚力 \\
+$\kappa_S$ & Potential gradient stiffness & Social mobility resistance / 社会流动阻力 \\
+$\alpha$ & Harmonic potential strength & ``Fairness'' restoring force / 公平恢复力 \\
+$\beta$ & Quartic saturation & Extreme inequality penalty / 极端不平等惩罚 \\
+$\Sf_0$ & Natural potential level & Baseline prosperity / 基线繁荣水平 \\
+$\lambda$ & Gauge-potential coupling & Bias-inequality synergy (Thm11) / 偏差-不平等协同 \\
+$M_g$ & Gauge mobility & Rate of attitude change / 态度变化速率 \\
+$M_0$ & Base potential mobility & Base rate of resource flow / 资源流动基础速率 \\
+$\gamma$ & Mobility bias & Matthew effect strength / 马太效应强度 \\
+$\deltac$ & Domain wall thickness & Moral boundary sharpness / 道德边界锐度 \\
+$\sigma_g$ & Interface energy & Social cost of difference / 差异的社会成本 \\
+$\Rc$ & Critical nucleus radius & Minimum reform coalition size / 最小改革联盟规模 \\
+\bottomrule
+\end{tabular}
+\caption{Phase field parameters and their SCX interpretations.}
+\label{tab:parameters}
+\end{table}
+
+% ---------------------------------------------------------------------------
+\section{Derivation of the Interface Energy}
+\section{界面能的推导}
+
+For the 1D equilibrium domain wall with $\lambda = 0$, the Euler-Lagrange
+equation is obtained from the first integral:
+
+\begin{equation}
+  \frac{\kappa_g}{2} \left(\frac{d\gf}{dx}\right)^2 = f_g(\gf)
+  \label{eq:first_integral}
+\end{equation}
+
+This gives the kink profile. The interface energy is then:
+
+\begin{align}
+  \sigma_g &= \int_{-\infty}^{\infty} \left[f_g(\gf(x)) +
+    \frac{\kappa_g}{2} \left|\frac{d\gf}{dx}\right|^2\right] dx \\
+  &= \int_{-\infty}^{\infty} 2 f_g(\gf(x)) \, dx
+  \quad \text{(using Eq.~\ref{eq:first_integral})} \\
+  &= 2 \int_{0}^{g_{\text{eq}}} \sqrt{2\kappa_g f_g(\gf)} \, d\gf
+\end{align}
+
+Evaluating with $f_g(\gf) = \frac{A}{4}\|\gf\|^4 - \frac{B}{2}\|\gf\|^2$
+(referenced to the minima so $f_g(g_{\text{eq}}) = 0$):
+\begin{equation}
+  \sigma_g = \frac{2\sqrt{2\kappa_g}}{3} \cdot \frac{B^{3/2}}{A}
+\end{equation}
+
+\bigskip
+\noindent
+\textit{通过能量首次积分 $\frac{\kappa_g}{2}(d\gf/dx)^2 = f_g(\gf)$ 得到扭结轮廓。界面能通过 $\sigma_g = 2\int_0^{g_{\text{eq}}} \sqrt{2\kappa_g f_g(\gf)} d\gf$ 计算，得出 $\sigma_g = \frac{2\sqrt{2\kappa_g}}{3} B^{3/2}/A$。}
+
+% ---------------------------------------------------------------------------
+\section{Derivation of the LSW $t^{1/3}$ Law}
+\section{LSW $t^{1/3}$ 律的推导}
+
+Following the classical LSW theory \cite{lifshitz1961, wagner1961}, in the
+late-stage coarsening regime with a small volume fraction of the minority
+phase, the growth rate of a domain of radius $R$ is:
+
+\begin{equation}
+  \frac{dR}{dt} = \frac{D}{R} \left(\frac{1}{R_c} - \frac{1}{R}\right)
+  \label{eq:lsw_growth}
+\end{equation}
+
+where $D$ is the effective diffusivity and $R_c$ is the critical radius
+(domains with $R = R_c$ neither grow nor shrink). Mass conservation implies
+$R_c = \langle R \rangle$. The asymptotic analysis yields $R_c(t) \propto t^{1/3}$
+and a universal scaled size distribution.
+
+For a system with finite volume fraction (typical for social systems), the
+scaling remains $t^{1/3}$ but the distribution broadens \cite{ardell1972}.
+
+\bigskip
+\noindent
+\textit{遵循经典LSW理论，晚期粗化区中畴的生长率为 $dR/dt = (D/R)(1/R_c - 1/R)$。质量守恒给出 $R_c = \langle R\rangle$。渐近分析产生 $R_c(t) \propto t^{1/3}$。对于有限体积分数（社会系统的典型情况），标度保持 $t^{1/3}$，但分布变宽。}
+
+% ===========================================================================
+%  BIBLIOGRAPHY
+% ===========================================================================
+\begin{thebibliography}{99}
+
+\bibitem{chen2002}
+L. Q. Chen.
+\textit{Phase-field models for microstructure evolution.}
+Annual Review of Materials Research, 32:113--140, 2002.
+
+\bibitem{provatas2011}
+N. Provatas and K. Elder.
+\textit{Phase-Field Methods in Materials Science and Engineering.}
+Wiley-VCH, 2011.
+
+\bibitem{evans1992}
+L. C. Evans, H. M. Soner, and P. E. Souganidis.
+\textit{Phase transitions and generalized motion by mean curvature.}
+Communications on Pure and Applied Mathematics, 45(9):1097--1123, 1992.
+
+\bibitem{ilmanen1993}
+T. Ilmanen.
+\textit{Convergence of the Allen-Cahn equation to Brakke's motion by mean curvature.}
+Journal of Differential Geometry, 38(2):417--461, 1993.
+
+\bibitem{lifshitz1961}
+I. M. Lifshitz and V. V. Slyozov.
+\textit{The kinetics of precipitation from supersaturated solid solutions.}
+Journal of Physics and Chemistry of Solids, 19(1--2):35--50, 1961.
+
+\bibitem{wagner1961}
+C. Wagner.
+\textit{Theorie der Alterung von Niederschl\"agen durch Uml\"osen.}
+Zeitschrift f\"ur Elektrochemie, 65(7--8):581--591, 1961.
+
+\bibitem{ardell1972}
+A. J. Ardell.
+\textit{The effect of volume fraction on particle coarsening.}
+Acta Metallurgica, 20(1):61--71, 1972.
+
+\bibitem{hohenberg1977}
+P. C. Hohenberg and B. I. Halperin.
+\textit{Theory of dynamic critical phenomena.}
+Reviews of Modern Physics, 49(3):435--479, 1977.
+(Classification of dynamical universality classes: Model A = Allen-Cahn,
+Model B = Cahn-Hilliard.)
+
+\bibitem{scx_framework}
+SCX Working Group.
+\textit{SCX: Situs Consensus eXpert Framework.}
+SCX Theory Series, Xiaogan Supercomputing Center, 2025--2026.
+
+\bibitem{scx_moe_gauge}
+SCX Working Group.
+\textit{Potential Surface Misalignment in MoE: Gauge Freedom and MILP Gauge Fixing.}
+SCX Theory Series, 2026.
+
+\bibitem{scx_singularity}
+SCX Working Group.
+\textit{Audit Singularities: Black Hole Analogies for SCX Potential Surface Theory.}
+SCX Theory Series, 2026.
+
+\bibitem{scx_environment}
+SCX Working Group.
+\textit{SCX and Environmental Intergenerational Potential.}
+SCX Theory Series, 2026.
+
+\end{thebibliography}
+
+% ===========================================================================
+\end{document}

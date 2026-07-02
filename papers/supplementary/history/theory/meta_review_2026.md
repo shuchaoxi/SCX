@@ -144,14 +144,14 @@ $0.333 < 0.5$ → 按论文分类属于"操纵主导相"（应 $\sigma_T^*(M) > 
 ## 二、scx_temporal（记忆-遗忘的形式理论）
 
 ### 致命漏洞 1.1：退化速率声明的自相矛盾
-**审查指控：** 推论 1 声明 $\Omega(v_{\min}^2 \cdot t)$（线性），但证明推导出 $\geq v_{\min}^2 t^2/4 + o(t^2)$（二次）。同一推论的两种表述差了一个 $t$ 因子。
+**审查指控：** 推论 1 声明 $\Omega(v_^2 \cdot t)$（线性），但证明推导出 $\geq v_^2 t^2/4 + o(t^2)$（二次）。同一推论的两种表述差了一个 $t$ 因子。
 
 **复核：** **[CONFIRMED]**
 
 证明步骤 4 的代数：
-$$\|\bar{\theta}_t^* - \theta_t^*\|^2 \geq v_{\min}^2 \cdot \left(\frac{t(t+1)}{2t}\right)^2 - o(t^2) = \frac{v_{\min}^2 t^2}{4} + o(t^2)$$
+$$\|\bar_t^* - \theta_t^*\|^2 \geq v_^2 \cdot \left(\frac{t(t+1)}{2t}\right)^2 - o(t^2) = \frac{v_^2 t^2}{4} + o(t^2)$$
 
-这是 $\Theta(t^2)$。但推论文字声明 $\Omega(v_{\min}^2 \cdot t)$。**渐近阶差了一个 $t$ 因子。** 如果读者只看 $\Omega(t)$ 声明，会严重低估发散速度。在数学写作中，这是不可接受的矛盾。
+这是 $\Theta(t^2)$。但推论文字声明 $\Omega(v_^2 \cdot t)$。**渐近阶差了一个 $t$ 因子。** 如果读者只看 $\Omega(t)$ 声明，会严重低估发散速度。在数学写作中，这是不可接受的矛盾。
 
 ### 致命漏洞 2.1：两个 MSE 表达式不可调和
 **审查指控：** 步骤 5 和步骤 7 给出的 MSE 表达式差异远超"精确化"——$\alpha$ 的依赖从 $\alpha^2$ 变为 $\alpha$，$L$ 和 $\mu$ 的幂次全部改变。
@@ -160,16 +160,16 @@ $$\|\bar{\theta}_t^* - \theta_t^*\|^2 \geq v_{\min}^2 \cdot \left(\frac{t(t+1)}{
 
 步骤 5：$\text{MSE}(\lambda) = \frac{v^2}{\alpha^2\mu^2} \cdot \frac{\lambda^2}{(1-\lambda)^2} + \alpha^2\sigma^2 \cdot \frac{1-\lambda}{1+\lambda}$
 
-步骤 7：$\text{MSE}(\lambda) = \frac{L^2 v^2}{\mu^4} \cdot \frac{\lambda^2}{(1-\lambda)^2} + \frac{\alpha\sigma^2}{\mu} \cdot \frac{1-\lambda}{1+\lambda}$
+步骤 7：$\text{MSE}(\lambda) = \frac{L^2 v^2}{\mu^4} \cdot \frac{\lambda^2}{(1-\lambda)^2} + \frac{\alpha\sigma^2} \cdot \frac{1-\lambda}{1+\lambda}$
 
 偏差项系数从 $1/(\alpha^2\mu^2)$ 变为 $L^2/\mu^4$。方差项系数从 $\alpha^2\sigma^2$ 变为 $\alpha\sigma^2/\mu$。这些不是"精确化"——是根本不同的表达式。**步骤 5 到步骤 7 之间没有任何推导。** 这是代数自由跳跃。
 
 ### 致命漏洞 2.2："简化版" $v_c$ 代数上不等价
-**审查指控：** 简化声称 $v_c = \frac{\sigma}{2\sqrt{\alpha}}\sqrt{\frac{\mu}{L}}$ "在 $\mu \approx L$ 下"，但实际推导给出 $v_c = \frac{\sigma}{2\sqrt{\alpha}} \cdot \frac{\mu^{3/2}}{L}$，两者相等要求 $\mu = \sqrt{L}$，而非 $\mu \approx L$。
+**审查指控：** 简化声称 $v_c = \frac{2\sqrt}\sqrt{\frac{L}}$ "在 $\mu \approx L$ 下"，但实际推导给出 $v_c = \frac{2\sqrt} \cdot \frac{\mu^{3/2}}{L}$，两者相等要求 $\mu = \sqrt{L}$，而非 $\mu \approx L$。
 
 **复核：** **[CONFIRMED]**
 
-$$\frac{\mu^{3/2}}{L} = \sqrt{\frac{\mu}{L}} \iff \frac{\mu^{3/2}}{L} = \frac{\mu^{1/2}}{L^{1/2}} \iff \frac{\mu}{L^{1/2}} = 1 \iff \mu = \sqrt{L}$$
+$$\frac{\mu^{3/2}}{L} = \sqrt{\frac{L}} \iff \frac{\mu^{3/2}}{L} = \frac{\mu^{1/2}}{L^{1/2}} \iff \frac{L^{1/2}} = 1 \iff \mu = \sqrt{L}$$
 
 对于 $L=100$，这要求 $\mu=10$，条件数 $\kappa = 10$——完全不是 $\kappa \approx 1$（即 $\mu \approx L$）。**简化在代数上是错误的。**
 
@@ -179,7 +179,7 @@ $$\frac{\mu^{3/2}}{L} = \sqrt{\frac{\mu}{L}} \iff \frac{\mu^{3/2}}{L} = \frac{\m
 **复核：** **[CONFIRMED]**
 
 这是本论文最根本的数学问题。计算：
-$$\frac{d\text{MSE}}{d\lambda} = \frac{2v^2}{\alpha^2\mu^2} \cdot \frac{\lambda}{(1-\lambda)^3} - \alpha^2\sigma^2 \cdot \frac{2}{(1+\lambda)^2}$$
+$$\frac{d\text{MSE}}{d\lambda} = \frac{2v^2}{\alpha^2\mu^2} \cdot \frac{(1-\lambda)^3} - \alpha^2\sigma^2 \cdot \frac{2}{(1+\lambda)^2}$$
 
 当 $\lambda \to 1^-$：第一项 $\to +\infty$（因为 $1/(1-\lambda)^3$），第二项 $\to -\alpha^2\sigma^2/2$（有限）。
 
@@ -305,7 +305,7 @@ SCX 审计的核心任务是在**不知道专家可靠性的情况下**检测噪
 从证明步骤 1-3 严格推导：
 $$P_e(R) \geq \frac{H(Y) - I(Y;U) - \log 2}{\log|\mathcal{Y}|} \geq \frac{\delta(R) - \log 2}{\log|\mathcal{Y}|}$$
 
-这是 $P_e$ 与 $\delta(R)$ 之间的**线性**关系。但定理陈述给出 $F_1 \leq F_{1,\text{base}} + C_F \cdot \sqrt{\delta/(2\log|\mathcal{Y}|)}$，其中 $r(\delta) = \sqrt{\delta}$（平方根）。平方根形式似乎是从原始 Theorem 2（$C_F\sqrt{\delta/2}$）照搬而来，而非从率失真推导中自然产生。**定理陈述与证明之间存在不可弥合的函数形式跳跃。**
+这是 $P_e$ 与 $\delta(R)$ 之间的**线性**关系。但定理陈述给出 $F_1 \leq F_{1,\text{base}} + C_F \cdot \sqrt{\delta/(2\log|\mathcal{Y}|)}$，其中 $r(\delta) = \sqrt$（平方根）。平方根形式似乎是从原始 Theorem 2（$C_F\sqrt{\delta/2}$）照搬而来，而非从率失真推导中自然产生。**定理陈述与证明之间存在不可弥合的函数形式跳跃。**
 
 ### 严重漏洞 5.1：$\Delta_{\text{IB}}(R)$ 对理想特征 IB 曲线的依赖性
 **审查指控：** $I_{\text{ideal}}(R)$ 不唯一——不同的"理想特征"（如 $Y$ 本身 vs. $Y$ 加正交噪声）有不同的 IB 曲线。
@@ -361,7 +361,7 @@ $$\frac{M^*}{M} = \frac{1}{1 + \rho^2 \cdot \kappa(\sigma_\eta^2)}$$
 
 **复核：** **[CONFIRMED]**
 
-这是本元审查中逻辑最清晰的致命发现。论文自己的推论 4（共识天花板）证明了当 $\rho > 0$ 时，$\text{err}(M,\rho) \to \Phi(-\frac{\bar{\mu}^+ - \bar{\mu}^-}{2\sqrt{\bar{\rho}}}) > 0$。将这个非零常数代入 $I_{\text{corr}}$ 的定义：
+这是本元审查中逻辑最清晰的致命发现。论文自己的推论 4（共识天花板）证明了当 $\rho > 0$ 时，$\text{err}(M,\rho) \to \Phi(-\frac{\bar^+ - \bar^-}{2\sqrt{\bar}}) > 0$。将这个非零常数代入 $I_{\text{corr}}$ 的定义：
 $$I_{\text{corr}}(\rho) = \lim_{M\to\infty} -\frac{1}{M}\log(\text{正常数}) = 0$$
 
 因此 $M^* = M \cdot I_{\text{ind}} / 0$ 无定义。**论文的一个核心构造被自己另一个定理的结论所否定。** 这是论文内部逻辑自洽性的崩溃。
@@ -438,7 +438,7 @@ $$|\mathbb{E}[C_n \mid H_1] - c_0| = |-\varepsilon(2p-1)^2 + \varepsilon^2 c_0|$
 
 **复核：** **[CONFIRMED]**
 
-**子错误 1（条件事件问题）：** 论文假设 (A2) 声明"估计噪声 $\varepsilon_m$ 在给定 $P(V)$ 下是条件独立的"。如果 $P(V)$ 是总体分布，条件于它后所有 $\hat{\tau}_m$ 变为确定性函数（抽样变异正来源于从 $P(V)$ 中有限抽样）。如果 $P(V)$ 被理解为经验分布 $\hat{P}_n(V)$，则不同估计器都拟合在同一有限样本上，不独立。**无论哪种解释，(A2) 都不成立。**
+**子错误 1（条件事件问题）：** 论文假设 (A2) 声明"估计噪声 $\varepsilon_m$ 在给定 $P(V)$ 下是条件独立的"。如果 $P(V)$ 是总体分布，条件于它后所有 $\hat_m$ 变为确定性函数（抽样变异正来源于从 $P(V)$ 中有限抽样）。如果 $P(V)$ 被理解为经验分布 $\hat{P}_n(V)$，则不同估计器都拟合在同一有限样本上，不独立。**无论哪种解释，(A2) 都不成立。**
 
 **子错误 2（不可知中心量问题）：** 定理将可观测的样本均值联系到 $\tau^* + \delta_M$，其中 $\delta_M = \frac{1}{M}\sum \text{bias}_m$——所有专家的未知系统性偏差的均值。根据 scx_causal 的 3-SCM 不可辨识性定理本身，这个量既不可观测也不可估计。定理退化为"如果你知道偏差总和，你就能控制噪声"的循环论证。
 
@@ -451,7 +451,7 @@ $$|\mathbb{E}[C_n \mid H_1] - c_0| = |-\varepsilon(2p-1)^2 + \varepsilon^2 c_0|$
 
 **复核：** **[CONFIRMED]**
 
-Gershgorin 定理声明：每个特征值位于以 $a_{ii}$ 为中心、以 $R_i = \sum_{j \neq i} |a_{ij}|$ 为半径的圆盘内。对于 $\Sigma_{\text{dis}}$（对角线全为零），每个圆盘中心在原点，定理只保证 $\rho(\Sigma_{\text{dis}}) \leq \max_i \sum_{j \neq i} |\hat{\tau}_i - \hat{\tau}_j|$——这是**上界**。要获得谱半径的**下界**，需要 Rayleigh 商或 Collatz-Wielandt 公式（对非负矩阵）。论文未提供任何下界推导。此外，仅一个非零偏差不保证谱半径显著非零。
+Gershgorin 定理声明：每个特征值位于以 $a_{ii}$ 为中心、以 $R_i = \sum_{j \neq i} |a_{ij}|$ 为半径的圆盘内。对于 $\Sigma_{\text{dis}}$（对角线全为零），每个圆盘中心在原点，定理只保证 $\rho(\Sigma_{\text{dis}}) \leq \max_i \sum_{j \neq i} |\hat_i - \hat_j|$——这是**上界**。要获得谱半径的**下界**，需要 Rayleigh 商或 Collatz-Wielandt 公式（对非负矩阵）。论文未提供任何下界推导。此外，仅一个非零偏差不保证谱半径显著非零。
 
 ### 严重漏洞 2.3：Tracy-Widom 分布声明错误
 **审查指控：** Tracy-Widom 不适用于固定 $M$、非独立条目、非中心化的矩阵。
@@ -460,21 +460,21 @@ Gershgorin 定理声明：每个特征值位于以 $a_{ii}$ 为中心、以 $R_i
 
 审查者给出了多个技术理由：
 1. $\Sigma_{\text{dis}}$ 的条目是非负绝对值，而 Wigner 矩阵元素以零为中心对称分布；
-2. 整个矩阵由仅 $M$ 个基础随机变量决定，有效秩至多为 2（一阶矩阵由 $\hat{\tau}$ 向量的线性函数生成）；
+2. 整个矩阵由仅 $M$ 个基础随机变量决定，有效秩至多为 2（一阶矩阵由 $\hat$ 向量的线性函数生成）；
 3. TW 渐近要求 $M \to \infty$ 与 $n \to \infty$ 的联合极限，其中 $M/n$ 趋于正常数——论文的 $M$ 是固定的专家数量；
-4. 在固定 $M$ 和 $\mathcal{H}_0$ 下，正确渐近分布来自 $\hat{\tau}_1, \ldots, \hat{\tau}_M$ 的联合渐近正态性和 Delta 方法——**不是 Tracy-Widom**。
+4. 在固定 $M$ 和 $\mathcal{H}_0$ 下，正确渐近分布来自 $\hat_1, ..., \hat_M$ 的联合渐近正态性和 Delta 方法——**不是 Tracy-Widom**。
 
 这些都是正确的。
 
 ### 严重漏洞 3.2：$Q_k$ 相关性强但被当作独立
-**审查指控：** $Q_a$ 和 $Q_b$ 共享 $\hat{\tau}^{\text{full}}$ 且 $\hat{\tau}^{(-a)}$ 和 $\hat{\tau}^{(-b)}$ 共享 $K-2$ 个工具，相关性被忽略导致 FWER 严重膨胀。
+**审查指控：** $Q_a$ 和 $Q_b$ 共享 $\hat^{\text{full}}$ 且 $\hat^{(-a)}$ 和 $\hat^{(-b)}$ 共享 $K-2$ 个工具，相关性被忽略导致 FWER 严重膨胀。
 
 **复核：** **[CONFIRMED]**
 
 审查者的协方差推导是正确的：
-$$\text{Cov}(\hat{\tau}^{\text{full}} - \hat{\tau}^{(-a)}, \hat{\tau}^{\text{full}} - \hat{\tau}^{(-b)}) = \sigma^2_{\text{full}} - \text{Cov}(\hat{\tau}^{\text{full}}, \hat{\tau}^{(-b)}) - \text{Cov}(\hat{\tau}^{(-a)}, \hat{\tau}^{\text{full}}) + \text{Cov}(\hat{\tau}^{(-a)}, \hat{\tau}^{(-b)})$$
+$$\text{Cov}(\hat^{\text{full}} - \hat^{(-a)}, \hat^{\text{full}} - \hat^{(-b)}) = \sigma^2_{\text{full}} - \text{Cov}(\hat^{\text{full}}, \hat^{(-b)}) - \text{Cov}(\hat^{(-a)}, \hat^{\text{full}}) + \text{Cov}(\hat^{(-a)}, \hat^{(-b)})$$
 
-当 $K$ 较大时，$\hat{\tau}^{(-a)} \approx \hat{\tau}^{(-b)} \approx \hat{\tau}^{\text{full}}$，导致 $\text{Corr}(Q_a, Q_b)$ 可以任意接近 1。使用独立正态临界值（如 Bonferroni）严重低估多重检验惩罚——实际 FWER 可比名义水平高出数倍。审查者指出的修复方案（基于 $(K+1)$ 维联合渐近正态性的 bootstrap 校准）是正确的技术路线。
+当 $K$ 较大时，$\hat^{(-a)} \approx \hat^{(-b)} \approx \hat^{\text{full}}$，导致 $\text{Corr}(Q_a, Q_b)$ 可以任意接近 1。使用独立正态临界值（如 Bonferroni）严重低估多重检验惩罚——实际 FWER 可比名义水平高出数倍。审查者指出的修复方案（基于 $(K+1)$ 维联合渐近正态性的 bootstrap 校准）是正确的技术路线。
 
 ### 严重漏洞 4.1：do-演算完备性的误用
 **审查指控：** do-calculus 完备性是正向的（可识别 → do-规则序列存在），而桥接定理需要反向推断（分歧模式 → do-规则被违反）。

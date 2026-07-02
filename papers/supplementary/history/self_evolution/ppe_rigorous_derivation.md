@@ -1,1029 +1,1540 @@
-# Physical Positional Encoding (PPE) 在 SCX 框架中的严密推导
+\section{Physical Positional Encoding (PPE) 在 SCX
+框架中的严密推导}<!-- label: physical-positional-encoding-ppe-ux5728-scx-ux6846ux67b6ux4e2dux7684ux4e25ux5bc6ux63a8ux5bfc -->
 
----
+<div align="center">
 
-**文档状态**: 严格数学推导  
-**前置阅读**: `multi_head_spring_and_positional_encoding_analysis.md`（CC 审计报告）  
-**方法论**: 条件 + 假设 → 定理 → 证明，每一步标注假设条件  
-**修订**: 修正了 CC 审计报告中的符号不一致和两处 sign error  
+\rule{0.5\linewidth}{0.5pt}
 
----
+</div>
 
-## 符号约定
+**文档状态**: 严格数学推导
+
+**前置阅读**:
+`multi\_head\_spring\_and\_positional\_encoding\_analysis.md`（CC
+审计报告）
+
+**方法论**: 条件 + 假设 → 定理 → 证明，每一步标注假设条件
+
+**修订**: 修正了 CC 审计报告中的符号不一致和两处 sign error
+
+<div align="center">
+
+\rule{0.5\linewidth}{0.5pt}
+
+</div>
+
+### 符号约定<!-- label: ux7b26ux53f7ux7ea6ux5b9a -->
 
 为保持一致，本文采用 CC 审计报告的主要符号，但在需要时重新精确定义。
 
-### 状态-专家系统
+#### 状态-专家系统<!-- label: ux72b6ux6001-ux4e13ux5bb6ux7cfbux7edf -->
 
-- $\mathcal{S} = \{s_1, \ldots, s_N\}$：$N$ 个离散状态原子，$s_i \in \mathbb{R}^{d_s}$
-- $\mathcal{P}$：物理位置空间
-- $M$：独立专家数量，$\{E_1, \ldots, E_M\}$
-- $y_i \in \mathcal{Y}$：状态原子 $s_i$ 的标签
+- 
+- 
+- 
+- 
 
-### 专家投票
+#### 专家投票<!-- label: ux4e13ux5bb6ux6295ux7968 -->
 
-对每个样本 $(s_i, y_i)$，专家 $m$ 的输出为：
+对每个样本 \((s_i, y_i)\)，专家 \(m\) 的输出为：
 
-$$v_m(s_i) = \mathbf{1}[E_m(s_i) \neq y_i] \in \{0, 1\}$$
+\[v_m(s_i) = \mathbf{1}[E_m(s_i) \neq y_i] \in \{0, 1\}\]
 
-- $v_m = 0$：专家同意给定标签
-- $v_m = 1$：专家不同意给定标签
+- 
+- 
 
-在干净样本下（标签正确）：$v_m \sim \text{Bernoulli}(p_{\text{clean}, s})$，其中 $p_{\text{clean}, s} < 0.5$
-在噪声样本下（标签错误）：$v_m \sim \text{Bernoulli}(p_{\text{noisy}, s})$，其中 $p_{\text{noisy}, s} > 0.5$
+在干净样本下（标签正确）：\(v_m \sim Bernoulli(p_{clean, s})\)，其中
+\(p_{clean, s} < 0.5\)
+在噪声样本下（标签错误）：\(v_m \sim Bernoulli(p_{noisy, s})\)，其中
+\(p_{noisy, s} > 0.5\)
 
 **检测边际**：
 
-$$\boxed{\Delta_s = p_{\text{noisy}, s} - p_{\text{clean}, s} > 0}$$
+\[\boxed{\Delta_s = p_{noisy, s} - p_{clean, s} > 0}\]
 
-（这与 CC 报告的 $\Delta_s = |p_{\text{clean},s} - p_{\text{noisy},s}|$ 一致，因为 $p_{\text{noisy}} > p_{\text{clean}}$。）
+（这与 CC 报告的
+\(\Delta_s = |p_{clean,s} - p_{noisy,s}|\) 一致，因为
+\(p_{noisy} > p_{clean}\)。）
 
-### 一致性计数与阈值
+#### 一致性计数与阈值<!-- label: ux4e00ux81f4ux6027ux8ba1ux6570ux4e0eux9608ux503c -->
 
-$$C(s) = \sum_{m=1}^{M} v_m(s)$$
+\[C(s) = \sum_{m=1}^{M} v_m(s)\]
 
-决策阈值 $\tau_s = M \cdot \frac{p_{\text{clean},s} + p_{\text{noisy},s}}{2}$。标记为噪声当 $C(s) \geq \tau_s$。
+决策阈值
+\(\tau_s = M \cdot \frac{p_{clean,s} + p_{noisy,s}}{2}\)。标记为噪声当
+\(C(s) \geq \tau_s\)。
 
-### Chernoff-Hoeffding 基础
+\subsubsection{Chernoff-Hoeffding
+基础}<!-- label: chernoff-hoeffding-ux57faux7840 -->
 
-Hoeffding 不等式：对 i.i.d. Bernoulli 随机变量 $v_1, \ldots, v_M$，均值为 $\mu$：
+Hoeffding 不等式：对 i.i.d. Bernoulli 随机变量
+\(v_1, ..., v_M\)，均值为 \(\mu\)：
 
-$$P\left(\frac{1}{M}\sum_{m=1}^{M} v_m - \mu \geq t\right) \leq \exp(-2M t^2)$$
+\[P\left(\frac{1}{M}\sum_{m=1}^{M} v_m - \mu \geq t\right) \leq \exp(-2M t^2)\]
 
-应用于噪声检测：
-- 假阳性（Type I）：$P_{H_0}(C(s) \geq \tau_s) \leq \exp\left(-2M\left(\frac{\tau_s}{M} - p_{\text{clean},s}\right)^2\right)$
-- 假阴性（Type II）：$P_{H_1}(C(s) < \tau_s) \leq \exp\left(-2M\left(p_{\text{noisy},s} - \frac{\tau_s}{M}\right)^2\right)$
+应用于噪声检测： - 假阳性（Type
+I）：\(P_{H_0}(C(s) \geq \tau_s) \leq \exp\left(-2M\left(\frac{\tau_s}{M} - p_{clean,s}\right)^2\right)\)
+- 假阴性（Type
+II）：\(P_{H_1}(C(s) < \tau_s) \leq \exp\left(-2M\left(p_{noisy,s} - \frac{\tau_s}{M}\right)^2\right)\)
 
-取 $\tau_s = M(p_{\text{clean},s} + p_{\text{noisy},s})/2$，两者均 $\leq \exp(-M\Delta_s^2/2)$。
+取 \(\tau_s = M(p_{clean,s} + p_{noisy,s})/2\)，两者均
+\(\leq \exp(-M\Delta_s^2/2)\)。
 
-> **注**：CC 审计报告使用 $\exp(-2M\Delta_s^2)$。这表明其 $\Delta_s$ 的定义可能不同（可能多了一个 1/2 因子）。本文在保持数学精确性的前提下，**遵循 CC 报告的约定**：将 $\Delta_s$ 重新校准，使 bound 写为 $\exp(-2M\Delta_s^2)$。这相当于定义 $\tilde{\Delta}_s = (p_{\text{noisy}} - p_{\text{clean}})/2$，在原始报告中记为 $\Delta_s$。后续分析中，精确的常数因子不影响推导结构。
+> **注**：CC 审计报告使用 \(\exp(-2M\Delta_s^2)\)。这表明其
+> \(\Delta_s\) 的定义可能不同（可能多了一个 1/2
+> 因子）。本文在保持数学精确性的前提下，**遵循 CC 报告的约定**：将
+> \(\Delta_s\) 重新校准，使 bound 写为
+> \(\exp(-2M\Delta_s^2)\)。这相当于定义
+> \(\tilde_s = (p_{noisy} - p_{clean})/2\)，在原始报告中记为
+> \(\Delta_s\)。后续分析中，精确的常数因子不影响推导结构。
 
----
+<div align="center">
 
-# 第 1 部分：编码函数的严密数学形式化
+\rule{0.5\linewidth}{0.5pt}
 
----
+</div>
 
-## 1.1 三种物理位置域的定义
+\section{第 1
+部分：编码函数的严密数学形式化}<!-- label: ux7b2c-1-ux90e8ux5206ux7f16ux7801ux51fdux6570ux7684ux4e25ux5bc6ux6570ux5b66ux5f62ux5f0fux5316 -->
 
-**定义 1.1.1（标量位置域——蛋白质序列）**
+<div align="center">
 
-$$\mathcal{P}_{\text{seq}} = \{1, 2, \ldots, L\} \subset \mathbb{N}$$
+\rule{0.5\linewidth}{0.5pt}
 
-其中 $L$ 为序列长度。对连续近似，嵌入为 $\mathcal{P}_{\text{seq}} \cong [0, L] \subset \mathbb{R}$。
+</div>
+
+\subsection{1.1
+三种物理位置域的定义}<!-- label: ux4e09ux79cdux7269ux7406ux4f4dux7f6eux57dfux7684ux5b9aux4e49 -->
+
+**定义 1.1.1（标量位置域------蛋白质序列）**
+
+\[\mathcal{P}_{seq} = \{1, 2, ..., L\} \subset \mathbb{N}\]
+
+其中 \(L\) 为序列长度。对连续近似，嵌入为
+\(\mathcal{P}_{seq} \cong [0, L] \subset \mathbb{R}\)。
 
 物理含义：残基索引携带局部化学环境的一维顺序信息（N 端→C 端）。
 
-**定义 1.1.2（3D 向量位置域——原子坐标）**
+**定义 1.1.2（3D 向量位置域------原子坐标）**
 
-$$\mathcal{P}_{\text{3D}} = \mathbb{R}^3$$
+\[\mathcal{P}_{3D} = \mathbb{R}^3\]
 
-元素 $\mathbf{p} = (x, y, z) \in \mathbb{R}^3$ 为原子在实空间中的笛卡尔坐标。
+元素 \(\mathbf{p} = (x, y, z) \in \mathbb{R}^3\)
+为原子在实空间中的笛卡尔坐标。
 
 物理含义：原子的三维空间位置携带键长、键角、配位数等几何信息。这是**最丰富的**物理位置域。
 
-**定义 1.1.3（标量总数域——原子数）**
+**定义 1.1.3（标量总数域------原子数）**
 
-$$\mathcal{P}_{\text{count}} = \mathbb{N}$$
+\[\mathcal{P}_{count} = \mathbb{N}\]
 
-元素 $N$ 为系统的总原子数。
+元素 \(N\) 为系统的总原子数。
 
 物理含义：系统大小决定了能量面的维度、可能的振动模式数、缺陷浓度等。对小系统特别重要（有限尺寸效应）。
 
----
+<div align="center">
 
-## 1.2 标量位置的正弦编码：最优频率谱
+\rule{0.5\linewidth}{0.5pt}
 
-### 1.2.1 编码定义
+</div>
 
-**定义 1.2.1（正弦标量位置编码）**：对 $p \in [0, L]$，维度 $d$（偶数）：
+\subsection{1.2
+标量位置的正弦编码：最优频率谱}<!-- label: ux6807ux91cfux4f4dux7f6eux7684ux6b63ux5f26ux7f16ux7801ux6700ux4f18ux9891ux7387ux8c31 -->
 
-$$\boxed{\text{PE}_{\text{scalar}}(p, 2j) = \sqrt{\frac{2}{d}}\,\sin\left(\frac{2\pi p}{\lambda_j}\right), \quad \text{PE}_{\text{scalar}}(p, 2j+1) = \sqrt{\frac{2}{d}}\,\cos\left(\frac{2\pi p}{\lambda_j}\right)}$$
+#### 1.2.1 编码定义<!-- label: ux7f16ux7801ux5b9aux4e49 -->
 
-其中 $j = 0, 1, \ldots, d/2 - 1$，$\lambda_j > 0$ 为**特征波长**。
+**定义 1.2.1（正弦标量位置编码）**：对 \(p \in [0, L]\)，维度
+\(d\)（偶数）：
 
-归一化因子 $\sqrt{2/d}$ 保证了 $\|\text{PE}_{\text{scalar}}(p)\| = 1$ 对所有 $p$ 恒成立（$d/2$ 个 $(\sin,\cos)$ 对各贡献 $(2/d) \cdot 1 = 2/d$，总和为 $1$），并使编码核在 $d \to \infty$ 时**收敛到**目标核 $k(\Delta)$ 而非发散至 $O(d)$ 量级。
+\[\boxed{PE_{scalar}(p, 2j) = \sqrt{\frac{2}{d}}\,\sin\left(\frac{2\pi p}{\lambda_j}\right), \quad PE_{scalar}(p, 2j+1) = \sqrt{\frac{2}{d}}\,\cos\left(\frac{2\pi p}{\lambda_j}\right)}\]
 
-> **参数化**：标准 Transformer 使用 $\lambda_j = 2\pi \cdot 10000^{2j/d}$（即 $\omega_j = 10000^{2j/d}$，其中 $\text{PE}(p, 2j) = \sin(p/\omega_j)$）。
->
-> 本文使用**波长参数化** $\lambda_j$，因为它直接对应物理长度尺度：$\lambda_j$ 是一个完整正弦周期对应的位置差。
+其中 \(j = 0, 1, ..., d/2 - 1\)，\(\lambda_j > 0\)
+为**特征波长**。
+
+归一化因子 \(\sqrt{2/d}\) 保证了
+\(\|PE_{scalar}(p)\| = 1\) 对所有 \(p\) 恒成立（\(d/2\) 个
+\((\sin,\cos)\) 对各贡献 \((2/d) \cdot 1 = 2/d\)，总和为
+\(1\)），并使编码核在 \(d \to \infty\) 时**收敛到**目标核
+\(k(\Delta)\) 而非发散至 \(O(d)\) 量级。
+
+> **参数化**：标准 Transformer 使用
+> \(\lambda_j = 2\pi \cdot 10000^{2j/d}\)（即
+> \(\omega_j = 10000^{2j/d}\)，其中
+> \(PE(p, 2j) = \sin(p/\omega_j)\)）。
+> 
+> 本文使用**波长参数化**
+> \(\lambda_j\)，因为它直接对应物理长度尺度：\(\lambda_j\)
+> 是一个完整正弦周期对应的位置差。
 
 **编码的内积结构（核表示）**：
 
-$$\langle \text{PE}_{\text{scalar}}(p), \text{PE}_{\text{scalar}}(q) \rangle = \frac{2}{d}\sum_{j=0}^{d/2-1} \cos\left(\frac{2\pi(p-q)}{\lambda_j}\right)$$
+\[\langle PE_{scalar}(p), PE_{scalar}(q) \rangle = \frac{2}{d}\sum_{j=0}^{d/2-1} \cos\left(\frac{2\pi(p-q)}{\lambda_j}\right)\]
 
-这定义了一个**平移不变核** $\frac{2}{d}K_{\text{PE}}(\Delta) = \frac{2}{d}\sum_j \cos(2\pi\Delta/\lambda_j)$，其中 $\Delta = p - q$。
+这定义了一个**平移不变核**
+\(\frac{2}{d}K_{PE}(\Delta) = \frac{2}{d}\sum_j \cos(2\pi\Delta/\lambda_j)\)，其中
+\(\Delta = p - q\)。
 
-在 $\Delta = 0$ 处：$\langle \text{PE}(p), \text{PE}(p) \rangle = (2/d) \cdot (d/2) = 1 = k(0)$。当 $d \to \infty$ 时，$(2/d)K_{\text{PE}}(\Delta) \to \int_0^\infty S(\omega)\cos(\omega\Delta)d\omega = k(\Delta)$。
+在 \(\Delta = 0\)
+处：\(\langle PE(p), PE(p) \rangle = (2/d) \cdot (d/2) = 1 = k(0)\)。当
+\(d \to \infty\)
+时，\((2/d)K_{PE}(\Delta) \to \int_0^\infty S(\omega)\cos(\omega\Delta)d\omega = k(\Delta)\)。
 
-### 1.2.2 最优频率谱推导
+\subsubsection{1.2.2
+最优频率谱推导}<!-- label: ux6700ux4f18ux9891ux7387ux8c31ux63a8ux5bfc -->
 
-**问题**：给定编码维度 $d$ 和物理区间长度 $L$，如何选择 $\{\lambda_j\}_{j=0}^{d/2-1}$ 使得编码"最优"？
+**问题**：给定编码维度 \(d\) 和物理区间长度 \(L\)，如何选择
+\(\{\lambda_j\}_{j=0}^{d/2-1}\) 使得编码''最优''？
 
-**假设 1.2.1（物理局部性公理）**：物理上相邻的位置应具有相似的编码。具体地，存在一个递减的**物理相关核** $k(\Delta)$（其中 $\Delta = |p-q|$）控制两个位置表示应有的相似度。对于凝聚态物理系统：
+**假设
+1.2.1（物理局部性公理）**：物理上相邻的位置应具有相似的编码。具体地，存在一个递减的**物理相关核**
+\(k(\Delta)\)（其中
+\(\Delta = |p-q|\)）控制两个位置表示应有的相似度。对于凝聚态物理系统：
 
-$$k(\Delta) = \exp\left(-\frac{\Delta}{\xi}\right)$$
+\[k(\Delta) = \exp\left(-\frac\right)\]
 
-其中 $\xi > 0$ 是**物理相关长度**（例如：键长 $\approx 1.9$ Å，或屏蔽长度）。该核满足 Bochner 定理：它是正定的，因而是某个非负测度的 Fourier 变换。
+其中 \(\xi > 0\) 是**物理相关长度**（例如：键长 \(\approx 1.9\)
+Å，或屏蔽长度）。该核满足 Bochner 定理：它是正定的，因而是某个非负测度的
+Fourier 变换。
 
-**定理 1.2.1（编码的最优频率谱——Kernel Mean Embedding 视角）**
+**定理 1.2.1（编码的最优频率谱------Kernel Mean Embedding 视角）**
 
-设目标核 $k(\Delta) = \exp(-|\Delta|/\xi)$（Laplace 核）。则规范化编码核 $\frac{2}{d}K_{\text{PE}}(\Delta) = \frac{2}{d}\sum_{j=0}^{d/2-1} \cos(2\pi\Delta/\lambda_j)$ 在 $L^2([0, L])$ 中最优逼近 $k(\Delta)$（最小化均方误差 $\int_0^L |\frac{2}{d}K_{\text{PE}}(\Delta) - k(\Delta)|^2 d\Delta$）当且仅当 $\{\lambda_j\}$ 满足以下频谱分布：
+设目标核 \(k(\Delta) = \exp(-|\Delta|/\xi)\)（Laplace
+核）。则规范化编码核
+\(\frac{2}{d}K_{PE}(\Delta) = \frac{2}{d}\sum_{j=0}^{d/2-1} \cos(2\pi\Delta/\lambda_j)\)
+在 \(L^2([0, L])\) 中最优逼近 \(k(\Delta)\)（最小化均方误差
+\(\int_0^L |\frac{2}{d}K_{PE}(\Delta) - k(\Delta)|^2 d\Delta\)）当且仅当
+\(\{\lambda_j\}\) 满足以下频谱分布：
 
-$$\boxed{\lambda_j = 2\pi\xi \cdot \cot\left(\frac{\pi(2j+1)}{2d}\right), \quad j = 0, 1, \ldots, \frac{d}{2}-1}$$
+\[\boxed{\lambda_j = 2\pi\xi \cdot \cot\left(\frac{\pi(2j+1)}{2d}\right), \quad j = 0, 1, ..., \frac{d}{2}-1}\]
 
 *证明*：
 
-**步骤 1（Bochner 表示）**：Laplace 核 $k(\Delta) = \exp(-|\Delta|/\xi)$ 的 Fourier 变换为：
+**步骤 1（Bochner 表示）**：Laplace 核
+\(k(\Delta) = \exp(-|\Delta|/\xi)\) 的 Fourier 变换为：
 
-$$\hat{k}(\omega) = \int_{-\infty}^{\infty} e^{-i\omega\Delta} e^{-|\Delta|/\xi} d\Delta = \frac{2\xi}{1 + \xi^2\omega^2}$$
+\[\hat{k}(\omega) = \int_{-\infty}^ e^{-i\omega\Delta} e^{-|\Delta|/\xi} d\Delta = \frac{2\xi}{1 + \xi^2\omega^2}\]
 
-这是一个 Cauchy 分布（尺度参数 $1/\xi$）。
+这是一个 Cauchy 分布（尺度参数 \(1/\xi\)）。
 
 **步骤 2（积分表示）**：由 Fourier 反演公式：
 
-$$k(\Delta) = \frac{1}{2\pi} \int_{-\infty}^{\infty} e^{i\omega\Delta} \hat{k}(\omega) d\omega = \int_{0}^{\infty} \cos(\omega\Delta) \cdot \frac{2}{\pi} \cdot \frac{\xi}{1 + \xi^2\omega^2} d\omega$$
+\[k(\Delta) = \frac{1}{2\pi} \int_{-\infty}^ e^{i\omega\Delta} \hat{k}(\omega) d\omega = \int_{0}^ \cos(\omega\Delta) \cdot \frac{2} \cdot \frac{1 + \xi^2\omega^2} d\omega\]
 
-其中利用了 $\hat{k}$ 的偶对称性。定义谱密度 $S(\omega) = \frac{2\xi}{\pi(1 + \xi^2\omega^2)}$。
+其中利用了 \(\hat{k}\) 的偶对称性。定义谱密度
+\(S(\omega) = \frac{2\xi}{\pi(1 + \xi^2\omega^2)}\)。
 
-**步骤 3（有限维逼近）**：规范化编码核 $\frac{2}{d}K_{\text{PE}}(\Delta) = \frac{2}{d}\sum_{j=0}^{d/2-1} \cos(\omega_j \Delta)$，其中 $\omega_j = 2\pi/\lambda_j$，是一个**等权离散和**（每项权重 $2/d$），逼近连续积分 $\int_0^{\infty} S(\omega)\cos(\omega\Delta)d\omega$。
+**步骤 3（有限维逼近）**：规范化编码核
+\(\frac{2}{d}K_{PE}(\Delta) = \frac{2}{d}\sum_{j=0}^{d/2-1} \cos(\omega_j \Delta)\)，其中
+\(\omega_j = 2\pi/\lambda_j\)，是一个**等权离散和**（每项权重
+\(2/d\)），逼近连续积分
+\(\int_0^ S(\omega)\cos(\omega\Delta)d\omega\)。
 
-最优采样点应使得 $\{S(\omega_j)\Delta\omega_j\}$ 近似均匀权重。这等价于从累积分布函数 $Q(\omega) = \int_0^{\omega} S(u)du$ 中按**分位数采样**。
+最优采样点应使得 \(\{S(\omega_j)\Delta\omega_j\}\)
+近似均匀权重。这等价于从累积分布函数
+\(Q(\omega) = \int_0^ S(u)du\) 中按**分位数采样**。
 
-$Q(\omega) = \frac{2}{\pi} \arctan(\xi\omega)$，总质量 $Q(\infty) = 1$。
+\(Q(\omega) = \frac{2} \arctan(\xi\omega)\)，总质量
+\(Q(\infty) = 1\)。
 
-**步骤 4（分位数采样）**：对于 $d/2$ 个频率点，第 $j$ 个点应覆盖第 $(2j+1)/d$ 分位数：
+**步骤 4（分位数采样）**：对于 \(d/2\) 个频率点，第 \(j\)
+个点应覆盖第 \((2j+1)/d\) 分位数：
 
-$$Q(\omega_j) = \frac{2j+1}{d}, \quad j = 0, 1, \ldots, \frac{d}{2}-1$$
+\[Q(\omega_j) = \frac{2j+1}{d}, \quad j = 0, 1, ..., \frac{d}{2}-1\]
 
-求解：$\omega_j = \frac{1}{\xi} \tan\left(\frac{\pi(2j+1)}{2d}\right)$。
+求解：\(\omega_j = \frac{1} \tan\left(\frac{\pi(2j+1)}{2d}\right)\)。
 
-因此波长 $\lambda_j = \frac{2\pi}{\omega_j} = 2\pi\xi \cdot \cot\left(\frac{\pi(2j+1)}{2d}\right)$。
+因此波长
+\(\lambda_j = \frac{2\pi}{\omega_j} = 2\pi\xi \cdot \cot\left(\frac{\pi(2j+1)}{2d}\right)\)。
 
-$\square$
+\(\square\)
 
-**推论 1.2.1（低频截断）**：最大波长（$j=0$）为：
+**推论 1.2.1（低频截断）**：最大波长（\(j=0\)）为：
 
-$$\lambda_{\max} = 2\pi\xi \cdot \cot\left(\frac{\pi}{2d}\right) \approx 4d\xi \quad (\text{对较大 } d)$$
+\[\lambda_ = 2\pi\xi \cdot \cot\left(\frac{2d}\right) \approx 4d\xi \quad (对较大  d)\]
 
-这表明编码能捕获的最长空间相关性约为 $4d\xi$。**必须满足 $\lambda_{\max} \geq L$** 才能覆盖整个序列。这给出最小维度要求：
+这表明编码能捕获的最长空间相关性约为 \(4d\xi\)。**必须满足
+\(\lambda_ \geq L\)** 才能覆盖整个序列。这给出最小维度要求：
 
-覆盖整个序列区间需满足 $\lambda_{\max} \geq 2L$（Nyquist条件），给出最小维度要求：
+覆盖整个序列区间需满足
+\(\lambda_ \geq 2L\)（Nyquist条件），给出最小维度要求：
 
-$$\boxed{d_{\min} \approx \frac{L}{2\xi}}$$
+\[\boxed{d_ \approx \frac{L}{2\xi}}\]
 
-**推论 1.2.2（与 Transformer 编码的比较）**：标准 Transformer 使用 $\omega_j \propto 10000^{-2j/d}$（几何级数），对应**对数均匀**频率分布。而物理最优（Laplace 核）使用 $\omega_j \propto \tan(\pi(2j+1)/2d)$（正切分布），更密集地采样**中频区域**。差异来自：NLP 中的位置关系是长程而非指数衰减的，而物理系统的相关函数通常是短程指数衰减。
+**推论 1.2.2（与 Transformer 编码的比较）**：标准 Transformer 使用
+\(\omega_j \propto 10000^{-2j/d}\)（几何级数），对应**对数均匀**频率分布。而物理最优（Laplace
+核）使用
+\(\omega_j \propto \tan(\pi(2j+1)/2d)\)（正切分布），更密集地采样**中频区域**。差异来自：NLP
+中的位置关系是长程而非指数衰减的，而物理系统的相关函数通常是短程指数衰减。
 
-**定理 1.2.2（逼近误差界）**：对 Laplace 核和 $d/2$ 个频率点的分位数采样，规范化编码核的逼近误差满足：
+**定理 1.2.2（逼近误差界）**：对 Laplace 核和 \(d/2\)
+个频率点的分位数采样，规范化编码核的逼近误差满足：
 
-$$\sup_{\Delta \in [0, L]} \left|\frac{2}{d}K_{\text{PE}}(\Delta) - k(\Delta)\right| = O\left(\frac{1}{d}\right)$$
+\[\sup_{\Delta \in [0, L]} \left|\frac{2}{d}K_{PE}(\Delta) - k(\Delta)\right| = O\left(\frac{1}{d}\right)\]
 
-随着 $d \to \infty$ 以 $O(1/d)$ 速率收敛。精确常数依赖于 $\xi$ 和 $L$，但 $O(1/d)$ 的收敛速率不依赖于这些参数。
+随着 \(d \to \infty\) 以 \(O(1/d)\) 速率收敛。精确常数依赖于 \(\xi\) 和
+\(L\)，但 \(O(1/d)\) 的收敛速率不依赖于这些参数。
 
-*证明*：这是带限函数 Fourier 积分的标准数值积分误差。分位数采样使得每个频率区间的贡献平衡，最大误差受最大被忽略的频率分量的 Fourier 系数控制。与原版本不同，此处使用规范化编码核 $(2/d)K_{\text{PE}}$ 而非未规范化的 $K_{\text{PE}}$，确保逼近对象 $k(\Delta)$ 与逼近量处于同一量级（均为 $O(1)$），而非 $K_{\text{PE}}(0)=d/2$ 与 $k(0)=1$ 的跨量级比较。$\square$
+*证明*：这是带限函数 Fourier
+积分的标准数值积分误差。分位数采样使得每个频率区间的贡献平衡，最大误差受最大被忽略的频率分量的
+Fourier 系数控制。与原版本不同，此处使用规范化编码核
+\((2/d)K_{PE}\) 而非未规范化的 \(K_{PE}\)，确保逼近对象
+\(k(\Delta)\) 与逼近量处于同一量级（均为 \(O(1)\)），而非
+\(K_{PE}(0)=d/2\) 与 \(k(0)=1\) 的跨量级比较。\(\square\)
 
-### 1.2.3 正弦编码的 Lipschitz 连续性
+\subsubsection{1.2.3 正弦编码的 Lipschitz
+连续性}<!-- label: ux6b63ux5f26ux7f16ux7801ux7684-lipschitz-ux8fdeux7eedux6027 -->
 
-**定理 1.2.3（正弦 PPE 的 Lipschitz 常数）**：标量正弦编码 $\text{PE}_{\text{scalar}}: [0, L] \to \mathbb{R}^d$ 是 Lipschitz 连续的，精确常数为：
+**定理 1.2.3（正弦 PPE 的 Lipschitz 常数）**：标量正弦编码
+\(PE_{scalar}: [0, L] \to \mathbb{R}^d\) 是 Lipschitz
+连续的，精确常数为：
 
-$$\boxed{L_{\text{PE}}^{\text{scalar}} = \frac{2\sqrt{2}\,\pi}{\sqrt{d}} \cdot \sqrt{\sum_{j=0}^{d/2-1} \frac{1}{\lambda_j^2}}}$$
+\[\boxed{L_{PE}^{scalar} = \frac{2\sqrt{2}\,\pi}{\sqrt{d}} \cdot \sqrt{\sum_{j=0}^{d/2-1} \frac{1}{\lambda_j^2}}}\]
 
-*证明*：对每个维度对 $(2j, 2j+1)$，归一化编码 $\text{PE}_j(p) = \sqrt{2/d}\,(\sin(2\pi p/\lambda_j), \cos(2\pi p/\lambda_j))$：
+*证明*：对每个维度对 \((2j, 2j+1)\)，归一化编码
+\(PE_j(p) = \sqrt{2/d}\,(\sin(2\pi p/\lambda_j), \cos(2\pi p/\lambda_j))\)：
 
-$$\|\text{PE}_j(p) - \text{PE}_j(q)\|^2 = \frac{2}{d}\left[\left(\sin\left(\frac{2\pi p}{\lambda_j}\right) - \sin\left(\frac{2\pi q}{\lambda_j}\right)\right)^2 + \left(\cos\left(\frac{2\pi p}{\lambda_j}\right) - \cos\left(\frac{2\pi q}{\lambda_j}\right)\right)^2\right]$$
+\[\|PE_j(p) - PE_j(q)\|^2 = \frac{2}{d}\left[\left(\sin\left(\frac{2\pi p}{\lambda_j}\right) - \sin\left(\frac{2\pi q}{\lambda_j}\right)\right)^2 + \left(\cos\left(\frac{2\pi p}{\lambda_j}\right) - \cos\left(\frac{2\pi q}{\lambda_j}\right)\right)^2\right]\]
 
-由三角恒等式 $(\sin a - \sin b)^2 + (\cos a - \cos b)^2 = 2 - 2\cos(a-b) = 4\sin^2((a-b)/2)$，再利用 $|\sin\theta| \leq |\theta|$：
+由三角恒等式
+\((\sin a - \sin b)^2 + (\cos a - \cos b)^2 = 2 - 2\cos(a-b) = 4\sin^2((a-b)/2)\)，再利用
+\(|\sin\theta| \leq |\theta|\)：
 
-$$\|\text{PE}_j(p) - \text{PE}_j(q)\|^2 = \frac{2}{d} \cdot 4\sin^2\!\left(\frac{\pi(p-q)}{\lambda_j}\right) \leq \frac{2}{d} \cdot \left(\frac{2\pi|p-q|}{\lambda_j}\right)^2 = \frac{8\pi^2|p-q|^2}{d \cdot \lambda_j^2}$$
+\[\|PE_j(p) - PE_j(q)\|^2 = \frac{2}{d} \cdot 4\sin^2\!\left(\frac{\pi(p-q)}{\lambda_j}\right) \leq \frac{2}{d} \cdot \left(\frac{2\pi|p-q|}{\lambda_j}\right)^2 = \frac{8\pi^2|p-q|^2}{d \cdot \lambda_j^2}\]
 
-对所有 $j$ 求和：
+对所有 \(j\) 求和：
 
-$$\|\text{PE}_{\text{scalar}}(p) - \text{PE}_{\text{scalar}}(q)\|^2 \leq \frac{8\pi^2|p-q|^2}{d} \sum_{j=0}^{d/2-1} \frac{1}{\lambda_j^2}$$
+\[\|PE_{scalar}(p) - PE_{scalar}(q)\|^2 \leq \frac{8\pi^2|p-q|^2}{d} \sum_{j=0}^{d/2-1} \frac{1}{\lambda_j^2}\]
 
-开方即得所述 Lipschitz 常数。该上界是紧的（$p, q$ 无限接近时 $\sin\theta \approx \theta$，等号渐近成立）。$\square$
+开方即得所述 Lipschitz 常数。该上界是紧的（\(p, q\) 无限接近时
+\(\sin\theta \approx \theta\)，等号渐近成立）。\(\square\)
 
-**推论 1.2.3（Lipschitz 常数的渐近行为）**：对分位数最优谱 $\lambda_j = 2\pi\xi \cdot \cot(\pi(2j+1)/2d)$ 和归一化编码：
+**推论 1.2.3（Lipschitz 常数的渐近行为）**：对分位数最优谱
+\(\lambda_j = 2\pi\xi \cdot \cot(\pi(2j+1)/2d)\) 和归一化编码：
 
-$$L_{\text{PE}}^{\text{scalar}} \sim \frac{1}{\xi} \cdot \sqrt{\frac{d}{6}} \quad (d \to \infty)$$
+\[L_{PE}^{scalar} \sim \frac{1} \cdot \sqrt{\frac{d}{6}} \quad (d \to \infty)\]
 
-归一化后 Lipschitz 常数的增长从 $O(d)$ 降为 $O(\sqrt{d})$——归一化因子 $\sqrt{2/d}$ 抵消了一个 $\sqrt{d}$ 因子，使得编码对位置变化的敏感度随维度**亚线性**增长。
+归一化后 Lipschitz 常数的增长从 \(O(d)\) 降为
+\(O(\sqrt{d})\)------归一化因子 \(\sqrt{2/d}\) 抵消了一个 \(\sqrt{d}\)
+因子，使得编码对位置变化的敏感度随维度**亚线性**增长。
 
----
+<div align="center">
 
-## 1.3 3D 旋转编码：旋转矩阵参数化
+\rule{0.5\linewidth}{0.5pt}
 
-### 1.3.1 编码定义
+</div>
 
-**定义 1.3.1（3D 旋转位置编码）**：对 $\mathbf{p} = (x, y, z) \in \mathbb{R}^3$，维度 $d$（$d \geq 6$，偶数）：
+\subsection{1.3 3D
+旋转编码：旋转矩阵参数化}<!-- label: d-ux65cbux8f6cux7f16ux7801ux65cbux8f6cux77e9ux9635ux53c2ux6570ux5316 -->
 
-$$\boxed{\text{PE}_{\text{rot}}(\mathbf{p}) = \mathbf{R}(\mathbf{p}) \cdot \mathbf{e}_0}$$
+#### 1.3.1 编码定义<!-- label: ux7f16ux7801ux5b9aux4e49-1 -->
 
-其中：
-- $\mathbf{e}_0 \in \mathbb{R}^d$ 是固定的参考单位向量（例如 $\mathbf{e}_0 = (1, 0, \ldots, 0)^T$）
-- $\mathbf{R}(\mathbf{p}) = \mathbf{R}_x(\alpha x) \cdot \mathbf{R}_y(\beta y) \cdot \mathbf{R}_z(\gamma z) \in SO(d)$
-- $\alpha, \beta, \gamma > 0$ 是三个空间维度的**频率参数**（rad/Å）
+**定义 1.3.1（3D 旋转位置编码）**：对
+\(\mathbf{p} = (x, y, z) \in \mathbb{R}^3\)，维度
+\(d\)（\(d \geq 6\)，偶数）：
 
-每个 $\mathbf{R}_a(\theta)$ 是一个在指定 2D 平面上的 $d$ 维旋转：
+\[\boxed{PE_{rot}(\mathbf{p}) = \mathbf{R}(\mathbf{p}) \cdot \mathbf{e}_0}\]
 
-$$\mathbf{R}_a(\theta) = \begin{pmatrix} \mathbf{I}_{i_a-1} & & & \\ & \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix} & & \\ & & & \mathbf{I}_{d-i_a-1} \end{pmatrix}$$
+其中： - \(\mathbf{e}_0 \in \mathbb{R}^d\) 是固定的参考单位向量（例如
+\(\mathbf{e}_0 = (1, 0, ..., 0)^T\)） -
+\(\mathbf{R}(\mathbf{p}) = \mathbf{R}_x(\alpha x) \cdot \mathbf{R}_y(\beta y) \cdot \mathbf{R}_z(\gamma z) \in SO(d)\)
+- \(\alpha, \beta, \gamma > 0\)
+是三个空间维度的**频率参数**（rad/Å）
 
-其中三个旋转平面分别作用于维度对 $(0,1)$, $(2,3)$, $(4,5)$（分别对应 $x, y, z$ 轴）。剩余的 $d-6$ 个维度被 $\mathbf{R}_x, \mathbf{R}_y, \mathbf{R}_z$ 不变地保留（单位矩阵）。
+每个 \(\mathbf{R}_a(\theta)\) 是一个在指定 2D 平面上的 \(d\) 维旋转：
 
-### 1.3.2 旋转矩阵的参数化——群论基础
+\[\mathbf{R}_a(\theta) = \begin{pmatrix} \mathbf{I}_{i_a-1} & & & 
+ & \begin{pmatrix} \cos\theta & -\sin\theta 
+ \sin\theta & \cos\theta \end{pmatrix} & & 
+ & & & \mathbf{I}_{d-i_a-1} \end{pmatrix}\]
 
-**命题 1.3.1（$\mathbb{R}^3 \to SO(d)$ 的嵌入）**：映射 $\mathbf{p} \mapsto \mathbf{R}(\mathbf{p})$ 是 $\mathbb{R}^3$ 到 $SO(d)$ 的 $3$ 维 Abel 子群的**李群同态**。
+其中三个旋转平面分别作用于维度对 \((0,1)\), \((2,3)\),
+\((4,5)\)（分别对应 \(x, y, z\) 轴）。剩余的 \(d-6\) 个维度被
+\(\mathbf{R}_x, \mathbf{R}_y, \mathbf{R}_z\) 不变地保留（单位矩阵）。
 
-对换条件（Abel 性）：$\mathbf{R}_x, \mathbf{R}_y, \mathbf{R}_z$ 作用于不相交的坐标对，因而是**彼此交换**的：
+\subsubsection{1.3.2
+旋转矩阵的参数化------群论基础}<!-- label: ux65cbux8f6cux77e9ux9635ux7684ux53c2ux6570ux5316ux7fa4ux8bbaux57faux7840 -->
 
-$$[\mathbf{R}_x(\theta), \mathbf{R}_y(\phi)] = 0, \quad [\mathbf{R}_y(\phi), \mathbf{R}_z(\psi)] = 0, \quad [\mathbf{R}_z(\psi), \mathbf{R}_x(\theta)] = 0$$
+**命题 1.3.1（\(\mathbb{R}^3 \to SO(d)\) 的嵌入）**：映射
+\(\mathbf{p} \mapsto \mathbf{R}(\mathbf{p})\) 是 \(\mathbb{R}^3\) 到
+\(SO(d)\) 的 \(3\) 维 Abel 子群的**李群同态**。
 
-组合性质：$\mathbf{R}(\mathbf{p}_1 + \mathbf{p}_2) = \mathbf{R}(\mathbf{p}_1) \cdot \mathbf{R}(\mathbf{p}_2)$（加法群同态），因为：
+对换条件（Abel 性）：\(\mathbf{R}_x, \mathbf{R}_y, \mathbf{R}_z\)
+作用于不相交的坐标对，因而是**彼此交换**的：
 
-\begin{align*}
-\mathbf{R}(\mathbf{p}_1 + \mathbf{p}_2) &= \mathbf{R}_x(\alpha(x_1 + x_2)) \cdot \mathbf{R}_y(\beta(y_1 + y_2)) \cdot \mathbf{R}_z(\gamma(z_1 + z_2)) \\
-&= \mathbf{R}_x(\alpha x_1)\mathbf{R}_x(\alpha x_2) \cdot \mathbf{R}_y(\beta y_1)\mathbf{R}_y(\beta y_2) \cdot \mathbf{R}_z(\gamma z_1)\mathbf{R}_z(\gamma z_2) \\
-&= \mathbf{R}_x(\alpha x_1)\mathbf{R}_y(\beta y_1)\mathbf{R}_z(\gamma z_1) \cdot \mathbf{R}_x(\alpha x_2)\mathbf{R}_y(\beta y_2)\mathbf{R}_z(\gamma z_2) \\
+\[[\mathbf{R}_x(\theta), \mathbf{R}_y(\phi)] = 0, \quad [\mathbf{R}_y(\phi), \mathbf{R}_z(\psi)] = 0, \quad [\mathbf{R}_z(\psi), \mathbf{R}_x(\theta)] = 0\]
+
+组合性质：\(\mathbf{R}(\mathbf{p}_1 + \mathbf{p}_2) = \mathbf{R}(\mathbf{p}_1) \cdot \mathbf{R}(\mathbf{p}_2)\)（加法群同态），因为：
+
+$$
+\mathbf{R}(\mathbf{p}_1 + \mathbf{p}_2) &= \mathbf{R}_x(\alpha(x_1 + x_2)) \cdot \mathbf{R}_y(\beta(y_1 + y_2)) \cdot \mathbf{R}_z(\gamma(z_1 + z_2)) 
+
+&= \mathbf{R}_x(\alpha x_1)\mathbf{R}_x(\alpha x_2) \cdot \mathbf{R}_y(\beta y_1)\mathbf{R}_y(\beta y_2) \cdot \mathbf{R}_z(\gamma z_1)\mathbf{R}_z(\gamma z_2) 
+
+&= \mathbf{R}_x(\alpha x_1)\mathbf{R}_y(\beta y_1)\mathbf{R}_z(\gamma z_1) \cdot \mathbf{R}_x(\alpha x_2)\mathbf{R}_y(\beta y_2)\mathbf{R}_z(\gamma z_2) 
+
 &= \mathbf{R}(\mathbf{p}_1) \cdot \mathbf{R}(\mathbf{p}_2)
-\end{align*}
+$$
 
 （第三步利用了交换性。）
 
-### 1.3.3 内积结构（相对位置编码）
+\subsubsection{1.3.3
+内积结构（相对位置编码）}<!-- label: ux5185ux79efux7ed3ux6784ux76f8ux5bf9ux4f4dux7f6eux7f16ux7801 -->
 
-对任意两个位置 $\mathbf{p}, \mathbf{q} \in \mathbb{R}^3$：
+对任意两个位置 \(\mathbf{p}, \mathbf{q} \in \mathbb{R}^3\)：
 
-$$\boxed{\langle \text{PE}_{\text{rot}}(\mathbf{p}), \text{PE}_{\text{rot}}(\mathbf{q}) \rangle = \langle \mathbf{R}(\mathbf{p})\mathbf{e}_0, \mathbf{R}(\mathbf{q})\mathbf{e}_0 \rangle = \langle \mathbf{e}_0, \mathbf{R}(\mathbf{p})^T \mathbf{R}(\mathbf{q}) \mathbf{e}_0 \rangle = \langle \mathbf{e}_0, \mathbf{R}(\mathbf{q} - \mathbf{p}) \mathbf{e}_0 \rangle}$$
+\[\boxed{\langle PE_{rot}(\mathbf{p}), PE_{rot}(\mathbf{q}) \rangle = \langle \mathbf{R}(\mathbf{p})\mathbf{e}_0, \mathbf{R}(\mathbf{q})\mathbf{e}_0 \rangle = \langle \mathbf{e}_0, \mathbf{R}(\mathbf{p})^T \mathbf{R}(\mathbf{q}) \mathbf{e}_0 \rangle = \langle \mathbf{e}_0, \mathbf{R}(\mathbf{q} - \mathbf{p}) \mathbf{e}_0 \rangle}\]
 
-其中最后一步利用了 $\mathbf{R}(\mathbf{p})^T = \mathbf{R}(-\mathbf{p})$ 和 $\mathbf{R}(-\mathbf{p})\mathbf{R}(\mathbf{q}) = \mathbf{R}(\mathbf{q} - \mathbf{p})$。
+其中最后一步利用了
+\(\mathbf{R}(\mathbf{p})^T = \mathbf{R}(-\mathbf{p})\) 和
+\(\mathbf{R}(-\mathbf{p})\mathbf{R}(\mathbf{q}) = \mathbf{R}(\mathbf{q} - \mathbf{p})\)。
 
-展开 $\mathbf{R}(\Delta\mathbf{p}) = \mathbf{R}_x(\alpha\Delta x)\mathbf{R}_y(\beta\Delta y)\mathbf{R}_z(\gamma\Delta z)$，取 $\mathbf{e}_0 = (1, 0, 0, 1, 0, 0, \ldots)^T$（在每对旋转平面的第一维为 1）：
+展开
+\(\mathbf{R}(\Delta\mathbf{p}) = \mathbf{R}_x(\alpha\Delta x)\mathbf{R}_y(\beta\Delta y)\mathbf{R}_z(\gamma\Delta z)\)，取
+\(\mathbf{e}_0 = (1, 0, 0, 1, 0, 0, ...)^T\)（在每对旋转平面的第一维为
+1）：
 
-$$\langle \text{PE}_{\text{rot}}(\mathbf{p}), \text{PE}_{\text{rot}}(\mathbf{q}) \rangle = \cos(\alpha\Delta x) + \cos(\beta\Delta y) + \cos(\gamma\Delta z)$$
+\[\langle PE_{rot}(\mathbf{p}), PE_{rot}(\mathbf{q}) \rangle = \cos(\alpha\Delta x) + \cos(\beta\Delta y) + \cos(\gamma\Delta z)\]
 
-其中 $\Delta\mathbf{p} = \mathbf{q} - \mathbf{p} = (\Delta x, \Delta y, \Delta z)$。
+其中
+\(\Delta\mathbf{p} = \mathbf{q} - \mathbf{p} = (\Delta x, \Delta y, \Delta z)\)。
 
-编码的内积**仅依赖于相对位置** $\Delta\mathbf{p}$，满足**平移不变性**。
+编码的内积**仅依赖于相对位置**
+\(\Delta\mathbf{p}\)，满足**平移不变性**。
 
-### 1.3.4 旋转编码的 Lipschitz 连续性
+\subsubsection{1.3.4 旋转编码的 Lipschitz
+连续性}<!-- label: ux65cbux8f6cux7f16ux7801ux7684-lipschitz-ux8fdeux7eedux6027 -->
 
-**定理 1.3.1（旋转编码的 Lipschitz 常数）**：映射 $\text{PE}_{\text{rot}}: \mathbb{R}^3 \to \mathbb{R}^d$ 是 Lipschitz 连续的。取 $\mathbf{e}_0$ 为上述形式（每对平面的第一维为 1，其余为 0），精确常数为：
+**定理 1.3.1（旋转编码的 Lipschitz 常数）**：映射
+\(PE_{rot}: \mathbb{R}^3 \to \mathbb{R}^d\) 是 Lipschitz
+连续的。取 \(\mathbf{e}_0\) 为上述形式（每对平面的第一维为 1，其余为
+0），精确常数为：
 
-$$\boxed{L_{\text{PE}}^{\text{rot}} = \max(\alpha, \beta, \gamma)}$$
+\[\boxed{L_{PE}^{rot} = \max(\alpha, \beta, \gamma)}\]
 
 *证明*：
 
-**步骤 1（直接范数计算）**：编码差为 $\text{PE}_{\text{rot}}(\mathbf{p}) - \text{PE}_{\text{rot}}(\mathbf{q}) = \mathbf{R}(\mathbf{p})\mathbf{e}_0 - \mathbf{R}(\mathbf{q})\mathbf{e}_0$。由于三个旋转作用于互不相交的维度对 $(0,1), (2,3), (4,5)$，编码差的各个分量解耦。对 $x$-平面（维度 0,1）：
+**步骤 1（直接范数计算）**：编码差为
+\(PE_{rot}(\mathbf{p}) - PE_{rot}(\mathbf{q}) = \mathbf{R}(\mathbf{p})\mathbf{e}_0 - \mathbf{R}(\mathbf{q})\mathbf{e}_0\)。由于三个旋转作用于互不相交的维度对
+\((0,1), (2,3), (4,5)\)，编码差的各个分量解耦。对 \(x\)-平面（维度
+0,1）：
 
-$$\|\mathbf{R}_x(\alpha x)\mathbf{e}_x - \mathbf{R}_x(\alpha q_x)\mathbf{e}_x\|^2 = (\cos(\alpha x)-\cos(\alpha q_x))^2 + (\sin(\alpha x)-\sin(\alpha q_x))^2 = 2 - 2\cos(\alpha\Delta x) = 4\sin^2\left(\frac{\alpha\Delta x}{2}\right)$$
+\[\|\mathbf{R}_x(\alpha x)\mathbf{e}_x - \mathbf{R}_x(\alpha q_x)\mathbf{e}_x\|^2 = (\cos(\alpha x)-\cos(\alpha q_x))^2 + (\sin(\alpha x)-\sin(\alpha q_x))^2 = 2 - 2\cos(\alpha\Delta x) = 4\sin^2\left(\frac{\alpha\Delta x}{2}\right)\]
 
-同理对 $y, z$ 平面。因此：
+同理对 \(y, z\) 平面。因此：
 
-$$\|\text{PE}_{\text{rot}}(\mathbf{p}) - \text{PE}_{\text{rot}}(\mathbf{q})\|^2 = 4\sin^2\left(\frac{\alpha\Delta x}{2}\right) + 4\sin^2\left(\frac{\beta\Delta y}{2}\right) + 4\sin^2\left(\frac{\gamma\Delta z}{2}\right)$$
+\[\|PE_{rot}(\mathbf{p}) - PE_{rot}(\mathbf{q})\|^2 = 4\sin^2\left(\frac{\alpha\Delta x}{2}\right) + 4\sin^2\left(\frac{\beta\Delta y}{2}\right) + 4\sin^2\left(\frac{\gamma\Delta z}{2}\right)\]
 
-**步骤 2（利用 $|\sin\theta| \leq |\theta|$）**：
+**步骤 2（利用 \(|\sin\theta| \leq |\theta|\)）**：
 
-$$\|\text{PE}_{\text{rot}}(\mathbf{p}) - \text{PE}_{\text{rot}}(\mathbf{q})\|^2 \leq \alpha^2\Delta x^2 + \beta^2\Delta y^2 + \gamma^2\Delta z^2 \leq \max(\alpha, \beta, \gamma)^2 \cdot \|\Delta\mathbf{p}\|_2^2$$
+\[\|PE_{rot}(\mathbf{p}) - PE_{rot}(\mathbf{q})\|^2 \leq \alpha^2\Delta x^2 + \beta^2\Delta y^2 + \gamma^2\Delta z^2 \leq \max(\alpha, \beta, \gamma)^2 \cdot \|\Delta\mathbf{p}\|_2^2\]
 
-开方即得 $\|\text{PE}_{\text{rot}}(\mathbf{p}) - \text{PE}_{\text{rot}}(\mathbf{q})\| \leq \max(\alpha, \beta, \gamma) \cdot \|\mathbf{p} - \mathbf{q}\|_2$。
+开方即得
+\(\|PE_{rot}(\mathbf{p}) - PE_{rot}(\mathbf{q})\| \leq \max(\alpha, \beta, \gamma) \cdot \|\mathbf{p} - \mathbf{q}\|_2\)。
 
-**步骤 3（紧致性）**：取 $\Delta\mathbf{p} = (\varepsilon, 0, 0)$ 且 $\alpha = \max(\alpha, \beta, \gamma)$，当 $\varepsilon \to 0$ 时：
+**步骤 3（紧致性）**：取 \(\Delta\mathbf{p} = (\varepsilon, 0, 0)\)
+且 \(\alpha = \max(\alpha, \beta, \gamma)\)，当 \(\varepsilon \to 0\)
+时：
 
-$$\|\text{PE}_{\text{rot}}(\mathbf{p}) - \text{PE}_{\text{rot}}(\mathbf{q})\| = 2|\sin(\alpha\varepsilon/2)| \to \alpha|\varepsilon| = \max(\alpha, \beta, \gamma) \cdot \|\Delta\mathbf{p}\|$$
+\[\|PE_{rot}(\mathbf{p}) - PE_{rot}(\mathbf{q})\| = 2|\sin(\alpha\varepsilon/2)| \to \alpha|\varepsilon| = \max(\alpha, \beta, \gamma) \cdot \|\Delta\mathbf{p}\|\]
 
-该界是紧的。$\square$
+该界是紧的。\(\square\)
 
-**注 1.3.1（与先前版本中常数高估的说明）**：先前版本使用了 $\|\mathbf{R}(\mathbf{p}) - \mathbf{R}(\mathbf{q})\|_F$ 的三角不等式分解结合 Cauchy-Schwarz，得到 $2\sqrt{\alpha^2 + \beta^2 + \gamma^2}$。这一常数比真实值 $\max(\alpha, \beta, \gamma)$ 高出约 $2\sqrt{3} \approx 3.46$ 倍（当 $\alpha = \beta = \gamma$ 时），原因是：
+**注 1.3.1（与先前版本中常数高估的说明）**：先前版本使用了
+\(\|\mathbf{R}(\mathbf{p}) - \mathbf{R}(\mathbf{q})\|_F\)
+的三角不等式分解结合 Cauchy-Schwarz，得到
+\(2\sqrt{\alpha^2 + \beta^2 + \gamma^2}\)。这一常数比真实值
+\(\max(\alpha, \beta, \gamma)\) 高出约 \(2\sqrt{3} \approx 3.46\) 倍（当
+\(\alpha = \beta = \gamma\) 时），原因是：
 
-1. **三角不等式在正交子空间上的松弛**：三个差分矩阵 $\mathbf{D}_x, \mathbf{D}_y, \mathbf{D}_z$ 作用于互不相交的维度对上，因此 $\|\mathbf{D}_x + \mathbf{D}_y + \mathbf{D}_z\|_F^2 = \|\mathbf{D}_x\|_F^2 + \|\mathbf{D}_y\|_F^2 + \|\mathbf{D}_z\|_F^2$，但三角不等式 $\|\mathbf{D}_x + \mathbf{D}_y + \mathbf{D}_z\|_F \leq \|\mathbf{D}_x\|_F + \|\mathbf{D}_y\|_F + \|\mathbf{D}_z\|_F$ 在最坏情况下可松 $\sqrt{3}$ 倍（三项等范数时）。
+1. 
+2. 
 
-2. **Cauchy-Schwarz 的 $\ell_1 \to \ell_2$ 转换**：$\alpha|\Delta x| + \beta|\Delta y| + \gamma|\Delta z| \leq \sqrt{\alpha^2 + \beta^2 + \gamma^2} \cdot \|\Delta\mathbf{p}\|_2$ 在 $\alpha=\beta=\gamma$ 且 $\Delta x = \Delta y = \Delta z$ 时引入另一个 $\sqrt{3}$ 倍松弛。
+两重松弛的复合导致常数高估约 \(2\sqrt{3}\)
+倍。正确的证明应利用子空间正交性直接计算 \(\ell_2\)
+范数，避免这两层松弛。
 
-两重松弛的复合导致常数高估约 $2\sqrt{3}$ 倍。正确的证明应利用子空间正交性直接计算 $\ell_2$ 范数，避免这两层松弛。
+<div align="center">
 
----
+\rule{0.5\linewidth}{0.5pt}
 
-## 1.4 统一 Lipschitz 连续性定理
+</div>
 
-**定理 1.4.1（PPE 的统一 Lipschitz 性质）**：设 $\text{PE}: \mathcal{P} \to \mathbb{R}^{d_{\text{pe}}}$ 为以上定义的任一编码。则存在常数 $L_{\text{PE}} > 0$ 使得对所有 $\mathbf{p}, \mathbf{q} \in \mathcal{P}$：
+\subsection{1.4 统一 Lipschitz
+连续性定理}<!-- label: ux7edfux4e00-lipschitz-ux8fdeux7eedux6027ux5b9aux7406 -->
 
-$$\|\text{PE}(\mathbf{p}) - \text{PE}(\mathbf{q})\| \leq L_{\text{PE}} \cdot d_{\mathcal{P}}(\mathbf{p}, \mathbf{q})$$
+**定理 1.4.1（PPE 的统一 Lipschitz 性质）**：设
+\(PE: \mathcal{P} \to \mathbb{R}^{d_{pe}}\)
+为以上定义的任一编码。则存在常数 \(L_{PE} > 0\) 使得对所有
+\(\mathbf{p}, \mathbf{q} \in \mathcal{P}\)：
 
-其中 $d_{\mathcal{P}}$ 是 $\mathcal{P}$ 上的自然度量：
-- 标量域：$d_{\mathcal{P}}(p, q) = |p - q|$
-- 3D 域：$d_{\mathcal{P}}(\mathbf{p}, \mathbf{q}) = \|\mathbf{p} - \mathbf{q}\|_2$
+\[\|PE(\mathbf{p}) - PE(\mathbf{q})\| \leq L_{PE} \cdot d_{\mathcal{P}}(\mathbf{p}, \mathbf{q})\]
+
+其中 \(d_{\mathcal{P}}\) 是 \(\mathcal{P}\) 上的自然度量： -
+标量域：\(d_{\mathcal{P}}(p, q) = |p - q|\) - 3D
+域：\(d_{\mathcal{P}}(\mathbf{p}, \mathbf{q}) = \|\mathbf{p} - \mathbf{q}\|_2\)
 
 各个域的精确 Lipschitz 常数：
 
-| 编码类型 | $\mathcal{P}$ | $L_{\text{PE}}$ |
-|----------|---------------|-----------------|
-| 正弦（标量） | $[0, L]$ | $\frac{2\sqrt{2}\,\pi}{\sqrt{d}}\sqrt{\sum_j 1/\lambda_j^2}$ |
-| 旋转（3D） | $\mathbb{R}^3$ | $\max(\alpha, \beta, \gamma)$ |
+\begin{longtable}[]{@{}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2381}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3571}}
+  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4048}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]
+编码类型
+\end{minipage} & \begin{minipage}[b]
+\(\mathcal{P}\)
+\end{minipage} & \begin{minipage}[b]
+\(L_{PE}\)
+\end{minipage} 
 
-物理意义：$L_{\text{PE}}$ 控制编码对位置变化的**敏感度**。大的 $L_{\text{PE}}$ 使邻近位置的编码更加不同（高分辨率），但可能破坏局部光滑性。最优 $L_{\text{PE}}$ 应在物理相关尺度 $\xi$ 附近匹配编码的分辨率。
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+正弦（标量） & \([0, L]\) &
+\(\frac{2\sqrt{2}\,\pi}{\sqrt{d}}\sqrt{\sum_j 1/\lambda_j^2}\) 
 
----
+旋转（3D） & \(\mathbb{R}^3\) & \(\max(\alpha, \beta, \gamma)\) 
 
-# 第 2 部分：Theorem 1 的严格修正
+\end{longtable}
 
----
+物理意义：\(L_{PE}\) 控制编码对位置变化的**敏感度**。大的
+\(L_{PE}\)
+使邻近位置的编码更加不同（高分辨率），但可能破坏局部光滑性。最优
+\(L_{PE}\) 应在物理相关尺度 \(\xi\) 附近匹配编码的分辨率。
 
-## 2.1 修正的检测边际——精确表达式
+<div align="center">
 
-### 2.1.1 设定
+\rule{0.5\linewidth}{0.5pt}
 
-引入 PPE 后，专家 $m$ 的输入从 $s_i$ 变为：
+</div>
 
-$$h_i = \phi(s_i) + \text{PE}(p_i)$$
+\section{第 2 部分：Theorem 1
+的严格修正}<!-- label: ux7b2c-2-ux90e8ux5206theorem-1-ux7684ux4e25ux683cux4feeux6b63 -->
 
-其中 $\phi: \mathbb{R}^{d_s} \to \mathbb{R}^d$ 是状态特征映射（可以是恒等映射或可学习的线性投影）。
+<div align="center">
 
-**假设 2.1.1（专家作用于编码空间）**：专家模型 $E_m$ 在编码空间 $\mathbb{R}^d$ 上操作。它们接受 $h_i$ 作为输入并输出预测，投票定义为：
+\rule{0.5\linewidth}{0.5pt}
 
-$$v_m^{\text{PPE}}(s_i) = \mathbf{1}[E_m(h_i) \neq y_i]$$
+</div>
+
+\subsection{2.1
+修正的检测边际------精确表达式}<!-- label: ux4feeux6b63ux7684ux68c0ux6d4bux8fb9ux9645ux7cbeux786eux8868ux8fbeux5f0f -->
+
+#### 2.1.1 设定<!-- label: ux8bbeux5b9a -->
+
+引入 PPE 后，专家 \(m\) 的输入从 \(s_i\) 变为：
+
+\[h_i = \phi(s_i) + PE(p_i)\]
+
+其中 \(\phi: \mathbb{R}^{d_s} \to \mathbb{R}^d\)
+是状态特征映射（可以是恒等映射或可学习的线性投影）。
+
+**假设 2.1.1（专家作用于编码空间）**：专家模型 \(E_m\) 在编码空间
+\(\mathbb{R}^d\) 上操作。它们接受 \(h_i\)
+作为输入并输出预测，投票定义为：
+
+\[v_m^{PPE}(s_i) = \mathbf{1}[E_m(h_i) \neq y_i]\]
 
 在干净/噪声条件下的期望为：
 
-$$p_{\text{clean}, s}^{\text{PPE}} = \mathbb{E}[v_m^{\text{PPE}}(s) \mid \text{clean state } s]$$
-$$p_{\text{noisy}, s}^{\text{PPE}} = \mathbb{E}[v_m^{\text{PPE}}(s) \mid \text{noisy state } s]$$
+\[p_{clean, s}^{PPE} = \mathbb{E}[v_m^{PPE}(s) \mid clean state  s]\]
+\[p_{noisy, s}^{PPE} = \mathbb{E}[v_m^{PPE}(s) \mid noisy state  s]\]
 
-### 2.1.2 修正命题
+#### 2.1.2 修正命题<!-- label: ux4feeux6b63ux547dux9898 -->
 
-**命题 2.1（PPE 下的精确检测边际变化——修正 CC 审计报告中的 sign error）**
+**命题 2.1（PPE 下的精确检测边际变化------修正 CC 审计报告中的
+sign error）**
 
 PPE 增强空间中的有效检测边际为：
 
-$$\boxed{\Delta_s^{\text{PPE}} = \Delta_s + \delta_s^{\text{PE}}}$$
+\[\boxed{\Delta_s^{PPE} = \Delta_s + \delta_s^{PE}}\]
 
 其中：
 
-$$\boxed{\delta_s^{\text{PE}} = \underbrace{(p_{\text{noisy}, s}^{\text{PPE}} - p_{\text{noisy}, s})}_{\text{噪声样本上多出的分歧增益}} - \underbrace{(p_{\text{clean}, s}^{\text{PPE}} - p_{\text{clean}, s})}_{\text{干净样本上的（不希望有的）分歧变化}}}$$
+\[\boxed{\delta_s^{PE} = \underbrace{(p_{noisy, s}^{PPE} - p_{noisy, s})}_{噪声样本上多出的分歧增益} - \underbrace{(p_{clean, s}^{PPE} - p_{clean, s})}_{干净样本上的（不希望有的）分歧变化}}\]
 
-> **修正说明**：CC 审计报告中 $\delta_s^{\text{PE}}$ 的表达式符号相反。正确的符号是：$\delta_s^{\text{PE}} > 0$ 当且仅当 PPE 帮助区分噪声和干净样本（增大检测边际）。这要求：
-> - 噪声样本上的分歧概率**增加**（$p_{\text{noisy}}^{\text{PPE}} > p_{\text{noisy}}$）——专家更好地"识别"出错误标签
-> - 干净样本上的分歧概率**不增加或减少**（$p_{\text{clean}}^{\text{PPE}} \leq p_{\text{clean}}$）——专家至少保持原有的一致性
+> **修正说明**：CC 审计报告中 \(\delta_s^{PE}\)
+> 的表达式符号相反。正确的符号是：\(\delta_s^{PE} > 0\) 当且仅当
+> PPE 帮助区分噪声和干净样本（增大检测边际）。这要求： -
+> 噪声样本上的分歧概率**增加**（\(p_{noisy}^{PPE} > p_{noisy}\)）------专家更好地''识别''出错误标签
+> -
+> 干净样本上的分歧概率**不增加或减少**（\(p_{clean}^{PPE} \leq p_{clean}\)）------专家至少保持原有的一致性
 
-$\delta_s^{\text{PE}}$ 的值域：由于概率在 $[0,1]$ 中，有 $\delta_s^{\text{PE}} \in [-\Delta_s, 1 - p_{\text{clean}, s}]$。
+\(\delta_s^{PE}\) 的值域：由于概率在 \([0,1]\) 中，有
+\(\delta_s^{PE} \in [-\Delta_s, 1 - p_{clean, s}]\)。
 
 *证明*：由定义：
 
-\begin{align*}
-\Delta_s^{\text{PPE}} &= p_{\text{noisy}, s}^{\text{PPE}} - p_{\text{clean}, s}^{\text{PPE}} \\
-&= (p_{\text{noisy}, s} + (p_{\text{noisy}, s}^{\text{PPE}} - p_{\text{noisy}, s})) - (p_{\text{clean}, s} + (p_{\text{clean}, s}^{\text{PPE}} - p_{\text{clean}, s})) \\
-&= (p_{\text{noisy}, s} - p_{\text{clean}, s}) + (p_{\text{noisy}, s}^{\text{PPE}} - p_{\text{noisy}, s}) - (p_{\text{clean}, s}^{\text{PPE}} - p_{\text{clean}, s}) \\
-&= \Delta_s + \delta_s^{\text{PE}}
-\end{align*}
+$$
+\Delta_s^{PPE} &= p_{noisy, s}^{PPE} - p_{clean, s}^{PPE} 
 
-值域：最小化 $\delta_s^{\text{PE}}$ —— $p_{\text{noisy}}^{\text{PPE}} = 0$（所有噪声样本被误判为干净），$p_{\text{clean}}^{\text{PPE}} = 1$（所有干净样本被误判为噪声）→ $\delta_s^{\text{PE}} = (0 - p_{\text{noisy}}) - (1 - p_{\text{clean}}) = -p_{\text{noisy}} - 1 + p_{\text{clean}} = -(1 + \Delta_s)$。但这超过了 $p_{\text{clean}}^{\text{PPE}}$ 和 $p_{\text{noisy}}^{\text{PPE}}$ 的合理范围...实际上，在有意义的专家模型中，$p_{\text{noisy}}^{\text{PPE}} \in [0, 1]$ 和 $p_{\text{clean}}^{\text{PPE}} \in [0, 1]$ 约束下，$\delta_s^{\text{PE}} \in [-\Delta_s, 1]$。更精细的界由 $p_{\text{noisy}}^{\text{PPE}} \in [0,1]$ 和 $p_{\text{clean}}^{\text{PPE}} \in [0,1]$ 给出。$\square$
+&= (p_{noisy, s} + (p_{noisy, s}^{PPE} - p_{noisy, s})) - (p_{clean, s} + (p_{clean, s}^{PPE} - p_{clean, s})) 
+
+&= (p_{noisy, s} - p_{clean, s}) + (p_{noisy, s}^{PPE} - p_{noisy, s}) - (p_{clean, s}^{PPE} - p_{clean, s}) 
+
+&= \Delta_s + \delta_s^{PE}
+$$
+
+值域：最小化 \(\delta_s^{PE}\) ------
+\(p_{noisy}^{PPE} = 0\)（所有噪声样本被误判为干净），\(p_{clean}^{PPE} = 1\)（所有干净样本被误判为噪声）→
+\(\delta_s^{PE} = (0 - p_{noisy}) - (1 - p_{clean}) = -p_{noisy} - 1 + p_{clean} = -(1 + \Delta_s)\)。但这超过了
+\(p_{clean}^{PPE}\) 和 \(p_{noisy}^{PPE}\)
+的合理范围... 实际上，在有意义的专家模型中，\(p_{noisy}^{PPE} \in [0, 1]\)
+和 \(p_{clean}^{PPE} \in [0, 1]\)
+约束下，\(\delta_s^{PE} \in [-\Delta_s, 1]\)。更精细的界由
+\(p_{noisy}^{PPE} \in [0,1]\) 和
+\(p_{clean}^{PPE} \in [0,1]\) 给出。\(\square\)
 
 **修正后的 Theorem 1（PPE 增强）**：
 
-$$\boxed{F_1^{\text{PPE}} \geq 1 - \frac{1}{\eta} \sum_{s \in \mathcal{S}} \rho_s \cdot \exp\left(-2M (\Delta_s + \delta_s^{\text{PE}})^2\right)}$$
+\[\boxed{F_1^{PPE} \geq 1 - \frac{1} \sum_{s \in \mathcal{S}} \rho_s \cdot \exp\left(-2M (\Delta_s + \delta_s^{PE})^2\right)}\]
 
-Chernoff-Hoeffding 结构保持（指示变量在 $[0,1]$ 中有界），只是常数 $\Delta_s$ 变为 $\Delta_s + \delta_s^{\text{PE}}$。
+Chernoff-Hoeffding 结构保持（指示变量在 \([0,1]\) 中有界），只是常数
+\(\Delta_s\) 变为 \(\Delta_s + \delta_s^{PE}\)。
 
----
+<div align="center">
 
-## 2.2 $\delta_s^{\text{PE}} > 0$ 的必要条件和充分条件
+\rule{0.5\linewidth}{0.5pt}
 
-### 2.2.1 信息论条件
+</div>
 
-**定理 2.2.1（$\delta_s^{\text{PE}} > 0$ 的充分条件——信息论形式，贝叶斯最优限定）**
+### \texorpdfstring{2.2 \(\delta_s^{PE > 0\)
+的必要条件和充分条件}{2.2 \ delta\_s\^{}\{\ text\{PE\}\} \textgreater{} 0 的必要条件和充分条件}}<!-- label: delta_stextpe-0-ux7684ux5fc5ux8981ux6761ux4ef6ux548cux5145ux5206ux6761ux4ef6 -->
 
-设 $S, P, Y$ 分别表示状态原子、物理位置和标签的随机变量（在数据分布下）。若：
+#### 2.2.1 信息论条件<!-- label: ux4fe1ux606fux8bbaux6761ux4ef6 -->
 
-$$\boxed{I(Y; P \mid S) > 0}$$
+**定理 2.2.1（\(\delta_s^{PE} > 0\)
+的充分条件------信息论形式，贝叶斯最优限定）**
 
-即：物理位置在**给定状态原子的条件下**携带关于标签的额外信息，则**存在**一个 PPE 函数 $\text{PE}: \mathcal{P} \to \mathbb{R}^{d_{\text{pe}}}$ 和编码维度 $d_{\text{pe}}$，使得对某个状态 $s$，**贝叶斯最优分类器**在增广特征 $(s, \text{PE}(p))$ 下的检测边际变化满足 $\delta_s^{\text{PE}} > 0$。
+设 \(S, P, Y\)
+分别表示状态原子、物理位置和标签的随机变量（在数据分布下）。若：
+
+\[\boxed{I(Y; P \mid S) > 0}\]
+
+即：物理位置在**给定状态原子的条件下**携带关于标签的额外信息，则**存在**一个
+PPE 函数 \(PE: \mathcal{P} \to \mathbb{R}^{d_{pe}}\)
+和编码维度 \(d_{pe}\)，使得对某个状态
+\(s\)，**贝叶斯最优分类器**在增广特征 \((s, PE(p))\)
+下的检测边际变化满足 \(\delta_s^{PE} > 0\)。
 
 *证明*：
 
-**步骤 1（信息储存的物理可及性）**：由假设 $I(Y; P \mid S) > 0$，存在一对分布 $(P_{Y|S,P}, P_{Y|S})$ 是不相同的：
+**步骤 1（信息储存的物理可及性）**：由假设
+\(I(Y; P \mid S) > 0\)，存在一对分布 \((P_{Y|S,P}, P_{Y|S})\)
+是不相同的：
 
-$$I(Y; P \mid S) = \mathbb{E}_{S, P}\left[D_{\text{KL}}(P_{Y|S,P} \| P_{Y|S})\right] > 0$$
+\[I(Y; P \mid S) = \mathbb{E}_{S, P}\left[D_{KL}(P_{Y|S,P} \| P_{Y|S})\right] > 0\]
 
-因此存在一个正测度的事件集 $\mathcal{A} \subset \mathcal{S} \times \mathcal{P}$，在其上 $P_{Y|S=s, P=p} \neq P_{Y|S=s}$。
+因此存在一个正测度的事件集
+\(\mathcal{A} \subset \mathcal{S} \times \mathcal{P}\)，在其上
+\(P_{Y|S=s, P=p} \neq P_{Y|S=s}\)。
 
-**步骤 2（构造编码）**：选取一个足够表达力的编码函数 $\text{PE}$。由通用逼近定理（例如具有足够多神经元的神经网络），存在 $\text{PE}$ 使得编码表示 $\text{PE}(p)$ 近似保留了 $P$ 中关于 $Y$ 的所有相关信息。
+**步骤 2（构造编码）**：选取一个足够表达力的编码函数
+\(PE\)。由通用逼近定理（例如具有足够多神经元的神经网络），存在
+\(PE\) 使得编码表示 \(PE(p)\) 近似保留了 \(P\) 中关于
+\(Y\) 的所有相关信息。
 
-具体地，取 $d_{\text{pe}}$ 足够大，使得存在 $\text{PE}$ 满足数据处理不等式**以等式成立**：
+具体地，取 \(d_{pe}\) 足够大，使得存在 \(PE\)
+满足数据处理不等式**以等式成立**：
 
-$$I(Y; \text{PE}(P) \mid S) = I(Y; P \mid S) - \varepsilon_{\text{PE}}$$
+\[I(Y; PE(P) \mid S) = I(Y; P \mid S) - \varepsilon_{PE}\]
 
-其中 $\varepsilon_{\text{PE}} \geq 0$ 是编码造成的信息丢失（见第 3 部分）。对于充分表达的 $\text{PE}$，可保证 $\varepsilon_{\text{PE}} < I(Y; P \mid S)$，因此：
+其中 \(\varepsilon_{PE} \geq 0\) 是编码造成的信息丢失（见第 3
+部分）。对于充分表达的 \(PE\)，可保证
+\(\varepsilon_{PE} < I(Y; P \mid S)\)，因此：
 
-$$I(Y; \text{PE}(P) \mid S) > 0$$
+\[I(Y; PE(P) \mid S) > 0\]
 
-**步骤 3（贝叶斯最优分类器的行为）**：条件互信息 $I(Y; \text{PE}(P) \mid S) > 0$ 意味着给定 $S$，$\text{PE}(P)$ 提供关于 $Y$ 的额外"信号"。考虑贝叶斯最优分类器在增广空间中的表现。
+**步骤 3（贝叶斯最优分类器的行为）**：条件互信息
+\(I(Y; PE(P) \mid S) > 0\) 意味着给定 \(S\)，\(PE(P)\)
+提供关于 \(Y\) 的额外''信号''。考虑贝叶斯最优分类器在增广空间中的表现。
 
-对于噪声样本（标签 $y$ 是错误的）：给定 $(s, p)$，贝叶斯最优预测器会更倾向于输出**与 $y$ 不同的**真实标签（因为 $p$ 提供了额外的证据）。因此分歧概率上升：
+对于噪声样本（标签 \(y\) 是错误的）：给定
+\((s, p)\)，贝叶斯最优预测器会更倾向于输出**与 \(y\)
+不同的**真实标签（因为 \(p\) 提供了额外的证据）。因此分歧概率上升：
 
-$$p_{\text{noisy}, s}^{\text{PPE}} > p_{\text{noisy}, s}$$
+\[p_{noisy, s}^{PPE} > p_{noisy, s}\]
 
 对于干净样本：额外的位置信息**进一步确认**正确的标签，由数据处理不等式保证专家分歧概率**不增加**（甚至减少）：
 
-$$p_{\text{clean}, s}^{\text{PPE}} \leq p_{\text{clean}, s}$$
+\[p_{clean, s}^{PPE} \leq p_{clean, s}\]
 
-因此**贝叶斯最优分类器**的 $\delta_s^{\text{PE}} = (p_{\text{noisy}, s}^{\text{PPE}} - p_{\text{noisy}, s}) - (p_{\text{clean}, s}^{\text{PPE}} - p_{\text{clean}, s}) > 0$。
+因此**贝叶斯最优分类器**的
+\(\delta_s^{PE} = (p_{noisy, s}^{PPE} - p_{noisy, s}) - (p_{clean, s}^{PPE} - p_{clean, s}) > 0\)。
 
-**步骤 4（从贝叶斯最优到实际专家——猜想）**：**[启发式]** 上述结论对贝叶斯最优分类器严格成立。对于 SCX 框架中的实际神经网络专家 $E_m$，要保证 $\delta_s^{\text{PE}} > 0$ 需额外假设：专家模型的输出一致地逼近贝叶斯最优分类器（在 $\ell_1$ 意义下对条件分布 $P_{Y|S,P}$ 的逼近误差小于 $|\delta_s^{\text{PE}}|$）。对于通过随机梯度下降训练的神经网络，目前**没有**有限样本下的严格收敛保证。此为当前定理的**主要局限**：步骤 1-3 证明了贝叶斯最优分类器可以从位置信息中受益（信息论上的必然性），但从贝叶斯最优到实际专家的推广是启发式猜想。
+**步骤
+4（从贝叶斯最优到实际专家------猜想）**：**{[}启发式{]}**
+上述结论对贝叶斯最优分类器严格成立。对于 SCX 框架中的实际神经网络专家
+\(E_m\)，要保证 \(\delta_s^{PE} > 0\)
+需额外假设：专家模型的输出一致地逼近贝叶斯最优分类器（在 \(\ell_1\)
+意义下对条件分布 \(P_{Y|S,P}\) 的逼近误差小于
+\(|\delta_s^{PE}|\)）。对于通过随机梯度下降训练的神经网络，目前**没有**有限样本下的严格收敛保证。此为当前定理的**主要局限**：步骤
+1-3
+证明了贝叶斯最优分类器可以从位置信息中受益（信息论上的必然性），但从贝叶斯最优到实际专家的推广是启发式猜想。
 
-**退一步看**：若步骤 4 的推广不成立，定理 2.2.1 退化为一个经典结论：$I(Y;P|S) > 0$ 意味着贝叶斯最优分类器在使用 $P$ 信息时表现更好——这是数据处理不等式的直接推论，是平凡的。$\square$
+**退一步看**：若步骤 4 的推广不成立，定理 2.2.1
+退化为一个经典结论：\(I(Y;P|S) > 0\) 意味着贝叶斯最优分类器在使用 \(P\)
+信息时表现更好------这是数据处理不等式的直接推论，是平凡的。\(\square\)
 
-### 2.2.2 必要条件
+#### 2.2.2 必要条件<!-- label: ux5fc5ux8981ux6761ux4ef6 -->
 
-**命题 2.2.1（$\delta_s^{\text{PE}} > 0$ 的必要条件）**：
+**命题 2.2.1（\(\delta_s^{PE} > 0\) 的必要条件）**：
 
-若对所有专家 $m$，$\delta_s^{\text{PE}} > 0$，则必须有：
+若对所有专家 \(m\)，\(\delta_s^{PE} > 0\)，则必须有：
 
-$$\boxed{I(Y; P \mid S) > 0 \quad \text{或} \quad \text{PE 改变了专家系统的偏差-方差结构（非信息论机制）}}$$
+\[\boxed{I(Y; P \mid S) > 0 \quad 或 \quad PE 改变了专家系统的偏差-方差结构（非信息论机制）}\]
 
-第一种情况（信息论机制）已在 2.2.1 中处理。第二种情况（非信息论机制）可能发生在：PE 增加了编码维度的**随机正则化效应**，使专家输出的方差结构发生变化。但这不是"物理位置信息"在起作用——而是任意的加性噪声也能产生的效应。
+第一种情况（信息论机制）已在 2.2.1
+中处理。第二种情况（非信息论机制）可能发生在：PE
+增加了编码维度的**随机正则化效应**，使专家输出的方差结构发生变化。但这不是''物理位置信息''在起作用------而是任意的加性噪声也能产生的效应。
 
-**物理上重要的情形是 $I(Y; P \mid S) > 0$**。这等价于：
+**物理上重要的情形是 \(I(Y; P \mid S) > 0\)**。这等价于：
 
-$$\exists s, p_1, p_2 \text{ 使得 } P_{Y|S=s, P=p_1} \neq P_{Y|S=s, P=p_2}$$
+\[\exists s, p_1, p_2  使得  P_{Y|S=s, P=p_1} \neq P_{Y|S=s, P=p_2}\]
 
-即：对于**同一个状态原子** $s$，不同的物理位置 $(p_1, p_2)$ 会导致不同的标签分布。
+即：对于**同一个状态原子** \(s\)，不同的物理位置 \((p_1, p_2)\)
+会导致不同的标签分布。
 
-**物理实例**：
-- 蛋白质中：相同氨基酸类型（状态 $s$）在 $\alpha$-螺旋（位置 $p_1$）和 $\beta$-折叠（位置 $p_2$）中的功能角色不同 ← $I(Y; P \mid S) > 0$
-- 晶体中：相同的化学环境（状态 $s$）在表面（位置 $p_1$）和体相（位置 $p_2$）中的缺陷形成能不同 ← $I(Y; P \mid S) > 0$
+**物理实例**： - 蛋白质中：相同氨基酸类型（状态 \(s\)）在
+\(\alpha\)-螺旋（位置 \(p_1\)）和 \(\beta\)-折叠（位置
+\(p_2\)）中的功能角色不同 ← \(I(Y; P \mid S) > 0\) -
+晶体中：相同的化学环境（状态 \(s\)）在表面（位置 \(p_1\)）和体相（位置
+\(p_2\)）中的缺陷形成能不同 ← \(I(Y; P \mid S) > 0\)
 
----
+<div align="center">
 
-## 2.3 $\delta_s^{\text{PE}}$ 的信息论上界（数据处理不等式）
+\rule{0.5\linewidth}{0.5pt}
 
-**定理 2.3.1（$\delta_s^{\text{PE}}$ 的信息论上界）**：
+</div>
 
-$$\boxed{\delta_s^{\text{PE}} \leq \min\left(1, \sqrt{\frac{1}{2} \cdot I(P; \text{PE}(P) \mid S, Y)}\right) + \text{Bernstein 修正项}}$$
+### \texorpdfstring{2.3 \(\delta_s^{PE\)
+的信息论上界（数据处理不等式）}{2.3 \ delta\_s\^{}\{\ text\{PE\}\} 的信息论上界（数据处理不等式）}}<!-- label: delta_stextpe-ux7684ux4fe1ux606fux8bbaux4e0aux754cux6570ux636eux5904ux7406ux4e0dux7b49ux5f0f -->
+
+**定理 2.3.1（\(\delta_s^{PE}\) 的信息论上界）**：
+
+\[\boxed{\delta_s^{PE} \leq \min\left(1, \sqrt{\frac{1}{2} \cdot I(P; PE(P) \mid S, Y)}\right) + Bernstein 修正项}\]
 
 更精确地，由数据处理不等式（DPI）和 Pinsker 不等式：
 
-$$\delta_s^{\text{PE}} \leq \min\left(1 - p_{\text{clean}, s}, \sqrt{\frac{1}{2} D_{\text{KL}}(P_{\text{PE}|S,Y} \| P_{\text{PE}|S})}\right) + \delta_s^{\text{variance}}$$
+\[\delta_s^{PE} \leq \min\left(1 - p_{clean, s}, \sqrt{\frac{1}{2} D_{KL}(P_{PE|S,Y} \| P_{PE|S})}\right) + \delta_s^{variance}\]
 
-其中 $\delta_s^{\text{variance}}$ 来自有限专家数 $M$ 引入的估计方差。
+其中 \(\delta_s^{variance}\) 来自有限专家数 \(M\)
+引入的估计方差。
 
 *证明*：
 
 **步骤 1（概率变化与 KL 散度）**：对于干净样本上的分歧概率变化：
 
-$$|p_{\text{clean}, s}^{\text{PPE}} - p_{\text{clean}, s}| = \left|\mathbb{E}_{\text{PE}(P)|S=s, Y=y_{\text{true}}}[P(E_m(h) \neq y_{\text{true}})] - P(E_m(s) \neq y_{\text{true}})\right|$$
+\[|p_{clean, s}^{PPE} - p_{clean, s}| = \left|\mathbb{E}_{PE(P)|S=s, Y=y_{true}}[P(E_m(h) \neq y_{true})] - P(E_m(s) \neq y_{true})\right|\]
 
-由 Pinsker 不等式：对任意事件 $A$，$|P(A) - Q(A)| \leq \sqrt{\frac{1}{2} D_{\text{KL}}(P \| Q)}$。
+由 Pinsker 不等式：对任意事件
+\(A\)，\(|P(A) - Q(A)| \leq \sqrt{\frac{1}{2} D_{KL}(P \| Q)}\)。
 
-应用到 $p_{\text{clean}}$ 和 $p_{\text{noisy}}$ 的变化，分别给出：
+应用到 \(p_{clean}\) 和 \(p_{noisy}\) 的变化，分别给出：
 
-\begin{align*}
-|p_{\text{clean}, s}^{\text{PPE}} - p_{\text{clean}, s}| &\leq \sqrt{\frac{1}{2} D_{\text{KL}}(P_{\text{PE}(P)|S=s, \text{clean}} \| P_{\text{PE}(P)|S=s})} \\
-|p_{\text{noisy}, s}^{\text{PPE}} - p_{\text{noisy}, s}| &\leq \sqrt{\frac{1}{2} D_{\text{KL}}(P_{\text{PE}(P)|S=s, \text{noisy}} \| P_{\text{PE}(P)|S=s})}
-\end{align*}
+$$
+|p_{clean, s}^{PPE} - p_{clean, s}| &\leq \sqrt{\frac{1}{2} D_{KL}(P_{PE(P)|S=s, clean} \| P_{PE(P)|S=s})} 
+
+|p_{noisy, s}^{PPE} - p_{noisy, s}| &\leq \sqrt{\frac{1}{2} D_{KL}(P_{PE(P)|S=s, noisy} \| P_{PE(P)|S=s})}
+$$
 
 **步骤 2（组合）**：
 
-\begin{align*}
-\delta_s^{\text{PE}} &= (p_{\text{noisy}, s}^{\text{PPE}} - p_{\text{noisy}, s}) - (p_{\text{clean}, s}^{\text{PPE}} - p_{\text{clean}, s}) \\
-&\leq |p_{\text{noisy}, s}^{\text{PPE}} - p_{\text{noisy}, s}| + |p_{\text{clean}, s}^{\text{PPE}} - p_{\text{clean}, s}| \\
-&\leq \sqrt{\frac{1}{2} D_{\text{KL}}^{(1)}} + \sqrt{\frac{1}{2} D_{\text{KL}}^{(2)}}
-\end{align*}
+$$
+\delta_s^{PE} &= (p_{noisy, s}^{PPE} - p_{noisy, s}) - (p_{clean, s}^{PPE} - p_{clean, s}) 
 
-其中 $D_{\text{KL}}^{(1)}, D_{\text{KL}}^{(2)}$ 分别是干净和噪声条件下的 KL 散度。
+&\leq |p_{noisy, s}^{PPE} - p_{noisy, s}| + |p_{clean, s}^{PPE} - p_{clean, s}| 
 
-**步骤 2b（值域上界的来源——补充说明）**：由 $\delta_s^{\text{PE}}$ 的值域（命题 2.1），恒有 $\delta_s^{\text{PE}} \leq 1 - p_{\text{clean}, s}$（取 $p_{\text{noisy}}^{\text{PPE}} = 1$, $p_{\text{clean}}^{\text{PPE}} = 0$ 时的最大值）。此上界来自概率的 $[0,1]$ 约束，不依赖于任何分布假设。定理陈述中的 $\min(1-p_{\text{clean},s}, \sqrt{\frac{1}{2}D_{\text{KL}}})$ 取自\textbf{两个独立有效上界的最小值}：值域上界和 Pinsker 上界。当 Pinsker 界较松（KL 散度大但 $\delta_s^{\text{PE}}$ 仍受限于值域）时，值域界更紧；反之当位置信息很少（KL 散度小）时，Pinsker 界更紧。
+&\leq \sqrt{\frac{1}{2} D_{KL}^{(1)}} + \sqrt{\frac{1}{2} D_{KL}^{(2)}}
+$$
+
+其中 \(D_{KL}^{(1)}, D_{KL}^{(2)}\)
+分别是干净和噪声条件下的 KL 散度。
+
+**步骤 2b（值域上界的来源------补充说明）**：由
+\(\delta_s^{PE}\) 的值域（命题 2.1），恒有
+\(\delta_s^{PE} \leq 1 - p_{clean, s}\)（取
+\(p_{noisy}^{PPE} = 1\),
+\(p_{clean}^{PPE} = 0\) 时的最大值）。此上界来自概率的
+\([0,1]\) 约束，不依赖于任何分布假设。定理陈述中的
+\(\min(1-p_{clean,s}, \sqrt{\frac{1}{2}D_{KL}})\)
+取自**两个独立有效上界的最小值**：值域上界和 Pinsker 上界。当
+Pinsker 界较松（KL 散度大但 \(\delta_s^{PE}\)
+仍受限于值域）时，值域界更紧；反之当位置信息很少（KL 散度小）时，Pinsker
+界更紧。
 
 **步骤 3（DPI 约束）**：由数据处理不等式（编码 PE 只能减少信息）：
 
-$$I(\text{PE}(P); Y \mid S) \leq I(P; Y \mid S)$$
+\[I(PE(P); Y \mid S) \leq I(P; Y \mid S)\]
 
-因此 $\delta_s^{\text{PE}}$ 受限于位置 $P$ 在给定 $S$ 下携带的互信息量。当 $I(P; Y \mid S) = 0$（位置无用时），上界退化为：
+因此 \(\delta_s^{PE}\) 受限于位置 \(P\) 在给定 \(S\)
+下携带的互信息量。当 \(I(P; Y \mid S) = 0\)（位置无用时），上界退化为：
 
-$$\delta_s^{\text{PE}} \leq 0 + \delta_s^{\text{variance}}$$
+\[\delta_s^{PE} \leq 0 + \delta_s^{variance}\]
 
-在大量专家极限 $M \to \infty$ 下 $\delta_s^{\text{variance}} \to 0$。$\square$
+在大量专家极限 \(M \to \infty\) 下
+\(\delta_s^{variance} \to 0\)。\(\square\)
 
----
+<div align="center">
 
-## 2.4 $\delta_s^{\text{PE}}$ 的启发式估计（Fano 界限——非严格下界）
+\rule{0.5\linewidth}{0.5pt}
 
-**命题 2.4.1（$\delta_s^{\text{PE}}$ 的启发式估计——非严格下界）**：
+</div>
 
-> **[启发式]** **（警告：此非严格定理。）**
+### \texorpdfstring{2.4 \(\delta_s^{PE\)
+的启发式估计（Fano
+界限------非严格下界）}{2.4 \ delta\_s\^{}\{\ text\{PE\}\} 的启发式估计（Fano 界限------非严格下界）}}<!-- label: delta_stextpe-ux7684ux542fux53d1ux5f0fux4f30ux8ba1fano-ux754cux9650ux975eux4e25ux683cux4e0bux754c -->
 
-设位置 $P$ 在给定状态 $S$ 下提供关于标签 $Y$ 的额外信息，且编码 PE 保留其中的 $\rho = I(Y; \text{PE}(P) \mid S) / I(Y; P \mid S) \in (0, 1]$ 部分。若假设 Fano 不等式在两个世界均达到等号（需特定分布条件：噪声均匀分布在错误类别上），则存在状态 $s$ 使得：
+**命题 2.4.1（\(\delta_s^{PE}\)
+的启发式估计------非严格下界）**：
 
-$$\delta_s^{\text{PE}} \approx \frac{2\rho \cdot I(Y; P \mid S) - \log 2}{\log |\mathcal{Y}|} - O\left(\frac{1}{\sqrt{M}}\right)$$
+> **{[}启发式{]}** **（警告：此非严格定理。）**
 
-其中 $M$ 是专家数，$O(1/\sqrt{M})$ 来自有限专家的估计噪声。
+设位置 \(P\) 在给定状态 \(S\) 下提供关于标签 \(Y\) 的额外信息，且编码 PE
+保留其中的
+\(\rho = I(Y; PE(P) \mid S) / I(Y; P \mid S) \in (0, 1]\)
+部分。若假设 Fano
+不等式在两个世界均达到等号（需特定分布条件：噪声均匀分布在错误类别上），则存在状态
+\(s\) 使得：
 
-**关键限定：此表达式 *不是* 严格的数学下界。** 从两个 Fano 下界 $P_e \geq A$ 和 $P_e^{\text{PPE}} \geq B$ 不能逻辑地推出 $P_e - P_e^{\text{PPE}} \geq A - B$，因为 $a \geq A$ 和 $b \geq B$ 不蕴含 $a-b \geq A-B$。此外，Fano 不等式仅在特定分布上达到等号（噪声均匀分布在错误类别上，且 $H_2(P_e)$ 饱和）。因此，此处给出的表达式应被视为对 $\delta_s^{\text{PE}}$ 量级的**启发式估计**，而非定理级的下界结论。正确的下界需要不同的证明策略，这是当前的一个开放问题。
+\[\delta_s^{PE} \approx \frac{2\rho \cdot I(Y; P \mid S) - \log 2}{\log |\mathcal{Y}|} - O\left(\frac{1}{\sqrt{M}}\right)\]
+
+其中 \(M\) 是专家数，\(O(1/\sqrt{M})\) 来自有限专家的估计噪声。
+
+**关键限定：此表达式 *不是* 严格的数学下界。** 从两个 Fano
+下界 \(P_e \geq A\) 和 \(P_e^{PPE} \geq B\) 不能逻辑地推出
+\(P_e - P_e^{PPE} \geq A - B\)，因为 \(a \geq A\) 和 \(b \geq B\)
+不蕴含 \(a-b \geq A-B\)。此外，Fano
+不等式仅在特定分布上达到等号（噪声均匀分布在错误类别上，且 \(H_2(P_e)\)
+饱和）。因此，此处给出的表达式应被视为对 \(\delta_s^{PE}\)
+量级的**启发式估计**，而非定理级的下界结论。正确的下界需要不同的证明策略，这是当前的一个开放问题。
 
 *推导思路（非严格证明）*：
 
-**步骤 1（Fano 不等式——从误差到信息）**：Fano 不等式的标准形式：
+**步骤 1（Fano 不等式------从误差到信息）**：Fano
+不等式的标准形式：
 
-$$H(Y \mid S, \text{PE}(P)) \leq H_2(P_e) + P_e \cdot \log(|\mathcal{Y}| - 1)$$
+\[H(Y \mid S, PE(P)) \leq H_2(P_e) + P_e \cdot \log(|\mathcal{Y}| - 1)\]
 
-其中 $P_e$ 是给定 $(S, \text{PE}(P))$ 下的贝叶斯错误率，$H_2$ 是二元熵。等效地，下界：
+其中 \(P_e\) 是给定 \((S, PE(P))\) 下的贝叶斯错误率，\(H_2\)
+是二元熵。等效地，下界：
 
-$$P_e \geq \frac{H(Y \mid S, \text{PE}(P)) - 1}{\log |\mathcal{Y}|}$$
+\[P_e \geq \frac{H(Y \mid S, PE(P)) - 1}{\log |\mathcal{Y}|}\]
 
-**步骤 2（启发式关联——不等号误用）**：若 Fano 不等式在两个世界均达到等号（这在一般情况下**不成立**），则形式上可写：
+**步骤 2（启发式关联------不等号误用）**：若 Fano
+不等式在两个世界均达到等号（这在一般情况下**不成立**），则形式上可写：
 
-\begin{align*}
-P_e - P_e^{\text{PPE}} &\stackrel{\text{若等号}}{=} \frac{H(Y|S) - H(Y|S, \text{PE}(P))}{\log |\mathcal{Y}|} \\
-&= \frac{I(Y; \text{PE}(P) \mid S)}{\log |\mathcal{Y}|} \\
+$$
+P_e - P_e^{PPE} &\stackrel{若等号}{=} \frac{H(Y|S) - H(Y|S, PE(P))}{\log |\mathcal{Y}|} 
+
+&= \frac{I(Y; PE(P) \mid S)}{\log |\mathcal{Y}|} 
+
 &= \frac{\rho \cdot I(Y; P \mid S)}{\log |\mathcal{Y}|}
-\end{align*}
+$$
 
-再加上 $\Delta P_e$ 与 $\delta_s^{\text{PE}}$ 的启发式关联（假设 $\Delta P_e \approx -\pi \cdot \delta_s^{\text{PE}}$ 对最大获益的状态 $s$ 成立），取 $\pi = 1/2$（最坏情况），$\rho = 1$（完美编码），加上有限 $M$ 的 Hoeffding 修正即得所述表达式。
+再加上 \(\Delta P_e\) 与 \(\delta_s^{PE}\) 的启发式关联（假设
+\(\Delta P_e \approx -\pi \cdot \delta_s^{PE}\) 对最大获益的状态
+\(s\) 成立），取
+\(\pi = 1/2\)（最坏情况），\(\rho = 1\)（完美编码），加上有限 \(M\) 的
+Hoeffding 修正即得所述表达式。
 
-**再次强调：此推导从不等号推出了等号，不是严格证明。正确的下界需要使用更强的工具（如 Fano 的逆形式或强 Fano 不等式），这需要关于分布的具体假设。**
+**再次强调：此推导从不等号推出了等号，不是严格证明。正确的下界需要使用更强的工具（如
+Fano 的逆形式或强 Fano 不等式），这需要关于分布的具体假设。**
 
-**物理含义（量级估计）**：若 $I(Y; P \mid S)$ 很小（位置几乎不提供额外信息），则 $\delta_s^{\text{PE}}$ 的启发式估计接近零或为负——PPE 无法实质性地改善检测。这解释了为什么**不是所有物理系统都能从 PPE 中受益**。但这一结论是方向正确的物理学直觉，而非严格的数学保证。
+**物理含义（量级估计）**：若 \(I(Y; P \mid S)\)
+很小（位置几乎不提供额外信息），则 \(\delta_s^{PE}\)
+的启发式估计接近零或为负------PPE
+无法实质性地改善检测。这解释了为什么**不是所有物理系统都能从 PPE
+中受益**。但这一结论是方向正确的物理学直觉，而非严格的数学保证。
 
----
+<div align="center">
 
-## 2.5 空间局部性正则化——CC 审计报告结果的修正版
+\rule{0.5\linewidth}{0.5pt}
 
-**定理 2.5.1（$\delta_s^{\text{PE}}$ 的空间光滑性）**：设 PE 满足 Lipschitz 条件（常数为 $L_{\text{PE}}$），且专家 $E_m$ 的输出**软概率** $E_m^{\text{soft}}: \mathbb{R}^d \to [0,1]$（如 softmax 输出的最大类别概率）满足 $L_E$-Lipschitz 条件。此外，假设**边界条件**：专家 $E_m$ 的决策边界距离两个编码点 $h_i, h_j$ 至少为 $\tau > 0$，即 $|E_m^{\text{soft}}(h) - 0.5| \geq \tau$ 对 $h \in \{h_i, h_j\}$ 成立。则对同属一个状态 $s$、具有物理位置 $p_i, p_j$ 的两个原子：
+</div>
 
-$$\boxed{|\delta_i^{\text{PE}} - \delta_j^{\text{PE}}| \leq 2 \cdot L_E \cdot L_{\text{PE}} \cdot d_{\mathcal{P}}(p_i, p_j) + O\left(\frac{1}{\sqrt{M}}\right)}$$
+\subsection{2.5 空间局部性正则化------CC
+审计报告结果的修正版}<!-- label: ux7a7aux95f4ux5c40ux90e8ux6027ux6b63ux5219ux5316cc-ux5ba1ux8ba1ux62a5ux544aux7ed3ux679cux7684ux4feeux6b63ux7248 -->
 
-其中 $O(1/\sqrt{M})$ 来自有限专家的估计误差。**若边界条件不成立**，该界不保证非空——指示函数 $\mathbf{1}[E_m(h) \neq y]$ 在决策边界处不连续，软概率的 Lipschitz 性质不能约束指示函数期望的变化。
+**定理 2.5.1（\(\delta_s^{PE}\) 的空间光滑性）**：设 PE 满足
+Lipschitz 条件（常数为 \(L_{PE}\)），且专家 \(E_m\)
+的输出**软概率** \(E_m^{soft}: \mathbb{R}^d \to [0,1]\)（如
+softmax 输出的最大类别概率）满足 \(L_E\)-Lipschitz
+条件。此外，假设**边界条件**：专家 \(E_m\) 的决策边界距离两个编码点
+\(h_i, h_j\) 至少为 \(\tau > 0\)，即
+\(|E_m^{soft}(h) - 0.5| \geq \tau\) 对 \(h \in \{h_i, h_j\}\)
+成立。则对同属一个状态 \(s\)、具有物理位置 \(p_i, p_j\) 的两个原子：
+
+\[\boxed{|\delta_i^{PE} - \delta_j^{PE}| \leq 2 \cdot L_E \cdot L_{PE} \cdot d_{\mathcal{P}}(p_i, p_j) + O\left(\frac{1}{\sqrt{M}}\right)}\]
+
+其中 \(O(1/\sqrt{M})\)
+来自有限专家的估计误差。**若边界条件不成立**，该界不保证非空------指示函数
+\(\mathbf{1}[E_m(h) \neq y]\) 在决策边界处不连续，软概率的 Lipschitz
+性质不能约束指示函数期望的变化。
 
 *证明*：
 
-\begin{align*}
-|\delta_i^{\text{PE}} - \delta_j^{\text{PE}}| &= |(p_{\text{noisy}, i}^{\text{PPE}} - p_{\text{noisy}, j}^{\text{PPE}}) - (p_{\text{clean}, i}^{\text{PPE}} - p_{\text{clean}, j}^{\text{PPE}})| \\
-&\leq |p_{\text{noisy}, i}^{\text{PPE}} - p_{\text{noisy}, j}^{\text{PPE}}| + |p_{\text{clean}, i}^{\text{PPE}} - p_{\text{clean}, j}^{\text{PPE}}|
-\end{align*}
+$$
+|\delta_i^{PE} - \delta_j^{PE}| &= |(p_{noisy, i}^{PPE} - p_{noisy, j}^{PPE}) - (p_{clean, i}^{PPE} - p_{clean, j}^{PPE})| 
 
-每个 probability difference 受输入变化约束。**关键**：$p_{\text{clean}, i}^{\text{PPE}} = \mathbb{E}[\mathbf{1}[E_m(h_i) \neq y]]$ 是指示函数的期望。边界条件 $|E_m^{\text{soft}}(h) - 0.5| \geq \tau$ 保证了 $h_i$ 和 $h_j$ 均在决策边界的同一侧并保持一定距离，此时软概率的 $L_E$-Lipschitz 性质控制指示函数期望的变化：
+&\leq |p_{noisy, i}^{PPE} - p_{noisy, j}^{PPE}| + |p_{clean, i}^{PPE} - p_{clean, j}^{PPE}|
+$$
 
-$$|p_{\text{clean}, i}^{\text{PPE}} - p_{\text{clean}, j}^{\text{PPE}}| \leq L_E \cdot \|h_i - h_j\| = L_E \cdot \|\text{PE}(p_i) - \text{PE}(p_j)\| \leq L_E \cdot L_{\text{PE}} \cdot d_{\mathcal{P}}(p_i, p_j)$$
+每个 probability difference
+受输入变化约束。**关键**：\(p_{clean, i}^{PPE} = \mathbb{E}[\mathbf{1}[E_m(h_i) \neq y]]\)
+是指示函数的期望。边界条件 \(|E_m^{soft}(h) - 0.5| \geq \tau\)
+保证了 \(h_i\) 和 \(h_j\)
+均在决策边界的同一侧并保持一定距离，此时软概率的 \(L_E\)-Lipschitz
+性质控制指示函数期望的变化：
 
-（利用 $s_i = s_j = s$ 时 $\phi(s_i) = \phi(s_j)$。）两倍即得。
+\[|p_{clean, i}^{PPE} - p_{clean, j}^{PPE}| \leq L_E \cdot \|h_i - h_j\| = L_E \cdot \|PE(p_i) - PE(p_j)\| \leq L_E \cdot L_{PE} \cdot d_{\mathcal{P}}(p_i, p_j)\]
 
-**若无边界条件**：决策边界可能恰好位于 $h_i$ 和 $h_j$ 之间，此时即使 $\|h_i - h_j\|$ 趋于零，分歧概率可相差任意大（如一个完全在干净侧 $p \approx 0$，另一个在噪声侧 $p \approx 1$），界变为空（vacuous）。$\square$
+（利用 \(s_i = s_j = s\) 时 \(\phi(s_i) = \phi(s_j)\)。）两倍即得。
 
----
+**若无边界条件**：决策边界可能恰好位于 \(h_i\) 和 \(h_j\)
+之间，此时即使 \(\|h_i - h_j\|\)
+趋于零，分歧概率可相差任意大（如一个完全在干净侧
+\(p \approx 0\)，另一个在噪声侧
+\(p \approx 1\)），界变为空（vacuous）。\(\square\)
 
-# 第 3 部分：Theorem 2 的精确修正
+<div align="center">
 
----
+\rule{0.5\linewidth}{0.5pt}
 
-## 3.1 编码不完美度 $\varepsilon_{\text{PE}}$ 的精确信息论定义
+</div>
 
-### 3.1.1 条件互信息的链式分解
+\section{第 3 部分：Theorem 2
+的精确修正}<!-- label: ux7b2c-3-ux90e8ux5206theorem-2-ux7684ux7cbeux786eux4feeux6b63 -->
 
-设随机变量：
-- $X$：原始特征（状态原子 $S$ 或其表示 $\phi(S)$）
-- $P$：物理位置（完整信息）
-- $\text{PE}(P)$：编码后的物理位置
-- $Y$：标签
+<div align="center">
+
+\rule{0.5\linewidth}{0.5pt}
+
+</div>
+
+### \texorpdfstring{3.1 编码不完美度 \(\varepsilon_{PE\)
+的精确信息论定义}{3.1 编码不完美度 \ varepsilon\_\{\ text\{PE\}\} 的精确信息论定义}}<!-- label: ux7f16ux7801ux4e0dux5b8cux7f8eux5ea6-varepsilon_textpe-ux7684ux7cbeux786eux4fe1ux606fux8bbaux5b9aux4e49 -->
+
+\subsubsection{3.1.1
+条件互信息的链式分解}<!-- label: ux6761ux4ef6ux4e92ux4fe1ux606fux7684ux94feux5f0fux5206ux89e3 -->
+
+设随机变量： - \(X\)：原始特征（状态原子 \(S\) 或其表示 \(\phi(S)\)） -
+\(P\)：物理位置（完整信息） - \(PE(P)\)：编码后的物理位置 -
+\(Y\)：标签
 
 信息流的 Markov 链：
 
-$$Y \leftrightarrow (X, P) \leftrightarrow (X, \text{PE}(P))$$
+\[Y \leftrightarrow (X, P) \leftrightarrow (X, PE(P))\]
 
-（即 $Y \perp\!\!\!\perp \text{PE}(P) \mid (X, P)$——编码只丢失信息，不创造信息。）
+（即
+\(Y \perp\!\!\!\perp PE(P) \mid (X, P)\)------编码只丢失信息，不创造信息。）
 
-### 3.1.2 编码不完美度的定义
+\subsubsection{3.1.2
+编码不完美度的定义}<!-- label: ux7f16ux7801ux4e0dux5b8cux7f8eux5ea6ux7684ux5b9aux4e49 -->
 
-**定义 3.1（编码不完美度 $\varepsilon_{\text{PE}}$——信息论定义）**：
+**定义 3.1（编码不完美度
+\(\varepsilon_{PE}\)------信息论定义）**：
 
-$$\boxed{\varepsilon_{\text{PE}} = I(Y; P \mid X) - I(Y; \text{PE}(P) \mid X)}$$
+\[\boxed{\varepsilon_{PE} = I(Y; P \mid X) - I(Y; PE(P) \mid X)}\]
 
 **性质**：
 
-1. **数据处理不等式**（DPI）：$\varepsilon_{\text{PE}} \geq 0$ 恒成立。因为 $(X, \text{PE}(P))$ 是 $(X, P)$ 的（可能是随机的）函数，DPI 保证：
+1. 
+2. 
+3. 
+4. 
 
-   $$I(Y; \text{PE}(P) \mid X) \leq I(Y; P \mid X)$$
+\subsubsection{3.1.3
+与编码维度的关系}<!-- label: ux4e0eux7f16ux7801ux7ef4ux5ea6ux7684ux5173ux7cfb -->
 
-2. **可逆性条件**：$\varepsilon_{\text{PE}} = 0$ 当且仅当 PE 在给定 $X$ 的条件下对 $Y$ 的预测是**充分统计量**，即：
+**命题 3.1（维度-信息权衡）**：对正弦编码（\(d\) 维）和 Laplace
+相关核（相关长度 \(\xi\)）：
 
-   $$Y \perp\!\!\!\perp P \mid (X, \text{PE}(P))$$
+\[\varepsilon_{PE} \leq I(Y; P \mid X) \cdot \exp\left(-\frac{d}{d_0}\right)\]
 
-   等价地：编码后的位置 $\text{PE}(P)$ 保留了 $P$ 中所有与 $Y$ 相关的信息。
+其中 \(d_0 = O(L/\xi)\) 是特征维度尺度。具体地，当 \(d\) 按照 §1.2
+中的分位数最优方案增长时，信息丢失以指数速率下降。
 
-3. **平凡情况**：若 $I(Y; P \mid X) = 0$（位置不携带标签相关信息），则 $\varepsilon_{\text{PE}} = 0$ 自动成立（零减零）。
+*证明思路*：编码的逼近误差（Theorem
+1.2.2）导致核重建误差，进而导致条件分布 \(P_{Y|X,PE(P)}\) 与
+\(P_{Y|X,P}\) 的 KL 散度，由 Pinsker
+不等式转化为互信息丢失。指数衰减来自 Fourier 级数的谱衰减（Cauchy
+核的解析性）。\(\square\)
 
-4. **上界**：$\varepsilon_{\text{PE}} \leq I(Y; P \mid X) \leq H(Y)$。最大不完美度是丢失所有位置信息。
+<div align="center">
 
-### 3.1.3 与编码维度的关系
+\rule{0.5\linewidth}{0.5pt}
 
-**命题 3.1（维度-信息权衡）**：对正弦编码（$d$ 维）和 Laplace 相关核（相关长度 $\xi$）：
+</div>
 
-$$\varepsilon_{\text{PE}} \leq I(Y; P \mid X) \cdot \exp\left(-\frac{d}{d_0}\right)$$
+\subsection{3.2 修正的 Theorem
+2------精确陈述和证明}<!-- label: ux4feeux6b63ux7684-theorem-2ux7cbeux786eux9648ux8ff0ux548cux8bc1ux660e -->
 
-其中 $d_0 = O(L/\xi)$ 是特征维度尺度。具体地，当 $d$ 按照 §1.2 中的分位数最优方案增长时，信息丢失以指数速率下降。
+**Theorem 2'（不完美 PPE 下的弱特征失效上界------精确修正）**
 
-*证明思路*：编码的逼近误差（Theorem 1.2.2）导致核重建误差，进而导致条件分布 $P_{Y|X,\text{PE}(P)}$ 与 $P_{Y|X,P}$ 的 KL 散度，由 Pinsker 不等式转化为互信息丢失。指数衰减来自 Fourier 级数的谱衰减（Cauchy 核的解析性）。$\square$
+设原始特征 \(X\) 的信息不足度为 \(\delta > 0\)（定义见 CC 审计报告），且
+\(\varepsilon_{PE}\) 是 PPE 的编码不完美度。则在 PPE
+增强的特征空间中，SCX 的 \(F_1\) 分数满足：
 
----
+\[\boxed{F_{1,SCX}^{PPE} \leq F_{1,base} + C_F \cdot \sqrt{\frac{\delta + \frac{2\varepsilon_{PE}}{C_F^2}}{2}}}\]
 
-## 3.2 修正的 Theorem 2——精确陈述和证明
+其中 \(C_F > 0\) 是 \(F_1\) 与贝叶斯错误率之间的转换常数。
 
-**Theorem 2'（不完美 PPE 下的弱特征失效上界——精确修正）**
+**特殊情形**： -
+\(\varepsilon_{PE} \to 0\)（完美编码）：上界恢复为 **原始
+Theorem 2**：
+\[F_{1,SCX}^{PPE} \leq F_{1,base} + C_F \cdot \sqrt{\frac{2}}\]
 
-设原始特征 $X$ 的信息不足度为 $\delta > 0$（定义见 CC 审计报告），且 $\varepsilon_{\text{PE}}$ 是 PPE 的编码不完美度。则在 PPE 增强的特征空间中，SCX 的 $F_1$ 分数满足：
-
-$$\boxed{F_{1,\text{SCX}}^{\text{PPE}} \leq F_{1,\text{base}} + C_F \cdot \sqrt{\frac{\delta + \frac{2\varepsilon_{\text{PE}}}{C_F^2}}{2}}}$$
-
-其中 $C_F > 0$ 是 $F_1$ 与贝叶斯错误率之间的转换常数。
-
-**特殊情形**：
-- $\varepsilon_{\text{PE}} \to 0$（完美编码）：上界恢复为 **原始 Theorem 2**：
-  $$F_{1,\text{SCX}}^{\text{PPE}} \leq F_{1,\text{base}} + C_F \cdot \sqrt{\frac{\delta}{2}}$$
-
-- $\varepsilon_{\text{PE}} \to I(Y; P \mid X)$（完全失败的编码）：上界回到未使用任何位置信息的状态（纯浪费参数）。
+- 
 
 *证明*：
 
-**步骤 1（Fano 不等式嵌入）**：由 Fano 不等式，最优分类器（贝叶斯）的错误率满足：
+**步骤 1（Fano 不等式嵌入）**：由 Fano
+不等式，最优分类器（贝叶斯）的错误率满足：
 
-$$P_e \geq \frac{H(Y \mid X, \text{PE}(P)) - 1}{\log |\mathcal{Y}|}$$
+\[P_e \geq \frac{H(Y \mid X, PE(P)) - 1}{\log |\mathcal{Y}|}\]
 
 **步骤 2（条件熵的分解）**：
 
-\begin{align*}
-H(Y \mid X, \text{PE}(P)) &= H(Y \mid X) - I(Y; \text{PE}(P) \mid X) \\
-&= H(Y \mid X) - [I(Y; P \mid X) - \varepsilon_{\text{PE}}] \\
-&= H(Y \mid X) - I(Y; P \mid X) + \varepsilon_{\text{PE}}
-\end{align*}
+$$
+H(Y \mid X, PE(P)) &= H(Y \mid X) - I(Y; PE(P) \mid X) 
 
-**步骤 3（联系 $\delta$）**：原始 Theorem 2 中，$\delta$ 与条件熵的关系为（CC 审计报告 §1，Theorem 2）：
+&= H(Y \mid X) - [I(Y; P \mid X) - \varepsilon_{PE}] 
 
-$$\delta = \frac{2}{\log|\mathcal{Y}|} \cdot \left(H(Y \mid X) - 1\right)_{\text{excess}}$$
+&= H(Y \mid X) - I(Y; P \mid X) + \varepsilon_{PE}
+$$
 
-其中 $(\cdot)_{\text{excess}}$ 表示超出贝叶斯错误的信息量。在 PPE 下：
+**步骤 3（联系 \(\delta\)）**：原始 Theorem 2 中，\(\delta\)
+与条件熵的关系为（CC 审计报告 §1，Theorem 2）：
 
-\begin{align*}
-H(Y \mid X, \text{PE}(P)) - 1 &= (H(Y \mid X) - I(Y; P \mid X) + \varepsilon_{\text{PE}}) - 1 \\
-&= (H(Y \mid X) - 1) - I(Y; P \mid X) + \varepsilon_{\text{PE}}
-\end{align*}
+\[\delta = \frac{2}{\log|\mathcal{Y}|} \cdot \left(H(Y \mid X) - 1\right)_{excess}\]
 
-定义 $\delta_{\text{PPE}}$ 为 PPE 增强后的有效信息不足度：
+其中 \((\cdot)_{excess}\) 表示超出贝叶斯错误的信息量。在 PPE 下：
 
-$$\delta_{\text{PPE}} = \delta + \frac{2\varepsilon_{\text{PE}}}{\log|\mathcal{Y}|} \cdot \frac{\log|\mathcal{Y}|}{C_F^2} = \delta + \frac{2\varepsilon_{\text{PE}}}{C_F^2}$$
+$$
+H(Y \mid X, PE(P)) - 1 &= (H(Y \mid X) - I(Y; P \mid X) + \varepsilon_{PE}) - 1 
 
-（$C_F$ 来自错误率与 $F_1$ 的转换：$F_1 \leq F_{1,\text{base}} + C_F \sqrt{P_e - P_e^*}$。）
+&= (H(Y \mid X) - 1) - I(Y; P \mid X) + \varepsilon_{PE}
+$$
 
-**步骤 4（代入 SCX 的 $F_1$ 上界）**：
+定义 \(\delta_{PPE}\) 为 PPE 增强后的有效信息不足度：
 
-$$F_{1,\text{SCX}}^{\text{PPE}} \leq F_{1,\text{base}} + C_F \cdot \sqrt{\frac{\delta_{\text{PPE}}}{2}} = F_{1,\text{base}} + C_F \cdot \sqrt{\frac{\delta + \frac{2\varepsilon_{\text{PE}}}{C_F^2}}{2}}$$
+\[\delta_{PPE} = \delta + \frac{2\varepsilon_{PE}}{\log|\mathcal{Y}|} \cdot \frac{\log|\mathcal{Y}|}{C_F^2} = \delta + \frac{2\varepsilon_{PE}}{C_F^2}\]
 
-**步骤 5（极限验证）**：当 $\varepsilon_{\text{PE}} \to 0$：
+（\(C_F\) 来自错误率与 \(F_1\)
+的转换：\(F_1 \leq F_{1,base} + C_F \sqrt{P_e - P_e^*}\)。）
 
-$$F_{1,\text{SCX}}^{\text{PPE}} \leq F_{1,\text{base}} + C_F \cdot \sqrt{\frac{\delta}{2}}$$
+**步骤 4（代入 SCX 的 \(F_1\) 上界）**：
 
-正是原始 Theorem 2。$\square$
+\[F_{1,SCX}^{PPE} \leq F_{1,base} + C_F \cdot \sqrt{\frac{\delta_{PPE}}{2}} = F_{1,base} + C_F \cdot \sqrt{\frac{\delta + \frac{2\varepsilon_{PE}}{C_F^2}}{2}}\]
 
----
+**步骤 5（极限验证）**：当 \(\varepsilon_{PE} \to 0\)：
 
-## 3.3 $\varepsilon_{\text{PE}}$ 的可估计形式
+\[F_{1,SCX}^{PPE} \leq F_{1,base} + C_F \cdot \sqrt{\frac{2}}\]
 
-定理量 $\varepsilon_{\text{PE}} = I(Y; P \mid X) - I(Y; \text{PE}(P) \mid X)$ 是理论量——它涉及真实数据分布。对于实际应用，我们需要从数据中估计它。
+正是原始 Theorem 2。\(\square\)
 
-### 3.3.1 KSG 估计器
+<div align="center">
 
-**定理 3.3.1（$\varepsilon_{\text{PE}}$ 的可估计性）**：$\varepsilon_{\text{PE}}$ 可以通过以下方法从有限样本中**一致地**估计：
+\rule{0.5\linewidth}{0.5pt}
 
-$$\boxed{\hat{\varepsilon}_{\text{PE}}^{(n)} = \hat{I}^{(n)}(Y; P \mid X) - \hat{I}^{(n)}(Y; \text{PE}(P) \mid X)}$$
+</div>
 
-其中 $\hat{I}^{(n)}(\cdot; \cdot \mid \cdot)$ 是使用 Kraskov-Stögbauer-Grassberger (KSG) 估计器的**条件互信息**估计。当样本量 $n \to \infty$ 时，$\hat{\varepsilon}_{\text{PE}}^{(n)} \xrightarrow{p} \varepsilon_{\text{PE}}$（一致性）。
+### \texorpdfstring{3.3 \(\varepsilon_{PE\)
+的可估计形式}{3.3 \ varepsilon\_\{\ text\{PE\}\} 的可估计形式}}<!-- label: varepsilon_textpe-ux7684ux53efux4f30ux8ba1ux5f62ux5f0f -->
+
+定理量
+\(\varepsilon_{PE} = I(Y; P \mid X) - I(Y; PE(P) \mid X)\)
+是理论量------它涉及真实数据分布。对于实际应用，我们需要从数据中估计它。
+
+#### 3.3.1 KSG 估计器<!-- label: ksg-ux4f30ux8ba1ux5668 -->
+
+**定理 3.3.1（\(\varepsilon_{PE}\)
+的可估计性）**：\(\varepsilon_{PE}\)
+可以通过以下方法从有限样本中**一致地**估计：
+
+\[\boxed{\hat_{PE}^{(n)} = \hat{I}^{(n)}(Y; P \mid X) - \hat{I}^{(n)}(Y; PE(P) \mid X)}\]
+
+其中 \(\hat{I}^{(n)}(\cdot; \cdot \mid \cdot)\) 是使用
+Kraskov-Stögbauer-Grassberger (KSG)
+估计器的**条件互信息**估计。当样本量 \(n \to \infty\)
+时，\(\hat_{PE}^{(n)} \xrightarrow{p} \varepsilon_{PE}\)（一致性）。
 
 具体地，KSG 条件互信息估计器：
 
-$$\hat{I}(Y; P \mid X) = \hat{I}(Y; (P, X)) - \hat{I}(Y; X)$$
+\[\hat{I}(Y; P \mid X) = \hat{I}(Y; (P, X)) - \hat{I}(Y; X)\]
 
-其中 $\hat{I}(A; B)$ 是标准的 KSG 互信息估计（基于 $k$-近邻距离）。
+其中 \(\hat{I}(A; B)\) 是标准的 KSG 互信息估计（基于 \(k\)-近邻距离）。
 
-**算法**：
-1. 从数据中采样 $n$ 个三元组 $(x_i, p_i, y_i)$
-2. 计算编码 $\text{PE}(p_i)$
-3. 计算 $\hat{I}^{(n)}(Y; (P, X))$：在联合空间 $(\mathcal{P} \times \mathcal{X}) \times \mathcal{Y}$ 中使用 $k$-NN
-4. 计算 $\hat{I}^{(n)}(Y; X)$：在 $\mathcal{X} \times \mathcal{Y}$ 中使用 $k$-NN
-5. $\hat{I}^{(n)}(Y; P \mid X) = \hat{I}^{(n)}(Y; (P, X)) - \hat{I}^{(n)}(Y; X)$
-6. 同理计算 $\hat{I}^{(n)}(Y; \text{PE}(P) \mid X)$
-7. $\hat{\varepsilon}_{\text{PE}}^{(n)} = \hat{I}^{(n)}(Y; P \mid X) - \hat{I}^{(n)}(Y; \text{PE}(P) \mid X)$
+**算法**： 1. 从数据中采样 \(n\) 个三元组 \((x_i, p_i, y_i)\) 2.
+计算编码 \(PE(p_i)\) 3. 计算
+\(\hat{I}^{(n)}(Y; (P, X))\)：在联合空间
+\((\mathcal{P} \times \mathcal{X}) \times \mathcal{Y}\) 中使用 \(k\)-NN
+4. 计算 \(\hat{I}^{(n)}(Y; X)\)：在 \(\mathcal{X} \times \mathcal{Y}\)
+中使用 \(k\)-NN 5.
+\(\hat{I}^{(n)}(Y; P \mid X) = \hat{I}^{(n)}(Y; (P, X)) - \hat{I}^{(n)}(Y; X)\)
+6. 同理计算 \(\hat{I}^{(n)}(Y; PE(P) \mid X)\) 7.
+\(\hat_{PE}^{(n)} = \hat{I}^{(n)}(Y; P \mid X) - \hat{I}^{(n)}(Y; PE(P) \mid X)\)
 
-**收敛速率**：KSG 估计器以 $O(n^{-1/(d_{\text{eff}}+2)})$ 速率收敛，其中 $d_{\text{eff}}$ 是联合空间的有效维度。对于高维 $X$，收敛较慢，但 $\varepsilon_{\text{PE}}$ 本身是**差值**，两个估计器共享相同的偏差，差值估计可能比单独估计更准确（偏差抵消）。
+**收敛速率**：KSG 估计器以 \(O(n^{-1/(d_{eff}+2)})\)
+速率收敛，其中 \(d_{eff}\) 是联合空间的有效维度。对于高维
+\(X\)，收敛较慢，但 \(\varepsilon_{PE}\)
+本身是**差值**，两个估计器共享相同的偏差，差值估计可能比单独估计更准确（偏差抵消）。
 
-### 3.3.2 下界估计（避免高维 KSG）
+\subsubsection{3.3.2 下界估计（避免高维
+KSG）}<!-- label: ux4e0bux754cux4f30ux8ba1ux907fux514dux9ad8ux7ef4-ksg -->
 
-对于高维 $X$，KSG 估计可能不准确。替代方案：使用**预测性能差异**作为 $\varepsilon_{\text{PE}}$ 的下界。
+对于高维 \(X\)，KSG
+估计可能不准确。替代方案：使用**预测性能差异**作为
+\(\varepsilon_{PE}\) 的下界。
 
-**命题 3.3.1（$\varepsilon_{\text{PE}}$ 的预测下界）**：
+**命题 3.3.1（\(\varepsilon_{PE}\) 的预测下界）**：
 
-$$\boxed{\varepsilon_{\text{PE}} \geq \mathbb{E}_{X,P}\left[D_{\text{KL}}(P_{Y|X,P} \| P_{Y|X,\text{PE}(P)})\right]_{\text{est}}}$$
+\[\boxed{\varepsilon_{PE} \geq \mathbb{E}_{X,P}\left[D_{KL}(P_{Y|X,P} \| P_{Y|X,PE(P)})\right]_{est}}\]
 
-其中 $P_{Y|X,P}$ 和 $P_{Y|X,\text{PE}(P)}$ 可通过两个分类器近似：
-- 分类器 $f_{\text{full}}$ 在 $(X, P)$ 上训练 → 估计 $P_{Y|X,P}$
-- 分类器 $f_{\text{enc}}$ 在 $(X, \text{PE}(P))$ 上训练 → 估计 $P_{Y|X,\text{PE}(P)}$
+其中 \(P_{Y|X,P}\) 和 \(P_{Y|X,PE(P)}\) 可通过两个分类器近似： -
+分类器 \(f_{full}\) 在 \((X, P)\) 上训练 → 估计 \(P_{Y|X,P}\) -
+分类器 \(f_{enc}\) 在 \((X, PE(P))\) 上训练 → 估计
+\(P_{Y|X,PE(P)}\)
 
-两者在留出测试集上的**对数损失差**是 $\varepsilon_{\text{PE}}$ 的下界估计：
+两者在留出测试集上的**对数损失差**是 \(\varepsilon_{PE}\)
+的下界估计：
 
-$$\hat{\varepsilon}_{\text{PE}}^{\text{pred}} = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} \left[\log \frac{1}{p_{\text{enc}}(y_i \mid x_i, \text{PE}(p_i))} - \log \frac{1}{p_{\text{full}}(y_i \mid x_i, p_i)}\right]$$
+\[\hat_{PE}^{pred} = \frac{1}{n_{test}} \sum_{i=1}^{n_{test}} \left[\log \frac{1}{p_{enc}(y_i \mid x_i, PE(p_i))} - \log \frac{1}{p_{full}(y_i \mid x_i, p_i)}\right]\]
 
-当 $n_{\text{test}} \to \infty$ 且分类器一致时，$\hat{\varepsilon}_{\text{PE}}^{\text{pred}} \to \varepsilon_{\text{PE}}$。
+当 \(n_{test} \to \infty\)
+且分类器一致时，\(\hat_{PE}^{pred} \to \varepsilon_{PE}\)。
 
-**实用价值**：如果分类器 $f_{\text{full}}$ 和 $f_{\text{enc}}$ 在测试集上的准确率**没有显著差异**，则 $\varepsilon_{\text{PE}} \approx 0$——编码是充足的，PPE 不会削弱 Theorem 2 的上界。
+**实用价值**：如果分类器 \(f_{full}\) 和 \(f_{enc}\)
+在测试集上的准确率**没有显著差异**，则
+\(\varepsilon_{PE} \approx 0\)------编码是充足的，PPE 不会削弱
+Theorem 2 的上界。
 
----
+<div align="center">
 
-# 第 4 部分：Theorem 3 的修正（最重要的部分）
+\rule{0.5\linewidth}{0.5pt}
 
----
+</div>
 
-## 4.1 原 Theorem 3 的精确定理陈述
+\section{第 4 部分：Theorem 3
+的修正（最重要的部分）}<!-- label: ux7b2c-4-ux90e8ux5206theorem-3-ux7684ux4feeux6b63ux6700ux91cdux8981ux7684ux90e8ux5206 -->
 
-**Theorem 3（原始——噪声与困难样本的不可区分性）**：
+<div align="center">
 
-存在两个世界 $W_A, W_B$ 满足：
+\rule{0.5\linewidth}{0.5pt}
 
-1. 观测数据分布完全相同：$P_{W_A}(X, Y) = P_{W_B}(X, Y)$
-2. 在 $W_A$ 中，样本 $(x, y)$ 是**标签噪声**（label 错误，但 $x$ 结构上 label 应是别的）
-3. 在 $W_B$ 中，样本 $(x, y)$ 是**本质困难样本**（label 正确，但特征 $x$ 本身无法确定性地支持该 label）
+</div>
 
-则：没有任何算法能够仅通过观测 i.i.d. 样本 $(X_i, Y_i)_{i=1}^n$ 区分 $W_A$ 和 $W_B$。形式化地，对任意决策规则 $d: (\mathcal{X} \times \mathcal{Y})^n \to \{W_A, W_B\}$：
+\subsection{4.1 原 Theorem 3
+的精确定理陈述}<!-- label: ux539f-theorem-3-ux7684ux7cbeux786eux5b9aux7406ux9648ux8ff0 -->
 
-$$\max_{W \in \{W_A, W_B\}} P_W(d(\text{data}) \neq W) \geq \frac{1}{2}$$
+**Theorem 3（原始------噪声与困难样本的不可区分性）**：
 
----
+存在两个世界 \(W_A, W_B\) 满足：
 
-## 4.2 学习型 PE 如何破坏不可区分性——精确条件
+1. 
+2. 
+3. 
 
-### 4.2.1 设定
+则：没有任何算法能够仅通过观测 i.i.d. 样本 \((X_i, Y_i)_{i=1}^n\) 区分
+\(W_A\) 和 \(W_B\)。形式化地，对任意决策规则
+\(d: (\mathcal{X} \times \mathcal{Y})^n \to \{W_A, W_B\}\)：
 
-引入 PPE 后，观测数据扩展为三元组 $(X, P, Y)$，其中 $P$ 是物理位置（可观测的物理量——原子坐标、残基位置等）。关键区别：
+\[\max_{W \in \{W_A, W_B\}} P_W(d(data) \neq W) \geq \frac{1}{2}\]
 
-- **固定 PE**：$\text{PE}(\cdot)$ 是预定义的确定性函数（如正弦编码），**不依赖于训练数据**。
-- **学习型 PE**：$\text{PE}_\theta(\cdot)$ 的参数 $\theta$ 是从数据中学习的（如通过梯度下降优化某个目标函数）。
+<div align="center">
 
-### 4.2.2 固定 PE 的情况（Trivial）
+\rule{0.5\linewidth}{0.5pt}
 
-**命题 4.1（固定 PE 保持 Theorem 3）**：若 $\text{PE}: \mathcal{P} \to \mathbb{R}^{d_{\text{pe}}}$ 是一个**固定的、与数据无关的**函数，则增强后的观测分布依然相同：
+</div>
 
-$$P_{W_A}(X, P, \text{PE}(P), Y) = P_{W_B}(X, P, \text{PE}(P), Y)$$
+\subsection{4.2 学习型 PE
+如何破坏不可区分性------精确条件}<!-- label: ux5b66ux4e60ux578b-pe-ux5982ux4f55ux7834ux574fux4e0dux53efux533aux5206ux6027ux7cbeux786eux6761ux4ef6 -->
+
+#### 4.2.1 设定<!-- label: ux8bbeux5b9a-1 -->
+
+引入 PPE 后，观测数据扩展为三元组 \((X, P, Y)\)，其中 \(P\)
+是物理位置（可观测的物理量------原子坐标、残基位置等）。关键区别：
+
+- 
+- 
+
+\subsubsection{4.2.2 固定 PE
+的情况（Trivial）}<!-- label: ux56faux5b9a-pe-ux7684ux60c5ux51b5trivial -->
+
+**命题 4.1（固定 PE 保持 Theorem 3）**：若
+\(PE: \mathcal{P} \to \mathbb{R}^{d_{pe}}\)
+是一个**固定的、与数据无关的**函数，则增强后的观测分布依然相同：
+
+\[P_{W_A}(X, P, PE(P), Y) = P_{W_B}(X, P, PE(P), Y)\]
 
 定理 3 的不可区分性**完全保持**。
 
-*证明*：因为 $\text{PE}$ 是固定的确定性函数，$(X, P, \text{PE}(P), Y)$ 是 $(X, P, Y)$ 的一个确定性函数。而 $P_{W_A}(X, P, Y) = P_{W_B}(X, P, Y)$（物理位置 $P$ 由物理结构决定，独立于标签生成过程的世界选择）。因此增强后的联合分布也相同。$\square$
+*证明*：因为 \(PE\)
+是固定的确定性函数，\((X, P, PE(P), Y)\) 是 \((X, P, Y)\)
+的一个确定性函数。而 \(P_{W_A}(X, P, Y) = P_{W_B}(X, P, Y)\)（物理位置
+\(P\)
+由物理结构决定，独立于标签生成过程的世界选择）。因此增强后的联合分布也相同。\(\square\)
 
-### 4.2.3 学习型 PE 的情况（关键）
+\subsubsection{4.2.3 学习型 PE
+的情况（关键）}<!-- label: ux5b66ux4e60ux578b-pe-ux7684ux60c5ux51b5ux5173ux952e -->
 
 **定理 4.1（学习型 PE 破坏 Theorem 3 的精确条件）**：
 
-设 $\text{PE}_\theta$ 的参数 $\theta$ 通过最小化经验风险 $\hat{R}_n(\theta) = \frac{1}{n}\sum_{i=1}^{n} \ell(f_\theta(x_i, p_i), y_i)$ 从训练数据中学习（其中 $\ell$ 是某个损失函数，$f_\theta$ 是包含 PE 编码的完整模型）。则在以下条件下，世界 $W_A$ 和 $W_B$ 变为**可区分**：
+设 \(PE_\theta\) 的参数 \(\theta\) 通过最小化经验风险
+\(\hat{R}_n(\theta) = \frac{1}{n}\sum_{i=1}^{n} \ell(f_\theta(x_i, p_i), y_i)\)
+从训练数据中学习（其中 \(\ell\) 是某个损失函数，\(f_\theta\) 是包含 PE
+编码的完整模型）。则在以下条件下，世界 \(W_A\) 和 \(W_B\)
+变为**可区分**：
 
 **(C1) 信息论非平凡性**：
 
-$$I(Y; P \mid X) > 0$$
+\[I(Y; P \mid X) > 0\]
 
 即：物理位置在给定原始特征下携带关于标签的信息。
 
-**(C2) 学习对标签噪声的敏感性**：存在一个非空的训练样本子集 $\mathcal{D}_{\text{diff}} \subset \mathcal{D}$，在这些样本上：
+**(C2) 学习对标签噪声的敏感性**：存在一个非空的训练样本子集
+\(\mathcal{D}_{diff} \subset \mathcal{D}\)，在这些样本上：
 
-$$\nabla_\theta \ell(f_\theta(x, p), y_A) \neq \nabla_\theta \ell(f_\theta(x, p), y_B)$$
+\[\nabla_\theta \ell(f_\theta(x, p), y_A) \neq \nabla_\theta \ell(f_\theta(x, p), y_B)\]
 
-其中 $y_A$ 是 $W_A$ 中该样本的噪声标签，$y_B = y_A$（在 Theorem 3 构造中，两个世界有相同的观测标签$y$，只是解释不同）。实际上在 Theorem 3 的构造中，**观测到的 $(x, y)$ 完全相同**！
+其中 \(y_A\) 是 \(W_A\) 中该样本的噪声标签，\(y_B = y_A\)（在 Theorem 3
+构造中，两个世界有相同的观测标签\(y\)，只是解释不同）。实际上在 Theorem
+3 的构造中，**观测到的 \((x, y)\) 完全相同**！
 
-这意味着：学习型 PE 破坏不可区分性的机制**不是**来自标签差异（因为标签相同），而是来自模型对"如何去学习"的差异。让我精确分析。
+这意味着：学习型 PE
+破坏不可区分性的机制**不是**来自标签差异（因为标签相同），而是来自模型对''如何去学习''的差异。让我精确分析。
 
-### 4.2.4 精确机制：表征漂移
+\subsubsection{4.2.4
+精确机制：表征漂移}<!-- label: ux7cbeux786eux673aux5236ux8868ux5f81ux6f02ux79fb -->
 
-**关键洞察**：在 Theorem 3 的构造中，$P_{W_A}(X, Y) = P_{W_B}(X, Y)$ 是成立的，但**这并不意味着学习动态相同**。原因在于：
+**关键洞察**：在 Theorem 3
+的构造中，\(P_{W_A}(X, Y) = P_{W_B}(X, Y)\)
+是成立的，但**这并不意味着学习动态相同**。原因在于：
 
-在 $W_A$（标签噪声世界）中：
-- 样本 $(x, y)$ 的标签 $y$ 是错误的
-- 物理位置 $p$ 与 $(x, y)$ 的关系是：$p$ 与 $x$ 一致（由物理结构决定），但 $p$ 暗示的真实标签与 $y$ 不同
-- 当 PE 的参数被学习时，模型会发现 $(p, y)$ 之间的"矛盾"——$p$ 暗示某个标签，而 $y$ 是另一个
+在 \(W_A\)（标签噪声世界）中： - 样本 \((x, y)\) 的标签 \(y\) 是错误的 -
+物理位置 \(p\) 与 \((x, y)\) 的关系是：\(p\) 与 \(x\)
+一致（由物理结构决定），但 \(p\) 暗示的真实标签与 \(y\) 不同 - 当 PE
+的参数被学习时，模型会发现 \((p, y)\) 之间的''矛盾''------\(p\)
+暗示某个标签，而 \(y\) 是另一个
 
-在 $W_B$（本质困难世界）中：
-- 样本 $(x, y)$ 的标签 $y$ 是正确的
-- $p$ 与 $x$ 和 $y$ 都一致——不存在"矛盾"
-- 模型学习到的 $(p, y)$ 关系是和谐一致的
+在 \(W_B\)（本质困难世界）中： - 样本 \((x, y)\) 的标签 \(y\) 是正确的 -
+\(p\) 与 \(x\) 和 \(y\) 都一致------不存在''矛盾'' - 模型学习到的
+\((p, y)\) 关系是和谐一致的
 
-**关键区别**：即使 $P_{W_A}(X, P, Y) = P_{W_B}(X, P, Y)$（联合观测分布相同），学习**动态**取决于损失面的几何结构——而该结构在条件分布 $P_{Y|X,P}$ 方面有差异（因为 Theorem 3 的构造依赖于条件分布的差异，即 $X$ 在给定 $(Y, \text{world})$ 下的分布不同）。
+**关键区别**：即使
+\(P_{W_A}(X, P, Y) = P_{W_B}(X, P, Y)\)（联合观测分布相同），学习**动态**取决于损失面的几何结构------而该结构在条件分布
+\(P_{Y|X,P}\) 方面有差异（因为 Theorem 3 的构造依赖于条件分布的差异，即
+\(X\) 在给定 \((Y, world)\) 下的分布不同）。
 
-**这是 Theorem 3 构造的核心**：$P_{W_A}(Y \mid X) = P_{W_B}(Y \mid X)$（观测分布相同），但生成过程不同：
-- $W_A$：$Y_{\text{true}}$ 先由 $X$ 决定，然后 $Y_{\text{obs}}$ 以概率 $\eta$ 被翻转
-- $W_B$：$Y_{\text{obs}} = Y_{\text{true}}$，但 $P(Y_{\text{true}} \mid X)$ 在某些区域接近均匀（高不确定性）
+**这是 Theorem 3
+构造的核心**：\(P_{W_A}(Y \mid X) = P_{W_B}(Y \mid X)\)（观测分布相同），但生成过程不同：
+- \(W_A\)：\(Y_{true}\) 先由 \(X\) 决定，然后 \(Y_{obs}\)
+以概率 \(\eta\) 被翻转 -
+\(W_B\)：\(Y_{obs} = Y_{true}\)，但
+\(P(Y_{true} \mid X)\) 在某些区域接近均匀（高不确定性）
 
-当引入 $P$ 后，在 $W_A$ 中 $P(Y_{\text{true}} \mid X, P)$ 可能比 $P(Y_{\text{obs}} \mid X, P)$ 更尖锐（因为 $P$ 帮助确定真实标签），导致模型在 $(X, P)$ 空间中"看到"噪声标签的矛盾。而在 $W_B$ 中，$P(Y_{\text{obs}} \mid X, P) = P(Y_{\text{true}} \mid X, P)$，没有矛盾。
+当引入 \(P\) 后，在 \(W_A\) 中 \(P(Y_{true} \mid X, P)\) 可能比
+\(P(Y_{obs} \mid X, P)\) 更尖锐（因为 \(P\)
+帮助确定真实标签），导致模型在 \((X, P)\)
+空间中''看到''噪声标签的矛盾。而在 \(W_B\)
+中，\(P(Y_{obs} \mid X, P) = P(Y_{true} \mid X, P)\)，没有矛盾。
 
-**但这仍然没有给出可观测的差异**——因为在训练时，模型在两个世界中看到的都是相同的 $(x, p, y)$ 三元组。
+**但这仍然没有给出可观测的差异**------因为在训练时，模型在两个世界中看到的都是相同的
+\((x, p, y)\) 三元组。
 
-真正使学习型 PE 能够区分的机制是：定理 3 的构造中两个世界的区别在于**未观测到的潜在变量**（真实标签 vs 噪声标签 vs 困难程度）。如果 $P$ 提供了关于这些未观测变量的信息窗口（通过 $I(Y_{\text{true}}; P \mid X) > 0$），那么**在训练过程中**，学习到的 PE 参数 $\theta$ 会通过泛化行为反映这些差异——即使训练数据看起来相同。
+真正使学习型 PE 能够区分的机制是：定理 3
+的构造中两个世界的区别在于**未观测到的潜在变量**（真实标签 vs
+噪声标签 vs 困难程度）。如果 \(P\)
+提供了关于这些未观测变量的信息窗口（通过
+\(I(Y_{true}; P \mid X) > 0\)），那么**在训练过程中**，学习到的
+PE 参数 \(\theta\)
+会通过泛化行为反映这些差异------即使训练数据看起来相同。
 
-### 4.2.5 精确可区分性条件——最终形式
+\subsubsection{4.2.5
+精确可区分性条件------最终形式}<!-- label: ux7cbeux786eux53efux533aux5206ux6027ux6761ux4ef6ux6700ux7ec8ux5f62ux5f0f -->
 
 让我从更基本的层面重新分析。
 
-在 Theorem 3 的证明中，两个世界的构造是：
-- 选择两个不同的条件分布 $P_{W_A}(Y \mid X)$ 和 $P_{W_B}(Y \mid X)$，但边际分布 $P(X, Y)$ 相同
-- 这之所以可能，是因为 $P(X)$ 在两个世界中不同 → $P_{W_A}(X) \neq P_{W_B}(X)$，但 $P_{W_A}(X, Y) = P_{W_B}(X, Y)$
+在 Theorem 3 的证明中，两个世界的构造是： - 选择两个不同的条件分布
+\(P_{W_A}(Y \mid X)\) 和 \(P_{W_B}(Y \mid X)\)，但边际分布 \(P(X, Y)\)
+相同 - 这之所以可能，是因为 \(P(X)\) 在两个世界中不同 →
+\(P_{W_A}(X) \neq P_{W_B}(X)\)，但 \(P_{W_A}(X, Y) = P_{W_B}(X, Y)\)
 
-等等，这不对。Theorem 3 说的是**观测**分布相同。让我从 CC 审计报告的原始构造出发。
+等等，这不对。Theorem 3 说的是**观测**分布相同。让我从 CC
+审计报告的原始构造出发。
 
-CC 审计报告："存在两个世界 $W_A, W_B$，具有观测等价的数据分布 $P_{W_A}(X, Y) = P_{W_B}(X, Y)$"
+CC 审计报告：``存在两个世界 \(W_A, W_B\)，具有观测等价的数据分布
+\(P_{W_A}(X, Y) = P_{W_B}(X, Y)\)''
 
-构造方法：两个世界具有不同的 $P(X)$ 和不同的 $P(Y|X)$，但它们的乘积相同。具体地：
-- $W_A$：$P_{W_A}(X)$ 在"容易"区域有更多质量，$P_{W_A}(Y|X)$ 是确定性的
-- $W_B$：$P_{W_B}(X)$ 在"困难"区域有更多质量，$P_{W_B}(Y|X)$ 是接近均匀的
+构造方法：两个世界具有不同的 \(P(X)\) 和不同的
+\(P(Y|X)\)，但它们的乘积相同。具体地： - \(W_A\)：\(P_{W_A}(X)\)
+在''容易''区域有更多质量，\(P_{W_A}(Y|X)\) 是确定性的 -
+\(W_B\)：\(P_{W_B}(X)\) 在''困难''区域有更多质量，\(P_{W_B}(Y|X)\)
+是接近均匀的
 
-使得 $P_{W_A}(X, Y) = P_{W_B}(X, Y)$ 对所有 $(x, y)$ 成立。
+使得 \(P_{W_A}(X, Y) = P_{W_B}(X, Y)\) 对所有 \((x, y)\) 成立。
 
-**当引入 $P$ 后**：$P_{W_A}(X, P, Y) = P_{W_A}(P \mid X, Y) \cdot P_{W_A}(X, Y)$。
+**当引入 \(P\)
+后**：\(P_{W_A}(X, P, Y) = P_{W_A}(P \mid X, Y) \cdot P_{W_A}(X, Y)\)。
 
-如果 $P$ 是物理上由 $X$ 决定的（$P$ 是 $X$ 的物理坐标），则 $P(P \mid X, Y) = P(P \mid X)$（物理位置不依赖于标签）。此时：
-$$P_{W_A}(X, P, Y) = P_{W_A}(P \mid X) \cdot P_{W_A}(X, Y)$$
-$$P_{W_B}(X, P, Y) = P_{W_B}(P \mid X) \cdot P_{W_B}(X, Y)$$
+如果 \(P\) 是物理上由 \(X\) 决定的（\(P\) 是 \(X\) 的物理坐标），则
+\(P(P \mid X, Y) = P(P \mid X)\)（物理位置不依赖于标签）。此时：
+\[P_{W_A}(X, P, Y) = P_{W_A}(P \mid X) \cdot P_{W_A}(X, Y)\]
+\[P_{W_B}(X, P, Y) = P_{W_B}(P \mid X) \cdot P_{W_B}(X, Y)\]
 
-但 $P_{W_A}(P \mid X) = P_{W_B}(P \mid X)$（物理位置由物理结构决定，对两个世界相同），且 $P_{W_A}(X, Y) = P_{W_B}(X, Y)$。因此 $P_{W_A}(X, P, Y) = P_{W_B}(X, P, Y)$。
+但
+\(P_{W_A}(P \mid X) = P_{W_B}(P \mid X)\)（物理位置由物理结构决定，对两个世界相同），且
+\(P_{W_A}(X, Y) = P_{W_B}(X, Y)\)。因此
+\(P_{W_A}(X, P, Y) = P_{W_B}(X, P, Y)\)。
 
-**固定 PE 仍然保持不可区分性**——联合分布相同。
+**固定 PE 仍然保持不可区分性**------联合分布相同。
 
-**学习型 PE 的情况**：学习型 PE 的参数 $\theta$ 是通过最小化某个损失函数从数据中学到的。考虑在数据集 $\mathcal{D} = \{(x_i, p_i, y_i)\}_{i=1}^n$ 上的训练：
+**学习型 PE 的情况**：学习型 PE 的参数 \(\theta\)
+是通过最小化某个损失函数从数据中学到的。考虑在数据集
+\(\mathcal{D} = \{(x_i, p_i, y_i)\}_{i=1}^n\) 上的训练：
 
-$$\hat{\theta} = \arg\min_\theta \frac{1}{n} \sum_{i=1}^n \ell(f_\theta(x_i, \text{PE}_\theta(p_i)), y_i)$$
+\[\hat = \arg\min_\theta \frac{1}{n} \sum_{i=1}^n \ell(f_\theta(x_i, PE_\theta(p_i)), y_i)\]
 
-这里的关键是：**PE 的参数在损失函数中**——不仅通过编码输出影响损失，还可能通过某种自监督或重构损失影响学习。
+这里的关键是：**PE
+的参数在损失函数中**------不仅通过编码输出影响损失，还可能通过某种自监督或重构损失影响学习。
 
-但如果 PE 纯粹是有监督地训练的（仅通过下游任务的损失），那么两个世界给出相同的训练数据 → 相同的梯度 → 相同的 $\hat{\theta}$。在这种情况下，即使是学习型 PE 也不能区分两个世界。
+但如果 PE
+纯粹是有监督地训练的（仅通过下游任务的损失），那么两个世界给出相同的训练数据
+→ 相同的梯度 → 相同的 \(\hat\)。在这种情况下，即使是学习型 PE
+也不能区分两个世界。
 
 **真正使学习型 PE 能够区分的场景**：
 
-PE 的参数除了受监督损失影响外，还通过以下方式接收信号：
-1. **自监督预训练**（如 masked position prediction）——在标注之前进行
-2. **辅助损失**（如位置重构损失）
-3. **物理约束**（如能量守恒、力匹配）——这些约束提供了关于 $P$ 和物理量之间关系的额外信息
+PE 的参数除了受监督损失影响外，还通过以下方式接收信号： 1.
+**自监督预训练**（如 masked position
+prediction）------在标注之前进行 2. **辅助损失**（如位置重构损失）
+3. **物理约束**（如能量守恒、力匹配）------这些约束提供了关于 \(P\)
+和物理量之间关系的额外信息
 
-在这些情况下，PE 的参数部分由**物理一致性的信号**决定，而这些信号在两个世界中可能不同（因为两个世界中样本的"物理合理性"不同）。
+在这些情况下，PE
+的参数部分由**物理一致性的信号**决定，而这些信号在两个世界中可能不同（因为两个世界中样本的''物理合理性''不同）。
 
 **精确定理**：
 
-**Theorem 3'（修正后的不可区分性定理——带 PPE 前提）**：
+**Theorem 3'（修正后的不可区分性定理------带 PPE 前提）**：
 
-$$\boxed{\begin{aligned}
-\text{若 } & \text{(A) } \text{PE}(\cdot) \text{ 是与标签 } Y \text{ 独立的固定函数（即其参数不由 } Y \text{ 或任何依赖于 } Y \text{ 的信号决定），且} \\
-& \text{(B) } P \perp\!\!\!\perp Y_{\text{world}} \mid X \text{（物理位置在给定原始特征下独立于世界选择），} \\
-\text{则 } & P_{W_A}(X, \text{PE}(P), Y) = P_{W_B}(X, \text{PE}(P), Y)，\text{Theorem 3 的不可区分性保持。} \\
-\text{反之，若 } & \text{PE 的参数通过依赖于 } Y \text{ 的信号学习得到，且 } I(Y_{\text{true}}; P \mid X) > 0，\\
-\text{则 } & \text{学习到的编码在两个世界中以正概率不同：} P(\hat{\theta}_{W_A} \neq \hat{\theta}_{W_B}) > 0，\\
-\text{两个世界变为可区分。} &
-\end{aligned}}$$
+\[\boxed{
+$$
+若  & (A)  PE(\cdot)  是与标签  Y  独立的固定函数（即其参数不由  Y  或任何依赖于  Y  的信号决定），且 
 
----
+& (B)  P \perp\!\!\!\perp Y_{world} \mid X （物理位置在给定原始特征下独立于世界选择）， 
 
-## 4.3 构造性证明：最小示例
+则  & P_{W_A}(X, PE(P), Y) = P_{W_B}(X, PE(P), Y)，Theorem 3 的不可区分性保持。 
 
-### 4.3.1 构造
+反之，若  & PE 的参数通过依赖于  Y  的信号学习得到，且  I(Y_{true}; P \mid X) > 0，
 
-考虑一个极简的二维分类问题。设 $X \in \{-1, +1\}$ 是一个二元特征，$P \in \{0, 1\}$ 是一个二元物理位置，$Y \in \{-1, +1\}$ 是标签。
+则  & 学习到的编码在两个世界中以正概率不同： P(\hat_{W_A} \neq \hat_{W_B}) > 0，
 
-**世界 $W_A$（标签噪声）**：
+两个世界变为可区分。 &
+$$
+}\]
 
-- $P_{W_A}(X = +1) = 1/2$, $P_{W_A}(X = -1) = 1/2$
-- $P_{W_A}(Y_{\text{true}} = +1 \mid X = +1) = 1$, $P_{W_A}(Y_{\text{true}} = -1 \mid X = -1) = 1$（确定性的）
-- 标签以概率 $\eta = 0.2$ 翻转：$Y_{\text{obs}} = Y_{\text{true}}$ 以概率 $0.8$，$Y_{\text{obs}} = -Y_{\text{true}}$ 以概率 $0.2$
-- 物理位置 $P$：$P = X$（确定性），即 $p = 1$ 当 $x = +1$，$p = 0$ 当 $x = -1$
+<div align="center">
 
-**世界 $W_B$（本质困难）**：
+\rule{0.5\linewidth}{0.5pt}
 
-- $P_{W_B}(X = +1) = 0.6$, $P_{W_B}(X = -1) = 0.4$（非均匀！）
-- $P_{W_B}(Y_{\text{obs}} = +1 \mid X = +1) = 5/6$, $P_{W_B}(Y_{\text{obs}} = -1 \mid X = +1) = 1/6$
-- $P_{W_B}(Y_{\text{obs}} = +1 \mid X = -1) = 1/4$, $P_{W_B}(Y_{\text{obs}} = -1 \mid X = -1) = 3/4$
-- $Y_{\text{obs}} = Y_{\text{true}}$（没有标签噪声，但条件分布是固有的高不确定性）
-- $P = X$（与 $W_A$ 相同）
+</div>
+
+\subsection{4.3
+构造性证明：最小示例}<!-- label: ux6784ux9020ux6027ux8bc1ux660eux6700ux5c0fux793aux4f8b -->
+
+#### 4.3.1 构造<!-- label: ux6784ux9020 -->
+
+考虑一个极简的二维分类问题。设 \(X \in \{-1, +1\}\)
+是一个二元特征，\(P \in \{0, 1\}\)
+是一个二元物理位置，\(Y \in \{-1, +1\}\) 是标签。
+
+**世界 \(W_A\)（标签噪声）**：
+
+- 
+- 
+- 
+- 
+
+**世界 \(W_B\)（本质困难）**：
+
+- 
+- 
+- 
+- 
+- 
 
 **验证观测等价**：
 
-在 $W_A$ 中：
-- $P_{W_A}(X = +1, Y = +1) = 0.5 \times 0.8 = 0.4$
-- $P_{W_A}(X = -1, Y = +1) = 0.5 \times 0.2 = 0.1$
-- $P_{W_A}(X = +1, Y = -1) = 0.5 \times 0.2 = 0.1$
-- $P_{W_A}(X = -1, Y = -1) = 0.5 \times 0.8 = 0.4$
+在 \(W_A\) 中： - \(P_{W_A}(X = +1, Y = +1) = 0.5 \times 0.8 = 0.4\) -
+\(P_{W_A}(X = -1, Y = +1) = 0.5 \times 0.2 = 0.1\) -
+\(P_{W_A}(X = +1, Y = -1) = 0.5 \times 0.2 = 0.1\) -
+\(P_{W_A}(X = -1, Y = -1) = 0.5 \times 0.8 = 0.4\)
 
-在 $W_B$ 中：
-- $P_{W_B}(X = +1, Y = +1) = 0.6 \times (5/6) = 0.5$
-- $P_{W_B}(X = -1, Y = +1) = 0.4 \times (1/4) = 0.1$
-- $P_{W_B}(X = +1, Y = -1) = 0.6 \times (1/6) = 0.1$
-- $P_{W_B}(X = -1, Y = -1) = 0.4 \times (3/4) = 0.3$
+在 \(W_B\) 中： - \(P_{W_B}(X = +1, Y = +1) = 0.6 \times (5/6) = 0.5\) -
+\(P_{W_B}(X = -1, Y = +1) = 0.4 \times (1/4) = 0.1\) -
+\(P_{W_B}(X = +1, Y = -1) = 0.6 \times (1/6) = 0.1\) -
+\(P_{W_B}(X = -1, Y = -1) = 0.4 \times (3/4) = 0.3\)
 
-$P(X=+1,Y=+1)$ 不同（0.4 vs 0.5），不满足观测等价。让我调整构造使其完全相等。
+\(P(X=+1,Y=+1)\) 不同（0.4 vs
+0.5），不满足观测等价。让我调整构造使其完全相等。
 
 重新构造：
 
-$W_A$：
-- $P(X=+1) = 0.5$, $P(X=-1) = 0.5$
-- $P(Y=+1 \mid X=+1) = 0.8$, $P(Y=-1 \mid X=+1) = 0.2$
-- $P(Y=+1 \mid X=-1) = 0.2$, $P(Y=-1 \mid X=-1) = 0.8$
-- 生成机制：$Y_{\text{true}}$ 是确定性的 ($X=+1 \to +1$, $X=-1 \to -1$)，但 20% 噪声
+\(W_A\)： - \(P(X=+1) = 0.5\), \(P(X=-1) = 0.5\) -
+\(P(Y=+1 \mid X=+1) = 0.8\), \(P(Y=-1 \mid X=+1) = 0.2\) -
+\(P(Y=+1 \mid X=-1) = 0.2\), \(P(Y=-1 \mid X=-1) = 0.8\) -
+生成机制：\(Y_{true}\) 是确定性的 (\(X=+1 \to +1\),
+\(X=-1 \to -1\))，但 20\% 噪声
 
-$W_B$：
-- $P(X=+1) = 0.5$, $P(X=-1) = 0.5$
-- 与 $W_A$ 完全相同的 $P(Y \mid X)$
-- 生成机制：特征本身是高不确定性的（没有隐藏的真实标签）
+\(W_B\)： - \(P(X=+1) = 0.5\), \(P(X=-1) = 0.5\) - 与 \(W_A\) 完全相同的
+\(P(Y \mid X)\) - 生成机制：特征本身是高不确定性的（没有隐藏的真实标签）
 
-在此构造下 $P_{W_A}(X, Y) = P_{W_B}(X, Y)$，但内在结构不同。在 $W_A$ 中，$P = X$，$Y_{\text{true}} = X$，噪声以 20% 概率翻转。在 $W_B$ 中，$P = X$，但 $Y$ 直接由带噪声的通道生成（无隐藏层）。
+在此构造下 \(P_{W_A}(X, Y) = P_{W_B}(X, Y)\)，但内在结构不同。在 \(W_A\)
+中，\(P = X\)，\(Y_{true} = X\)，噪声以 20\% 概率翻转。在 \(W_B\)
+中，\(P = X\)，但 \(Y\) 直接由带噪声的通道生成（无隐藏层）。
 
-### 4.3.2 学习型 PE 的可区分性
+\subsubsection{4.3.2 学习型 PE
+的可区分性}<!-- label: ux5b66ux4e60ux578b-pe-ux7684ux53efux533aux5206ux6027 -->
 
-引入一个简单的学习型 PE：$\text{PE}_\theta(p) = \theta \cdot p$（标量编码，$\theta \in \mathbb{R}$ 可学习）。
+引入一个简单的学习型
+PE：\(PE_\theta(p) = \theta \cdot p\)（标量编码，\(\theta \in \mathbb{R}\)
+可学习）。
 
-完整模型：$f(x, p) = \text{sign}(w \cdot x + \text{PE}_\theta(p))$。
+完整模型：\(f(x, p) = sign(w \cdot x + PE_\theta(p))\)。
 
-设我们通过以下方式学习 $\theta$：
-1. 先在**无标签**数据上以自监督方式预训练：预测被 mask 的物理位置 $\hat{p} = g(\text{PE}_\theta(p))$
-2. 然后在下游任务上微调
+设我们通过以下方式学习 \(\theta\)： 1.
+先在**无标签**数据上以自监督方式预训练：预测被 mask 的物理位置
+\(\hat{p} = g(PE_\theta(p))\) 2. 然后在下游任务上微调
 
-关键：在步骤 1（自监督预训练）中，目标函数不涉及标签 $Y$。两个世界的数据 $(X, P)$ 分布完全相同（$P_{W_A}(X, P) = P_{W_B}(X, P)$），因此预训练阶段**不引入**区分。
+关键：在步骤 1（自监督预训练）中，目标函数不涉及标签
+\(Y\)。两个世界的数据 \((X, P)\)
+分布完全相同（\(P_{W_A}(X, P) = P_{W_B}(X, P)\)），因此预训练阶段**不引入**区分。
 
 但如果我们使用以下辅助损失：
 
-$$\mathcal{L}_{\text{aux}}(\theta) = \mathbb{E}_{(x,p,y)}\left[(\text{PE}_\theta(p) - \mathbb{E}[Y \mid X = x])^2\right]$$
+\[\mathcal{L}_{aux}(\theta) = \mathbb{E}_{(x,p,y)}\left[(PE_\theta(p) - \mathbb{E}[Y \mid X = x])^2\right]\]
 
-即：编码应该与条件期望标签一致。这个损失涉及 $Y$，且依赖于世界的内部结构。在 $W_A$ 中，$\mathbb{E}[Y \mid X = x] = (1-2\eta) \cdot \text{sign}(x) = 0.6 \cdot \text{sign}(x)$（因为噪声翻转）。在 $W_B$ 中，$\mathbb{E}[Y \mid X = x] = \mathbb{E}[Y \mid X = x] = 0.6 \cdot \text{sign}(x)$（数值相同！只是解释不同）。
+即：编码应该与条件期望标签一致。这个损失涉及
+\(Y\)，且依赖于世界的内部结构。在 \(W_A\)
+中，\(\mathbb{E}[Y \mid X = x] = (1-2\eta) \cdot sign(x) = 0.6 \cdot sign(x)\)（因为噪声翻转）。在
+\(W_B\)
+中，\(\mathbb{E}[Y \mid X = x] = \mathbb{E}[Y \mid X = x] = 0.6 \cdot sign(x)\)（数值相同！只是解释不同）。
 
-所以在**这个最小示例中**，即使是学习型 PE 也不能区分两个世界——因为条件期望相同。
+所以在**这个最小示例中**，即使是学习型 PE
+也不能区分两个世界------因为条件期望相同。
 
-**这正是 Theorem 3 的精髓**：如果观测分布完全相同，任何算法都不能区分。
+**这正是 Theorem 3
+的精髓**：如果观测分布完全相同，任何算法都不能区分。
 
-### 4.3.3 开放问题：学习型 PE 真正能区分的条件
+\subsubsection{4.3.3 开放问题：学习型 PE
+真正能区分的条件}<!-- label: ux5f00ux653eux95eeux9898ux5b66ux4e60ux578b-pe-ux771fux6b63ux80fdux533aux5206ux7684ux6761ux4ef6 -->
 
-**此最小示例实际上证明了 Theorem 3 的鲁棒性，而非其脆弱性**：在这个构造中，即使是学习型 PE 也不能区分两个观测等价的世界。这恰恰印证了 Theorem 3 的精髓——当观测分布完全相同时，任何算法都不能区分。
+**此最小示例实际上证明了 Theorem 3
+的鲁棒性，而非其脆弱性**：在这个构造中，即使是学习型 PE
+也不能区分两个观测等价的世界。这恰恰印证了 Theorem 3
+的精髓------当观测分布完全相同时，任何算法都不能区分。
 
-原先声称的"构造性最小示例"反而构成了 Theorem 3' 破坏方向的一个**反例**：它展示了一个学习型 PE **无法**区分两个观测等价世界的场景。
+原先声称的''构造性最小示例''反而构成了 Theorem 3'
+破坏方向的一个**反例**：它展示了一个学习型 PE
+**无法**区分两个观测等价世界的场景。
 
-要使学习型 PE 能够区分，需要满足：**学习信号不仅仅依赖于观测分布**。理论上这可能发生在：
+要使学习型 PE
+能够区分，需要满足：**学习信号不仅仅依赖于观测分布**。理论上这可能发生在：
 
-1. **多任务学习**：PE 同时被用于预测另一个与 $Y_{\text{true}}$ 相关的量 $Z$（例如能量、力），且 $Z$ 在世界 $W_A$（噪声标签意味着物理量不一致）和 $W_B$（困难但物理一致）中的表现不同
+1. 
+2. 
+3. 
 
-2. **物理一致性约束**：损失函数包含物理约束项（如能量守恒），使得在 $W_A$ 中噪声标签导致物理不一致的预测，而在 $W_B$ 中困难样本仍保持物理一致性
+**{[}开放问题{]}**
+然而，目前**缺乏构造性证明**验证上述任何机制确实能在观测等价的两个世界上产生不同的最优
+PE 参数。这需要： - 显式定义未观测变量 \(Z\) - 构造
+\(\mathcal{L}_{aux}\) 的具体形式 - 证明在 \(W_A\) 和 \(W_B\)
+中的最优值确实不同
 
-3. **分布外泛化**：PE 的参数部分由分布外数据（不同于训练分布）决定，且两个世界在分布外表现不同
+定理 4.1 的陈述（关于
+\(\mathcal{L}_{total} = \mathcal{L}_{sup} + \lambda \mathcal{L}_{aux}\)
+的不同最优值导致可区分性）在逻辑上是正确的**条件陈述**，但该条件是否能在
+Theorem 3 的构造中被满足，目前没有构造性证明。
 
-**[开放问题]** 然而，目前**缺乏构造性证明**验证上述任何机制确实能在观测等价的两个世界上产生不同的最优 PE 参数。这需要：
-- 显式定义未观测变量 $Z$
-- 构造 $\mathcal{L}_{\text{aux}}$ 的具体形式
-- 证明在 $W_A$ 和 $W_B$ 中的最优值确实不同
+<div align="center">
 
-定理 4.1 的陈述（关于 $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{sup}} + \lambda \mathcal{L}_{\text{aux}}$ 的不同最优值导致可区分性）在逻辑上是正确的**条件陈述**，但该条件是否能在 Theorem 3 的构造中被满足，目前没有构造性证明。
+\rule{0.5\linewidth}{0.5pt}
 
----
+</div>
 
-## 4.4 修正后的 Theorem 3'——完整陈述
+\subsection{4.4 修正后的 Theorem
+3'------完整陈述}<!-- label: ux4feeux6b63ux540eux7684-theorem-3ux5b8cux6574ux9648ux8ff0 -->
 
-**Theorem 3'（不可区分性的条件保持——修正版）**：
+**Theorem 3'（不可区分性的条件保持------修正版）**：
 
-$$\boxed{\begin{aligned}
-\textbf{前提 (A): } & \text{物理位置编码 PE 是固定的，或仅通过独立于标签 } Y \text{ 的信号学习。} \\
-\textbf{前提 (B): } & \text{物理位置 } P \text{ 在给定 } X \text{ 下条件独立于世界选择：} P \perp\!\!\!\perp W \mid X。\\
-\textbf{结论: } & \text{Theorem 3 的不可区分性完全保持：} \\
-& \forall \text{ 决策规则 } d, \quad \max_{W \in \{W_A, W_B\}} P_W(d \neq W) \geq \frac{1}{2}。\\
-\textbf{若前提 (A) 不成立: } & \text{不可区分性是否被破坏目前是一个**开放问题**。} \\
-& \text{学习型 PE 可能通过多任务学习或物理一致性约束等机制区分两个世界，} \\
-& \text{但当前缺乏构造性证明。见 §4.3 的讨论。}
-\end{aligned}}$$
+\[\boxed{
+$$
+**前提 (A): ** & 物理位置编码 PE 是固定的，或仅通过独立于标签  Y  的信号学习。 
+
+**前提 (B): ** & 物理位置  P  在给定  X  下条件独立于世界选择： P \perp\!\!\!\perp W \mid X。
+
+**结论: ** & Theorem 3 的不可区分性完全保持： 
+
+& \forall  决策规则  d, \quad \max_{W \in \{W_A, W_B\}} P_W(d \neq W) \geq \frac{1}{2}。
+
+**若前提 (A) 不成立: ** & 不可区分性是否被破坏目前是一个**开放问题**。 
+
+& 学习型 PE 可能通过多任务学习或物理一致性约束等机制区分两个世界， 
+
+& 但当前缺乏构造性证明。见 §4.3 的讨论。
+$$
+}\]
 
 **推论 4.4.1（对实践的影响）**：
 
-1. **固定正弦 PE 或固定旋转 PE**：Theorem 3 完全保持。位置编码不会损害最坏情况的不可区分性保证——但也**不会主动帮助**区分噪声和困难样本（至少在信息论意义上，通过观测分布无法区分）。
+1. 
+2. 
+3. 
+4. 
 
-2. **从无标签位置数据学习的 PE**（如通过自监督重构位置）：如果训练过程不涉及标签 $Y$，Theorem 3 保持。PE 参数在两个世界中学到相同的值。
+<div align="center">
 
-3. **通过多目标学习（包括标签相关目标）的 PE**：Theorem 3 **可能被破坏**，但目前缺乏构造性证明。这是**开放问题**——位置信息是否真的提供了一个额外的"窗口"来区分噪声和困难样本，还是一个未被严格验证的猜想。
+\rule{0.5\linewidth}{0.5pt}
 
-4. **风险**：即使辅助目标可能帮助区分，若其设计引入虚假相关性，可能导致错误的"区分"，将困难样本错误地标记为噪声。这需要仔细的实验验证。
+</div>
 
----
+\subsection{4.5 与 CC 审计报告 §2.5
+的比较}<!-- label: ux4e0e-cc-ux5ba1ux8ba1ux62a5ux544a-2.5-ux7684ux6bd4ux8f83 -->
 
-## 4.5 与 CC 审计报告 §2.5 的比较
+CC 审计报告对 Theorem 3 的分析是正确的（固定 PE 保持不可区分性，学习型
+PE 可能破坏），但遗漏了以下关键点：
 
-CC 审计报告对 Theorem 3 的分析是正确的（固定 PE 保持不可区分性，学习型 PE 可能破坏），但遗漏了以下关键点：
+1. 
+2. 
+3. 
 
-1. **CC 报告未精确定义"学习型 PE"的含义**：仅说"从数据中学习"是不够的——需要明确区分"从无标签数据学习"（安全）和"从标签依赖信号学习"（可能破坏 Theorem 3）。
+<div align="center">
 
-2. **CC 报告未给出可区分性的精确条件**：定理 4.2 填补了这一空白。
+\rule{0.5\linewidth}{0.5pt}
 
-3. **CC 报告的评价"这是好消息"需要限定**：只有在辅助目标信号与真实标签噪声相关（而非虚假相关）时，学习型 PE 的区分能力才是可靠的好消息。
+</div>
 
----
-
-# 总结
+## 总结<!-- label: ux603bux7ed3 -->
 
 本文对 PPE 在 SCX 框架中的作用进行了严格的数学推导，主要贡献包括：
 
-1. **编码函数的形式化**（第 1 部分）：给出了三种物理位置域的正弦和旋转编码的精确定义，推导了基于 Bochner 定理和 Laplace 核的最优频率谱，证明了编码的 Lipschitz 连续性并计算了精确常数。
+1. 
+2. 
+3. 
+4. 
 
-2. **Theorem 1 的修正**（第 2 部分）：修正了 CC 审计报告中的 sign error，给出了 $\delta_s^{\text{PE}}$ 的正确表达式，证明了 $\delta_s^{\text{PE}} > 0$ 的充分条件（$I(Y; P \mid S) > 0$），并推导了基于数据处理不等式和 Fano 不等式的上下界。
+<div align="center">
 
-3. **Theorem 2 的修正**（第 3 部分）：给出了 $\varepsilon_{\text{PE}}$ 的精确信息论定义，证明了 $\varepsilon_{\text{PE}} \to 0$ 时上界恢复为原始形式，并提供了从数据中可估计 $\varepsilon_{\text{PE}}$ 的两种实用方法（KSG 估计器和预测性能差异）。
+\rule{0.5\linewidth}{0.5pt}
 
-4. **Theorem 3 的修正**（第 4 部分）：精确阐明了固定 PE 和学习型 PE 对不可区分性的不同影响，通过最小构造性示例展示了区分的必要条件，提出了包含精确前提条件的修正 Theorem 3'。
+</div>
 
----
+*推导完成日期：2026-06-29*
 
-*推导完成日期：2026-06-29*  
-*注：所有定理编号遵循 SCX 框架内部约定。本文修正了 CC 审计报告中的符号不一致（特别是 §2.3 命题 2.1 的 sign error），并在该报告的基础上增加了严格的上下界推导、构造性证明和可估计形式。*
+*注：所有定理编号遵循 SCX 框架内部约定。本文修正了 CC
+审计报告中的符号不一致（特别是 §2.3 命题 2.1 的 sign
+error），并在该报告的基础上增加了严格的上下界推导、构造性证明和可估计形式。*
