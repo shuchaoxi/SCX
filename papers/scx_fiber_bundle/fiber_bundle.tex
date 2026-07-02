@@ -1,7 +1,6 @@
 \documentclass[12pt,a4paper]{article}
 
 % ── Encoding & Language ──────────────────────────────────────────────
-\usepackage[UTF8]{ctex}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 
@@ -24,21 +23,13 @@
 
 % ── Theorem environments ─────────────────────────────────────────────
 \theoremstyle{definition}
-\newtheorem{definition}{定义}[section]
-\newtheorem{theorem}{定理}[section]
-\newtheorem{proposition}{命题}[section]
-\newtheorem{corollary}{推论}[section]
-\newtheorem{lemma}{引理}[section]
-\newtheorem{remark}{注记}[section]
-\newtheorem{example}{例}[section]
-
-\theoremstyle{plain}
-\newtheorem*{definition*}{Definition}
-\newtheorem*{theorem*}{Theorem}
-\newtheorem*{proposition*}{Proposition}
-\newtheorem*{corollary*}{Corollary}
-\newtheorem*{lemma*}{Lemma}
-\newtheorem*{remark*}{Remark}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
 
 % ── Custom commands ──────────────────────────────────────────────────
 \newcommand{\R}{\mathbb{R}}
@@ -63,14 +54,15 @@
 \newcommand{\verts}{\mathcal{V}}
 \newcommand{\edgs}{\mathcal{E}}
 
+% SCX macros
+\newcommand{\SCX}{\textsf{SCX}}
+
 \title{
-    {\Huge \textbf{势能面不齐的离散几何：SCX规范理论的图霍奇形式化}}\\[0.5em]
-    {\Large Discrete Geometry of PES Misalignment: A Graph Hodge Formalization of SCX Gauge Theory}\\[1em]
-    {\normalsize 边赋值、回路曲率、零模固定与 Cercis 残差}\\[0.3em]
+    {\Huge \textbf{Discrete Geometry of PES Misalignment: A Graph Hodge Formalization of SCX Gauge Theory}}\\[1em]
     {\normalsize Edge Assignments, Loop Curvature, Zero-Mode Fixing, and the Cercis Residual}
 }
 
-\author{}
+\author{SCX}
 \date{\today}
 
 \begin{document}
@@ -79,20 +71,6 @@
 % ══════════════════════════════════════════════════════════════════════
 \begin{abstract}
 \noindent
-{\bf 中文摘要.}
-本文将 SCX (Self-Consistent eXpert) 多专家系统的规范理论建立在图上的离散霍奇（Hodge）理论之上，
-完全放弃连续微分几何的纤维丛框架，转而直接处理实际计算中所用的离散数学结构。
-我们将专家之间的成对位移视为有向图 $\grph = (\verts, \edgs)$ 上的边赋值 $A_e$，
-将曲率定义为沿基本回路的和乐（holonomy），
-将规范固定形式化为寻找顶点势 $g_v$ 以极小化残差 $\sum_{e} \|A_e - (g_w - g_v)\|^2$ 的最小二乘问题。
-我们严格区分{\bf 零模固定}条件 $\sum_v g_v = 0$（消除整体平移自由度，使解唯一）与连续 Coulomb 规范 $\partial_\mu A^\mu = 0$（对联络的散度约束），
-并承认本丛在拓扑上是平凡的这一事实（$G \cong \R^{Md}$ 可缩，底空间可缩，所有陈类为零）。
-Cercis 分数定义为规范固定后的{\bf 残差范数}——即最优顶点势下的极小化目标函数值——直接匹配 SCX 的实际实现。
-该框架是自包含的、严格正确定义的，且与 SCX 代码逐行进行着相同的计算。
-
-\vspace{0.8em}
-\noindent
-{\bf English Abstract.}
 This paper grounds the gauge theory of the SCX (Self-Consistent eXpert) multi-expert system
 in discrete Hodge theory on graphs, abandoning the continuous fiber bundle preamble entirely
 in favor of the discrete mathematical structures that the actual computation employs.
@@ -116,36 +94,11 @@ computation as the SCX code line-by-line.
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{引言：从连续假象到离散本质 / Introduction: From Continuous Pretense to Discrete Reality}
+\section{Introduction: From Continuous Pretense to Discrete Reality}
 % ══════════════════════════════════════════════════════════════════════
 
-\subsection{问题的核心 / The Core Problem}
+\subsection{The Core Problem}
 
-在多专家 SCX 框架中，我们有 $M$ 个专家，每个专家在一组 $N$ 个参数构型
-$\{x^1, \dots, x^N\} \subset \mathcal{X}$ 上产生预测。
-专家 $m$ 在构型 $k$ 处的原始输出记作 $\tilde{x}_m^k \in \R^d$。
-
-核心问题是：由于每个专家拥有独立的平移自由度（即可以选择自己的坐标原点），
-原始坐标 $\tilde{x}_m^k$ 并非物理上有意义的量——它们依赖于每个专家私下选择的``规范''（gauge）。
-两个专家 $i$ 和 $j$ 在同一构型 $k$ 上的预测差
-$\delta_{ij}^k := \tilde{x}_i^k - \tilde{x}_j^k$
-既反映了真实的物理差异，也包含了各自规范选择的任意性。
-
-以下两个基本问题驱动了本文的全部分析：
-
-\begin{enumerate}[label=(\roman*)]
-    \item {\bf 全局对齐问题 (Global Alignment Problem):}
-        是否存在一组顶点平移 $\{g_m^k\}$，使得对齐后的坐标
-        $\hat{x}_m^k = \tilde{x}_m^k - g_m^k$ 在所有构型 $k$ 上
-        对任意一对专家 $(i,j)$ 满足某种一致性？
-
-    \item {\bf 不一致性度量问题 (Inconsistency Quantification Problem):}
-        当不存在完美的全局对齐时，如何客观地（即以不依赖于任何特定规范选择的方式）
-        度量多专家系统的不一致程度？
-\end{enumerate}
-
-\medskip
-\noindent
 In the multi-expert SCX framework, we have $M$ experts, each producing predictions
 on a set of $N$ parameter configurations $\{x^1, \dots, x^N\} \subset \mathcal{X}$.
 The raw output of expert $m$ at configuration $k$ is denoted $\tilde{x}_m^k \in \R^d$.
@@ -172,58 +125,8 @@ Two fundamental questions drive the entire analysis of this paper:
         the degree of inconsistency in the multi-expert system?
 \end{enumerate}
 
-\subsection{为什么不用连续纤维丛 / Why Not Continuous Fiber Bundles}
+\subsection{Why Not Continuous Fiber Bundles}
 
-此前的工作尝试将上述问题嵌入连续微分几何的框架——主纤维丛、Ehresmann 联络、
-曲率 $2$-形式等。然而，这种嵌入存在若干根本性的困难：
-
-\begin{enumerate}[label=F\arabic*:, leftmargin=*]
-    \item {\bf 联络从未被构造。}
-        连续框架中的 Ehresmann 联络 $\omega$ 从未从实际专家数据中显式构造。
-        论文只是声称存在这样一个联络，却未说明边的赋值 $A_e$
-        如何从离散数据中产生作为连续联络的离散化。
-        一个从未被构造的对象不能作为理论的基础。
-
-    \item {\bf 曲率定义自相矛盾。}
-        即使在连续框架内，不同章节对曲率的定义也不一致：
-        一处将 Cercis 分数定义为 Yang-Mills 泛函 $\int \|F\|^2$，
-        另一处（实际 SCX 计算）则定义为 $Q + \eta N$——一个完全不同的量。
-        二者从未被证明等价。
-
-    \item {\bf 拓扑是平凡的。}
-        结构群 $G \cong \R^{Md}$ 是可缩的，底流形 $\mathcal{X}$ 也是可缩的
-        （参数空间的一个子集）。因此所有 Chern 类、所有上同调障碍均恒为零。
-        主丛 $\bun \cong \R^{Md} \times \mathcal{X}$ 是全局平凡的。
-        不存在拓扑内容——所有内容是几何的（平坦 vs.\ 非平坦联络）。
-
-    \item {\bf Coulomb 规范被错误识别。}
-        约束 $\sum_m g_m = 0$ 被反复称为``离散 Coulomb 规范''
-        或``Coulomb 条件的离散类比''。但它并非 Coulomb 规范。
-        Coulomb 规范是对{\bf 规范势}的散度约束：$\partial_\mu A^\mu = 0$。
-        $\sum_m g_m = 0$ 是对{\bf 规范参数}的线性约束，
-        其作用仅是固定零模（整体平移自由度）以保证解的唯一性。
-        二者的数学结构、物理含义和几何位置完全不同。
-
-        \begin{center}
-        \begin{tabular}{@{}lll@{}}
-            \toprule
-            & Coulomb 规范 $\partial_\mu A^\mu = 0$ & 零模固定 $\sum g_m = 0$ \\
-            \midrule
-            约束对象 & 联络/规范势 $A$ & 规范参数 $g$ \\
-            数学类型 & 散度约束（微分算子） & 线性子空间约束（代数） \\
-            目的       & 选择横场分支 & 消除积分常数 \\
-            类比       & $\nabla \cdot \mathbf{E} = 0$ & $\int \Lambda \,dx = 0$ \\
-            \bottomrule
-        \end{tabular}
-        \end{center}
-\end{enumerate}
-
-鉴于上述困难，本文采用一个完全不同的路径：
-{\bf 在图上直接使用离散霍奇理论。}
-这正是 SCX 代码实际执行的数学——我们只是将其显式地、诚实地、系统地表述出来。
-
-\medskip
-\noindent
 Previous work attempted to embed the above problem into the framework of continuous
 differential geometry — principal fiber bundles, Ehresmann connections,
 curvature $2$-forms, etc. However, this embedding suffers from several fundamental
@@ -269,24 +172,8 @@ In light of these difficulties, this paper takes an entirely different path:
 This is the mathematics that SCX code actually performs — we are simply making it
 explicit, honest, and systematic.
 
-\subsection{本文的路线图 / Roadmap of This Paper}
+\subsection{Roadmap of This Paper}
 
-\begin{itemize}
-    \item 第~2~节建立图上离散霍奇理论的基本工具：边赋值、外导数 $d_0, d_1$、
-        霍奇分解与图拉普拉斯算子。
-    \item 第~3~节构造 SCX 图：将专家对构型的比较映射为有向图上的边赋值，
-        定义曲率为沿基本回路的和乐。
-    \item 第~4~节形式化规范固定问题：顶点势的最小二乘拟合，
-        区分零模固定（$\sum g_v = 0$）与 Coulomb 规范。
-    \item 第~5~节给出 Cercis 分数的正确定义：规范固定后的残差范数，
-        并证明其规范不变性。
-    \item 第~6~节承认拓扑平凡性，解释为何这并不削弱理论的内容。
-    \item 第~7~节给出数值算法。
-    \item 第~8~节总结。
-\end{itemize}
-
-\medskip
-\noindent
 \begin{itemize}
     \item Section~2 develops the basic tools of discrete Hodge theory on graphs:
         edge assignments, exterior derivatives $d_0, d_1$, Hodge decomposition,
@@ -308,26 +195,17 @@ explicit, honest, and systematic.
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{图上的离散霍奇理论 / Discrete Hodge Theory on Graphs}
+\section{Discrete Hodge Theory on Graphs}
 % ══════════════════════════════════════════════════════════════════════
 
-本节建立一个自包含的、图上的离散霍奇理论工具箱。
-所有后续构造——SCX 规范图、曲率计算、规范固定、Cercis 残差——均建立在此基础之上。
-无需连续微分几何的任何知识。
+This section establishes a self-contained toolbox of discrete Hodge theory on graphs.
+All subsequent constructions — the SCX gauge graph, curvature computation,
+gauge-fixing, and Cercis residual — are built upon this foundation.
+No knowledge of continuous differential geometry is required.
 
-\subsection{有向图 / Directed Graphs}
+\subsection{Directed Graphs}
 
-\begin{definition}[有向图]
-一个{\bf 有向图} $\grph = (\verts, \edgs)$ 由以下组成：
-\begin{itemize}
-    \item $\verts$：有限顶点集，$|\verts| = n$；
-    \item $\edgs \subseteq \verts \times \verts$：有向边集，$|\edgs| = m$。
-\end{itemize}
-每条有向边 $e = (u \to v)$ 表示从源顶点 $u$ 到目标顶点 $v$ 的有序对。
-我们允许重边（多个边连接同一对顶点），但不允许自环（$u \neq v$）。
-\end{definition}
-
-\noindent
+\begin{definition}[Directed Graph]
 A {\bf directed graph} $\grph = (\verts, \edgs)$ consists of:
 \begin{itemize}
     \item $\verts$: a finite set of vertices, $|\verts| = n$;
@@ -336,24 +214,14 @@ A {\bf directed graph} $\grph = (\verts, \edgs)$ consists of:
 Each directed edge $e = (u \to v)$ is an ordered pair from source vertex $u$ to
 target vertex $v$. We allow multiple edges between the same pair of vertices
 but not self-loops ($u \neq v$).
-
-\subsection{离散微分形式：顶点函数与边赋值 / Discrete Differential Forms: Vertex Functions and Edge Assignments}
-
-图上的离散外微分演算将标量函数（$0$-形式）与边赋值（$1$-形式）联系起来。
-
-\begin{definition}[顶点空间与边空间]
-定义以下实向量空间：
-\begin{itemize}
-    \item {\bf $0$-形式空间} $\Omega^0(\grph)$：所有顶点函数 $f: \verts \to \R$，维数 $n$。
-        记作向量 $\mathbf{f} = (f_1, \dots, f_n)^T \in \R^n$。
-    \item {\bf $1$-形式空间} $\Omega^1(\grph)$：所有边赋值 $\alpha: \edgs \to \R$，维数 $m$。
-        记作向量 $\boldsymbol{\alpha} = (\alpha_1, \dots, \alpha_m)^T \in \R^m$。
-\end{itemize}
-对于 $d$ 维向量值情形，我们取 $d$ 个拷贝的直和：
-$\Omega^k(\grph; \R^d) := \bigoplus_{a=1}^d \Omega^k(\grph)$。
 \end{definition}
 
-\noindent
+\subsection{Discrete Differential Forms: Vertex Functions and Edge Assignments}
+
+The discrete exterior calculus on graphs relates scalar functions ($0$-forms)
+to edge assignments ($1$-forms).
+
+\begin{definition}[Vertex Space and Edge Space]
 Define the following real vector spaces:
 \begin{itemize}
     \item {\bf $0$-form space} $\Omega^0(\grph)$: all vertex functions $f: \verts \to \R$,
@@ -363,211 +231,132 @@ Define the following real vector spaces:
 \end{itemize}
 For $d$-dimensional vector-valued forms, we take the direct sum of $d$ copies:
 $\Omega^k(\grph; \R^d) := \bigoplus_{a=1}^d \Omega^k(\grph)$.
+\end{definition}
 
-\subsection{离散外导数 / Discrete Exterior Derivatives}
+\subsection{Discrete Exterior Derivatives}
 
-\begin{definition}[关联矩阵与 $d_0$]
-图 $\grph$ 的{\bf 关联矩阵 (incidence matrix)} $B \in \R^{m \times n}$ 定义为：
-对每条边 $e = (u \to v)$ 和每个顶点 $w$，
+\begin{definition}[Incidence Matrix and $d_0$]
+The {\bf incidence matrix} $B \in \R^{m \times n}$ of $\grph$ is defined by:
+for each edge $e = (u \to v)$ and each vertex $w$,
 \[
     B_{e,w} = 
     \begin{cases}
-        +1, & \text{若 } w = v \text{（目标）}, \\
-        -1, & \text{若 } w = u \text{（源）}, \\
-        0,  & \text{否则}.
+        +1, & \text{if } w = v \text{ (target)}, \\
+        -1, & \text{if } w = u \text{ (source)}, \\
+        0,  & \text{otherwise}.
     \end{cases}
 \]
-
-{\bf 离散外导数} $d_0: \Omega^0(\grph) \to \Omega^1(\grph)$ 定义为 $d_0 := B$，
-即对 $f \in \Omega^0(\grph)$ 和边 $e = (u \to v)$：
-\[
-    (d_0 f)_e = f_v - f_u.
-\]
-换言之，$d_0 f$ 计算 $f$ 沿每条边的差分。
-\end{definition}
-
-\noindent
-The {\bf incidence matrix} $B \in \R^{m \times n}$ of $\grph$ is defined by:
-for each edge $e = (u \to v)$ and each vertex $w$,
-$B_{e,w} = +1$ if $w = v$ (target), $-1$ if $w = u$ (source), $0$ otherwise.
 
 The {\bf discrete exterior derivative} $d_0: \Omega^0(\grph) \to \Omega^1(\grph)$
 is defined as $d_0 := B$, i.e., for $f \in \Omega^0(\grph)$ and edge $e = (u \to v)$:
-$(d_0 f)_e = f_v - f_u$.
+\[
+    (d_0 f)_e = f_v - f_u.
+\]
 In words, $d_0 f$ computes the difference of $f$ along each edge.
-
-\begin{definition}[回路的离散外导数 $d_1$]
-设 $\mathcal{L}$ 为图 $\grph$ 的一组{\bf 基本回路 (elementary loops)}（例如，由某一生成树
-的补边所确定的循环基）。令 $C \in \R^{|\mathcal{L}| \times m}$ 为{\bf 回路矩阵 (cycle matrix)}，
-对每个回路 $\gamma \in \mathcal{L}$ 和每条边 $e \in \edgs$：
-\[
-    C_{\gamma,e} = 
-    \begin{cases}
-        +1, & \text{若边 } e \text{ 沿回路 } \gamma \text{ 的正方向}, \\
-        -1, & \text{若边 } e \text{ 沿回路 } \gamma \text{ 的负方向}, \\
-        0,  & \text{否则}.
-    \end{cases}
-\]
-
-{\bf 离散外导数} $d_1: \Omega^1(\grph) \to \Omega^2(\grph)$ 定义为 $d_1 := C$，
-其中 $\Omega^2(\grph) \cong \R^{|\mathcal{L}|}$ 是回路空间。
-对 $\alpha \in \Omega^1(\grph)$ 和回路 $\gamma = (e_1, e_2, \dots, e_k)$：
-\[
-    (d_1 \alpha)_\gamma = \sum_{e \in \gamma} \sigma_e \, \alpha_e,
-\]
-其中 $\sigma_e \in \{+1, -1\}$ 是边 $e$ 相对回路方向的符号。
 \end{definition}
 
-\noindent
+\begin{definition}[Discrete Exterior Derivative $d_1$ on Loops]
 Let $\mathcal{L}$ be a set of {\bf elementary loops} of $\grph$
 (e.g., the cycle basis determined by the complement edges of a spanning tree).
 Let $C \in \R^{|\mathcal{L}| \times m}$ be the {\bf cycle matrix},
 where for each loop $\gamma \in \mathcal{L}$ and each edge $e \in \edgs$:
-$C_{\gamma,e} = +1$ if $e$ follows $\gamma$'s positive direction,
-$-1$ if opposite, $0$ otherwise.
+\[
+    C_{\gamma,e} = 
+    \begin{cases}
+        +1, & \text{if edge } e \text{ follows the positive direction of loop } \gamma, \\
+        -1, & \text{if edge } e \text{ follows the negative direction of loop } \gamma, \\
+        0,  & \text{otherwise}.
+    \end{cases}
+\]
 
 The {\bf discrete exterior derivative} $d_1: \Omega^1(\grph) \to \Omega^2(\grph)$
 is defined as $d_1 := C$, where $\Omega^2(\grph) \cong \R^{|\mathcal{L}|}$ is the loop space.
 For $\alpha \in \Omega^1(\grph)$ and loop $\gamma = (e_1, e_2, \dots, e_k)$:
-$(d_1 \alpha)_\gamma = \sum_{e \in \gamma} \sigma_e \, \alpha_e$,
+\[
+    (d_1 \alpha)_\gamma = \sum_{e \in \gamma} \sigma_e \, \alpha_e,
+\]
 where $\sigma_e \in \{+1, -1\}$ is the sign of edge $e$ relative to the loop orientation.
+\end{definition}
 
-\begin{theorem}[基本恒等式：$d_1 \circ d_0 = 0$]
+\begin{theorem}[Fundamental Identity: $d_1 \circ d_0 = 0$]
 \label{thm:d1d0}
-关联矩阵与回路矩阵满足：
+The incidence and cycle matrices satisfy:
 \[
     d_1 \circ d_0 = C B = 0.
 \]
-换言之，$\im(d_0) \subseteq \ker(d_1)$。
-这是连续情形 $\dif^2 = 0$ 的离散类比。
-
-{\bf 证明.} 对任意 $f \in \Omega^0(\grph)$ 和任意回路 $\gamma = (v_0 \to v_1 \to \cdots \to v_k = v_0)$：
-\[
-    (d_1 d_0 f)_\gamma = \sum_{i=0}^{k-1} (f_{v_{i+1}} - f_{v_i}) = f_{v_k} - f_{v_0} = 0.
-\]
-因为求和是一个伸缩和，起点与终点重合故抵消。$\square$
-\end{theorem}
-
-\noindent
-{\bf Theorem~\ref{thm:d1d0} (Fundamental identity: $d_1 \circ d_0 = 0$).}
-The incidence and cycle matrices satisfy: $d_1 \circ d_0 = C B = 0$.
 Equivalently, $\im(d_0) \subseteq \ker(d_1)$.
 This is the discrete analog of $\dif^2 = 0$ in the continuous setting.
 
 {\bf Proof.} For any $f \in \Omega^0(\grph)$ and any loop
 $\gamma = (v_0 \to v_1 \to \cdots \to v_k = v_0)$:
-$(d_1 d_0 f)_\gamma = \sum_{i=0}^{k-1} (f_{v_{i+1}} - f_{v_i}) = f_{v_k} - f_{v_0} = 0$,
+\[
+    (d_1 d_0 f)_\gamma = \sum_{i=0}^{k-1} (f_{v_{i+1}} - f_{v_i}) = f_{v_k} - f_{v_0} = 0,
+\]
 since the sum telescopes and $v_k = v_0$. $\square$
+\end{theorem}
 
-\subsection{离散霍奇分解 / Discrete Hodge Decomposition}
+\subsection{Discrete Hodge Decomposition}
 
-要使外导数成为真正的霍奇理论的一部分，我们需要内积和伴随算子。
+To make the exterior derivatives part of a genuine Hodge theory, we need inner products and adjoint operators.
 
-\begin{definition}[内积与伴随算子]
-在 $\Omega^0(\grph)$ 上定义标准内积（以顶点权重 $\mathbf{w}_0 \in \R^n_{>0}$）：
+\begin{definition}[Inner Products and Adjoint Operators]
+Define the standard inner product on $\Omega^0(\grph)$ (with vertex weights
+$\mathbf{w}_0 \in \R^n_{>0}$):
 \[
     \langle f, g \rangle_0 := \sum_{v \in \verts} w_{0,v} \, f_v \, g_v.
 \]
-在 $\Omega^1(\grph)$ 上定义内积（以边权重 $\mathbf{w}_1 \in \R^m_{>0}$）：
+On $\Omega^1(\grph)$ (with edge weights $\mathbf{w}_1 \in \R^m_{>0}$):
 \[
     \langle \alpha, \beta \rangle_1 := \sum_{e \in \edgs} w_{1,e} \, \alpha_e \, \beta_e.
 \]
 
-离散外导数 $d_0$ 关于这些内积的{\bf 形式伴随 (formal adjoint)} 为
-$\dzeroT := d_0^*: \Omega^1(\grph) \to \Omega^0(\grph)$，
-由下式确定：
+The {\bf formal adjoint} of $d_0$ with respect to these inner products is
+$\dzeroT := d_0^*: \Omega^1(\grph) \to \Omega^0(\grph)$, determined by:
 \[
     \langle d_0 f, \alpha \rangle_1 = \langle f, \dzeroT \alpha \rangle_0,
     \quad \forall f \in \Omega^0(\grph), \; \alpha \in \Omega^1(\grph).
 \]
 
-显式地，$\dzeroT = W_0^{-1} B^T W_1$，其中
-$W_0 = \diag(\mathbf{w}_0)$，$W_1 = \diag(\mathbf{w}_1)$。
-若无权重（$W_0 = I_n$, $W_1 = I_m$），则 $\dzeroT = B^T$，
-其对顶点 $v$ 的作用为：
-\[
-    (\dzeroT \alpha)_v = \sum_{e: \text{入边到 } v} \alpha_e \;-\; \sum_{e: \text{出边自 } v} \alpha_e.
-\]
-这正好是 $v$ 处的{\bf 离散散度 (discrete divergence)}（入边减出边）。
-\end{definition}
-
-\noindent
-Define the standard inner product on $\Omega^0(\grph)$ (with vertex weights
-$\mathbf{w}_0 \in \R^n_{>0}$):
-$\langle f, g \rangle_0 := \sum_{v \in \verts} w_{0,v} \, f_v \, g_v$.
-On $\Omega^1(\grph)$ (with edge weights $\mathbf{w}_1 \in \R^m_{>0}$):
-$\langle \alpha, \beta \rangle_1 := \sum_{e \in \edgs} w_{1,e} \, \alpha_e \, \beta_e$.
-
-The {\bf formal adjoint} of $d_0$ with respect to these inner products is
-$\dzeroT := d_0^*: \Omega^1(\grph) \to \Omega^0(\grph)$, determined by:
-$\langle d_0 f, \alpha \rangle_1 = \langle f, \dzeroT \alpha \rangle_0$.
-
 Explicitly, $\dzeroT = W_0^{-1} B^T W_1$, where
 $W_0 = \diag(\mathbf{w}_0)$, $W_1 = \diag(\mathbf{w}_1)$.
 In the unweighted case ($W_0 = I_n$, $W_1 = I_m$), $\dzeroT = B^T$, whose action
 on vertex $v$ is:
-$(\dzeroT \alpha)_v = \sum_{e: \text{incoming to } v} \alpha_e \;-\; \sum_{e: \text{outgoing from } v} \alpha_e$.
+\[
+    (\dzeroT \alpha)_v = \sum_{e: \text{incoming to } v} \alpha_e \;-\; \sum_{e: \text{outgoing from } v} \alpha_e.
+\]
 This is precisely the {\bf discrete divergence} at $v$ (incoming minus outgoing).
+\end{definition}
 
-\begin{definition}[图拉普拉斯算子]
-{\bf 图 $0$-拉普拉斯}（组合 Laplace--Beltrami 算子）为：
+\begin{definition}[Graph Laplacians]
+The {\bf graph $0$-Laplacian} (combinatorial Laplace--Beltrami operator) is:
 \[
     \Lzero := \dzeroT d_0 = W_0^{-1} B^T W_1 B.
 \]
-在无权情形下，$\Lzero = B^T B$ 即为经典的组合拉普拉斯矩阵：
+In the unweighted case, $\Lzero = B^T B$ is the classical combinatorial Laplacian:
 \[
     (\Lzero)_{uv} = 
     \begin{cases}
         \deg(v), & u = v, \\
-        -1,      & (u, v) \text{ 或 } (v, u) \in \edgs, \\
-        0,       & \text{否则}.
+        -1,      & (u, v) \text{ or } (v, u) \in \edgs, \\
+        0,       & \text{otherwise}.
     \end{cases}
 \]
 
-{\bf 图 $1$-拉普拉斯}（全 Hodge 拉普拉斯）为：
+The {\bf graph $1$-Laplacian} (full Hodge Laplacian) is:
 \[
     \Lone := d_0 \dzeroT + \doneT d_1 = B W_0^{-1} B^T W_1 + C^T W_2 C W_1^{-1},
 \]
-其中 $W_2$ 是回路空间 $\Omega^2(\grph)$ 上的（可选）权重矩阵。
-在无权情形下简化为 $\Lone = B B^T + C^T C$。
+where $W_2$ is an (optional) weight matrix on the loop space $\Omega^2(\grph)$.
+In the unweighted case this reduces to $\Lone = B B^T + C^T C$.
 \end{definition}
 
-\noindent
-The {\bf graph $0$-Laplacian} (combinatorial Laplace--Beltrami operator) is:
-$\Lzero := \dzeroT d_0 = W_0^{-1} B^T W_1 B$.
-In the unweighted case, $\Lzero = B^T B$ is the classical combinatorial Laplacian.
-
-The {\bf graph $1$-Laplacian} (full Hodge Laplacian) is:
-$\Lone := d_0 \dzeroT + \doneT d_1 = B W_0^{-1} B^T W_1 + C^T W_2 C W_1^{-1}$,
-which in the unweighted case reduces to $\Lone = B B^T + C^T C$.
-
-\begin{theorem}[离散霍奇分解定理]
+\begin{theorem}[Discrete Hodge Decomposition]
 \label{thm:hodge_decomp}
-对于任意连通图 $\grph$，$\Omega^1(\grph)$ 有正交分解：
+For any connected graph $\grph$, $\Omega^1(\grph)$ admits the orthogonal decomposition:
 \[
     \Omega^1(\grph) = \im(d_0) \oplus \ker(\Lone) \oplus \im(\doneT),
 \]
-其中：
-\begin{itemize}
-    \item $\im(d_0)$：{\bf 正合 $1$-形式}（梯度的像）——可以写为某个顶点函数的差分；
-    \item $\ker(\Lone) = \ker(d_1) \cap \ker(\dzeroT)$：{\bf 调和 $1$-形式}——
-        既无散度也无旋度；
-    \item $\im(\doneT)$：{\bf 余正合 $1$-形式}（离散余微分的像）。
-\end{itemize}
-
-等价地，每条边赋值 $\alpha \in \Omega^1(\grph)$ 有唯一分解：
-\[
-    \alpha = d_0 f + h + \doneT \beta,
-\]
-其中 $f \in \Omega^0(\grph)$, $h \in \ker(\Lone)$, $\beta \in \Omega^2(\grph)$。
-分量 $d_0 f$ 称为 $\alpha$ 的{\bf 梯度部分 (gradient part)}，
-$h$ 称为{\bf 调和部分 (harmonic part)}。
-\end{theorem}
-
-\noindent
-{\bf Theorem~\ref{thm:hodge_decomp} (Discrete Hodge Decomposition).}
-For any connected graph $\grph$, $\Omega^1(\grph)$ admits the orthogonal decomposition:
-$\Omega^1(\grph) = \im(d_0) \oplus \ker(\Lone) \oplus \im(\doneT)$, where:
+where:
 \begin{itemize}
     \item $\im(d_0)$: {\bf exact $1$-forms} (image of gradient) — expressible as differences of a vertex function;
     \item $\ker(\Lone) = \ker(d_1) \cap \ker(\dzeroT)$: {\bf harmonic $1$-forms} — both divergence-free and curl-free;
@@ -575,116 +364,86 @@ $\Omega^1(\grph) = \im(d_0) \oplus \ker(\Lone) \oplus \im(\doneT)$, where:
 \end{itemize}
 
 Equivalently, every edge assignment $\alpha \in \Omega^1(\grph)$ has a unique decomposition:
-$\alpha = d_0 f + h + \doneT \beta$,
+\[
+    \alpha = d_0 f + h + \doneT \beta,
+\]
 where $f \in \Omega^0(\grph)$, $h \in \ker(\Lone)$, $\beta \in \Omega^2(\grph)$.
 The component $d_0 f$ is called the {\bf gradient part},
 $h$ the {\bf harmonic part}.
+\end{theorem}
 
-\begin{remark}[关于 $1$-拉普拉斯的两部分]
-全 Hodge $1$-拉普拉斯 $\Lone = d_0 \dzeroT + \doneT d_1$ 包含两项：
-\begin{itemize}
-    \item {\bf 下 (down) 部分} $d_0 \dzeroT = B B^T$（在无权情形）：出现在法方程和规范固定问题中。$\ker(d_0 \dzeroT) = \ker(\dzeroT)$。
-    \item {\bf 上 (up) 部分} $\doneT d_1 = C^T C$：编码回路约束。$\ker(\doneT d_1) = \ker(d_1)$。
-\end{itemize}
-只有全拉普拉斯满足 $\ker(\Lone) = \ker(d_1) \cap \ker(\dzeroT)$——即调和 $1$-形式的空间。
-下部分 $d_0 \dzeroT$ 单独使用时，其核仅为 $\ker(\dzeroT)$（余闭形式），
-不包含 $\ker(d_1)$ 条件。SCX 的计算（法方程 $B^T B g = B^T A$）仅涉及下部分 $B^T B$，
-但调和分解（定理~\ref{thm:hodge_decomp}）和残差的调和分量识别需要全拉普拉斯。
-\end{remark}
-
-\noindent
-{\bf Remark on the two parts of the $1$-Laplacian.}
+\begin{remark}[On the Two Parts of the $1$-Laplacian]
 The full Hodge $1$-Laplacian $\Lone = d_0 \dzeroT + \doneT d_1$ has two parts:
-the {\bf down} part $d_0 \dzeroT = B B^T$ (unweighted), appearing in the normal equations
-and gauge-fixing problem, with $\ker(d_0 \dzeroT) = \ker(\dzeroT)$;
-and the {\bf up} part $\doneT d_1 = C^T C$, encoding loop constraints, with
-$\ker(\doneT d_1) = \ker(d_1)$.
+\begin{itemize}
+    \item {\bf Down part} $d_0 \dzeroT = B B^T$ (unweighted): appears in the normal equations
+        and gauge-fixing problem. $\ker(d_0 \dzeroT) = \ker(\dzeroT)$.
+    \item {\bf Up part} $\doneT d_1 = C^T C$: encodes loop constraints. $\ker(\doneT d_1) = \ker(d_1)$.
+\end{itemize}
 Only the full Laplacian satisfies $\ker(\Lone) = \ker(d_1) \cap \ker(\dzeroT)$ — the space
 of harmonic $1$-forms. The down part alone has kernel $\ker(\dzeroT)$ (co-closed forms),
 without the $\ker(d_1)$ condition. SCX's computation (normal equations $B^T B g = B^T A$)
 uses only the down part $B^T B$, but the harmonic decomposition (Theorem~\ref{thm:hodge_decomp})
 and identification of the harmonic residual component require the full Laplacian.
+\end{remark}
 
-\begin{remark}[$1$-形式何时是正合的？]
-$\alpha \in \Omega^1(\grph)$ 是正合的（即存在 $f$ 使得 $\alpha = d_0 f$）
-当且仅当 $\alpha$ 沿{\bf 所有}回路 $\gamma$ 的和为零：
+\begin{remark}[When Is a $1$-Form Exact?]
+$\alpha \in \Omega^1(\grph)$ is exact (i.e., exists $f$ with $\alpha = d_0 f$)
+iff the sum of $\alpha$ along {\bf all} loops $\gamma$ vanishes:
 \[
     \alpha = d_0 f \;\Longleftrightarrow\; d_1 \alpha = 0 \;\Longleftrightarrow\;
     \sum_{e \in \gamma} \sigma_e \alpha_e = 0 \quad \forall \gamma \in \mathcal{L}.
 \]
-这给出了离散版本的 Poincaré 引理：闭 $1$-形式（无边、无环量和）在一连通图上
-是正合的{\bf 当且仅当图无环}（即图是树）。
-若图有环，则 $\ker(d_1)$ 严格大于 $\im(d_0)$，差额正是调和 $1$-形式的空间。
-\end{remark}
-
-\noindent
-$\alpha \in \Omega^1(\grph)$ is exact (i.e., exists $f$ with $\alpha = d_0 f$)
-iff the sum of $\alpha$ along {\bf all} loops $\gamma$ vanishes:
-$\alpha = d_0 f \Longleftrightarrow d_1 \alpha = 0 \Longleftrightarrow
-\sum_{e \in \gamma} \sigma_e \alpha_e = 0$ for all $\gamma \in \mathcal{L}$.
 This is the discrete Poincaré lemma: a closed $1$-form (curl-free) on a connected
 graph is exact {\bf iff the graph is a tree}. If the graph has cycles,
 $\ker(d_1)$ is strictly larger than $\im(d_0)$, the difference being
 the space of harmonic $1$-forms.
+\end{remark}
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{SCX 图：构造与曲率 / The SCX Graph: Construction and Curvature}
+\section{The SCX Graph: Construction and Curvature}
 % ══════════════════════════════════════════════════════════════════════
 
-\subsection{专家比较图 / The Expert Comparison Graph}
+\subsection{The Expert Comparison Graph}
 
-SCX 计算的原始数据是所有成对专家位移的集合。
-我们将这些数据组织为有向图上的边赋值。
+The raw data of SCX computation is the set of all pairwise expert displacements.
+We organize this data as edge assignments on a directed graph.
 
-\begin{definition}[SCX 专家比较图]
-SCX 专家比较图 $\grph_{\text{SCX}} = (\verts, \edgs)$ 构造如下：
+\begin{definition}[SCX Expert Comparison Graph]
+The SCX expert comparison graph $\grph_{\text{SCX}} = (\verts, \edgs)$ is constructed as follows:
 
 \begin{itemize}
-    \item {\bf 顶点集 $\verts$：} 每个顶点对应一对（构型，专家）：
+    \item {\bf Vertex set $\verts$:} Each vertex corresponds to a (configuration, expert) pair:
         \[
             \verts = \{(k, m) \mid k \in \{1, \dots, N\},\; m \in \{1, \dots, M\}\}.
         \]
-        共有 $|\verts| = N \cdot M$ 个顶点。
+        There are $|\verts| = N \cdot M$ vertices.
 
-    \item {\bf 边集 $\edgs$：} 包含两类边：
+    \item {\bf Edge set $\edgs$:} Two types:
         \begin{enumerate}[label=(\alph*)]
-            \item {\bf 参数边 (parameter edges)：}
+            \item {\bf Parameter edges:}
                 \[
                     \edgs_{\text{par}} = \{(k, m) \to (k+1, m) \mid k = 1,\dots,N-1,\; m = 1,\dots,M\}.
                 \]
-                表示同一专家沿参数轴从构型 $k$ 到 $k+1$ 的移动。
-                每条参数边的赋值为专家 $m$ 在相邻构型间的预测变化量。
+                Representing the movement of the same expert along the parameter axis
+                from configuration $k$ to $k+1$. Each parameter edge is assigned the
+                change in expert $m$'s prediction between adjacent configurations.
 
-            \item {\bf 专家边 (expert edges)：}
+            \item {\bf Expert edges:}
                 \[
                     \edgs_{\text{exp}} = \{(k, i) \to (k, j) \mid k = 1,\dots,N,\; i,j = 1,\dots,M,\; i \neq j\}.
                 \]
-                表示在同一构型 $k$ 处，从专家 $i$ 的预测到专家 $j$ 的预测的位移。
-                每条专家边的赋值为成对专家位移 $\delta_{ij}^k = \tilde{x}_i^k - \tilde{x}_j^k$。
+                Representing the displacement from expert $i$'s prediction to expert $j$'s
+                prediction at the same configuration $k$. Each expert edge is assigned the
+                pairwise expert displacement $\delta_{ij}^k = \tilde{x}_i^k - \tilde{x}_j^k$.
         \end{enumerate}
 
-    \item {\bf 总边集：} $\edgs = \edgs_{\text{par}} \cup \edgs_{\text{exp}}$。
-        图 $\grph_{\text{SCX}}$ 是一个有向多重图（存在多个不同边连接同一对顶点）。
+    \item {\bf Total edge set:} $\edgs = \edgs_{\text{par}} \cup \edgs_{\text{exp}}$.
+        The graph $\grph_{\text{SCX}}$ is a directed multigraph (multiple distinct edges
+        may connect the same pair of vertices).
 \end{itemize}
 \end{definition}
-
-\noindent
-The SCX expert comparison graph $\grph_{\text{SCX}} = (\verts, \edgs)$ is constructed as follows:
-\begin{itemize}
-    \item {\bf Vertex set $\verts$:} Each vertex corresponds to a (configuration, expert) pair:
-        $\verts = \{(k, m) \mid k \in \{1, \dots, N\},\; m \in \{1, \dots, M\}\}$,
-        with $|\verts| = N \cdot M$ vertices.
-    \item {\bf Edge set $\edgs$:} Two types:
-        \begin{enumerate}[label=(\alph*)]
-            \item {\bf Parameter edges:} $\edgs_{\text{par}} = \{(k, m) \to (k+1, m)\}$,
-                representing the movement of the same expert along the parameter axis.
-            \item {\bf Expert edges:} $\edgs_{\text{exp}} = \{(k, i) \to (k, j)\}$,
-                representing the displacement from expert $i$ to expert $j$ at configuration $k$.
-        \end{enumerate}
-    \item {\bf Total edges:} $\edgs = \edgs_{\text{par}} \cup \edgs_{\text{exp}}$.
-\end{itemize}
 
 \begin{figure}[htbp]
 \centering
@@ -698,99 +457,76 @@ The SCX expert comparison graph $\grph_{\text{SCX}} = (\verts, \edgs)$ is constr
     \node (kp3) at (4,2) {$(k{+}1,3)$};
     
     % Parameter edges (vertical, blue)
-    \draw[->, blue, thick] (k1) -- (kp1) node[midway,left,font=\tiny] {参数};
+    \draw[->, blue, thick] (k1) -- (kp1) node[midway,left,font=\tiny] {param};
     \draw[->, blue, thick] (k2) -- (kp2);
     \draw[->, blue, thick] (k3) -- (kp3);
     
     % Expert edges (horizontal, red)
-    \draw[->, red, thick] (k1) -- (k2) node[midway,above,font=\tiny] {专家};
+    \draw[->, red, thick] (k1) -- (k2) node[midway,above,font=\tiny] {expert};
     \draw[->, red, thick] (k2) -- (k3);
     \draw[->, red, thick] (kp1) -- (kp2);
     \draw[->, red, thick] (kp2) -- (kp3);
     \draw[->, red, thick, bend left] (k1) to (k3);
     \draw[->, red, thick, bend left] (kp1) to (kp3);
 \end{tikzpicture}
-\caption{SCX 图的局部结构：蓝色竖边 = 参数边，红色横边 = 专家边。
-四边形回路 $(k,1) \to (k,2) \to (k{+}1,2) \to (k{+}1,1) \to (k,1)$ 是基本曲率回路。}
+\caption{Local structure of the SCX graph: blue vertical edges = parameter edges,
+red horizontal edges = expert edges. The quadrilateral loop
+$(k,1) \to (k,2) \to (k{+}1,2) \to (k{+}1,1) \to (k,1)$ is an elementary curvature loop.}
 \label{fig:scx_graph}
 \end{figure}
 
-\subsection{边赋值：成对专家位移 / Edge Assignments: Pairwise Expert Displacements}
+\subsection{Edge Assignments: Pairwise Expert Displacements}
 
-\begin{definition}[SCX 边赋值 $A$]
-定义边赋值映射 $A: \edgs \to \R^d$ 如下：
-\begin{itemize}
-    \item 对于参数边 $e = (k, m) \to (k+1, m)$：
-        \[
-            A_e = \tilde{x}_m^{k+1} - \tilde{x}_m^k \;\in\; \R^d.
-        \]
-        （专家 $m$ 在构型 $k$ 到 $k+1$ 之间的预测变化。）
-
-    \item 对于专家边 $e = (k, i) \to (k, j)$：
-        \[
-            A_e = \delta_{ij}^k = \tilde{x}_i^k - \tilde{x}_j^k \;\in\; \R^d.
-        \]
-        （在构型 $k$ 处，专家 $i$ 到专家 $j$ 的成对位移。）
-\end{itemize}
-
-$A \in \Omega^1(\grph_{\text{SCX}}; \R^d)$ 是 $d$ 维向量值的图 $1$-形式，
-即图 $\grph_{\text{SCX}}$ 上每个坐标维度的边赋值。
-\end{definition}
-
-\noindent
+\begin{definition}[SCX Edge Assignment $A$]
 Define the edge assignment map $A: \edgs \to \R^d$ as follows:
 \begin{itemize}
     \item For parameter edges $e = (k, m) \to (k+1, m)$:
-        $A_e = \tilde{x}_m^{k+1} - \tilde{x}_m^k \in \R^d$
-        (the change in expert $m$'s prediction between configurations $k$ and $k+1$).
+        \[
+            A_e = \tilde{x}_m^{k+1} - \tilde{x}_m^k \;\in\; \R^d.
+        \]
+        (The change in expert $m$'s prediction between configurations $k$ and $k+1$.)
+
     \item For expert edges $e = (k, i) \to (k, j)$:
-        $A_e = \delta_{ij}^k = \tilde{x}_i^k - \tilde{x}_j^k \in \R^d$
-        (the pairwise displacement from expert $i$ to expert $j$ at configuration $k$).
+        \[
+            A_e = \delta_{ij}^k = \tilde{x}_i^k - \tilde{x}_j^k \;\in\; \R^d.
+        \]
+        (The pairwise displacement from expert $i$ to expert $j$ at configuration $k$.)
 \end{itemize}
+
 $A \in \Omega^1(\grph_{\text{SCX}}; \R^d)$ is the $d$-dimensional vector-valued
 graph $1$-form — the edge assignment in each coordinate dimension.
+\end{definition}
 
-\begin{remark}[边赋值是直接数据，非推演所得]
-关键点：$A$ 并非从某个连续联络 $\omega$ ``拉回''或``离散化''而得。
-$A$ {\bf 就是}原始数据——成对专家位移的集合，直接编码为图上的边赋值。
-连续纤维丛框架在此是多余的，甚至是有害的，因为它暗示了并不存在的构造。
-\end{remark}
-
-\noindent
+\begin{remark}[Edge Assignments Are Direct Data, Not Derived]
 Crucially: $A$ is not ``pulled back'' or ``discretized'' from some continuous
 connection $\omega$. $A$ {\bf is} the raw data — the collection of pairwise expert
 displacements, directly encoded as edge assignments on a graph.
 The continuous fiber bundle framework is superfluous here, and even harmful,
 because it suggests constructions that do not exist.
+\end{remark}
 
-\subsection{规范变换作为顶点函数 / Gauge Transformations as Vertex Functions}
+\subsection{Gauge Transformations as Vertex Functions}
 
-\begin{definition}[顶点势（规范参数）]
-一个{\bf 顶点势}（或{\bf 规范参数}）是函数 $g: \verts \to \R^d$，
-为每个（构型，专家）对分配一个平移向量 $g_m^k \in \R^d$。
-
-物理上，$g_m^k$ 是应用于专家 $m$ 在构型 $k$ 处的规范平移：
-对齐后的坐标为 $\hat{x}_m^k = \tilde{x}_m^k - g_m^k$。
-\end{definition}
-
-\noindent
+\begin{definition}[Vertex Potential (Gauge Parameter)]
 A {\bf vertex potential} (or {\bf gauge parameter}) is a function
 $g: \verts \to \R^d$, assigning to each (configuration, expert) pair a
 translation vector $g_m^k \in \R^d$. Physically, $g_m^k$ is the gauge translation
 applied to expert $m$ at configuration $k$:
-$\hat{x}_m^k = \tilde{x}_m^k - g_m^k$.
+the aligned coordinates are $\hat{x}_m^k = \tilde{x}_m^k - g_m^k$.
+\end{definition}
 
-\begin{proposition}[边赋值的规范变换]
-在顶点势 $g$ 的规范变换下，边赋值 $A$ 按以下方式变换：
-对每条边 $e = (u \to v)$，其中 $u = (k, i)$, $v = (\ell, j)$：
+\begin{proposition}[Gauge Transformation of Edge Assignments]
+Under a gauge transformation by vertex potential $g$, the edge assignment $A$
+transforms as: for each edge $e = (u \to v)$, where $u = (k, i)$, $v = (\ell, j)$:
 \[
     A'_e = A_e - (g_v - g_u) = A_e - (d_0 g)_e.
 \]
-即 $A' = A - d_0 g$。
-这是连续 Abel 规范变换 $A'_\mu = A_\mu - \partial_\mu \Lambda$ 的离散精确类比。
+i.e., $A' = A - d_0 g$.
+This is the discrete exact analog of the continuous abelian gauge transformation
+$A'_\mu = A_\mu - \partial_\mu \Lambda$.
 
-{\bf 证明.} 对齐后，专家 $i$ 在构型 $k$ 的坐标为 $\tilde{x}_i^k - g_i^k$。
-变换后的边赋值为：
+{\bf Proof.} After alignment, expert $i$ at configuration $k$ has coordinate
+$\tilde{x}_i^k - g_i^k$. The transformed edge assignment is:
 \[
     A'_e = (\tilde{x}_j^\ell - g_j^\ell) - (\tilde{x}_i^k - g_i^k)
          = (\tilde{x}_j^\ell - \tilde{x}_i^k) - (g_j^\ell - g_i^k)
@@ -798,36 +534,25 @@ $\hat{x}_m^k = \tilde{x}_m^k - g_m^k$.
 \]
 \end{proposition}
 
-\noindent
-Under a gauge transformation by vertex potential $g$, the edge assignment $A$
-transforms as: for each edge $e = (u \to v)$, $A'_e = A_e - (g_v - g_u) = A_e - (d_0 g)_e$,
-i.e., $A' = A - d_0 g$.
-This is the discrete exact analog of the continuous abelian gauge transformation
-$A'_\mu = A_\mu - \partial_\mu \Lambda$.
+\subsection{Curvature: Holonomy around Elementary Loops}
 
-\subsection{曲率：沿基本回路的和乐 / Curvature: Holonomy around Elementary Loops}
-
-\begin{definition}[SCX 基本回路]
-图 $\grph_{\text{SCX}}$ 的{\bf 基本四边形回路}具有以下形式：
-对每对相邻构型 $k, k+1$ 和每对不同专家 $i, j$（$i \neq j$）：
+\begin{definition}[SCX Elementary Loops]
+The {\bf elementary quadrilateral loops} of $\grph_{\text{SCX}}$ have the form:
+for each adjacent configuration pair $k, k+1$ and each distinct expert pair $i, j$ ($i \neq j$):
 \[
-    \gamma_{k,i,j} := (k,i) \xrightarrow{\text{专家}} (k,j)
-                    \xrightarrow{\text{参数}} (k{+}1,j)
-                    \xrightarrow{\text{专家}} (k{+}1,i)
-                    \xrightarrow{\text{参数}} (k,i).
+    \gamma_{k,i,j} := (k,i) \xrightarrow{\text{expert}} (k,j)
+                    \xrightarrow{\text{param}} (k{+}1,j)
+                    \xrightarrow{\text{expert}} (k{+}1,i)
+                    \xrightarrow{\text{param}} (k,i).
 \]
-注意：从 $(k{+}1,j)$ 到 $(k{+}1,i)$ 的专家边方向是反向的（$j \to i$），
-从 $(k{+}1,i)$ 到 $(k,i)$ 的参数边方向也是反向的。
+Note: the expert edge from $(k{+}1,j)$ to $(k{+}1,i)$ is reversed ($j \to i$),
+and the parameter edge from $(k{+}1,i)$ to $(k,i)$ is also reversed.
 \end{definition}
 
-\noindent
-The {\bf elementary quadrilateral loops} of $\grph_{\text{SCX}}$ have the form:
-for each adjacent configuration pair $k, k+1$ and each distinct expert pair $i, j$:
-$\gamma_{k,i,j} := (k,i) \to (k,j) \to (k{+}1,j) \to (k{+}1,i) \to (k,i)$.
-
-\begin{definition}[离散曲率：沿回路的和乐]
-沿四边形回路 $\gamma_{k,i,j}$ 的{\bf 离散曲率}（{\bf 和乐}）定义为边赋值
-沿该回路的代数和（注意边的方向）：
+\begin{definition}[Discrete Curvature: Holonomy around Loops]
+The {\bf discrete curvature} ({\bf holonomy}) around the quadrilateral loop
+$\gamma_{k,i,j}$ is the algebraic sum of edge assignments along the loop
+(accounting for edge direction):
 \[
 \begin{aligned}
     \curv(\gamma_{k,i,j})
@@ -837,7 +562,7 @@ $\gamma_{k,i,j} := (k,i) \to (k,j) \to (k{+}1,j) \to (k{+}1,i) \to (k,i)$.
 \end{aligned}
 \]
 
-代入边赋值的定义：
+Substituting the definitions of edge assignments:
 \[
 \begin{aligned}
     \curv(\gamma_{k,i,j})
@@ -846,26 +571,6 @@ $\gamma_{k,i,j} := (k,i) \to (k,j) \to (k{+}1,j) \to (k{+}1,i) \to (k,i)$.
     &= (\tilde{x}_i^k - \tilde{x}_j^k) + (\tilde{x}_j^{k+1} - \tilde{x}_j^k)
        + (\tilde{x}_j^{k+1} - \tilde{x}_i^{k+1}) + (\tilde{x}_i^k - \tilde{x}_i^{k+1}).
 \end{aligned}
-\]
-
-简化后：
-\[
-    \curv(\gamma_{k,i,j}) = (\tilde{x}_i^k - \tilde{x}_i^{k+1}) - (\tilde{x}_j^k - \tilde{x}_j^{k+1}).
-\]
-
-{\bf 几何解释：} $\curv(\gamma_{k,i,j})$ 度量了专家 $i$ 与专家 $j$ 在参数
-$k \to k+1$ 之间的预测变化量之{\bf 差}。
-若两个专家的预测在参数变化下以完全相同的方式变化，
-则该四边形回路的曲率为零。
-\end{definition}
-
-\noindent
-The {\bf discrete curvature} ({\bf holonomy}) around the quadrilateral loop
-$\gamma_{k,i,j}$ is the algebraic sum of edge assignments along the loop:
-\[
-    \curv(\gamma_{k,i,j})
-    = \delta_{ij}^k + (\tilde{x}_j^{k+1} - \tilde{x}_j^k)
-      + \delta_{ji}^{k+1} + (\tilde{x}_i^k - \tilde{x}_i^{k+1}).
 \]
 
 Simplifying:
@@ -878,235 +583,158 @@ Simplifying:
 between parameters $k$ and $k+1$. If the two experts' predictions change
 in exactly the same way under the parameter variation, the curvature
 of this quadrilateral loop is zero.
+\end{definition}
 
-\begin{proposition}[曲率的规范不变性]
+\begin{proposition}[Gauge Invariance of Curvature]
 \label{prop:curv_gauge_inv}
-离散曲率 $\curv(\gamma)$ 是规范不变的：
-对任意顶点势 $g$，有 $\curv'(\gamma) = \curv(\gamma)$。
+Discrete curvature $\curv(\gamma)$ is gauge-invariant:
+for any vertex potential $g$, $\curv'(\gamma) = \curv(\gamma)$.
 
-{\bf 证明.} 对任意回路 $\gamma$，
-$\curv'(\gamma) = \sum_e \sigma_e A'_e = \sum_e \sigma_e (A_e - (d_0 g)_e)
-= \curv(\gamma) - \sum_e \sigma_e (d_0 g)_e$。
-但 $\sum_e \sigma_e (d_0 g)_e = (d_1 d_0 g)_\gamma = 0$（由定理~\ref{thm:d1d0}，$d_1 d_0 = 0$）。
-故 $\curv'(\gamma) = \curv(\gamma)$。$\square$
+{\bf Proof.} For any loop $\gamma$,
+$\curv'(\gamma) = \sum_e \sigma_e A'_e
+= \sum_e \sigma_e (A_e - (d_0 g)_e)
+= \curv(\gamma) - \sum_e \sigma_e (d_0 g)_e$.
+But $\sum_e \sigma_e (d_0 g)_e = (d_1 d_0 g)_\gamma = 0$ (by Theorem~\ref{thm:d1d0}, $d_1 d_0 = 0$).
+Thus $\curv'(\gamma) = \curv(\gamma)$. $\square$
 
-这是连续 Abel 理论中 $F_{\mu\nu} = \partial_\mu A_\nu - \partial_\nu A_\mu$ 的规范不变性
-的离散类比。
+This is the discrete analog of the gauge invariance of
+$F_{\mu\nu} = \partial_\mu A_\nu - \partial_\nu A_\mu$ in continuous abelian theory.
 \end{proposition}
 
-\noindent
-{\bf Proposition~\ref{prop:curv_gauge_inv} (Gauge invariance of curvature).}
-$\curv(\gamma)$ is gauge-invariant: for any vertex potential $g$,
-$\curv'(\gamma) = \curv(\gamma)$.
-
-{\bf Proof.} $\curv'(\gamma) = \sum_e \sigma_e A'_e
-= \sum_e \sigma_e (A_e - (d_0 g)_e) = \curv(\gamma) - (d_1 d_0 g)_\gamma
-= \curv(\gamma)$, since $d_1 d_0 = 0$ (Theorem~\ref{thm:d1d0}). $\square$
-
-\begin{definition}[曲率向量]
-将所有基本四边形的曲率值收集为单个向量
-$\boldsymbol{\kappa} \in \R^{|\mathcal{L}| \times d}$（因为每个回路 $d$ 个坐标维度的曲率），
-或简写为 $\boldsymbol{\kappa} \in \Omega^2(\grph_{\text{SCX}}; \R^d)$。
-形式上，对每个坐标 $a = 1, \dots, d$：
+\begin{definition}[Curvature Vector]
+Collect all elementary quadrilateral curvatures into a single vector
+$\boldsymbol{\kappa} \in \R^{|\mathcal{L}| \times d}$ (since each loop has curvature in $d$ coordinate dimensions),
+or $\boldsymbol{\kappa} \in \Omega^2(\grph_{\text{SCX}}; \R^d)$.
+Formally, for each coordinate $a = 1, \dots, d$:
 \[
     \boldsymbol{\kappa}_a = d_1 A_a = C \, \mathbf{A}_a,
 \]
-其中 $\mathbf{A}_a \in \R^m$ 是所有边在第 $a$ 坐标上的赋值向量，
-$C$ 是回路矩阵。
+where $\mathbf{A}_a \in \R^m$ is the vector of edge assignments in the $a$-th coordinate,
+and $C$ is the cycle matrix.
 \end{definition}
 
-\noindent
-Collect all elementary quadrilateral curvatures into a single vector
-$\boldsymbol{\kappa} \in \R^{|\mathcal{L}| \times d}$,
-or $\boldsymbol{\kappa} \in \Omega^2(\grph_{\text{SCX}}; \R^d)$.
-Formally, for each coordinate $a = 1, \dots, d$:
-$\boldsymbol{\kappa}_a = d_1 A_a = C \, \mathbf{A}_a$.
+\subsection{Flatness Condition}
 
-\subsection{平坦性条件 / Flatness Condition}
-
-\begin{theorem}[SCX 平坦性判别准则]
+\begin{theorem}[SCX Flatness Criterion]
 \label{thm:flatness}
-以下条件等价：
+The following are equivalent:
 \begin{enumerate}[label=(\roman*)]
-    \item 对所有基本回路 $\gamma \in \mathcal{L}$，有 $\curv(\gamma) = 0$；
-    \item 边赋值 $A$ 是正合的：存在顶点势 $g$ 使得 $A = d_0 g$；
-    \item 存在全局规范对齐：对齐后的坐标 $\hat{x}_m^k = \tilde{x}_m^k - g_m^k$
-        使得所有专家边赋值变为零（即所有专家在相同构型处输出相同坐标）。
+    \item $\curv(\gamma) = 0$ for all elementary loops $\gamma \in \mathcal{L}$;
+    \item The edge assignment $A$ is exact: there exists a vertex potential $g$ such that $A = d_0 g$;
+    \item Global gauge alignment exists: the aligned coordinates
+        $\hat{x}_m^k = \tilde{x}_m^k - g_m^k$
+        make all expert edge assignments vanish (i.e., all experts output the same coordinates
+        at the same configuration).
 \end{enumerate}
 
-{\bf 证明.} $(i) \Leftrightarrow (ii)$ 由离散霍奇理论（$d_1 A = 0 \Rightarrow A \in \ker(d_1)$，
-但需注意图有回路时 $\ker(d_1) = \im(d_0) \oplus \ker(\Lone)$。
-对所有{\it 四边形}回路 $d_1 A = 0$ 保证了 $A$ 没有四边形回路分量。
-若图仅由四边形回路生成（如 SCX 图），则这等价于 $A \in \ker(d_1)$。
-然而，若调和分量非零，$A$ 仍可满足 $d_1 A = 0$ 但不是正合的。
-对于 SCX 图的特定拓扑结构，我们将在下文分析此细微之处。）
+{\bf Proof.} $(i) \Leftrightarrow (ii)$ by discrete Hodge theory ($d_1 A = 0 \Rightarrow A \in \ker(d_1)$,
+but note that when the graph has cycles, $\ker(d_1) = \im(d_0) \oplus \ker(\Lone)$.
+That $d_1 A = 0$ for all {\it quadrilateral} loops guarantees $A$ has no quadrilateral loop component.
+If the graph is generated solely by quadrilateral loops (as in the SCX graph), this is equivalent to
+$A \in \ker(d_1)$. However, if the harmonic component is non-zero, $A$ may still satisfy
+$d_1 A = 0$ without being exact. For the specific topology of the SCX graph, we analyze
+this subtlety below.)
 
-$(ii) \Rightarrow (iii)$：若 $A = d_0 g$，则对专家边 $e = (k,i) \to (k,j)$：
-$A_e = g_j^k - g_i^k$。但 $A_e = \delta_{ij}^k = \tilde{x}_i^k - \tilde{x}_j^k$。
-故 $\tilde{x}_i^k - \tilde{x}_j^k = g_j^k - g_i^k$，
-即 $\tilde{x}_i^k - g_i^k = \tilde{x}_j^k - g_j^k$。
-因此对齐后的坐标 $\hat{x}_i^k = \hat{x}_j^k$ 对所有 $i,j,k$ 成立。
+$(ii) \Rightarrow (iii)$: If $A = d_0 g$, then for an expert edge $e = (k,i) \to (k,j)$:
+$A_e = g_j^k - g_i^k$. But $A_e = \delta_{ij}^k = \tilde{x}_i^k - \tilde{x}_j^k$.
+Thus $\tilde{x}_i^k - \tilde{x}_j^k = g_j^k - g_i^k$,
+i.e., $\tilde{x}_i^k - g_i^k = \tilde{x}_j^k - g_j^k$.
+Therefore the aligned coordinates satisfy $\hat{x}_i^k = \hat{x}_j^k$ for all $i,j,k$.
 
-$(iii) \Rightarrow (ii)$：反向同理。$\square$
+$(iii) \Rightarrow (ii)$: Reverse the argument. $\square$
 \end{theorem}
 
-\noindent
-{\bf Theorem~\ref{thm:flatness} (SCX Flatness Criterion).}
-The following are equivalent:
-(i) $\curv(\gamma) = 0$ for all elementary loops $\gamma \in \mathcal{L}$;
-(ii) $A$ is exact: there exists a vertex potential $g$ with $A = d_0 g$;
-(iii) Global gauge alignment exists: the aligned coordinates
-$\hat{x}_m^k = \tilde{x}_m^k - g_m^k$ make all expert edge assignments vanish
-(all experts output the same coordinates at the same configuration).
+\subsection{Non-Flatness and PES Misalignment}
 
-\subsection{非平坦性与势能面不齐 / Non-Flatness and PES Misalignment}
-
-\begin{theorem}[势能面不齐的离散刻画]
+\begin{theorem}[Discrete Characterization of PES Misalignment]
 \label{thm:pes_misalignment}
-若存在基本回路 $\gamma$ 使得 $\curv(\gamma) \neq 0$（即边赋值 $A$ 不是正合的），
-则不存在顶点势 $g$ 能够同时使所有专家边赋值为零。
-换言之，不存在单一全局规范选择能够完美对齐所有专家。
-此即{\bf 势能面不齐 (PES misalignment)} 的离散表述。
-
-更一般地，$\curv(\gamma) \neq 0$ 意味着：
-至少存在一对专家 $(i,j)$ 和一对相邻构型 $(k, k+1)$，
-使得专家 $i$ 与专家 $j$ 在 $(k \to k+1)$ 之间的预测变化不一致。
-其几何图像为：两个势能面在参数空间中以不同的方式弯曲。
-\end{theorem}
-
-\noindent
-{\bf Theorem~\ref{thm:pes_misalignment} (Discrete characterization of PES misalignment).}
 If there exists an elementary loop $\gamma$ with $\curv(\gamma) \neq 0$
-(i.e., $A$ is not exact), then no vertex potential $g$ can simultaneously
-zero all expert edge assignments — no single global gauge choice can perfectly
-align all experts. This is the discrete formulation of
-{\bf 势能面不齐 (PES misalignment)}.
+(i.e., the edge assignment $A$ is not exact),
+then no vertex potential $g$ can simultaneously
+zero all expert edge assignments.
+In other words, no single global gauge choice can perfectly
+align all experts.
+This is the discrete formulation of {\bf PES misalignment} (potential energy surface misalignment).
+
+More generally, $\curv(\gamma) \neq 0$ implies:
+there exists at least one pair of experts $(i,j)$ and one pair of adjacent configurations $(k, k+1)$
+such that expert $i$'s and expert $j$'s prediction changes between $(k \to k+1)$ are inconsistent.
+The geometric picture: two potential energy surfaces bend differently in parameter space.
+\end{theorem}
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{规范固定：最小二乘与零模 / Gauge-Fixing: Least Squares and the Zero-Mode}
+\section{Gauge-Fixing: Least Squares and the Zero-Mode}
 % ══════════════════════════════════════════════════════════════════════
 
-\subsection{规范固定作为最小二乘问题 / Gauge-Fixing as a Least-Squares Problem}
+\subsection{Gauge-Fixing as a Least-Squares Problem}
 
-当曲率非零时，不存在精确满足 $A = d_0 g$ 的顶点势 $g$。
-此时我们可以寻找一个``最佳近似''——极小化 $A$ 与其正合逼近 $d_0 g$
-之间的 $L^2$ 距离的顶点势。此即{\bf 规范固定}的离散形式化。
+When curvature is non-zero, there is no vertex potential $g$ satisfying $A = d_0 g$ exactly.
+We can then seek a ``best approximation'' — a vertex potential that minimizes
+the $L^2$ distance between $A$ and its exact approximation $d_0 g$.
+This is the discrete formalization of {\bf gauge-fixing}.
 
-\begin{definition}[最小二乘规范固定问题]
-给定边赋值 $A \in \Omega^1(\grph_{\text{SCX}}; \R^d)$，
-寻找顶点势 $g: \verts \to \R^d$ 极小化残差范数的平方：
+\begin{definition}[Least-Squares Gauge-Fixing Problem]
+Given edge assignment $A \in \Omega^1(\grph_{\text{SCX}}; \R^d)$,
+find vertex potential $g: \verts \to \R^d$ minimizing the squared residual norm:
 \[
     \min_{g \in \R^{n \times d}} \; \mathcal{R}[g] := \sum_{e \in \edgs} \|A_e - (d_0 g)_e\|^2.
 \]
 
-其中 $\|\cdot\|$ 是 $\R^d$ 上的欧氏范数。
-展开目标函数：
+where $\|\cdot\|$ is the Euclidean norm on $\R^d$.
+Expanding the objective:
 \[
     \mathcal{R}[g] = \sum_{a=1}^{d} \sum_{e \in \edgs} (A_{e,a} - (d_0 g_a)_e)^2
     = \sum_{a=1}^{d} \|\mathbf{A}_a - B \mathbf{g}_a\|^2,
 \]
-其中 $\mathbf{A}_a \in \R^m$ 是所有边在第 $a$ 维坐标上的赋值向量，
-$\mathbf{g}_a \in \R^n$ 是所有顶点上的第 $a$ 维规范参数，
-$B \in \R^{m \times n}$ 是图 $\grph_{\text{SCX}}$ 的关联矩阵。
+where $\mathbf{A}_a \in \R^m$ is the vector of edge assignments in the $a$-th coordinate,
+$\mathbf{g}_a \in \R^n$ is the $a$-th coordinate of gauge parameters on all vertices,
+and $B \in \R^{m \times n}$ is the incidence matrix of $\grph_{\text{SCX}}$.
 \end{definition}
 
-\noindent
-Given edge assignment $A \in \Omega^1(\grph_{\text{SCX}}; \R^d)$,
-find vertex potential $g: \verts \to \R^d$ minimizing the squared residual norm:
-$\min_{g \in \R^{n \times d}} \; \mathcal{R}[g] := \sum_{e \in \edgs} \|A_e - (d_0 g)_e\|^2$.
+\subsection{Normal Equations and the Zero-Mode}
 
-Expanding: $\mathcal{R}[g] = \sum_{a=1}^{d} \sum_{e \in \edgs} (A_{e,a} - (d_0 g_a)_e)^2
-= \sum_{a=1}^{d} \|\mathbf{A}_a - B \mathbf{g}_a\|^2$.
-
-\subsection{法方程与零模 / Normal Equations and the Zero-Mode}
-
-\begin{proposition}[法方程]
+\begin{proposition}[Normal Equations]
 \label{prop:normal_eq}
-极小化问题 $\min_g \|\mathbf{A} - B\mathbf{g}\|^2$ 的最优性条件为法方程：
+The optimality condition for $\min_g \|\mathbf{A} - B\mathbf{g}\|^2$ is the normal equation:
 \[
     B^T B \, \mathbf{g} = B^T \mathbf{A}.
 \]
-即（对每个坐标维独立）：
+i.e., (for each coordinate dimension independently):
 \[
     \Lzero \, \mathbf{g} = \dzeroT \mathbf{A},
 \]
-其中 $\Lzero = B^T B$ 是图拉普拉斯矩阵（无权情形）。
+where $\Lzero = B^T B$ is the graph Laplacian (unweighted case).
 \end{proposition}
 
-\noindent
-The optimality condition for $\min_g \|\mathbf{A} - B\mathbf{g}\|^2$ is the
-normal equation: $B^T B \, \mathbf{g} = B^T \mathbf{A}$, i.e.,
-$\Lzero \, \mathbf{g} = \dzeroT \mathbf{A}$.
-
-\begin{remark}[零模：解的非唯一性]
-图拉普拉斯 $\Lzero = B^T B$ 总是奇异的（对于连通图，$\ker(\Lzero) = \operatorname{span}(\mathbf{1})$，
-即全一向量）。其物理解释为：若 $g$ 是最优规范参数，则
-$g + c$（对所有专家和构型加上同一个常数平移 $c \in \R^d$）给出完全相同的残差，
-因为 $(d_0(g + c))_e = (d_0 g)_e + (c - c) = (d_0 g)_e$。
-
-该非唯一性——称为{\bf 零模 (zero-mode)}——对应于所有专家共享的``整体平移''自由度。
-并没有物理内容与之关联（所有成对位移在此变换下不变），
-但它使得最小二乘问题没有唯一解，需要在数值上加以固定。
-\end{remark}
-
-\noindent
+\begin{remark}[The Zero-Mode: Non-Uniqueness of Solution]
 The graph Laplacian $\Lzero = B^T B$ is always singular (for a connected graph,
 $\ker(\Lzero) = \operatorname{span}(\mathbf{1})$, the all-ones vector).
-Physically: if $g$ is an optimal gauge parameter, then $g + c$
-(adding the same constant translation $c \in \R^d$ to all experts and configurations)
-gives the identical residual, since $(d_0(g + c))_e = (d_0 g)_e$.
+Its physical interpretation: if $g$ is an optimal gauge parameter, then
+$g + c$ (adding the same constant translation $c \in \R^d$ to all experts and configurations)
+gives the identical residual, since $(d_0(g + c))_e = (d_0 g)_e + (c - c) = (d_0 g)_e$.
 
 This non-uniqueness — called the {\bf zero-mode} — corresponds to the
 ``overall translation'' degree of freedom shared by all experts.
-It carries no physical content (all pairwise displacements are invariant),
-but makes the least-squares problem ill-posed and must be fixed numerically.
+It carries no physical content (all pairwise displacements are invariant under this transformation),
+but it makes the least-squares problem ill-posed and must be fixed numerically.
+\end{remark}
 
-\subsection{零模固定：$\sum g_v = 0$（不是 Coulomb 规范！） / Zero-Mode Fixing: $\sum g_v = 0$ (Not Coulomb Gauge!)}
+\subsection{Zero-Mode Fixing: $\sum g_v = 0$ (Not Coulomb Gauge!)}
 
-现在我们来到一个关键的辨明点。
+We now arrive at a critical point of clarification.
 
-\begin{theorem}[$\sum_v g_v = 0$ 是零模固定，不是 Coulomb 规范]
+\begin{theorem}[$\sum_v g_v = 0$ Is Zero-Mode Fixing, Not Coulomb Gauge]
 \label{thm:zero_mode}
-约束
+The constraint
 \[
     \sum_{v \in \verts} g_v = 0
 \]
-（或等价地 $\langle g, \mathbf{1} \rangle = 0$，即 $g \perp \mathbf{1}$）
-的功能是{\bf 消除零模以保证解的唯一性}。它{\bf 不是}连续 Coulomb 规范
-$\partial_\mu A^\mu = 0$ 的离散类比。
-
-{\bf 理由.} 
-\begin{enumerate}[label=(\arabic*)]
-    \item {\bf 约束的对象不同。} 
-        $\sum g_v = 0$ 是对{\bf 规范参数} $g$ 的线性约束。
-        Coulomb 规范 $\partial_\mu A^\mu = 0$ 是对{\bf 规范势} $A$ 的散度约束。
-        前者在 $\Omega^0(\grph)$ 中，后者在 $\Omega^1(\grph)$ 中。
-
-    \item {\bf 数学类型不同。}
-        $\sum g = 0$ 是代数约束（$g$ 正交于零模方向）。
-        散度 $\dzeroT A = 0$ 是微分约束（要求离散散度为零）。
-        二者作用于不同的空间。
-
-    \item {\bf 连续类比不同。}
-        $\sum g_v = 0$ 的连续类比不是 $\partial_\mu A^\mu = 0$，
-        而是规范参数的正交条件 $\int \Lambda(x) \,dx = 0$，
-        即在规范变换 $A \to A - d\Lambda$ 中固定积分常数。
-        此即固定``规范参数的零模''，而非对联络施加条件。
-
-    \item {\bf 在计算中扮演的角色不同。}
-        在求解法方程 $B^T B g = B^T A$ 时，约束 $\sum g = 0$ 等价于
-        在 $\mathbf{1}^\perp$（全一向量正交补）上求伪逆或最小范数解。
-        这使得线性系统非奇异，但不改变残差 $\mathcal{R}[g]$ 的值。
-    \end{enumerate}
-\end{theorem}
-
-\noindent
-{\bf Theorem~\ref{thm:zero_mode} ($\sum_v g_v = 0$ is zero-mode fixing, not Coulomb gauge).}
-The constraint $\sum_{v \in \verts} g_v = 0$ serves to {\bf eliminate the zero-mode
-to ensure solution uniqueness}. It is {\bf not} the discrete analog of the
-continuous Coulomb gauge $\partial_\mu A^\mu = 0$.
+(or equivalently $\langle g, \mathbf{1} \rangle = 0$, i.e., $g \perp \mathbf{1}$)
+serves to {\bf eliminate the zero-mode to ensure solution uniqueness}.
+It is {\bf not} the discrete analog of the continuous Coulomb gauge
+$\partial_\mu A^\mu = 0$.
 
 {\bf Reasons:}
 \begin{enumerate}[label=(\arabic*)]
@@ -1114,55 +742,58 @@ continuous Coulomb gauge $\partial_\mu A^\mu = 0$.
         $\sum g_v = 0$ is a linear constraint on the {\bf gauge parameter} $g \in \Omega^0$.
         Coulomb gauge $\partial_\mu A^\mu = 0$ is a divergence constraint on the
         {\bf gauge potential} $A \in \Omega^1$.
+        The former lives in $\Omega^0(\grph)$, the latter in $\Omega^1(\grph)$.
+
     \item {\bf Different mathematical type.}
         $\sum g = 0$ is algebraic ($g$ orthogonal to the zero-mode direction).
         The divergence $\dzeroT A = 0$ is differential (requiring discrete divergence to vanish).
+        They act on different spaces.
+
     \item {\bf Different continuous analog.}
         The continuous analog of $\sum g_v = 0$ is not $\partial_\mu A^\mu = 0$,
         but the orthogonality condition $\int \Lambda(x) \,dx = 0$ on the gauge parameter —
-        fixing the integration constant in $A \to A - d\Lambda$.
+        fixing the integration constant in the gauge transformation $A \to A - d\Lambda$.
+        This fixes the ``zero-mode of the gauge parameter,'' not imposes a condition on the connection.
+
     \item {\bf Different role in computation.}
-        In solving $B^T B g = B^T A$, the constraint $\sum g = 0$ is equivalent to
-        taking the pseudo-inverse or minimum-norm solution on $\mathbf{1}^\perp$.
-        It makes the linear system non-singular without changing the residual $\mathcal{R}[g]$.
+        In solving the normal equation $B^T B g = B^T A$, the constraint $\sum g = 0$ is equivalent to
+        taking the pseudo-inverse or minimum-norm solution on $\mathbf{1}^\perp$
+        (the orthogonal complement of the all-ones vector).
+        It makes the linear system non-singular without changing the value of the residual $\mathcal{R}[g]$.
 \end{enumerate}
+\end{theorem}
 
-\begin{remark}[什么是真正的离散 Coulomb 规范？]
-如果我们要在图上定义真正的 Coulomb 规范类比，它应当是：
-\[
-    \dzeroT A = 0 \quad \text{或} \quad \dzeroT (A - d_0 g) = 0,
-\]
-即要求规范固定后的边赋值的离散散度为零。
-这是一个完全不同的方程，涉及 $\Lone$ 而非 $\Lzero$，
-且在 SCX 的计算中{\bf 从未被使用}。
-SCX 的解 $g$ 满足 $B^T B g = B^T A$ 加上 $\sum g = 0$，
-但并不保证 $B^T (A - B g) = 0$（实际上后者{\it 就是}法方程本身，而非附加条件）。
-\end{remark}
-
-\noindent
+\begin{remark}[What Is the Genuine Discrete Coulomb Gauge?]
 A genuine discrete Coulomb gauge analog would be:
-$\dzeroT A = 0$ or $\dzeroT (A - d_0 g) = 0$,
+\[
+    \dzeroT A = 0 \quad \text{or} \quad \dzeroT (A - d_0 g) = 0,
+\]
 i.e., requiring the discrete divergence of the gauge-fixed edge assignment to vanish.
 This is an entirely different equation, involving $\Lone$ rather than $\Lzero$,
 and is {\bf never used} in the SCX computation.
+The SCX solution $g$ satisfies $B^T B g = B^T A$ together with $\sum g = 0$,
+but does not guarantee $B^T (A - B g) = 0$ (in fact the latter {\it is} the normal equation itself,
+not an additional condition).
+\end{remark}
 
-\subsection{规范固定问题的求解 / Solving the Gauge-Fixing Problem}
+\subsection{Solving the Gauge-Fixing Problem}
 
-\begin{proposition}[零模固定下的闭式解]
+\begin{proposition}[Closed-Form Solution with Zero-Mode Fixing]
 \label{prop:solution}
-加上零模固定约束 $\sum_v g_v = 0$（对每个坐标维分别施加）的最小二乘问题：
+With zero-mode fixing constraint $\sum_v g_{v,a} = 0$ (imposed independently for each coordinate dimension),
+the least-squares problem:
 \[
     \min_{g: \sum_v g_{v,a} = 0} \sum_{a=1}^d \| \mathbf{A}_a - B \mathbf{g}_a \|^2
 \]
-的解由伪逆给出：
+has solution given by the pseudo-inverse:
 \[
     \mathbf{g}_a^* = (B^T B)^+ \, B^T \mathbf{A}_a,
 \]
-其中 $(B^T B)^+$ 是 $B^T B$ 的 Moore-Penrose 伪逆。
-等价地，$\mathbf{g}_a^*$ 是最小范数解，满足 $\mathbf{g}_a^* \perp \mathbf{1}$
-（即自动满足 $\sum_v g_{v,a}^* = 0$）。
+where $(B^T B)^+$ is the Moore-Penrose pseudo-inverse of $B^T B$.
+Equivalently, $\mathbf{g}_a^*$ is the minimum-norm solution, satisfying
+$\mathbf{g}_a^* \perp \mathbf{1}$ (i.e., automatically satisfying $\sum_v g_{v,a}^* = 0$).
 
-数值上，可以通过求解增广系统：
+Numerically, one can solve the augmented system:
 \[
     \begin{pmatrix}
         B^T B & \mathbf{1} \\
@@ -1176,60 +807,30 @@ and is {\bf never used} in the SCX computation.
         B^T \mathbf{A}_a \\ 0
     \end{pmatrix}
 \]
-来获得解，其中 $\lambda$ 是拉格朗日乘子。
+where $\lambda$ is a Lagrange multiplier.
 \end{proposition}
 
-\noindent
-With zero-mode fixing $\sum_v g_{v,a} = 0$, the solution is given by the
-pseudo-inverse: $\mathbf{g}_a^* = (B^T B)^+ \, B^T \mathbf{A}_a$,
-which is the minimum-norm solution satisfying $\mathbf{g}_a^* \perp \mathbf{1}$.
+\subsection{Geometric Interpretation of the Solution}
 
-\subsection{解的几何解释 / Geometric Interpretation of the Solution}
-
-\begin{proposition}[规范固定作为正交投影]
+\begin{proposition}[Gauge-Fixing as Orthogonal Projection]
 \label{prop:projection}
-最优顶点势 $g^*$ 满足：
+The optimal vertex potential $g^*$ satisfies:
 \[
     d_0 g^* = \text{proj}_{\im(B)}(\mathbf{A}),
 \]
-即 $B g^*$（$d_0 g^*$ 的向量形式）是 $\mathbf{A}$ 到 $\im(B)$（$B$ 的列空间）的
-正交投影。
-
-因此，规范固定将边赋值 $A$ 分解为两部分：
-\begin{itemize}
-    \item {\bf 可规范消除部分：} $d_0 g^* \in \im(d_0) \subseteq \Omega^1$ ——
-        可以通过选择规范参数完全吸收的边赋值分量（梯度部分）；
-    \item {\bf 不可消除残差：} $A - d_0 g^* \perp \im(d_0)$ ——
-        无论怎样选择规范参数都无法消除的剩余分量。
-\end{itemize}
-\end{proposition}
-
-\noindent
-The optimal vertex potential $g^*$ satisfies:
-$d_0 g^* = \text{proj}_{\im(B)}(\mathbf{A})$,
-i.e., $B g^*$ is the orthogonal projection of $\mathbf{A}$ onto $\im(B)$,
+i.e., $B g^*$ (the vector form of $d_0 g^*$) is the orthogonal projection of $\mathbf{A}$ onto $\im(B)$,
 the column space of $B$.
 
-Thus gauge-fixing decomposes the edge assignment $A$ into:
+Thus gauge-fixing decomposes the edge assignment $A$ into two parts:
 \begin{itemize}
     \item {\bf Gauge-removable part:} $d_0 g^* \in \im(d_0) \subseteq \Omega^1$ — the component
         that can be fully absorbed by choosing gauge parameters (the gradient part);
     \item {\bf Ineliminable residual:} $A - d_0 g^* \perp \im(d_0)$ — the component
         that cannot be removed by any choice of gauge parameters.
 \end{itemize}
+\end{proposition}
 
-\begin{remark}[与霍奇分解的关系]
-残差 $A - d_0 g^*$ 落在 $\im(d_0)^\perp$ 中。
-由离散霍奇分解（定理~\ref{thm:hodge_decomp}）：
-$\im(d_0)^\perp = \ker(\Lone) \oplus \im(\doneT)$。
-即规范固定后的残差包含了{\bf 调和部分}和{\bf 余正合部分}，
-它们共同度量了 $A$ 中``不可由梯度消除''的内容。
-
-特别地，$\ker(\Lone)$ 的维数等于图的圈数 (cyclomatic number) $|\mathcal{L}|$，
-即独立基本回路的个数。调和分量精确地对应了非零环路和乐——即非零离散曲率。
-\end{remark}
-
-\noindent
+\begin{remark}[Relation to Hodge Decomposition]
 The residual $A - d_0 g^*$ lies in $\im(d_0)^\perp$.
 By the discrete Hodge decomposition (Theorem~\ref{thm:hodge_decomp}):
 $\im(d_0)^\perp = \ker(\Lone) \oplus \im(\doneT)$.
@@ -1241,68 +842,44 @@ In particular, $\dim \ker(\Lone)$ equals the cyclomatic number $|\mathcal{L}|$
 of the graph — the number of independent elementary loops.
 The harmonic component precisely corresponds to non-zero loop holonomies —
 i.e., non-zero discrete curvature.
+\end{remark}
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{Cercis 分数：规范固定后的残差范数 / The Cercis Score: Residual Norm after Gauge-Fixing}
+\section{The Cercis Score: Residual Norm after Gauge-Fixing}
 % ══════════════════════════════════════════════════════════════════════
 
-\subsection{定义：残差，而非 Yang-Mills 泛函 / Definition: Residual, not Yang-Mills Functional}
+\subsection{Definition: Residual, not Yang-Mills Functional}
 
-我们现在给出 Cercis 分数的{\bf 唯一定义}，该定义直接匹配 SCX 的实际计算。
+We now give the {\bf unique definition} of the Cercis Score, one that directly matches
+the actual SCX computation.
 
-\begin{definition}[Cercis 分数]
+\begin{definition}[Cercis Score]
 \label{def:cercis}
-令 $g^*$ 为零模固定最小二乘问题（命题~\ref{prop:solution}）的最优顶点势。
-定义{\bf Cercis 分数}为规范固定后的{\bf 残差范数}：
+Let $g^*$ be the optimal vertex potential from the zero-mode-fixed least-squares
+problem (Proposition~\ref{prop:solution}).
+The {\bf Cercis Score} is defined as the {\bf residual norm after gauge-fixing}:
 \[
     \cercis := \mathcal{R}[g^*] = \sum_{e \in \edgs} \|A_e - (d_0 g^*)_e\|^2.
 \]
 
-展开为分量形式（每个坐标维）：
+Expanding component-wise (per coordinate dimension):
 \[
     \cercis = \sum_{a=1}^{d} \|\mathbf{A}_a - B \mathbf{g}_a^*\|^2
           = \sum_{a=1}^{d} \|\mathbf{A}_a - B (B^T B)^+ B^T \mathbf{A}_a\|^2.
 \]
 
-令 $P = B (B^T B)^+ B^T$ 为到 $\im(B)$ 的正交投影矩阵，
-$P^\perp = I - P$ 为到 $\im(B)^\perp$ 的投影。
-则简洁地：
+Let $P = B (B^T B)^+ B^T$ be the orthogonal projection matrix onto $\im(B)$,
+and $P^\perp = I - P$ the projector onto $\im(B)^\perp$.
+Then concisely:
 \[
     \cercis = \sum_{a=1}^{d} \|P^\perp \mathbf{A}_a\|^2
           = \sum_{a=1}^{d} \mathbf{A}_a^T P^\perp \mathbf{A}_a.
 \]
 \end{definition}
 
-\noindent
-Let $g^*$ be the optimal vertex potential from the zero-mode-fixed least-squares
-problem. The {\bf Cercis Score} is the {\bf residual norm after gauge-fixing}:
-\[
-    \cercis := \mathcal{R}[g^*] = \sum_{e \in \edgs} \|A_e - (d_0 g^*)_e\|^2.
-\]
-
-With $P = B (B^T B)^+ B^T$ the orthogonal projector onto $\im(B)$:
-$\cercis = \sum_{a=1}^{d} \|P^\perp \mathbf{A}_a\|^2
-= \sum_{a=1}^{d} \mathbf{A}_a^T P^\perp \mathbf{A}_a$.
-
-\begin{remark}[Cercis 不是 Yang-Mills 泛函]
-本文中的 Cercis 分数 {\bf 不是} Yang-Mills 泛函 $\int \|F\|^2$。
-它不是曲率范数的平方和，不是 $d_1 A$ 的 $L^2$ 范数。
-Cercis 是规范固定后的{\bf 残差}，即 $A$ 到 $\im(d_0)$ 的距离的平方。
-
-曲率 $\boldsymbol{\kappa} = d_1 A$ 满足 $\boldsymbol{\kappa} = d_1(A - d_0 g^*)$
-（因为 $d_1 d_0 = 0$），故曲率仅由残差 $A - d_0 g^*$ 决定。
-但 Cercis 是残差的{\it 全部}范数，而不仅限于其调和分量（即曲率）。
-具体地，若残差 $r = A - d_0 g^*$，则：
-\[
-    \cercis = \|r\|^2 = \|r_{\text{harm}}\|^2 + \|r_{\text{coexact}}\|^2,
-\]
-而 Yang-Mills 型泛函仅捕获调和范数 $\|d_1 r\|^2 = \|d_1 r_{\text{harm}}\|^2$。
-二者不同，且 Cercis 才是 SCX 实际使用的量。
-\end{remark}
-
-\noindent
+\begin{remark}[Cercis Is Not the Yang-Mills Functional]
 The Cercis Score in this paper is {\bf not} the Yang-Mills functional $\int \|F\|^2$.
 It is not the sum of squared curvature norms, not the $L^2$ norm of $d_1 A$.
 Cercis is the {\bf residual} after gauge-fixing — the squared distance from $A$ to $\im(d_0)$.
@@ -1312,170 +889,126 @@ The curvature $\boldsymbol{\kappa} = d_1 A$ satisfies $\boldsymbol{\kappa} = d_1
 $A - d_0 g^*$. But Cercis is the {\it total} norm of the residual,
 not just its harmonic component (i.e., curvature).
 Specifically, if $r = A - d_0 g^*$, then:
-$\cercis = \|r\|^2 = \|r_{\text{harm}}\|^2 + \|r_{\text{coexact}}\|^2$,
+\[
+    \cercis = \|r\|^2 = \|r_{\text{harm}}\|^2 + \|r_{\text{coexact}}\|^2,
+\]
 whereas a Yang-Mills-type functional would only capture
 $\|d_1 r\|^2 = \|d_1 r_{\text{harm}}\|^2$. These are different,
 and Cercis is the quantity actually used by SCX.
-
-\subsection{规范不变性 / Gauge Invariance}
-
-\begin{theorem}[Cercis 的规范不变性]
-\label{thm:cercis_inv}
-Cercis 分数 $\cercis$ 是规范不变的：
-在规范变换 $A \mapsto A' = A - d_0 h$ 下（其中 $h$ 为任意顶点势），
-有 $\cercis' = \cercis$。
-
-{\bf 证明.} 令 $g^*$ 为原始 $A$ 的最优顶点势。
-则在变换后的边赋值 $A' = A - d_0 h$ 下，最优点为 $g'^* = g^* - h$，
-（因为 $A' - d_0 g'^* = (A - d_0 h) - d_0(g^* - h) = A - d_0 g^*$）。
-故残差不变：$\|A' - d_0 g'^*\|^2 = \|A - d_0 g^*\|^2$。
-因此 $\cercis' = \cercis$。$\square$
-\end{theorem}
-
-\noindent
-{\bf Theorem~\ref{thm:cercis_inv} (Gauge invariance of Cercis).}
-$\cercis$ is gauge-invariant: under $A \mapsto A' = A - d_0 h$, $\cercis' = \cercis$.
-
-{\bf Proof.} The optimal potential shifts as $g'^* = g^* - h$, leaving the
-residual unchanged: $\|A' - d_0 g'^*\|^2 = \|A - d_0 g^*\|^2$. $\square$
-
-\begin{remark}[规范不变性的直觉]
-因为 $\cercis$ 定义为残差范数，即 $A$ 到子空间 $\im(d_0)$ 的（平方）距离，
-而 $\im(d_0)$ 是整个规范轨道的切线空间（事实上就是轨道本身，因为群是 Abel 的），
-所以该距离在规范变换下不变。
 \end{remark}
 
-\subsection{Cercis 的判别性质 / Discriminative Properties of Cercis}
+\subsection{Gauge Invariance}
 
-\begin{theorem}[$\cercis = 0$ 的刻画]
-\label{thm:cercis_zero}
-以下条件等价：
-\begin{enumerate}[label=(\roman*)]
-    \item $\cercis = 0$；
-    \item 边赋值 $A$ 是正合的：存在 $g$ 使得 $A = d_0 g$；
-    \item $A \in \im(d_0)$，即 $A$ 完全由梯度部分构成；
-    \item 存在完美全局对齐：所有专家在所有构型下输出一致的坐标；
-    \item 对所有四边形基本回路 $\gamma$，$\curv(\gamma) = 0$，且\\
-        $A$ 的余正合分量为零。
-\end{enumerate}
+\begin{theorem}[Gauge Invariance of Cercis]
+\label{thm:cercis_inv}
+The Cercis Score $\cercis$ is gauge-invariant:
+under the gauge transformation $A \mapsto A' = A - d_0 h$ (where $h$ is an arbitrary vertex potential),
+$\cercis' = \cercis$.
 
-注意：(v) 中的第二个条件（余正合分量为零）是必须的：$d_1 A = 0$ 本身
-仅排除调和分量，但不能保证 $A$ 是正合的（见定理~\ref{thm:flatness}的注记）。
-在 SCX 的实际计算中，若图具有非平凡的余正合分量，
-即使曲率为零也可能 $\cercis > 0$。
+{\bf Proof.} Let $g^*$ be the optimal vertex potential for the original $A$.
+Under the transformed edge assignment $A' = A - d_0 h$, the optimum shifts to $g'^* = g^* - h$,
+(since $A' - d_0 g'^* = (A - d_0 h) - d_0(g^* - h) = A - d_0 g^*$).
+Hence the residual is unchanged: $\|A' - d_0 g'^*\|^2 = \|A - d_0 g^*\|^2$.
+Therefore $\cercis' = \cercis$. $\square$
 \end{theorem}
 
-\noindent
-{\bf Theorem~\ref{thm:cercis_zero} (Characterization of $\cercis = 0$).}
-The following are equivalent:
-(i) $\cercis = 0$; (ii) $A$ is exact; (iii) $A \in \im(d_0)$;
-(iv) perfect global alignment exists; (v) all loop curvatures vanish
-{\it and} the coexact component of $A$ is zero.
+\begin{remark}[Intuition for Gauge Invariance]
+Since $\cercis$ is defined as the residual norm — the (squared) distance from $A$ to
+the subspace $\im(d_0)$ — and $\im(d_0)$ is the tangent space of the gauge orbit
+(in fact the orbit itself, since the group is abelian), the distance is invariant under
+gauge transformations.
+\end{remark}
 
-\subsection{Cercis 作为一致性度量 / Cercis as a Consistency Measure}
+\subsection{Discriminative Properties of Cercis}
+
+\begin{theorem}[Characterization of $\cercis = 0$]
+\label{thm:cercis_zero}
+The following are equivalent:
+\begin{enumerate}[label=(\roman*)]
+    \item $\cercis = 0$;
+    \item The edge assignment $A$ is exact: there exists $g$ such that $A = d_0 g$;
+    \item $A \in \im(d_0)$, i.e., $A$ consists entirely of the gradient part;
+    \item Perfect global alignment exists: all experts output consistent coordinates
+        at all configurations;
+    \item $\curv(\gamma) = 0$ for all quadrilateral elementary loops $\gamma$, {\it and}
+        the coexact component of $A$ is zero.
+\end{enumerate}
+
+Note: the second condition in (v) (coexact component zero) is necessary:
+$d_1 A = 0$ alone only excludes the harmonic component but does not guarantee
+that $A$ is exact (see the remark after Theorem~\ref{thm:flatness}).
+In the actual SCX computation, if the graph has a non-trivial coexact component,
+$\cercis > 0$ is possible even when curvature is zero.
+\end{theorem}
+
+\subsection{Cercis as a Consistency Measure}
 
 \begin{corollary}
-Cercis 分数提供了多专家系统规范一致性的客观度量：
+The Cercis Score provides an objective measure of gauge consistency of the
+multi-expert system:
 \begin{itemize}
-    \item $\cercis = 0$：系统是{\bf 规范一致的 (gauge-consistent)}。
-        存在一组规范平移使得对齐后的坐标不依赖于专家或构型的具体选择。
-    \item $\cercis > 0$：系统是{\bf 规范不一致的 (gauge-inconsistent)}。
-        残差的幅度度量了无法通过规范固定消除的``内在摩擦''。
-        $\cercis$ 越大，多专家系统越不一致。
+    \item $\cercis = 0$: the system is {\bf gauge-consistent}.
+        A set of gauge translations exists such that aligned coordinates
+        are independent of the specific choice of expert or configuration.
+    \item $\cercis > 0$: the system is {\bf gauge-inconsistent}.
+        The magnitude of the residual measures the ``intrinsic friction''
+        that cannot be eliminated by gauge-fixing.
+        The larger $\cercis$, the more inconsistent the multi-expert system.
 \end{itemize}
 
-Cercis 的归一化版本可定义为：
+A normalized version of Cercis can be defined as:
 \[
     \bar{\cercis} := \frac{\cercis}{\|A\|^2},
 \]
-取值范围在 $[0, 1]$ 之间，其中 $0$ 对应完美一致性，$1$ 对应完全不一致
-（即 $A$ 完全正交于 $\im(d_0)$）。
+taking values in $[0, 1]$, where $0$ corresponds to perfect consistency
+and $1$ corresponds to complete inconsistency
+(i.e., $A$ is completely orthogonal to $\im(d_0)$).
 \end{corollary}
-
-\noindent
-Cercis provides an objective measure of gauge consistency:
-\begin{itemize}
-    \item $\cercis = 0$: {\bf gauge-consistent} — a set of gauge translations exists
-        such that aligned coordinates are independent of expert/configuration.
-    \item $\cercis > 0$: {\bf gauge-inconsistent} — the residual magnitude
-        measures ``intrinsic friction'' that cannot be eliminated by gauge-fixing.
-\end{itemize}
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{拓扑平凡性的诚实承认 / Honest Acknowledgment of Topological Triviality}
+\section{Honest Acknowledgment of Topological Triviality}
 % ══════════════════════════════════════════════════════════════════════
 
-\subsection{所有陈类均为零 / All Chern Classes Vanish}
+\subsection{All Chern Classes Vanish}
 
-我们现在诚实地面对一个被先前工作所回避的基本事实。
+We now honestly confront a fundamental fact that prior work has evaded.
 
-\begin{proposition}[SCX 丛是拓扑平凡的]
+\begin{proposition}[The SCX Bundle Is Topologically Trivial]
 \label{prop:trivial}
-从连续主丛的角度看（如果非要建立的话）：
+From the perspective of continuous principal bundles (if one insists on constructing them):
 \begin{enumerate}[label=(\arabic*)]
-    \item {\bf 结构群 $G \cong \R^{Md}$ 是可缩的。}
-        作为向量空间，$\R^{Md}$ 可以连续收缩到原点。
-        因此其所有同伦群 $\pi_k(G) = 0$（$k \geq 0$）。
+    \item {\bf The structure group $G \cong \R^{Md}$ is contractible.}
+        As a vector space, $\R^{Md}$ can be continuously contracted to the origin.
+        Therefore all its homotopy groups vanish: $\pi_k(G) = 0$ for $k \geq 0$.
 
-    \item {\bf 底空间 $\mathcal{X} \subset \R^K$ 是可缩的。}
-        参数空间是 $\R^K$ 的一个子集（通常为凸集或立方体），同样可缩。
+    \item {\bf The base space $\mathcal{X} \subset \R^K$ is contractible.}
+        The parameter space is a subset of $\R^K$ (typically a convex set or cube), also contractible.
 
-    \item {\bf 分类空间是平凡的。}
-        对可缩群 $G$，其分类空间 $BG$ 是弱可缩的。
-        故同伦类集合 $[\mathcal{X}, BG] = \{*\}$ —— 只有一个同伦类。
-        因此所有 $G$-主丛在 $\mathcal{X}$ 上都是平凡的。
+    \item {\bf The classifying space is trivial.}
+        For a contractible group $G$, its classifying space $BG$ is weakly contractible.
+        Hence the set of homotopy classes $[\mathcal{X}, BG] = \{*\}$ — there is only one homotopy class.
+        Therefore all $G$-principal bundles over $\mathcal{X}$ are trivial.
 
-    \item {\bf 所有特征类为零。}
-        Chern 类、Pontryagin 类、Euler 类等所有实特征类恒为零。
-        因为 $\mathcal{X}$ 可缩 $\Rightarrow$ $H^k(\mathcal{X}; \R) = 0$（$k > 0$）。
-        第二 de Rham 上同调 $H^2_{\mathrm{dR}}(\mathcal{X}; \R) = 0$ 平凡地为零。
+    \item {\bf All characteristic classes are zero.}
+        Chern classes, Pontryagin classes, Euler classes, and all other real characteristic classes
+        are identically zero.
+        Since $\mathcal{X}$ is contractible $\Rightarrow$ $H^k(\mathcal{X}; \R) = 0$ for $k > 0$.
+        The second de Rham cohomology $H^2_{\mathrm{dR}}(\mathcal{X}; \R) = 0$ trivially.
 \end{enumerate}
 
-因此，不存在任何拓扑障碍。不存在拓扑不变量。不存在非平凡丛。
-SCX 主丛（如果我们要建立的话）只是平凡的直积 $\bun \cong G \times \mathcal{X}$。
+Therefore, there are no topological obstructions. No topological invariants. No non-trivial bundles.
+The SCX principal bundle (if we were to construct it) is simply the trivial product
+$\bun \cong G \times \mathcal{X}$.
 \end{proposition}
 
-\noindent
-{\bf Proposition~\ref{prop:trivial} (The SCX bundle is topologically trivial).}
-\begin{enumerate}[label=(\arabic*)]
-    \item $G \cong \R^{Md}$ is contractible (a vector space);
-    \item $\mathcal{X}$ is contractible (typically a convex subset of $\R^K$);
-    \item $[\mathcal{X}, BG] = \{*\}$, so all $G$-principal bundles are trivial;
-    \item All characteristic classes vanish ($H^k(\mathcal{X}) = 0$ for $k > 0$).
-\end{enumerate}
-There are no topological obstructions. No topological invariants.
-No non-trivial bundles.
+\subsection{The Content Is Geometric, Not Topological}
 
-\subsection{内容在几何，而非拓扑 / The Content is Geometric, Not Topological}
+Does this weaken the theory? No. Here is why.
 
-这削弱了理论吗？不。原因如下。
-
-\begin{remark}[真正的区分：平坦 vs.\ 非平坦联络]
-拓扑学处理的是何时一个丛不能约化为平凡丛的问题。
-对于 SCX，丛{\bf 总是}平凡的——这没有任何疑问。
-
-真正的内容是{\bf 几何}的：在给定的边赋值 $A$ 下，
-$A$ 是否落在 $\im(d_0)$ 中（即 $A$ 是否平坦 / 正合）？
-这是一个关于 $A$ 与子空间 $\im(d_0)$ 之间关系的{\it 线性代数}问题，
-而非拓扑问题。
-
-即使丛是平凡的，边赋值 $A$ 仍可具有非零的曲率分量（调和 $1$-形式）。
-这正是 $A \notin \im(d_0)$ 的情形——即规范不一致性浮现的时刻。
-该现象是几何的（度量了 $A$ 离 $\im(d_0)$ 有多远），
-而非拓扑的（不涉及扭曲积或转换函数）。
-
-类比：在 $\R^3$（可缩，平凡的）上，矢量场 $\mathbf{v}$ 可以是无旋的
-（$\nabla \times \mathbf{v} = 0$，$\mathbf{v} = \nabla \phi$）或非无旋的。
-这并非拓扑陈述——$\R^3$ 的拓扑未曾改变过。
-同理，SCX 的规范一致性问题涉及 $A$ 在给定（平凡）图上的分解，
-而非丛的非平凡性。
-\end{remark}
-
-\noindent
-{\bf The true distinction: flat vs.\ non-flat connections.}
-Topology asks: when can a bundle not be reduced to the trivial bundle?
+\begin{remark}[The True Distinction: Flat vs.\ Non-Flat Connections]
+Topology deals with the question of when a bundle cannot be reduced to the trivial bundle.
 For SCX, the bundle is {\bf always} trivial — this is uncontroversial.
 
 The real content is {\bf geometric}: given an edge assignment $A$,
@@ -1483,8 +1016,8 @@ does $A$ lie in $\im(d_0)$ (is $A$ flat / exact)?
 This is a {\it linear algebra} question about the relationship between $A$
 and the subspace $\im(d_0)$, not a topological question.
 
-Even though the graph (bundle) is trivial, $A$ can still have non-zero
-curvature components (harmonic $1$-forms). This is the case when
+Even though the bundle is trivial, the edge assignment $A$ can still have non-zero
+curvature components (harmonic $1$-forms). This is precisely the case when
 $A \notin \im(d_0)$ — the moment gauge inconsistency appears.
 The phenomenon is geometric (measuring how far $A$ is from $\im(d_0)$),
 not topological (involving twisted products or transition functions).
@@ -1494,80 +1027,70 @@ may be curl-free ($\nabla \times \mathbf{v} = 0$, $\mathbf{v} = \nabla \phi$)
 or not. This is not a topological statement — the topology of $\R^3$ never changes.
 Similarly, SCX's gauge consistency problem concerns the decomposition of $A$
 on the given (trivial) graph, not the non-triviality of a bundle.
+\end{remark}
 
-\subsection{图视角下的拓扑内容 / Topological Content in the Graph Perspective}
+\subsection{Topological Content in the Graph Perspective}
 
-在图的视角下，唯一的``拓扑''内容是图本身的 Betti 数。
+In the graph perspective, the only ``topological'' content is the Betti numbers of the graph itself.
 
-\begin{proposition}[图同调]
-图 $\grph_{\text{SCX}}$ 的（实系数）同调群为：
+\begin{proposition}[Graph Homology]
+The (real coefficient) homology of $\grph_{\text{SCX}}$ is:
 \begin{itemize}
-    \item $H_0(\grph) \cong \R^c$，其中 $c$ 是连通分支数（通常为 $1$）；
-    \item $H_1(\grph) \cong \R^{|\mathcal{L}|}$，其中 $|\mathcal{L}|$ 是基本回路数
-        （图圈数，cyclomatic number）；
-    \item $H_k(\grph) = 0$ 对所有 $k \geq 2$。
+    \item $H_0(\grph) \cong \R^c$, where $c$ is the number of connected components (typically $1$);
+    \item $H_1(\grph) \cong \R^{|\mathcal{L}|}$, where $|\mathcal{L}|$ is the number of elementary loops
+        (the cyclomatic number);
+    \item $H_k(\grph) = 0$ for all $k \geq 2$.
 \end{itemize}
 
-$H_1(\grph) \cong \ker(\Lone)$ 是调和 $1$-形式的空间。
-$H_1$ 的非零维数表示图中有 $|\mathcal{L}|$ 个独立回路，
-每个回路承载着非平凡和乐的可能性。
-但这不是丛的拓扑——这只是图的圈结构。
-\end{proposition}
-
-\noindent
-The (real) homology of $\grph_{\text{SCX}}$ is:
-$H_0(\grph) \cong \R^c$ ($c$ = number of connected components),
-$H_1(\grph) \cong \R^{|\mathcal{L}|}$ (cyclomatic number),
-$H_k(\grph) = 0$ for $k \geq 2$.
-
 $H_1(\grph) \cong \ker(\Lone)$ is the space of harmonic $1$-forms.
-A non-zero $H_1$ means the graph has $|\mathcal{L}|$ independent loops,
+A non-zero dimensional $H_1$ means the graph has $|\mathcal{L}|$ independent loops,
 each capable of carrying non-trivial holonomy.
 But this is not bundle topology — it is merely the cycle structure of the graph.
+\end{proposition}
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{数值算法 / Numerical Algorithm}
+\section{Numerical Algorithm}
 % ══════════════════════════════════════════════════════════════════════
 
-\subsection{数据结构与算法概览 / Data Structures and Algorithm Overview}
+\subsection{Data Structures and Algorithm Overview}
 
-SCX 规范的完整数值流程由以下步骤组成。
-每一步均直接对应前文所述的数学结构。
+The complete numerical pipeline of SCX gauge-fixing consists of the following steps.
+Each step directly corresponds to the mathematical structures described above.
 
 \begin{algorithm}[H]
-\caption{SCX 规范固定与 Cercis 计算}
+\caption{SCX Gauge-Fixing and Cercis Computation}
 \label{alg:scx}
-\begin{enumerate}[label=步骤 \arabic*:, leftmargin=*]
-    \item {\bf 输入：} $M$ 个专家在 $N$ 个构型上的原始预测
-        $\{\tilde{x}_m^k \in \R^d \mid k = 1,\dots,N,\; m = 1,\dots,M\}$。
+\begin{enumerate}[label=Step \arabic*:, leftmargin=*]
+    \item {\bf Input:} Raw predictions of $M$ experts at $N$ configurations
+        $\{\tilde{x}_m^k \in \R^d \mid k = 1,\dots,N,\; m = 1,\dots,M\}$.
 
-    \item {\bf 构造图 $\grph_{\text{SCX}}$：}
+    \item {\bf Construct graph $\grph_{\text{SCX}}$:}
         \begin{itemize}
-            \item 顶点：$n = N \cdot M$，索引为 $(k, m)$；
-            \item 参数边：$(k,m) \to (k{+}1,m)$，共 $M \cdot (N-1)$ 条；
-            \item 专家边：$(k,i) \to (k,j)$（$i \neq j$），共 $N \cdot M \cdot (M-1)$ 条；
-            \item 总边数：$m = M(N-1) + NM(M-1)$。
+            \item Vertices: $n = N \cdot M$, indexed by $(k, m)$;
+            \item Parameter edges: $(k,m) \to (k{+}1,m)$, totaling $M \cdot (N-1)$;
+            \item Expert edges: $(k,i) \to (k,j)$ ($i \neq j$), totaling $N \cdot M \cdot (M-1)$;
+            \item Total edges: $m = M(N-1) + NM(M-1)$.
         \end{itemize}
 
-    \item {\bf 构建关联矩阵 $B \in \R^{m \times n}$：}
-        对每条边 $e$，$B_{e,v_{\text{target}}} = +1$，$B_{e,v_{\text{source}}} = -1$。
+    \item {\bf Build incidence matrix $B \in \R^{m \times n}$:}
+        For each edge $e$, $B_{e,v_{\text{target}}} = +1$, $B_{e,v_{\text{source}}} = -1$.
 
-    \item {\bf 组装边赋值向量 $\mathbf{A}_a \in \R^m$：}（对每个坐标维 $a = 1,\dots,d$）
+    \item {\bf Assemble edge assignment vectors $\mathbf{A}_a \in \R^m$:} (for each coordinate $a = 1,\dots,d$)
         \begin{itemize}
-            \item 参数边：$A_e = \tilde{x}_{m,a}^{k+1} - \tilde{x}_{m,a}^k$；
-            \item 专家边：$A_e = \tilde{x}_{i,a}^k - \tilde{x}_{j,a}^k$。
+            \item Parameter edges: $A_e = \tilde{x}_{m,a}^{k+1} - \tilde{x}_{m,a}^k$;
+            \item Expert edges: $A_e = \tilde{x}_{i,a}^k - \tilde{x}_{j,a}^k$.
         \end{itemize}
 
-    \item {\bf 计算图拉普拉斯与右端项：}
+    \item {\bf Compute graph Laplacian and right-hand side:}
         \[
             L = B^T B \in \R^{n \times n}, \quad
             \mathbf{b}_a = B^T \mathbf{A}_a \in \R^n.
         \]
 
-    \item {\bf 解带零模固定的法方程：}
-        对每个 $a = 1,\dots,d$，求解：
+    \item {\bf Solve normal equations with zero-mode fixing:}
+        For each $a = 1,\dots,d$, solve:
         \[
             \begin{pmatrix}
                 L & \mathbf{1} \\
@@ -1581,128 +1104,122 @@ SCX 规范的完整数值流程由以下步骤组成。
                 \mathbf{b}_a \\ 0
             \end{pmatrix}.
         \]
-        （或等价地，使用共轭梯度法在 $\mathbf{1}^\perp$ 子空间上求解 $L \mathbf{g}_a = \mathbf{b}_a$。）
+        (Or equivalently, use conjugate gradient on the subspace $\mathbf{1}^\perp$ to solve $L \mathbf{g}_a = \mathbf{b}_a$.)
 
-    \item {\bf 计算残差与 Cercis 分数：}
+    \item {\bf Compute residual and Cercis Score:}
         \[
             \cercis = \sum_{a=1}^{d} \|\mathbf{A}_a - B \mathbf{g}_a\|^2.
         \]
 
-    \item {\bf 输出对齐后的预测（可选）：}
+    \item {\bf Output aligned predictions (optional):}
         \[
             \hat{x}_m^k = \tilde{x}_m^k - g_m^k, \quad \forall k, m.
         \]
 \end{enumerate}
 \end{algorithm}
 
-\subsection{与原始 MILP 的关系 / Relation to the Original MILP}
+\subsection{Relation to the Original MILP}
 
-原始 SCX 的实现使用了 MILP（混合整数线性规划）进行规范固定。
-本文的最小二乘公式等价于 MILP 的{\it 连续松弛}：当所有整数约束被移除后，
-MILP 即约化为求解法方程 $B^T B g = B^T A$ 带约束 $\sum g = 0$。
-
-若需要整数约束（例如，$g_m^k$ 限制在整数格点上），
-可以在最小二乘解的基础上进行舍入或分支定界。
-然而，对于大多数应用场景，连续最小二乘解已提供足够精度的规范固定。
-
-\medskip
-\noindent
-The original SCX implementation uses MILP (Mixed-Integer Linear Programming)
+The original SCX implementation used MILP (Mixed-Integer Linear Programming)
 for gauge-fixing. The least-squares formulation here is equivalent to the
 {\it continuous relaxation} of MILP: when all integer constraints are removed,
 MILP reduces to solving $B^T B g = B^T A$ with constraint $\sum g = 0$.
 
-\subsection{计算复杂度 / Computational Complexity}
+If integer constraints are required (e.g., $g_m^k$ restricted to integer lattice points),
+rounding or branch-and-bound can be applied on top of the least-squares solution.
+However, for most application scenarios, the continuous least-squares solution
+already provides gauge-fixing with sufficient precision.
 
-\begin{proposition}[复杂度分析]
+\subsection{Computational Complexity}
+
+\begin{proposition}[Complexity Analysis]
 \begin{itemize}
-    \item 图构造：$O(N M^2)$（每条专家边需计算一个成对位移）；
-    \item 拉普拉斯组装：$O(m) = O(N M^2)$（非零元插入）；
-    \item 法方程求解：$O(n^{3/2})$ 至 $O(n^2)$ 取决于求解器
-        （$n = NM$，利用 $L$ 的稀疏性可用共轭梯度 $O(n \cdot \text{nnz})$ 每步）；
-    \item Cercis 计算：$O(m d) = O(N M^2 d)$。
-\end{itemize}
-
-对于典型的参数设置（$M \sim 10^1$--$10^2$，$N \sim 10^2$--$10^3$，$d \leq 3$），
-全部流程可在现代硬件上于数秒至数分钟内完成。
-\end{proposition}
-
-\noindent
-\begin{itemize}
-    \item Graph construction: $O(N M^2)$;
-    \item Laplacian assembly: $O(m) = O(N M^2)$;
-    \item Normal equation solve: $O(n^{3/2})$ to $O(n^2)$ depending on solver;
+    \item Graph construction: $O(N M^2)$ (each expert edge requires computing a pairwise displacement);
+    \item Laplacian assembly: $O(m) = O(N M^2)$ (non-zero entry insertion);
+    \item Normal equation solve: $O(n^{3/2})$ to $O(n^2)$ depending on solver
+        ($n = NM$, exploiting the sparsity of $L$, conjugate gradient gives $O(n \cdot \text{nnz})$ per step);
     \item Cercis computation: $O(m d) = O(N M^2 d)$.
 \end{itemize}
+
+For typical parameter settings ($M \sim 10^1$--$10^2$, $N \sim 10^2$--$10^3$, $d \leq 3$),
+the entire pipeline completes in seconds to minutes on modern hardware.
+\end{proposition}
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{与先前工作的关系 / Relationship to Prior Work}
+\section{Relationship to Prior Work}
 % ══════════════════════════════════════════════════════════════════════
 
-本节明确本文的表述与先前连续纤维丛表述之间的关系，
-并诚实地指出后者的错误。
+This section clarifies the relationship between the formulation in this paper
+and the prior continuous fiber bundle formulation, and honestly identifies
+the errors in the latter.
 
-\subsection{对应关系 / Correspondences}
+\subsection{Correspondences}
 
 \begin{center}
 \begin{tabular}{@{}lll@{}}
     \toprule
-    {\bf 概念} & {\bf 连续纤维丛（先前）} & {\bf 图霍奇理论（本文）} \\
+    {\bf Concept} & {\bf Continuous Fiber Bundle (Prior)} & {\bf Graph Hodge Theory (This Paper)} \\
     \midrule
-    底空间 & 底流形 $\base$ & 图 $\grph_{\text{SCX}}$ \\
-    纤维 & $G \cong \R^{Md}$ & 无（图无纤维结构） \\
-    联络 & Ehresmann $\omega$（从未构造） & 边赋值 $A \in \Omega^1$（原始数据） \\
-    规范变换 & $A \to A - d\Lambda$ & $A \to A - d_0 g$ \\
-    曲率 & $\Omega = d\omega$（连续 $2$-形式） & $\boldsymbol{\kappa} = d_1 A$（回路和乐） \\
-    Coulomb 规范 & $\partial_\mu A^\mu = 0$（不对应任何 SCX 计算） & 不存在于 SCX 中 \\
-    $\sum g_m = 0$ & 误称为 Coulomb & 正确识别为零模固定 \\
-    Cercis & 不一致：$\int \|F\|^2$ vs.\ $Q+\eta N$ & 唯一定义：残差范数 $\|P^\perp A\|^2$ \\
-    拓扑内容 & 声称非平凡（错误） & 诚实承认平凡性 \\
+    Base space & Base manifold $\base$ & Graph $\grph_{\text{SCX}}$ \\
+    Fiber & $G \cong \R^{Md}$ & None (graph has no fiber structure) \\
+    Connection & Ehresmann $\omega$ (never constructed) & Edge assignment $A \in \Omega^1$ (raw data) \\
+    Gauge transformation & $A \to A - d\Lambda$ & $A \to A - d_0 g$ \\
+    Curvature & $\Omega = d\omega$ (continuous $2$-form) & $\boldsymbol{\kappa} = d_1 A$ (loop holonomy) \\
+    Coulomb gauge & $\partial_\mu A^\mu = 0$ (corresponds to no SCX computation) & Does not exist in SCX \\
+    $\sum g_m = 0$ & Misidentified as Coulomb & Correctly identified as zero-mode fixing \\
+    Cercis & Inconsistent: $\int \|F\|^2$ vs.\ $Q+\eta N$ & Unique definition: residual norm $\|P^\perp A\|^2$ \\
+    Topological content & Claimed non-trivial (incorrect) & Honestly admits triviality \\
     \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{先前表述中的错误 / Errors in Prior Formulation}
+\subsection{Errors in Prior Formulation}
 
 \begin{enumerate}[label=F\arabic*:, leftmargin=*]
-    \item {\bf F1: $\sum g_m = 0$ 不是 Coulomb 规范。}
-        如前所述，它是对规范参数的零模固定约束，
-        而非对联络的散度约束。将其称为 Coulomb 规范混淆了两个完全不同的数学结构。
-        正确的连续类比是规范变换 $A \to A - d\Lambda$ 中固定积分常数 $\int \Lambda = 0$。
+    \item {\bf F1: $\sum g_m = 0$ is not Coulomb gauge.}
+        As discussed above, it is a zero-mode fixing constraint on the gauge parameters,
+        not a divergence constraint on the connection. Calling it Coulomb gauge conflates
+        two entirely different mathematical structures.
+        The correct continuous analog is fixing the integration constant $\int \Lambda = 0$
+        in the gauge transformation $A \to A - d\Lambda$.
 
-    \item {\bf F2: 联络 $\omega$ 从未被构造。}
-        连续框架声称存在一个主丛及其上的联络，但从未说明如何从
-        成对专家位移 $\delta_{ij}^k$ 构造出该联络。
-        本文采取了更诚实的路径：$\delta_{ij}^k$ 就是边赋值 $A_e$，
-        它就是数据本身，无需另外的``联络''来中介。
+    \item {\bf F2: The connection $\omega$ was never constructed.}
+        The continuous framework asserts the existence of a principal bundle with a connection,
+        but never explains how to construct that connection from the pairwise expert displacements
+        $\delta_{ij}^k$.
+        This paper takes the more honest path: $\delta_{ij}^k$ {\it are} the edge assignments $A_e$ —
+        they are the data themselves, requiring no separate ``connection'' to mediate.
 
-    \item {\bf F3: Cercis 定义不一致。}
-        先前文本在两个互不兼容的定义之间摇摆：
-        (a) $\cercis = \int \|F\|^2$（Yang-Mills 泛函），
-        (b) $\cercis = Q + \eta N$（SCX 实际使用的 $Q+\eta N$）。
-        本文统一为残差范数 $\cercis = \|P^\perp A\|^2$，
-        这与 (b) 一致且不与 (a) 混淆。
+    \item {\bf F3: Cercis definition is inconsistent.}
+        The prior text oscillates between two mutually incompatible definitions:
+        (a) $\cercis = \int \|F\|^2$ (Yang-Mills functional),
+        (b) $\cercis = Q + \eta N$ (the $Q+\eta N$ actually used by SCX).
+        This paper unifies them as the residual norm $\cercis = \|P^\perp A\|^2$,
+        which agrees with (b) and is not confused with (a).
 
-    \item {\bf F4: 拓扑被误述。}
-        先前文本暗示了非平凡拓扑结构，但 $G$ 可缩且 $\base$ 可缩
-        $\Rightarrow$ 所有 Chern 类为零 $\Rightarrow$ 丛是平凡的。
-        本文明确承认这一点，并将内容正确地解释为几何的（平坦 vs.\ 非平坦），
-        而非拓扑的。
+    \item {\bf F4: Topology is misrepresented.}
+        The prior text suggests non-trivial topological structure, but
+        $G$ contractible and $\base$ contractible
+        $\Rightarrow$ all Chern classes vanish $\Rightarrow$ the bundle is trivial.
+        This paper acknowledges this explicitly and correctly interprets the content
+        as geometric (flat vs.\ non-flat), not topological.
 \end{enumerate}
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{离散霍奇与连续微分几何的比较 / Discrete Hodge vs.\ Continuous Differential Geometry}
+\section{Discrete Hodge vs.\ Continuous Differential Geometry}
 \label{sec:comparison}
 % ══════════════════════════════════════════════════════════════════════
 
-本节对离散图霍奇方法与连续微分几何（纤维丛）方法进行系统性比较，
-阐明各自的能力边界，并解释为何离散方法是 SCX 的正确选择。
+This section provides a systematic comparison between the discrete graph Hodge method
+and the continuous differential geometry (fiber bundle) method,
+delineates their respective capabilities, and explains why the discrete method
+is the correct choice for SCX.
 
-\subsection{两种形式化 / Two Formalisms}
+\subsection{Two Formalisms}
 
 \newcommand{\contok}{\checkmark}
 \newcommand{\contno}{$\times$}
@@ -1711,350 +1228,304 @@ MILP reduces to solving $B^T B g = B^T A$ with constraint $\sum g = 0$.
 \begin{center}
 \begin{tabular}{@{}p{4.5cm} p{4.5cm} p{4.5cm}@{}}
 \toprule
-{\bf 能力 / Capability} & {\bf 离散霍奇（本文）} & {\bf 连续纤维丛（先前）} \\
+{\bf Capability} & {\bf Discrete Hodge (This Paper)} & {\bf Continuous Fiber Bundle (Prior)} \\
 \midrule
-从原始数据直接构造 & \contok\ 边赋值 $A_e$ 即数据 & \contno\ 联络 $\omega$ 从未构造 \\
+Direct construction from raw data & \contok\ Edge assignment $A_e$ is the data & \contno\ Connection $\omega$ never constructed \\
 \addlinespace
-曲率的精确定义 & \contok\ 回路和乐 $d_1 A$ & \contok\ 曲率 $2$-形式 $\Omega$ \\
+Precise definition of curvature & \contok\ Loop holonomy $d_1 A$ & \contok\ Curvature $2$-form $\Omega$ \\
 \addlinespace
-规范变换公式 & \contok\ $A' = A - d_0 g$ & \contok\ $A' = A - d\Lambda$ \\
+Gauge transformation formula & \contok\ $A' = A - d_0 g$ & \contok\ $A' = A - d\Lambda$ \\
 \addlinespace
-规范固定算法 & \contok\ 最小二乘 $B^T B g = B^T A$ & \contno\ 无对应离散算法 \\
+Gauge-fixing algorithm & \contok\ Least squares $B^T B g = B^T A$ & \contno\ No corresponding discrete algorithm \\
 \addlinespace
-Cercis 的唯一定义 & \contok\ $\|P^\perp A\|^2$ & \contno\ 摇摆于 $\int\|F\|^2$ 与 $Q+\eta N$ \\
+Unique definition of Cercis & \contok\ $\|P^\perp A\|^2$ & \contno\ Oscillates between $\int\|F\|^2$ and $Q+\eta N$ \\
 \addlinespace
-零模处理 & \contok\ $\sum g_v = 0$ 正确识别 & \contno\ 误称为 Coulomb 规范 \\
+Zero-mode handling & \contok\ $\sum g_v = 0$ correctly identified & \contno\ Misidentified as Coulomb gauge \\
 \addlinespace
-拓扑内容 & \contok\ 诚实承认平凡性 & \contno\ 暗示非平凡拓扑 \\
+Topological content & \contok\ Honestly admits triviality & \contno\ Suggests non-trivial topology \\
 \addlinespace
-数值可计算性 & \contok\ 稀疏线性系统求解 & \contno\ 连续 PDE，无法离散化 \\
+Numerical computability & \contok\ Sparse linear system solve & \contno\ Continuous PDE, not discretizable \\
 \addlinespace
-与 SCX 代码一致 & \contok\ 逐行对应 & \contno\ 仅松散类比 \\
+Consistency with SCX code & \contok\ Line-by-line correspondence & \contno\ Loose analogy only \\
 \addlinespace
-非 Abel 推广路径 & \contok\ 群值边赋值 + 优化 & \contok\ 主丛 + 联络 \\
+Path to non-abelian generalization & \contok\ Group-valued edge assignments + optimization & \contok\ Principal bundle + connection \\
 \addlinespace
-与持续同调的联系 & \contok\ $H_1$ 条形码 & \contno\ 无自然联系 \\
+Connection to persistent homology & \contok\ $H_1$ barcode & \contno\ No natural connection \\
 \addlinespace
-无穷维极限 & \contok\ 图趋近网格 & \contok\ 离散化 $\to$ 连续 PDE \\
+Infinite-dimensional limit & \contok\ Graph limits to mesh & \contok\ Discretization $\to$ continuous PDE \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{连续微分几何能做什么 / What Continuous Differential Geometry Can Do}
+\subsection{What Continuous Differential Geometry Can Do}
 
-连续微分几何（纤维丛、联络、曲率）在以下方面是强大的：
-
-\begin{enumerate}[label=(\arabic*)]
-    \item {\bf 全局拓扑分类。}
-        当底流形和结构群非平凡时，Chern--Weil 理论通过特征类提供拓扑障碍的完整分类。
-        例如，$SU(2)$-丛在 $S^4$ 上的瞬子数由第二 Chern 类 $c_2$ 的积分给出，
-        且必须是整数。这一整套机制对于具有非平凡拓扑的物理系统是不可替代的。
-
-    \item {\bf 分析工具。}
-        Atiyah--Singer 指标定理将椭圆算子的解析指标与拓扑不变量联系起来。
-        Hodge 理论将调和形式空间与 de Rham 上同调等同。
-        这些深刻定理提供了分析计算与拓扑分类之间的桥梁。
-
-    \item {\bf 局部到全局的整合。}
-        联络 $1$-形式统一了局部规范变换（$A \to A - d\Lambda$）与全局平行移动。
-        Wilson 线 $W[\gamma] = \mathcal{P}\exp(\oint_\gamma A)$ 是规范不变的且编码了路径依赖信息。
-        这一结构在非 Abel 情形下是不可或缺的。
-
-    \item {\bf 成熟的理论生态。}
-        六十年的发展产生了完整的定理体系（Chern--Weil、Atiyah--Singer、Witten 异常、
-        Seiberg--Witten），任何规范理论问题都可以从中寻找启示。
-\end{enumerate}
-
-\subsection{连续微分几何不能做什么 / What Continuous Differential Geometry Cannot Do}
-
-然而，对于 SCX 的具体问题，连续微分几何有以下根本性局限：
+Continuous differential geometry (fiber bundles, connections, curvature) is powerful in the following respects:
 
 \begin{enumerate}[label=(\arabic*)]
-    \item {\bf 无法从离散数据构造联络。}
-        连续框架需要一个底流形上的光滑联络 $1$-形式 $\omega$。
-        但 SCX 的原始数据是{\bf 有限个}成对位移 $\delta_{ij}^k$——一组离散数字。
-        从有限个点值构造一个光滑联络是一项{\bf 不适定逆问题}：
-        存在无穷多个光滑联络可以插值给定的离散值，
-        没有任何唯一性原则来选择其中一个。
-        先前的工作从未显式构造过一个联络——它们只是{\it 声称}存在。
+    \item {\bf Global topological classification.}
+        When the base manifold and structure group are non-trivial, Chern--Weil theory provides
+        a complete classification of topological obstructions via characteristic classes.
+        For example, the instanton number of an $SU(2)$-bundle over $S^4$ is given by
+        the integral of the second Chern class $c_2$, and must be an integer.
+        This entire machinery is irreplaceable for physical systems with non-trivial topology.
 
-    \item {\bf 所有拓扑不变量恒为零。}
-        SCX 的底空间 $\mathcal{X} \subset \R^K$ 是可缩的（通常是凸参数区域），
-        结构群 $G \cong \R^{Md}$ 也是可缩的。因此：
-        \begin{itemize}
-            \item $H^k(\mathcal{X}; \R) = 0$ 对所有 $k > 0$；
-            \item 所有 Chern 类 $c_k(P) \in H^{2k}(\mathcal{X}; \R) = 0$ 恒为零；
-            \item 主丛是全局平凡的：$P \cong G \times \mathcal{X}$；
-            \item 同伦类集合 $[\mathcal{X}, BG] = \{*\}$ 只有一个元素。
-        \end{itemize}
-        这意味着 Chern--Weil 理论、指标定理和瞬子分类的全部重武器
-        {\bf 在此没有任何非平凡的输出}。它们提供的所有拓扑不变量都是零。
-        引用这些定理不会产生任何关于 SCX 系统的新信息。
+    \item {\bf Analytical tools.}
+        The Atiyah--Singer index theorem relates the analytic index of elliptic operators
+        to topological invariants. Hodge theory identifies the space of harmonic forms
+        with de Rham cohomology. These deep theorems provide bridges between analytic
+        computation and topological classification.
 
-    \item {\bf 连续形式化与计算无关。}
-        Cercis 分数的实际计算是：对 $M \times N$ 个顶点的稀疏线性系统
-        $B^T B g = B^T A$ 求解（或等价地，计算 $A$ 到 $\im(B)$ 的投影）。
-        连续框架将此描述为 Yang--Mills 泛函 $\int \|F\|^2$ 的极小化，
-        但这两个量{\bf 不是同一个数学对象}：
-        \begin{itemize}
-            \item $\int \|F\|^2$ 是曲率 $2$-形式的 $L^2$ 范数；
-            \item $\|P^\perp A\|^2$ 是边赋值到梯度子空间的距离的平方；
-            \item 前者仅捕获调和分量（曲率），后者包含调和和余正合两部分。
-        \end{itemize}
-        将它们混为一谈是范畴错误。
+    \item {\bf Local-to-global integration.}
+        The connection $1$-form unifies local gauge transformations ($A \to A - d\Lambda$)
+        with global parallel transport. Wilson lines $W[\gamma] = \mathcal{P}\exp(\oint_\gamma A)$
+        are gauge-invariant and encode path-dependent information.
+        This structure is indispensable in the non-abelian case.
 
-    \item {\bf 术语混淆。}
-        连续框架将 $\sum g_v = 0$ 称为``Coulomb 规范''，但 Coulomb 规范是
-        $\partial_\mu A^\mu = 0$——对规范{\bf 势}的散度约束。
-        $\sum g_v = 0$ 是对规范{\bf 参数}的零模固定。
-        混淆这两个概念不仅是不精确的——它是错误的。
-        一个经过物理训练的审稿人会立即识别出这个错误。
+    \item {\bf Mature theoretical ecosystem.}
+        Six decades of development have produced a complete body of theorems
+        (Chern--Weil, Atiyah--Singer, Witten anomaly, Seiberg--Witten),
+        from which any gauge theory problem can draw insight.
 \end{enumerate}
 
-\subsection{为何离散方法是正确的选择 / Why Discrete is the Right Choice}
+\subsection{What Continuous Differential Geometry Cannot Do}
 
-离散图霍奇方法的优势源于以下原则：
+However, for the specific problem of SCX, continuous differential geometry has the following
+fundamental limitations:
 
 \begin{enumerate}[label=(\arabic*)]
-    \item {\bf 本体论诚实 (Ontological Honesty)。}
-        SCX 的数据是离散的。图是离散的。计算是离散的。
-        离散霍奇理论{\bf 就是}数据的原生数学——不需要插值、不需要光滑化、
-        不需要将离散数字提升为连续场这一不可验证的步骤。
+    \item {\bf Cannot construct a connection from discrete data.}
+        The continuous framework requires a smooth connection $1$-form $\omega$ on a base manifold.
+        But SCX's raw data consist of {\bf finitely many} pairwise displacements $\delta_{ij}^k$ —
+        a set of discrete numbers. Constructing a smooth connection from finitely many point values
+        is an {\bf ill-posed inverse problem}: infinitely many smooth connections can interpolate
+        the given discrete values, with no uniqueness principle to select one.
+        Prior work never explicitly constructed a connection — it merely {\it asserted} existence.
 
-    \item {\bf 计算对应 (Computational Correspondence)。}
-        本文的每一个数学对象都直接对应 SCX 代码中的一行或多行：
+    \item {\bf All topological invariants are identically zero.}
+        SCX's base space $\mathcal{X} \subset \R^K$ is contractible (typically a convex parameter region),
+        and the structure group $G \cong \R^{Md}$ is also contractible. Therefore:
         \begin{itemize}
-            \item $A_e = \delta_{ij}^k$：成对专家位移的直接存储；
-            \item $B$：图的邻接结构，用于构建法方程；
-            \item $B^T B g = B^T A$：MILP 的连续松弛的精确形式；
-            \item $\cercis = \|P^\perp A\|^2$：规范固定后残差的直接计算。
+            \item $H^k(\mathcal{X}; \R) = 0$ for all $k > 0$;
+            \item All Chern classes $c_k(P) \in H^{2k}(\mathcal{X}; \R) = 0$ vanish identically;
+            \item The principal bundle is globally trivial: $P \cong G \times \mathcal{X}$;
+            \item The set of homotopy classes $[\mathcal{X}, BG] = \{*\}$ has a single element.
         \end{itemize}
+        This means the entire heavy weaponry of Chern--Weil theory, index theorems, and instanton
+        classification {\bf produces no non-trivial output here}. All topological invariants they
+        provide are zero. Citing these theorems generates no new information about the SCX system.
 
-    \item {\bf 数学自足 (Mathematical Self-Sufficiency)。}
-        离散霍奇理论是一个完整的、自包含的数学体系。
-        它有自己的 Hodge 分解、自己的 Laplacians、自己的上同调。
-        它不需要引用连续理论来进行自我辩护。
-        事实上，连续 de Rham 上同调可以通过取离散霍奇理论的适当极限来{\it 恢复}，
-        而非相反。
-
-    \item {\bf 可证伪性 (Falsifiability)。}
-        离散形式化的每一个陈述都可以通过数值计算直接验证。
-        连续形式化的陈述（如``存在一个联络 $\omega$''）通常无法验证或证伪——
-        因为它们没有给出构造。
-
-    \item {\bf 自然的推广路径 (Natural Generalization Path)。}
-        离散框架为推广提供了清晰的道路：
+    \item {\bf The continuous formalism is disconnected from the computation.}
+        The actual computation of the Cercis Score is: solve the sparse linear system
+        $B^T B g = B^T A$ for $M \times N$ vertices (or equivalently, compute the projection
+        of $A$ onto $\im(B)$). The continuous framework describes this as minimization
+        of the Yang--Mills functional $\int \|F\|^2$, but these two quantities are
+        {\bf not the same mathematical object}:
         \begin{itemize}
-            \item 加权图：$W_0, W_1$ 权重矩阵；
-            \item 非 Abel 群值边赋值：群值最小二乘；
-            \item 持续同调：Cercis 作为 $H_1$ 持续性；
-            \item 无穷维极限：图 $\to$ 网格 $\to$ PDE。
+            \item $\int \|F\|^2$ is the $L^2$ norm of the curvature $2$-form;
+            \item $\|P^\perp A\|^2$ is the squared distance from the edge assignment to the gradient subspace;
+            \item The former captures only the harmonic component (curvature), while the latter
+                contains both harmonic and coexact parts.
         \end{itemize}
-        这些推广都不需要首先穿过连续框架。
+        Confusing them is a category error.
+
+    \item {\bf Terminological confusion.}
+        The continuous framework calls $\sum g_v = 0$ the ``Coulomb gauge,'' but Coulomb gauge is
+        $\partial_\mu A^\mu = 0$ — a divergence constraint on the gauge {\bf potential}.
+        $\sum g_v = 0$ is zero-mode fixing on the gauge {\bf parameter}.
+        Confusing these two concepts is not merely imprecise — it is incorrect.
+        A physically trained referee would immediately recognize this error.
 \end{enumerate}
 
-\subsection{连续形式化若要成为有效需要什么条件 / What the Continuous Formalism Would Need to Become Valid}
+\subsection{Why Discrete Is the Right Choice}
 
-如果未来的工作坚持使用连续微分几何框架，至少需要完成以下步骤：
+The advantages of the discrete graph Hodge method stem from the following principles:
+
+\begin{enumerate}[label=(\arabic*)]
+    \item {\bf Ontological Honesty.}
+        SCX's data are discrete. The graph is discrete. The computation is discrete.
+        Discrete Hodge theory {\bf is} the native mathematics of the data — no interpolation,
+        no smoothing, no unverifiable step of lifting discrete numbers to continuous fields is needed.
+
+    \item {\bf Computational Correspondence.}
+        Every mathematical object in this paper directly corresponds to one or more lines in the SCX code:
+        \begin{itemize}
+            \item $A_e = \delta_{ij}^k$: direct storage of pairwise expert displacements;
+            \item $B$: the adjacency structure of the graph, used to build the normal equations;
+            \item $B^T B g = B^T A$: the exact form of the continuous relaxation of MILP;
+            \item $\cercis = \|P^\perp A\|^2$: direct computation of the residual after gauge-fixing.
+        \end{itemize}
+
+    \item {\bf Mathematical Self-Sufficiency.}
+        Discrete Hodge theory is a complete, self-contained mathematical system.
+        It has its own Hodge decomposition, its own Laplacians, its own cohomology.
+        It does not need to reference continuous theory for self-justification.
+        In fact, continuous de Rham cohomology can be {\it recovered} by taking an appropriate
+        limit of discrete Hodge theory, not the other way around.
+
+    \item {\bf Falsifiability.}
+        Every statement in the discrete formulation can be directly verified by numerical computation.
+        Statements in the continuous formulation (such as ``there exists a connection $\omega$'')
+        are typically unverifiable or unfalsifiable — because they provide no construction.
+
+    \item {\bf Natural Generalization Path.}
+        The discrete framework provides clear paths for generalization:
+        \begin{itemize}
+            \item Weighted graphs: $W_0, W_1$ weight matrices;
+            \item Non-abelian group-valued edge assignments: group-valued least squares;
+            \item Persistent homology: Cercis as $H_1$ persistence;
+            \item Infinite-dimensional limit: graph $\to$ mesh $\to$ PDE.
+        \end{itemize}
+        None of these generalizations require first passing through the continuous framework.
+\end{enumerate}
+
+\subsection{What the Continuous Formalism Would Need to Become Valid}
+
+If future work insists on using the continuous differential geometry framework,
+at minimum the following steps must be completed:
 
 \begin{enumerate}[label=C\arabic*:, leftmargin=*]
-    \item {\bf C1：从离散数据显式构造联络。}
-        必须给出一个算法，从有限个成对位移 $\{\delta_{ij}^k\}$ 显式地构造出
-        一个光滑联络 $1$-形式 $\omega$（例如通过插值或重构）。
-        仅仅声称存在这样一个联络是不够的。
+    \item {\bf C1: Explicitly construct a connection from discrete data.}
+        An algorithm must be given that explicitly constructs a smooth connection $1$-form $\omega$
+        from finitely many pairwise displacements $\{\delta_{ij}^k\}$ (e.g., via interpolation or reconstruction).
+        Merely asserting that such a connection exists is insufficient.
 
-    \item {\bf C2：证明离散化的一致性。}
-        必须证明当离散数据（构型数 $N \to \infty$ 且专家数 $M \to \infty$）被细化时，
-        离散边赋值 $A_e$ 在某种适当的意义下收敛到连续联络 $\omega$。
-        这类似于格点规范理论中证明连续极限的存在性。
+    \item {\bf C2: Prove consistency of discretization.}
+        It must be proved that as the discrete data are refined
+        (number of configurations $N \to \infty$ and number of experts $M \to \infty$),
+        the discrete edge assignments $A_e$ converge, in some appropriate sense,
+        to the continuous connection $\omega$. This is analogous to proving the existence
+        of the continuum limit in lattice gauge theory.
 
-    \item {\bf C3：建立非平凡拓扑。}
-        必须识别出底空间或结构群中{\it 确实存在}的非平凡拓扑结构。
-        如果底空间和群都是可缩的，则必须承认连续框架的拓扑部分不产生任何非平凡输出。
-        另一种可能是考虑非平凡的群作用或具有孔洞的参数空间。
+    \item {\bf C3: Establish non-trivial topology.}
+        Non-trivial topological structure must be identified that {\it actually exists}
+        in the base space or structure group. If both the base space and the group are contractible,
+        one must acknowledge that the topological part of the continuous framework
+        produces no non-trivial output. Alternatives include considering non-trivial group actions
+        or parameter spaces with holes.
 
-    \item {\bf C4：将 Cercis 与 Yang-Mills 泛函精确关联。}
-        如果声称 Cercis 分数对应于 $\int \|F\|^2$，则必须在数学上证明二者相等，
-        或至少在适当的极限下收敛。目前这两个量是不同空间中的不同数学对象。
+    \item {\bf C4: Precisely relate Cercis to the Yang-Mills functional.}
+        If it is claimed that the Cercis Score corresponds to $\int \|F\|^2$,
+        one must mathematically prove that they are equal, or at least converge
+        in an appropriate limit. Currently these two quantities are different mathematical objects
+        in different spaces.
 
-    \item {\bf C5：正确定义 Coulomb 规范类比。}
-        必须给出连续 Coulomb 规范 $\partial_\mu A^\mu = 0$ 的正确离散化，
-        并与 SCX 实际使用的约束 $\sum g_v = 0$ 进行区分。
-        如果它们不同（事实确实如此），则必须说明在什么条件下二者等价，
-        或承认它们是不相关的。
+    \item {\bf C5: Correctly define the Coulomb gauge analog.}
+        A correct discretization of the continuous Coulomb gauge $\partial_\mu A^\mu = 0$ must be given,
+        and it must be distinguished from the constraint $\sum g_v = 0$ actually used by SCX.
+        If they are different (as they indeed are), one must state under what conditions they are equivalent,
+        or acknowledge that they are unrelated.
 \end{enumerate}
 
 \bigskip
 \noindent
-{\bf 总结.}
-离散图霍奇理论与连续纤维丛理论并非竞争关系——它们是不同层次的形式化，
-适用于不同的问题。
-对于 SCX，数据天然是离散的，计算天然是离散的，
-因此离散形式化是{\bf 唯一与计算一致}的形式化。
-连续框架只有在完成上述 C1--C5 步骤后才可能被视为有效的替代方案。
-在此之前，离散霍奇理论应被视为 SCX 规范理论的{\bf 权威表述}。
+{\bf Summary.}
+Discrete graph Hodge theory and continuous fiber bundle theory are not competitors —
+they are formalisms at different levels, suited to different problems.
+For SCX, the data are naturally discrete, the computation is naturally discrete,
+and therefore the discrete formalism is the {\bf only formalism consistent with the computation}.
+The continuous framework can only be considered a valid alternative
+after completing the above steps C1--C5. Until then, discrete Hodge theory
+should be regarded as the {\bf authoritative formulation} of SCX gauge theory.
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{推广与展望 / Generalizations and Outlook}
+\section{Generalizations and Outlook}
 % ══════════════════════════════════════════════════════════════════════
 
-\subsection{加权图与更一般的度量 / Weighted Graphs and More General Metrics}
+\subsection{Weighted Graphs and More General Metrics}
 
-本文中我们使用了无权图（所有边权重相等）。
-更一般地，可以为边赋予权重以反映对某些专家或构型比较的置信度：
+In this paper we used unweighted graphs (all edge weights equal).
+More generally, edge weights can be assigned to reflect confidence in
+certain expert or configuration comparisons:
 \[
     \mathcal{R}_W[g] := \sum_{e \in \edgs} w_e \, \|A_e - (d_0 g)_e\|^2.
 \]
-加权拉普拉斯 $L_W = B^T W B$ 替换无权版本，所有理论结果保持不变。
+The weighted Laplacian $L_W = B^T W B$ replaces the unweighted version, and all
+theoretical results carry through unchanged.
 
-加权版本允许将 Cercis 调整为对重要专家对或关键构型区域更敏感。
+The weighted version allows tuning Cercis to be more sensitive to important expert pairs
+or critical configuration regions.
 
-\medskip
-\noindent
-We used unweighted graphs. More generally, edge weights $w_e$ reflecting
-confidence in certain expert/config comparisons yield:
-$\mathcal{R}_W[g] := \sum_{e \in \edgs} w_e \, \|A_e - (d_0 g)_e\|^2$,
-with $L_W = B^T W B$. All theory carries through.
+\subsection{Non-Abelian Expert Symmetries}
 
-\subsection{非 Abel 专家对称性 / Non-Abelian Expert Symmetries}
-
-若专家的规范群扩展为包含旋转和缩放的群（如 $\mathrm{SE}(d)$），
-图的边赋值变为群值而非向量值。此时：
+If the gauge group of experts extends to include rotations and scaling (e.g., $\mathrm{SE}(d)$),
+the edge assignments become group-valued rather than vector-valued. In this case:
 \begin{itemize}
-    \item 规范变换 $g$ 是群值顶点函数；
-    \item 边赋值变换为 $A'_e = g_v \circ A_e \circ g_u^{-1}$；
-    \item 规范固定变为群值最小二乘问题，
-        需在齐性空间上求解（可使用黎曼流形上的优化方法）；
-    \item 曲率仍可定义为回路上的群乘积。
+    \item Gauge transformations $g$ are group-valued vertex functions;
+    \item Edge assignments transform as $A'_e = g_v \circ A_e \circ g_u^{-1}$;
+    \item Gauge-fixing becomes a group-valued least-squares problem,
+        requiring solution on homogeneous spaces (using optimization methods on Riemannian manifolds);
+    \item Curvature can still be defined as the group product along loops.
 \end{itemize}
 
-本文的图论框架为这些推广提供了自然的基础。
+The graph-theoretic framework of this paper provides a natural foundation
+for such generalizations.
 
-\medskip
-\noindent
-If the gauge group extends to rotations and scaling (e.g., $\mathrm{SE}(d)$):
-edge assignments become group-valued; gauge-fixing becomes a group-valued
-least-squares problem on homogeneous spaces. The graph-theoretic framework
-provides a natural foundation for such extensions.
+\subsection{Connection to Persistent Homology}
 
-\subsection{与持续同调的联系 / Connection to Persistent Homology}
-
-Cercis 分数可以解释为持续同调（persistent homology）中的一种持续性度量：
+The Cercis Score can be interpreted as a persistence measure in persistent homology:
 \begin{itemize}
-    \item 非零离散曲率回路对应 $1$-维条形码中的``洞''；
-    \item Cercis 的调和分量 $\|r_{\text{harm}}\|^2$ 可视为
-        持续 $H_1$ 类在某种过滤下的持续性加权和；
-    \item 规范固定等价于寻找最优上边缘以``填补''这些 $1$-维空洞。
+    \item Non-zero discrete curvature loops correspond to $1$-dimensional ``holes'' in the barcode;
+    \item The harmonic component of Cercis, $\|r_{\text{harm}}\|^2$, can be viewed as
+        a persistence-weighted sum of $H_1$ classes under some filtration;
+    \item Gauge-fixing is equivalent to searching for the optimal coboundary to ``fill'' these $1$-dimensional holes.
 \end{itemize}
 
-\medskip
-\noindent
-Cercis can be interpreted through persistent homology:
-non-zero curvature loops correspond to $H_1$ ``holes'';
-the harmonic component of Cercis is a persistence-weighted sum of $H_1$ classes;
-gauge-fixing is the search for optimal coboundaries to ``fill'' these holes.
+\subsection{Infinite-Dimensional Limit}
 
-\subsection{无穷维极限 / Infinite-Dimensional Limit}
-
-当 $M \to \infty$ 且 $N \to \infty$ 时，图 $\grph_{\text{SCX}}$ 趋于一个
-乘积空间 $[0,1] \times [0,1]$ 上的连续网格。此时的极限偏微分方程
-涉及两个方向的导数（参数方向和专家方向），与二维规范场论有自然联系。
-严格分析这一极限仍在进行中。
-
-\medskip
-\noindent
-As $M, N \to \infty$, the SCX graph tends to a continuous grid on $[0,1] \times [0,1]$.
-The limiting PDE involves derivatives in both parameter and expert directions,
-with natural connections to 2D gauge theories. Rigorous analysis is ongoing.
+As $M \to \infty$ and $N \to \infty$, the graph $\grph_{\text{SCX}}$ tends to a
+continuous grid on the product space $[0,1] \times [0,1]$. The limiting PDE
+involves derivatives in both parameter and expert directions,
+with natural connections to 2D gauge field theory.
+Rigorous analysis of this limit is ongoing.
 
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════
-\section{结论 / Conclusion}
+\section{Conclusion}
 % ══════════════════════════════════════════════════════════════════════
 
-\subsection{主要结果 / Main Results}
+\subsection{Main Results}
 
-本文在图上建立了 SCX 多专家系统规范理论的完整离散形式化。主要贡献如下：
-
-\begin{enumerate}[label=(\arabic*)]
-    \item {\bf 图霍奇框架：}
-        将 SCX 的数学结构精确定位为有向图上的离散霍奇理论。
-        成对专家位移直接编码为边赋值 $A_e$，无需连续联络或纤维丛。
-
-    \item {\bf 曲率作为回路和乐：}
-        定义离散曲率为沿基本四边形回路的边赋值代数和。
-        曲率非零当且仅当不同专家在参数变化下预测变化不一致——
-        此即势能面不齐的几何表述。
-
-    \item {\bf 规范固定的最小二乘形式化：}
-        将规范固定严格形式化为寻找顶点势 $g$ 以极小化
-        $\sum_e \|A_e - (g_w - g_v)\|^2$ 的最小二乘问题。
-
-    \item {\bf 零模固定 $\neq$ Coulomb 规范：}
-        严格区分约束 $\sum_v g_v = 0$（零模固定，保证解的唯一性）
-        与 Coulomb 规范 $\partial_\mu A^\mu = 0$（对联络的散度约束）。
-        前者是代数约束，后者是微分约束——二者完全不同。
-
-    \item {\bf Cercis 分数的唯一定义：}
-        将 Cercis 分数定义为规范固定后的残差范数 $\|P^\perp A\|^2$，
-        即边赋值到梯度子空间的距离的平方。
-        此定义唯一、规范不变、且精确匹配 SCX 的实际计算。
-
-    \item {\bf 拓扑平凡性的诚实承认：}
-        明确承认 $G$ 可缩、$\mathcal{X}$ 可缩，故丛拓扑平凡。
-        所有内容均为几何（平坦 vs.\ 非平坦边赋值），而非拓扑。
-\end{enumerate}
-
-\medskip
-\noindent
 This paper establishes a complete discrete formalization of SCX gauge theory
-on graphs. Main contributions:
+on graphs. The main contributions are:
 
 \begin{enumerate}[label=(\arabic*)]
-    \item {\bf Graph Hodge framework:} SCX mathematics is discrete Hodge theory
+    \item {\bf Graph Hodge framework:}
+        The mathematical structure of SCX is precisely located as discrete Hodge theory
         on directed graphs. Pairwise expert displacements are directly encoded
         as edge assignments $A_e$ — no continuous connection or fiber bundle needed.
 
-    \item {\bf Curvature as loop holonomy:} Discrete curvature is defined as the
-        algebraic sum of edge assignments around elementary quadrilateral loops.
-        Non-zero curvature iff experts' predictions change inconsistently under
-        parameter variation — the geometric formulation of PES misalignment.
+    \item {\bf Curvature as loop holonomy:}
+        Discrete curvature is defined as the algebraic sum of edge assignments
+        around elementary quadrilateral loops. Curvature is non-zero iff experts'
+        predictions change inconsistently under parameter variation —
+        the geometric formulation of PES misalignment.
 
-    \item {\bf Gauge-fixing as least squares:} Gauge-fixing is rigorously formalized
-        as finding vertex potentials $g$ minimizing $\sum_e \|A_e - (g_w - g_v)\|^2$.
+    \item {\bf Gauge-fixing as least squares:}
+        Gauge-fixing is rigorously formalized as finding vertex potentials $g$ minimizing
+        $\sum_e \|A_e - (g_w - g_v)\|^2$.
 
-    \item {\bf Zero-mode fixing $\neq$ Coulomb gauge:} Strictly distinguishes
-        $\sum_v g_v = 0$ (zero-mode fixing, ensuring uniqueness) from
-        Coulomb gauge $\partial_\mu A^\mu = 0$ (divergence constraint on connection).
+    \item {\bf Zero-mode fixing $\neq$ Coulomb gauge:}
+        Strictly distinguishes the constraint $\sum_v g_v = 0$ (zero-mode fixing,
+        ensuring solution uniqueness) from Coulomb gauge $\partial_\mu A^\mu = 0$
+        (divergence constraint on the connection). The former is algebraic,
+        the latter differential — they are entirely different.
 
-    \item {\bf Unique Cercis definition:} Cercis Score = residual norm $\|P^\perp A\|^2$
-        after gauge-fixing, uniquely defined, gauge-invariant, and matching SCX computation.
+    \item {\bf Unique Cercis definition:}
+        The Cercis Score is defined as the residual norm $\|P^\perp A\|^2$ after gauge-fixing,
+        i.e., the squared distance from the edge assignment to the gradient subspace.
+        This definition is unique, gauge-invariant, and precisely matches the actual SCX computation.
 
-    \item {\bf Honest topological triviality:} Acknowledges contractible $G$ and
-        $\mathcal{X}$ $\Rightarrow$ trivial bundle. All content is geometric
+    \item {\bf Honest topological triviality:}
+        Explicitly acknowledges that $G$ is contractible and $\mathcal{X}$ is contractible,
+        hence the bundle is topologically trivial. All content is geometric
         (flat vs.\ non-flat edge assignments), not topological.
 \end{enumerate}
 
-\subsection{最终评注 / Final Remark}
+\subsection{Final Remark}
 
-SCX 框架的数学核心是优雅而简洁的：它只是图上的离散霍奇分解。
-给定一组成对专家位移（边赋值 $A$），问题归结为判断 $A$ 与梯度子空间
-$\im(d_0)$ 之间的距离。
-规范一致性意味着该距离为零（$A$ 是正合的）；不一致性意味着距离为正，
-Cercis 分数精确地量化了这一距离。
-
-连续微分几何的引入——纤维丛、联络、曲率形式——对此问题而言是多余的，
-甚至是有害的，因为它引入的术语（Coulomb 规范、Yang-Mills 作用量、Chern 类）
-与实际的离散计算并不对应。
-
-我们主张：清晰、诚实、且数学上确切的离散表述，
-总是比不准确的、与计算无关联的连续类比更为可取得多。
-
-\medskip
-\noindent
 The mathematical core of SCX is elegant and simple: it is just discrete Hodge
 decomposition on a graph. Given a set of pairwise expert displacements (edge
 assignment $A$), the problem reduces to determining the distance between $A$
@@ -2072,7 +1543,7 @@ is always preferable to an inaccurate continuous analogy disconnected from
 the computation.
 
 % ══════════════════════════════════════════════════════════════════════
-% 参考文献 / References
+% References
 % ══════════════════════════════════════════════════════════════════════
 
 \begin{thebibliography}{99}

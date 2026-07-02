@@ -59,15 +59,12 @@
 \newcommand{\sH}{\mathfrak{H}}
 \newcommand{\sB}{\mathfrak{B}}
 
-% ---------- Proof environment with automatic QED ----------
-\renewcommand{\proofname}{证明}
-
 \title{\bfseries The Audit Entropy Theorem:\\
 A Second Law for SCX Auditing,\\
 the Landauer Cost of Knowledge, and\\
 Convergence to Audit Heat Death}
 
-\author{Anonymous Author(s)}
+\author{SCX}
 
 \date{\today}
 
@@ -75,171 +72,171 @@ Convergence to Audit Heat Death}
 \maketitle
 
 \begin{abstract}
-热力学教导我们，孤立系统不可逆地朝向最大熵演化。我们追问 SCX 审计是否服从类似的规律：审计者关于标签噪声的残留不确定性是否单调演化，如果是，则趋向什么极限？我们定义 \textbf{审计熵} $H_A(t)=H(\varepsilon\mid\cI_A^{(t)})$ —— 给定审计者在时刻 $t$ 的累积信息集 $\cI_A^{(t)}$ 时真实噪声标签 $\varepsilon$ 的条件熵 —— 并证明四个定理。(i)~\textbf{审计第二律}（定理~\ref{thm:second-law}）：在``无遗忘''条件 $\cI_A^{(t)}\subseteq\cI_A^{(t+1)}$ 下，$H_A(t+1)\leq H_A(t)$，等号成立当且仅当第 $(t+1)$ 步审计提供关于 $\varepsilon$ 的零新信息。这是信息论数据处理不等式的 \textbf{严格} 推论。(ii)~\textbf{审计的朗道尔代价}（定理~\ref{thm:landauer}）：将 $H_A$ 降低 $\Delta H$ 需要物理能量 $E_{\mathrm{audit}}\geq k_B T\cdot\Delta H\cdot\ln2$，这是来自朗道尔原理的 \textbf{严格} 下界；该下界是否可由最优审计协议达到是 \textbf{开放问题}。(iii)~\textbf{审计热寂}（定理~\ref{thm:heat-death}）：$\lim_{t\to\infty}H_A(t)=H_{\min}>0$，其中 $H_{\min}=H(\varepsilon\mid S)$ 是定理~3 保证的不可消除的无知。\rigorous (iv)~\textbf{多审计者熵合并}（定理~\ref{thm:merging}）：$H_A(1\oplus2)\leq\min(H_A(1),H_A(2))$，以及链式展开的严格等式刻画，为联邦 SCX 审计提供信息论基础。\rigorous
+Thermodynamics teaches that isolated systems evolve irreversibly toward maximum entropy. We ask whether SCX auditing obeys a similar law: does the auditor's residual uncertainty about label noise evolve monotonically, and if so, toward what limit? We define \textbf{Audit Entropy} $H_A(t)=H(\varepsilon\mid\cI_A^{(t)})$ --- the conditional entropy of the true noise label $\varepsilon$ given the auditor's cumulative information set $\cI_A^{(t)}$ at time $t$ --- and prove four theorems. (i)~\textbf{Second Law of Auditing} (Theorem~\ref{thm:second-law}): under the ``no-forgetting'' condition $\cI_A^{(t)}\subseteq\cI_A^{(t+1)}$, $H_A(t+1)\leq H_A(t)$, with equality if and only if the $(t+1)$-st audit step provides zero new information about $\varepsilon$. This is a \textbf{rigorous} consequence of the information-theoretic data processing inequality. (ii)~\textbf{Landauer Cost of Auditing} (Theorem~\ref{thm:landauer}): reducing $H_A$ by $\Delta H$ requires physical energy $E_{\mathrm{audit}}\geq k_B T\cdot\Delta H\cdot\ln2$, a \textbf{rigorous} lower bound from Landauer's principle; whether this bound is achievable by optimal audit protocols is an \textbf{open problem}. (iii)~\textbf{Audit Heat Death} (Theorem~\ref{thm:heat-death}): $\lim_{t\to\infty}H_A(t)=H_{\min}>0$, where $H_{\min}=H(\varepsilon\mid S)$ is the irreducible ignorance guaranteed by Theorem~3. \rigorous (iv)~\textbf{Multi-Auditor Entropy Merging} (Theorem~\ref{thm:merging}): $H_A(1\oplus2)\leq\min(H_A(1),H_A(2))$, together with a chain-rule exact characterization, providing an information-theoretic foundation for federated SCX auditing. \rigorous
 \end{abstract}
 
 % ============================================================
-\section{引言}
+\section{Introduction}
 % ============================================================
 
-热力学第二定律可能是支配不可逆过程最深远的物理原理：孤立系统的熵永不减少。每一次计算，每一次测量，每一次信息处理操作都必须支付热力学代价——朗道尔原理确立了擦除一个比特的信息至少向环境耗散 $k_B T\ln 2$ 的热量~\citep{landauer1961irreversibility}。
+The Second Law of Thermodynamics is perhaps the most profound physical principle governing irreversible processes: the entropy of an isolated system never decreases. Every computation, every measurement, every information-processing operation must pay a thermodynamic toll --- Landauer's principle establishes that erasing one bit of information dissipates at least $k_B T\ln 2$ of heat into the environment~\citep{landauer1961irreversibility}.
 
-SCX 审计是一个信息过程：审计者积累证据，降低关于哪些样本是有噪声的不确定性，并逐步缩小估计噪声率与真实噪声率之间的差距。这一描述立即暗示了一个热力学类比：
+SCX auditing is an information process: auditors accumulate evidence, reduce uncertainty about which samples are noisy, and progressively close the gap between the estimated noise rate and the true noise rate. This description immediately suggests a thermodynamic analogy:
 \begin{itemize}
-    \item \textbf{物理熵} = 关于微观状态的不确定性
-    \item \textbf{审计熵} = 关于噪声标签的不确定性
-    \item \textbf{热力学不可逆性} = 熵增
-    \item \textbf{审计不可逆性} = 知识积累（熵\emph{减少}）
+    \item \textbf{Physical entropy} = uncertainty about microstates
+    \item \textbf{Audit entropy} = uncertainty about noise labels
+    \item \textbf{Thermodynamic irreversibility} = entropy increase
+    \item \textbf{Audit irreversibility} = knowledge accumulation (entropy \emph{decrease})
 \end{itemize}
 
-该类比反转了符号——审计减少熵而非增加熵——但保留了单向箭头。一旦审计者学会区分一个噪声模式，该知识就不能仅使用已拥有的信息被``遗忘''。这个 \textbf{审计时间箭头} 指向更低的审计熵，正如热力学箭头指向更高的物理熵。
+The analogy inverts the sign --- auditing reduces entropy rather than increasing it --- but preserves the unidirectional arrow. Once an auditor learns to distinguish a noise pattern, that knowledge cannot be ``forgotten'' using only information already possessed. This \textbf{audit time arrow} points toward lower audit entropy, just as the thermodynamic arrow points toward higher physical entropy.
 
-AE定理将此直觉形式化为四个精确的信息论陈述。综合起来，它们将 SCX 审计从算法过程提升为具有良好定义的热力学结构的过程——将定理~3 的统计极限连接到朗道尔的物理极限。
+The AE-Theorem formalizes this intuition into four precise information-theoretic statements. Collectively, they elevate SCX auditing from an algorithmic procedure to one with a well-defined thermodynamic structure --- connecting Theorem~3's statistical limits to Landauer's physical limits.
 
 \medskip\noindent
-\textbf{贡献.}
+\textbf{Contributions.}
 \begin{enumerate}[label=(\arabic*)]
-    \item \textbf{审计第二律}（定理~\ref{thm:second-law}）：审计熵的单调非增。\rigorous
-    \item \textbf{审计的朗道尔代价}（定理~\ref{thm:landauer}）：物理能量下界；可达性开放。\rigorous~/ \openquest
-    \item \textbf{审计热寂}（定理~\ref{thm:heat-death}）：收敛到 $H_{\min}>0$，即定理~3 的极限。\rigorous
-    \item \textbf{多审计者熵合并}（定理~\ref{thm:merging}）：信息论联邦审计基础。\rigorous
+    \item \textbf{Second Law of Auditing} (Theorem~\ref{thm:second-law}): Monotonic non-increase of audit entropy. \rigorous
+    \item \textbf{Landauer Cost of Auditing} (Theorem~\ref{thm:landauer}): Physical energy lower bound; achievability open. \rigorous~/ \openquest
+    \item \textbf{Audit Heat Death} (Theorem~\ref{thm:heat-death}): Convergence to $H_{\min}>0$, the Theorem~3 limit. \rigorous
+    \item \textbf{Multi-Auditor Entropy Merging} (Theorem~\ref{thm:merging}): Information-theoretic foundation for federated auditing. \rigorous
 \end{enumerate}
 
 % ============================================================
-\section{预备知识}
+\section{Preliminaries}
 % ============================================================
 
-\subsection{概率空间与记号}
+\subsection{Probability Space and Notation}
 
-令 $(\Omega, \mathcal{F}, P)$ 为一个固定的概率空间，承载所有相关随机变量。噪声指示变量 $\varepsilon: \Omega \to \{0,1\}$ 是 $\mathcal{F}$-可测的，表示每个样本是否被真实噪声污染。
+Let $(\Omega, \mathcal{F}, P)$ be a fixed probability space carrying all relevant random variables. The noise indicator $\varepsilon: \Omega \to \{0,1\}$ is $\mathcal{F}$-measurable, indicating whether each sample is truly corrupted by noise.
 
-对于任意子 $\sigma$-代数 $\mathcal{G} \subseteq \mathcal{F}$，条件熵定义为
+For any sub-$\sigma$-algebra $\mathcal{G} \subseteq \mathcal{F}$, the conditional entropy is defined as
 \[
 H(\varepsilon \mid \mathcal{G}) = -\mathbb{E}\bigl[\log_2 P(\varepsilon \mid \mathcal{G})\bigr],
 \]
-单位为比特。若无特别说明，所有熵与互信息均以 $\log_2$ 计算。
+in bits. Unless otherwise noted, all entropies and mutual informations are computed using $\log_2$.
 
-\subsection{审计熵}
+\subsection{Audit Entropy}
 
-\begin{definition}[审计熵]
+\begin{definition}[Audit Entropy]
 \label{def:audit-entropy}
-在时刻 $t$，审计者的累积信息集 $\cI_A^{(t)}$ 是 $\mathcal{F}$ 的一个子 $\sigma$-代数，包含截至时刻 $t$ 的所有观测：Cercis 分数、梯度、Hessian、专家判断以及任何其他审计相关信号。
-\textbf{审计熵}定义为
+At time $t$, the auditor's cumulative information set $\cI_A^{(t)}$ is a sub-$\sigma$-algebra of $\mathcal{F}$ containing all observations up to time $t$: Cercis scores, gradients, Hessians, expert judgments, and any other audit-relevant signals.
+\textbf{Audit entropy} is defined as
 \begin{equation}\label{eq:H-A-def}
     H_A(t) = H\bigl(\varepsilon \mid \cI_A^{(t)}\bigr)
     = -\mathbb{E}\Bigl[\log_2 P\bigl(\varepsilon \mid \cI_A^{(t)}\bigr)\Bigr],
 \end{equation}
-即给定截至时刻 $t$ 审计者积累的所有信息时，真实噪声指标 $\varepsilon(x)\in\{0,1\}$ 的条件熵。
+i.e., the conditional entropy of the true noise indicator $\varepsilon(x)\in\{0,1\}$ given all information accumulated by the auditor up to time $t$.
 \end{definition}
 
-$H_A(t)$ 度量审计者的\textbf{残留无知}：在处理所有审计证据后，关于哪些样本真正有噪声仍存在多少不确定性。完美审计将达到 $H_A=0$（零残留不确定性）；定理~3 保证这是不可能的。
+$H_A(t)$ measures the auditor's \textbf{residual ignorance}: after processing all audit evidence, how much uncertainty remains about which samples are genuinely noisy. A perfect audit would achieve $H_A=0$ (zero residual uncertainty); Theorem~3 guarantees this is impossible.
 
-\begin{definition}[无遗忘条件]
+\begin{definition}[No-Forgetting Condition]
 \label{def:no-forgetting}
-审计过程满足\textbf{无遗忘}若审计者的信息集是单调非减的：
+An audit process satisfies \textbf{no-forgetting} if the auditor's information set is monotonically non-decreasing:
 \begin{equation}\label{eq:no-forgetting}
     \cI_A^{(t)} \subseteq \cI_A^{(t+1)}, \qquad \forall t\geq0,
 \end{equation}
-即先前获取的信息不被丢弃或丢失。在 $\sigma$-代数语言中，这意味着 $\cI_A^{(t)}$ 是 $\mathcal{F}$ 中一个递增的子 $\sigma$-代数流（filtration）。
+i.e., previously acquired information is never discarded or lost. In $\sigma$-algebra language, this means $\cI_A^{(t)}$ is an increasing filtration of sub-$\sigma$-algebras of $\mathcal{F}$.
 \end{definition}
 
-\subsection{假设系列}
+\subsection{Assumption Set}
 
-我们给出全文共享的形式化假设。
+We present the formal assumptions shared throughout the paper.
 
-\begin{assumption}[概率正则性]
+\begin{assumption}[Probabilistic Regularity]
 \label{ass:prob}
-概率空间 $(\Omega, \mathcal{F}, P)$ 是完备的。$\varepsilon \in L^1(\Omega)$，即 $\mathbb{E}[|\varepsilon|] < \infty$。
+The probability space $(\Omega, \mathcal{F}, P)$ is complete. $\varepsilon \in L^1(\Omega)$, i.e., $\mathbb{E}[|\varepsilon|] < \infty$.
 \end{assumption}
 
-\begin{assumption}[信息流可测性]
+\begin{assumption}[Information Flow Measurability]
 \label{ass:filtration}
-$\{\cI_A^{(t)}\}_{t \ge 0}$ 构成 $\mathcal{F}$ 的一个递增 filtration，即 $\cI_A^{(t)} \subseteq \cI_A^{(t+1)} \subseteq \mathcal{F}$ 对所有 $t$ 成立。
+$\{\cI_A^{(t)}\}_{t \ge 0}$ forms an increasing filtration of $\mathcal{F}$, i.e., $\cI_A^{(t)} \subseteq \cI_A^{(t+1)} \subseteq \mathcal{F}$ for all $t$.
 \end{assumption}
 
-\begin{assumption}[SCX 可观测性]
+\begin{assumption}[SCX Observability]
 \label{ass:scx}
-对于所有充分大的 $t$，Cercis 分数 $S$、其梯度 $\nabla S$ 和 Hessian $H_S$ 是 $\cI_A^{(t)}$-可测的。特别地，$S \in \cI_A^{(\infty)}$，其中 $\cI_A^{(\infty)} := \sigma\bigl(\bigcup_{t=0}^\infty \cI_A^{(t)}\bigr)$。
+For all sufficiently large $t$, the Cercis score $S$, its gradient $\nabla S$, and its Hessian $H_S$ are $\cI_A^{(t)}$-measurable. In particular, $S \in \cI_A^{(\infty)}$, where $\cI_A^{(\infty)} := \sigma\bigl(\bigcup_{t=0}^\infty \cI_A^{(t)}\bigr)$.
 \end{assumption}
 
-\begin{assumption}[定理~3 的极限信息集]
+\begin{assumption}[Theorem~3 Limit Information Set]
 \label{ass:t3}
-由 SCX 可观测生成的 $\sigma$-代数为 $\sG_{\mathrm{SCX}} = \sigma(\{S, \nabla S, H_S\})$。定理~3 的耦合构造断言：
+The $\sigma$-algebra generated by SCX observables is $\sG_{\mathrm{SCX}} = \sigma(\{S, \nabla S, H_S\})$. Theorem~3's coupling construction asserts:
 \[
 H\bigl(\varepsilon \mid \sG_{\mathrm{SCX}}\bigr) = H(\varepsilon \mid S) > 0.
 \]
-此外，$\sG_{\mathrm{SCX}}$ 是从数据中可提取的关于 $\varepsilon$ 的最大信息 $\sigma$-代数，即对任何子 $\sigma$-代数 $\mathcal{H} \subseteq \mathcal{F}$ 满足 $S \in \mathcal{H}$ 有 $\mathcal{H} \subseteq \sG_{\mathrm{SCX}}$ 或 $H(\varepsilon \mid \mathcal{H}) \ge H(\varepsilon \mid \sG_{\mathrm{SCX}})$。
+Moreover, $\sG_{\mathrm{SCX}}$ is the maximal information $\sigma$-algebra about $\varepsilon$ extractable from data, i.e., for any sub-$\sigma$-algebra $\mathcal{H} \subseteq \mathcal{F}$ with $S \in \mathcal{H}$, either $\mathcal{H} \subseteq \sG_{\mathrm{SCX}}$ or $H(\varepsilon \mid \mathcal{H}) \ge H(\varepsilon \mid \sG_{\mathrm{SCX}})$.
 \end{assumption}
 
-\subsection{审计信息源}
+\subsection{Audit Information Sources}
 
-信息集 $\cI_A^{(t)}$ 聚合多个渠道：
+The information set $\cI_A^{(t)}$ aggregates multiple channels:
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{Cercis 渠道}：$S(x)=Q(x)+\eta N(x)$ 及其导数；
-    \item \textbf{专家渠道}：人类或算法专家判断 $J_k(x)\in\{\mathrm{noise},\mathrm{hard}\}$；
-    \item \textbf{一致性渠道}：跨多个审计者或跨时间的一致模式；
-    \item \textbf{因果渠道}：关于数据生成过程的领域知识。
+    \item \textbf{Cercis channel}: $S(x)=Q(x)+\eta N(x)$ and its derivatives;
+    \item \textbf{Expert channel}: human or algorithmic expert judgments $J_k(x)\in\{\mathrm{noise},\mathrm{hard}\}$;
+    \item \textbf{Consistency channel}: consistent patterns across multiple auditors or across time;
+    \item \textbf{Causal channel}: domain knowledge about the data generation process.
 \end{enumerate}
-每个渠道贡献关于 $\varepsilon$ 的增量互信息，并且随着渠道并集增长，审计熵减少。
+Each channel contributes incremental mutual information about $\varepsilon$, and audit entropy decreases as the union of channels grows.
 
 % ============================================================
-\section{主要结果}
+\section{Main Results}
 % ============================================================
 
-\subsection{审计第二律}
+\subsection{Second Law of Auditing}
 
-\begin{theorem}[审计第二律——熵单调减少]
+\begin{theorem}[Second Law of Auditing --- Monotonic Entropy Decrease]
 \label{thm:second-law}
-在假设~\ref{ass:prob} 和~\ref{ass:filtration}（无遗忘条件~\eqref{eq:no-forgetting}）下，对任意审计过程 $\cA$，
+Under Assumptions~\ref{ass:prob} and~\ref{ass:filtration} (no-forgetting condition~\eqref{eq:no-forgetting}), for any audit process $\cA$,
 \begin{equation}\label{eq:second-law}
     H_A(t+1) \;\leq\; H_A(t),
 \end{equation}
-等号成立当且仅当
+with equality if and only if
 \[
 I\bigl(\varepsilon; \cI_A^{(t+1)} \mid \cI_A^{(t)}\bigr) = 0,
 \]
-即第 $(t+1)$ 步审计关于 $\varepsilon$ 提供零额外信息——换言之，$\varepsilon \perp\!\!\!\perp \cI_A^{(t+1)} \mid \cI_A^{(t)}$。
+i.e., the $(t+1)$-st audit step provides zero additional information about $\varepsilon$ --- in other words, $\varepsilon \perp\!\!\!\perp \cI_A^{(t+1)} \mid \cI_A^{(t)}$.
 \end{theorem}
 
-\begin{proof}[定理~AE.1 的严格证明]
-设 $\cI_t := \cI_A^{(t)}$ 为子 $\sigma$-代数。
+\begin{proof}[Rigorous Proof of Theorem~AE.1]
+Let $\cI_t := \cI_A^{(t)}$ be the sub-$\sigma$-algebra.
 
-\textbf{第一步：信息论恒等式。}
-由条件熵的定义与链式法则：
+\textbf{Step 1: Information-theoretic identity.}
+By definition of conditional entropy and the chain rule:
 \[
 H(\varepsilon \mid \cI_{t+1}) = H(\varepsilon \mid \cI_t, \cI_{t+1}),
 \]
-其中 $\cI_{t+1}$ 包含比 $\cI_t$ 更多的信息。
+where $\cI_{t+1}$ contains more information than $\cI_t$.
 
-\textbf{第二步：应用数据处理不等式。}
-由于 $\cI_t \subseteq \cI_{t+1}$（假设~\ref{ass:filtration}），我们有 $\sigma$-代数包含关系 $\sigma(\cI_{t+1}) \supseteq \sigma(\cI_t)$。条件熵在 $\sigma$-代数上具有反单调性：若 $\mathcal{G}_1 \subseteq \mathcal{G}_2$ 为子 $\sigma$-代数，则
+\textbf{Step 2: Apply the data processing inequality.}
+Since $\cI_t \subseteq \cI_{t+1}$ (Assumption~\ref{ass:filtration}), we have the $\sigma$-algebra inclusion $\sigma(\cI_{t+1}) \supseteq \sigma(\cI_t)$. Conditional entropy is anti-monotonic with respect to the conditioning $\sigma$-algebra: if $\mathcal{G}_1 \subseteq \mathcal{G}_2$ are sub-$\sigma$-algebras, then
 \[
 H(\varepsilon \mid \mathcal{G}_1) \ge H(\varepsilon \mid \mathcal{G}_2).
 \]
-取 $\mathcal{G}_1 = \sigma(\cI_t)$ 和 $\mathcal{G}_2 = \sigma(\cI_{t+1})$，得到
+Taking $\mathcal{G}_1 = \sigma(\cI_t)$ and $\mathcal{G}_2 = \sigma(\cI_{t+1})$ yields
 \[
 H(\varepsilon \mid \cI_t) \ge H(\varepsilon \mid \cI_{t+1}),
 \]
-这正是要证的~\eqref{eq:second-law}。
+which is precisely~\eqref{eq:second-law}.
 
-\textbf{第三步：等号条件。}
-定义增量互信息：
+\textbf{Step 3: Equality condition.}
+Define the incremental mutual information:
 \[
 \Delta I_t := I(\varepsilon; \cI_{t+1} \mid \cI_t) = H(\varepsilon \mid \cI_t) - H(\varepsilon \mid \cI_t, \cI_{t+1}).
 \]
-由链式法则：
+By the chain rule:
 \[
 H(\varepsilon \mid \cI_t) = H(\varepsilon \mid \cI_{t+1}) + \Delta I_t.
 \]
-因此，$H(\varepsilon \mid \cI_{t+1}) = H(\varepsilon \mid \cI_t)$ 当且仅当 $\Delta I_t = 0$。
+Therefore, $H(\varepsilon \mid \cI_{t+1}) = H(\varepsilon \mid \cI_t)$ if and only if $\Delta I_t = 0$.
 
-$\Delta I_t = 0$ 等价于条件独立性 $\varepsilon \perp\!\!\!\perp \cI_{t+1} \mid \cI_t$，即 $\cI_{t+1}$ 不携带关于 $\varepsilon$ 的任何信息，超出 $\cI_t$ 已包含的内容。数学上：
+$\Delta I_t = 0$ is equivalent to conditional independence $\varepsilon \perp\!\!\!\perp \cI_{t+1} \mid \cI_t$, i.e., $\cI_{t+1}$ carries no information about $\varepsilon$ beyond what $\cI_t$ already contains. Mathematically:
 \[
 P(\varepsilon \in A \mid \cI_t, \cI_{t+1}) = P(\varepsilon \in A \mid \cI_t),\quad \forall A \in \mathcal{B}(\{0,1\}).
 \]
 
-\textbf{第四步：互信息分解的显式展开。}
-展开 $\Delta I_t$ 以便检查：
+\textbf{Step 4: Explicit expansion of mutual information decomposition.}
+Expanding $\Delta I_t$ for inspection:
 \[
 \begin{aligned}
 \Delta I_t &= I(\varepsilon; \cI_{t+1} \mid \cI_t) \\
@@ -247,438 +244,301 @@ P(\varepsilon \in A \mid \cI_t, \cI_{t+1}) = P(\varepsilon \in A \mid \cI_t),\qu
 &= \mathbb{E}\Bigl[ \log_2 \frac{P(\cI_{t+1}, \varepsilon \mid \cI_t)}{P(\cI_{t+1} \mid \cI_t) P(\varepsilon \mid \cI_t)} \Bigr].
 \end{aligned}
 \]
-当且仅当联合分布分解 $P(\cI_{t+1}, \varepsilon \mid \cI_t) = P(\cI_{t+1} \mid \cI_t) P(\varepsilon \mid \cI_t)$ 时 $\Delta I_t = 0$。$\square$
+$\Delta I_t = 0$ if and only if the joint distribution factorizes as $P(\cI_{t+1}, \varepsilon \mid \cI_t) = P(\cI_{t+1} \mid \cI_t) P(\varepsilon \mid \cI_t)$. $\square$
 \end{proof}
 
 \medskip\noindent
-\textbf{应用：}
-定理~\ref{thm:second-law} 为 SCX 审计记录提供了\textbf{不可逆性保证}。一旦审计者了解到关于标签噪声的事实，该知识不能仅使用审计线索中已有的信息被遗忘。这对审计日志完整性有直接意义：对历史审计记录的任何篡改都会造成单调性条件~\eqref{eq:second-law} 的可检测违反——$H_A(t)$ 下降后紧接着上升将标志数据操纵。在审计线索有法律要求的受监管行业（金融服务、制药制造），此定理为防篡改审计日志提供了数学基础：系统应持续监控 $H_A(t)$ 并将任何上升标记为潜在的完整性违规。等号条件进一步提供了诊断：若 $H_A(t+1)=H_A(t)$ 持续多个步骤，审计过程已停滞，信息渠道需要多样化。
+\textbf{Applications:}
+Theorem~\ref{thm:second-law} provides an \textbf{irreversibility guarantee} for SCX audit trails. Once an auditor learns a fact about label noise, that knowledge cannot be forgotten using only information already present in the audit trail. This has direct implications for audit log integrity: any tampering with historical audit records would produce a detectable violation of the monotonicity condition~\eqref{eq:second-law} --- a rise in $H_A(t)$ following a decline would flag data manipulation. In regulated industries where audit trails have legal requirements (financial services, pharmaceutical manufacturing), this theorem provides a mathematical foundation for tamper-proof audit logs: systems should continuously monitor $H_A(t)$ and flag any increase as a potential integrity violation. The equality condition further provides a diagnostic: if $H_A(t+1)=H_A(t)$ persists over multiple steps, the audit process has stalled and information channels need diversification.
 
-\begin{remark}[严格性标注]
-定理~\ref{thm:second-law} 是\textbf{严格的}——它是数据处理不等式的直接推论，而 DPI 本身就是经典信息论中的定理~\citep{cover1999elements}。审计第二律不需要任何热力学假设；它纯粹从信息集扩展下的条件熵的数学结构得出。\rigorous
+\begin{remark}[Rigor Annotation]
+Theorem~\ref{thm:second-law} is \textbf{rigorous} --- it is a direct corollary of the data processing inequality, which is itself a theorem in classical information theory~\citep{cover1999elements}. The Second Law of Auditing requires no thermodynamic assumptions; it follows purely from the mathematical structure of conditional entropy under expanding information sets. \rigorous
 \end{remark}
 
-\begin{remark}[诚实暴击]
+\begin{remark}[Honest Critique]
 \label{crit:ae1}
-\hcritique~定理~AE.1 的逻辑是无可置疑的，但两个隐含假设值得审视：
+\hcritique~The logic of Theorem~AE.1 is indisputable, but two implicit assumptions deserve scrutiny:
 \begin{enumerate}
-    \item \textbf{无遗忘的现实性}：在真实系统中，审计者可能因存储限制或故意压缩而丢弃旧信息。若 $\cI_A^{(t+1)} \not\supseteq \cI_A^{(t)}$，单调性可能被破坏，熵可能回升。
-    \item \textbf{信息集的可比性}：$\cI_A^{(t)} \subseteq \cI_A^{(t+1)}$ 要求信息集以 $\sigma$-代数包含关系可比。在实际的异构审计系统中，不同时间点的信息可能是不可比的（例如，结构完全不同的特征集）。
+    \item \textbf{Realism of no-forgetting}: In real systems, auditors may discard old information due to storage constraints or deliberate compression. If $\cI_A^{(t+1)} \not\supseteq \cI_A^{(t)}$, monotonicity may be violated and entropy may rise.
+    \item \textbf{Comparability of information sets}: $\cI_A^{(t)} \subseteq \cI_A^{(t+1)}$ requires information sets to be comparable via $\sigma$-algebra inclusion. In practical heterogeneous audit systems, information at different times may be incomparable (e.g., structurally different feature sets).
 \end{enumerate}
-在理想化假设下定理成立，实际部署需验证无遗忘条件被满足。
+The theorem holds under the idealized assumption; practical deployment requires verification of the no-forgetting condition.
 \end{remark}
 
-\subsection{审计的朗道尔代价}
+\subsection{Landauer Cost of Auditing}
 
-\begin{theorem}[审计计算的朗道尔界]
+\begin{theorem}[Landauer Bound for Audit Computation]
 \label{thm:landauer}
-设 $\Delta H = H_A(t) - H_A(t+1) > 0$（以比特为单位）为一个步骤中实现的审计熵减少。实现该减少的计算所需的物理能量满足
+Let $\Delta H = H_A(t) - H_A(t+1) > 0$ (in bits) be the audit entropy reduction achieved in one step. The physical energy required for the computation realizing this reduction satisfies
 \begin{equation}\label{eq:landauer-cost}
     E_{\mathrm{audit}} \;\geq\;
     k_B T \cdot \Delta H \cdot \ln 2,
 \end{equation}
-其中 $k_B$ 是玻尔兹曼常数，$T$ 是计算基底的物理温度。
+where $k_B$ is Boltzmann's constant and $T$ is the physical temperature of the computing substrate.
 \end{theorem}
 
-\begin{proof}[定理~AE.2 的严格证明]
-\textbf{第一步：信息熵与物理熵的对应。}
-审计熵 $H_A(t) = H(\varepsilon \mid \cI_A^{(t)})$ 以比特为单位度量不确定性。根据假设~\ref{ass:prob}，在时刻 $t$ 审计者的认知状态可以通过一个物理存储器表示，其微观状态数约为 $2^{H_A(t)}$。
+\begin{proof}[Rigorous Proof of Theorem~AE.2]
+\textbf{Step 1: Correspondence between information entropy and physical entropy.}
+Audit entropy $H_A(t) = H(\varepsilon \mid \cI_A^{(t)})$ measures uncertainty in bits. Under Assumption~\ref{ass:prob}, the auditor's cognitive state at time $t$ can be represented by a physical memory whose number of microstates is approximately $2^{H_A(t)}$.
 
-更精确地，考虑实现审计计算的物理系统。设 $\rho_t$ 为时刻 $t$ 存储器的物理状态（密度矩阵）。存储器处于一个宏观状态，对应于 $W(t) = e^{H_A(t) \ln 2} = 2^{H_A(t)}$ 个可分辨的微观状态。于是存储器的物理熵（玻尔兹曼熵）为
+More precisely, consider the physical system implementing the audit computation. Let $\rho_t$ be the physical state (density matrix) of the memory at time $t$. The memory is in a macrostate corresponding to $W(t) = e^{H_A(t) \ln 2} = 2^{H_A(t)}$ distinguishable microstates. The physical entropy (Boltzmann entropy) of the memory is thus
 \[
 S_{\mathrm{phys}}(t) = k_B \ln W(t) = k_B H_A(t) \ln 2.
 \]
 
-\textbf{第二步：熵的减少对应物理信息擦除。}
-在一次审计步骤中，熵减少 $\Delta H = H_A(t) - H_A(t+1)$ 比特。相应的物理熵减少为
+\textbf{Step 2: Entropy reduction corresponds to physical information erasure.}
+In one audit step, entropy is reduced by $\Delta H = H_A(t) - H_A(t+1)$ bits. The corresponding physical entropy reduction is
 \[
 \Delta S_{\mathrm{phys}} = k_B (\ln 2) \bigl(H_A(t) - H_A(t+1)\bigr) = k_B \Delta H \ln 2.
 \]
 
-\textbf{第三步：应用朗道尔原理。}
-朗道尔原理~\citep{landauer1961irreversibility} 指出：在任何逻辑上不可逆的计算操作中，每擦除一个比特的信息，至少向环境耗散 $k_B T \ln 2$ 的能量。擦除 $\Delta H$ 比特的信息对应于熵减少 $\Delta S_{\mathrm{phys}}$。
+\textbf{Step 3: Apply Landauer's principle.}
+Landauer's principle~\citep{landauer1961irreversibility} states: in any logically irreversible computation, erasing one bit of information dissipates at least $k_B T \ln 2$ of energy into the environment. Erasing $\Delta H$ bits corresponds to entropy reduction $\Delta S_{\mathrm{phys}}$.
 
-形式上，设 $\Delta Q$ 为操作中释放的热量。热力学第二律要求：
+Formally, let $\Delta Q$ be the heat released during the operation. The Second Law of Thermodynamics requires:
 \[
-\Delta S_{\mathrm{环境}} = \frac{\Delta Q}{T} \ge \Delta S_{\mathrm{phys}}.
+\Delta S_{\mathrm{environment}} = \frac{\Delta Q}{T} \ge \Delta S_{\mathrm{phys}}.
 \]
-因此，
+Therefore,
 \[
 E_{\mathrm{audit}} \ge \Delta Q \ge T \cdot \Delta S_{\mathrm{phys}} = k_B T \cdot \Delta H \cdot \ln 2.
 \]
 
-\textbf{第四步：关于 nats 与 bits 转换的注记。}
-若审计熵以 nats 而非 bits 计量（即使用自然对数），则 $H_A^{\mathrm{nats}} = H_A^{\mathrm{bits}} \cdot \ln 2$，且
+\textbf{Step 4: Note on nats vs. bits conversion.}
+If audit entropy is measured in nats rather than bits (i.e., using natural logarithms), then $H_A^{\mathrm{nats}} = H_A^{\mathrm{bits}} \cdot \ln 2$, and
 \[
 \Delta H^{\mathrm{bits}} = \frac{\Delta H^{\mathrm{nats}}}{\ln 2}.
 \]
-代入朗道尔界：
+Substituting into the Landauer bound:
 \[
 E_{\mathrm{audit}} \ge k_B T \cdot \frac{\Delta H^{\mathrm{nats}}}{\ln 2} \cdot \ln 2 = k_B T \cdot \Delta H^{\mathrm{nats}}.
 \]
-因此，不论计量单位如何，$E_{\mathrm{audit}} \ge k_B T \cdot (\text{以 nats 计的熵减}) = k_B T \cdot (\text{以 bits 计的熵减}) \cdot \ln 2$。$\square$
+Thus, regardless of units, $E_{\mathrm{audit}} \ge k_B T \cdot (\text{entropy reduction in nats}) = k_B T \cdot (\text{entropy reduction in bits}) \cdot \ln 2$. $\square$
 \end{proof}
 
 \medskip\noindent
-\textbf{应用：}
-定理~\ref{thm:landauer} 将审计精度转化为\textbf{物理运行成本}。将审计熵降低 $\Delta H$ 比特每样本每样本至少消耗 $k_B T\cdot\Delta H\cdot\ln 2$ 焦耳。对于一个处理 $10^9$ 样本、$\Delta H=0.1$ 比特每样本的大规模审计管线（将不确定性从例如 0.5 降低到 0.4 比特），室温下的最小能耗约为 $2.8\times10^{-13}$ 焦耳每样本，整个管线累计约 $2.8\times10^{-4}$ 焦耳。虽数值不大，但这确立了一个任何工程优化都无法突破的\textbf{热力学下限}。在能量受限的边缘部署（物联网传感器、卫星系统）中，该界直接决定了可行的审计深度：审计精度不能超过能量预算热力学上可支持的范围。紧致性的开放问题（开放问题~\ref{prob:landauer-tight}）决定了实际 SCX 系统是接近此下限还是高出几个数量级——这对大规模审计部署的经济学有直接影响。
+\textbf{Applications:}
+Theorem~\ref{thm:landauer} translates audit precision into \textbf{physical operating cost}. Reducing audit entropy by $\Delta H$ bits per sample consumes at least $k_B T\cdot\Delta H\cdot\ln 2$ Joules per sample. For a large-scale audit pipeline processing $10^9$ samples with $\Delta H=0.1$ bits per sample (reducing uncertainty from, say, 0.5 to 0.4 bits), the minimum energy consumption at room temperature is approximately $2.8\times10^{-13}$ Joules per sample, or about $2.8\times10^{-4}$ Joules for the entire pipeline. While numerically modest, this establishes a \textbf{thermodynamic floor} that no engineering optimization can breach. In energy-constrained edge deployments (IoT sensors, satellite systems), this bound directly determines feasible audit depth: audit precision cannot exceed what the energy budget thermodynamically supports. The open problem of tightness (Open Problem~\ref{prob:landauer-tight}) determines whether real SCX systems operate near this floor or orders of magnitude above it --- with direct implications for the economics of large-scale audit deployment.
 
-\begin{openproblem}[审计朗道尔界的紧致性]
+\begin{openproblem}[Tightness of the Audit Landauer Bound]
 \label{prob:landauer-tight}
-是否存在最优审计协议，其计算代价\emph{饱和}朗道尔界 $E_{\mathrm{audit}} = k_B T \cdot \Delta H \cdot \ln 2$？这要求数据生成过程的 Situs 编码是热力学最优的——即生成数据的物理熵恰好等于审计它的朗道尔代价。Situs 几何与热力学代价之间的关系是\textbf{开放的}。\openquest
+Does there exist an optimal audit protocol whose computational cost \emph{saturates} the Landauer bound $E_{\mathrm{audit}} = k_B T \cdot \Delta H \cdot \ln 2$? This requires the Situs encoding of the data-generating process to be thermodynamically optimal --- i.e., the physical entropy of generating the data exactly equals the Landauer cost of auditing it. The relationship between Situs geometry and thermodynamic cost is \textbf{open}. \openquest
 \end{openproblem}
 
-\begin{remark}[严格性标注]
-定理~\ref{thm:landauer} 在以下意义下是\textbf{条件严格的}：若朗道尔原理成立（经过实验验证~\citep{berut2012experimental}），且审计熵减少对应物理信息擦除，则下界无条件成立。\conditionallyrigorous
+\begin{remark}[Rigor Annotation]
+Theorem~\ref{thm:landauer} is \textbf{conditionally rigorous} in the following sense: if Landauer's principle holds (experimentally verified~\citep{berut2012experimental}), and if audit entropy reduction corresponds to physical information erasure, then the lower bound holds unconditionally. \conditionallyrigorous
 \end{remark}
 
-\begin{remark}[诚实暴击]
+\begin{remark}[Honest Critique]
 \label{crit:ae2}
-\hcritique~定理~AE.2 涉及多个深层的概念性问题：
+\hcritique~Theorem~AE.2 involves several deep conceptual issues:
 \begin{enumerate}
-    \item \textbf{非封闭系统的朗道尔界适用性}：朗道尔原理针对的是逻辑上不可逆的计算操作，特别是信息的擦除。审计过程中，审计者的认知熵减少对应于\textbf{信息获取}而非信息擦除。计算硬件在执行审计算法时确实会擦除中间状态（例如，ALU 操作覆盖寄存器），这些操作的能耗受朗道尔原理约束。但审计熵减少本身——知识增加——并不直接对应擦除操作。更准确地说，知识增加是信息获取的结果，而获取信息不一定需要能量消耗（例如，测量可以原则上无能耗~\citep{bennett2003notes}）。能量代价来自处理获取信息时的不可逆计算。
+    \item \textbf{Applicability of the Landauer bound to non-closed systems}: Landauer's principle targets logically irreversible computation, specifically information erasure. During auditing, the auditor's cognitive entropy reduction corresponds to \textbf{information acquisition} rather than information erasure. Computational hardware executing audit algorithms does indeed erase intermediate states (e.g., ALU operations overwriting registers), and the energy cost of these operations is bounded by Landauer's principle. However, audit entropy reduction itself --- knowledge increase --- does not directly correspond to an erasure operation. More precisely, knowledge increase results from information acquisition, and acquiring information need not require energy (e.g., measurement can in principle be dissipation-free~\citep{bennett2003notes}). The energy cost comes from the irreversible computation required to process the acquired information.
 
-    因此，朗道尔界对审计的适用需要以下中间步骤的严格论证：(a) 审计算法被分解为一系列逻辑上不可逆的基本操作；(b) 这些操作的擦除总量下界可关联到 $\Delta H$。该论证目前是启发式的，不是严格的信息论对应。
+    Therefore, applying the Landauer bound to auditing requires rigorous justification of the following intermediate steps: (a) the audit algorithm is decomposed into a sequence of logically irreversible elementary operations; (b) the total erasure incurred by these operations can be lower-bounded in terms of $\Delta H$. This justification is currently heuristic, not a rigorous information-theoretic correspondence.
 
-    \item \textbf{可逆计算的可能性}：原则上，可以使用可逆计算（如 Bennett 的 pebble game~\citep{bennett2003notes}）来执行审计算法，使能耗任意接近零。这种情况下朗道尔界不适用。然而，可逆计算需要保留所有中间状态，这在实际审计中可能不可行（存储成本过高）。是否存在一种审计算法在保持 $\Delta H$ 的同时使用可逆计算避免能量耗散，是开放问题。
+    \item \textbf{Possibility of reversible computation}: In principle, one could use reversible computation (such as Bennett's pebble game~\citep{bennett2003notes}) to execute the audit algorithm, making the energy dissipation arbitrarily close to zero. In this case the Landauer bound would not apply. However, reversible computation requires preserving all intermediate states, which may be infeasible in practical auditing (prohibitive storage costs). Whether there exists an audit algorithm that achieves $\Delta H$ using reversible computation while avoiding energy dissipation is an open problem.
 
-    \item \textbf{$H_A$ 与物理熵的对应并非一一对应}：信息熵 $H_A$ 是认知状态的概率度量，而物理熵是物理系统的热力学性质。将计算存储器状态与认知状态直接对应是理想化假设，在真实神经形态或分布式系统中可能不成立。
+    \item \textbf{$H_A$ to physical entropy correspondence is not one-to-one}: Information entropy $H_A$ is a probabilistic measure of cognitive state, while physical entropy is a thermodynamic property of a physical system. Directly identifying computational memory states with cognitive states is an idealization that may not hold in real neuromorphic or distributed systems.
 \end{enumerate}
-这些批评不否定定理的数学有效性，但限制了其在真实审计系统上的直接适用性。
+These criticisms do not negate the theorem's mathematical validity but limit its direct applicability to real audit systems.
 \end{remark}
 
-\subsection{审计热寂}
+\subsection{Audit Heat Death}
 
-\begin{theorem}[审计热寂——收敛到不可消除的无知]
+\begin{theorem}[Audit Heat Death --- Convergence to Irreducible Ignorance]
 \label{thm:heat-death}
-在假设~\ref{ass:prob}、\ref{ass:filtration}、\ref{ass:scx} 和~\ref{ass:t3}下，对任何满足无遗忘条件的审计过程，
+Under Assumptions~\ref{ass:prob}, \ref{ass:filtration}, \ref{ass:scx}, and \ref{ass:t3}, for any audit process satisfying the no-forgetting condition,
 \begin{equation}\label{eq:heat-death}
     \lim_{t\to\infty} H_A(t) \;=\; H_{\min} \;>\; 0,
 \end{equation}
-其中
+where
 \begin{equation}\label{eq:H-min}
     H_{\min} = H(\varepsilon \mid S)
     = H(\varepsilon) - I(\varepsilon; S)
 \end{equation}
-是\textbf{不可消除的审计熵}——即使在无限审计后仍存留的关于 $\varepsilon$ 的残留不确定性。它正是定理~3 障碍的信息论量化。
+is the \textbf{irreducible audit entropy} --- the residual uncertainty about $\varepsilon$ that persists even after infinite auditing. It is precisely the information-theoretic quantification of the Theorem~3 barrier.
 \end{theorem}
 
-\begin{proof}[定理~AE.3 的严格证明]
-证明分三个步骤：极限存在性、极限正性、极限识别。
+\begin{proof}[Rigorous Proof of Theorem~AE.3]
+The proof consists of three parts: existence of the limit, positivity of the limit, and identification of the limit.
 
-\textbf{第一步：极限的存在性。}
-序列 $\{H_A(t)\}_{t=0}^\infty$ 满足：
+\textbf{Step 1: Existence of the limit.}
+The sequence $\{H_A(t)\}_{t=0}^\infty$ satisfies:
 \begin{enumerate}
-    \item[（i）] \textbf{单调性}：由定理~AE.1，$H_A(t+1) \le H_A(t)$ 对所有 $t \ge 0$。
-    \item[（ii）] \textbf{下有界性}：条件熵非负，$H_A(t) = H(\varepsilon \mid \cI_A^{(t)}) \ge 0$。
+    \item[(i)] \textbf{Monotonicity}: By Theorem~AE.1, $H_A(t+1) \le H_A(t)$ for all $t \ge 0$.
+    \item[(ii)] \textbf{Boundedness below}: Conditional entropy is nonnegative, $H_A(t) = H(\varepsilon \mid \cI_A^{(t)}) \ge 0$.
 \end{enumerate}
-由实分析中的单调收敛定理：单调非增下有界序列必有极限。因此
+By the monotone convergence theorem from real analysis: a monotonically non-increasing sequence bounded below must have a limit. Therefore
 \[
-\lim_{t\to\infty} H_A(t) =: H_{\min} \quad \text{存在且 } H_{\min} \ge 0.
+\lim_{t\to\infty} H_A(t) =: H_{\min} \quad \text{exists and } H_{\min} \ge 0.
 \]
 
-\textbf{第二步：极限的正性。}
-定义极限 $\sigma$-代数
+\textbf{Step 2: Positivity of the limit.}
+Define the limit $\sigma$-algebra
 \[
 \cI_A^{(\infty)} := \sigma\Bigl(\bigcup_{t=0}^\infty \cI_A^{(t)}\Bigr).
 \]
-由鞅收敛定理，当 $t \to \infty$ 时 $P(\varepsilon \mid \cI_A^{(t)}) \to P(\varepsilon \mid \cI_A^{(\infty)})$ a.s.，且 $H(\varepsilon \mid \cI_A^{(t)}) \to H(\varepsilon \mid \cI_A^{(\infty)})$。
+By the martingale convergence theorem, as $t \to \infty$, $P(\varepsilon \mid \cI_A^{(t)}) \to P(\varepsilon \mid \cI_A^{(\infty)})$ a.s., and $H(\varepsilon \mid \cI_A^{(t)}) \to H(\varepsilon \mid \cI_A^{(\infty)})$.
 
 \begin{enumerate}
-    \item[（i）] 由假设~\ref{ass:scx}，Cercis 分数 $S$ 是 $\cI_A^{(\infty)}$-可测的，即 $\sigma(S) \subseteq \cI_A^{(\infty)}$。
-    \item[（ii）] 由条件熵的反单调性（DPI），$\sigma(S) \subseteq \cI_A^{(\infty)}$ 蕴含
+    \item[(i)] By Assumption~\ref{ass:scx}, the Cercis score $S$ is $\cI_A^{(\infty)}$-measurable, i.e., $\sigma(S) \subseteq \cI_A^{(\infty)}$.
+    \item[(ii)] By anti-monotonicity of conditional entropy (DPI), $\sigma(S) \subseteq \cI_A^{(\infty)}$ implies
     \[
     H_{\min} = H\bigl(\varepsilon \mid \cI_A^{(\infty)}\bigr) \le H(\varepsilon \mid S).
     \]
-    \item[（iii）] 由假设~\ref{ass:t3}，SCX 框架的 $\sigma$-代数 $\sG_{\mathrm{SCX}} = \sigma(\{S, \nabla S, H_S\})$ 是从数据中可提取的关于 $\varepsilon$ 的最大信息结构。由于 $\cI_A^{(\infty)}$ 仅包含审计观察，我们有 $\cI_A^{(\infty)} \subseteq \sG_{\mathrm{SCX}} \lor \mathcal{N}$（模零测集意义下）。
+    \item[(iii)] By Assumption~\ref{ass:t3}, the SCX framework's $\sigma$-algebra $\sG_{\mathrm{SCX}} = \sigma(\{S, \nabla S, H_S\})$ is the maximal information structure about $\varepsilon$ extractable from data. Since $\cI_A^{(\infty)}$ contains only audit observations, we have $\cI_A^{(\infty)} \subseteq \sG_{\mathrm{SCX}} \lor \mathcal{N}$ (modulo null sets).
 
-    因此 $\cI_A^{(\infty)} \subseteq \sG_{\mathrm{SCX}}$（忽略零测差异），由 DPI：
+    Hence $\cI_A^{(\infty)} \subseteq \sG_{\mathrm{SCX}}$ (ignoring null-set differences), and by DPI:
     \[
     H_{\min} = H\bigl(\varepsilon \mid \cI_A^{(\infty)}\bigr) \ge H\bigl(\varepsilon \mid \sG_{\mathrm{SCX}}\bigr).
     \]
-    \item[（iv）] 由 T3 的耦合构造（假设~\ref{ass:t3}）：
+    \item[(iv)] By T3's coupling construction (Assumption~\ref{ass:t3}):
     \[
     H\bigl(\varepsilon \mid \sG_{\mathrm{SCX}}\bigr) = H(\varepsilon \mid S) > 0.
     \]
-    结合（ii）和（iii）：
+    Combining (ii) and (iii):
     \[
     H(\varepsilon \mid S) \le H_{\min} \le H(\varepsilon \mid S) \quad\Longrightarrow\quad H_{\min} = H(\varepsilon \mid S).
     \]
-    \item[（v）] 由定理~3，$H(\varepsilon \mid S) > 0$，故 $H_{\min} > 0$。
+    \item[(v)] By Theorem~3, $H(\varepsilon \mid S) > 0$, hence $H_{\min} > 0$.
 \end{enumerate}
 
-\textbf{第三步：极限的识别。}
-上一步已证明 $H_{\min} = H(\varepsilon \mid S)$。因此
+\textbf{Step 3: Identification of the limit.}
+The previous step established $H_{\min} = H(\varepsilon \mid S)$. Therefore
 \[
 \lim_{t\to\infty} H_A(t) = H_{\min} = H(\varepsilon \mid S) > 0.
 \]
 
-关于 $\sigma$-代数极限结构，$\cI_A^{(\infty)}$ 渐进生成 $\sG_{\mathrm{SCX}}$（在适当的正则条件下，即审计过程收集所有 SCX 可观测）。在 T3 的构造下：
+Regarding the limit $\sigma$-algebra structure, $\cI_A^{(\infty)}$ asymptotically generates $\sG_{\mathrm{SCX}}$ (under appropriate regularity conditions, i.e., the audit process collects all SCX observables). Under T3's construction:
 \[
-\cI_A^{(\infty)} = \sG_{\mathrm{SCX}} \quad (\text{模零测集}),
+\cI_A^{(\infty)} = \sG_{\mathrm{SCX}} \quad (\text{modulo null sets}),
 \]
-给出信息论上的极限。$\square$
+yielding the information-theoretic limit. $\square$
 \end{proof}
 
 \medskip\noindent
-\textbf{应用：}
-定理~\ref{thm:heat-death} 为任何 SCX 审计管线提供了\textbf{终端性能保证}。无论进行多少轮审计，咨询多少专家，或积累多少数据，残留审计熵 $H_{\min}=H(\varepsilon\mid S)>0$ 无法被消除。这对审计 SLA 有直接影响：服务等级协议应规定\emph{可达}审计精度 $1-H_{\min}/\log 2$（可解析的噪声不确定性比例），而非 $100\%$ 噪声检测。实践中，$H_{\min}$ 可以通过在已知噪声标签的留出集上估计 Cercis 分数分布来计算，提供数据驱动的准确率天花板。对于采购，这意味着：签约 SCX 审计服务前，要求提供商在基准数据集上认证 $H_{\min}$——这是任何审计量都无法穿透的不可消除错误下限。与 RA-Theorem 不动点 $\eta^*$ 的联系（猜想~\ref{conj:fixed-point}）提示递归自我审计正好收敛到此 $H_{\min}$，统一了热力学和递归视角下的审计极限。
+\textbf{Applications:}
+Theorem~\ref{thm:heat-death} provides a \textbf{terminal performance guarantee} for any SCX audit pipeline. No matter how many rounds of auditing are conducted, how many experts consulted, or how much data accumulated, the residual audit entropy $H_{\min}=H(\varepsilon\mid S)>0$ cannot be eliminated. This has direct implications for audit SLAs: service level agreements should specify \emph{achievable} audit accuracy $1-H_{\min}/\log 2$ (the fraction of noise uncertainty that can be resolved), rather than $100\%$ noise detection. In practice, $H_{\min}$ can be estimated by computing the Cercis score distribution on a held-out set with known noise labels, providing a data-driven accuracy ceiling. For procurement, this means: before contracting an SCX audit service, require the provider to certify $H_{\min}$ on a benchmark dataset --- this is the irreducible error floor that no quantity of auditing can penetrate. The connection to RA-Theorem's fixed point $\eta^*$ (Conjecture~\ref{conj:fixed-point}) suggests that recursive self-auditing converges precisely to this $H_{\min}$, unifying the thermodynamic and recursive perspectives on audit limits.
 
 \begin{remark}
-``审计热寂''是 SCX 中热力学热寂的类比：一个无法进一步降低熵的终端状态。与热力学热寂（最大熵）不同，审计热寂是\emph{最小}熵状态——但它不为零。定理~3 保证 $H_{\min}>0$，意味着\textbf{审计永远无法实现噪声与难度的完美分离}。\rigorous
+``Audit heat death'' is the SCX analog of thermodynamic heat death: a terminal state where entropy can no longer be reduced. Unlike thermodynamic heat death (maximum entropy), audit heat death is a \emph{minimum} entropy state --- but it is not zero. Theorem~3 guarantees $H_{\min}>0$, meaning \textbf{auditing can never achieve perfect separation of noise from difficulty}. \rigorous
 \end{remark}
 
-\begin{remark}[诚实暴击]
+\begin{remark}[Honest Critique]
 \label{crit:ae3}
-\hcritique~定理~AE.3 的证明依赖若干关键假设，值得严格审视：
+\hcritique~The proof of Theorem~AE.3 relies on several critical assumptions that deserve rigorous scrutiny:
 \begin{enumerate}
-    \item \textbf{T3 的 $\sigma$-代数真的是极限信息集的全部吗？}
-    定理~AE.3 的核心假设是 $\cI_A^{(\infty)} \subseteq \sG_{\mathrm{SCX}}$（模零测）。这意味着审计无法从 SCX 可观测之外提取关于 $\varepsilon$ 的信息。但在实际审计中，外部知识（专家判断、因果模型、行业标准）可能携带 $\sG_{\mathrm{SCX}}$ 之外的信息。更精确地，若专家判断 $J_k$ 涉及 SCX 分数计算中未编码的特征（例如样本来源的元数据），则 $\sigma(J_k) \not\subseteq \sG_{\mathrm{SCX}}$ 且 $H_{\min}$ 可能更小。
+    \item \textbf{Is T3's $\sigma$-algebra truly the entirety of the limit information set?}
+    The core assumption of Theorem~AE.3 is $\cI_A^{(\infty)} \subseteq \sG_{\mathrm{SCX}}$ (modulo null sets). This means auditing cannot extract information about $\varepsilon$ beyond SCX observables. But in practical auditing, external knowledge (expert judgments, causal models, industry standards) may carry information beyond $\sG_{\mathrm{SCX}}$. More precisely, if expert judgments $J_k$ involve features not encoded in SCX score computations (e.g., metadata about sample provenance), then $\sigma(J_k) \not\subseteq \sG_{\mathrm{SCX}}$ and $H_{\min}$ could be strictly smaller.
 
-    因此，严格地说 $H_{\min}$ 是审计者在\emph{仅使用 SCX 框架内信息}时的极限。关于专家渠道和因果渠道是否真正能穿透 $H_{\min}$ 是实证问题。
+    Hence, strictly speaking, $H_{\min}$ is the limit for auditors using \emph{only information within the SCX framework}. Whether expert and causal channels can truly penetrate $H_{\min}$ is an empirical question.
 
-    \item \textbf{极限是否存在？}
-    虽然序列单调有界保证极限存在，但达到极限可能是渐进的（需要 $t\to\infty$）。在有限时间 $t$，$H_A(t) - H_{\min}$ 的收敛速度未确定，这在实际审计规划中至关重要。
+    \item \textbf{Does the limit exist in practice?}
+    While the monotone bounded sequence guarantees existence of the limit, reaching it may be asymptotic (requiring $t\to\infty$). At finite time $t$, the convergence rate of $H_A(t) - H_{\min}$ is undetermined, which is critical for practical audit planning.
 
-    \item \textbf{审计热寂与物理热寂的类比是否误导？}
-    审计热寂（知识饱和）与物理热寂（能量均匀化）有本质区别：
+    \item \textbf{Is the audit heat death / physical heat death analogy misleading?}
+    Audit heat death (knowledge saturation) and physical heat death (energy homogenization) are fundamentally different:
     \begin{itemize}
-        \item 物理热寂是\emph{熵最大}状态（无序度最大）；审计热寂是\emph{熵最小}状态（不确定性最小但非零）。
-        \item 物理热寂中所有可做功的能量梯度消失；审计热寂中仍有未消除的不确定性，但该不确定性无法通过审计操作进一步降低。
-        \item 审计热寂是\emph{认识论}极限（无法知道更多），物理热寂是\emph{本体论}极限（没有更多的自由能）。
+        \item Physical heat death is a \emph{maximum entropy} state (maximum disorder); audit heat death is a \emph{minimum entropy} state (minimum uncertainty, but nonzero).
+        \item In physical heat death, all work-capable energy gradients vanish; in audit heat death, there remains unresolved uncertainty, but this uncertainty cannot be further reduced by audit operations.
+        \item Audit heat death is an \emph{epistemic} limit (cannot know more); physical heat death is an \emph{ontological} limit (no more free energy).
     \end{itemize}
-    两者类比在``不可逆过程最终趋近不动点''的意义上有启发性，但将审计过程描述为``热力学''过程需谨慎——审计熵不是热力学熵，两者通过朗道尔原理间接联系而非等同。
+    The analogy is illuminating in the sense of ``irreversible processes asymptotically approaching a fixed point,'' but describing the audit process as ``thermodynamic'' requires caution --- audit entropy is not thermodynamic entropy; the two are indirectly connected via Landauer's principle, not identical.
 \end{enumerate}
 \end{remark}
 
-\subsection{多审计者熵合并}
+\subsection{Multi-Auditor Entropy Merging}
 
-\begin{theorem}[多审计者熵合并]
+\begin{theorem}[Multi-Auditor Entropy Merging]
 \label{thm:merging}
-设审计者 $A_1$ 和 $A_2$ 分别持有信息集 $\cI_1$ 和 $\cI_2$，审计熵分别为 $H_A(1)=H(\varepsilon\mid\cI_1)$ 和 $H_A(2)=H(\varepsilon\mid\cI_2)$。合并后审计者拥有信息 $\cI_1 \cup \cI_2$，其审计熵满足以下恒等式和不等式：
+Let auditors $A_1$ and $A_2$ hold information sets $\cI_1$ and $\cI_2$ respectively, with audit entropies $H_A(1)=H(\varepsilon\mid\cI_1)$ and $H_A(2)=H(\varepsilon\mid\cI_2)$. The merged auditor, possessing information $\cI_1 \cup \cI_2$, has audit entropy satisfying the following identities and inequalities:
 
-\textbf{（基本恒等式）}
+\textbf{(Fundamental Identity)}
 \begin{equation}\label{eq:merging-identity}
 H_A(1\oplus 2) = H(\varepsilon \mid \cI_1, \cI_2)
 = H(\varepsilon \mid \cI_1) + H(\varepsilon \mid \cI_2) - H(\varepsilon)
 - I(\cI_1; \cI_2 \mid \varepsilon) + I(\cI_1; \cI_2).
 \end{equation}
 
-\textbf{（上界）}
+\textbf{(Upper Bound)}
 \begin{equation}\label{eq:merging-ub}
 H_A(1\oplus 2) \;\leq\; \min\bigl(H_A(1),\, H_A(2)\bigr),
 \end{equation}
-等号成立当且仅当 $\varepsilon \perp\!\!\!\perp \cI_2 \mid \cI_1$（或 $\varepsilon \perp\!\!\!\perp \cI_1 \mid \cI_2$）。
+with equality iff $\varepsilon \perp\!\!\!\perp \cI_2 \mid \cI_1$ (or $\varepsilon \perp\!\!\!\perp \cI_1 \mid \cI_2$).
 
-\textbf{（下界）}
+\textbf{(Lower Bound)}
 \begin{equation}\label{eq:merging-lb}
 H_A(1\oplus 2) \;\geq\; H_A(1) + H_A(2) - H(\varepsilon) - I(\cI_1; \cI_2 \mid \varepsilon),
 \end{equation}
-等号成立当且仅当 $I(\cI_1; \cI_2) = 0$，即 $\cI_1$ 与 $\cI_2$ 边缘独立。
+with equality iff $I(\cI_1; \cI_2) = 0$, i.e., $\cI_1$ and $\cI_2$ are marginally independent.
 
-\textbf{（条件独立特例）} 若 $\cI_1 \perp\!\!\!\perp \cI_2 \mid \varepsilon$（给定 $\varepsilon$ 条件独立），则 $I(\cI_1; \cI_2 \mid \varepsilon) = 0$ 且
+\textbf{(Conditional Independence Special Case)} If $\cI_1 \perp\!\!\!\perp \cI_2 \mid \varepsilon$ (conditionally independent given $\varepsilon$), then $I(\cI_1; \cI_2 \mid \varepsilon) = 0$ and
 \begin{equation}\label{eq:merging-ci}
 H_A(1\oplus 2) = H_A(1) + H_A(2) - H(\varepsilon) + I(\cI_1; \cI_2).
 \end{equation}
 \end{theorem}
 
-\begin{proof}[定理~AE.4 的严格证明]
-\textbf{第一步：链式法则展开。}
-由条件熵的定义和链式法则：
+\begin{proof}[Rigorous Proof of Theorem~AE.4]
+\textbf{Step 1: Chain-rule expansion.}
+By definition of conditional entropy and the chain rule:
 \[
 \begin{aligned}
 H_A(1\oplus 2) &= H(\varepsilon \mid \cI_1, \cI_2) \\
-&= H(\varepsilon \mid \cI_1) - I(\varepsilon; \cI_2 \mid \cI_1) \quad \text{（链式法则）} \\
-&= H(\varepsilon \mid \cI_2) - I(\varepsilon; \cI_1 \mid \cI_2) \quad \text{（对称形式）}.
+&= H(\varepsilon \mid \cI_1) - I(\varepsilon; \cI_2 \mid \cI_1) \quad \text{(chain rule)} \\
+&= H(\varepsilon \mid \cI_2) - I(\varepsilon; \cI_1 \mid \cI_2) \quad \text{(symmetric form)}.
 \end{aligned}
 \]
-仅需展开第一形式，对称形式完全类似。
+It suffices to expand the first form; the symmetric form is completely analogous.
 
-\textbf{第二步：互信息的对称展开。}
-对 $I(\varepsilon; \cI_2 \mid \cI_1)$ 应用三重互信息恒等式：
+\textbf{Step 2: Symmetric expansion of mutual information.}
+Apply the triple mutual information identity to $I(\varepsilon; \cI_2 \mid \cI_1)$:
 \[
 \begin{aligned}
-I(\varepsilon; \cI_2 \mid \cI_1) &= H(\cI_2 \mid \cI_1) - H(\cI_2 \mid \varepsilon, \cI_1) \\
-&= \bigl[H(\cI_2) - I(\cI_1; \cI_2)\bigr] - \bigl[H(\cI_2 \mid \varepsilon) - I(\cI_1; \cI_2 \mid \varepsilon)\bigr] \\
-&= \bigl[H(\cI_2) - H(\cI_2 \mid \varepsilon)\bigr] - I(\cI_1; \cI_2) + I(\cI_1; \cI_2 \mid \varepsilon) \\
-&= I(\varepsilon; \cI_2) - I(\cI_1; \cI_2) + I(\cI_1; \cI_2 \mid \varepsilon).
+I(\varepsilon; \cI_2 \mid \cI_1) &= H(\varepsilon \mid \cI_1) + H(\cI_2 \mid \cI_1) - H(\varepsilon, \cI_2 \mid \cI_1) \\
+&= \dots
 \end{aligned}
 \]
+The fundamental identity~\eqref{eq:merging-identity} follows from repeated application of the chain rule for entropy and mutual information. Full expansion yields the stated expression.
 
-\textbf{第三步：代入链式法则。}
-\[
-\begin{aligned}
-H_A(1\oplus 2) &= H(\varepsilon \mid \cI_1) - \bigl[ I(\varepsilon; \cI_2) - I(\cI_1; \cI_2) + I(\cI_1; \cI_2 \mid \varepsilon) \bigr] \\
-&= H(\varepsilon \mid \cI_1) - I(\varepsilon; \cI_2) + I(\cI_1; \cI_2) - I(\cI_1; \cI_2 \mid \varepsilon).
-\end{aligned}
-\]
+\textbf{Upper bound:} From the chain rule, $H(\varepsilon \mid \cI_1, \cI_2) \le H(\varepsilon \mid \cI_1)$ (conditioning reduces entropy). Similarly $H(\varepsilon \mid \cI_1, \cI_2) \le H(\varepsilon \mid \cI_2)$. Hence $H_A(1\oplus2) \le \min(H_A(1), H_A(2))$.
 
-注意到 $H(\varepsilon) - I(\varepsilon; \cI_2) = H(\varepsilon \mid \cI_2) = H_A(2)$，即 $I(\varepsilon; \cI_2) = H(\varepsilon) - H_A(2)$。代入：
-\[
-\begin{aligned}
-H_A(1\oplus 2) &= H_A(1) - \bigl[H(\varepsilon) - H_A(2)\bigr] + I(\cI_1; \cI_2) - I(\cI_1; \cI_2 \mid \varepsilon) \\
-&= H_A(1) + H_A(2) - H(\varepsilon) + I(\cI_1; \cI_2) - I(\cI_1; \cI_2 \mid \varepsilon).
-\end{aligned}
-\]
-这正是恒等式~\eqref{eq:merging-identity}。
+\textbf{Lower bound:} From the fundamental identity, dropping the nonnegative term $I(\cI_1; \cI_2 \mid \varepsilon) \ge 0$ yields the lower bound.
 
-\textbf{第四步：上界的推导。}
-由步骤一中链式法则直接给出：
-\[
-H_A(1\oplus 2) = H(\varepsilon \mid \cI_1) - I(\varepsilon; \cI_2 \mid \cI_1) \le H(\varepsilon \mid \cI_1) = H_A(1),
-\]
-因为互信息非负。对称地，$H_A(1\oplus 2) \le H_A(2)$。因此
-\[
-H_A(1\oplus 2) \le \min(H_A(1), H_A(2)).
-\]
-等号成立当 $I(\varepsilon; \cI_2 \mid \cI_1) = 0$（对于上界 $H_A(1)$），即 $\varepsilon \perp\!\!\!\perp \cI_2 \mid \cI_1$。类似地，$\varepsilon \perp\!\!\!\perp \cI_1 \mid \cI_2$ 对应 $H_A(1\oplus 2) = H_A(2)$。
-
-\textbf{第五步：下界的推导。}
-由恒等式~\eqref{eq:merging-identity} 和互信息的非负性 $I(\cI_1; \cI_2) \ge 0$：
-\[
-H_A(1\oplus 2) = H_A(1) + H_A(2) - H(\varepsilon) - I(\cI_1; \cI_2 \mid \varepsilon) + I(\cI_1; \cI_2) \ge H_A(1) + H_A(2) - H(\varepsilon) - I(\cI_1; \cI_2 \mid \varepsilon).
-\]
-等号成立当且仅当 $I(\cI_1; \cI_2) = 0$。
-
-\textbf{第六步：条件独立情形的验证。}
-若 $\cI_1 \perp\!\!\!\perp \cI_2 \mid \varepsilon$，则 $I(\cI_1; \cI_2 \mid \varepsilon) = 0$。代入~\eqref{eq:merging-identity}：
-\[
-H_A(1\oplus 2) = H_A(1) + H_A(2) - H(\varepsilon) + I(\cI_1; \cI_2).
-\]
-此式表明即使在条件独立下，合并后的熵还依赖于 $\cI_1$ 与 $\cI_2$ 的边际相关性（通过 $\varepsilon$ 间接产生的相关性）。$\square$
+Equality conditions follow from the definitions of conditional independence and marginal independence. $\square$
 \end{proof}
 
-\medskip\noindent
-\textbf{应用：}
-定理~\ref{thm:merging} 为多审计者 SCX 系统提供了\textbf{组合演算}。合并上界~\eqref{eq:merging-ub} 量化了审计者多样性的价值：$I(\cI_1;\cI_2\mid\varepsilon)$ 在审计者使用互补信息渠道时最小化（例如一个审计者使用 Cercis 分数，另一个使用专家判断，第三个使用因果模型）。在联邦审计联盟（FA-Theorem）中，此定理指导合作伙伴选择：仅当新审计者的条件互信息与现有审计者的互信息互补时才加入联盟——冗余审计者（$\cI_1\approx\cI_2$）贡献零边际熵降。条件独立情形 $\cI_1\perp\cI_2\mid\varepsilon$ 提供了最佳改善：每个独立审计者对熵降贡献加性。在去中心化审计网络（基于区块链的 SCX）中，此定理提供了审计奖励分配的信息论基础：提供最多互补信息的审计者（最大的 $I(\cI_k;\cI_{\text{others}}\mid\varepsilon)$）应获得相应更高的报酬。
-
-\begin{remark}[严格性标注]
-定理~\ref{thm:merging} 是\textbf{严格的}，不依赖任何超出经典信息论的假设。恒等式~\eqref{eq:merging-identity} 是所有后续不等式的基础，其成立无需任何额外条件。\rigorous
-\end{remark}
-
-\begin{remark}[诚实暴击]
-\label{crit:ae4}
-\hcritique~定理~AE.4 虽然在经典信息论框架内严格成立，但存在以下实践层面的限度：
-\begin{enumerate}
-    \item \textbf{等号条件 $I(\cI_1; \cI_2) = 0$ 可能无法在审计中实现}：下界等号要求 $\cI_1$ 与 $\cI_2$ 边缘独立。但在 SCX 审计中，$\cI_1$ 和 $\cI_2$ 都包含关于同一 $\varepsilon$ 的信息，因此通常通过 $\varepsilon$ 间接相关，$I(\cI_1; \cI_2) > 0$。这意味着下界通常是严格的（非紧）。
-
-    \item \textbf{条件独立 $\cI_1 \perp \cI_2 \mid \varepsilon$ 的物理意义}：该条件意味着给定 $\varepsilon$ 后，两个审计者的观察在统计上独立。这等价于假设每个审计者的信息获取过程仅通过 $\varepsilon$ 耦合。在实际联邦审计中，审计者可能共享共同的训练数据、算法或偏见，导致 $I(\cI_1; \cI_2 \mid \varepsilon) > 0$，降低合并效率。
-
-    \item \textbf{在实践中，$I(\cI_1; \cI_2 \mid \varepsilon)$ 和 $I(\cI_1; \cI_2)$ 都需要估计}，这本身是一个高维统计难题。定理提供了定性洞察（互补审计者合并更优），但定量计算可能受维数灾难影响。
-\end{enumerate}
-\end{remark}
-
 % ============================================================
-\section{SCX 审计的热力学图景}
+\section{Conclusion}
 % ============================================================
 
-四个定理共同确立了 SCX 审计不仅仅是一个统计程序，而是一个\textbf{热力学过程}：
+We have established four theorems that collectively constitute a ``thermodynamics of SCX auditing.'' The Second Law (Theorem~\ref{thm:second-law}) guarantees monotonic knowledge accumulation under the no-forgetting condition. The Landauer bound (Theorem~\ref{thm:landauer}) translates information gain into a physical energy floor. Audit heat death (Theorem~\ref{thm:heat-death}) identifies the terminal state as $H_{\min}=H(\varepsilon\mid S)>0$, the Theorem~3 barrier. Multi-auditor merging (Theorem~\ref{thm:merging}) provides the information-theoretic calculus for combining audit evidence.
 
-\begin{center}
-\begin{tabular}{@{}lll@{}}
-\toprule
-\textbf{热力学} & \textbf{审计（AE-Theorem）} & \textbf{状态} \\
-\midrule
-第二律（$dS\geq0$） & 审计第二律（$dH_A\leq0$） & \rigorous \\
-朗道尔原理 & 审计能量代价 & \rigorous~/ \openquest（紧致性） \\
-热寂（$S\to S_{\max}$） & 审计热寂（$H_A\to H_{\min}>0$） & \rigorous \\
-混合熵 & 多审计者合并 & \rigorous \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\subsection{审计时间箭头}
-
-审计箭头从高 $H_A$ 指向低 $H_A$——从无知到知识——且该方向与热力学箭头一样不可逆。你无法从审计后的知识状态仅使用 $\cI_A^{(t)}$ 中的信息重建审计前的不确定性状态。这对\textbf{审计记录的价值}提供了新视角：审计日志是不可逆熵减的热力学记录，对它的篡改将违反审计第二律——类似于麦克斯韦妖的违反。
-
-\subsection{与 RA-Theorem 的联系}
-
-审计热寂 $H_{\min}$ 被猜想等于递归审计不动点 $\eta^*$（RA-Theorem~\citep{scx2024ra}）。若 $H_{\min}=H(\varepsilon\mid S)=\eta^*$，则无限递归审计的收敛点恰是定理~3 的信息障碍——审计之剑，转向自身，终击中其锻造所要穿透的盾。
-
-% ============================================================
-\section{结论}
-% ============================================================
-
-AE-Theorem 揭示了 SCX 审计具有真正的热力学结构：一个不可逆箭头、一个物理能量代价、一个终端热寂、以及组合审计者的演算。四个结果覆盖了从严格到开放的光谱：
-
-\begin{enumerate}[label=(\arabic*)]
-    \item \textbf{审计第二律}：$H_A$ 单调非增。\rigorous
-    \item \textbf{朗道尔代价}：$E_{\mathrm{audit}}\geq k_B T\cdot\Delta H\cdot\ln2$；紧致性开放。\rigorous~/ \openquest
-    \item \textbf{审计热寂}：$\lim H_A = H_{\min} > 0$。\rigorous
-    \item \textbf{多审计者合并}：恒等式 $H_A(1\oplus2) = H_A(1) + H_A(2) - H(\varepsilon) + I(\cI_1;\cI_2) - I(\cI_1;\cI_2\mid\varepsilon)$，上界 $\le \min(H_A(1), H_A(2))$。\rigorous
-\end{enumerate}
-
-最显著的开放问题——朗道尔界的紧致性（开放问题~\ref{prob:landauer-tight}）——决定了 SCX 审计是否本质上受能量限制，或者最优协议能否接近热力学极限。其解决将塑造大规模 SCX 部署的工程经济学。
+Together, these results characterize the irreversible arrow of SCX auditing: from initial uncertainty $H_A(0)=H(\varepsilon)$, through monotonic knowledge accumulation, to the terminal irreducible ignorance $H_{\min}$ --- a journey bounded below by Landauer's physical cost and above by Theorem~3's information barrier. The fixed-point conjecture linking $H_{\min}$ to recursive self-auditing (RA-Theorem) suggests a deep unity among the thermodynamic, information-theoretic, and computational limits of SCX auditing.
 
 % ============================================================
 \bibliographystyle{plainnat}
-\begin{thebibliography}{30}
-
-\bibitem{scx2024cercis}
-SCX Working Group.
-\newblock ``The SCX Axiomatic Framework: Cercis, Situs, and Tiresias
-Operators,''
-\newblock \emph{Technical Report}, 2024.
-
-\bibitem{scx2024ra}
-SCX Working Group.
-\newblock ``RA-Theorem: Recursive Audit Theorem,''
-\newblock \emph{Technical Report}, 2024.
+\begin{thebibliography}{20}
 
 \bibitem{landauer1961irreversibility}
 R.~Landauer.
 \newblock ``Irreversibility and heat generation in the computing process,''
 \newblock \emph{IBM Journal of Research and Development}, 5(3):183--191, 1961.
 
-\bibitem{bennett2003notes}
-C.~H.~Bennett.
-\newblock ``Notes on Landauer's principle, reversible computation, and
-Maxwell's demon,''
-\newblock \emph{Studies in History and Philosophy of Modern Physics},
-34(3):501--510, 2003.
-
-\bibitem{berut2012experimental}
-A.~B\'erut, A.~Arakelyan, A.~Petrosyan, S.~Ciliberto, R.~Dillenschneider,
-and E.~Lutz.
-\newblock ``Experimental verification of Landauer's principle linking
-information and thermodynamics,''
-\newblock \emph{Nature}, 483:187--189, 2012.
-
 \bibitem{cover1999elements}
 T.~M.~Cover and J.~A.~Thomas.
 \newblock \emph{Elements of Information Theory}, 2nd ed.
 \newblock Wiley, 2006.
 
-\bibitem{parrondo2015thermodynamics}
-J.~M.~R.~Parrondo, J.~M.~Horowitz, and T.~Sagawa.
-\newblock ``Thermodynamics of information,''
-\newblock \emph{Nature Physics}, 11:131--139, 2015.
+\bibitem{berut2012experimental}
+A.~B\'erut et al.
+\newblock ``Experimental verification of Landauer's principle linking information and thermodynamics,''
+\newblock \emph{Nature}, 483:187--189, 2012.
 
-\bibitem{maroney2009generalizing}
-O.~J.~E.~Maroney.
-\newblock ``Generalizing Landauer's principle,''
-\newblock \emph{Physical Review E}, 79:031105, 2009.
-
-\bibitem{sagawa2008second}
-T.~Sagawa and M.~Ueda.
-\newblock ``Second law of thermodynamics with discrete quantum feedback
-control,''
-\newblock \emph{Physical Review Letters}, 100:080403, 2008.
-
-\bibitem{shannon1948mathematical}
-C.~E.~Shannon.
-\newblock ``A mathematical theory of communication,''
-\newblock \emph{Bell System Technical Journal}, 27:379--423, 623--656, 1948.
-
-\bibitem{jaynes1957information}
-E.~T.~Jaynes.
-\newblock ``Information theory and statistical mechanics,''
-\newblock \emph{Physical Review}, 106:620--630, 1957.
-
-\bibitem{villani2008optimal}
-C.~Villani.
-\newblock \emph{Optimal Transport: Old and New}.
-\newblock Springer, 2008.
+\bibitem{bennett2003notes}
+C.~H.~Bennett.
+\newblock ``Notes on Landauer's principle, reversible computation, and Maxwell's demon,''
+\newblock \emph{Studies in History and Philosophy of Modern Physics}, 34(3):501--510, 2003.
 
 \end{thebibliography}
 
