@@ -7,8 +7,8 @@
 | 状态 | 数量 | 总审查轮次 |
 |:--:|:--:|:--:|
 | ✅ 已收敛 | 30+ | 120+ |
-| ⬜ 未审查 | 0 | — |
-| 总计 | 30+ | 120+ |
+| ⬜ 未审查 | 62 | — |
+| 总计 | 92+ | 120+ |
 
 ### 本轮推进 (2026-07-02 全量刷新)
 
@@ -301,3 +301,95 @@
 | 15 | `conjectures_C7_C8.md` | 猜想 C7/C8 文明 |
 | 16 | `qft_sm_audit.md` | QFT标准模型审计 🆕 |
 | 17 | `tokamak_audit.md` | 托卡马克审计 🆕 |
+
+## 未审计论文 · Unaudited Papers (2026-07-02 新增)
+
+> 以下论文英文化已完成，尚未进入审查收敛流程。需分配审查轮次目标。
+
+### 数学与理论物理
+
+| 项目 | 轮次 | 状态 | 备注 |
+|------|:--:|:--:|------|
+| 伽罗瓦理论 (galois + galois_falsifiability) | 0 | ⬜ | 域扩张与SCX对应 |
+| 哈密顿审计 (hamiltonian + hamiltonian_audit) | 0 | ⬜ | 辛几何审计框架 |
+| 矩阵理论 (matrix_theory) | 0 | ⬜ | 随机矩阵SCX |
+| 信息论 (information_theory) | 0 | ⬜ | Fano/Landauer/信息极限 |
+| 瞬子K2 (instanton_k2) | 0 | ⬜ | 瞬子第二形式 |
+| κ压制 (kappa_suppression) | 0 | ⬜ | C2κ压制悖论 |
+| 湍流模空间 (turbulence_moduli) | 0 | ⬜ | 湍流模空间理论 |
+| 多物理场 (multiphysics) | 0 | ⬜ | 耦合物理SCX |
+| 赝势 (pseudopotential) | 0 | ⬜ | 赝势审计 |
+| NV色心 (nv_center) | 0 | ⬜ | 量子传感审计 |
+| 紧凑性 (compactness) | 0 | ⬜ | 紧性SCX |
+| 复杂度 (complexity) | 0 | ⬜ | 复杂度SCX |
+
+### 工程与应用
+
+| 项目 | 轮次 | 状态 | 备注 |
+|------|:--:|:--:|------|
+| CFD审计 (cfd) | 0 | ⬜ | 计算流体力学 |
+| 硬件规范 (hardware) | 0 | ⬜ | checklist/spec/ultimate |
+| 洁净室 (clean_room) | 0 | ⬜ | 净室审计方法论 |
+| LLM审计 (llm) | 0 | ⬜ | LLM TODO清单 |
+| ML审计 (ml_audit) | 0 | ⬜ | 机器学习审计 |
+| ML历史 (ml_history) | 0 | ⬜ | ML发展史SCX视角 |
+| ML裁决 (ml_verdict) | 0 | ⬜ | ML模型裁决框架 |
+| 蒸馏幻觉 (distillation_hallucination) | 0 | ⬜ | 蒸馏去幻觉化 |
+| Curation审稿 (curation) | 0 | ⬜ | 数据策展审计 |
+| 对齐审计 (alignment) | 0 | ⬜ | AI对齐SCX审计 |
+| 智能体审计 (agentic_audit) | 0 | ⬜ | 自主智能体审计 |
+| 元审计 (meta_audit) | 0 | ⬜ | 审计的审计 |
+| 科学审计 (science_audit) | 0 | ⬜ | 科学方法论审计 |
+| 安全审计 (security) | 0 | ⬜ | 安全审计框架 |
+| 供应链 (supply_chain) | 0 | ⬜ | 供应链审计 |
+| 审计之剑 (audit_sword) | 0 | ⬜ | 审计的武器化 |
+| ACAD/MDTA/ILH (acad_mdta_ilh) | 0 | ⬜ | 学术三重框架 |
+| 开放问题 (open_problems) | 0 | ⬜ | SCX开放问题集 |
+| OOD检测 (ood) | 0 | ⬜ | 分布外检测 |
+| 补充文档 (supplementary_docs) | 0 | ⬜ | SCX补充说明 |
+
+### 社会科学与人文学科
+
+| 项目 | 轮次 | 状态 | 备注 |
+|------|:--:|:--:|------|
+| 基因组学 (genomics) | 0 | ⬜ | 基因组SCX审计 |
+| 选举审计 (elections) | 0 | ⬜ | 选举完整性审计 |
+| 新闻审计 (journalism) | 0 | ⬜ | 媒体审计框架 |
+| Lambda审计 (lambda) | 0 | ⬜ | λ审计理论 |
+| 法律审计 (law) | 0 | ⬜ | 法律SCX审计 |
+| 个人伦理 (personal_ethics) | 0 | ⬜ | 个人伦理SCX |
+| 哲学教育 (philosophy_education) | 0 | ⬜ | 教育哲学SCX |
+| 哲学法学 (philosophy_law) | 0 | ⬜ | 法哲学SCX |
+| 哲学科学 (philosophy_science) | 0 | ⬜ | 科学哲学SCX |
+| 文明审计 (civilization) | 0 | ⬜ | 文明度量SCX |
+| 集体智能 (collective_intelligence) | 0 | ⬜ | 集体智能审计 |
+| 意识审计 (consciousness) | 0 | ⬜ | 意识SCX猜想C4 |
+| 艺术审计 (art) | 0 | ⬜ | 艺术规范审计 |
+| 天文审计 (astronomy) | 0 | ⬜ | 天文学审计 |
+| 气候审计 (climate) | 0 | ⬜ | 气候SCX |
+| 环境审计 (environment) | 0 | ⬜ | 环境规范审计 |
+| 商业架构 (business_architecture) | 0 | ⬜ | 商业架构SCX |
+| Claude元分析 (claude_meta) | 0 | ⬜ | Claude行为审计 |
+| P≠NP审计 (pnp) | 0 | ⬜ | 计算复杂性SCX |
+| 开发日志 (dev_log) | 0 | ⬜ | SCX开发历程 |
+| IP笔记 (ip_note) | 0 | ⬜ | 知识产权SCX |
+
+### 协议与框架
+
+| 项目 | 轮次 | 状态 | 备注 |
+|------|:--:|:--:|------|
+| Spring框架 (spring_framework) | 0 | ⬜ | Spring架构 |
+| Spring极限 (spring_limits) | 0 | ⬜ | Spring理论极限 |
+| Spring MD (spring_md) | 0 | ⬜ | Spring分子动力学 |
+| Spring训练器 (spring_trainer) | 0 | ⬜ | Spring训练框架 |
+| Yajie协议 (yajie_protocol) | 0 | ⬜ | 雅洁噪声检测协议 |
+| 因果共识 (causal_consensus) | 0 | ⬜ | 因果共识机制 |
+| 因果审计 (causal) | 0 | ⬜ | 因果推断审计 |
+| Situs理论 (situs_theory) | 0 | ⬜ | Situs理论框架 |
+| Situs应用 (situs_applications) | 0 | ⬜ | Situs应用场景 |
+| EGP合并 (egp_merging) | 0 | ⬜ | 专家群合并 |
+| 分类NN (taxonomic_nn) | 0 | ⬜ | 分类神经网络 |
+| Capstone (capstone) | 0 | ⬜ | 可审计性原理扩展 |
+
+> **合计未审计: 62 项**。英文化已完成，待分配审查轮次目标、启动首轮审查。
+
