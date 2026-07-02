@@ -287,12 +287,12 @@ def verify_national_potential():
         boot_results = {}
         for country, data in countries.items():
             noisy_data = {
-                'gdp': data['gdp'] * (1 + np.random.randn() * 0.03),
-                'gini': np.clip(data['gini'] + np.random.randn() * 0.02, 0, 1),
-                'life': data['life'] + np.random.randn() * 0.5,
-                'pop': data['pop'],
-                'trade': np.clip(data['trade'] + np.random.randn() * 0.05, 0, 10),
-                'rd': np.clip(data['rd'] + np.random.randn() * 0.1, 0, 10),
+                'gdp_per_capita': data['gdp'] * (1 + np.random.randn() * 0.03),
+                'gini_index': np.clip(data['gini'] + np.random.randn() * 0.02, 0, 1),
+                'life_expectancy': data['life'] + np.random.randn() * 0.5,
+                'population_millions': data['pop'],
+                'trade_openness': np.clip(data['trade'] + np.random.randn() * 0.05, 0, 10),
+                'r_and_d_spending': np.clip(data['rd'] + np.random.randn() * 0.1, 0, 10),
             }
             r = compute_national_potential(**noisy_data)
             boot_results[country] = r['potential']
@@ -389,32 +389,32 @@ def generate_wealth_profiles():
     # 净资产分位数: [p10, p25, p50, p75, p90] 千美元
     profiles = {
         'US': {
-            'quantiles': [1.2, 12, 65, 200, 550],
+            'net_asset_quantiles': [1.2, 12, 65, 200, 550],
             'gini_wealth': 0.85, 'financial_inclusion': 0.93,
             'savings_rate': 0.05, 'home_ownership': 0.65, 'debt_to_income': 1.3,
         },
         'CN': {
-            'quantiles': [3, 15, 40, 110, 240],
+            'net_asset_quantiles': [3, 15, 40, 110, 240],
             'gini_wealth': 0.71, 'financial_inclusion': 0.80,
             'savings_rate': 0.35, 'home_ownership': 0.90, 'debt_to_income': 2.0,
         },
         'DE': {
-            'quantiles': [2, 18, 60, 180, 420],
+            'net_asset_quantiles': [2, 18, 60, 180, 420],
             'gini_wealth': 0.78, 'financial_inclusion': 0.99,
             'savings_rate': 0.11, 'home_ownership': 0.51, 'debt_to_income': 0.9,
         },
         'JP': {
-            'quantiles': [5, 25, 70, 190, 400],
+            'net_asset_quantiles': [5, 25, 70, 190, 400],
             'gini_wealth': 0.63, 'financial_inclusion': 0.98,
             'savings_rate': 0.06, 'home_ownership': 0.61, 'debt_to_income': 1.1,
         },
         'IN': {
-            'quantiles': [0.5, 2, 8, 25, 70],
+            'net_asset_quantiles': [0.5, 2, 8, 25, 70],
             'gini_wealth': 0.83, 'financial_inclusion': 0.50,
             'savings_rate': 0.20, 'home_ownership': 0.85, 'debt_to_income': 0.5,
         },
         'BR': {
-            'quantiles': [0.3, 2, 7, 25, 90],
+            'net_asset_quantiles': [0.3, 2, 7, 25, 90],
             'gini_wealth': 0.89, 'financial_inclusion': 0.70,
             'savings_rate': 0.15, 'home_ownership': 0.72, 'debt_to_income': 0.8,
         },
@@ -462,7 +462,7 @@ def verify_wealth_potential():
     # 分位数分布展开 / Quantile distribution details
     print(f"\n净资产分位数分布 / Net Asset Quantile Distribution:")
     for country, profile in profiles.items():
-        q = profile['quantiles']
+        q = profile['net_asset_quantiles']
         print(f"  {country:>8}: p10=${q[0]:5.1f}K, p25=${q[1]:5.0f}K, "
               f"p50=${q[2]:5.0f}K, p75=${q[3]:5.0f}K, p90=${q[4]:5.0f}K, "
               f"p90/p10={q[4]/max(1,q[0]):.1f}x")
@@ -498,7 +498,7 @@ def verify_wealth_potential():
     # S算子应用于财富分布 / S-operator applied to wealth distribution
     print(f"\nS算子应用于财富分布 / S-Operator on Wealth Distribution:")
     for country, profile in profiles.items():
-        q = np.array(profile['quantiles']).reshape(-1, 1)
+        q = np.array(profile['net_asset_quantiles']).reshape(-1, 1)
         S, Q, N = S_operator(q, weight_quality=1.0, weight_novelty=0.4)
         print(f"  {country:>8}: S={S:.4f}, Q={Q:.4f}, N={N:.4f}")
 

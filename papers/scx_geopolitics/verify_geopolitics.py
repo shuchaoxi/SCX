@@ -344,9 +344,10 @@ def trust_premium_model(audit_depth, a=1.0, b=0.5, c=0.2, d=0.1):
     - c * d²: 审计成本 (递增边际) / audit cost (increasing marginal)
     - d * d/(d+1): 隐私/主权侵蚀成本 / privacy/sovereignty erosion cost
     """
-    trust_gain = a * (1 - np.exp(-np.maximum(d, 0) / b))
-    audit_cost = c * d**2
-    sovereignty_cost = d * d / (d + 0.5)
+    depth = np.asarray(audit_depth)
+    trust_gain = a * (1 - np.exp(-np.maximum(depth, 0) / b))
+    audit_cost = c * depth**2
+    sovereignty_cost = d * depth / (depth + 0.5)
     return trust_gain - audit_cost - sovereignty_cost
 
 
@@ -916,8 +917,6 @@ def verify_national_readiness():
     }
     print(f"  互操作权重/Interop Weights: {interop_weights}")
     for country, data in sorted_countries:
-        interop_score = sum(interop_weights[k] * data['categories'][k.replace('_quality', '').replace('_infrastructure', '').replace('_capital', '').replace('_stability', '')]
-                           for k in interop_weights)
         # Let me compute it properly
         p = profiles[country]
         interop_score = (
