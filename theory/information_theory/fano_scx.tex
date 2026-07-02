@@ -1,10 +1,10 @@
 % ===========================================================================
 % fano_scx.tex
-% Rigorous Relationship between Fano's Inequality and the Honest Person Theorem
-% Fano→LeCam→SCX Thm3 derivation chain | Compactness proof (minimax theorem) | Shannon comparison table
-% Honest critique edition: all theorems annotated with assumptions and rigor level
+% Fano不等式与老实人定理的严格关系
+% Fano→LeCam→SCX Thm3 推导链 | 紧致性证明(极小极大定理) | Shannon对照表
+% 诚实暴击版：所有定理标注假设与严格性等级
 % ===========================================================================
-\documentclass[12pt,a4paper]{article}
+\documentclass[12pt,a4paper]{ctexart}
 
 % ---- Packages ----
 \usepackage{amsmath,amssymb,amsthm}
@@ -21,32 +21,32 @@
 
 % ---- Theorem environments ----
 \theoremstyle{plain}
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{proposition}[theorem]{命题}
 
 \theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{assumption}[theorem]{Assumption}
-\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{assumption}[theorem]{假设}
+\newtheorem{remark}[theorem]{注记}
 
 % ---- Strictness markers ----
 \newcommand{\strictness}[1]{{\small\sffamily[#1]}}
-\newcommand{\rigorous}{\strictness{Rigorous: verifiable line-by-line}}
-\newcommand{\sketch}{\strictness{Sketch: direction correct, details TBD}}
-\newcommand{\conjecture}{\strictness{Conjecture: heuristic argument}}
-\newcommand{\heuristic}{\strictness{Heuristic: intuition-driven}}
+\newcommand{\rigorous}{\strictness{严格：逐行可验}}
+\newcommand{\sketch}{\strictness{概要：方向正确，细节待补}}
+\newcommand{\conjecture}{\strictness{猜想：启发式论证}}
+\newcommand{\heuristic}{\strictness{启发式：直觉导向}}
 
 % ---- Honest commentary boxes ----
 \newtcolorbox{honestbox}[1][]{
   colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries,
-  title={\textcolor{red}{\large\textbf{!}} Honest Critique}, breakable, #1
+  title={🩸 诚实暴击}, breakable, #1
 }
 
 \newtcolorbox{assumecheck}[1][]{
   colback=blue!3!white, colframe=blue!50!black, fonttitle=\bfseries,
-  title={Assumption Audit}, breakable, #1
+  title={📋 假设审查}, breakable, #1
 }
 
 % ---- Operators ----
@@ -62,357 +62,357 @@
 \DeclareMathOperator{\Minimax}{Minimax}
 \newcommand{\indep}{\perp\!\!\!\perp}
 
-\title{\textbf{Rigorous Relationship between Fano's Inequality and the Honest Person Theorem}\\[0.3em]
-       \large Derivation chain (Fano $\to$ LeCam $\to$ SCX Thm.3), compactness proof, \\ and structural comparison with Shannon's Channel Coding Theorem}
-\author{SCX}
+\title{\textbf{Fano不等式与老实人定理的严格关系}\\[0.3em]
+       \large Fano下界的推导链(Fano $\to$ LeCam $\to$ SCX Thm.3)、紧致性证明、\\与Shannon信道编码定理的结构对比}
+\author{SCX理论组}
 \date{\today}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-This paper rigorously establishes the mathematical link between \textbf{Fano's Inequality} and the \textbf{Honest Person Theorem} within the SCX framework. Core contributions:
-(1) A complete derivation chain Fano $\to$ LeCam $\to$ SCX Thm.3, with each step annotated with required assumptions and rigor level;
-(2) Compactness proof: establishing the minimax duality for SCX risk lower bounds via Fan--Sion type minimax theorems under the weak topology;
-(3) A \textbf{structural comparison table} with Shannon's Channel Coding Theorem --- revealing that both theories share the Fano skeleton but are oriented in opposite directions (encoder vs. auditor).
+本文严格建立\textbf{Fano不等式}与SCX框架中\textbf{老实人定理(Honest Person Theorem)}之间的数学联系。核心贡献为：
+(1) 完整的推导链 Fano $\to$ LeCam $\to$ SCX Thm.3，每一步标注所需假设与严格性等级；
+(2) 紧致性证明：通过极小极大定理(Fan--Sion型)在弱拓扑下建立SCX风险下界的minimax对偶；
+(3) 与Shannon信道编码定理的\textbf{结构对照表}——揭示两个理论共享Fano骨架但朝向相反（编码器 vs. 审计者）。
 
-\textbf{Honest critique:} The application of Fano's inequality in the SCX framework \textbf{does not constitute an independent theorem}, but is a natural corollary of the LeCam two-point method (\S\ref{sec:lecam}) and minimax duality (\S\ref{sec:minimax}). Any claim that ``SCX directly derives lower bounds via Fano'' \textbf{skips critical steps}.
+\textbf{诚实暴击：}Fano不等式在SCX框架下的应用\textbf{不构成独立定理}，而是LeCam二点法(\S\ref{sec:lecam})与极小极大对偶(\S\ref{sec:minimax})的自然推论。凡声称“SCX通过Fano直接导出下界”的论述均为\textbf{跳过关键步骤}。
 \end{abstract}
 
 \tableofcontents
 
 % ===========================================================================
-\section{Preliminaries: Classical Fano's Inequality}
+\section{预备知识：经典Fano不等式}
 % ===========================================================================
 
-\begin{definition}[Fano's Inequality, classical form]
+\begin{definition}[Fano不等式，经典形式]
 \label{def:fano}
-Let random variable $X \in \mathcal{X}$, with estimator $\hat{X} \in \mathcal{X}$ based on observation $Y$, and let $X \to Y \to \hat{X}$ form a Markov chain. Denote error probability $P_e = \mathbb{P}(\hat{X} \neq X)$. Then:
+设随机变量$X \in \mathcal{X}$，其估计量$\hat{X} \in \mathcal{X}$基于观测$Y$，且$X \to Y \to \hat{X}$构成Markov链。记错误概率$P_e = \mathbb{P}(\hat{X} \neq X)$。则：
 \begin{equation}\label{eq:fano}
 \Ent(X \mid Y) \leq h_2(P_e) + P_e \log(|\mathcal{X}| - 1),
 \end{equation}
-where $h_2(p) = -p\log p - (1-p)\log(1-p)$ is the binary entropy function.
+其中$h_2(p) = -p\log p - (1-p)\log(1-p)$为二元熵函数。
 \end{definition}
 
 \begin{remark}
-The right-hand side of (\ref{eq:fano}) asymptotically approximates $P_e \log|\mathcal{X}| + \log 2$ as $|\mathcal{X}| \to \infty$.
-A more commonly used weakened form is:
+式(\ref{eq:fano})的右端当$|\mathcal{X}| \to \infty$时渐近于$P_e \log|\mathcal{X}| + \log 2$。
+更常用的弱化形式为：
 \begin{equation}\label{eq:fano_weak}
 P_e \geq \frac{\Ent(X \mid Y) - \log 2}{\log|\mathcal{X}|}.
 \end{equation}
 \end{remark}
 
-\begin{assumption}[Implicit assumptions of Fano's Inequality]\label{as:fano_assume}
+\begin{assumption}[Fano不等式的隐含假设]\label{as:fano_assume}
 \begin{enumerate}[label=(F\arabic*)]
-    \item Finite alphabet: $|\mathcal{X}| < \infty$.
-    \item Deterministic decoder: $\hat{X} = g(Y)$ for some function $g$.
-    \item Discrete probability space (continuous versions require additional argument).
+    \item 有限字母表：$|\mathcal{X}| < \infty$。
+    \item 确定性解码器：$\hat{X} = g(Y)$对某个函数$g$。
+    \item 离散概率空间（连续版本需额外论证）。
 \end{enumerate}
-\strictness{Rigorous: classical proof has no gaps}
+\strictness{严格：经典证明无漏洞}
 \end{assumption}
 
 \begin{honestbox}
-\textbf{Warning:} A common mistake when directly applying (\ref{eq:fano_weak}) to the SCX audit scenario ---
-setting $|\mathcal{X}|$ to ``the number of all possible hypotheses'' --- ignores the \textbf{structural constraints}
-of the SCX framework (chained encoding, append semantics, CEC consistency). Classical Fano assumes $X$ is uniformly unstructured over $\mathcal{X}$,
-while SCX assumes the existence of a \textbf{prior partial order}. This is a fatal difference.
+\textbf{警告：}直接套用式(\ref{eq:fano_weak})于SCX审计场景的常见错误——
+将$|\mathcal{X}|$设为“所有可能的假设数量”——忽略了SCX框架中假设空间的\textbf{结构约束}
+（链式编码、追加语义、CEC一致性）。经典Fano假设$X$在$\mathcal{X}$上均匀无结构，
+而SCX假设存在\textbf{先验偏序}。这是致命差异。
 \end{honestbox}
 
 % ===========================================================================
-\section{First Link in the Chain: Fano $\to$ LeCam Two-Point Method}
+\section{推导链第一环：Fano $\to$ LeCam二点法}
 \label{sec:lecam}
 % ===========================================================================
 
-\begin{definition}[LeCam Distance / Two-Point Method]
+\begin{definition}[LeCam距离 / 二点法]
 \label{def:lecam}
-For two distributions $P_{\theta_0}, P_{\theta_1}$ on a parameter space $\Theta$, define:
+对于参数空间$\Theta$上的两个分布$P_{\theta_0}, P_{\theta_1}$，定义：
 \begin{equation}\label{eq:lecam_affinity}
 \rho(P_{\theta_0}, P_{\theta_1}) = \int \sqrt{dP_{\theta_0} dP_{\theta_1}}
 \end{equation}
-as the Hellinger affinity. The LeCam lower bound is based on: if two hypotheses are \textbf{indistinguishable} under observation, then no test can simultaneously achieve low error rates.
+为Hellinger亲和度。LeCam下界基于：若两个假设在观测上\textbf{不可区分}，则任何检验无法同时获得低错误率。
 \end{definition}
 
-\begin{theorem}[LeCam Two-Point Lower Bound, generalization of Fano]
+\begin{theorem}[LeCam二点下界，Fano的泛化]
 \label{thm:lecam}
-Let $\theta_0, \theta_1 \in \Theta$ satisfy $\TV(P_{\theta_0}, P_{\theta_1}) \leq \varepsilon < 1$.
-Then for any decision function $\hat{\theta}$:
+设$\theta_0, \theta_1 \in \Theta$满足$\TV(P_{\theta_0}, P_{\theta_1}) \leq \varepsilon < 1$。
+则对任意决策函数$\hat{\theta}$：
 \begin{equation}\label{eq:lecam_lb}
 \max_{\theta \in \{\theta_0, \theta_1\}} \mathbb{P}_\theta(\hat{\theta} \neq \theta)
 \geq \frac{1 - \varepsilon}{2}.
 \end{equation}
 \end{theorem}
 
-\begin{proof}[Derivation chain Fano $\Rightarrow$ LeCam]
-\textbf{Key idea:} Fano's inequality considers the \textbf{uniform distribution over multiple hypotheses}, while LeCam reduces this to the \textbf{two hardest hypotheses}.
+\begin{proof}[推导链 Fano $\Rightarrow$ LeCam]
+\textbf{关键思路：}Fano不等式考虑的是\textbf{多个假设均匀分布}的情况，而LeCam将其约化为\textbf{最困难的两个假设}。
 \begin{enumerate}
-    \item Starting from Fano: let $|\mathcal{X}| = M$, take uniform prior $\pi$, then $\Ent(X) = \log M$.
-    \item By the data processing inequality: $\MI(X; \hat{X}) \leq \MI(X; Y)$.
-    \item Therefore $\Ent(X \mid \hat{X}) = \Ent(X) - \MI(X; \hat{X}) \geq \log M - \MI(X; Y)$.
-    \item Substituting into Fano: $P_e \geq 1 - \frac{\MI(X; Y) + \log 2}{\log M}$.
-    \item \textbf{Key step:} Take $M=2$ (two-point hypothesis), and note that for two distributions,
-    $\MI(X;Y)$ is controlled by $\TV(P_{\theta_0}, P_{\theta_1})$:
+    \item 从Fano出发：设$|\mathcal{X}| = M$，取均匀先验$\pi$，则$\Ent(X) = \log M$。
+    \item 由数据处理不等式：$\MI(X; \hat{X}) \leq \MI(X; Y)$。
+    \item 因此$\Ent(X \mid \hat{X}) = \Ent(X) - \MI(X; \hat{X}) \geq \log M - \MI(X; Y)$。
+    \item 代入Fano：$P_e \geq 1 - \frac{\MI(X; Y) + \log 2}{\log M}$。
+    \item \textbf{关键步骤：}取$M=2$（二点假设），并注意到对于两个分布，
+    $\MI(X;Y)$受$\TV(P_{\theta_0}, P_{\theta_1})$控制：
     \begin{equation}
     \MI(X;Y) \leq \TV(P_{\theta_0}, P_{\theta_1}) \cdot \log 2
-    \quad (\text{for binary $X$, equality holds for deterministic signals}).
+    \quad (\text{对二元$X$，等号在确定性信号成立}).
     \end{equation}
-    This immediately yields the LeCam lower bound (\ref{eq:lecam_lb}).
+    由此即得LeCam下界(\ref{eq:lecam_lb})。
 \end{enumerate}
-\strictness{Rigorous: at $M=2$ degeneracy, Fano $\equiv$ LeCam, no information loss}
+\strictness{严格：$M=2$退化时Fano $\equiv$ LeCam，无信息损失}
 \end{proof}
 
 \begin{assumecheck}
-Assumptions required by the LeCam two-point method (fewer than Fano):
+LeCam二点法所需假设（比Fano少）：
 \begin{itemize}
-    \item Only two distributions need to be comparable (no finite alphabet required);
-    \item Applicable to general Polish spaces (Borel measurability suffices).
+    \item 仅需两个分布可比较（不需有限字母表）；
+    \item 适用于一般Polish空间（Borel可测即可）。
 \end{itemize}
-\textbf{Rigor is far stronger than Fano}: Fano requires finite $|\mathcal{X}|$, while LeCam only needs controllable total variation.
+\textbf{严格性远强于Fano}：Fano需要有限$|\mathcal{X}|$，而LeCam仅需全变差可控。
 \end{assumecheck}
 
 % ===========================================================================
-\section{Second Link in the Chain: LeCam $\to$ SCX Theorem 3}
+\section{推导链第二环：LeCam $\to$ SCX定理3}
 \label{sec:scx_thm3}
 % ===========================================================================
 
-\begin{definition}[Formalization of the SCX Audit Scenario]
+\begin{definition}[SCX审计场景的形式化]
 \label{def:scx_audit}
-Let the SCX system maintain a state sequence $s_0, s_1, \ldots, s_t \in \mathcal{S}$,
-where each state transition $s_i \to s_{i+1}$ is triggered by a \textbf{chained append operation} $a_{i+1}$.
-The auditor $\mathcal{A}$ observes log fragments $Y \subset \{s_i\}$ (possibly with noise/truncation),
-and asserts a hypothesis set $\mathcal{H} \subset \mathcal{S}$.
+设SCX系统维护状态序列$s_0, s_1, \ldots, s_t \in \mathcal{S}$，
+其中每次状态转移$s_i \to s_{i+1}$由\textbf{链式追加操作}$a_{i+1}$触发。
+审计者$\mathcal{A}$观测日志片段$Y \subset \{s_i\}$（可能含噪声/截断），
+并声称假设集$\mathcal{H} \subset \mathcal{S}$。
 \end{definition}
 
-\begin{theorem}[SCX Theorem 3 --- Honest Person Theorem, Audit Lower Bound]
+\begin{theorem}[SCX定理3——老实人定理，审计下界]
 \label{thm:scx3}
-In the SCX framework, suppose the auditor attempts to distinguish the true state $s^*$ from an alternative state $s'$ using observation $Y$.
-If $\TV(P_{Y|s^*}, P_{Y|s'}) \leq \varepsilon$,
-then the sum of Type I and Type II errors for \textbf{any} decision rule $\delta(Y) \in \{0,1\}$ (0=accept $s^*$, 1=reject)
-satisfies:
+在SCX框架中，设审计者试图从观测$Y$区分真实状态$s^*$与备择状态$s'$。
+若$\TV(P_{Y|s^*}, P_{Y|s'}) \leq \varepsilon$，
+则审计者\textbf{任何}决策规则$\delta(Y) \in \{0,1\}$（0=接受$s^*$，1=拒绝）
+的I类与II类错误之和满足：
 \begin{equation}\label{eq:scx3}
 \alpha(s^*) + \beta(s') \geq 1 - \varepsilon.
 \end{equation}
-In particular, if one requires $\alpha(s^*) < \alpha_0$ and $\beta(s') < \beta_0$,
-then necessarily $\TV(P_{Y|s^*}, P_{Y|s'}) > 1 - \alpha_0 - \beta_0$.
+特别地，若要求$\alpha(s^*) < \alpha_0$且$\beta(s') < \beta_0$，
+则必须有$\TV(P_{Y|s^*}, P_{Y|s'}) > 1 - \alpha_0 - \beta_0$。
 \end{theorem}
 
-\begin{proof}[Derivation: LeCam $\Rightarrow$ SCX Thm.3]
-Set $\theta_0 = s^*$, $\theta_1 = s'$ as two SCX states.
-The auditor's $\delta(Y)$ is precisely the test function in the LeCam framework.
-Equation (\ref{eq:scx3}) is a direct restatement of the LeCam lower bound (\ref{eq:lecam_lb}) (in sum-of-error-probabilities form):
+\begin{proof}[推导：LeCam $\Rightarrow$ SCX Thm.3]
+令$\theta_0 = s^*$，$\theta_1 = s'$为两个SCX状态。
+审计者的$\delta(Y)$即为LeCam框架中的检验函数。
+式(\ref{eq:scx3})是LeCam下界(\ref{eq:lecam_lb})的直接重述（误差概率之和形式）：
 
 \[
 \alpha(s^*) + \beta(s') = \mathbb{P}_{s^*}(\delta=1) + \mathbb{P}_{s'}(\delta=0)
 \geq 1 - \TV(P_{Y|s^*}, P_{Y|s'}).
 \]
 
-\textbf{Note:} No new assumptions are added here --- this step is \textbf{trivial}. The true power of SCX Thm.3
-comes from linking $\TV(P_{Y|s^*}, P_{Y|s'})$ to \textbf{SCX-specific structural quantities} (chain length, CEC hash distance).
-\strictness{Rigorous: equivalent transformation, no information loss}
+\textbf{注：}此处未添加任何新假设——此步是\textbf{平凡的}。SCX Thm.3的真正力量
+来自于将$\TV(P_{Y|s^*}, P_{Y|s'})$与\textbf{SCX特有的结构量}（链长度、CEC哈希距离）联系起来。
+\strictness{严格：等价变换，无信息损失}
 \end{proof}
 
 \begin{honestbox}
-\textbf{SCX Thm.3 is overrated.}
+\textbf{SCX Thm.3被高估了。}
 
-The derivation from LeCam to SCX Thm.3 is an \textbf{identity transformation} --- no new mathematical structure is introduced.
-\textbf{The genuinely non-trivial work} lies in lower-bounding $\TV(P_{Y|s^*}, P_{Y|s'})$ using SCX system quantities (entropy of append operations, CEC state distance),
-which is the content of \S\ref{sec:scx_tv} below.
-\textbf{Any paper claiming SCX Thm.3 is ``independent of LeCam'' or ``transcends classical information theory'' should be treated with caution.}
+从LeCam到SCX Thm.3的推导是\textbf{恒等变换}——没有引入新的数学结构。
+\textbf{真正的非平凡工作}在于将$\TV(P_{Y|s^*}, P_{Y|s'})$用SCX系统量（追加操作的熵、CEC状态距离）下界化，
+这是下面\S\ref{sec:scx_tv}的内容。
+\textbf{凡宣称SCX Thm.3“独立于LeCam”或“超越经典信息论”的论文，均需警惕。}
 \end{honestbox}
 
 % ===========================================================================
-\section{SCX-Specific Total Variation Lower Bound: Structured Fano-Type Argument}
+\section{SCX特有的全变差下界：结构化的Fano型论证}
 \label{sec:scx_tv}
 % ===========================================================================
 
-\begin{theorem}[SCX-TV Lower Bound --- SCX-ification of Fano Structure]
+\begin{theorem}[SCX-TV下界——Fano结构的SCX化]
 \label{thm:scx_tv}
-In the SCX framework, let the \textbf{chained divergence depth} between states $s^*$ and $s'$ be $d = \text{cdepth}(s^*, s')$ ---
-the index of the first append operation where the two states' append sequences diverge. Assume each append operation introduces an average
-CEC information entropy of $\eta > 0$ (\textbf{Assumption A, see below}). Then:
+在SCX框架下，设状态$s^*$与$s'$的\textbf{链式差异深度}为$d = \text{cdepth}(s^*, s')$——
+即使两状态的追加序列首次分歧的操作索引。设每次追加操作平均引入的
+CEC信息熵为$\eta > 0$（\textbf{假设A，见下}）。则：
 \begin{equation}\label{eq:scx_tv_bound}
 \TV(P_{Y|s^*}, P_{Y|s'}) \leq 1 - e^{-\eta d}.
 \end{equation}
 \end{theorem}
 
-\begin{assumption}[Key Assumption A: Constant Information Gain per Append]\label{as:A}
-The change in observational distribution $\TV(P_{Y|s_{\text{before}}}, P_{Y|s_{\text{after}}})$
-induced by each chained append operation $a$ \textbf{does not decay with state history} in expectation. Formally:
+\begin{assumption}[关键假设A：追加操作的信息增益恒定]\label{as:A}
+每次链式追加操作$a$产生的观测分布变化量$\TV(P_{Y|s_{\text{before}}}, P_{Y|s_{\text{after}}})$
+在期望意义下\textbf{不随状态历史衰减}。形式化：
 \[
 \exists \eta > 0, \forall s \in \mathcal{S}, \forall a \in \mathcal{A}:
 \mathbb{E}[\TV(P_{Y|s}, P_{Y|s \circ a})] \geq \eta.
 \]
-\strictness{Heuristic: holds for most real SCX instances, but lacks a general proof}
+\strictness{启发式：对大多数真实SCX实例成立，但缺乏通用证明}
 \end{assumption}
 
-\begin{corollary}[Quantitative Form of the Honest Person Theorem]
-If the auditor requires $\alpha + \beta < \delta$ (total error tolerance $\delta$), then the minimum auditable
-chained divergence depth is:
+\begin{corollary}[老实人定理的量化形式]
+若审计者要求$\alpha + \beta < \delta$（总错误容忍度$\delta$），则审计可分辨的
+最小链式差异深度为：
 \begin{equation}\label{eq:honest_threshold}
 d_{\min} = \frac{\log(1/\delta)}{\eta}.
 \end{equation}
-\textbf{That is:} any tampering with depth $< d_{\min}$ is \textbf{unauditable} at tolerance $\delta$.
+\textbf{即：}任何深度$< d_{\min}$的篡改在$\delta$容忍度下\textbf{不可审计}。
 \end{corollary}
 
 \begin{honestbox}
-\textbf{The truth behind the name ``Honest Person Theorem'':}
+\textbf{“老实人定理”命名的真相：}
 
-This theorem actually says: \textbf{if your tampering is sufficiently shallow (early in the append chain), the auditor cannot discover it} ---
-so being an ``honest person'' is not a moral choice but an \textbf{information-theoretic inevitability}.
-A dishonest operation at depth $d_{\min} - 1$ cannot be detected with probability $> 1-\delta$ mathematically.
+这个定理实际上说的是：\textbf{如果你的篡改足够浅（在追加链的早期），审计者无法发现}——
+所以“老实人”不是道德选择，而是\textbf{信息论必然}。
+一个深度为$d_{\min} - 1$的不老实操作，数学上无法以概率$> 1-\delta$被检测。
 
-This is equivalent to: SCX's audit security is \textbf{not absolute}, but is paid for in terms of append depth.
+这等价于：SCX的审计安全性\textbf{不是绝对的}，而是以追加深度为代价的。
 \end{honestbox}
 
 % ===========================================================================
-\section{Compactness Proof: Minimax Theorem}
+\section{紧致性证明：极小极大定理}
 \label{sec:minimax}
 % ===========================================================================
 
-\begin{definition}[Auditor vs. Tamperer Minimax Game]
+\begin{definition}[审计者与篡改者的极小极大博弈]
 \label{def:minimax_game}
-Define the zero-sum game $\Gamma = (\mathcal{A}, \mathcal{T}, \Risk)$:
+定义零和博弈$\Gamma = (\mathcal{A}, \mathcal{T}, \Risk)$：
 \begin{itemize}
-    \item \textbf{Auditor} $A \in \mathcal{A}$: chooses a test strategy $\delta: \mathcal{Y} \to \{0,1\}$.
-    \item \textbf{Tamperer} $T \in \mathcal{T}$: chooses a tampered state $s' \in \mathcal{S}$ (satisfying $\text{cdepth}(s^*, s') \leq D$).
-    \item \textbf{Payoff function}: $\Risk(A, T) = \mathbb{P}_{s^*}(\delta=1) + \mathbb{P}_{T}(\delta=0)$ (total error).
+    \item \textbf{审计者}$A \in \mathcal{A}$：选择检验策略$\delta: \mathcal{Y} \to \{0,1\}$。
+    \item \textbf{篡改者}$T \in \mathcal{T}$：选择篡改状态$s' \in \mathcal{S}$（满足$\text{cdepth}(s^*, s') \leq D$）。
+    \item \textbf{收益函数}：$\Risk(A, T) = \mathbb{P}_{s^*}(\delta=1) + \mathbb{P}_{T}(\delta=0)$（总错误）。
 \end{itemize}
-The auditor minimizes worst-case risk, the tamperer maximizes:
+审计者最小化最坏情况风险，篡改者最大化：
 \begin{equation}\label{eq:minimax}
 V = \inf_{A \in \mathcal{A}} \sup_{T \in \mathcal{T}} \Risk(A, T).
 \end{equation}
 \end{definition}
 
-\begin{theorem}[Compactness --- SCX Version of the Minimax Theorem]
+\begin{theorem}[紧致性——极小极大定理的SCX版本]
 \label{thm:compactness}
-Assume $\mathcal{S}$ is endowed with the weak topology and $\mathcal{T}$ is a \textbf{compact subset} thereof (under the append depth constraint $D$).
-If the risk function $\Risk(A, T)$ is \textbf{lower semicontinuous} in $T$ and \textbf{quasiconvex} in $A$,
-then the minimax equality holds:
+设$\mathcal{S}$赋有弱拓扑且$\mathcal{T}$为其\textbf{紧子集}（在追加深度$D$约束下）。
+若风险函数$\Risk(A, T)$在$T$上\textbf{下半连续}且在$A$上\textbf{拟凸}，
+则极小极大等式成立：
 \begin{equation}\label{eq:minimax_eq}
 \inf_{A} \sup_{T} \Risk(A, T) = \sup_{T} \inf_{A} \Risk(A, T).
 \end{equation}
-Moreover, there \textbf{exists} a saddle point $(A^*, T^*)$ attaining this value.
+且\textbf{存在}鞍点$(A^*, T^*)$达到该值。
 \end{theorem}
 
-\begin{proof}[Proof sketch --- Application of Fan--Sion Minimax Theorem]
-\strictness{Sketch: direction correct, compactness conditions need instance-by-instance verification}
+\begin{proof}[证明概要——Fan-Sion极小极大定理的应用]
+\strictness{概要：方向正确，紧性条件需逐实例验证}
 \begin{enumerate}
-    \item \textbf{Compactness verification:} Under the append depth constraint $\text{cdepth}(s^*, \cdot) \leq D$,
-    $\mathcal{T}$ is a \textbf{finite-dimensional truncation} of $\mathcal{S}$ (each append introduces finite information $\eta$),
-    hence compact under the weak topology (Arzelà-Ascoli type argument, requires assuming $\mathcal{S}$ is a pre-compact family on a Polish space).
+    \item \textbf{紧性验证：}在追加深度约束$\text{cdepth}(s^*, \cdot) \leq D$下，
+    $\mathcal{T}$为$\mathcal{S}$的\textbf{有限维截断}（每次追加引入有限信息量$\eta$），
+    因此在弱拓扑下为紧集（Arzelà-Ascoli型论证，需假设$\mathcal{S}$是Polish空间上的预紧族）。
 
-    \item \textbf{Quasiconvexity:} $\Risk(A, T)$ is linear in randomized tests on the audit strategy space $\mathcal{A}$, hence quasiconvex.
+    \item \textbf{拟凸性：}审计策略空间$\mathcal{A}$上的$\Risk(A, T)$对随机化检验是线性的，因此拟凸。
 
-    \item \textbf{Lower semicontinuity:} By total variation lower semicontinuity (Scheffé's lemma), $\Risk(A, T)$ is lower semicontinuous in $T$.
+    \item \textbf{下半连续性：}由全变差下半连续性（Scheffé引理），$\Risk(A, T)$在$T$上下半连续。
 
-    \item \textbf{Application of Fan--Sion Theorem:} Under the above conditions, the minimax equality follows directly.
-    Existence of saddle points is guaranteed by compactness (the compact version of Sion's theorem).
+    \item \textbf{应用Fan--Sion定理：}上述条件满足后，minimax等式直接得出。
+    鞍点存在性由紧性保证（Sion定理的紧版本）。
 \end{enumerate}
 \end{proof}
 
 \begin{assumecheck}
-\textbf{Hidden cracks} in the compactness proof:
-\begin{enumerate}[label=\textbf{Crack \arabic*:}]
-    \item \textbf{``Finite information $\eta$'' $\Rightarrow$ compactness?} This is a large jump. Finite information does not equal finite dimension.
-    $\mathcal{S}$ could be an infinite-dimensional function space (e.g., continuous state trajectories), and entropy constraints alone do not guarantee compactness ---
-    stronger \textbf{uniform continuity} conditions or \textbf{RKHS} structure is needed.
-    \item \textbf{Weak topology lower semicontinuity:} SCX's observation model $P_{Y|s}$ must satisfy some continuity;
-    for discrete observations (SCX's actual scenario!), the weak topology is not the natural choice --- the discrete topology should be used,
-    in which case compactness degenerates to finiteness ($\mathcal{T}$ is actually a finite set, since append combinations under depth $D$ are finite).
+紧致性证明的\textbf{隐藏裂缝}：
+\begin{enumerate}[label=\textbf{裂\arabic*：}]
+    \item \textbf{“有限信息量$\eta$” $\Rightarrow$ 紧性？} 这步跳跃很大。有限信息不等于有限维。
+    $\mathcal{S}$可能是无限维函数空间（如连续状态轨迹），仅靠熵约束不足以保证紧性——
+    需要更强的\textbf{一致连续性}条件或\textbf{RKHS}结构。
+    \item \textbf{弱拓扑下半连续：}SCX的观测模型$P_{Y|s}$需要满足某种连续性；
+    对离散观测（SCX的实际场景！），弱拓扑不是自然选择——需使用离散拓扑，
+    此时紧性退化为有限性（$\mathcal{T}$实际上是有限集，因为深度$D$下追加组合有限）。
 \end{enumerate}
 
-\textbf{Conclusion:} Compactness in \textbf{discrete SCX} (the actual scenario) is trivial (finite set $\Rightarrow$ compact);
-in \textbf{continuous SCX} (theoretical generalization) requires additional assumptions and has not been fully proven.
+\textbf{结论：}紧致性在\textbf{离散SCX}（实际场景）下是平凡的（有限集$\Rightarrow$紧）；
+在\textbf{连续SCX}（理论推广）下需要额外假设，尚未完全证明。
 \end{assumecheck}
 
 % ===========================================================================
-\section{Structural Comparison with Shannon's Channel Coding Theorem}
+\section{与Shannon信道编码定理的结构对比}
 \label{sec:shannon_comparison}
 % ===========================================================================
 
 \begin{table}[h!]
 \centering
-\caption{\textbf{Structural symmetry of the Fano-derived theorem family: Shannon vs. SCX}}
+\caption{\textbf{Fano-引申定理族的结构对称性：Shannon vs. SCX}}
 \label{tab:comparison}
 \renewcommand{\arraystretch}{1.8}
 \begin{tabular}{@{}p{3.2cm} p{5.2cm} p{5.2cm}@{}}
 \toprule
-\textbf{Dimension} & \textbf{Shannon Channel Coding Theorem} & \textbf{SCX Honest Person Theorem} \\
+\textbf{维度} & \textbf{Shannon信道编码定理} & \textbf{SCX老实人定理} \\
 \midrule
-\textbf{Core Inequality} &
-Fano's inequality (classical) &
+\textbf{核心不等式} &
+Fano不等式（经典） &
 Fano $\to$ LeCam $\to$ SCX Thm.3 \\
 \midrule
-\textbf{Direction} &
-\textbf{Forward problem}: design encoder $\to$ maximize reliable transmission rate &
-\textbf{Inverse problem}: auditor $\gets$ detect minimum resolvable depth of tampering \\
+\textbf{方向} &
+\textbf{正问题}：设计编码器$\to$最大化可靠传输速率 &
+\textbf{逆问题}：审计者$\gets$检测篡改的最低可分辨深度 \\
 \midrule
-\textbf{Information Measure} &
-Mutual information $I(X;Y)$: channel capacity is $\max_{P_X} I(X;Y)$ &
-TV distance: $\TV(P_{Y|s^*}, P_{Y|s'})$ \\
+\textbf{信息量度量} &
+互信息$I(X;Y)$：信道容量为$\max_{P_X} I(X;Y)$ &
+TV距离：$\TV(P_{Y|s^*}, P_{Y|s'})$ \\
 \midrule
-\textbf{Asymptotic Object} &
-Code length $n \to \infty$, number of codewords $M = e^{nR}$ &
-Append depth $d \to \infty$, number of hypotheses $\sim e^{\eta d}$ \\
+\textbf{渐近对象} &
+码长$n \to \infty$，码字数$M = e^{nR}$ &
+追加深度$d \to \infty$，假设数$\sim e^{\eta d}$ \\
 \midrule
-\textbf{Achievability / Indistinguishability} &
-$R < C \Rightarrow$ there exists a code with $P_e \to 0$ (achievable) &
-$d > d_{\min} \Rightarrow$ auditor can distinguish (positive direction)
-$d < d_{\min} \Rightarrow$ tampering undetectable (negative direction) \\
+\textbf{可达性/不可分辨性} &
+$R < C \Rightarrow$ 存在码使得$P_e \to 0$（可达） &
+$d > d_{\min} \Rightarrow$ 审计可分辨（正向）
+$d < d_{\min} \Rightarrow$ 篡改不可检测（负向） \\
 \midrule
-\textbf{Limit Theorem} &
-Channel coding converse: $R > C \Rightarrow P_e$ has positive lower bound &
-SCX compactness: minimax saddle point exists, yielding optimal audit/tamper pair \\
+\textbf{极定理} &
+信道编码逆定理：$R > C \Rightarrow P_e$有正下界 &
+SCX紧致性：minimax鞍点存在，给出最优审计/篡改对 \\
 \midrule
-\textbf{Mathematical Core} &
-Fano $\to$ typical sequences $\to$ joint typicality decoding &
-Fano $\to$ LeCam two-point $\to$ TV lower bound $\to$ chained depth threshold \\
+\textbf{数学核心} &
+Fano $\to$ 典型序列$\to$联合典型解码 &
+Fano $\to$ LeCam二点$\to$ TV下界$\to$链式深度门限 \\
 \midrule
-\textbf{``Random Coding''} &
-Existence argument for random codebook &
-\textbf{No counterpart} --- SCX is a deterministic append chain,
-``randomized audit'' is not a native SCX concept \\
+\textbf{“随机编码”} &
+随机码本的存在性论证 &
+\textbf{不存在对应物}——SCX是确定性的追加链，
+“随机审计”非SCX原生概念 \\
 \midrule
-\textbf{Philosophy of Symmetry} &
-Channel noise ``helps'' the encoder (distinguishes codewords) &
-Append entropy ``protects'' the tamperer (conceals shallow tampering) \\
+\textbf{对称性的哲学} &
+信道噪声“帮助”编码者（区分码字） &
+追加熵“保护”篡改者（掩盖浅层篡改） \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{honestbox}
-\textbf{Limits of the symmetry: Shannon and SCX are not duals.}
+\textbf{对称性的极限：Shannon与SCX不是对偶的。}
 
-The table above reveals structural parallelism, but \textbf{no rigorous mathematical duality exists}:
+上表揭示了结构上的平行性，但\textbf{不存在严格的数学对偶}：
 \begin{itemize}
-    \item In Shannon's theorem, the asymptotic behavior as $n \to \infty$ is governed by the \textbf{law of large numbers} (typical sequences).
-    \item In SCX, the increase of append depth $d$ is governed by \textbf{information accumulation} (per-append information gain $\eta$).
-    The latter lacks the mathematical elegance of the law of large numbers --- $\eta$ is an assumed constant, not estimated from data.
+    \item Shannon定理中，$n \to \infty$时的渐近行为受\textbf{大数定律}支配（典型序列）。
+    \item SCX中，追加深度$d$的增加受\textbf{信息累积}支配（每次追加的信息增益$\eta$）。
+    后者缺乏大数定律的数学优雅性——$\eta$是假设的常数，而非从数据估计的。
 \end{itemize}
 
-\textbf{Any paper claiming ``SCX is the dual of Shannon'' must prove the existence of $\eta$ independent of any specific SCX implementation. No one has done so to date.}
+\textbf{任何声称“SCX是Shannon对偶”的论文，需证明$\eta$的存在性不依赖于特定SCX实现。目前无人做到。}
 \end{honestbox}
 
 % ===========================================================================
-\section{Honest Critique Summary}
+\section{诚实暴击总结}
 \label{sec:conclusion}
 % ===========================================================================
 
-\begin{honestbox}[title={Honest Critique Summary}]
+\begin{honestbox}[title=🩸 全文诚实暴击总结]
 \begin{enumerate}[leftmargin=*]
-    \item \textbf{Fano $\to$ LeCam $\to$ SCX Thm.3} derivation chain:
-    the only non-trivial step is the first link (Fano $\to$ LeCam, controlling information at $M=2$ degeneracy).
-    The second link (LeCam $\to$ SCX Thm.3) is \textbf{relabeling}.
+    \item \textbf{Fano $\to$ LeCam $\to$ SCX Thm.3}的推导链中，
+    唯一非平凡的步骤是第一环（Fano $\to$ LeCam，$M=2$退化时的信息量控制）。
+    第二环（LeCam $\to$ SCX Thm.3）是\textbf{重命名}。
 
-    \item \textbf{The real content of SCX Thm.3} --- lower-bounding TV distance using append depth $d$ and $\eta$ ---
-    depends on \textbf{Assumption A} (constant information gain $\eta$), which \textbf{lacks a general proof}.
+    \item \textbf{SCX Thm.3的真正内容}——用追加深度$d$和$\eta$下界TV距离——
+    依赖于\textbf{假设A}（恒常信息增益$\eta$），该假设\textbf{缺乏一般性证明}。
 
-    \item \textbf{Compactness (minimax theorem)} degenerates to a \textbf{trivial finiteness argument} in discrete SCX;
-    in the continuous SCX generalization, the \textbf{rigorous proof has not been completed}.
+    \item \textbf{紧致性（极小极大定理）}在离散SCX下退化为\textbf{平凡有限性论证}；
+    在连续SCX推广下\textbf{尚未完成严格证明}。
 
-    \item \textbf{Shannon--SCX ``duality''} belongs to \textbf{analogical similarity}, not mathematical duality.
-    Shannon's asymptotic theory relies on the law of large numbers; SCX's asymptotic theory lacks the corresponding probabilistic foundation.
+    \item \textbf{Shannon--SCX“对偶”}属于\textbf{类比层面的相似}，不构成数学对偶。
+    Shannon的渐近理论依赖大数定律；SCX的渐近理论缺乏对应的概率基础。
 
-    \item \textbf{Final recommendation:} The valid mathematical kernel of the SCX information-theoretic framework is the LeCam two-point method (already ~70 years old) + SCX's unique CEC chained structure. The remaining ``generalizations'' require verifying Assumption A and compactness conditions on each specific SCX instance.
+    \item \textbf{最终建议：}SCX信息论框架的有效数学内核是LeCam二点法（已有约70年历史）+SCX特有的CEC链式结构。其余“推广”需要在每个具体SCX实例中验证假设A和紧性条件。
 \end{enumerate}
 \end{honestbox}
 
@@ -439,7 +439,7 @@ Wiley, 2006.
 A.~B.~Tsybakov.
 \textit{Introduction to Nonparametric Estimation.}
 Springer, 2009.
-(Clearest modern exposition of the LeCam two-point method, Chapter 2)
+(LeCam二点法的最清晰现代阐述，第2章)
 
 \bibitem{sion1958}
 M.~Sion.

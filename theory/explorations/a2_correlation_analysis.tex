@@ -66,132 +66,154 @@
 Fix}\label{a2-conditional-independence-vulnerability-analysis-and-fix}
 
 \begin{quote}
-\textbf{Trigger}: Hostile review points out that A2 ``is almost certainly false and is the Achilles' heel of the entire framework.'' \textbf{Conclusion}: The diagnosis is correct, but it can be fixed. Replace with a weak-correlation concentration inequality; the degradation rate is computed.
+\textbf{触发}: Hostile review 指出 A2 ``几乎肯定为假，是整个框架的
+Achilles 之踵'' \textbf{结论}:
+诊断正确，但可以修复。替换为弱相关集中不等式，降价退化速率。
 \end{quote}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{1. Diagnosis}\label{diagnosis}
+\subsection{1. 问题确诊}\label{ux95eeux9898ux786eux8bca}
 
-The proof chain of Theorem 1:
+Theorem 1 的证明链:
 
 \begin{verbatim}
-A2 (conditional independence) → e_m independent → Hoeffding concentration → exp(-2MΔ²) exponential rate
+A2 (条件独立) → e_m 独立 → Hoeffding 集中 → exp(-2MΔ²) 指数速率
 \end{verbatim}
 
-If there is conditional correlation \(\rho > 0\) among expert errors (given state \(s\)):
-- CNN: all experts fail together on blurry images
-- MLIP: all experts fail together on transition-state configurations
-- Effective number of independent experts: \(M_{\text{eff}} \approx M / (1 + (M-1)\rho)\)
+如果专家错误之间存在条件相关 \(\rho > 0\)（给定状态 \(s\)）: - CNN:
+所有专家在模糊图像上一起错 - MLIP: 所有专家在过渡态构型上一起错 -
+有效独立专家数: \(M_{\text{eff}} \approx M / (1 + (M-1)\rho)\)
 
-At \(\rho = 0.3\), \(M=12\) degrades to \(M_{\text{eff}} = 2.8\) --- the exponential gain nearly vanishes.
+在 \(\rho = 0.3\) 时，\(M=12\) 退化到
+\(M_{\text{eff}} = 2.8\)------指数增益几乎消失。
 
-\textbf{CIFAR-10 Experimental Evidence}: The theoretical lower bound F1 \( \ge \) 0.976 (under the assumed independence case), while the measured F1 = 0.617. The gap cannot be explained solely by \(\mu_s\) estimation error.
+\textbf{CIFAR-10 实验证据}: 理论下界 F1≥0.976（假定的独立情况），实测
+F1=0.617。差距无法仅用 \(\mu_s\) 估计误差解释。
 
-\textbf{AlN Experimental Evidence}: The global bound F1 \( \ge \) 0.87 matches the empirical value. But this holds only when \(\rho \lesssim 0.02\) --- an extremely weak assumption that requires verification.
+\textbf{AlN 实验证据}: 全局界 F1≥0.87 匹配经验值。但仅当
+\(\rho \lesssim 0.02\) 时才成立------这是一个极弱的假设，需要验证。
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{2. Fix}\label{fix}
+\subsection{2. 修复方案}\label{ux4feeux590dux65b9ux6848}
 
-\subsubsection{2.1 Honest A2}\label{honest-a2}
+\subsubsection{2.1 诚实化 A2}\label{ux8bdaux5b9eux5316-a2}
 
-\textbf{Old A2}: Given \(x\), expert errors \(\{e_m\}\) are conditionally independent.
+\textbf{旧 A2}: 给定 \(x\) 下，专家错误 \(\{e_m\}\) 条件独立。
 
-\textbf{New A2'}: Given state \(s\), the conditional correlation coefficient of expert errors \(\{e_m\}\) is bounded:
+\textbf{新 A2'}: 给定状态 \(s\) 下，专家错误 \(\{e_m\}\)
+的条件相关系数有界:
 \[\rho_s = \max_{m \neq m'} \text{Corr}(e_m, e_{m'} \mid X \in s) \leq \bar{\rho} < 1\]
 
-where
+其中
 \(\text{Corr}(e_m, e_{m'} \mid s) = \frac{\text{Cov}(e_m, e_{m'} \mid s)}{\sqrt{\text{Var}(e_m \mid s) \text{Var}(e_{m'} \mid s)}}\)
 
-When \(\bar{\rho} = 0\), the old A2 is recovered.
+当 \(\bar{\rho} = 0\) 时恢复旧 A2。
 
-\subsubsection{2.2 Weak-Correlation Concentration Inequality}\label{weak-correlation-concentration-inequality}
+\subsubsection{2.2
+弱相关集中不等式}\label{ux5f31ux76f8ux5173ux96c6ux4e2dux4e0dux7b49ux5f0f}
 
-\textbf{Lemma 2' (Weak-Correlation Hoeffding)}. Let \(\{e_m\}_{m=1}^M\) be \([0,1]\)-valued random variables satisfying \(\mathbb{E}[e_m \mid s] \leq \mu_s\), and
-\(\text{Cov}(e_m, e_{m'} \mid s) \leq \rho \cdot \sqrt{\text{Var}(e_m) \text{Var}(e_{m'})}\), with
-\(\rho \in [0, 1)\). Then:
+\textbf{Lemma 2' (弱相关 Hoeffding)}. 设 \(\{e_m\}_{m=1}^M\) 为
+\([0,1]\)-值随机变量，满足 \(\mathbb{E}[e_m \mid s] \leq \mu_s\)，且
+\(\text{Cov}(e_m, e_{m'} \mid s) \leq \rho \cdot \sqrt{\text{Var}(e_m) \text{Var}(e_{m'})}\)，其中
+\(\rho \in [0, 1)\)。则:
 
 \[\mathbb{P}\left(\frac{1}{M}\sum_{m=1}^M e_m > \theta \;\middle|\; s\right) \leq \exp\left(-\frac{2M(\theta - \mu_s)^2}{1 + (M-1)\rho}\right)\]
 
-\textbf{Proof}:
-For correlated random variables, \(\text{Var}(\sum_m e_m \mid s) = \sum_m \text{Var}(e_m) + \sum_{m \neq m'} \text{Cov}(e_m, e_{m'}) \leq M\sigma^2(1 + (M-1)\rho)\), where
-\(\sigma^2 = \max_m \text{Var}(e_m) \leq 1/4\). Apply the weak-correlation Hoeffding bound of Bentkus (2004) or van de Geer \& Lederer (2013). \(\square\)
+\textbf{证明}:
+对相关随机变量，\(\text{Var}(\sum_m e_m \mid s) = \sum_m \text{Var}(e_m) + \sum_{m \neq m'} \text{Cov}(e_m, e_{m'}) \leq M\sigma^2(1 + (M-1)\rho)\)，其中
+\(\sigma^2 = \max_m \text{Var}(e_m) \leq 1/4\)。应用 Bentkus (2004) 或
+van de Geer \& Lederer (2013) 的弱相关 Hoeffding 界。\(\square\)
 
-\subsubsection{2.3 Corrected Theorem 1}\label{corrected-theorem-1}
+\subsubsection{2.3 修正后的 Theorem
+1}\label{ux4feeux6b63ux540eux7684-theorem-1}
 
 \[\text{F1} \geq 1 - \frac{1}{\eta}\sum_{s} \rho_s \cdot \exp\left(-\frac{2M\Delta_s^2}{1 + (M-1)\bar{\rho}_s}\right)\]
 
-where
+其中
 \(\bar{\rho}_s = \max_{m \neq m'} \text{Corr}(e_m, e_{m'} \mid X \in s)\)
-is the \textbf{maximum expert error correlation coefficient} within state \(s\).
+是状态 \(s\) 内的\textbf{最大专家错误相关系数}。
 
-\textbf{Degradation rate}:
+\textbf{退化速率}:
 \[M_{\text{eff}}(s) = \frac{M}{1 + (M-1)\bar{\rho}_s}\]
 
 \begin{longtable}[]{@{}ccl@{}}
 \toprule\noalign{}
-\(\bar{\rho}_s\) & \(M_{\text{eff}}\) when \(M=12\) & Degradation degree \\
+\(\bar{\rho}_s\) & \(M=12\) 时 \(M_{\text{eff}}\) & 退化程度 \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.00 & 12.0 & Original bound \\
-0.02 & 9.8 & Mild \\
-0.05 & 7.7 & Moderate \\
-0.10 & 5.7 & Significant \\
-0.20 & 3.8 & Severe \\
-0.50 & 1.8 & Exponential gain vanishes \\
+0.00 & 12.0 & 原界 \\
+0.02 & 9.8 & 轻微 \\
+0.05 & 7.7 & 中度 \\
+0.10 & 5.7 & 显著 \\
+0.20 & 3.8 & 严重 \\
+0.50 & 1.8 & 指数增益消失 \\
 \end{longtable}
 
-\textbf{Key Corollary}: Even with \(\bar{\rho}_s = 0.05\) (mild correlation), \(M=12\) is still equivalent to 7.7 independent experts --- exponential convergence still holds, only the constant is slightly larger.
+\textbf{关键推论}: 即使 \(\bar{\rho}_s = 0.05\)（轻微相关），\(M=12\)
+仍然相当于 7.7 个独立专家------指数收敛依然成立，只是常数稍大。
 
-\subsubsection{2.4 Testability of A2'}\label{testability-of-a2}
+\subsubsection{2.4 A2'
+的可检验性}\label{a2-ux7684ux53efux68c0ux9a8cux6027}
 
-Unlike the old A2, A2' is \textbf{testable}:
-1. For each state \(s\), compute the expert error matrix \(E_s \in \{0,1\}^{n_s \times M}\)
-2. Estimate pairwise correlation coefficients \(\hat{\rho}_{mm'}^{(s)}\)
-3. Take \(\hat{\bar{\rho}}_s = \max_{m \neq m'} \hat{\rho}_{mm'}^{(s)}\)
-4. If \(\hat{\bar{\rho}}_s \geq 0.5\), issue an A2' violation warning
+与旧 A2 不同，A2' 是\textbf{可检验的}: 1. 对每个状态
+\(s\)，计算专家错误矩阵 \(E_s \in \{0,1\}^{n_s \times M}\) 2.
+估计成对相关系数 \(\hat{\rho}_{mm'}^{(s)}\) 3. 取
+\(\hat{\bar{\rho}}_s = \max_{m \neq m'} \hat{\rho}_{mm'}^{(s)}\) 4. 如果
+\(\hat{\bar{\rho}}_s \geq 0.5\)，发出 A2' 违反警告
 
-\textbf{AlN v3 Estimate}: Estimate \(\hat{\bar{\rho}}_s\) over 8 states (pending experimental verification); expect \(\hat{\bar{\rho}} \lesssim 0.05\) in thermal states (because each expert is trained on a different subset).
+\textbf{AlN v3 估计}: 在 8 个状态上估计
+\(\hat{\bar{\rho}}_s\)（待实验验证），预期在 thermal 状态上
+\(\hat{\bar{\rho}} \lesssim 0.05\)（因为每个专家在不同子集上训练）。
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3. Impact on Theorem 4' (Exact Constant Minimax)}\label{impact-on-theorem-4-exact-constant-minimax}
+\subsection{3. 对 Theorem 4' (Exact Constant Minimax)
+的影响}\label{ux5bf9-theorem-4-exact-constant-minimax-ux7684ux5f71ux54cd}
 
-\subsubsection{3.1 Problem}\label{problem}
+\subsubsection{3.1 问题}\label{ux95eeux9898}
 
-Theorem 4' uses the Bahadur-Rao exact asymptotics, requiring i.i.d. Bernoulli expert errors. If correlation exists:
+Theorem 4' 使用 Bahadur-Rao 精确渐近，要求 i.i.d. Bernoulli
+专家错误。如果存在相关:
 
 \[\text{Var}\left(\frac{1}{M}\sum e_m \mid s\right) = \frac{p_0(1-p_0)}{M}(1 + (M-1)\rho) \neq \frac{p_0(1-p_0)}{M}\]
 
-Bahadur-Rao's asymptotic expansion needs correction: the actual variance is inflated by a factor of \((1+(M-1)\rho)\).
+Bahadur-Rao 的渐近展开需要修正: 实际方差被放大 \((1+(M-1)\rho)\) 倍。
 
-\subsubsection{3.2 Correction}\label{correction}
+\subsubsection{3.2 修正}\label{ux4feeux6b63}
 
-\textbf{Corrected Bahadur-Rao} (correlated Bernoulli):
+\textbf{修正的 Bahadur-Rao} (相关 Bernoulli):
 \[\mathbb{P}(C_M \geq \theta \mid \text{clean}) \sim \frac{\exp(-M \cdot \text{KL}(\theta \| p_0))}{\lambda_0^* \sqrt{2\pi M \cdot \theta(1-\theta) \cdot (1+(M-1)\rho)}}\]
 
-Correlation reduces the effective sample size, but \textbf{the exponential rate \(\kappa\) is unchanged} (Chernoff information depends only on the marginal distribution, not on correlation).
+相关使有效样本量减少，但\textbf{指数速率 \(\kappa\) 不变}（Chernoff
+信息只依赖于边际分布，不依赖相关性）。
 
-\textbf{Key Conclusion}: The exact constant \(C_{\min}\) needs to be multiplied by a correction factor of \(\sqrt{1+(M-1)\rho}\) --- but this does not affect \textbf{rate optimality} (the liminf exponent is unchanged) nor \textbf{constant optimality} (as long as the corrected constant applies to all algorithms).
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{4. Impact on Theorem 2}\label{impact-on-theorem-2}
-
-Theorem 2's Fano-Pinsker-TV chain \textbf{does not depend on A2} --- it depends only on the mutual information between the feature \(\phi\) and the state \(S\). Expert correlation does not affect this bound.
+\textbf{关键结论}: 精确常数 \(C_{\min}\) 需要乘以 \(\sqrt{1+(M-1)\rho}\)
+的修正因子------但这不影响\textbf{速率最优性}（liminf
+的指数不变）和\textbf{常数最优性}（只要修正后的常数对所有算法都适用）。
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5. Impact on Theorem 3}\label{impact-on-theorem-3}
+\subsection{4. 对 Theorem 2
+的影响}\label{ux5bf9-theorem-2-ux7684ux5f71ux54cd}
 
-Theorem 3's construction (World A vs. World B) \textbf{still holds under A2'} --- both worlds can accommodate correlated experts. The unidentifiability conclusion is unaffected.
+Theorem 2 的 Fano-Pinsker-TV 链\textbf{不依赖 A2}------只依赖特征
+\(\phi\) 和状态 \(S\) 之间的互信息。专家相关不影响这个 bound。
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{6. Honest Conclusions}\label{honest-conclusions}
+\subsection{5. 对 Theorem 3
+的影响}\label{ux5bf9-theorem-3-ux7684ux5f71ux54cd}
+
+Theorem 3 的构造（世界 A vs 世界 B）\textbf{在 A2'
+下仍然成立}------两个世界都可以容纳相关专家。不可识别性结论不受影响。
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6. 诚实结论}\label{ux8bdaux5b9eux7ed3ux8bba}
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3000}}
@@ -200,40 +222,52 @@ Theorem 3's construction (World A vs. World B) \textbf{still holds under A2'} --
   >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2000}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-Theorem
+定理
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-A2 Dependence
+A2 依赖程度
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Correlation Impact
+关联影响
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Fix Difficulty
+修正难度
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Thm 1 & \textbf{High} & Exponential rate degrades \(M \to M_{\text{eff}}\) & Medium (replace Hoeffding) \\
-Thm 2 & None & --- & No fix needed \\
-Thm 3 & None & --- & No fix needed \\
-Thm 4' & \textbf{High} & Exact constant correction \(\sqrt{1+(M-1)\rho}\) &
-Medium (correlated Bahadur-Rao) \\
-Thm 5 & None & --- & No fix needed \\
-Prop 6 & None & --- & No fix needed \\
+Thm 1 & \textbf{高} & 指数速率退化 \(M \to M_{\text{eff}}\) & 中等（替换
+Hoeffding） \\
+Thm 2 & 无 & --- & 无需修正 \\
+Thm 3 & 无 & --- & 无需修正 \\
+Thm 4' & \textbf{高} & 精确常数修正 \(\sqrt{1+(M-1)\rho}\) &
+中等（Bahadur-Rao 相关版本） \\
+Thm 5 & 无 & --- & 无需修正 \\
+Prop 6 & 无 & --- & 无需修正 \\
 \end{longtable}
 
-\textbf{Overall}: A2 is the framework's most fragile assumption, but it can be fixed to A2' (weak correlation) without changing the direction of the core conclusions. The exponential rate still holds, only the effective number of experts decreases from \(M\) to \(M_{\text{eff}}\). In practice, two-layer state discovery \textbf{reduces} expert correlation (because features within states are homogeneous) but cannot \textbf{eliminate} it.
+\textbf{总体}: A2 是框架最脆弱的假设，但可以修复为
+A2'（弱相关）而不改变核心结论的方向。指数速率仍然成立，只是有效专家数从
+\(M\) 降为
+\(M_{\text{eff}}\)。在实践中，两层状态发现\textbf{降低}了专家相关（因为状态内特征同质），但不能\textbf{消除}它。
 
-\textbf{Honest response to the reviewer}: ``We acknowledge that A2 (conditional independence) is the strongest and least verifiable assumption in the framework. We relax it to A2' (bounded correlation) and provide the degraded bound. Under A2', the exponential rate is preserved but with effective expert count \(M_{\text{eff}} = M/(1+(M-1)\bar{\rho})\). We provide a procedure for estimating \(\bar{\rho}\) from data.''
+\textbf{向审稿人的诚实回应}: ``We acknowledge that A2 (conditional
+independence) is the strongest and least verifiable assumption in the
+framework. We relax it to A2' (bounded correlation) and provide the
+degraded bound. Under A2', the exponential rate is preserved but with
+effective expert count \(M_{\text{eff}} = M/(1+(M-1)\bar{\rho})\). We
+provide a procedure for estimating \(\bar{\rho}\) from data.''
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{7. Numerical Verification: Correlation in AlN Data}\label{numerical-verification-aln-data-correlation}
+\subsection{7. 数值验证：AlN
+数据的相关性}\label{ux6570ux503cux9a8cux8bc1aln-ux6570ux636eux7684ux76f8ux5173ux6027}
 
-(Pending experiment. Expectation: after two-layer state discovery, expert error correlation within each state should be very low --- because experts are trained on different subsets and the sample distribution within states is homogeneous. If \(\hat{\bar{\rho}} \gtrsim 0.1\) for thermal states, then the current \(M=12\) is insufficient and needs to be increased to \(M \approx 20\).)
+（待跑实验。预期：两层状态发现后，每个状态内专家错误的相关性应该很低------因为专家在不同子集上训练，且状态内样本分布同质。如果
+thermal 状态的 \(\hat{\bar{\rho}} \gtrsim 0.1\)，则当前 \(M=12\)
+不够，需要增加到 \(M \approx 20\)。）
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\emph{Related: {[}{[}01\_noise\_detection\_guarantee{]}{]} ·
+\emph{关联: {[}{[}01\_noise\_detection\_guarantee{]}{]} ·
 {[}{[}exact\_constant\_minimax{]}{]} ·
 {[}{[}hostile\_review\_response{]}{]}}
 
