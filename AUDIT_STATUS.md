@@ -1,6 +1,6 @@
 # SCX 审计收敛状态
 
-最后更新: 2026-07-02 (全量刷新 — 231篇论文/85+审查报告/首轮全覆盖)
+最后更新: 2026-07-03 (Gauge+博弈论深度审计, 44处数学修正, 3新原型论文, 3理论盘点, 5理论方向交叉合成)
 
 ## 总览
 
@@ -76,10 +76,68 @@
 
 | 项目 | 轮次 | 状态 | 裁决 |
 |------|:--:|:--:|------|
-| 博弈论 NPE/NPT/SCX Prize | 8 | ✅ | R7: 2 CRITICAL缺口(M*自指方程推导/q_min校准假设); R8: 5边界测试+4反例。核心差距:治理↔SCX定理检测率桥接未建立 |
+| 博弈论 NPE/NPT/SCX Prize | 10 | ✅ | **07-03重新审计**: NPE Thm1代数5处修正(Δ≥λ−κ→Δ≥−λ, Γ=−Δ, p*=−Δ_A/λ), D-D条件修正(Δ≤−(n−1)κ→Δ≤0), M边际Δ−(λ−κ)→Δ+λ, 级联修正15处。M*显式解加(1−ρ̄)因子。全部21处修正已推送 |
 | 审计经济学 | 3 | ✅ | TAM统一$1.1-1.8T，$5-8T加推导，诚实红利概率化 |
 | 商业格局 | 5 | ✅ | A-—三层分化，赢家输家矩阵，补5轮完成 |
 | 公司估值 | 3 | ✅ | DCF校准，12家公司数值 |
+
+## Gauge 规范理论
+
+| 项目 | 轮次 | 状态 | 裁决 |
+|------|:--:|:--:|------|
+| gauge_formalized | 12 | ✅ | **07-03两轮审计**: R1-6处修正(ewecommand→删除, Gauss-Newton quadratic→linear, O(d)/O(d)≅{pt}→Conj(O(d)), DW加非阿贝尔限定, Stab for all→generic, \Conj声明)。R2-2处修正(
+ef{thm:hodge_iso}→
+ef{thm:od_hodge_fix}, where→Here)。编译通过33页PDF |
+| fiber_bundle | 12 | ✅ | **07-03两轮审计**: R1-5处修正(Thm5.3(v)加三角形, 注记方向修正, Yang-Mills d1r_harm→d1r_coexact, Lemma循环基LaTeX, Code-Paper Remark LaTeX)。R2-3处修正(Proof sketch数学模式重建, \label{sec:algorithm}补加, 交叉引用修复)。全部8处已推送 |
+| gauge_physics | 10 | ✅ | 诚实类比综述: A+诚实度, C+数学严格性。无数学错误(自我纠错覆盖)。27映射中5个高/中严格性, 18个极低/无 |
+| 交叉审计 | 1 | ✅ | fiber_bundle.md与.tex同步, dim(kerΔ₁)跨论文一致, supplementary一致。gauge_physics术语微矛盾(Coulomb-type vs honesty声明) |
+
+## Spring 自进化理论
+
+| 项目 | 轮次 | 状态 | 裁决 |
+|------|:--:|:--:|------|
+| Spring Framework + Limits + Trainer + MD | 2 | 🔄 | **07-03深度审计**: 3处修正(Thm1.4 O(T^{1/4})→O(√logT), Thm3.1/P3定理→猜想, 符号统一)。11隐藏假设, 4/10证明严格性。R2审计进行中 |
+
+## Situs 空间理论
+
+| 项目 | 轮次 | 状态 | 裁决 |
+|------|:--:|:--:|------|
+| Situs Theory + Applications | 2 | ✅ | **07-03深度审计**: 编码定理严格证明✅, 已修正错误(δ_s^PE符号/Lipschitz 3.46×/Fano逻辑/归一化)。诚实标注系统典范级。残余: 摘要/正文条件措辞已确认一致。R2审计进行中 |
+
+## 新方向原型
+
+| 项目 | 状态 | 说明 |
+|------|:--:|------|
+| scx_topological_adoption | ✅ | 15页, β₁→CEC临界值相位跃迁, 编译通过 |
+| scx_info_geo_game | ✅ | 18页, Fisher-Rao重写NPE均衡, 编译通过 |
+| scx_lie_concentration | ✅ | 21页, O(d)上Lévy型集中不等式, 编译通过 |
+| THEORY_INVENTORY (3份) | ✅ | SCX理论/Gauge/博弈论完整盘点 |
+| THEORY_SYNTHESIS | ⏳ | 5方向交叉合成, 边界空隙+可推导数学, 进行中 |
+
+## 本轮关键发现 · 2026-07-03
+
+### 致命错误已修复 (CRITICAL → FIXED)
+
+| 论文 | 致命错误 | 修复 |
+|------|------|------|
+| NPE 定理1 | A-A: Δ≥λ−κ→Δ≥−λ (符号错), D-D: Δ≤−(n−1)κ→Δ≤0 (推导符号反), 混合区域从不存在→多重均衡 | 21处级联修正 |
+| gauge_formalized | O(d)模空间 O(d)/O(d)≅{pt}→Conj(O(d)) | 共轭类空间修正 |
+| gauge_formalized | Gauss-Newton声称quadratic→实际linear | 命题+证明统一 |
+| fiber_bundle | Thm5.3(v)缺三角形回路 | 补全+加d₁A=0等价 |
+| fiber_bundle | Yang-Mills注记 d₁r_harm→d₁r_coexact | 数学错误修正 |
+| scx_governance | M*显式解缺(1-ρ̄)因子 | 重新推导修正 |
+| Spring | Thm1.4 O(T^{1/4})→O(√logT) | 求和公式修正 |
+| Spring | Thm3.1/P3伪证明 | 降为猜想 |
+
+### 结构性缺口 (待后续)
+
+| 方向 | 缺口 | 优先级 |
+|------|------|:--:|
+| Gauge→博弈论 | β₁与CEC临界值定量关系 | P1 |
+| SCX→Gauge | 集中不等式从Rⁿ到O(d)推广 | P1 |
+| 博弈论→Spring | NPE均衡与Spring收敛的形式连接 | P2 |
+| Situs→Gauge | 位置编码对β₁的定量影响 | P2 |
+| 全方向 | 统一(M,|ℰ|,d)相图 | P1 |
 
 ## 协议与治理
 
