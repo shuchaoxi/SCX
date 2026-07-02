@@ -24,41 +24,40 @@
 \newcommand{\rigorSemi}{$\blacksquare$\;\textbf{[Rigor: \texttt{SEMI} $\star\star\;\;$]}}
 \newcommand{\rigorSketch}{$\blacksquare$\;\textbf{[Rigor: \texttt{SKETCH} $\star\;\;\,$]}}
 
-\title{神经网络分类学理论：从SCX公理系统推导机器学习已知现象\\
-       ——严格形式化版本}
+\title{Neural Network Taxonomic Theory: Deriving Known ML Phenomena from the SCX Axiom System\\
+      --- Rigorous Formalization}
 \author{SCX}
-\date{2026年6月30日}
+\date{June 30, 2026}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-\textbf{本文的核心贡献是 Theorem~3——SCX 的``不确定性原理''：在仅从观测数据出发、无额外结构假设的情况下，区分``标签噪声''和``样本本质困难''是数学上不可能的。} 本文提供两种严格证明：显式构造证明和Fano不等式信息论下界证明，二者相互印证。
+\textbf{The core contribution of this paper is Theorem~3 --- SCX's ``Uncertainty Principle'': given only observational data and no additional structural assumptions, distinguishing ``label noise'' from ``inherent sample difficulty'' is mathematically impossible.} We provide two rigorous proofs: an explicit construction proof and a Fano inequality information-theoretic lower bound proof, which mutually corroborate each other.
 
-从此定理出发，SCX公理系统（Theorem~1,2,4、Cercis评分$S = Q + \eta N$、Spring自演化定理）为机器学习六大核心经验现象提供统一严格推导：集成方法的指数收敛（\S2）、深度的隐式集成效应（\S3）、表示学习的互信息对偶（\S4）、LLM幻觉的必然性（\S5）、深度是噪声时代的产物（\S6）、自监督学习的$\eta$-退化极限（\S7）。\textbf{每个推导均标注严格性等级}：\texttt{FULL}（$\star\star\star$，完整$\varepsilon$-$\delta$/不等式证明链）、\texttt{SEMI}（$\star\star\;\;$，关键步骤形式化，部分启发式界）、\texttt{SKETCH}（$\star\;\;\,$，概念推导，定性论证）。
+From this theorem, the SCX axiom system (Theorem~1,2,4, Cercis score $S = Q + \eta N$, Spring self-evolution theorem) provides a unified rigorous derivation for six core empirical phenomena in machine learning: exponential convergence of ensemble methods (\S2), implicit ensemble effect of depth (\S3), mutual information duality of representation learning (\S4), inevitability of LLM hallucinations (\S5), depth as a product of the noisy era (\S6), and $\eta$-degradation limit of self-supervised learning (\S7). \textbf{Each derivation is annotated with a rigor level}: \texttt{FULL} ($\star\star\star$, complete $\varepsilon$-$\delta$/inequality proof chain), \texttt{SEMI} ($\star\star\;$, key steps formalized, partially heuristic bounds), \texttt{SKETCH} ($\star\;\;$, conceptual derivation, qualitative arguments).
 
-Theorem~3具备好理论的所有特征：简洁性、基础性、可独立陈述、在ML理论中占据明确生态位——连接``无免费午餐''定理和数据质量评估。其余推导是其推论和展开。
+Theorem~3 possesses all characteristics of a good theory: simplicity, fundamentality, independent statement, and a clear ecological niche in ML theory --- connecting the ``No Free Lunch'' theorem with data quality assessment. The remaining derivations are its corollaries and elaborations.
 
 \bigskip
-\noindent\textbf{关键词}：Theorem~3，噪声-难度不可区分，Fano不等式，SCX公理，LLM幻觉，集成方法，深度学习，自监督学习，严格性等级
+\noindent\textbf{Keywords}: Theorem~3, noise-difficulty indistinguishability, Fano inequality, SCX axioms, LLM hallucinations, ensemble methods, deep learning, self-supervised learning, rigor levels
 \end{abstract}
 
 \tableofcontents
 
 %=====================================================================
-\section{SCX公理系统}
-%=====================================================================
+\section{SCX Axiom System}\label{scx-axioms}
 
-\subsection{公理化动机}
+\subsection{Axiomatic Motivation}
+Machine learning theory has long faced an awkward situation: empirically highly successful algorithms (deep networks, ensemble methods, self-supervised pretraining) lack a unified axiomatic foundation. The SCX framework establishes a minimal axiom set by identifying a fundamental non-commutativity in data quality assessment.
 
-机器学习理论长期面临一个尴尬处境：经验上极为成功的算法（深度网络、集成方法、自监督预训练）缺乏统一的公理基础。SCX框架通过识别数据质量评估中的基本不对易性（fundamental non-commutativity），建立了最小公理集合。
+\textbf{Core Insight.} The fundamental problem in data quality assessment --- ``this sample's label is wrong'' vs. ``this sample is so hard that all experts get it wrong'' --- is indistinguishable from observational data alone (Theorem~3). This indistinguishability is machine learning's ``Uncertainty Principle'': it delineates a hard boundary — any method claiming to detect label noise must declare its additional structural assumptions.
 
-\textbf{核心洞察。} 数据质量评估中的基本问题——``这个样本标签错了''和``这个样本太难导致所有专家都错了''——在观测数据上是不可区分的（Theorem~3）。这一不可区分性是机器学习的``不确定性原理''：它划定了一个硬边界，任何声称能够检测标签噪声的方法都必须声明其附加的结构假设。
+\subsection{Notation Convention}
 
-\subsection{符号约定}
+Let $(\mathcal{X}, \mathcal{Y})$ be the input-label space, $|\mathcal{Y}| = K$. $f^*: \mathcal{X} \to \mathcal{Y}$ is the true oracle (unobservable). $\{f_m\}_{m=1}^M$ are $M$ expert models, $\ell: \mathcal{Y} \times \mathcal{Y} \to [0, B]$ is a bounded loss function. State space $\mathcal{S}$ indexes a measurable partition of $\mathcal{X}$. $\eta \in (0, 1/2)$ is the global label noise rate. Unless otherwise noted, all logarithms are natural logs.
 
-设$(\mathcal{X}, \mathcal{Y})$为输入-标签空间，$|\mathcal{Y}| = K$。$f^*: \mathcal{X} \to \mathcal{Y}$为真实oracle（不可观测）。$\{f_m\}_{m=1}^M$为$M$个专家模型，$\ell: \mathcal{Y} \times \mathcal{Y} \to [0, B]$为有界损失函数。状态空间$\mathcal{S}$索引$\mathcal{X}$的可测划分。$\eta \in (0, 1/2)$为全局标签噪声率。所有对数除特别说明外均为自然对数。
 \rigorFull
 
 \begin{definition}[共识评分]

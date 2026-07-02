@@ -104,7 +104,7 @@
 \begin{abstract}
 We formalize legal evidence evaluation as a multi-expert audit problem under the \SCX{} (Structured Causal eXamination) framework. In this formulation, each legal witness $w \in \witnessSet$ is an \textbf{expert} who produces a \textbf{testimony} $\tau_w = (m_w, \mathcal{A}_w)$ consisting of a factual claim $m_w$ and a set of declared assumptions $\mathcal{A}_w$ under which the claim holds. Cross-examination is modeled as an \textbf{audit procedure} $\crossexam$ that interrogates the internal consistency and assumption-coverage of each testimony. Corroborating testimonies across independent witnesses form a \Yajie{} \textbf{consensus} with bounded error probability; contradictory testimonies yield a \textbf{discrepancy signal} $\discrepancy$ whose source is unidentifiable without declared assumptions. The evidence chain is formalized as a \textbf{cryptographic hash chain} $\evidenceChain = (e_0, \ldots, e_K)$ where $h_i = \hashFunc(e_i \| h_{i-1})$, guaranteeing tamper-proof sequential integrity.
 
-We prove three core theorems. \textbf{Theorem~1 (Multi-Witness Corroboration 多证人佐证):} With $M$ conditionally independent witnesses each having credibility $\rho_w$, the probability that an incorrect fact survives unanimous corroboration decays as $\exp(-2M_{\mathrm{eff}}\,\rho_{\min}^2)$. \textbf{Theorem~2 (Hearsay as Self-Audit 传闻证据的自审计不可辨识性):} When witness $A$ testifies about witness $B$'s statement, the fact asserted by $B$ is unidentifiable without $B$'s original declaration---hearsay is mathematically equivalent to a self-audit loop and provides zero independent corroboration. \textbf{Theorem~3 (Perjury Detection via Adversarial Cross-Examination 伪证检测与对抗性质询):} A perjurious witness---one who actively fabricates testimony ($\perjury$ regime)---is detected by adversarial cross-examination with probability approaching $1$ exponentially in the number of independent lines of questioning $Q$, while a truthful witness is falsely flagged with probability exponentially small in $Q$.
+We prove three core theorems. \textbf{Theorem~1 (Multi-Witness Corroboration 多证人佐证):} With $M$ conditionally independent witnesses each having credibility $\rho_w$, the probability that an incorrect fact survives unanimous corroboration decays as $\exp(-2M_{\mathrm{eff}}\,\rho_{\min}^2)$. \textbf{Theorem~2 (Hearsay as Self-Audit 传闻证据的Self-Audit不可辨识性):} When witness $A$ testifies about witness $B$'s statement, the fact asserted by $B$ is unidentifiable without $B$'s original declaration---hearsay is mathematically equivalent to a self-audit loop and provides zero independent corroboration. \textbf{Theorem~3 (Perjury Detection via Adversarial Cross-Examination 伪证检测与对抗性质询):} A perjurious witness---one who actively fabricates testimony ($\perjury$ regime)---is detected by adversarial cross-examination with probability approaching $1$ exponentially in the number of independent lines of questioning $Q$, while a truthful witness is falsely flagged with probability exponentially small in $Q$.
 
 Beyond the theorems, we develop the \Yajie{} consensus protocol for weighted aggregation of witness testimonies under correlation, the \Cercis{} evidence score for ranking testimonies by accuracy and novelty, and the \Spring{} gating mechanism for detecting regime transitions from credible testimony to perjury. The framework provides a rigorous mathematical foundation for core legal doctrines---corroboration requirements, hearsay exclusion, chain-of-custody, and cross-examination---unifying them under a single audit-theoretic structure.
 
@@ -145,7 +145,7 @@ Cross-examination & Audit procedure $\crossexam$ & 交叉质询 $\leftrightarrow
 Corroboration & \Yajie{} consensus & 佐证 $\leftrightarrow$ 共识 \\
 Contradiction & Discrepancy signal $\discrepancy$ & 矛盾 $\leftrightarrow$ 差异 \\
 Evidence chain & Cryptographic hash chain & 证据链 $\leftrightarrow$ 哈希链 \\
-Hearsay & Self-audit loop (Theorem~2) & 传闻 $\leftrightarrow$ 自审计 \\
+Hearsay & Self-audit loop (Theorem~2) & 传闻 $\leftrightarrow$ Self-Audit \\
 Perjury & Active evil / fabrication regime (Theorem~3) & 伪证 $\leftrightarrow$ 主动作恶 \\
 \bottomrule
 \end{tabular}
@@ -159,7 +159,7 @@ Perjury & Active evil / fabrication regime (Theorem~3) & 伪证 $\leftrightarrow
     \item \textbf{Three theorems with full proofs}:
     \begin{itemize}
         \item \textbf{Theorem~\ref{thm:corroboration}} (Multi-Witness Corroboration 多证人佐证): With $M$ independent witnesses, the probability of a false fact surviving unanimous corroboration decays exponentially in $M$.
-        \item \textbf{Theorem~\ref{thm:hearsay}} (Hearsay as Self-Audit 传闻自审计): A hearsay claim provides zero independent corroboration and is mathematically equivalent to a self-audit loop.
+        \item \textbf{Theorem~\ref{thm:hearsay}} (Hearsay as Self-Audit 传闻Self-Audit): A hearsay claim provides zero independent corroboration and is mathematically equivalent to a self-audit loop.
         \item \textbf{Theorem~\ref{thm:perjury}} (Perjury Detection via Adversarial Audit 伪证检测): Adversarial cross-examination detects active perjury with probability exponentially close to 1 in the number of independent questions $Q$.
     \end{itemize}
     \item \textbf{Multi-Witness \Yajie{} Protocol} (Section~\ref{sec:yajie}): Weighted consensus aggregation across witnesses with heterogeneous credibility, precision, and correlation.
@@ -413,13 +413,13 @@ where $\KL(p \| q) = p \ln(p/q) + (1-p) \ln((1-p)/(1-q))$ is the Kullback-Leible
 \end{corollary}
 
 %=====================================================================
-\section{Theorem 2: Hearsay as Self-Audit 传闻证据的自审计不可辨识性}
+\section{Theorem 2: Hearsay as Self-Audit 传闻证据的Self-Audit不可辨识性}
 \label{sec:hearsay}
 %=====================================================================
 
 \subsection{Statement}
 
-\begin{theorem}[Hearsay Self-Audit Unidentifiability 传闻自审计不可辨识性]
+\begin{theorem}[Hearsay Self-Audit Unidentifiability 传闻Self-Audit不可辨识性]
 \label{thm:hearsay}
 Let $w_A, w_B \in \witnessSet$ be two witnesses. Let $w_B$ possess direct knowledge of fact $\fact$ and produce testimony $\tau_B = (m_B, \mathcal{A}_B, \sigma_B^2, \rho_B)$. Let $w_A$ produce a \textbf{hearsay testimony} $\tau_A^{\hear}$ that asserts the content of $w_B$'s testimony: $m_A = \text{``}w_B \text{ claims } m_B\text{''}$. Then, without access to $w_B$'s original testimony $\tau_B$, the fact $\fact$ is \textbf{unidentifiable} from $\tau_A^{\hear}$ alone. Formally, for any two facts $\fact \neq \fact'$, there exist witness configurations such that:
 \begin{equation}
@@ -832,7 +832,7 @@ Table~\ref{tab:theorems} summarizes how the three theorems partition the problem
 \textbf{Theorem} & \textbf{Threat Model} & \textbf{Detection Mechanism} & \textbf{Chinese} \\
 \midrule
 Thm.~1 & Honest noise (error) & Multi-witness consensus & 多证人佐证 \\
-Thm.~2 & Information laundering (hearsay) & Self-audit identification & 传闻自审计 \\
+Thm.~2 & Information laundering (hearsay) & Self-audit identification & 传闻Self-Audit \\
 Thm.~3 & Active evil (perjury) & Adversarial cross-examination & 伪证对抗检测 \\
 \bottomrule
 \end{tabular}
