@@ -726,10 +726,15 @@ class StateValue:
         p1: float,
         eta: float,
     ) -> dict:
-        r"""Compute all geometric constants from Theorem 4'.
+        r"""Compute all geometric constants from Theorem 4' (Bahadur-Rao asymptotics).
 
-        Returns the Chernoff point :math:`\theta^*`, saddlepoints
-        :math:`\lambda_0^*, \lambda_1^*`, total log-odds :math:`D^*`,
+        Note: saddlepoints computed at Chernoff point theta*.  For the adaptive
+        threshold theta-dagger (see adaptive_threshold_theorem4), the saddlepoints
+        should ideally be recomputed at theta-dagger, but the difference is a
+        higher-order O(1/M) effect in the asymptotic Bahadur-Rao expansion.
+
+        Returns the Chernoff point theta*, saddlepoints
+        lambda_0*, lambda_1*, total log-odds D*,
         exponent fraction :math:`s`, Chernoff information :math:`\kappa`,
         and the minimax optimal constant :math:`C_{\min}`.
 
