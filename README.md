@@ -13,14 +13,45 @@
 
 | | |
 |:--|:--|
-| Papers 论文 | 197 |
-| Review rounds 审查轮次 | 105+ |
+| Papers 论文 | 212 .tex + 250 .md |
+| Scripts 验证 | 33 ALL PASS |
 | Tests 测试 | 676 passed |
-| Converged items 已收敛 | 24/24 |
-| P0 critical fixes | ✅ 全部清零 |
-| Formalization 形式化 | ✅ 全部完成 |
+| Reviews 审查 | 110+ 轮次 |
+| P0 fixes | ✅ 清零 |
+| Review standard | **10 轮收敛** |
 
-→ [Full audit status 完整审计状态](AUDIT_STATUS.md)
+→ [Audit status 审计状态](AUDIT_STATUS.md) · [Attack surface 攻击面](ATTACK_SURFACE.md) · [Paper index 论文索引](PAPER_SCRIPT_INDEX.md)
+
+---
+
+## 🔟 10-Round Review Standard · 十轮审查标准
+
+Major scientific questions require 10 rounds of hostile review before convergence.  
+重大科学问题需经 10 轮敌对审查方可收敛。
+
+| 阶段 | 轮次 | 目标 |
+|:--|:--:|------|
+| 初始审查 | 1-3 | 发现致命错误 |
+| 深度修复 | 4-6 | 修正+验证+边界条件 |
+| 跨域一致性 | 7-9 | 与其他定理交叉验证 |
+| 终审 | 10 | 无可发现错误 |
+
+### Convergence Status · 收敛状态
+
+| 项目 | 轮次 | 目标 |
+|------|:--:|:--:|
+| 规范理论 | 10 | ✅ |
+| 核心定理1-4 | 5 | ⚠️→10 |
+| 博弈论 NPE | 3 | ⚠️→10 |
+| 统一场论 | 4 | ⚠️→10 |
+| 量子审计 | 5 | ⚠️→10 |
+| 黑洞奇点 | 5 | ⚠️→10 |
+| 社会推论7篇 | 5 | ⚠️→10 |
+| Monte Carlo | 0 | ⬜→10 |
+| 相场论 | 0 | ⬜→10 |
+| 弦统一 | 0 | ⬜→10 |
+| 反抗悖论 | 5 | ⚠️→10 |
+| 可审计性原理 | 5 | ⚠️→10 |
 
 ---
 
