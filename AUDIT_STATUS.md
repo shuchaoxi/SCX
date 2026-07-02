@@ -1,6 +1,6 @@
 # SCX 审计收敛状态
 
-最后更新: 2026-07-02 (全量刷新 — 220+论文/120+审查/MD格式/新作标注)
+最后更新: 2026-07-02 (全量刷新 — 231篇论文/85+审查报告/首轮全覆盖)
 
 ## 总览
 
@@ -8,8 +8,9 @@
 |:--:|:--:|:--:|
 | ✅ 已收敛 | 30+ | 120+ |
 | 🔄 审查中 | 8 | 8 |
-| ⬜ 未审查 | 62 | — |
-| 总计 | 100+ | 128+ |
+| 🔍 首轮审查完成 | 62+ | 62+ |
+| ⬜ 未审查 | 0 | — |
+| 总计 | 100+ | 190+ |
 
 ### 本轮推进 (2026-07-02 全量刷新)
 
@@ -218,7 +219,7 @@
 
 ---
 
-## 审查报告清单 · Review File Index (52 份)
+## 审查报告清单 · Review File Index (85 份)
 
 ### docs/reviews/
 
@@ -303,9 +304,25 @@
 | 16 | `qft_sm_audit.md` | QFT标准模型审计 🆕 |
 | 17 | `tokamak_audit.md` | 托卡马克审计 🆕 |
 
-## 未审计论文 · Unaudited Papers (2026-07-02 新增)
+## 新论文 · New Papers (2026-07-02 新增, 首轮审查完成)
 
-> 以下论文英文化已完成，尚未进入审查收敛流程。需分配审查轮次目标。
+| 项目 | 轮次 | 状态 | 审查报告 | 裁决 |
+|------|:--:|:--:|------|------|
+| 蛋白质折叠 (protein_folding) | 1 | 🔍 | NEW_BATCH3 | enumitem 冲突需修 |
+| 黑洞热力学 (black_hole) | 1 | 🔍 | NEW_BATCH1 | ⚠️ enumitem 版本问题 |
+| 密码学审计 (cryptography) | 1 | 🔍 | NEW_BATCH1 | ✅ \H 冲突已修 |
+| 数论/RH (number_theory) | 1 | 🔍 | NEW_BATCH1 | ⚠️ TikZ + proof 关闭错误 |
+| 黎曼猜想 ×3 | — | ⏳ | 待提交 | 对面本地锁着 |
+| 神经科学 (neuroscience) | 1 | 🔍 | NEW_BATCH2 | ✅ 小幅修改 |
+| 语言学 (linguistics) | 1 | 🔍 | NEW_BATCH2 | ✅ 小幅修改 |
+| 标度律 (scaling_laws) | 1 | 🔍 | NEW_BATCH2 | ✅ 小幅修改 |
+| 教育审计 (education_audit) | 1 | 🔍 | NEW_BATCH3 | ⚠️ 条件接受 |
+| 金融审计 (finance) | 1 | 🔍 | NEW_BATCH3 | ✅ 小幅修改 |
+| 医学审计 (medicine_audit) | 1 | 🔍 | NEW_BATCH3 | ✅ 强接受 |
+
+## 首轮审查完成 · Round 1 Complete (原未审计 62 项, 2026-07-02 全部首轮完成)
+
+> 以下论文英文化已完成，首轮审查已执行（Batch 1-27）。详细报告见 `docs/reviews/UNAUDITED_BATCH*_ROUND1.md`。
 
 ### 数学与理论物理
 
