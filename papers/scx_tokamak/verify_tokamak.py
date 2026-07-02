@@ -1271,8 +1271,9 @@ if __name__ == "__main__":
     # Run additional analyses
     analyze_greenwald_limit()
 
-    if results['cercis_interp']['M'] > 1 and ensemble.trained:
-        sensitivity_analysis(ensemble)
+    # Note: sensitivity_analysis requires the ensemble object from main()
+    # which is scoped locally. It can be run by importing and calling directly.
+    # sensitivity_analysis(ensemble)
 
     print("\n" + "=" * 80)
     print(" All analyses complete. / 所有分析完成。")
