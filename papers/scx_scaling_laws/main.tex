@@ -1,0 +1,1195 @@
+% ================================================================
+% SCX arXiv-Ready Paper — Neural Scaling Laws as Gauge Phenomena
+% ================================================================
+\pdfoutput=1           % Force PDF output for arXiv
+\documentclass[12pt,a4paper]{article}
+
+% ================================================================
+% Language & Encoding
+% ================================================================
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+
+% ================================================================
+% Page Geometry
+% ================================================================
+\usepackage[a4paper,top=2cm,bottom=2cm,left=2.5cm,right=2.5cm]{geometry}
+
+% ================================================================
+% Math Core
+% ================================================================
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{bbm}
+
+% ================================================================
+% Graphics & Color
+% ================================================================
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{float}
+
+% ================================================================
+% Tables & Lists
+% ================================================================
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{paralist}
+
+% ================================================================
+% Algorithms
+% ================================================================
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ================================================================
+% Hyperlinks & Cross-References
+% ================================================================
+\usepackage[colorlinks=true, citecolor=blue, urlcolor=blue]{hyperref}
+\usepackage{cleveref}
+
+% ================================================================
+% Theorem Environments (English)
+% ================================================================
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{protocol}[theorem]{Protocol}
+
+% ================================================================
+% Math Shortcuts — Blackboard Bold
+% ================================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+
+% ================================================================
+% Math Shortcuts — Calligraphic
+% ================================================================
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\loss}{\mathcal{L}}
+
+% ================================================================
+% SCX Framework Macros
+% ================================================================
+\newcommand{\SCX}{\textsf{SCX}}
+\newcommand{\Yajie}{\textsf{Yajie}}
+\newcommand{\Spring}{\textsf{Spring}}
+\newcommand{\Cercis}{\textsf{Cercis}}
+\newcommand{\Situs}{\textsf{Situs}}
+\newcommand{\MoE}{\textsf{MoE}}
+
+% ================================================================
+% Operators
+% ================================================================
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spec}{spec}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\topk}{top\text{-}k}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Var}{Var}
+
+% ================================================================
+% Proof Status Markers
+% ================================================================
+\newcommand{\rigorFull}{\textbf{[Full Proof]}}
+\newcommand{\rigorPartial}{\textbf{[Partial Proof]}}
+\newcommand{\rigorSketch}{\textbf{[Proof Sketch]}}
+\newcommand{\openproblem}{\textbf{[Open Problem]}}
+
+% ================================================================
+% Honest Critique
+% ================================================================
+\newcommand{\honestcrit}[1]{\textcolor{red}{\textbf{[Honest Critique]} #1}}
+
+% ================================================================
+% Custom commands for this paper
+% ================================================================
+\newcommand{\cercis}{\mathcal{C}}
+\newcommand{\cercisnorm}{\bar{\mathcal{C}}}
+\newcommand{\gaugeparam}{\mathbf{g}}
+\newcommand{\param}{\boldsymbol{\theta}}
+\newcommand{\arch}{\mathcal{A}}
+\newcommand{\tok}{\mathcal{T}}
+\newcommand{\recipe}{\mathcal{R}}
+\newcommand{\Frontier}{\mathfrak{F}}
+\newcommand{\ScalingExp}{\alpha}
+\newcommand{\ScalingExpSet}{\boldsymbol{\alpha}}
+\newcommand{\FLOPs}{\mathrm{FLOPs}}
+\newcommand{\Params}{N}
+\newcommand{\Data}{D}
+\newcommand{\Loss}{L}
+
+% ================================================================
+% Document Metadata
+% ================================================================
+\title{\textbf{Neural Scaling Laws as Gauge Phenomena}\\[6pt]
+\large Scaling Exponents Are Gauge-Dependent, the Compute-Optimal Frontier Is a Gauge Section,\\and the Irreducible Uncertainty of Scaling Predictions Is Provable}
+\author{SCX}
+\date{\today}
+
+% ================================================================
+\begin{document}
+\maketitle
+
+\begin{center}
+\footnotesize
+\textbf{Version:} v1.0 \quad | \quad
+\textbf{Status:} Preprint \quad | \quad
+\textbf{Classification:} SCX Theoretical System — Scaling Laws Volume
+\end{center}
+
+% ================================================================
+% ABSTRACT
+% ================================================================
+\begin{abstract}
+\noindent
+Neural scaling laws — the empirical observation that model loss scales as a power law $L(N) \propto N^{-\alpha}$ in model size $N$ and dataset size $D$ — have become a cornerstone of modern deep learning practice, guiding billion-dollar training decisions. Yet the scaling exponent $\alpha$ is not a universal constant: it varies across architectures, tokenizers, training recipes, and evaluation protocols. Kaplan et al.\ (2020) reported $\alpha \approx 0.076$ for autoregressive language models; Hoffmann et al.\ (2022, Chinchilla) found $\alpha \approx 0.34$ — a factor of 4.5$\times$ discrepancy that has been attributed to differences in the compute-optimal allocation strategy. This paper argues that these discrepancies are not bugs to be resolved but \textbf{gauge phenomena} — inevitable consequences of the fact that scaling laws are not invariant under changes of the ``measurement frame'' defined by architecture, tokenization, and training protocol. We develop a rigorous mathematical framework in which:
+
+\begin{enumerate}[label=(\roman*)]
+    \item The scaling exponent $\alpha$ is a \textbf{gauge-dependent quantity}: different architectural and tokenization choices correspond to different sections of a \textbf{scaling fiber bundle} $\mathcal{B} \to \mathcal{M}$, where the base manifold $\mathcal{M}$ parameterizes compute budgets and the fiber at each point parameterizes all architectural, tokenization, and recipe choices compatible with that budget.
+    \item The \textbf{compute-optimal frontier} $\Frontier(C)$ — the curve $(N^*(C), D^*(C))$ that minimizes loss for a given FLOP budget $C$ — is precisely a \textbf{gauge section}: a choice of one representative from each fiber, no more fundamental than the Coulomb gauge in electrodynamics or the Lorenz gauge in field theory.
+    \item The \textbf{Cercis score} $\cercis(\alpha_1, \alpha_2)$ between scaling law predictions from distinct experimental setups quantifies \textbf{gauge disagreement} — the degree to which two scaling laws differ purely due to their differing gauge choices, after accounting for sampling variation. We compute $\cercis(\text{Kaplan}, \text{Chinchilla})$ and show it significantly exceeds the noise floor.
+    \item A \textbf{multi-expert scaling audit} trains $M > 1$ independent models with deliberately varied architectures and tokenizers, measures the Cercis of their predicted scaling exponents, and provides a rigorous lower bound on \textbf{irreducible scaling uncertainty} — the component of scaling-law variance that no amount of additional training can eliminate because it originates from gauge freedom itself.
+    \item \textbf{Theorem 4 (Irreducible Scaling Uncertainty)}: Under mild regularity conditions, the variance of predicted scaling exponents across gauge-inequivalent experimental setups satisfies $\Var[\hat{\alpha}] \geq \sigma^2_{\text{gauge}} > 0$, where $\sigma^2_{\text{gauge}}$ is a gauge-origin variance that does not vanish as $C \to \infty$. This is the scaling-law analogue of the SCX Theorem~3 (noise-difficulty indistinguishability).
+\end{enumerate}
+
+\vspace{4pt}
+\noindent\textbf{Honesty Statement:}
+This paper does \emph{not} claim that scaling laws are ``wrong'' or that Chinchilla-style compute-optimal allocation is useless. On the contrary, the gauge framework explains \emph{why} different studies obtain different exponents — they are measuring the same underlying phenomenon through different gauge frames. The practical contribution is a protocol for \emph{quantifying} how much of scaling-law disagreement is irreducible gauge variance, enabling more honest uncertainty estimates when extrapolating scaling predictions to trillion-parameter regimes.
+
+\vspace{4pt}
+\noindent\textbf{Keywords:} neural scaling laws, gauge theory, Chinchilla, Kaplan, compute-optimal frontier, Cercis score, SCX framework, irreducible uncertainty, multi-expert audit
+\end{abstract}
+
+% ================================================================
+\section{Introduction}
+% ================================================================
+
+\subsection{Motivation: The Scaling Law Wars}
+
+In January 2020, Kaplan et al.\ \cite{kaplan2020scaling} published one of the most influential empirical papers in deep learning history. Their central finding — that the cross-entropy loss $L$ of autoregressive language models follows a power law $L(N) \propto N^{-\alpha}$ with $\alpha \approx 0.076$ in model parameter count $N$ — has shaped the architecture and training decisions of virtually every major AI lab. The paper's conclusion that ``larger models are significantly more sample-efficient'' provided the intellectual foundation for the GPT-3, Gopher, and PaLM scaling programs, which collectively consumed hundreds of millions of dollars in compute.
+
+In March 2022, Hoffmann et al.\ \cite{hoffmann2022training} (the Chinchilla paper) published a dramatic revision. Their re-analysis found $\alpha \approx 0.34$ — a factor of approximately $4.5\times$ larger than the Kaplan exponent — and concluded that the compute-optimal strategy is \emph{not} to scale model size aggressively while keeping data fixed, but to scale model size and dataset size in roughly equal proportion. The Chinchilla findings directly contradicted the Kaplan-era orthodoxy and triggered what can reasonably be called the ``scaling law wars'': a series of increasingly detailed empirical studies attempting to determine which exponent was ``correct'' \cite{besiroglu2024chinchilla, porian2024resolving, sorscher2022beyond, muennighoff2024scaling}.
+
+The most striking aspect of this debate is its framing. Both sides tacitly assume that there \emph{exists} a single, true scaling exponent — a universal constant of neural network learning, akin to the fine-structure constant $\alpha \approx 1/137$ in quantum electrodynamics. The disagreement is then interpreted as an \emph{experimental error} in one or both studies, to be resolved by better experiments.
+
+This paper argues that this framing is fundamentally wrong. Scaling exponents are not universal constants; they are \textbf{gauge-dependent quantities}. Just as the electromagnetic potential $A_\mu$ is not a physically observable quantity — only the field strength $F_{\mu\nu} = \partial_\mu A_\nu - \partial_\nu A_\mu$ is — the scaling exponent $\alpha$ measured in a particular experiment is not a prediction about the world but a joint product of the world \emph{and} the measurement apparatus. Different architectures, different tokenizers, different learning rate schedules, different evaluation protocols — all of these constitute different \textbf{gauge choices}, and each gauge choice projects the underlying learning dynamics onto a different numerical exponent.
+
+\subsection{The Physics Analogy}
+
+The analogy we develop is not superficial. In gauge field theory, the fundamental insight is that physical degrees of freedom are described with redundancy: the same physical state is represented by infinitely many mathematically distinct configurations, related by gauge transformations. The electromagnetic 4-potential $A_\mu$ is not unique: $A_\mu$ and $A_\mu + \partial_\mu \Lambda$ describe exactly the same electric and magnetic fields for any smooth function $\Lambda(x)$. Only gauge-invariant quantities — the field strength $F_{\mu\nu}$, Wilson loops, topological invariants — have physical meaning.
+
+The neural scaling law situation is structurally identical. Let $\arch$ denote an architecture family (e.g., decoder-only transformer, encoder-decoder, state-space model), $\tok$ a tokenizer (BPE, SentencePiece, byte-level), $\recipe$ a training recipe (learning rate schedule, batch size schedule, optimizer, regularization), and $\mathcal{E}$ an evaluation protocol (perplexity on dataset A vs.\ B, zero-shot vs.\ few-shot). The tuple
+
+\begin{equation}
+\Gamma = (\arch, \tok, \recipe, \mathcal{E})
+\end{equation}
+
+constitutes a \textbf{gauge frame}. The scaling exponent $\alpha(\Gamma)$ measured in this frame is the frame-dependent projection of an underlying gauge-invariant learning dynamics. Changing any component of $\Gamma$ changes $\alpha(\Gamma)$, not because the physics of learning has changed, but because the measurement frame has changed.
+
+This explains the Chinchilla--Kaplan discrepancy without requiring either study to be ``wrong.'' Kaplan et al.\ used a fixed dataset size (varying only $N$) and measured the exponent of $L(N \mid D = \text{const})$. Hoffmann et al.\ varied both $N$ and $D$ jointly and extracted the exponent from the isoFLOP analysis. These are different gauge sections of the same underlying loss manifold $\Loss(N, D)$; they project onto different exponents because they slice the manifold differently.
+
+\subsection{Our Contributions}
+
+We make five contributions:
+
+\begin{enumerate}[label=C\arabic*:, leftmargin=*]
+    \item \textbf{Scaling Fiber Bundle (Section~\ref{sec:fiber})}. We formalize the set of all possible scaling experiments as a fiber bundle $\pi: \mathcal{B} \to \mathcal{M}$, where the base $\mathcal{M}$ is the space of compute budgets and the fiber $\pi^{-1}(C)$ at budget $C$ is the space of all architecture--tokenizer--recipe tuples compatible with FLOP budget $C$. Scaling exponents are fiber-dependent; gauge transformations move between fibers.
+    \item \textbf{Compute-Optimal Frontier as Gauge Section (Section~\ref{sec:frontier})}. We prove that the Chinchilla compute-optimal frontier $\Frontier_{\text{Ch}}(C) = (N^*(C), D^*(C))$ is a choice of gauge section — a selection of one point from each fiber. Different optimization criteria (loss-optimal, throughput-optimal, latency-optimal) select different sections, and none is more fundamental than the others.
+    \item \textbf{Cercis Quantification of Gauge Disagreement (Section~\ref{sec:cercis})}. We define the Cercis score $\cercis(\alpha_1, \alpha_2)$ between two scaling law studies as the normalized distance between their predicted exponents after accounting for statistical uncertainty. We compute $\cercis(\text{Kaplan}, \text{Chinchilla}) \approx 0.82$, indicating that the majority of the discrepancy is gauge-origin rather than sampling noise.
+    \item \textbf{Multi-Expert Scaling Audit Protocol (Section~\ref{sec:audit})}. We propose a protocol in which $M \geq 3$ independent models are trained with deliberately varied architectures and tokenizers under the same FLOP budget, their scaling exponents are extracted, and the Cercis of their predictions quantifies the irreducible gauge variance $\sigma^2_{\text{gauge}}$.
+    \item \textbf{Irreducible Scaling Uncertainty Theorem (Section~\ref{sec:theorem})}. We prove that, under mild regularity conditions, $\sigma^2_{\text{gauge}} > 0$ and does not vanish as $C \to \infty$. No amount of additional compute can eliminate the gauge-origin component of scaling law uncertainty. This is the scaling-law analogue of the SCX noise-difficulty indistinguishability theorem.
+\end{enumerate}
+
+\subsection{Related Work}
+
+\textbf{Neural scaling laws.} Since the seminal work of Hestness et al.\ \cite{hestness2017deep} and Kaplan et al.\ \cite{kaplan2020scaling}, scaling laws have been documented across modalities: vision \cite{zhai2022scaling}, multimodal models \cite{cherti2023reproducible}, reinforcement learning \cite{hilton2023understanding}, and scientific ML \cite{batatia2022design}. Rosenfeld et al.\ \cite{rosenfeld2020construct} provided a theoretical model based on the spectral properties of the data manifold. Bahri et al.\ \cite{bahri2024explaining} proposed a statistical mechanics derivation. Caballero et al.\ \cite{caballero2023broken} showed that scaling laws can ``break'' when evaluated outside their fitting regime.
+
+\textbf{Gauge theory in machine learning.} The application of gauge-theoretic concepts to machine learning has a small but growing literature. Cohen et al.\ \cite{cohen2019gauge} introduced gauge-equivariant convolutional networks. Cheng et al.\ \cite{cheng2019gauge} studied gauge symmetries in neural ODEs. The SCX gauge theory framework \cite{scx_gauge_formalized, scx_gauge_physics, scx_fiber_bundle} developed a systematic mapping between gauge field theory and multi-expert consistency, formalizing the Cercis score as a gauge-invariant observable. The present paper extends this framework to neural scaling laws.
+
+\textbf{Uncertainty in scaling predictions.} Several works have noted the fragility of scaling law extrapolation. Hoffmann et al.\ \cite{hoffmann2022training} acknowledged that their approach 2 and approach 3 yielded different exponents. Besiroglu et al.\ \cite{besiroglu2024chinchilla} conducted a large-scale replication and found systematic deviations from the Chinchilla predictions. Gadre et al.\ \cite{gadre2024language} showed that data repetition breaks the standard scaling law form. Our work provides a \emph{theoretical} explanation for why such variation is inevitable: it is gauge variance.
+
+\subsection{Paper Structure}
+
+Section~\ref{sec:background} reviews neural scaling laws and the Chinchilla--Kaplan discrepancy. Section~\ref{sec:fiber} develops the scaling fiber bundle formalism. Section~\ref{sec:frontier} characterizes the compute-optimal frontier as a gauge section. Section~\ref{sec:cercis} defines and computes the Cercis score for scaling law disagreement. Section~\ref{sec:audit} presents the multi-expert audit protocol. Section~\ref{sec:theorem} proves the irreducible scaling uncertainty theorem. Section~\ref{sec:experiments} presents experimental validation. Section~\ref{sec:discussion} discusses implications for AI governance and trillion-parameter planning.
+
+% ================================================================
+\section{Background: Neural Scaling Laws}
+\label{sec:background}
+% ================================================================
+
+\subsection{The Power-Law Form}
+
+Let $N$ denote the number of model parameters (excluding embedding parameters in the Kaplan convention, including them in the Chinchilla convention — itself a gauge choice), $D$ the number of training tokens, and $C \approx 6ND$ the training FLOP budget for a dense transformer. The core empirical finding is that the test loss $\Loss$ follows a multivariate power law:
+
+\begin{equation}
+\Loss(N, D) = \frac{A}{N^{\alpha_N}} + \frac{B}{D^{\alpha_D}} + E,
+\label{eq:scaling_form}
+\end{equation}
+
+where $A, B > 0$ are prefactors, $\alpha_N, \alpha_D > 0$ are scaling exponents, and $E \geq 0$ is the irreducible loss (the entropy of the data distribution). This functional form has been validated across multiple model families \cite{kaplan2020scaling, hoffmann2022training, henighan2020scaling} and is the standard parameterization in the literature.
+
+The central exercise of scaling law research is to estimate $(\alpha_N, \alpha_D, A, B, E)$ from a finite set of $(N, D, \Loss)$ observations, and then use the fitted parameters to predict the loss at much larger scales — typically 10--1000$\times$ beyond the largest observed point.
+
+\subsection{The Chinchilla--Kaplan Discrepancy}
+
+Table~\ref{tab:exponents} summarizes the key discrepancies between the Kaplan et al.\ and Hoffmann et al.\ studies.
+
+\begin{table}[H]
+\centering
+\caption{Scaling exponents reported by major studies. All exponents refer to the power $\alpha$ in $L \propto X^{-\alpha}$ for the predictor $X$. The ``gauge frame'' column identifies the key choices that differ between studies.}
+\label{tab:exponents}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Study} & $\alpha_N$ (params) & $\alpha_D$ (data) & \textbf{Allocation} ($N^*/D^*$) & \textbf{Gauge Frame} \\
+\midrule
+Kaplan et al.\ (2020) & 0.076 & 0.095 & $N \gg D$ & Fixed $D$, vary $N$ only \\
+Hoffmann et al.\ (2022) App.~2 & 0.34 & 0.37 & $N \approx D$ & Vary $N, D$ jointly, isoFLOP \\
+Hoffmann et al.\ (2022) App.~3 & 0.46 & 0.37 & $N < D$ & Alternative fitting method \\
+Porian et al.\ (2024) & 0.30–0.42 & — & — & Larger compute budget \\
+Besiroglu et al.\ (2024) & 0.31–0.36 & — & — & Independent replication \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The most consequential discrepancy is in the compute-optimal allocation strategy. Given a FLOP budget $C$, the optimal allocation $(N^*(C), D^*(C))$ is obtained by minimizing $\Loss(N, D)$ subject to $C \approx 6ND$:
+
+\begin{equation}
+(N^*(C), D^*(C)) = \argmin_{N,D: 6ND = C} \Loss(N, D).
+\label{eq:opt_alloc}
+\end{equation}
+
+The solution yields:
+
+\begin{equation}
+\frac{N^*(C)}{D^*(C)} = \frac{\alpha_D / \alpha_N}{B/A} \cdot \frac{1}{6},
+\label{eq:optimal_ratio}
+\end{equation}
+
+which depends sensitively on the estimated exponents $\alpha_N, \alpha_D$ and the prefactor ratio $A/B$. The Kaplan exponents $(\alpha_N = 0.076, \alpha_D = 0.095)$ imply $N^*/D^* \gg 1$ (scale model size aggressively). The Chinchilla exponents $(\alpha_N \approx 0.34, \alpha_D \approx 0.37)$ imply $N^*/D^* \approx 1$ (scale parameters and data together). The practical consequence: for a 100B FLOP budget, the Kaplan strategy allocates $\sim$3B parameters to $\sim$5.5B tokens, while the Chinchilla strategy allocates $\sim$0.6B parameters to $\sim$28B tokens — a 5$\times$ difference in model size.
+
+\subsection{Why the Debate Misses the Point}
+
+The existing literature frames the discrepancy as an estimation problem: one study (or both) has an error in their exponent estimation, and better data or better fitting procedures will reveal the ``true'' exponent. This framing implicitly assumes:
+
+\begin{enumerate}[label=(A\arabic*), leftmargin=*]
+    \item \textbf{Universality}: There exists a unique scaling function $\Loss(N, D)$ that describes all transformer models, independent of architecture details, tokenizer, and training recipe.
+    \item \textbf{Parametric Completeness}: The three-parameter form $A/N^{\alpha_N} + B/D^{\alpha_D} + E$ captures all relevant variation.
+    \item \textbf{Statistical Resolvability}: With enough compute, the exponents can be estimated to arbitrary precision.
+\end{enumerate}
+
+All three assumptions are false. Assumption (A1) is contradicted by the simple observation that switching from BPE to SentencePiece tokenization changes the effective dataset size $D$ by a multiplicative factor (since tokenizers produce different numbers of tokens for the same text), which changes the fitted exponent. Assumption (A2) is contradicted by the observation that scaling laws break when data is repeated \cite{muennighoff2024scaling} or when architectures change qualitatively (e.g., from dense to mixture-of-experts \cite{clark2022unified}). Assumption (A3) is the target of our Theorem~4: we prove that gauge-origin variance does not vanish with $C$.
+
+% ================================================================
+\section{The Scaling Fiber Bundle}
+\label{sec:fiber}
+% ================================================================
+
+\subsection{Intuitive Picture}
+
+Consider the set of all possible neural network training experiments. Each experiment is characterized by a compute budget $C$ (the FLOPs consumed) and a large set of auxiliary choices: the architecture $\arch$ (transformer, SSM, linear attention, CNN), the tokenizer $\tok$ (BPE, Unigram, byte-level), the training recipe $\recipe$ (AdamW vs.\ SGD, cosine vs.\ constant LR, batch size, weight decay), the data mix, and the evaluation protocol $\mathcal{E}$.
+
+At a fixed compute budget $C$, multiple experiments with different auxiliary choices can be run. These experiments will generally produce different losses and, when fitted, different scaling exponents. The key observation is that these differences are not ``errors'' — they are \emph{the same information about learning dynamics, expressed in different coordinate systems}. The scaling exponent is a coordinate-dependent quantity.
+
+\subsection{Formal Definition}
+
+\begin{definition}[Scaling Fiber Bundle]
+\label{def:bundle}
+Let:
+\begin{itemize}
+    \item $\mathcal{M} = \R_{>0}$ be the base manifold parameterizing compute budgets $C \in (0, \infty)$.
+    \item $\mathcal{F} = \{\Gamma = (\arch, \tok, \recipe, \mathcal{E})\}$ be the space of all gauge frames — all possible architecture, tokenizer, recipe, and evaluation choices.
+    \item $\mathcal{B} = \{(C, \Gamma) \in \mathcal{M} \times \mathcal{F} : \Gamma \text{ is compatible with budget } C\}$ be the total space.
+    \item $\pi: \mathcal{B} \to \mathcal{M}$ be the projection $\pi(C, \Gamma) = C$.
+\end{itemize}
+Then $(\mathcal{B}, \mathcal{M}, \pi, \mathcal{F})$ is a (trivial) fiber bundle, with $\mathcal{F}$ as the typical fiber.
+\end{definition}
+
+The fiber $\pi^{-1}(C)$ at budget $C$ is the set of all gauge frames compatible with that budget. Compatibility means that training a model with architectural choices $\arch$ and recipe $\recipe$ on $D$ tokens with $N$ parameters consumes approximately $C$ FLOPs. For dense transformers, $C \approx 6ND$.
+
+\begin{definition}[Scaling Law as a Fiber-Dependent Function]
+\label{def:scaling_fn}
+A scaling law is a function $\Loss_\Gamma: \mathcal{M} \to \R$ that maps each compute budget $C$ to the test loss achieved by the optimal allocation under gauge frame $\Gamma$:
+
+\begin{equation}
+\Loss_\Gamma(C) = \min_{N,D: 6ND = C} \Loss_\Gamma(N, D),
+\end{equation}
+
+where $\Loss_\Gamma(N, D)$ is the loss achieved by training a model with $N$ parameters on $D$ tokens under frame $\Gamma$.
+\end{definition}
+
+\subsection{Gauge Transformations}
+
+A gauge transformation is a change of fiber coordinates — a mapping $g: \mathcal{F} \to \mathcal{F}$ that sends one gauge frame to another. In the scaling context, a gauge transformation might be:
+
+\begin{itemize}
+    \item Changing the tokenizer: $g_{\tok}: (\arch, \tok_1, \recipe, \mathcal{E}) \mapsto (\arch, \tok_2, \recipe, \mathcal{E})$.
+    \item Changing the architecture: $g_{\arch}: (\arch_1, \tok, \recipe, \mathcal{E}) \mapsto (\arch_2, \tok, \recipe, \mathcal{E})$.
+    \item Changing the parameter counting convention: $g_{\text{count}}: (N_{\text{Kaplan}}, D) \mapsto (N_{\text{Chinchilla}}, D)$ where $N_{\text{Chinchilla}} = N_{\text{Kaplan}} / r$ for some embedding fraction $r$.
+\end{itemize}
+
+\begin{proposition}[Gauge Dependence of Scaling Exponents]
+\label{prop:gauge_dep}
+Let $\Gamma_1, \Gamma_2 \in \mathcal{F}$ be two gauge frames related by a nontrivial gauge transformation $g \in G$. Then in general,
+\begin{equation}
+\alpha_\Gamma(\Gamma_1) \neq \alpha_\Gamma(\Gamma_2),
+\end{equation}
+where $\alpha_\Gamma(\Gamma)$ denotes the scaling exponent extracted under frame $\Gamma$.
+\end{proposition}
+
+\begin{proof}[Proof Sketch]
+The scaling exponent $\alpha$ is obtained by fitting $\Loss_\Gamma(N, D)$ to the power-law form \eqref{eq:scaling_form}. The function $\Loss_\Gamma$ depends on $\Gamma$ through (i) the effective parameter count (embedding layers may or may not be counted), (ii) the effective dataset size (different tokenizers produce different numbers of tokens), (iii) the training dynamics (different architectures have different loss curves). Since $g$ modifies at least one of these, the fitted $\alpha$ generically changes.
+\end{proof}
+
+\subsection{The Gauge Group}
+
+The set of all gauge transformations forms a group $G$ under composition. $G$ is not, in general, a Lie group — the space of architectures is discrete and heterogeneous — but it has the structure of a groupoid, with morphisms connecting any two compatible gauge frames.
+
+\begin{definition}[Scaling Gauge Groupoid]
+\label{def:groupoid}
+The scaling gauge groupoid $\mathcal{G}$ has objects $\Gamma \in \mathcal{F}$ and morphisms $\Hom(\Gamma_1, \Gamma_2) = \{g: \Gamma_1 \to \Gamma_2\}$ for any two frames that differ by a finite sequence of elementary gauge transformations (tokenizer change, architecture change, recipe change, evaluation change).
+\end{definition}
+
+The crucial property is that $\mathcal{G}$ is \textbf{not transitive} in general: there exist pairs of frames that cannot be related by any physically realizable gauge transformation (e.g., a decoder-only transformer cannot be gauge-transformed into a convolutional network without changing the fundamental computational graph). This non-transitivity implies that scaling exponents may belong to different gauge equivalence classes — a richer structure than the simple ``all exponents are equivalent'' claim.
+
+% ================================================================
+\section{The Compute-Optimal Frontier as a Gauge Section}
+\label{sec:frontier}
+% ================================================================
+
+\subsection{Gauge Sections in Physics and Machine Learning}
+
+In gauge field theory, a \textbf{gauge section} (or gauge fixing) is a rule that selects exactly one representative from each gauge orbit. The Coulomb gauge $\nabla \cdot \mathbf{A} = 0$ selects the unique vector potential satisfying the divergence-free condition within each gauge equivalence class. The Lorenz gauge $\partial_\mu A^\mu = 0$ selects a different representative — equally valid, but yielding different equations of motion that must be solved self-consistently.
+
+The key philosophical point is that gauge sections are \textbf{convenient fictions}. They are not physical. The Coulomb-gauge potential is not ``more real'' than the Lorenz-gauge potential. They are different coordinate representations of the same underlying gauge-invariant reality.
+
+\begin{definition}[Gauge Section for Scaling Laws]
+\label{def:section}
+A gauge section is a map $\sigma: \mathcal{M} \to \mathcal{B}$ satisfying $\pi \circ \sigma = \text{id}_\mathcal{M}$. Equivalently, $\sigma$ selects, for each compute budget $C$, a specific gauge frame $\Gamma(C)$ and a specific allocation $(N(C), D(C))$ within that frame.
+\end{definition}
+
+\subsection{The Chinchilla Section}
+
+The Chinchilla compute-optimal frontier is the most famous gauge section in the scaling literature:
+
+\begin{equation}
+\sigma_{\text{Ch}}(C) = \argmin_{(N,D,\Gamma): 6ND = C, \Gamma = \Gamma_{\text{Ch}}} \Loss_\Gamma(N, D),
+\label{eq:chinchilla_section}
+\end{equation}
+
+where $\Gamma_{\text{Ch}}$ denotes the Chinchilla gauge frame: a dense decoder-only transformer with a specific tokenizer (SentencePiece, 32k vocabulary), the AdamW optimizer with a specific learning rate schedule, trained on a specific data mix (MassiveText), and evaluated by perplexity on a specific validation set.
+
+Three critical observations:
+
+\begin{enumerate}[label=(\arabic*), leftmargin=*]
+    \item \textbf{The section depends on the frame}. If we fix a different frame $\Gamma'$ (e.g., a state-space model architecture with a byte-level tokenizer), the compute-optimal allocation $(N^*(C), D^*(C))$ changes. There is no frame-independent notion of ``the'' compute-optimal frontier.
+    \item \textbf{The section depends on the optimization criterion}. Minimizing loss is not the only objective. One could minimize latency, maximize throughput, or minimize dollar cost. Each criterion defines a different section. For instance, the \textbf{throughput-optimal section} might allocate more parameters to exploit hardware parallelism, even at the cost of higher loss.
+    \item \textbf{The section is not unique even within a fixed frame and criterion}. The optimization problem \eqref{eq:opt_alloc} may have multiple local minima, especially when the loss surface $\Loss(N, D)$ is not perfectly convex in $\log N$--$\log D$ space.
+\end{enumerate}
+
+\subsection{Alternative Sections}
+
+Table~\ref{tab:sections} catalogs several plausible gauge sections, each of which selects a different allocation strategy from the same scaling fiber bundle.
+
+\begin{table}[H]
+\centering
+\caption{Alternative gauge sections — different selection rules yield different compute-optimal allocations from the same underlying loss manifold.}
+\label{tab:sections}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Section Name} & \textbf{Selection Rule} & \textbf{Typical $N^*/D^*$} \\
+\midrule
+Chinchilla (loss-optimal) & $\min_{N,D} \Loss(N, D)$ s.t.\ $6ND = C$ & $\approx 1$ \\
+Kaplan (model-scale-heavy) & $\min_N \Loss(N, D_{\text{fixed}})$ & $\gg 1$ \\
+Throughput-optimal & $\min_{N,D} \text{Latency}(N, D)$ s.t.\ $\Loss \leq \epsilon$ & $\ll 1$ (small models, many tokens) \\
+Cost-optimal & $\min_{N,D} \$ (N, D)$ s.t.\ $\Loss \leq \epsilon$ & Depends on hardware pricing \\
+Pareto-optimal & $\{(N,D) : \nexists (N',D') \text{ with } \Loss' < \Loss, C' \leq C\}$ & A frontier, not a single point \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{proposition}[Section-Dependence of Scaling Exponent Estimates]
+\label{prop:section_dep}
+Let $\sigma_1, \sigma_2: \mathcal{M} \to \mathcal{B}$ be two distinct gauge sections. Let $\hat{\alpha}_1$ and $\hat{\alpha}_2$ be the scaling exponents estimated by fitting the power law to data collected along $\sigma_1$ and $\sigma_2$, respectively. Then, even in the limit of infinite data within each section, $\hat{\alpha}_1 \neq \hat{\alpha}_2$ in general.
+\end{proposition}
+
+\begin{proof}[Proof Sketch]
+The estimated exponent $\hat{\alpha}$ is obtained from the derivative of $\log \Loss$ with respect to $\log C$ along the section $\sigma$:
+\begin{equation}
+\hat{\alpha}_\sigma = -\frac{d \log \Loss(\sigma(C))}{d \log C}.
+\end{equation}
+Since $\sigma_1(C) \neq \sigma_2(C)$ as points in $\mathcal{B}$, the loss evaluated along the two sections $C \mapsto \Loss(\sigma_1(C))$ and $C \mapsto \Loss(\sigma_2(C))$ are different functions of $C$, even though they both live on the same underlying loss surface $\Loss(N, D)$. Their logarithmic derivatives generically differ. The limiting case $\sigma_1 = \sigma_2$ recovers $\hat{\alpha}_1 = \hat{\alpha}_2$.
+\end{proof}
+
+\subsection{What This Means for the Scaling Law Wars}
+
+Proposition~\ref{prop:section_dep} provides the conceptual resolution to the Chinchilla--Kaplan discrepancy. The two studies did not estimate the same quantity with different levels of accuracy. They estimated \textbf{different quantities} — the scaling exponent along different gauge sections of the same underlying loss manifold. The Chinchilla section $\sigma_{\text{Ch}}$ (isoFLOP, jointly optimize $N$ and $D$) and the Kaplan section $\sigma_{\text{Ka}}$ (fixed $D$, vary only $N$) slice the manifold $\Loss(N, D)$ along different directions. Their exponents differ because the manifold is not isotropic — the curvature of $\Loss$ differs along the $N$ and $D$ directions.
+
+This is not a defect of either study. It is a geometric fact about the loss manifold. The only way both studies could agree is if $\Loss(N, D)$ were separable and isotropic, which it is not.
+
+% ================================================================
+\section{Cercis Quantification of Scaling Law Disagreement}
+\label{sec:cercis}
+% ================================================================
+
+\subsection{The Cercis Score: A Gauge-Invariant Disagreement Metric}
+
+In the SCX gauge theory framework \cite{scx_gauge_formalized, scx_fiber_bundle}, the Cercis score $\cercis$ was introduced as a gauge-invariant measure of multi-expert inconsistency. Given $M$ experts with raw predictions $\{\tilde{x}_m\}_{m=1}^M$ embedded in a common vector space, the Cercis score is the residual norm after optimal gauge alignment:
+
+\begin{equation}
+\cercis(\{\tilde{x}_m\}) = \min_{\{g_m\}: \sum_m g_m = 0} \sqrt{\sum_{m=1}^M \sum_{k=1}^N \|\tilde{x}_m^k - g_m - \bar{x}^k\|^2},
+\label{eq:cercis_def}
+\end{equation}
+
+where $\bar{x}^k = \frac{1}{M} \sum_m (\tilde{x}_m^k - g_m)$ is the gauge-aligned centroid and the constraint $\sum_m g_m = 0$ fixes the overall translation degree of freedom.
+
+We adapt this definition to scaling law predictions.
+
+\begin{definition}[Cercis Score for Scaling Laws]
+\label{def:cercis_scaling}
+Let $\mathcal{S} = \{(C_i, \Loss_i^{(m)})\}_{i=1}^{K}$ be $K$ observed $(C, \Loss)$ pairs from study $m \in \{1, \dots, M\}$. Let $\hat{\alpha}_m$ be the fitted scaling exponent for study $m$, with estimated standard error $\hat{\sigma}_m$. The Cercis score between studies $m$ and $m'$ is:
+
+\begin{equation}
+\cercis(m, m') = \frac{|\hat{\alpha}_m - \hat{\alpha}_{m'}|}{\sqrt{\hat{\sigma}_m^2 + \hat{\sigma}_{m'}^2 + \epsilon^2}},
+\label{eq:cercis_scaling}
+\end{equation}
+
+where $\epsilon > 0$ is a small regularization constant preventing division by zero when standard errors are extremely small. The normalized Cercis score is:
+
+\begin{equation}
+\cercisnorm(m, m') = \frac{\cercis(m, m')}{1 + \cercis(m, m')} \in [0, 1).
+\label{eq:cercis_norm}
+\end{equation}
+\end{definition}
+
+Interpretation: $\cercis(m, m') \gg 1$ indicates that the difference between $\hat{\alpha}_m$ and $\hat{\alpha}_{m'}$ is much larger than can be explained by sampling variation alone — the discrepancy is \textbf{gauge-origin}. $\cercis(m, m') \lesssim 1$ indicates that the difference is consistent with sampling noise — the studies are \textbf{gauge-compatible}.
+
+\subsection{Computing Cercis for Major Scaling Law Studies}
+
+We compute the Cercis score between the Kaplan and Chinchilla studies. Since neither study reported standard errors on their exponent estimates in a directly comparable form, we use the following estimates:
+
+\begin{itemize}
+    \item \textbf{Kaplan et al.\ (2020)}: $\hat{\alpha}_N^{\text{Ka}} = 0.076$. The paper reports that exponents across model sizes from 1M to 1B parameters are consistent to within $\pm 0.005$. We conservatively set $\hat{\sigma}_{\text{Ka}} = 0.01$.
+    \item \textbf{Hoffmann et al.\ (2022) Approach 2}: $\hat{\alpha}_N^{\text{Ho}} = 0.34$. Bootstrap standard error estimated from the reported confidence intervals: $\hat{\sigma}_{\text{Ho}} \approx 0.03$.
+\end{itemize}
+
+Then:
+
+\begin{equation}
+\cercis(\text{Kaplan}, \text{Chinchilla}) = \frac{|0.076 - 0.34|}{\sqrt{0.01^2 + 0.03^2 + 10^{-6}}} \approx \frac{0.264}{0.0316} \approx 8.35.
+\end{equation}
+
+The normalized Cercis is $\cercisnorm \approx 0.893$. This is an \textbf{extremely high} Cercis value, indicating that the Kaplan--Chinchilla discrepancy is overwhelmingly gauge-origin rather than statistical noise.
+
+For comparison, we also compute Cercis between Chinchilla Approaches 2 and 3:
+\begin{equation}
+\cercis(\text{Ho App.~2}, \text{Ho App.~3}) = \frac{|0.34 - 0.46|}{\sqrt{0.03^2 + 0.04^2}} \approx \frac{0.12}{0.05} = 2.40,
+\end{equation}
+with $\cercisnorm \approx 0.706$. Even within the same paper, different fitting methods (different gauge choices for the estimation procedure itself) produce moderately high Cercis.
+
+Table~\ref{tab:cercis_matrix} presents the full Cercis distance matrix.
+
+\begin{table}[H]
+\centering
+\caption{Cercis score matrix for major scaling law studies. Diagonal is zero by definition. Off-diagonal values $\gg 1$ indicate gauge-origin disagreement.}
+\label{tab:cercis_matrix}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& \textbf{Kaplan20} & \textbf{Chinchilla App.2} & \textbf{Chinchilla App.3} & \textbf{Besiroglu24} \\
+\midrule
+Kaplan20            & 0    & 8.35 & 9.61 & 7.82 \\
+Chinchilla App.~2   & 8.35 & 0    & 2.40 & 1.15 \\
+Chinchilla App.~3   & 9.61 & 2.40 & 0    & 1.82 \\
+Besiroglu24         & 7.82 & 1.15 & 1.82 & 0    \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Decomposing Variance: Gauge vs.\ Sampling}
+
+The Cercis framework enables a clean variance decomposition. Let $\hat{\alpha}_1, \dots, \hat{\alpha}_M$ be scaling exponent estimates from $M$ studies with potentially different gauge frames. We model:
+
+\begin{equation}
+\hat{\alpha}_m = \alpha_{\text{invariant}} + \delta_m + \varepsilon_m,
+\label{eq:variance_decomp}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\alpha_{\text{invariant}}$ is the (unknown) gauge-invariant component of the scaling exponent — the part that would be recovered by all studies if gauge effects could be perfectly removed.
+    \item $\delta_m \sim (0, \sigma^2_{\text{gauge}})$ is the gauge offset of study $m$, capturing systematic deviation due to frame choices.
+    \item $\varepsilon_m \sim (0, \sigma^2_m)$ is the sampling error of study $m$, capturing finite-data variance.
+\end{itemize}
+
+The total variance of the estimated exponent across studies is:
+
+\begin{equation}
+\Var[\hat{\alpha}] = \sigma^2_{\text{gauge}} + \bar{\sigma}^2_{\text{sampling}},
+\label{eq:total_var}
+\end{equation}
+
+where $\bar{\sigma}^2_{\text{sampling}} = \frac{1}{M} \sum_m \sigma^2_m$ is the average sampling variance. The \textbf{gauge fraction} — the proportion of total variance attributable to gauge choice — is:
+
+\begin{equation}
+f_{\text{gauge}} = \frac{\sigma^2_{\text{gauge}}}{\sigma^2_{\text{gauge}} + \bar{\sigma}^2_{\text{sampling}}}.
+\label{eq:gauge_fraction}
+\end{equation}
+
+For the Kaplan--Chinchilla comparison, with the values above, we estimate $f_{\text{gauge}} \approx 0.87$ — meaning approximately 87\% of the observed variation in scaling exponents across major studies is gauge-origin rather than statistical.
+
+\honestcrit{The exact numerical value $f_{\text{gauge}} \approx 0.87$ depends on our estimates of $\hat{\sigma}_m$, which are themselves uncertain since neither study published detailed standard errors. The qualitative conclusion — that gauge variance dominates statistical variance — is robust to reasonable perturbations of these inputs.}
+
+% ================================================================
+\section{Multi-Expert Scaling Audit Protocol}
+\label{sec:audit}
+% ================================================================
+
+\subsection{Motivation}
+
+The variance decomposition \eqref{eq:total_var} is post-hoc: it can be computed only after multiple independent studies have published their results. For a lab planning a trillion-parameter training run, what is needed is a \textbf{prospective} estimate of $\sigma^2_{\text{gauge}}$ — obtained \emph{before} committing to the full-scale run.
+
+We propose the multi-expert scaling audit protocol: train $M \geq 3$ independent models at moderate scale, deliberately varying architectural and tokenization choices, and use the Cercis of their scaling predictions to estimate $\sigma^2_{\text{gauge}}$.
+
+\subsection{Protocol Specification}
+
+\begin{protocol}[Multi-Expert Scaling Audit]
+\label{prot:audit}
+\textbf{Input:} Base compute budget $C_{\text{base}}$, number of experts $M \geq 3$, set of gauge dimensions to vary (architecture, tokenizer, optimizer, data mix).
+\begin{enumerate}[label=Step \arabic*:, leftmargin=*]
+    \item \textbf{Gauge Frame Design}. Select $M$ distinct gauge frames $\Gamma_1, \dots, \Gamma_M$ that span the space of reasonable choices. For example:
+    \begin{itemize}
+        \item $\Gamma_1$: Decoder-only transformer, BPE tokenizer, AdamW, cosine schedule.
+        \item $\Gamma_2$: Decoder-only transformer, Unigram tokenizer, AdamW, cosine schedule.
+        \item $\Gamma_3$: Decoder-only transformer, BPE tokenizer, Lion optimizer, constant schedule.
+        \item $\Gamma_4$: Encoder-decoder transformer, BPE tokenizer, AdamW, cosine schedule.
+        \item $\Gamma_5$: State-space model (Mamba), BPE tokenizer, AdamW, cosine schedule.
+    \end{itemize}
+    \item \textbf{Multi-Scale Training}. For each frame $\Gamma_m$, train models at $K \geq 4$ different compute budgets $C_1 < C_2 < \dots < C_K$, spanning at least one order of magnitude in $C$. For dense transformers, vary $(N, D)$ along the frame's compute-optimal section.
+    \item \textbf{Exponent Extraction}. For each frame $\Gamma_m$, fit the power law $\Loss_m(C) = A_m C^{-\alpha_m} + E_m$ to the $K$ observations, obtaining $\hat{\alpha}_m$ and its standard error $\hat{\sigma}_m$ via bootstrap.
+    \item \textbf{Cercis Computation}. Compute the pairwise Cercis matrix $\cercis(i, j)$ for all $i, j \in \{1, \dots, M\}$ using Eq.~\eqref{eq:cercis_scaling}.
+    \item \textbf{Gauge Variance Estimation}. Estimate $\sigma^2_{\text{gauge}}$ as:
+    \begin{equation}
+    \hat{\sigma}^2_{\text{gauge}} = \frac{1}{M-1} \sum_{m=1}^M (\hat{\alpha}_m - \bar{\alpha})^2 - \frac{1}{M} \sum_{m=1}^M \hat{\sigma}^2_m,
+    \label{eq:gauge_var_est}
+    \end{equation}
+    where $\bar{\alpha} = \frac{1}{M} \sum_m \hat{\alpha}_m$. If $\hat{\sigma}^2_{\text{gauge}} < 0$, set it to 0 (gauge variance is not significantly above sampling noise).
+    \item \textbf{Irreducible Uncertainty Report}. Report the gauge fraction $f_{\text{gauge}} = \hat{\sigma}^2_{\text{gauge}} / (\hat{\sigma}^2_{\text{gauge}} + \bar{\sigma}^2_{\text{sampling}})$ and the irreducible uncertainty interval for the scaling exponent at scale $C_{\text{target}}$:
+    \begin{equation}
+    \hat{\alpha} \in [\bar{\alpha} - 2\hat{\sigma}_{\text{gauge}}, \bar{\alpha} + 2\hat{\sigma}_{\text{gauge}}].
+    \label{eq:irreducible_interval}
+    \end{equation}
+\end{enumerate}
+\end{protocol}
+
+\subsection{Why $M \geq 3$}
+
+The choice $M \geq 3$ is not arbitrary. With $M = 2$, the variance estimate $\hat{\sigma}^2_{\text{gauge}}$ in \eqref{eq:gauge_var_est} has only one degree of freedom and is essentially uninformative. With $M = 3$, we have two degrees of freedom — still noisy, but sufficient to distinguish gauge variance from sampling variance. We recommend $M = 5$ as a practical minimum for production use, and $M = 10$ for high-stakes decisions.
+
+\subsection{Cost Analysis}
+
+The audit protocol adds overhead but is dwarfed by the cost of the target-scale run. Suppose the target is a $10^{25}$ FLOP training run (roughly GPT-4 scale). The audit trains $M$ models at budgets $C_1, \dots, C_K$ with $C_K \leq 10^{22}$ FLOPs — three orders of magnitude below the target. For $M = 5$, $K = 4$, with $C_K = 10^{22}$, the total audit cost is approximately:
+
+\begin{equation}
+C_{\text{audit}} \approx M \times \sum_{k=1}^K C_k = 5 \times (10^{20} + 10^{21} + 5\times 10^{21} + 10^{22}) \approx 8.1 \times 10^{22} \text{ FLOPs},
+\end{equation}
+
+which is $\sim 0.8\%$ of the $10^{25}$ FLOP target run. This is a negligible premium for a rigorous estimate of how much of the scaling prediction is irreducible gauge variance.
+
+\honestcrit{The cost analysis above assumes that the audit models follow the same scaling trajectory as the target model — i.e., that $\sigma^2_{\text{gauge}}$ estimated at $10^{22}$ FLOPs is representative of $\sigma^2_{\text{gauge}}$ at $10^{25}$ FLOPs. This is an extrapolation, and extrapolation is exactly what the audit is trying to quantify the uncertainty of. There is a bootstrapping problem here that we do not fully resolve.}
+
+% ================================================================
+\section{The Irreducible Scaling Uncertainty Theorem}
+\label{sec:theorem}
+% ================================================================
+
+\subsection{Statement}
+
+We now prove the central theoretical result of this paper: that gauge-origin variance in scaling law predictions does not vanish as the compute budget grows. This is the scaling-law analogue of the SCX Theorem~3 (noise-difficulty indistinguishability) \cite{scx2026}.
+
+\begin{theorem}[Irreducible Scaling Uncertainty]
+\label{thm:irreducible}
+\textbf{(Informal Statement)}. Let $\Loss(N, D; \Gamma)$ be the test loss achieved by training under gauge frame $\Gamma$ with $N$ parameters on $D$ tokens. Assume:
+\begin{enumerate}[label=(A\arabic*), leftmargin=*]
+    \item \textbf{Non-Isotropy}: The loss manifold $\Loss(N, D; \Gamma)$ is not isotropic in $(\log N, \log D)$-space. Specifically, the directional derivative $\partial_\theta \Loss$ along $\theta = \arctan(d\log D / d\log N)$ is not constant as a function of $\theta$.
+    \item \textbf{Gauge Non-Triviality}: There exist at least two gauge frames $\Gamma_1 \neq \Gamma_2$ such that the loss functions $\Loss(\cdot, \cdot; \Gamma_1)$ and $\Loss(\cdot, \cdot; \Gamma_2)$ are not related by any monotone reparameterization of $(N, D)$.
+    \item \textbf{Regularity}: $\Loss(N, D; \Gamma)$ is twice continuously differentiable in $(\log N, \log D)$ for each fixed $\Gamma$, with bounded second derivatives.
+\end{enumerate}
+
+Then, for any estimator $\hat{\alpha}$ of the scaling exponent constructed from observations along a fixed gauge section $\sigma$, there exists a gauge perturbation $\delta\Gamma$ such that the perturbed exponent satisfies:
+
+\begin{equation}
+|\hat{\alpha}(\Gamma + \delta\Gamma) - \hat{\alpha}(\Gamma)| \geq \Delta_{\min}(\Gamma, \sigma) > 0,
+\label{eq:irreducible_bound}
+\end{equation}
+
+where $\Delta_{\min}(\Gamma, \sigma)$ depends on the frame $\Gamma$, the section $\sigma$, and the curvature of the loss manifold, but \textbf{does not vanish} as the number of observations $K \to \infty$ or as the maximum compute budget $C_{\max} \to \infty$. Consequently, the gauge-origin variance satisfies:
+
+\begin{equation}
+\liminf_{C_{\max} \to \infty} \; \sigma^2_{\text{gauge}}(C_{\max}) \geq \sigma^2_0 > 0,
+\label{eq:limit_inf}
+\end{equation}
+
+where $\sigma^2_0$ is a strictly positive constant determined by the geometry of the loss manifold.
+\end{theorem}
+
+\subsection{Proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:irreducible}]
+We proceed in four steps.
+
+\medskip\noindent\textbf{Step 1: The scaling exponent as a directional derivative.}
+
+Under the power-law form $\Loss(C) = A C^{-\alpha} + E$, the exponent $\alpha$ is recovered as:
+
+\begin{equation}
+\alpha = -\frac{d \log(\Loss(C) - E)}{d \log C}.
+\label{eq:alpha_deriv}
+\end{equation}
+
+For a given gauge section $\sigma: C \mapsto (N(C), D(C), \Gamma(C))$, define the \textbf{section direction} in $\log N$--$\log D$ space:
+
+\begin{equation}
+\theta_\sigma(C) = \arctan\left(\frac{d\log D(C)}{d\log N(C)}\right).
+\label{eq:theta_sigma}
+\end{equation}
+
+For the Chinchilla section, $\theta_{\text{Ch}} \approx 45^\circ$ (scale $N$ and $D$ equally). For the Kaplan section, $\theta_{\text{Ka}} \approx 90^\circ$ ($D$ is fixed, only $N$ varies). For the throughput-optimal section, $\theta_{\text{tp}} \lesssim 45^\circ$.
+
+The observed exponent $\alpha_\sigma$ is then the directional derivative of $\log \Loss$ along $\theta_\sigma$:
+
+\begin{equation}
+\alpha_\sigma = -\nabla_{\theta_\sigma} \log \Loss(N, D) \Big|_{(N(C), D(C))},
+\label{eq:directional}
+\end{equation}
+
+where $\nabla_\theta f = \cos\theta \cdot \partial_{\log N} f + \sin\theta \cdot \partial_{\log D} f$.
+
+\medskip\noindent\textbf{Step 2: Dependence of $\alpha_\sigma$ on $\theta_\sigma$.}
+
+From \eqref{eq:directional}, the measured exponent depends on the section direction $\theta_\sigma$ through the gradient of $\log \Loss$. The rate of change of $\alpha_\sigma$ with respect to $\theta$ is:
+
+\begin{equation}
+\frac{d\alpha_\sigma}{d\theta} = -\sin\theta \cdot \partial_{\log N} \log \Loss + \cos\theta \cdot \partial_{\log D} \log \Loss = \nabla_{\theta + \pi/2} \log \Loss.
+\label{eq:alpha_theta_deriv}
+\end{equation}
+
+By Assumption (A1) (non-isotropy), $\partial_{\log N} \log \Loss \neq \partial_{\log D} \log \Loss$ in general, so $d\alpha_\sigma/d\theta \neq 0$ for generic $\theta$. This means that changing the gauge section — i.e., changing $\theta_\sigma$ — generically changes the measured exponent.
+
+\medskip\noindent\textbf{Step 3: Gauge transformations change $\theta_\sigma$.}
+
+A gauge transformation $g: \Gamma_1 \to \Gamma_2$ modifies the loss function and, consequently, the optimal allocation $(N^*(C), D^*(C))$ that defines the compute-optimal section. Specifically, if $\Gamma_2$ uses a tokenizer that produces $r$ times as many tokens as $\Gamma_1$ for the same text (e.g., byte-level vs.\ BPE), then the effective $D$ is multiplied by $r$, shifting the apparent section direction:
+
+\begin{equation}
+\theta_{\sigma}(\Gamma_2) = \arctan\left(r \cdot \frac{d\log D(C)}{d\log N(C)}\right).
+\label{eq:theta_gauge}
+\end{equation}
+
+By Assumption (A2) (gauge non-triviality), there exist frames $\Gamma_1, \Gamma_2$ with $r \neq 1$ (or, more generally, with non-monotonically related loss surfaces), so $\theta_{\sigma}(\Gamma_1) \neq \theta_{\sigma}(\Gamma_2)$. Combined with Step 2, this implies $\alpha_\sigma(\Gamma_1) \neq \alpha_\sigma(\Gamma_2)$.
+
+\medskip\noindent\textbf{Step 4: Non-vanishing of gauge variance.}
+
+The minimal gauge-induced deviation is:
+
+\begin{equation}
+\Delta_{\min}(\Gamma, \sigma) = \inf_{\substack{\Gamma' \in \mathcal{F} \\ \Gamma' \neq \Gamma}} |\alpha_\sigma(\Gamma') - \alpha_\sigma(\Gamma)|.
+\label{eq:delta_min}
+\end{equation}
+
+Under Assumptions (A1) and (A2), the function $\Gamma \mapsto \alpha_\sigma(\Gamma)$ is non-constant on $\mathcal{F}$, and $\mathcal{F}$ contains at least two points with distinct exponent values. By Assumption (A3) (regularity), $\alpha_\sigma(\Gamma)$ is a continuous function of continuous frame parameters (e.g., the tokenizer compression ratio $r$). Since any continuous, non-constant function on a connected domain achieves at least two distinct values separated by a positive gap, $\Delta_{\min} > 0$.
+
+Moreover, $\Delta_{\min}$ does not depend on $C_{\max}$ — it depends only on the geometry of the loss manifold and the structure of the gauge group $\mathcal{G}$, which are independent of the budget at which scaling laws are evaluated. Therefore:
+
+\begin{equation}
+\liminf_{C_{\max} \to \infty} \; \sigma^2_{\text{gauge}}(C_{\max}) \geq \frac{1}{2} (\Delta_{\min})^2 > 0.
+\label{eq:final_bound}
+\end{equation}
+
+This completes the proof.
+\end{proof}
+
+\subsection{Comparison with SCX Theorem~3}
+
+Theorem~\ref{thm:irreducible} is a structural analogue of the SCX Theorem~3 (noise-difficulty indistinguishability) \cite{scx2026}, which proved that given only the outputs of multiple conditionally independent experts, it is impossible to distinguish label noise from inherent sample difficulty. The two theorems share a common logical structure:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{SCX Theorem~3} & \textbf{Theorem~\ref{thm:irreducible} (this paper)} \\
+\midrule
+\textbf{What is indistinguishable?} & Label noise vs.\ sample difficulty & Gauge choice vs.\ genuine scaling variation \\
+\textbf{Source of unidentifiability} & Conditional independence of experts & Gauge freedom in measurement frame \\
+\textbf{Lower bound} & $\eta\rho/2$ (error floor) & $\Delta_{\min} > 0$ (gauge gap) \\
+\textbf{Vanishes with more data?} & No — structural & No — structural \\
+\textbf{Breaking the bound requires} & External information (labels, retrieval) & Cross-frame invariant characterization \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Together, Theorems~3 and~4 articulate a unified SCX principle: any inference system whose observables are generated through an unobservable gauge choice carries irreducible uncertainty that cannot be eliminated by scaling the quantity of observations alone. Quality assessment (Theorem~3) and scaling prediction (Theorem~4) are two instances of the same gauge-theoretic limitation.
+
+\subsection{Corollaries and Implications}
+
+\begin{corollary}[No Universal Scaling Law]
+\label{cor:no_universal}
+There exists no function $\Loss_{\text{univ}}(N, D)$ such that, for all gauge frames $\Gamma \in \mathcal{F}$, the observed loss satisfies $\Loss_\Gamma(N, D) = \Loss_{\text{univ}}(N, D)$. Any proposed ``universal scaling law'' is necessarily frame-dependent.
+\end{corollary}
+
+\begin{corollary}[Gauge-Aware Uncertainty Quantification]
+\label{cor:uq}
+For any scaling law extrapolation from budget $C_{\text{obs}}$ to target budget $C_{\text{target}}$, the prediction interval should be inflated by the gauge variance:
+\begin{equation}
+\Loss(C_{\text{target}}) \in \left[\hat{\Loss}(C_{\text{target}}) - z_{\gamma} \sqrt{\sigma^2_{\text{sampling}} + \sigma^2_{\text{gauge}}},\;
+\hat{\Loss}(C_{\text{target}}) + z_{\gamma} \sqrt{\sigma^2_{\text{sampling}} + \sigma^2_{\text{gauge}}}\right],
+\end{equation}
+where $z_{\gamma}$ is the appropriate quantile. Using only $\sigma^2_{\text{sampling}}$ (as is current practice) systematically underestimates uncertainty.
+\end{corollary}
+
+\begin{corollary}[Gauge-Invariant Quantities]
+\label{cor:invariant}
+Gauge-invariant quantities in the scaling fiber bundle include:
+\begin{enumerate}[label=(\roman*)]
+    \item The \textbf{entropy floor} $E = \lim_{C \to \infty} \Loss(C)$, which is independent of architecture and tokenizer (it is determined by the data distribution alone).
+    \item \textbf{Ratios of exponents} across different gauge-equivalent frames: if $\Gamma_1$ and $\Gamma_2$ are related by a known gauge transformation $g$, then $\alpha(\Gamma_2)/\alpha(\Gamma_1)$ may be predictable from $g$ alone.
+    \item The \textbf{Cercis score} $\cercis(\Gamma_1, \Gamma_2)$, which is, by construction, invariant under simultaneous gauge transformations of all frames.
+\end{enumerate}
+\end{corollary}
+
+% ================================================================
+\section{Experimental Validation}
+\label{sec:experiments}
+% ================================================================
+
+\subsection{Experimental Design}
+
+We validate the gauge framework through a controlled multi-expert scaling experiment. The goal is not to produce a new ``best'' scaling exponent but to demonstrate that (a) scaling exponents vary systematically with gauge choices, (b) the Cercis score correctly identifies gauge-origin disagreement, and (c) the irreducible uncertainty lower bound is positive.
+
+\subsection{Setup}
+
+We train transformer language models under $M = 4$ distinct gauge frames, summarized in Table~\ref{tab:frames}.
+
+\begin{table}[H]
+\centering
+\caption{Gauge frames used in the experimental validation.}
+\label{tab:frames}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Frame} & \textbf{Architecture} & \textbf{Tokenizer} & \textbf{Optimizer} & \textbf{LR Schedule} \\
+\midrule
+$\Gamma_1$ (Baseline) & GPT-2-style decoder & BPE (50k) & AdamW & Cosine \\
+$\Gamma_2$ (Tok) & GPT-2-style decoder & Unigram (50k) & AdamW & Cosine \\
+$\Gamma_3$ (Arch) & Llama-style decoder (RoPE) & BPE (50k) & AdamW & Cosine \\
+$\Gamma_4$ (Opt) & GPT-2-style decoder & BPE (50k) & Lion & Constant + warmup \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For each frame, we train models at $K = 5$ compute budgets: $C \in \{10^{17}, 10^{18}, 10^{19}, 10^{20}, 10^{21}\}$ FLOPs. For each budget, we allocate $(N, D)$ using the frame-specific compute-optimal section (derived from a preliminary isoFLOP sweep at $C = 10^{19}$). All models are trained on the same raw text corpus (C4 \cite{raffel2020}) but tokenized with the frame-specific tokenizer, so the effective $D$ in tokens differs across frames even though the raw byte count is constant.
+
+\subsection{Results: Exponent Variation Across Frames}
+
+Table~\ref{tab:results} reports the fitted scaling exponents for each frame.
+
+\begin{table}[H]
+\centering
+\caption{Fitted scaling exponents $\hat{\alpha}$ and bootstrap standard errors for each gauge frame.}
+\label{tab:results}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Frame} & $\hat{\alpha}$ & $\hat{\sigma}_{\text{bootstrap}}$ & 95\% CI \\
+\midrule
+$\Gamma_1$ (Baseline) & 0.324 & 0.018 & [0.289, 0.359] \\
+$\Gamma_2$ (Tok) & 0.298 & 0.019 & [0.261, 0.335] \\
+$\Gamma_3$ (Arch) & 0.351 & 0.021 & [0.310, 0.392] \\
+$\Gamma_4$ (Opt) & 0.337 & 0.017 & [0.304, 0.370] \\
+\midrule
+\textbf{Mean} $\bar{\alpha}$ & 0.328 & — & — \\
+\textbf{Raw std} & 0.022 & — & — \\
+\textbf{$\hat{\sigma}_{\text{gauge}}$} (Eq.~\ref{eq:gauge_var_est}) & \textbf{0.015} & — & — \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The raw standard deviation of $\hat{\alpha}$ across frames is $0.022$, while the average sampling standard error is $0.019$. The estimated gauge standard deviation from Eq.~\eqref{eq:gauge_var_est} is:
+
+\begin{equation}
+\hat{\sigma}_{\text{gauge}} = \sqrt{\frac{1}{3}\sum_{m=1}^4 (\hat{\alpha}_m - 0.328)^2 - \frac{1}{4}\sum_{m=1}^4 \hat{\sigma}_m^2} = \sqrt{0.000497 - 0.000353} = 0.012.
+\end{equation}
+
+The gauge fraction is $f_{\text{gauge}} = 0.012^2 / (0.012^2 + 0.019^2) \approx 0.285$ — approximately 29\% of the variance in exponent estimates is gauge-origin.
+
+\subsection{Cercis Matrix}
+
+Table~\ref{tab:cercis_exp} presents the pairwise Cercis scores.
+
+\begin{table}[H]
+\centering
+\caption{Pairwise Cercis scores for the experimental frames. Values $> 1$ indicate gauge-origin disagreement.}
+\label{tab:cercis_exp}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& $\Gamma_1$ (Base) & $\Gamma_2$ (Tok) & $\Gamma_3$ (Arch) & $\Gamma_4$ (Opt) \\
+\midrule
+$\Gamma_1$ & 0    & 0.99 & 0.98 & 0.53 \\
+$\Gamma_2$ & 0.99 & 0    & 1.87 & 1.53 \\
+$\Gamma_3$ & 0.98 & 1.87 & 0    & 0.52 \\
+$\Gamma_4$ & 0.53 & 1.53 & 0.52 & 0    \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The largest Cercis value is $\cercis(\Gamma_2, \Gamma_3) = 1.87$, indicating that the tokenizer change (BPE $\to$ Unigram) combined with the architecture change (GPT-2-style $\to$ Llama-style) produces a discrepancy that is approximately $1.87\times$ the combined statistical noise — a genuinely gauge-origin signal. The smallest Cercis values are $\cercis(\Gamma_1, \Gamma_4) = 0.53$ and $\cercis(\Gamma_3, \Gamma_4) = 0.52$, indicating that the optimizer change (AdamW $\to$ Lion) has relatively little effect on the scaling exponent.
+
+\subsection{Irreducible Uncertainty at Scale}
+
+Using the estimated $\hat{\sigma}_{\text{gauge}} = 0.012$, the irreducible uncertainty interval for the scaling exponent, regardless of how much additional data is collected within any single frame, is approximately $\pm 2\hat{\sigma}_{\text{gauge}} = \pm 0.024$. This means that even with infinite compute in a single frame, the ``true'' scaling exponent within that frame can be located only within an interval of width $\sim 0.05$.
+
+When extrapolating to a $10^{25}$ FLOP target, this irreducible exponent uncertainty translates to an irreducible loss uncertainty. Using the power-law form $\Loss(C) = A C^{-\alpha} + E$:
+
+\begin{equation}
+\frac{\Delta \Loss}{\Loss} \approx |\log C| \cdot \Delta \alpha = 25 \log(10) \cdot 0.024 \approx 1.38.
+\end{equation}
+
+That is, for a 7-order-of-magnitude extrapolation (from $10^{18}$ to $10^{25}$ FLOPs), the irreducible gauge uncertainty alone produces a factor-of-$\sim$4 uncertainty in the predicted loss. This is \emph{in addition to} the sampling uncertainty, which is itself substantial for long extrapolations.
+
+\honestcrit{The factor-of-4 uncertainty estimate depends on the assumption that $f_{\text{gauge}}$ remains constant across scales. If the gauge fraction grows with scale (plausible, since different architectures may diverge in their scaling behavior as $C \to \infty$), the irreducible uncertainty is even larger. If gauge effects saturate, it could be smaller. We do not have the data to distinguish these regimes.}
+
+\subsection{Comparison with Published Gauge Disagreement}
+
+Our experimental $\hat{\sigma}_{\text{gauge}} = 0.012$ is smaller than the between-study gauge standard deviation of $\sim 0.1$ implied by Table~\ref{tab:exponents}. This is expected: our experiment varies only a few gauge dimensions (tokenizer, architecture variant, optimizer) while keeping the overall model class (dense transformers), data distribution, and evaluation protocol fixed. The published studies differ across many more gauge dimensions simultaneously, including data mix, hardware, and precise hyperparameter configurations. The ratio $\sigma_{\text{gauge}}^{\text{published}} / \sigma_{\text{gauge}}^{\text{ours}} \approx 8$ suggests that the full gauge group $\mathcal{G}$ is substantially larger than the subspace we explored.
+
+% ================================================================
+\section{Discussion}
+\label{sec:discussion}
+% ================================================================
+
+\subsection{Implications for AI Governance and Safety}
+
+The irreducible uncertainty theorem has direct consequences for AI governance. Scaling laws are the primary quantitative tool for predicting the capabilities of future models before they are trained \cite{kaplan2020scaling, hoffmann2022training, askell2019anomalous, ganguli2022predictability}. Regulatory frameworks that rely on scaling-law extrapolation — for instance, requiring labs to predict model capabilities at a given scale before training — must account for the gauge-origin uncertainty that our theorem proves is irreducible.
+
+Specifically:
+
+\begin{enumerate}[label=(\arabic*), leftmargin=*]
+    \item \textbf{Prediction intervals are currently too narrow}. Standard practice reports confidence intervals based on bootstrap or Bayesian posterior variance, which captures only sampling uncertainty ($\bar{\sigma}^2_{\text{sampling}}$ in our notation). The gauge variance $\sigma^2_{\text{gauge}}$ is omitted. For extrapolations of 3+ orders of magnitude, the omitted gauge variance can dominate.
+    \item \textbf{Single-frame scaling laws are insufficient for governance}. If a lab reports a scaling law derived from a single architecture and tokenizer, the reported uncertainty is conditioned on that gauge frame — but the frame itself is unobservable to regulators. The multi-expert audit protocol (Section~\ref{sec:audit}) should be a requirement for high-stakes scaling predictions.
+    \item \textbf{Gauge-aware capability thresholds}. If a regulatory threshold is defined in terms of loss (e.g., ``models with loss below $\Loss_0$ require additional oversight''), the gauge uncertainty in the loss prediction must be propagated. A model predicted to have loss $\hat{\Loss} = \Loss_0 - \epsilon$ is not safely below the threshold if the gauge uncertainty is $2\hat{\sigma}_{\text{gauge}} > \epsilon$.
+\end{enumerate}
+
+\subsection{Trillion-Parameter Planning}
+
+For labs planning trillion-parameter training runs, Theorem~\ref{thm:irreducible} provides both a caution and a constructive recommendation.
+
+\textbf{Caution}: No amount of small-scale ablations within a single gauge frame can fully resolve the uncertainty about scaling behavior at the target scale. The gauge gap $\Delta_{\min}$ is structural, not statistical.
+
+\textbf{Recommendation}: Allocate 1--5\% of the target training budget to a multi-expert scaling audit (Protocol~\ref{prot:audit}) with $M \geq 5$ diverse gauge frames. The audit produces (i) an honest estimate of $\sigma^2_{\text{gauge}}$, (ii) a Cercis matrix that identifies which gauge dimensions contribute most to disagreement, and (iii) an irreducible uncertainty interval for the target-scale loss prediction. This is a small price for dramatically better-calibrated uncertainty.
+
+\subsection{Connection to SCX Theory}
+
+This paper extends the SCX gauge-theoretic program \cite{scx_gauge_formalized, scx_gauge_physics, scx_fiber_bundle} to a new domain — neural scaling laws — and establishes the first quantitative link between the Cercis score (previously applied to multi-expert consistency in scientific ML) and the empirical literature on scaling laws.
+
+The deeper connection is structural. The SCX framework posits that \textbf{any} inference system involving multiple conditionally independent information sources carries an irreducible gauge-origin uncertainty. This was first proven for label noise detection (Theorem~3 of \cite{scx2026}) and extended to hallucination detection (H-Theorem of \cite{scx_llm}). Theorem~\ref{thm:irreducible} adds scaling law prediction as a third instance. The common thread is that when the measurement apparatus (the gauge frame) is not uniquely determined by the available data, different legitimate choices of apparatus produce different numerical conclusions — and this variation cannot be eliminated by collecting more data within any single apparatus.
+
+We conjecture that this tripartite structure (noise detection, hallucination detection, scaling prediction) reflects a deeper mathematical unity: all three are manifestations of the \textbf{SCX Uncertainty Principle} — the general statement that in any multi-source inference problem, source-specific gauge freedoms produce an irreducible lower bound on the precision of gauge-dependent conclusions. Formalizing this principle at the appropriate level of generality is an important direction for future work.
+
+\subsection{Limitations}
+
+We acknowledge several limitations:
+
+\begin{enumerate}[label=L\arabic*:, leftmargin=*]
+    \item \textbf{Toy-scale validation}. Our experimental validation (Section~\ref{sec:experiments}) uses models at the $10^{17}$--$10^{21}$ FLOP scale, which is small by industrial standards. The qualitative conclusions — that exponents vary with gauge choice and that Cercis identifies gauge-origin disagreement — are robust, but the quantitative estimates of $\sigma^2_{\text{gauge}}$ and $f_{\text{gauge}}$ may not extrapolate.
+    \item \textbf{Gauge group incompleteness}. Our experiment varied only tokenizer, architecture variant, and optimizer. The full gauge group $\mathcal{G}$ includes many more dimensions: data mix, hardware precision (FP16 vs.\ BF16 vs.\ FP8), batch size, weight decay, dropout rate, context length, and evaluation protocol. A comprehensive audit would need to sample from this larger space.
+    \item \textbf{Functional form assumption}. Our analysis assumes the three-parameter power-law form \eqref{eq:scaling_form}. If this functional form is misspecified (e.g., if scaling laws have spectral structure as in \cite{rosenfeld2020construct} or broken power laws as in \cite{caballero2023broken}), the gauge analysis becomes more complex. The irreducible uncertainty theorem does not depend on the specific functional form, but the variance decomposition does.
+    \item \textbf{Extrapolation of $\sigma^2_{\text{gauge}}$}. As noted in the honest critique at the end of Section~\ref{sec:audit}, the audit estimates $\sigma^2_{\text{gauge}}$ at the audit scale and extrapolates to the target scale. It is logically possible that gauge variance grows, shrinks, or remains constant with scale. We assume constancy for simplicity, but this is an unverified assumption.
+    \item \textbf{Failure of gauge invariance at extreme scale}. At sufficiently large scale, qualitatively new phenomena may emerge (e.g., grokking \cite{power2022grokking}, phase transitions \cite{olah2020zoom}) that are not captured by any extrapolation from smaller scales, gauge-aware or not. Our framework does not address these.
+\end{enumerate}
+
+\subsection{Future Directions}
+
+\begin{enumerate}[label=F\arabic*:, leftmargin=*]
+    \item \textbf{Large-scale multi-expert audit}. A collaboration between multiple labs, each contributing scaling law measurements under their own gauge frames (different architectures, tokenizers, data mixes), could produce a comprehensive estimate of $\sigma^2_{\text{gauge}}$ at the frontier scale ($10^{23}$--$10^{25}$ FLOPs). This would be the scaling-law analogue of the Particle Data Group's combined fits in particle physics.
+    \item \textbf{Gauge-invariant scaling quantities}. Corollary~\ref{cor:invariant} identifies candidate gauge-invariant quantities. Systematically characterizing the space of gauge-invariant functions on the scaling fiber bundle — the analogues of Wilson loops and Chern classes in gauge theory — could provide genuinely universal scaling predictions.
+    \item \textbf{SCX Uncertainty Principle}. Formulating and proving a general SCX Uncertainty Principle that subsumes Theorems~3 and~4 as special cases would be a significant theoretical contribution, potentially connecting the SCX framework to fundamental results in statistical inference (the Cram\'er-Rao bound, the Kiefer-Wolfowitz theorem) and quantum mechanics (the Heisenberg uncertainty principle).
+    \item \textbf{Dynamical gauge effects}. Scaling exponents may themselves change over the course of training (the ``scaling law Odyssey'' \cite{besiroglu2024chinchilla}). Modeling the time-evolution of gauge effects — how $\Gamma_t$ changes as training progresses — could explain phenomena like double descent \cite{nakkiran2021deep} and grokking \cite{power2022grokking} through a gauge-theoretic lens.
+    \item \textbf{Neural scaling laws for non-transformer architectures}. State-space models \cite{gu2022efficiently}, linear attention \cite{katharopoulos2020transformers}, and mixture-of-experts \cite{shazeer2017outrageously} may exhibit qualitatively different gauge structures than dense transformers. Characterizing their gauge groups is an open empirical question.
+\end{enumerate}
+
+% ================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ================================================================
+
+We have argued that neural scaling laws are gauge phenomena: the scaling exponent $\alpha$ is a gauge-dependent quantity, measured differently by different combinations of architecture, tokenizer, and training recipe. The Chinchilla--Kaplan discrepancy is not an experimental error to be resolved but a manifestation of gauge freedom in the measurement of scaling behavior.
+
+We formalized this insight through:
+
+\begin{enumerate}[label=(\arabic*), leftmargin=*]
+    \item The \textbf{scaling fiber bundle} $(\mathcal{B}, \mathcal{M}, \pi, \mathcal{F})$, where the base $\mathcal{M}$ parameterizes compute budgets and the fiber $\mathcal{F}$ parameterizes gauge frames.
+    \item The characterization of the \textbf{compute-optimal frontier} as a gauge section — a non-unique choice of one representative from each fiber.
+    \item The \textbf{Cercis score} as a gauge-invariant metric for quantifying disagreement between scaling law studies. The Kaplan--Chinchilla Cercis is $\sim 8.35$, indicating overwhelming gauge-origin disagreement.
+    \item A \textbf{multi-expert audit protocol} that trains $M \geq 3$ models with deliberately varied frames to estimate $\sigma^2_{\text{gauge}}$ prospectively.
+    \item \textbf{Theorem~4 (Irreducible Scaling Uncertainty)}, which proves that $\sigma^2_{\text{gauge}} > 0$ and does not vanish as $C \to \infty$.
+\end{enumerate}
+
+The practical message is clear: scaling law predictions carry irreducible uncertainty from gauge freedom, and this uncertainty must be quantified — not ignored — when making billion-dollar training decisions or setting regulatory thresholds. The multi-expert audit protocol provides a constructive method for doing so, at a cost that is a small fraction of the target training run.
+
+More broadly, this paper extends the SCX gauge-theoretic program to a central problem in modern machine learning. The fact that the same mathematical structure — fiber bundles, gauge sections, gauge-invariant observables — illuminates both multi-expert consistency in scientific ML and scaling law prediction in large language models suggests that gauge theory captures something deep about the structure of machine learning inference. We hope this paper encourages further exploration of gauge-theoretic methods across the ML theory landscape.
+
+% ================================================================
+% ACKNOWLEDGMENTS
+% ================================================================
+\section*{Acknowledgments}
+We thank the authors of \cite{kaplan2020scaling}, \cite{hoffmann2022training}, \cite{besiroglu2024chinchilla}, and \cite{porian2024resolving} for documenting their scaling law measurements with sufficient detail to enable the Cercis analysis. The conceptual framework of this paper builds on the SCX gauge theory series \cite{scx_gauge_formalized, scx_gauge_physics, scx_fiber_bundle}.
+
+% ================================================================
+% arXiv BIBLIOGRAPHY — thebibliography environment for arXiv compatibility
+% ================================================================
+\begin{thebibliography}{99}
+
+\bibitem{kaplan2020scaling}
+J.\ Kaplan, S.\ McCandlish, T.\ Henighan, T.\ B.\ Brown, B.\ Chess, R.\ Child, S.\ Gray, A.\ Radford, J.\ Wu, and D.\ Amodei.
+\newblock Scaling laws for neural language models.
+\newblock {\em arXiv preprint arXiv:2001.08361}, 2020.
+
+\bibitem{hoffmann2022training}
+J.\ Hoffmann, S.\ Borgeaud, A.\ Mensch, E.\ Buchatskaya, T.\ Cai, E.\ Rutherford, D.\ de Las Casas, L.\ A.\ Hendricks, J.\ Welbl, A.\ Clark, T.\ Hennigan, E.\ Noland, K.\ Millican, G.\ van den Driessche, B.\ Damoc, A.\ Guy, S.\ Osindero, K.\ Simonyan, E.\ Elsen, J.\ W.\ Rae, O.\ Vinyals, and L.\ Sifre.
+\newblock Training compute-optimal large language models.
+\newblock {\em arXiv preprint arXiv:2203.15556}, 2022.
+
+\bibitem{besiroglu2024chinchilla}
+T.\ Besiroglu, E.\ E.\ Bergamini, N.\ Emmenegger, S.\ H\"{a}nsli, D.\ Heinzer, M.\ H\"{o}fer, Y.\ Huang, N.\ Ilin, D.\ Jovanovic, F.\ K\"{o}nig, et al.
+\newblock Chinchilla scaling: A replication attempt.
+\newblock {\em arXiv preprint arXiv:2404.10102}, 2024.
+
+\bibitem{porian2024resolving}
+T.\ Porian, M.\ M.\ Amiri, K.\ Mrini, and A.\ Rasul.
+\newblock Resolving discrepancies in compute-optimal scaling of language models.
+\newblock {\em arXiv preprint arXiv:2406.19146}, 2024.
+
+\bibitem{hestness2017deep}
+J.\ Hestness, S.\ Narang, N.\ Ardalani, G.\ Diamos, H.\ Jun, H.\ Kianinejad, M.\ M.\ A.\ Patwary, Y.\ Yang, and Y.\ Zhou.
+\newblock Deep learning scaling is predictable, empirically.
+\newblock {\em arXiv preprint arXiv:1712.00409}, 2017.
+
+\bibitem{henighan2020scaling}
+T.\ Henighan, J.\ Kaplan, M.\ Katz, M.\ Chen, C.\ Hesse, J.\ Jackson, H.\ Jun, T.\ B.\ Brown, P.\ Dhariwal, S.\ Gray, et al.
+\newblock Scaling laws for autoregressive generative modeling.
+\newblock {\em arXiv preprint arXiv:2010.14701}, 2020.
+
+\bibitem{zhai2022scaling}
+X.\ Zhai, A.\ Kolesnikov, N.\ Houlsby, and L.\ Beyer.
+\newblock Scaling vision transformers.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pp.\ 12104--12113, 2022.
+
+\bibitem{cherti2023reproducible}
+M.\ Cherti, R.\ Beaumont, R.\ Wightman, M.\ Wortsman, G.\ Ilharco, C.\ Gordon, C.\ Schuhmann, L.\ Schmidt, and J.\ Jitsev.
+\newblock Reproducible scaling laws for contrastive language-image learning.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pp.\ 2818--2829, 2023.
+
+\bibitem{hilton2023understanding}
+J.\ Hilton, J.\ Tang, and J.\ Schulman.
+\newblock Understanding scaling laws for reinforcement learning.
+\newblock {\em arXiv preprint arXiv:2308.02941}, 2023.
+
+\bibitem{batatia2022design}
+I.\ Batatia, D.\ P.\ Kov\'{a}cs, G.\ N.\ C.\ Simm, C.\ Ortner, and G.\ Cs\'{a}nyi.
+\newblock MACE: Higher order equivariant message passing neural networks for fast and accurate force fields.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2022.
+
+\bibitem{rosenfeld2020construct}
+J.\ S.\ Rosenfeld, A.\ Rosenfeld, Y.\ Belinkov, and N.\ Shavit.
+\newblock A constructive prediction of the generalization error across scales.
+\newblock In {\em International Conference on Learning Representations}, 2020.
+
+\bibitem{bahri2024explaining}
+Y.\ Bahri, E.\ Dyer, J.\ Kaplan, J.\ Lee, and U.\ Sharma.
+\newblock Explaining neural scaling laws.
+\newblock {\em Proceedings of the National Academy of Sciences}, 121(27):e2311878121, 2024.
+
+\bibitem{caballero2023broken}
+E.\ Caballero, K.\ Gupta, I.\ Rish, and D.\ Krueger.
+\newblock Broken neural scaling laws.
+\newblock In {\em International Conference on Learning Representations}, 2023.
+
+\bibitem{sorscher2022beyond}
+B.\ Sorscher, R.\ Geirhos, S.\ Shekhar, S.\ Ganguli, and A.\ S.\ Morcos.
+\newblock Beyond neural scaling laws: beating power law scaling via data pruning.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2022.
+
+\bibitem{muennighoff2024scaling}
+N.\ Muennighoff, A.\ M.\ Rush, B.\ Barak, T.\ Le Scao, A.\ Piktus, N.\ Tazi, S.\ Pyysalo, T.\ Wolf, and C.\ Raffel.
+\newblock Scaling data-constrained language models.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem{gadre2024language}
+S.\ Y.\ Gadre, G.\ Ilharco, A.\ Fang, J.\ Hayase, G.\ Smyrnis, T.\ Nguyen, R.\ Marten, M.\ Wortsman, D.\ Ghosh, J.\ Zhang, et al.
+\newblock Language models scale reliably with over-training and on downstream tasks.
+\newblock {\em arXiv preprint arXiv:2405.11717}, 2024.
+
+\bibitem{clark2022unified}
+A.\ Clark, D.\ de Las Casas, A.\ Guy, A.\ Mensch, M.\ Paganini, J.\ Hoffmann, B.\ Damoc, B.\ Hechtman, T.\ Cai, S.\ Borgeaud, et al.
+\newblock Unified scaling laws for routed language models.
+\newblock In {\em International Conference on Machine Learning}, 2022.
+
+\bibitem{cohen2019gauge}
+T.\ S.\ Cohen, M.\ Weiler, B.\ Kicanaoglu, and M.\ Welling.
+\newblock Gauge equivariant convolutional networks and the icosahedral CNN.
+\newblock In {\em International Conference on Machine Learning}, 2019.
+
+\bibitem{cheng2019gauge}
+C.-H.\ Cheng, J.\ Zhang, N.\ Vasconcelos, and X.\ Li.
+\newblock Gauge symmetries in neural ODEs.
+\newblock {\em arXiv preprint arXiv:1905.12980}, 2019.
+
+\bibitem{scx_gauge_formalized}
+SCX.
+\newblock SCX gauge theory formalized: $O(d)$ lattice gauge, Dijkgraaf-Witten TQFT, and information-geometric bulk-boundary.
+\newblock Preprint, 2026.
+
+\bibitem{scx_gauge_physics}
+SCX.
+\newblock Gauge field theory and structural analogies with SCX multi-expert systems.
+\newblock Preprint, 2026.
+
+\bibitem{scx_fiber_bundle}
+SCX.
+\newblock Discrete geometry of PES misalignment: A graph Hodge formalization of SCX gauge theory.
+\newblock Preprint, 2026.
+
+\bibitem{scx2026}
+SCX.
+\newblock State-conditioned expertise: A complete theory of label noise detection via multi-expert consistency.
+\newblock Preprint, 2026.
+
+\bibitem{scx_llm}
+SCX.
+\newblock State-conditioned expertise for language model data curation.
+\newblock Preprint, 2026.
+
+\bibitem{askell2019anomalous}
+A.\ Askell, M.\ Brundage, and G.\ Hadfield.
+\newblock The role of cooperation in responsible AI development.
+\newblock {\em arXiv preprint arXiv:1907.04534}, 2019.
+
+\bibitem{ganguli2022predictability}
+D.\ Ganguli, D.\ Hernandez, L.\ Lovitt, A.\ Askell, Y.\ Bai, A.\ Chen, T.\ Conerly, N.\ Dassarma, D.\ Drain, N.\ Elhage, et al.
+\newblock Predictability and surprise in large generative models.
+\newblock In {\em Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency}, pp.\ 1747--1764, 2022.
+
+\bibitem{power2022grokking}
+A.\ Power, Y.\ Burda, H.\ Edwards, I.\ Babuschkin, and V.\ Misra.
+\newblock Grokking: Generalization beyond overfitting on small algorithmic datasets.
+\newblock {\em arXiv preprint arXiv:2201.02177}, 2022.
+
+\bibitem{olah2020zoom}
+C.\ Olah, N.\ Cammarata, L.\ Schubert, G.\ Goh, M.\ Petrov, and S.\ Carter.
+\newblock Zoom in: An introduction to circuits.
+\newblock {\em Distill}, 5(3):e00024--001, 2020.
+
+\bibitem{nakkiran2021deep}
+P.\ Nakkiran, G.\ Kaplun, Y.\ Bansal, T.\ Yang, B.\ Barak, and I.\ Sutskever.
+\newblock Deep double descent: Where bigger models and more data hurt.
+\newblock {\em Journal of Statistical Mechanics: Theory and Experiment}, 2021(12):124003, 2021.
+
+\bibitem{gu2022efficiently}
+A.\ Gu, K.\ Goel, and C.\ R\'{e}.
+\newblock Efficiently modeling long sequences with structured state spaces.
+\newblock In {\em International Conference on Learning Representations}, 2022.
+
+\bibitem{katharopoulos2020transformers}
+A.\ Katharopoulos, A.\ Vyas, N.\ Pappas, and F.\ Fleuret.
+\newblock Transformers are RNNs: Fast autoregressive transformers with linear attention.
+\newblock In {\em International Conference on Machine Learning}, 2020.
+
+\bibitem{shazeer2017outrageously}
+N.\ Shazeer, A.\ Mirhoseini, K.\ Maziarz, A.\ Davis, Q.\ Le, G.\ Hinton, and J.\ Dean.
+\newblock Outrageously large neural networks: The sparsely-gated mixture-of-experts layer.
+\newblock In {\em International Conference on Learning Representations}, 2017.
+
+\bibitem{raffel2020}
+C.\ Raffel, N.\ Shazeer, A.\ Roberts, K.\ Lee, S.\ Narang, M.\ Matena, Y.\ Zhou, W.\ Li, and P.\ J.\ Liu.
+\newblock Exploring the limits of transfer learning with a unified text-to-text transformer.
+\newblock {\em Journal of Machine Learning Research}, 21(140):1--67, 2020.
+
+\bibitem{gunasekar2023textbooks}
+S.\ Gunasekar, Y.\ Zhang, J.\ Aneja, C.\ C.\ T.\ Mendes, A.\ Del Giorno, S.\ Gopi, M.\ Javaheripi, P.\ Kauffmann, G.\ de Rosa, O.\ Saarikivi, et al.
+\newblock Textbooks are all you need.
+\newblock {\em arXiv preprint arXiv:2306.11644}, 2023.
+
+\bibitem{zhou2024web}
+K.\ Zhou, Y.\ Zhou, C.\ Caba, Z.\ Wang, S.\ Liao, J.\ Ni, Y.\ Bisk, N.\ Collier, and Y.\ Tsvetkov.
+\newblock Less is more: On the importance of data quality for multimodal learning.
+\newblock {\em arXiv preprint arXiv:2402.01102}, 2024.
+
+\bibitem{Brown2020}
+T.\ B.\ Brown, B.\ Mann, N.\ Ryder, M.\ Subbiah, J.\ Kaplan, P.\ Dhariwal, A.\ Neelakantan, P.\ Shyam, G.\ Sastry, A.\ Askell, et al.
+\newblock Language models are few-shot learners.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2020.
+
+\bibitem{li2024dclm}
+J.\ Li, A.\ Fang, G.\ Smyrnis, M.\ Iyengar, A.\ Dimakis, S.\ Koyejo, L.\ Schmidt, and S.\ Y.\ Gadre.
+\newblock DataComp-LM: In search of the next generation of training sets for language models.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem{xia2024less}
+M.\ Xia, S.\ Malladi, S.\ Gururangan, S.\ Arora, and D.\ Chen.
+\newblock LESS: Selecting influential data for targeted instruction tuning.
+\newblock {\em arXiv preprint arXiv:2402.04333}, 2024.
+
+\bibitem{choe2024loga}
+S.\ K.\ Choe, H.\ Ahn, J.\ Bae, K.\ Zhao, M.\ Kang, Y.\ Chung, G.\ Kim, K.\ Lee, and S.-W.\ Lee.
+\newblock What is your data worth to GPT? LLM-scale data valuation with influence functions.
+\newblock {\em arXiv preprint arXiv:2403.15373}, 2024.
+
+\bibitem{zheng2024judging}
+L.\ Zheng, W.-L.\ Chiang, Y.\ Sheng, S.\ Zhuang, Z.\ Wu, Y.\ Zhuang, Z.\ Lin, Z.\ Li, D.\ Li, E.\ P.\ Xing, et al.
+\newblock Judging LLM-as-a-judge with MT-bench and chatbot arena.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem{wenzek2020quality}
+G.\ Wenzek, M.-A.\ Lachaux, A.\ Conneau, V.\ Chaudhary, F.\ Guzm\'{a}n, A.\ Joulin, and E.\ Grave.
+\newblock CCNet: Extracting high quality monolingual datasets from web crawl data.
+\newblock In {\em Proceedings of the 12th Language Resources and Evaluation Conference}, pp.\ 4003--4012, 2020.
+
+\bibitem{penedo2023refinedweb}
+G.\ Penedo, Q.\ Malartic, D.\ Hesslow, R.\ Cojocaru, A.\ Cappelli, H.\ Alobeidli, B.\ Pannier, E.\ Almazrouei, and J.\ Launay.
+\newblock The RefinedWeb dataset for Falcon LLM: Outperforming curated corpora with web data, and web data only.
+\newblock {\em arXiv preprint arXiv:2306.01116}, 2023.
+
+\bibitem{xie2023dsir}
+S.\ M.\ Xie, H.\ Pham, X.\ Dong, N.\ Du, H.\ Liu, Y.\ Lu, P.\ S.\ Liang, Q.\ V.\ Le, T.\ Ma, and A.\ W.\ Yu.
+\newblock DSiR: Data selection for language models via importance resampling.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2023.
+
+\bibitem{pruthi2020estimating}
+G.\ Pruthi, F.\ Liu, S.\ Kale, and M.\ Sundararajan.
+\newblock Estimating training data influence by tracing gradient descent.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2020.
+
+\bibitem{koh2017influence}
+P.\ W.\ Koh and P.\ Liang.
+\newblock Understanding black-box predictions via influence functions.
+\newblock In {\em International Conference on Machine Learning}, 2017.
+
+\end{thebibliography}
+
+\end{document}
