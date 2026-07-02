@@ -175,7 +175,7 @@ where $\eta = \mathbb{P}(Z=1)$ is the marginal noise rate.
 > 
 > $$
 > \mathbb{E}\bigl[|C(\hat{S}) - C(S)|\bigr]
-> \;\leq\; 2 \cdot \mathbb{P}(\hat{S} \neq S) + O\!\left(\frac{1}{\sqrt{n_}}\right),
+> \;\leq\; \mathbb{P}(\hat{S} \neq S) + O\!\left(\frac{1}{\sqrt{n_}}\right),
 > <!-- label: eq:degradation-bound -->
 > $$
 > 
@@ -211,16 +211,16 @@ where $\eta = \mathbb{P}(Z=1)$ is the marginal noise rate.
 > \]
 > Since $C(\cdot) \in [0,1]$, the pointwise difference satisfies
 > $|C(\hat{S}) - C(S)| \leq 1$, and consequently
-> $\mathbb{E}[|C(\hat{S}) - C(S)| \mid \hat{S} \neq S] \leq 2$.
+> $\mathbb{E}[|C(\hat{S}) - C(S)| \mid \hat{S} \neq S] \leq 1$.
 > 
 > Combining the two cases,
 > 
 > $$
 > \mathbb{E}\bigl[|C(\hat{S}) - C(S)|\bigr]
 > &\leq \mathbb{P}(\hat{S}=S) \cdot O(1/\sqrt{n_})
->    + \mathbb{P}(\hat{S}\neq S) \cdot 2 
+>    + \mathbb{P}(\hat{S}\neq S) \cdot 1 
 
-> &\leq 2 \cdot \mathbb{P}(\hat{S} \neq S) + O(1/\sqrt{n_}). \qedhere
+> &\leq \mathbb{P}(\hat{S} \neq S) + O(1/\sqrt{n_}). \qedhere
 > $$
 
 > **Corollary:** [Degradation to global consistency]

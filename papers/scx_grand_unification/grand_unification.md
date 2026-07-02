@@ -175,9 +175,13 @@ $$
     F_{ijk} = g_{ij} + g_{jk} + g_{ki}
 $$
 
-The **global flatness condition** is that the sum of all gauge fields around any
-closed loop vanishes. On a simply-connected base, this reduces to the condition that
-$g$ is exact: $g = df$ for some 0-cochain $f$. The Hodge decomposition then gives:
+The **global flatness condition** is that the holonomy around any
+closed loop vanishes. For Abelian groups, this simplifies to the sum of gauge
+fields around any closed loop being zero. For non-Abelian groups, the
+condition is that the path-ordered product around any closed loop equals the
+group identity. On a simply-connected base, flatness implies that
+$g$ is gauge-equivalent to zero (i.e., there exists a gauge transformation
+that sets $g = 0$ locally). The Hodge decomposition then gives:
 
 $$
     \Omega^1 = \mathrm{im}(d) \oplus \mathrm{im}(\delta) \oplus \mathrm{ker}(\Delta)
@@ -217,14 +221,18 @@ defined for the base manifold in question.
 > surfaces, stability is equivalent to the condition that all observables are
 > gauge-invariant, which is equivalent to $\sum_i g_i = 0$.
 
-> **Proof:** [Sketch for Abelian $G$]
+> **Proof:** [Sketch for Abelian $G$ — with correction]
 > Gauge invariance of an observable $\mathcal{O}$ means $\mathcal{O}$ is constant on gauge
 > orbits, i.e., $\mathcal{O}(\{g_i\}) = \mathcal{O}(\{g_i + d\lambda\})$. For Abelian $G$,
-> this holds iff $\mathcal{O}$ depends only on gauge-invariant combinations, the simplest
-> of which is the total flux $\sum_i g_i$. For $\mathcal{O}$ to have a well-defined value
-> across the entire closed system, the total flux must vanish --- otherwise, parallel
-> transport around the full system boundary would be path-dependent, violating uniqueness
-> of observables. Hence $\sum_i g_i = 0$.
+> the gauge-invariant subspace is spanned by **all** Wilson loop operators
+> $\mathcal{W}_\gamma = \exp(\sum_{e\in\gamma} g_e)$, not merely the total sum.
+> The condition $\sum_i g_i = 0$ is the **specific** requirement that the global
+> holonomy around the full system boundary vanishes — i.e., the connection is flat.
+> This is the stability condition, but it is **not** implied by gauge invariance alone;
+> rather, it is an additional dynamical requirement. We correct the earlier proof:
+> the total sum is the unique gauge-invariant *linear* functional, but not all
+> observables need be linear, so other invariants (e.g., individual Wilson loops)
+> may be non-zero even when $\sum_i g_i = 0$.
 > 
 > For non-Abelian groups, the sum must be taken with parallel transport (path-ordered sum;
 > see Appendix [ref] for details), and the condition generalizes to the
@@ -292,19 +300,22 @@ reparameterization of the router logits).
 
 ### The $\sum g = 0$ Condition
 
-The routing condition $\sum_i g_i = 0$ is automatically satisfied by construction
-(since probabilities sum to 1). *However*, this only holds **per-token**.
-The real condition is **per-batch**:
+The routing condition $\sum_i g_i(x) = 0$ is automatically satisfied **per-token**
+by construction (since probabilities sum to 1). Consequently, the per-batch sum
+$$\sum_{x \in \mathcal{B}} \sum_{i=1}^N g_i(x) = \sum_{x \in \mathcal{B}} 0 = 0$$
+is also trivially satisfied. **The additive sum condition contains no information
+about load balance** — it is automatically zero. The real stability condition
+for MoE routing is **nonlinear**: the variance of the gate distribution across
+the batch must be controlled to prevent representation collapse:
 
 $$
-    \boxed{\sum_{x \in \mathcal{B}} \sum_{i=1}^N g_i(x) = 0}
+    oxed{\operatorname{Var}_{x \in \mathcal{B}}\left[\sum_{i=1}^N \mathbb{1}_{	ext{select}}(i \mid x)ight] \leq 	au}
 $$
 
-which decomposes into two sub-conditions:
+This reduces to two practical sub-conditions:
 
-1. **Load balance:** $\sum_{x \in \mathcal{B}} g_i(x) = 0$ for each expert $i$
-2. **Coverage:** $\sum_{x \in \mathcal{B}} \left|\{i : g_i(x) > -\frac{1}{N}\}\right|
-
+1. **Load balance:** $\mathbb{E}_{x \in \mathcal{B}}[g_i(x)] pprox 0$ for each expert $i$
+2. **Coverage:** $rac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}} |\{i : g_i(x) > -1/N\}| \geq 	heta$
 ### Mathematical Isomorphism
 
 The MoE routing problem is isomorphic to a **discrete gauge theory** on the complete
@@ -530,7 +541,7 @@ but because the mathematical structure eliminates the incentive for destruction.
 
 ### The Dark Forest as a Gauge Theory
 
-**[Note:** This section is at the stage of a *gauge-theoretic interpretation*
+**[Critical Note (R8 correction):** This section is at the stage of a *heuristic gauge-theoretic interpretation*
 of Liu Cixin's fictional framework. The mapping from literary concepts to precise
 mathematical gauge fields is a heuristic analogy that requires further formalization
 before it reaches the same level of rigor as the physics or MoE domains. The core
@@ -1166,7 +1177,7 @@ $$
         && (Humility equilibrium)
 $$
 
-### The Category $\mathbf{GaugeSys$}
+### The Category $\mathbf{GaugeSys}$
 
 > **Definition:** [Category of Gauge Systems]
 > Let $\mathbf{GaugeSys}$ be the category where:

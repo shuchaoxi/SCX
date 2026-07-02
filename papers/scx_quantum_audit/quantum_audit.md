@@ -227,7 +227,7 @@ The basic hardware components are:
 > **Input:** M_t\ parameter vector, quantized to $n$-bit string
 > $m = (m_1,...,m_n) \in \{0,1\}^n$.
 > 
-> **Output:** Shared secret key $k \in \{0,1\}^$ ($\ell \leq n/2$ expected)
+> **Output:** Shared secret key $k \in \{0,1\}^{\ell} ($\ell \leq n/2$ expected)
 > used to encrypt $M_t$ for subsequent secure classical transmission,
 > or $\bot$ (abort on detected eavesdropping).
 > 
@@ -350,7 +350,7 @@ and further refined by Renner [cite]. The key result:
 > rate is strictly positive whenever $Q \lesssim 11.0\%$, since
 > $1 - 2H_2(Q) > 0$ for $Q < 11.0\%$. With two-way classical post-processing
 > (this is the commonly cited $\sim$11\% threshold), higher $Q$ values can still
-> yield positive key rate (up to $\sim$12.4\% for BB84 under Cascade-type
+> yield positive key rate (up to $\sim$12.4\% for BB84 under Cascade-type (specific noise models; see Remark)
 > reconciliation).
 > 
 > > **Remark:** [Finite-Key Considerations]
@@ -723,7 +723,7 @@ Models photon loss in fiber:
 \cN_^{amp}(\rho) = E_0\rho E_0^\dagger + E_1\rho E_1^\dagger,
 \]
 with $E_0 = \ketbra{0}{0} + \sqrt{1-\gamma}\ketbra{1}{1}$,
-$E_1 = \sqrt\ketbra{0}{1}$.
+$E_1 = \sqrt{\gamma}\,\ketbra{0}{1}$.
 
 **Audit interpretation:** $\gamma$ is the photon loss probability in
 the fiber. At 0.2 dB/km (standard single-mode fiber at 1550 nm),

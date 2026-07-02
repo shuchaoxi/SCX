@@ -33,7 +33,7 @@ where $\kappa = \mathrm{KL}(\theta^* \| p_0)$ is the Chernoff information betwee
 The method has a detectable failure mode. When the features used for state discovery carry insufficient information about the true data structure, performance degrades gracefully to that of a simple loss-threshold baseline. We quantify this through the mutual information $\delta = I(\phi(X); S)$ between features and true states, proving (**Theorem 2**, SI~S2):
 
 $$
-\mathrm{F1}_{\mathrm{SCX}} \leq \mathrm{F1}_{\mathrm{base}} + C_F \sqrt{\frac{2}}.
+\mathrm{F1}_{\mathrm{SCX}} \leq \mathrm{F1}_{\mathrm{base}} + C_F \sqrt{\frac{\delta}{2}}.
 $$
 
 This provides a practical diagnostic: estimate $\delta$ before running the full method. If $\delta / \log K < 0.2$, the features are sufficiently informative. If the ratio exceeds 0.5, the method will not outperform simpler approaches, and effort should be directed toward better feature engineering rather than hyperparameter tuning.

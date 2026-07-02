@@ -109,8 +109,8 @@ $$
 $$
     \boxed{\sum_{i \in ClaimSpace} g_i = 0}
 $$
-
-两者都是：**几何约束 = 内容分布**
+ （但性质不同：爱因斯坦方程是动力学方程，∑g=0 是约束条件）
+两者都是：**几何/规范约束 = 内容分布**
 \end{keyeq}
 
 ### 什么是"声明"（Claim）？
@@ -1063,7 +1063,7 @@ $$
 > **黑暗森林曲率：**
 > 
 > $$
->     F_{ij} = g_{ij} \otimes g_{ji} \quad （双向信息不对称的张量积）
+>     F_{ij} = g_{ij} \wedge g_{ji} \quad 	ext{(corrected: wedge product, not tensor product)} \quad （双向信息不对称的张量积）
 > $$
 > 
 > 
