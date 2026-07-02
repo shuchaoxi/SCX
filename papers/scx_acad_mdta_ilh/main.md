@@ -1,23 +1,11 @@
-\begin{CJK}{UTF8}{gbsn}
+# Beyond Metaphor: Rigorous Formalization of Quantum Entanglement, Data Wormholes, and Relativistic Invariance in SCX Auditing
 
-\title{
-    
-    { **超越隐喻**}
-    { 量子纠缠、数据虫洞与相对论不变性在SCX审计中的严格形式化}
-    { Beyond Metaphor: Rigorous Formalization of}
-    { Quantum Entanglement, Data Wormholes, and}
-    { Relativistic Invariance in SCX Auditing}
-    \rule{1.5pt}
-    { Xiaogan Supercomputing Center (SCX)}
-    { `papers/scx\_acad\_mdta\_ilh/main.tex`}
-    { Classification: INTERNAL}
-    { Version 1.0 --- 2026-07-02}
-    
-}
+**Xiaogan Supercomputing Center (SCX)**  
+`papers/scx_acad_mdta_ilh/main.tex`  
+**Classification:** INTERNAL  
+**Version 1.0 --- 2026-07-02**
 
 *Abstract:*
-
-**摘要：** 本文对SCX审计领域中三个源自物理学启发的探索路径——审计相关性不对称检测（ACAD）、流形密度拓扑分析（MDTA）、不变性分层体系（ILH）——进行严格的数学形式化。这三条路径分别起源于量子纠缠、虫洞（Einstein-Rosen桥）和狭义相对论的概念类比，经历了五轮\"灵感→修正→形式化→敌对审查→最终裁决\"的迭代。本文呈现修正后的最终框架：ACAD提供信息论/统计安全的篡改检测（5个定理+1个推论），MDTA提供基于持久同调的流形捷径审计风险评估（5个定理），ILH提供SCX不变性结构的群论文档化（9个定理）。每个框架均附有诚实的裁决：ACAD为**条件性有用**，MDTA为**实用主义的有用**，ILH为**文档价值**。本文遵循诚实性原则：不将物理学类比伪装成数学对应，明确陈述每个框架的局限性和裂缝。
 
 **Abstract:** This paper presents a rigorous mathematical formalization of three physics-inspired exploration paths in SCX auditing: Audit Correlation Asymmetry Detection (ACAD), Manifold Density Topology Analysis (MDTA), and Invariance Layered Hierarchy (ILH). These paths originate from conceptual analogies with quantum entanglement, wormholes (Einstein-Rosen bridges), and special relativity respectively, and have undergone five rounds of ``inspiration $\rightarrow$ correction $\rightarrow$ formalization $\rightarrow$ hostile review $\rightarrow$ final verdict.'' This paper presents the corrected final frameworks: ACAD provides information-theoretic/statistical-security tampering detection (5 theorems + 1 corollary), MDTA provides persistent-homology-based manifold shortcut audit risk assessment (5 theorems), and ILH documents SCX invariance structure via group theory (9 theorems). Each framework carries an honest verdict: ACAD is **conditionally useful**, MDTA is **pragmatically useful**, and ILH has **documentation value**. This paper adheres to the honesty principle: physics analogies are not disguised as mathematical correspondences, and each framework's limitations and fractures are explicitly stated.
 
@@ -27,1000 +15,902 @@
 
 ---
 
-## 引言 / Introduction
+## Introduction
 <!-- label: sec:intro -->
 
-### 背景与动机 / Background and Motivation
+### Background and Motivation
 
-SCX的核心数学基础是离散Hodge理论与规范理论（$U(1)$-型平移规范 + $O(d)$ 格点规范）。这些工具源自量子场论和粒子物理。本文探索三个更深层的物理学概念——**量子纠缠**、**虫洞**（Einstein-Rosen桥）和**狭义相对论**（Lorentz变换的不变性）——并诚实地问：它们是否为SCX审计提供了离散Hodge理论尚未覆盖的视角？
+SCX's core mathematical foundation is discrete Hodge theory + gauge theory ($U(1)$-type translation gauge + $O(d)$ lattice gauge). These tools originate from QFT and particle physics. This paper explores three deeper physics concepts --- quantum entanglement, wormholes (Einstein-Rosen bridges), and special relativity (Lorentz invariance) --- and honestly asks: do they provide audit perspectives not yet covered by discrete Hodge theory?
 
-*SCX's core mathematical foundation is discrete Hodge theory + gauge theory ($U(1)$-type translation gauge + $O(d)$ lattice gauge). These tools originate from QFT and particle physics. This paper explores three deeper physics concepts --- quantum entanglement, wormholes (Einstein-Rosen bridges), and special relativity (Lorentz invariance) --- and honestly asks: do they provide audit perspectives not yet covered by discrete Hodge theory?*
+[Table omitted --- see original .tex]
 
-[Table omitted — see original .tex]
+### Five-Round Iteration History
 
-### 五轮迭代历程 / Five-Round Iteration History
+This paper presents frameworks that have undergone five complete iterations:
 
-本文呈现的框架经历了完整的五轮迭代：
+1. **Round 1: Creative exploration** --- building analogical mappings from three physics concepts to SCX auditing
+2. **Round 2: Self-review and correction** --- identifying mathematical fractures in each analogy, correcting into honest mathematical problems
+3. **Round 3: Rigorous formalization** --- establishing explicit mathematical frameworks for all three corrected paths (definitions, theorems, proofs)
+4. **Round 4: Hostile review** --- searching for fractures in the formalizations with the mindset of a thesis committee
+5. **Round 5: Fixes and final verdict** --- repairing repairable fractures, honestly positioning each path's value
 
-1. **第1轮：创造性探索** —— 构建三个物理学概念到SCX审计的类比映射
-2. **第2轮：自审与修正** —— 识别每个类比中的数学裂缝，修正为诚实的数学问题
-3. **第3轮：严格形式化** —— 为三条修正路径建立显式的数学框架（定义、定理、证明）
-4. **第4轮：敌对审查** —— 以答辩委员会成员的心态寻找形式化中的裂缝
-5. **第5轮：修正与最终裁决** —— 修复可修复的裂缝，诚实定位每条路径的价值
+### Overview of Three Corrected Paths
 
-*This paper presents frameworks that have undergone five complete iterations: (1) Creative exploration --- building analogical mappings; (2) Self-review and correction --- identifying mathematical fractures; (3) Rigorous formalization --- establishing explicit mathematical frameworks; (4) Hostile review --- searching for fractures in formalizations; (5) Fixes and final verdict --- repairing repairable fractures, honestly positioning each path's value.*
+[Table omitted --- see original .tex]
 
-### 三条修正路径概览 / Overview of Three Corrected Paths
+### Honesty Principle
 
-[Table omitted — see original .tex]
+This paper adheres to the following honesty principles:
 
-### 诚实性原则 / Honesty Principle
-
-本文遵循以下诚实性原则：
-
-1. **不伪装类比为对应：** 当物理学概念被用作启发时，明确声明其为类比而非数学对应
-2. **裂缝透明化：** 每个框架的已知裂缝和局限性与定理一同呈现
-3. **裁决分级化：** 使用四级裁决体系——条件性有用、实用主义的有用、文档价值、边际价值
-4. **审计价值为最终准绳：** 无论形式化多么优雅，实用审计价值是最终评判标准
-
-*This paper adheres to the following honesty principles: (1) Analogies are not disguised as correspondences; (2) Fractures are transparently presented alongside theorems; (3) A tiered verdict system is used; (4) Practical audit value is the ultimate criterion.*
+1. **Analogies are not disguised as correspondences:** When physics concepts serve as inspiration, this is explicitly stated as analogy, not mathematical correspondence
+2. **Fracture transparency:** Known fractures and limitations are presented alongside theorems
+3. **Tiered verdict system:** A four-tier verdict system is used --- conditionally useful, pragmatically useful, documentation value, marginal value
+4. **Audit value as ultimate criterion:** Regardless of formal elegance, practical audit value is the ultimate evaluation criterion
 
 ---
 
-# 审计相关性不对称检测 / ACAD
+# Audit Correlation Asymmetry Detection / ACAD
 <!-- label: part:acad -->
 
-> [Table omitted — see original .tex]
+> [Table omitted --- see original .tex]
 
-## ACAD基础设定 / ACAD Foundations
+## ACAD Foundations
 <!-- label: sec:acad-found -->
 
-### 核心问题 / Core Problem
+### Core Problem
 
-\begin{bilingual}{核心问题 / Core Question}
-如果两个审计员$A$和$B$的参考数据通过某个秘密约束关联，攻击者在不知道约束的情况下篡改一方的数据，能否以高概率检测到？
-*If two auditors $A$ and $B$ have reference data linked by a secret constraint, can tampering with one side be detected with high probability by an attacker ignorant of the constraint?*
-\end{bilingual}
+If two auditors $A$ and $B$ have reference data linked by a secret constraint, can tampering with one side be detected with high probability by an attacker ignorant of the constraint?
 
-这是一个**信息论安全**问题——与量子密钥分发(QKD)共享直觉但不共享数学。ACAD将纠缠类比修正为诚实的信息论框架：不需要量子力学的任何概念。
+This is an information-theoretic security problem --- sharing intuition with QKD but not its mathematics. ACAD corrects the entanglement analogy into an honest information-theoretic framework requiring no quantum mechanics.
 
-*This is an information-theoretic security problem --- sharing intuition with QKD but not its mathematics. ACAD corrects the entanglement analogy into an honest information-theoretic framework requiring no quantum mechanics.*
+### Basic Definitions
 
-### 基本定义 / Basic Definitions
-
-> **Definition:** [审计对 / Audit Pair]
+> **Definition:** [Audit Pair]
 > <!-- label: def:audit-pair -->
-> 一个审计对是一个三元组$(\cA, \cB, \cC)$，其中：
+> An audit pair is a triple $(\mathcal{A}, \mathcal{B}, \mathcal{C})$, where:
 > 
-- $\cA \subseteq \cX^n$：审计员$A$的参考数据集空间（$n$个数据点）
-- $\cB \subseteq \cX^n$：审计员$B$的参考数据集空间
-- $\cC \subseteq \{C: \cX \times \cX \to \{0,1\}\}$：约束函数空间
+> - $\mathcal{A} \subseteq \mathcal{X}^n$: auditor $A$'s reference dataset space ($n$ data points)
+> - $\mathcal{B} \subseteq \mathcal{X}^n$: auditor $B$'s reference dataset space
+> - $\mathcal{C} \subseteq \{C: \mathcal{X} \times \mathcal{X} \to \{0,1\}\}$: constraint function space
 
-> **Definition:** [秘密配对 / Secret Pairing]
+> **Definition:** [Secret Pairing]
 > <!-- label: def:secret-pairing -->
-> 秘密配对是一个双射$\phi: [n] \to [n]$和一个约束函数$C \in \cC$，满足对审计员双方的部分可知性：
+> A secret pairing is a bijection $\phi: [n] \to [n]$ and a constraint function $C \in \mathcal{C}$, satisfying partial knowability for both auditors:
 > 
-- 审计员$A$知道$\{x_i^A\}_{i=1}^n$但不知道$\phi$和$\{x_j^B\}_{j=1}^n$
-- 审计员$B$知道$\{x_j^B\}_{j=1}^n$和$\phi$，但不知道$\{x_i^A\}_{i=1}^n$（在篡改检测阶段之前）
-- 约束满足：$\forall i \in [n],\; C(x_i^A, x_{\phi(i)}^B) = 1$
+> - Auditor $A$ knows $\{x_i^A\}_{i=1}^n$ but does not know $\phi$ and $\{x_j^B\}_{j=1}^n$
+> - Auditor $B$ knows $\{x_j^B\}_{j=1}^n$ and $\phi$, but does not know $\{x_i^A\}_{i=1}^n$ (before the tampering detection phase)
+> - Constraint satisfaction: $\forall i \in [n],\; C(x_i^A, x_{\phi(i)}^B) = 1$
 
-> **Definition:** [攻击者模型 / Adversary Model]
+> **Definition:** [Adversary Model]
 > <!-- label: def:adversary -->
-> 攻击者$\mathcal{E}$具有以下能力与限制：
+> The adversary $\mathcal{E}$ has the following capabilities and limitations:
 > 
-- **能力：** 可以修改$D_A = \{x_i^A\}_{i=1}^n$中的任意子集为$\tilde{D}_A = \{\tilde{x}_i^A\}_{i=1}^n$
-- **限制：** 不知道$\phi$、$D_B$、$C$的具体形式
-- **知识：** 知道$\cX$、$n$、以及$D_A$的原始内容
+> - **Capability:** May modify any subset of $D_A = \{x_i^A\}_{i=1}^n$ to $\tilde{D}_A = \{\tilde{x}_i^A\}_{i=1}^n$
+> - **Limitation:** Does not know $\phi$, $D_B$, or the specific form of $C$
+> - **Knowledge:** Knows $\mathcal{X}$, $n$, and the original content of $D_A$
 
-> **Definition:** [篡改检测协议 / Tampering Detection Protocol]
+> **Definition:** [Tampering Detection Protocol]
 > <!-- label: def:protocol -->
 > 
-1. **初始化：** 审计员$B$拥有$D_B$和$\phi$。安全的带外信道用于最终比对。
-2. **篡改：** 攻击者将$D_A$修改为$\tilde{D}_A$。
-3. **挑战：** $B$随机选择$k$个索引$i_1, ..., i_k \subset [n]$（均匀无放回抽样）。
-4. **请求：** $B$向$A$请求$\tilde{x}_{i_1}^A, ..., \tilde{x}_{i_k}^A$。
-5. **验证：** $B$计算检查通过率：
-6. **决策：** 如果$T_k < \tau$（预设阈值），则标记为``检测到篡改''。
+> 1. **Initialization:** Auditor $B$ holds $D_B$ and $\phi$. A secure out-of-band channel is used for final comparison.
+> 2. **Tampering:** The attacker modifies $D_A$ to $\tilde{D}_A$.
+> 3. **Challenge:** $B$ randomly selects $k$ indices $i_1, ..., i_k \subset [n]$ (uniform without replacement).
+> 4. **Request:** $B$ requests $\tilde{x}_{i_1}^A, ..., \tilde{x}_{i_k}^A$ from $A$.
+> 5. **Verification:** $B$ computes the check pass rate.
+> 6. **Decision:** If $T_k < \tau$ (predefined threshold), flag as ``tampering detected.''
 
-## ACAD定理体系 / ACAD Theorem System
+## ACAD Theorem System
 <!-- label: sec:acad-theorems -->
 
-### 定理1：检测概率下界（修正版）
+### Theorem 1: Detection Probability Lower Bound (Corrected)
 
-> **Theorem:** [ACAD检测概率下界 / ACAD Detection Probability Lower Bound]
+> **Theorem:** [ACAD Detection Probability Lower Bound]
 > <!-- label: thm:acad-detection -->
-> 设攻击者修改了$m$个数据点（$1 \leq m \leq n$），审计员$B$无放回抽取$k$个样本进行验证。假设约束函数$C$是$\varepsilon$-鲁棒的：对于任何未修改的对，$P(C(x_i^A, x_{\phi(i)}^B) = 1) \geq 1 - \varepsilon$（其中$\varepsilon \geq 0$是自然噪声）。假设攻击者不知道$\phi$且$\phi$是均匀随机双射。则：
-> 
+> Let the attacker modify $m$ data points ($1 \leq m \leq n$), and auditor $B$ draw $k$ samples without replacement for verification. Assume the constraint function $C$ is $\varepsilon$-robust: for any unmodified pair, $P(C(x_i^A, x_{\phi(i)}^B) = 1) \geq 1 - \varepsilon$ (where $\varepsilon \geq 0$ is natural noise). Assume the attacker does not know $\phi$ and $\phi$ is a uniformly random bijection. Then:
 > 
 > $$
-> \boxed{P(检测到篡改) \geq 1 - \exp\left(-\frac{2k \cdot \alpha^2 \cdot (1 - \varepsilon - \gamma)^2}{1 - (k-1)/n}\right)}
+> \boxed{P(\text{detection}) \geq 1 - \exp\left(-\frac{k \cdot \alpha^2 \cdot (1 - \varepsilon - \gamma)^2}{2\left(1 - (k-1)/n\right)}\right)}
 > $$
 > 
-> 
-> 其中$\alpha = m/n$是篡改比例，$\gamma$是攻击者在不知道$\phi$的情况下能成功伪造约束的最大概率，$\tau$是检测阈值。
-> 
-> *Let the attacker modify $m$ data points. Auditor $B$ draws $k$ samples without replacement. Assume constraint $C$ is $\varepsilon$-robust and the attacker does not know the uniformly random bijection $\phi$. Then the detection probability satisfies the above bound.*
+> where $\alpha = m/n$ is the tampering proportion, $\gamma$ is the maximum probability with which the attacker can successfully forge the constraint without knowing $\phi$, and $\tau$ is the detection threshold.
 
-> **Proof:** 设$S$为被篡改的索引集合，$|S| = m$。$B$抽取$k$个样本（无放回）。对于均匀随机双射$\phi$，攻击者无法预测哪些$i$被$\phi$映射到哪些$j$。
+> **Proof:** Let $S$ be the set of tampered indices, $|S| = m$. $B$ draws $k$ samples (without replacement). For a uniformly random bijection $\phi$, the attacker cannot predict which $i$ are mapped to which $j$ by $\phi$.
 > 
-> 设$p_1$为篡改条件下单次检查通过的概率：
-> 
-> $$
->     p_1 = \left(1 - \frac{m}{n}\right)(1 - \varepsilon) + \frac{m}{n} \cdot \gamma
-> $$
-> 
-> 其中第一项来自未篡改点（自然通过率$1-\varepsilon$），第二项来自篡改点（攻击者最多以$\gamma$的概率通过）。
-> 
-> 设$p_0 = 1 - \varepsilon$（无篡改条件下的通过率）。检测条件为$T_k < \tau$。选择$\tau = \frac{p_0 + p_1}{2}$为中间点，则：
+> Let $p_1$ be the single-check pass probability under tampering:
 > 
 > $$
->     \tau - p_1 = \frac{p_0 - p_1}{2} = \frac{m}{n} \cdot \frac{1 - \varepsilon - \gamma}{2} = \frac{\alpha(1 - \varepsilon - \gamma)}{2}
+> p_1 = \left(1 - \frac{m}{n}\right)(1 - \varepsilon) + \frac{m}{n} \cdot \gamma
 > $$
 > 
+> where the first term comes from unmodified points (natural pass rate $1-\varepsilon$), and the second term from tampered points (attacker passes with probability at most $\gamma$).
 > 
-> 使用Serfling不等式（无放回抽样的集中不等式）替代原始版本中的Hoeffding不等式：
-> 
-> $$
->     P(T_k \geq \tau) = P(T_k - p_1 \geq \tau - p_1) \leq \exp\left(-\frac{2k(\tau - p_1)^2}{1 - (k-1)/n}\right)
-> $$
-> 
-> 
-> 代入$\tau - p_1$：
+> Let $p_0 = 1 - \varepsilon$ (pass rate under no tampering). The detection condition is $T_k < \tau$. Choosing $\tau = \frac{p_0 + p_1}{2}$ as the midpoint:
 > 
 > $$
->     P(未检测到) &\leq \exp\left(-\frac{2k \cdot (\alpha(1 - \varepsilon - \gamma)/2)^2}{1 - (k-1)/n}\right) 
+> \tau - p_1 = \frac{p_0 - p_1}{2} = \frac{m}{n} \cdot \frac{1 - \varepsilon - \gamma}{2} = \frac{\alpha(1 - \varepsilon - \gamma)}{2}
+> $$
+> 
+> Using Serfling's inequality (concentration inequality for without-replacement sampling) instead of the original version's Hoeffding inequality:
+> 
+> $$
+> P(T_k \geq \tau) = P(T_k - p_1 \geq \tau - p_1) \leq \exp\left(-\frac{2k(\tau - p_1)^2}{1 - (k-1)/n}\right)
+> $$
+> 
+> Substituting $\tau - p_1$:
+> 
+> $$
+> \begin{aligned}
+> P(\text{no detection}) &\leq \exp\left(-\frac{2k \cdot (\alpha(1 - \varepsilon - \gamma)/2)^2}{1 - (k-1)/n}\right) \\
+> &= \exp\left(-\frac{k \cdot \alpha^2 \cdot (1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}\right)
+> \end{aligned}
+> $$
+> 
+> Therefore $P(\text{detection}) \geq 1 - \exp\left(-\frac{k \alpha^2 (1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}\right)$.
+> 
+> $\square$ **Note:** The original version (Theorem 6.1 in Round 3) used Hoeffding's inequality with independent Bernoulli approximation. This corrected version uses Serfling's inequality to handle the correlation from without-replacement sampling. When $k \ll n$, the correction factor $1 - (k-1)/n \approx 1$, and the two versions are equivalent.
 
->     &= \exp\left(-\frac{k \cdot \alpha^2 \cdot (1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}\right)
-> $$
-> 
-> 
-> 因此$P(检测到) \geq 1 - \exp\left(-\frac{k \alpha^2 (1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}\right)$。
-> 
-> $\square$ **注：** 原始版本（定理6.1 in Round 3）使用了独立Bernoulli近似的Hoeffding不等式。本修正版使用Serfling不等式处理无放回抽样的相关性。当$k \ll n$时，修正因子$1 - (k-1)/n \approx 1$，两版本等价。
+### Theorem 2: Statistical Security Bound
 
-### 定理2：统计安全界
-
-> **Theorem:** [ACAD统计安全界 / ACAD Statistical Security Bound]
+> **Theorem:** [ACAD Statistical Security Bound]
 > <!-- label: thm:acad-security -->
-> 如果攻击者不知道$\phi$和$D_B$，且$|D_B| = n$足够大，则对于任何满足知识限制的攻击策略$\mathcal{E}$，存在常数$c > 0$使得：
-> 
+> If the attacker does not know $\phi$ and $D_B$, and $|D_B| = n$ is sufficiently large, then for any attack strategy $\mathcal{E}$ satisfying the knowledge constraints, there exists a constant $c > 0$ such that:
 > 
 > $$
-> \boxed{\inf_{\mathcal{E}} P(检测到篡改) \geq 1 - \exp\left(-c \cdot k \cdot \alpha^2\right)}
+> \boxed{\inf_{\mathcal{E}} P(\text{detection}) \geq 1 - \exp\left(-c \cdot k \cdot \alpha^2\right)}
 > $$
 > 
-> 
-> 其中$c = \frac{(1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}$，下确界取遍所有满足知识限制的攻击策略。
-> 
-> *If the attacker does not know $\phi$ and $D_B$, then for any attack strategy $\mathcal{E}$ satisfying knowledge constraints, the detection probability is bounded below by the above exponential bound.*
+> where $c = \frac{(1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}$, and the infimum is taken over all attack strategies satisfying the knowledge constraints.
 
-> **Proof:** 攻击者的信息状态由$\sigma(\tilde{D}_A, D_A)$（攻击者知道的$\sigma$-代数）决定。$\phi$在此$\sigma$-代数下是不可测的（攻击者不知道配对）。
+> **Proof:** The attacker's information state is determined by the $\sigma$-algebra $\sigma(\tilde{D}_A, D_A)$ (what the attacker knows). $\phi$ is not measurable with respect to this $\sigma$-algebra (the attacker does not know the pairing).
 > 
-> 由信息论数据处理不等式，攻击者对$\phi$的估计误差下界为：
+> By the data processing inequality from information theory, the lower bound on the attacker's estimation error for $\phi$ is:
 > 
 > $$
->     H(\phi \mid \tilde{D}_A, D_A) \geq \log(n!) - I(\phi; D_A)
+> H(\phi \mid \tilde{D}_A, D_A) \geq \log(n!) - I(\phi; D_A)
 > $$
 > 
-> 其中$H$是熵，$I$是互信息。由于$D_A$由独立于$\phi$的过程生成（在初始化阶段），$I(\phi; D_A) = 0$。因此$H(\phi \mid \tilde{D}_A, D_A) = \log(n!)$——攻击者对$\phi$完全无知。
+> where $H$ is entropy and $I$ is mutual information. Since $D_A$ is generated by a process independent of $\phi$ (during initialization), $I(\phi; D_A) = 0$. Therefore $H(\phi \mid \tilde{D}_A, D_A) = \log(n!)$ --- the attacker has complete ignorance about $\phi$.
 > 
-> 在此无知条件下，攻击者能成功伪造约束的概率受限于随机猜测的水平，从而导出定理 [ref]中的指数界。
+> Under this ignorance condition, the attacker's probability of successfully forging the constraint is bounded by the random guessing level, leading to the exponential bound in Theorem [ref].
 > 
-> $\square$ **重要修正：** 原始版本（定理6.2 in Round 3）声称``信息论安全''。本修正版降级为``统计安全''（statistical security），因为：(1) 约束$C$可能有结构可被利用；(2) 攻击者可通过修改大量数据点实现部分成功；(3) 检查是抽样的而非穷举的。ACAD不达到一次一密级别的完美安全。
+> $\square$ **Important correction:** The original version (Theorem 6.2 in Round 3) claimed ``information-theoretic security.'' This corrected version downgrades to ``statistical security'' because: (1) the constraint $C$ may have exploitable structure; (2) the attacker can achieve partial success by modifying many data points; (3) verification is sampling-based rather than exhaustive. ACAD does not achieve one-time-pad level perfect security.
 
-### 定理3：样本复杂度
+### Theorem 3: Sample Complexity
 
-> **Theorem:** [样本复杂度 / Sample Complexity]
+> **Theorem:** [Sample Complexity]
 > <!-- label: thm:acad-sample -->
-> 为实现检测概率至少$1 - \delta$（给定显著性水平），所需的最小样本量$k^*$满足：
-> 
-> 
-> $$
-> \boxed{k^* \geq \frac{2 \cdot (1 - (k^*-1)/n)}{\alpha^2 (1 - \varepsilon - \gamma)^2} \cdot \log\frac{1}}
-> $$
-> 
-> 
-> 对于固定篡改比例$\alpha$且$k \ll n$的情况，渐进界为：
+> To achieve detection probability at least $1 - \delta$ (at a given significance level), the minimum required sample size $k^*$ satisfies:
 > 
 > $$
-> k^* = O\left(\frac{1}{\alpha^2} \cdot \log\frac{1}\right)
+> \boxed{k^* \geq \frac{2 \cdot (1 - (k^*-1)/n)}{\alpha^2 (1 - \varepsilon - \gamma)^2} \cdot \log\frac{1}{\delta}}
 > $$
 > 
+> For fixed tampering proportion $\alpha$ with $k \ll n$, the asymptotic bound is:
 > 
-> *To achieve detection probability at least $1-\delta$, the minimum required sample size satisfies the above bound. For fixed $\alpha$ with $k \ll n$, the asymptotic bound is $O(\alpha^{-2} \log \delta^{-1})$.*
+> $$
+> k^* = O\left(\frac{1}{\alpha^2} \cdot \log\frac{1}{\delta}\right)
+> $$
 
-> **Proof:** 从定理 [ref]的界出发，设$P(未检测到) \leq \delta$：
+> **Proof:** Starting from the bound in Theorem [ref], set $P(\text{no detection}) \leq \delta$:
 > 
 > $$
->     \exp\left(-\frac{k \alpha^2 (1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}\right) \leq \delta
+> \exp\left(-\frac{k \alpha^2 (1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}\right) \leq \delta
 > $$
 > 
-> 取对数并整理即得。当$k \ll n$时，$1 - (k-1)/n \approx 1$，得到简化形式。
+> Taking the logarithm and rearranging yields the result. When $k \ll n$, $1 - (k-1)/n \approx 1$, giving the simplified form.
 
-### 推论：实际参数下的可行性
+### Corollary: Feasibility Under Practical Parameters
 
-> **Corollary:** [实际参数 / Practical Parameters]
+> **Corollary:** [Practical Parameters]
 > <!-- label: cor:acad-practical -->
-> 若$\alpha = 0.1$（攻击者修改10\%的数据），$\varepsilon = 0.05$（5\%自然噪声），$\gamma = 0$（攻击者对约束完全无知），$\delta = 0.01$（99\%检测置信度），且$n = 10^4$，则$k^* \geq 2 \cdot 1 \cdot 100 / (1 \cdot 0.9025) \cdot 4.605 \approx 1020$。只需检查约10\%的数据即可高概率检测篡改。
+> If $\alpha = 0.1$ (attacker modifies 10\% of data), $\varepsilon = 0.05$ (5\% natural noise), $\gamma = 0$ (attacker completely ignorant of constraint), $\delta = 0.01$ (99\% detection confidence), and $n = 10^4$, then $k^* \geq 2 \cdot 1 \cdot 100 / (1 \cdot 0.9025) \cdot 4.605 \approx 1020$. Only about 10\% of the data needs to be checked to detect tampering with high probability.
 
-### 定理4：审计设置依赖性检测
+### Theorem 4: Audit Setting Dependence Detection
 
-> **Theorem:** [ACAD审计规避检测 / ACAD Audit Evasion Detection]
+> **Theorem:** [ACAD Audit Evasion Detection]
 > <!-- label: thm:acad-mm -->
-> 设专家系统$E$在审计设置$S_1$和$S_2$下产生预测分布$p_1$和$p_2$。定义审计设置依赖性度量：
+> Let expert system $E$ produce prediction distributions $p_1$ and $p_2$ under audit settings $S_1$ and $S_2$. Define the audit setting dependence measure:
 > 
 > $$
->     \Delta(S_1, S_2) = \MMD(p_1, p_2) = \sup_{f \in F} \left| \EE_{x \sim p_1}[f(x)] - \EE_{x \sim p_2}[f(x)] \right|
+> \Delta(S_1, S_2) = \MMD(p_1, p_2) = \sup_{f \in \mathcal{F}} \left| \mathbb{E}_{x \sim p_1}[f(x)] - \mathbb{E}_{x \sim p_2}[f(x)] \right|
 > $$
 > 
-> 其中$F$是再生核Hilbert空间(RKHS)的单位球。则在零假设$H_0: p_1 = p_2$（无审计设置依赖）下：
+> where $\mathcal{F}$ is the unit ball of the reproducing kernel Hilbert space (RKHS). Then under the null hypothesis $H_0: p_1 = p_2$ (no audit setting dependence):
 > 
 > $$
-> \boxed{P\left( \widehat_n > \sqrt{\frac{2K_}{n}} + \sqrt{\frac{2}{n}\log\frac{1}} \right) \leq \delta}
+> \boxed{P\left( \widehat{\MMD}_n > \sqrt{\frac{2K}{n}} + \sqrt{\frac{2}{n}\log\frac{1}{\delta}} \right) \leq \delta}
 > $$
 > 
-> 其中$K_ = \sup_x k(x, x)$是核函数的上界，$\widehat_n$是经验MMD估计。
-> 
-> *Under the null hypothesis of no audit-setting dependence ($p_1 = p_2$), the empirical MMD estimator concentrates around zero with the above exponential tail bound.*
+> where $K = \sup_x k(x, x)$ is the kernel's upper bound, and $\widehat{\MMD}_n$ is the empirical MMD estimate.
 
-> **Proof:** 这是MMD的经典集中不等式。对于有界核$k(\cdot, \cdot) \leq K_$，经验MMD估计$\widehat_n$满足McDiarmid不等式。具体地，改变单个样本对MMD的影响最多为$2\sqrt{K_/n}$，因此：
+> **Proof:** This is a classic concentration inequality for MMD. For a bounded kernel $k(\cdot, \cdot) \leq K$, the empirical MMD estimate $\widehat{\MMD}_n$ satisfies McDiarmid's inequality. Specifically, changing a single sample affects MMD by at most $2\sqrt{K/n}$, therefore:
 > 
 > $$
->     P\left(\widehat_n - \EE[\widehat_n] > t\right) \leq \exp\left(-\frac{nt^2}{2K_}\right)
+> P\left(\widehat{\MMD}_n - \mathbb{E}[\widehat{\MMD}_n] > t\right) \leq \exp\left(-\frac{nt^2}{2K}\right)
 > $$
 > 
-> 在$H_0$下$\EE[\widehat_n] \leq \sqrt{2K_/n}$，代入并设$t = \sqrt{\frac{2}{n}\log\frac{1}}$即得。
+> Under $H_0$, $\mathbb{E}[\widehat{\MMD}_n] \leq \sqrt{2K/n}$. Substituting and setting $t = \sqrt{\frac{2}{n}\log\frac{1}{\delta}}$ yields the result.
 
-### 定理5：约束构造方案
+### Theorem 5: Constraint Construction Schemes
 
-> **Theorem:** [约束构造的密码学基础 / Cryptographic Constraint Construction]
+> **Theorem:** [Cryptographic Constraint Construction]
 > <!-- label: thm:acad-constraint -->
-> 存在两类可构造的约束函数，满足ACAD协议的安全要求：
+> There are two constructible classes of constraint functions satisfying the security requirements of the ACAD protocol:
 > 
+> 1. **Data manifold pairing constraint:** Select a public set of high-density reference points $R = \{r_1, ..., r_n\}$. For each $r_i$, sample $x_i^A$ and $x_i^B$ within the $\varepsilon$-neighborhood. The constraint $C(x_i^A, x_i^B) = 1$ holds iff $d_{\mathcal{M}}(x_i^A, r_i) < \varepsilon$ and $d_{\mathcal{M}}(x_i^B, r_i) < \varepsilon$. This constraint does not depend on expert predictions (avoiding circularity).
+> 2. **Cryptographic hash constraint:** Construct using a hash chain: $x_i^B = H(x_i^A \| K)$, where $H$ is a cryptographic hash function and $K$ is a shared secret key. The constraint $C(x_i^A, x_i^B) = 1$ holds iff $H(x_i^A \| K) = x_i^B$. An attacker without knowledge of $K$ cannot construct $\tilde{x}_i^A$ satisfying the constraint.
 > 
-1. **数据流形配对约束：** 选择一个公开的高密度参考点集合$R = \{r_1, ..., r_n\}$，对于每个$r_i$在$\varepsilon$-邻域内采样$x_i^A$和$x_i^B$，约束$C(x_i^A, x_i^B) = 1$当且仅当$d_(x_i^A, r_i) < \varepsilon$且$d_(x_i^B, r_i) < \varepsilon$。此约束不依赖于专家预测（避免循环性）。
-2. **密码学哈希约束：** 使用哈希链构造：$x_i^B = H(x_i^A \| K)$，其中$H$是密码学哈希函数，$K$是共享密钥。约束$C(x_i^A, x_i^B) = 1$当且仅当$H(x_i^A \| K) = x_i^B$。攻击者在不知道$K$的情况下无法构造满足约束的$\tilde{x}_i^A$。
+> Scheme (b) provides the strongest security guarantee --- security reduces to the preimage resistance of the hash function.
 
+> **Proof:** For scheme (a), the constraint does not depend on expert predictions, thus avoiding the circularity of ``auditing validates expert predictions, while constraints depend on expert predictions.'' The attacker needs to know the global structure of the manifold (neighborhoods of $r_i$) to forge the constraint --- this is equivalent to knowing the distribution of $D_B$, consistent with the attacker's knowledge limitations.
 > 
-> 其中方案(b)提供最强的安全保证——安全性归结为哈希函数的抗原像性（preimage resistance）。
+> For scheme (b), the probability that an attacker without knowledge of $K$ can construct $\tilde{x}_i^A$ such that $H(\tilde{x}_i^A \| K) = x_i^B$ equals the success probability of a preimage attack on a random oracle, which under standard cryptographic assumptions is $O(2^{-|K|})$, i.e., $\gamma = \text{negl}(|K|)$.
 
-> **Proof:** 对于方案(a)，约束不依赖专家预测，因此不存在``审计本身验证专家预测、约束又依赖专家预测''的循环性。攻击者需要知道流形的全局结构（$r_i$的邻域）才能伪造约束——这等价于知道$D_B$的分布，与攻击者知识限制一致。
-> 
-> 对于方案(b)，攻击者在不知道$K$的情况下构造$\tilde{x}_i^A$使得$H(\tilde{x}_i^A \| K) = x_i^B$的概率等于对随机预言机的原像攻击成功概率，在标准密码学假设下为$O(2^{-|K|})$，即$\gamma = negl(|K|)$。
-
-## ACAD裁决 / ACAD Verdict
+## ACAD Verdict
 <!-- label: sec:acad-verdict -->
 
 \begin{verdictbox}{verdictyellow}
-**最终裁决：条件性有用 / CONDITIONALLY USEFUL**
+**Final Verdict: CONDITIONALLY USEFUL**
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
-**适用条件：** 当且仅当(1)约束可以被密码学方式实现（如哈希链），(2)审计员双方有安全信道时，ACAD提供一个可证明安全的篡改检测方案。
+**Applicable when:** (1) constraints can be cryptographically realized (e.g., hash chains), (2) auditors share a secure channel. ACAD provides a provably secure tampering detection scheme.
 
-**注意事项：** 不要声称ACAD是``量子''的或具有量子优势——它是经典统计安全方案。
-
-***Applicable when:** (1) constraints can be cryptographically realized (e.g., hash chains), (2) auditors share a secure channel. **Note:** Do not claim ACAD is ``quantum'' or has quantum advantage --- it is a classical statistical security scheme.*
+**Note:** Do not claim ACAD is ``quantum'' or has quantum advantage --- it is a classical statistical security scheme.
 \end{verdictbox}
 
 ---
 
-# 流形密度拓扑分析 / MDTA
+# Manifold Density Topology Analysis / MDTA
 <!-- label: part:mdta -->
 
-> [Table omitted — see original .tex]
+> [Table omitted --- see original .tex]
 
-## MDTA基础设定 / MDTA Foundations
+## MDTA Foundations
 <!-- label: sec:mdta-found -->
 
-### 核心问题 / Core Problem
+### Core Problem
 
-\begin{bilingual}{核心问题 / Core Question}
-Situs流形上的低密度区域是否构成审计盲区？两个在环境空间中相距很远的密集区，在流形距离上是否接近？局部审计（只看环境空间邻域）能否捕捉这种全局拓扑关系？
-*Do low-density regions on the Situs manifold constitute audit blind spots? Are two clusters far apart in ambient space close in manifold distance? Can local auditing capture such global topological relationships?*
-\end{bilingual}
+Do low-density regions on the Situs manifold constitute audit blind spots? Are two clusters far apart in ambient space close in manifold distance? Can local auditing capture such global topological relationships?
 
-MDTA将``虫洞''类比修正为诚实的流形学习+拓扑数据分析(TDA)框架。``捷径''（shortcut）替代``虫洞''——因为Situs流形通常是连通的，路径一直存在，只是长/短的区别。更像``峡谷''或``隧道''而非``虫洞''。
+MDTA corrects the ``wormhole'' analogy into an honest manifold learning + TDA framework. ``Shortcut'' replaces ``wormhole'' --- since the Situs manifold is typically connected, paths always exist, only shorter or longer. More like ``canyons'' or ``tunnels'' than ``wormholes.''
 
-*MDTA corrects the ``wormhole'' analogy into an honest manifold learning + TDA framework. ``Shortcut'' replaces ``wormhole'' --- since the Situs manifold is typically connected, paths always exist, only shorter or longer. More like ``canyons'' or ``tunnels'' than ``wormholes.''*
+### Basic Definitions
 
-### 基本定义 / Basic Definitions
-
-> **Definition:** [数据流形 / Data Manifold]
+> **Definition:** [Data Manifold]
 > <!-- label: def:data-manifold -->
-> 设$\cX \subseteq \RR^D$为数据空间（环境空间）。数据流形是一个三元组$(\cM, g, p)$，其中：
+> Let $\mathcal{X} \subseteq \mathbb{R}^D$ be the data space (ambient space). A data manifold is a triple $(\mathcal{M}, g, p)$, where:
 > 
-- $\cM$是$d$-维光滑流形（$d \ll D$），$\cM \subset \RR^D$是嵌入子流形
-- $g$是$\cM$上的Riemannian度规（由嵌入诱导的拉回度规或由数据密度构造的Fisher信息度规）
-- $p: \cM \to \RR_{>0}$是$\cM$上的数据密度函数（光滑，可积）
-
+> - $\mathcal{M}$ is a $d$-dimensional smooth manifold ($d \ll D$), $\mathcal{M} \subset \mathbb{R}^D$ is an embedded submanifold
+> - $g$ is a Riemannian metric on $\mathcal{M}$ (either the pullback metric induced by the embedding or a Fisher information metric constructed from data density)
+> - $p: \mathcal{M} \to \mathbb{R}_{>0}$ is a data density function on $\mathcal{M}$ (smooth, integrable)
 > 
-> **诚实声明：** 真实SCX数据可能不满足光滑流形假设。MDTA的统计量作为**描述性几何特征**仍然可计算——不需要流形假设来``成立''，它是算法输出而非理论前提。替代方案：使用**分层空间**(stratified space)假设，允许不同区域有不同维数。
+> **Honesty statement:** Real SCX data may not satisfy the smooth manifold assumption. MDTA statistics remain computable as **descriptive geometric features** --- the manifold assumption is not required for the algorithm to ``work''; it is an algorithmic output rather than a theoretical prerequisite. Alternative: use the **stratified space** assumption, allowing different regions to have different dimensions.
 
-> **Definition:** [密集区 / Cluster]
+> **Definition:** [Cluster]
 > <!-- label: def:cluster -->
-> 数据流形$\cM$上的一个$\rho$-密集区是一个连通开集$\cC \subset \cM$，满足：
+> A $\rho$-cluster on the data manifold $\mathcal{M}$ is a connected open set $\mathcal{C} \subset \mathcal{M}$ satisfying:
 > 
-1. $\forall x \in \cC, p(x) \geq \rho$（密度下界）
-2. $\cC$是道路连通的
-3. 边界$\partial\cC$处$p(x) = \rho$
+> 1. $\forall x \in \mathcal{C}, p(x) \geq \rho$ (density lower bound)
+> 2. $\mathcal{C}$ is path-connected
+> 3. At the boundary $\partial\mathcal{C}$, $p(x) = \rho$
 
-> **Definition:** [流形距离 / Manifold Distance]
+> **Definition:** [Manifold Distance]
 > <!-- label: def:manifold-dist -->
-> 两点$x, y \in \cM$之间的流形距离为：
+> The manifold distance between two points $x, y \in \mathcal{M}$ is:
 > 
 > $$
->     d_(x, y) = \inf_{\gamma: [0,1] \to \cM, \gamma(0)=x, \gamma(1)=y} \int_0^1 \sqrt{g_{\gamma(t)}(\dot(t), \dot(t))} \, dt
+> d_{\mathcal{M}}(x, y) = \inf_{\gamma: [0,1] \to \mathcal{M}, \gamma(0)=x, \gamma(1)=y} \int_0^1 \sqrt{g_{\gamma(t)}(\dot{\gamma}(t), \dot{\gamma}(t))} \, dt
 > $$
 > 
-> 两个密集区$\cC_i, \cC_j$之间的流形距离：
+> The manifold distance between two clusters $\mathcal{C}_i, \mathcal{C}_j$ is:
 > 
 > $$
->     d_(\cC_i, \cC_j) = \inf_{x \in \cC_i, y \in \cC_j} d_(x, y)
+> d_{\mathcal{M}}(\mathcal{C}_i, \mathcal{C}_j) = \inf_{x \in \mathcal{C}_i, y \in \mathcal{C}_j} d_{\mathcal{M}}(x, y)
 > $$
 
-> **Definition:** [捷径比率 / Shortcut Ratio]
+> **Definition:** [Shortcut Ratio]
 > <!-- label: def:shortcut-ratio -->
-> 对于两个密集区$\cC_i, \cC_j$，定义捷径比率：
+> For two clusters $\mathcal{C}_i, \mathcal{C}_j$, the shortcut ratio is defined as:
 > 
 > $$
->     \boxed{r(\cC_i, \cC_j) = \frac{d_(\cC_i, \cC_j)}{\|\mu_i - \mu_j\|}}
+> \boxed{r(\mathcal{C}_i, \mathcal{C}_j) = \frac{d_{\mathcal{M}}(\mathcal{C}_i, \mathcal{C}_j)}{\|\mu_i - \mu_j\|}}
 > $$
 > 
-> 其中$\mu_i = \frac{1}{\vol(\cC_i)} \int_{\cC_i} x \, dx$是$\cC_i$的质心。
+> where $\mu_i = \frac{1}{\vol(\mathcal{C}_i)} \int_{\mathcal{C}_i} x \, dx$ is the centroid of $\mathcal{C}_i$.
 
-> **Definition:** [流形捷径 / Manifold Shortcut]
+> **Definition:** [Manifold Shortcut]
 > <!-- label: def:shortcut -->
-> 当$r(\cC_i, \cC_j) < \tau$（$\tau \in (0, 1)$为预设阈值）时，称$(\cC_i, \cC_j)$构成一个$\tau$-流形捷径。捷径上的最小密度路径为：
+> When $r(\mathcal{C}_i, \mathcal{C}_j) < \tau$ ($\tau \in (0, 1)$ is a predefined threshold), $(\mathcal{C}_i, \mathcal{C}_j)$ is called a $\tau$-manifold shortcut. The minimum-density path on the shortcut is:
 > 
 > $$
->     \gamma^*_{ij} = \arg\min_{\gamma: \cC_i \to \cC_j} \int_\gamma ds
+> \gamma^*_{ij} = \arg\min_{\gamma: \mathcal{C}_i \to \mathcal{C}_j} \int_\gamma ds
 > $$
 > 
-> 沿$\gamma^*$的密度最小值定义捷径的**喉**(throat)：
+> The density minimum along $\gamma^*$ defines the **throat** of the shortcut:
 > 
 > $$
->     x_{throat} = \arg\min_{x \in \gamma^*_{ij}} p(x)
+> x_{\text{throat}} = \arg\min_{x \in \gamma^*_{ij}} p(x)
 > $$
 
-## MDTA定理体系 / MDTA Theorem System
+## MDTA Theorem System
 <!-- label: sec:mdta-theorems -->
 
-### 定理1：捷径密度分布的变分特征
+### Theorem 1: Variational Characterization of Shortcut Density
 
-> **Theorem:** [捷径密度分布的变分特征 / Variational Characterization of Shortcut Density]
+> **Theorem:** [Variational Characterization of Shortcut Density]
 > <!-- label: thm:mdta-variational -->
-> 设$\gamma^*$是连接$\cC_i$和$\cC_j$的最小流形测地线。沿$\gamma^*$的密度函数$p(\gamma^*(t))$满足：对于捷径（$r < 1$），存在唯一的极小值点$t^* \in (0, 1)$使得：
+> Let $\gamma^*$ be the minimal manifold geodesic connecting $\mathcal{C}_i$ and $\mathcal{C}_j$. The density function $p(\gamma^*(t))$ along $\gamma^*$ satisfies: for a shortcut ($r < 1$), there exists a unique minimum point $t^* \in (0, 1)$ such that:
 > 
 > $$
 > \boxed{p(\gamma^*(t^*)) = \min_{t \in [0,1]} p(\gamma^*(t)) < \min(\rho_i, \rho_j)}
 > $$
 > 
-> 其中$\rho_i, \rho_j$是$\cC_i, \cC_j$的密度下界。此外，若$\gamma^*$的曲率满足$|\ddot^*(t^*)| > 0$，则：
+> where $\rho_i, \rho_j$ are the density lower bounds of $\mathcal{C}_i, \mathcal{C}_j$. Moreover, if the curvature of $\gamma^*$ satisfies $|\ddot{\gamma}^*(t^*)| > 0$, then:
 > 
 > $$
-> p(\gamma^*(t^*)) \leq \frac{\rho_i + \rho_j}{2} - \frac{1}{8} |\ddot^*(t^*)| \cdot (\rho_i - \rho_j)^2 + O((\rho_i - \rho_j)^3)
+> p(\gamma^*(t^*)) \leq \frac{\rho_i + \rho_j}{2} - \frac{1}{8} |\ddot{\gamma}^*(t^*)| \cdot (\rho_i - \rho_j)^2 + O((\rho_i - \rho_j)^3)
 > $$
-> 
-> 
-> *The density function along the minimal geodesic connecting two shortcut clusters has a unique interior minimum lower than both cluster density bounds, with the above curvature-dependent bound.*
 
-> **Proof:** 由捷径定义$r < 1$，流形路径在环境空间中``绕路''，意味着流形在$\gamma^*$附近有显著曲率或折叠。密度函数沿测地线的二阶Taylor展开为：
+> **Proof:** By the shortcut definition $r < 1$, the manifold path ``detours'' in ambient space, implying significant curvature or folding of $\mathcal{M}$ near $\gamma^*$. The second-order Taylor expansion of the density function along the geodesic is:
 > 
 > $$
->     p(\gamma^*(t)) = p(\gamma^*(t^*)) + \frac{1}{2} p''(\gamma^*(t^*)) (t - t^*)^2 + O((t - t^*)^3)
+> p(\gamma^*(t)) = p(\gamma^*(t^*)) + \frac{1}{2} p''(\gamma^*(t^*)) (t - t^*)^2 + O((t - t^*)^3)
 > $$
 > 
-> 
-> 在端点$t = 0, 1$处，$p \geq \min(\rho_i, \rho_j)$。设端点$t=0$处密度为$\rho_i + \delta_i$（$\delta_i \geq 0$），$t=1$处为$\rho_j + \delta_j$。通过匹配端点条件的二阶展开，求解$t^*$和$p(\gamma^*(t^*))$：
+> At the endpoints $t = 0, 1$, $p \geq \min(\rho_i, \rho_j)$. Let the density at endpoint $t=0$ be $\rho_i + \delta_i$ ($\delta_i \geq 0$), and at $t=1$ be $\rho_j + \delta_j$. Matching endpoint conditions with the second-order expansion:
 > 
 > $$
->     p(\gamma^*(0)) &= p(t^*) + \frac{1}{2}p''(t^*) \cdot (t^*)^2 = \rho_i + \delta_i 
+> \begin{aligned}
+> p(\gamma^*(0)) &= p(t^*) + \frac{1}{2}p''(t^*) \cdot (t^*)^2 = \rho_i + \delta_i \\
+> p(\gamma^*(1)) &= p(t^*) + \frac{1}{2}p''(t^*) \cdot (1-t^*)^2 = \rho_j + \delta_j
+> \end{aligned}
+> $$
+> 
+> Under the curvature condition, $p''(t^*)$ is positively correlated with $|\ddot{\gamma}^*(t^*)|$ (density changes faster in regions of high curvature). Solving simultaneously and taking the worst case $\delta_i = \delta_j = 0$ yields the stated bound.
+> 
+> $\square$ **Note:** The theorem relies on a small-curvature assumption for the convergence of the Taylor expansion. In high-curvature regions (which characterize shortcuts), higher-order expansions or nonparametric bounds are needed. This is a known technical limitation.
 
->     p(\gamma^*(1)) &= p(t^*) + \frac{1}{2}p''(t^*) \cdot (1-t^*)^2 = \rho_j + \delta_j
-> $$
-> 
-> 
-> 在曲率存在的条件下，$p''(t^*)$与$|\ddot^*(t^*)|$正相关（密度在曲率大的区域变化快）。联立求解并取$\delta_i = \delta_j = 0$的最坏情况，得到所述界。
-> 
-> $\square$ **注：** 定理依赖于流形曲率的小性假设以保证Taylor展开的收敛。在高曲率区域（这正是捷径的特征），需要更高阶展开或非参数界。这是一个已知的技术限制。
+### Theorem 2: Shortcut Existence Condition
 
-### 定理2：捷径存在性条件
-
-> **Theorem:** [捷径存在性条件 / Shortcut Existence Condition]
+> **Theorem:** [Shortcut Existence Condition]
 > <!-- label: thm:mdta-existence -->
-> 两个$\rho$-密集区$\cC_i, \cC_j$之间存在$\tau$-捷径的充分条件是：
+> A sufficient condition for a $\tau$-shortcut between two $\rho$-clusters $\mathcal{C}_i, \mathcal{C}_j$ is:
 > 
 > $$
-> \boxed{\exists  连接  \cC_i, \cC_j  的道路  \gamma  使得  \frac{\int_\gamma ds}{\|\mu_i - \mu_j\|} < \tau}
+> \boxed{\exists \text{ a path } \gamma \text{ connecting } \mathcal{C}_i, \mathcal{C}_j \text{ such that } \frac{\int_\gamma ds}{\|\mu_i - \mu_j\|} < \tau}
 > $$
 > 
-> 
-> 等价地，如果$\cM$的reach（到达半径）$\tau_$满足：
+> Equivalently, if the reach $\tau_{\mathcal{M}}$ of $\mathcal{M}$ satisfies:
 > 
 > $$
->     \tau_ < \frac{\|\mu_i - \mu_j\|}{2} \cdot \sqrt{\frac{1}{\tau^2} - 1}
+> \tau_{\mathcal{M}} < \frac{\|\mu_i - \mu_j\|}{2} \cdot \sqrt{\frac{1}{\tau^2} - 1}
 > $$
 > 
-> 则捷径存在。
-> 
-> *A sufficient condition for a $\tau$-shortcut between clusters is the existence of a path whose length is less than $\tau$ times the ambient centroid distance. Equivalently, if the manifold's reach is sufficiently small relative to the inter-centroid distance, a shortcut exists.*
+> then a shortcut exists.
 
-> **Proof:** 由流形的reach定义（从$\cM$到其中轴的最大距离）。reach越小意味着流形折叠越严重。当流形折叠使得沿流形的路径远长于环境空间直线距离时，捷径比率$r < 1$。
+> **Proof:** By the definition of a manifold's reach (the maximum distance from $\mathcal{M}$ to its medial axis). Smaller reach implies more severe manifold folding. When folding makes the path along $\mathcal{M}$ significantly longer than the ambient-space straight-line distance, the shortcut ratio satisfies $r < 1$.
 > 
-> 设$\gamma$为连接两质心的直线段（在环境空间$\RR^D$中）。流形在$\gamma$附近的管状邻域半径受限于reach $\tau_$。沿流形的最短路径长度满足：
+> Let $\gamma$ be the straight line segment connecting the two centroids (in ambient space $\mathbb{R}^D$). The tubular neighborhood radius of $\mathcal{M}$ near $\gamma$ is bounded by the reach $\tau_{\mathcal{M}}$. The shortest path length along $\mathcal{M}$ satisfies:
 > 
 > $$
->     \int_{\gamma_} ds \leq \|\mu_i - \mu_j\| + 2\tau_ \cdot \theta
+> \int_{\gamma_{\mathcal{M}}} ds \leq \|\mu_i - \mu_j\| + 2\tau_{\mathcal{M}} \cdot \theta
 > $$
 > 
-> 其中$\theta$是管状邻域的角宽度。当$\tau_$足够小时，存在满足捷径比率条件的路径。
+> where $\theta$ is the angular width of the tubular neighborhood. When $\tau_{\mathcal{M}}$ is sufficiently small, a path exists satisfying the shortcut ratio condition.
 
-### 定理3：审计风险分类及其Lipschitz一致性
+### Theorem 3: Audit Risk Classification and Its Lipschitz Consistency
 
-> **Theorem:** [审计风险分类 / Audit Risk Classification]
+> **Theorem:** [Audit Risk Classification]
 > <!-- label: thm:mdta-risk -->
-> 对于捷径$(\cC_i, \cC_j, \gamma^*)$，定义审计风险评分(SAR)：
+> For a shortcut $(\mathcal{C}_i, \mathcal{C}_j, \gamma^*)$, define the Shortcut Audit Risk (SAR):
 > 
 > $$
->     \SAR(\gamma^*) = \Var_\gamma[g] \times \left|\frac{d}{dt} Cercis(\gamma^*(t))\right| \times \frac{1}{p(x_{throat})}
+> \SAR(\gamma^*) = \Var_\gamma[g] \times \left|\frac{d}{dt} Cercis(\gamma^*(t))\right| \times \frac{1}{p(x_{\text{throat}})}
 > $$
 > 
+> Based on the SAR score, shortcuts are classified into:
 > 
-> 基于SAR评分，捷径可分类为：
+> - **Benign shortcut:** $\SAR < \theta_1$ $\rightarrow$ genuine data structure
+> - **Adversarial shortcut:** $\theta_1 \leq \SAR < \theta_2$ $\rightarrow$ potential audit blind spot
+> - **Noise corridor:** $\SAR \geq \theta_2$ $\rightarrow$ non-auditable region
 > 
-- **良性捷径**(Benign)：$\SAR < \theta_1$ $\rightarrow$ 真实数据结构
-- **对抗性捷径**(Adversarial)：$\theta_1 \leq \SAR < \theta_2$ $\rightarrow$ 潜在审计盲区
-- **噪声走廊**(Noise Corridor)：$\SAR \geq \theta_2$ $\rightarrow$ 不可审计区域
-
-> 
-> 分类的一致性由以下Lipschitz条件保证：若Cercis沿捷径是$\alpha$-Lipschitz的，则：
+> Classification consistency is guaranteed by the following Lipschitz condition: if Cercis is $\alpha$-Lipschitz along the shortcut, then:
 > 
 > $$
-> \boxed{|\SAR(\gamma_1^*) - \SAR(\gamma_2^*)| \leq L \cdot d_(\gamma_1^*, \gamma_2^*)}
+> \boxed{|\SAR(\gamma_1^*) - \SAR(\gamma_2^*)| \leq L \cdot d_{\mathcal{M}}(\gamma_1^*, \gamma_2^*)}
 > $$
 > 
-> 其中$L = L_V \cdot \alpha \cdot L_p$是组合Lipschitz常数（$L_V$：方差Lipschitz常数，$L_p$：密度倒数的Lipschitz常数）。
-> 
-> *Shortcuts are classified as benign, adversarial, or noise corridors based on SAR. Classification consistency is guaranteed by Lipschitz continuity of the component factors.*
+> where $L = L_V \cdot \alpha \cdot L_p$ is the composite Lipschitz constant ($L_V$: variance Lipschitz constant, $L_p$: inverse-density Lipschitz constant).
 
-> **Proof:** 由各因子的Lipschitz性质：
+> **Proof:** By the Lipschitz property of each factor:
 > 
 > $$
->     |\Var_{\gamma_1}[g] - \Var_{\gamma_2}[g]| &\leq L_V \cdot d_(\gamma_1^*, \gamma_2^*) 
-
->     \left|\frac{d}{dt}Cercis(\gamma_1^*(t)) - \frac{d}{dt}Cercis(\gamma_2^*(t))\right| &\leq \alpha \cdot d_(\gamma_1^*, \gamma_2^*) 
-
->     \left|\frac{1}{p(x_{throat,1})} - \frac{1}{p(x_{throat,2})}\right| &\leq L_p \cdot d_(\gamma_1^*, \gamma_2^*)
+> \begin{aligned}
+> |\Var_{\gamma_1}[g] - \Var_{\gamma_2}[g]| &\leq L_V \cdot d_{\mathcal{M}}(\gamma_1^*, \gamma_2^*) \\
+> \left|\frac{d}{dt}Cercis(\gamma_1^*(t)) - \frac{d}{dt}Cercis(\gamma_2^*(t))\right| &\leq \alpha \cdot d_{\mathcal{M}}(\gamma_1^*, \gamma_2^*) \\
+> \left|\frac{1}{p(x_{\text{throat},1})} - \frac{1}{p(x_{\text{throat},2})}\right| &\leq L_p \cdot d_{\mathcal{M}}(\gamma_1^*, \gamma_2^*)
+> \end{aligned}
 > $$
 > 
-> 三者乘积的Lipschitz性质由乘积规则导出，$L = L_V \cdot \alpha \cdot L_p + cross-terms$。
+> The Lipschitz property of the product follows from the product rule, with $L = L_V \cdot \alpha \cdot L_p + \text{cross-terms}$.
 > 
-> $\square$ **诚实地：** SAR的乘积组合方式缺乏理论依据——为什么是乘积？为什么是这三个因子？这是一种ad-hoc启发式。修正方案：使用SAR多指标向量（见第 [ref]节）。
+> $\square$ **Honestly:** The product composition of SAR lacks theoretical justification --- why product? Why these three factors? This is an ad-hoc heuristic. Fix: use the SAR multi-metric vector (see Section [ref]).
 
-### 定理4：离散捷径检测的复杂度
+### Theorem 4: Complexity of Discrete Shortcut Detection
 
-> **Theorem:** [离散捷径检测的算法复杂度 / Complexity of Discrete Shortcut Detection]
+> **Theorem:** [Complexity of Discrete Shortcut Detection]
 > <!-- label: thm:mdta-complexity -->
-> 对于$N$个数据点的集合，使用k-NN图（$k = O(\log N)$）进行流形距离估计，捷径检测算法的时间复杂度为：
+> For a set of $N$ data points, using a $k$-NN graph ($k = O(\log N)$) for manifold distance estimation, the shortcut detection algorithm has time complexity:
 > 
 > $$
 > \boxed{O(N \log N \cdot k + C^2 \cdot N \log N)}
 > $$
 > 
-> 其中$C$是检测到的密集区数量。
+> where $C$ is the number of detected clusters.
+
+> **Proof:** The algorithm proceeds in two phases:
 > 
-> *The shortcut detection algorithm runs in $O(N \log N \cdot k + C^2 \cdot N \log N)$ time for $N$ points and $C$ detected clusters.*
-
-> **Proof:** 算法分为两个阶段：
+> 1. **$k$-NN graph construction:** Completed in $O(N \log N \cdot k)$ time using a kd-tree
+> 2. **Shortest paths for all cluster pairs:** For $C$ clusters, there are $O(C^2)$ pairs. Running Dijkstra's algorithm on each pair has complexity $O(N \log N)$ per pair (using a binary heap), totaling $O(C^2 \cdot N \log N)$
 > 
-1. **k-NN图构建：** 使用kd-tree在$O(N \log N \cdot k)$时间内完成
-2. **所有密集区对的最短路径：** 对于$C$个密集区，共有$O(C^2)$个对。在每个对上运行Dijkstra算法，单次复杂度$O(N \log N)$（使用二叉堆），总计$O(C^2 \cdot N \log N)$
+> Total complexity is the sum of both phases.
 
-> 总复杂度为两者之和。
+### Theorem 5: Consistency of Shortcut Ratio Estimation
 
-### 定理5：捷径比率估计的一致性
-
-> **Theorem:** [捷径比率估计的一致性 / Consistency of Shortcut Ratio Estimation]
+> **Theorem:** [Consistency of Shortcut Ratio Estimation]
 > <!-- label: thm:mdta-consistency -->
-> 设$\hat{d}_$是基于k-NN图的流形距离估计，$\hat{r}$是相应的捷径比率估计。则在$N \to \infty$、$k \to \infty$、$k/N \to 0$的条件下：
+> Let $\hat{d}_{\mathcal{M}}$ be the manifold distance estimate based on the $k$-NN graph, and $\hat{r}$ the corresponding shortcut ratio estimate. Then as $N \to \infty$, $k \to \infty$, $k/N \to 0$:
 > 
 > $$
-> \boxed{\hat{r} \xrightarrow{P} r \quad 即 \quad \forall \varepsilon > 0: \lim_{N \to \infty} P(|\hat{r} - r| > \varepsilon) = 0}
+> \boxed{\hat{r} \xrightarrow{P} r \quad \text{i.e.} \quad \forall \varepsilon > 0: \lim_{N \to \infty} P(|\hat{r} - r| > \varepsilon) = 0}
 > $$
 > 
-> 
-> *The k-NN graph-based shortcut ratio estimate converges in probability to the true ratio as $N \to \infty$ under standard manifold learning conditions.*
+> The $k$-NN graph-based shortcut ratio estimate converges in probability to the true ratio as $N \to \infty$ under standard manifold learning conditions.
 
-> **Proof:** 由k-NN图距离的Isomap一致性（Bernstein et al., 2000; Tenenbaum et al., 2000），在流形$\cM$是紧致且测地线凸的条件下，k-NN图最短路径一致地收敛到流形测地距离：
+> **Proof:** By the Isomap consistency of $k$-NN graph distances (Bernstein et al., 2000; Tenenbaum et al., 2000), under the conditions that $\mathcal{M}$ is compact and geodesically convex, the $k$-NN graph shortest path converges uniformly to the manifold geodesic distance:
 > 
 > $$
->     \hat{d}_(x, y) \xrightarrow{P} d_(x, y)
+> \hat{d}_{\mathcal{M}}(x, y) \xrightarrow{P} d_{\mathcal{M}}(x, y)
 > $$
 > 
+> Centroid estimates $\hat{\mu}_i \xrightarrow{P} \mu_i$ follow from the law of large numbers. The shortcut ratio $\hat{r} = \hat{d}_{\mathcal{M}} / \|\hat{\mu}_i - \hat{\mu}_j\|$ is a continuous function; consistency follows from the continuous mapping theorem.
 > 
-> 质心$\hat_i \xrightarrow{P} \mu_i$由大数定律保证。捷径比率$\hat{r} = \hat{d}_ / \|\hat_i - \hat_j\|$是连续函数，由连续映射定理得证。
-> 
-> $\square$ **重要条件：** 一致性依赖于(1)流形紧致，(2)数据采样均匀或密度有下界，(3)度规有界曲率。在捷径发生的低密度区域，k-NN图连接可能不可靠——这是捷径检测的核心困境。
+> $\square$ **Important condition:** Consistency depends on (1) manifold compactness, (2) uniform sampling or bounded-below density, (3) bounded metric curvature. In low-density regions where shortcuts occur, $k$-NN graph connections may be unreliable --- this is the core dilemma of shortcut detection.
 
-## MDTA修正 / MDTA Fixes
+## MDTA Fixes
 <!-- label: sec:mdta-fixes -->
 
-### 捷径的统计显著性检验
+### Statistical Significance Test for Shortcuts
 
-为消除阈值$\tau$的任意性，引入bootstrap显著性检验：
+To eliminate the arbitrariness of the threshold $\tau$, introduce a bootstrap significance test:
 
-> **Definition:** [统计显著的捷径 / Statistically Significant Shortcut]
+> **Definition:** [Statistically Significant Shortcut]
 > <!-- label: def:significant-shortcut -->
-> 捷径比率$r_{ij}$在水平$\alpha$下统计显著，如果：
+> The shortcut ratio $r_{ij}$ is statistically significant at level $\alpha$ if:
 > 
 > $$
->     P_{H_0}(r \leq r_{ij}^{obs}) \leq \alpha
+> P_{H_0}(r \leq r_{ij}^{\text{obs}}) \leq \alpha
 > $$
 > 
-> 其中零分布$H_0: r = 1$通过$B = 1000$次bootstrap重采样估计。对于每次bootstrap迭代：从$\cC_i$和$\cC_j$中有放回地重采样，计算$r_{ij}^{(b)}$，构造置信区间并检验$H_0$。如果$r_{ij}$在$1-\alpha$置信水平下显著小于1，标记为捷径。
+> where the null distribution $H_0: r = 1$ is estimated via $B = 1000$ bootstrap resamples. For each bootstrap iteration: resample with replacement from $\mathcal{C}_i$ and $\mathcal{C}_j$, compute $r_{ij}^{(b)}$, construct a confidence interval and test $H_0$. If $r_{ij}$ is significantly less than 1 at the $1-\alpha$ confidence level, flag it as a shortcut.
 
-### SAR多指标版本
+### SAR Multi-Metric Version
 
-替代单一的乘积SAR，使用多指标向量：
+Replace the single product SAR with a multi-metric vector:
 
 $$
-    SAR-Profile(\gamma^*) = \begin{pmatrix}
-        \Var_\gamma[g] 
-
-        \|\nabla_\gamma Cercis\| 
-
-        1/p(x_{throat}) 
-
-        捷径比率  r 
-
-        喉宽度  w_{throat}
-    \end{pmatrix}
+\SAR\text{-Profile}(\gamma^*) = \begin{pmatrix}
+\Var_\gamma[g] \\
+\|\nabla_\gamma Cercis\| \\
+1/p(x_{\text{throat}}) \\
+\text{shortcut ratio } r \\
+\text{throat width } w_{\text{throat}}
+\end{pmatrix}
 $$
 
-审计员根据具体场景（对抗性检测 vs. 拓扑探索 vs. 数据质量评估）选择关注不同维度。
+Auditors select which dimensions to focus on based on the specific scenario (adversarial detection vs. topological exploration vs. data quality assessment).
 
-## MDTA裁决 / MDTA Verdict
+## MDTA Verdict
 <!-- label: sec:mdta-verdict -->
 
 \begin{verdictbox}{verdictgreen}
-**最终裁决：实用主义的有用 / PRAGMATICALLY USEFUL**
+**Final Verdict: PRAGMATICALLY USEFUL**
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
-**MDTA是最``脚踏实地''的路径。** 不需要华丽的物理学包装——捷径检测、持久同调、SAR多指标分析在TDA工具箱中都有现成实现。核心贡献是将这些工具**定向到审计问题**上。
+**MDTA is the most ``down-to-earth'' path.** No fancy physics packaging needed --- shortcut detection, persistent homology, and SAR multi-metric analysis all have ready implementations in the TDA toolbox. The core contribution is **directing these tools toward auditing**.
 
-**审计建议：** 检测Situs流形上捷径比率$r < 0.3$的密集区对，标记为``审计盲区候选''，优先进行人工审查或增强采样。
-
-***MDTA is the most ``down-to-earth'' path.** No fancy physics packaging needed --- shortcut detection, persistent homology, and SAR multi-metric analysis all have ready implementations in the TDA toolbox. The core contribution is **directing these tools toward auditing**. **Audit recommendation:** detect cluster pairs with $r < 0.3$, flag as ``audit blind spot candidates,'' prioritize for human review or enhanced sampling.*
+**Audit recommendation:** detect cluster pairs with $r < 0.3$, flag as ``audit blind spot candidates,'' prioritize for human review or enhanced sampling.
 \end{verdictbox}
 
 ---
 
-# 不变性分层体系 / ILH
+# Invariance Layered Hierarchy / ILH
 <!-- label: part:ilh -->
 
-> [Table omitted — see original .tex]
+> [Table omitted --- see original .tex]
 
-## ILH基础设定 / ILH Foundations
+## ILH Foundations
 <!-- label: sec:ilh-found -->
 
-### 核心问题 / Core Problem
+### Core Problem
 
-\begin{bilingual}{核心问题 / Core Question}
-SCX的审计不变性如何按对称群的层级组织？每个层级产生什么审计保证？Cercis Score在不变性层级中处于什么位置？
-*How are SCX audit invariances organized by symmetry group layers? What audit guarantees does each layer provide? Where does Cercis Score sit in the invariance hierarchy?*
-\end{bilingual}
+How are SCX audit invariances organized by symmetry group layers? What audit guarantees does each layer provide? Where does Cercis Score sit in the invariance hierarchy?
 
-ILH将``相对论''类比修正为诚实的不变性结构文档。核心发现：SCX的不变性结构最接近**Galileo不变性**（空间平移+旋转），而非Lorentz不变性（含boost）。SCX的``相对论''是Galileo式的，不是Einstein式的。
+ILH corrects the ``relativity'' analogy into honest invariance structure documentation. Core finding: SCX's invariance structure is closest to **Galileo invariance** (spatial translation + rotation), not Lorentz invariance (with boosts). SCX's ``relativity'' is Galilean, not Einsteinian.
 
-*ILH corrects the ``relativity'' analogy into honest invariance structure documentation. Core finding: SCX's invariance structure is closest to **Galileo invariance** (spatial translation + rotation), not Lorentz invariance (with boosts). SCX's ``relativity'' is Galilean, not Einsteinian.*
+### Basic Definitions
 
-### 基本定义 / Basic Definitions
-
-> **Definition:** [审计对象 / Audit Object]
+> **Definition:** [Audit Object]
 > <!-- label: def:audit-object -->
-> SCX审计的基本对象是专家预测配置：
+> The basic object of SCX auditing is the expert prediction configuration:
 > 
 > $$
->     \cG = \RR^{M \times d}
+> \mathcal{G} = \mathbb{R}^{M \times d}
 > $$
 > 
-> 为所有可能的专家预测矩阵（每行是一个专家的$d$维预测向量）。$\Gamma \in \cG$表示一个配置。
+> the space of all possible expert prediction matrices (each row is a $d$-dimensional prediction vector for one expert). $\Gamma \in \mathcal{G}$ denotes a configuration.
 
-> **Definition:** [对称群作用 / Symmetry Group Action]
+> **Definition:** [Symmetry Group Action]
 > <!-- label: def:group-action -->
-> 对于群$G$和表示$\rho: G \to GL(\cG)$，群作用定义为：
+> For a group $G$ with representation $\rho: G \to GL(\mathcal{G})$, the group action is defined as:
 > 
 > $$
->     \alpha: G \times \cG \to \cG, \quad \alpha(g, \Gamma) = \rho(g) \cdot \Gamma
+> \alpha: G \times \mathcal{G} \to \mathcal{G}, \quad \alpha(g, \Gamma) = \rho(g) \cdot \Gamma
 > $$
 
-> **Definition:** [不变性层级 / Invariance Layer]
+> **Definition:** [Invariance Layer]
 > <!-- label: def:invariance-layer -->
-> 第$\ell$层不变性由一个群$G_\ell$及其作用$\alpha_\ell$定义，满足层级包含关系：
+> The $\ell$-th invariance layer is defined by a group $G_\ell$ and its action $\alpha_\ell$, satisfying the hierarchical inclusion:
 > 
 > $$
->     G_0 \subset G_1 \subset G_2 \subset ... \subset G_L
+> G_0 \subset G_1 \subset G_2 \subset ... \subset G_L
 > $$
 > 
-> 其中$G_0 = \{e\}$（平凡群，无不变性）。
+> where $G_0 = \{e\}$ (trivial group, no invariance).
 
-## ILH定理体系 / ILH Theorem System
+## ILH Theorem System
 <!-- label: sec:ilh-theorems -->
 
-### 定理1：层级不变量空间（修正版）
+### Theorem 1: Layered Invariant Space (Corrected)
 
-> **Theorem:** [层级不变量空间 / Layered Invariant Space]
+> **Theorem:** [Layered Invariant Space]
 > <!-- label: thm:ilh-invariant-space -->
-> 对于每个层级$\ell$，不变量空间为轨道空间$\cI_\ell = \cG / G_\ell$。层间存在自然投影：
+> For each layer $\ell$, the invariant space is the orbit space $\mathcal{I}_\ell = \mathcal{G} / G_\ell$. There exist natural projections between layers:
 > 
 > $$
 > \begin{tikzcd}
-> \cG \arrow[r, "\pi_\ell"] \arrow[rd, "\pi_{\ell-1}"'] & \cI_\ell \arrow[d, "\pi_{\ell, \ell-1}"] 
-
-> & \cI_{\ell-1}
+> \mathcal{G} \arrow[r, "\pi_\ell"] \arrow[rd, "\pi_{\ell-1}"'] & \mathcal{I}_\ell \arrow[d, "\pi_{\ell, \ell-1}"] \\
+> & \mathcal{I}_{\ell-1}
 > \end{tikzcd}
 > $$
 > 
-> 其中$\pi_{\ell, \ell-1}$由$G_{\ell-1} \subset G_\ell$诱导的轨道空间自然映射。
+> where $\pi_{\ell, \ell-1}$ is the natural map between orbit spaces induced by $G_{\ell-1} \subset G_\ell$.
+
+> **Proof:** This is a standard construction in group action theory. Elements of $\mathcal{I}_\ell$ are $G_\ell$-orbits in $\mathcal{G}$. Since $G_{\ell-1} \subset G_\ell$, each $G_\ell$-orbit contains a complete $G_{\ell-1}$-orbit, so there is a well-defined surjection $\pi_{\ell, \ell-1}: \mathcal{G}/G_\ell \to \mathcal{G}/G_{\ell-1}$.
 > 
-> *The invariant space at layer $\ell$ is the orbit space $\cI_\ell = \cG / G_\ell$, with natural projections between layers induced by the group inclusion hierarchy.*
+> $\square$ **Note:** The original version (Theorem 8.1 in Round 3) used category-theoretic functor language $\mathcal{F}_\ell: \mathcal{G} \to \mathcal{I}_\ell$. This language was decorative --- $\mathcal{F}_\ell$ is simply the natural projection $\mathcal{G} \to \mathcal{G}/G_\ell$, requiring no category-theoretic framework. This corrected version uses direct group-theoretic formulation.
 
-> **Proof:** 这是群作用理论的标准构造。$\cI_\ell$的元素是$G_\ell$在$\cG$上的轨道。由于$G_{\ell-1} \subset G_\ell$，每个$G_\ell$-轨道包含完整的$G_{\ell-1}$-轨道，因此存在良定义的满射$\pi_{\ell, \ell-1}: \cG/G_\ell \to \cG/G_{\ell-1}$。
-> 
-> $\square$ **注：** 原始版本（定理8.1 in Round 3）使用范畴论函子语言$\cF_\ell: \cG \to \cI_\ell$。该语言是装饰性的——$\cF_\ell$就是自然投影$\cG \to \cG/G_\ell$，不需要范畴论框架。本修正版使用直接的群论表述。
+### Theorem 2: Translation Invariance of Cercis
 
-### 定理2：Cercis的平移不变性
-
-> **Theorem:** [Cercis的平移不变性 / Translation Invariance of Cercis]
+> **Theorem:** [Translation Invariance of Cercis]
 > <!-- label: thm:ilh-cercis-translation -->
-> 设Cercis Score定义为差异向量集合的函数：
+> Let the Cercis Score be defined as a function of the set of difference vectors:
 > 
 > $$
->     Cercis(\Gamma) = f\left(\{d_{mn}\}_{m<n}\right), \quad d_{mn} = \Gamma_m - \Gamma_n \in \RR^d
+> Cercis(\Gamma) = f\left(\{d_{mn}\}_{m<n}\right), \quad d_{mn} = \Gamma_m - \Gamma_n \in \mathbb{R}^d
 > $$
 > 
-> 则Cercis在对角线平移$G_1 = (\RR^d, +)^M_{diag}$（作用于$\Gamma \mapsto \Gamma + \mathbf{1}_M \otimes c^T$，$c \in \RR^d$）下不变：
+> Then Cercis is invariant under diagonal translation $G_1 = (\mathbb{R}^d, +)^M_{\text{diag}}$ (acting as $\Gamma \mapsto \Gamma + \mathbf{1}_M \otimes c^T$, $c \in \mathbb{R}^d$):
 > 
 > $$
 > \boxed{Cercis(\Gamma + \mathbf{1}_M \otimes c^T) = Cercis(\Gamma)}
 > $$
 > 
-> 
-> *Cercis Score is invariant under diagonal translation of all expert predictions by the same vector.*
+> Cercis Score is invariant under diagonal translation of all expert predictions by the same vector.
 
-> **Proof:** $d_{mn}' = (\Gamma_m + c) - (\Gamma_n + c) = \Gamma_m - \Gamma_n = d_{mn}$，因此差异向量不变，Cercis（作为差异向量的函数）不变。
+> **Proof:** $d_{mn}' = (\Gamma_m + c) - (\Gamma_n + c) = \Gamma_m - \Gamma_n = d_{mn}$, so the difference vectors are unchanged, hence Cercis (as a function of difference vectors) is unchanged.
 
-### 定理3：平移不变量的完备性
+### Theorem 3: Completeness of Translation Invariants
 
-> **Theorem:** [平移不变量的完备性 / Completeness of Translation Invariants]
+> **Theorem:** [Completeness of Translation Invariants]
 > <!-- label: thm:ilh-completeness -->
-> 差异向量集合$\{d_{mn}\}_{m<n}$构成平移群作用的**完备不变量集合**——即两个配置$\Gamma, \Gamma'$在平移下等价当且仅当它们的所有差异向量相等：
+> The set of difference vectors $\{d_{mn}\}_{m<n}$ forms a **complete set of invariants** for the translation group action --- two configurations $\Gamma, \Gamma'$ are equivalent under translation iff all their difference vectors are equal:
 > 
 > $$
-> \boxed{\Gamma' = \Gamma + \mathbf{1}_M \otimes c^T  对某  c \in \RR^d \iff d_{mn}' = d_{mn} \; \forall m,n}
+> \boxed{\Gamma' = \Gamma + \mathbf{1}_M \otimes c^T \text{ for some } c \in \mathbb{R}^d \iff d_{mn}' = d_{mn} \; \forall m,n}
 > $$
-> 
-> 
-> *The set of difference vectors forms a complete set of invariants for the translation group action.*
 
-> **Proof:** ($\Rightarrow$) 若$\Gamma' = \Gamma + \mathbf{1}_M \otimes c^T$，则$d_{mn}' = d_{mn}$平凡成立。
+> **Proof:** ($\Rightarrow$) If $\Gamma' = \Gamma + \mathbf{1}_M \otimes c^T$, then $d_{mn}' = d_{mn}$ holds trivially.
 > 
-> ($\Leftarrow$) 若$d_{mn}' = d_{mn}$对所有$m,n$成立，固定$m=1$，则$\Gamma_n' = \Gamma_n + (\Gamma_1' - \Gamma_1)$对所有$n$。设$c = \Gamma_1' - \Gamma_1$，则$\Gamma' = \Gamma + \mathbf{1}_M \otimes c^T$。
+> ($\Leftarrow$) If $d_{mn}' = d_{mn}$ for all $m,n$, fix $m=1$, then $\Gamma_n' = \Gamma_n + (\Gamma_1' - \Gamma_1)$ for all $n$. Let $c = \Gamma_1' - \Gamma_1$, then $\Gamma' = \Gamma + \mathbf{1}_M \otimes c^T$.
 
-### 定理4：Cercis的旋转不变性
+### Theorem 4: Rotational Invariance of Cercis
 
-> **Theorem:** [Cercis的旋转不变性 / Rotational Invariance of Cercis]
+> **Theorem:** [Rotational Invariance of Cercis]
 > <!-- label: thm:ilh-cercis-rotation -->
-> 若Cercis Score仅通过范数和夹角依赖于$\Gamma$，则对所有$R \in O(d)$：
+> If the Cercis Score depends on $\Gamma$ only through norms and inner products, then for all $R \in O(d)$:
 > 
 > $$
 > \boxed{Cercis(\Gamma R^T) = Cercis(\Gamma)}
 > $$
 > 
-> 其中旋转作用为$\Gamma \mapsto \Gamma \cdot R^T$（所有专家的预测被同一个旋转矩阵作用）。
+> where the rotation acts as $\Gamma \mapsto \Gamma \cdot R^T$ (all expert predictions transformed by the same rotation).
 
-> **Proof:** $\|\Gamma_m R^T\|^2 = \Gamma_m R^T R \Gamma_m^T = \Gamma_m \Gamma_m^T = \|\Gamma_m\|^2$（因为$R^T R = I$）。$(\Gamma_m R^T) \cdot (\Gamma_n R^T) = \Gamma_m R^T R \Gamma_n^T = \Gamma_m \Gamma_n^T$。故范数和夹角在$O(d)$下不变，Cercis（作为范数和夹角的函数）不变。
+> **Proof:** $\|\Gamma_m R^T\|^2 = \Gamma_m R^T R \Gamma_m^T = \Gamma_m \Gamma_m^T = \|\Gamma_m\|^2$ (since $R^T R = I$). $(\Gamma_m R^T) \cdot (\Gamma_n R^T) = \Gamma_m R^T R \Gamma_n^T = \Gamma_m \Gamma_n^T$. Hence norms and inner products are invariant under $O(d)$, and Cercis (as a function of norms and inner products) is invariant.
 
-### 定理5：半直积不变量的结构
+### Theorem 5: Structure of Semidirect Product Invariants
 
-> **Theorem:** [半直积不变量的结构 / Structure of Semidirect Product Invariants]
+> **Theorem:** [Structure of Semidirect Product Invariants]
 > <!-- label: thm:ilh-semidirect -->
-> $G_3 = E(d) = \RR^d \rtimes O(d)$的不变量空间同构于平移不变量和旋转不变量的交集：
+> The invariant space of $G_3 = E(d) = \mathbb{R}^d \rtimes O(d)$ is isomorphic to the intersection of translation and rotation invariant spaces:
 > 
 > $$
-> \boxed{\cI_3 \cong (\cG / (\RR^d, +)) \cap (\cG / O(d)) \cong \cG / E(d)}
+> \boxed{\mathcal{I}_3 \cong (\mathcal{G} / (\mathbb{R}^d, +)) \cap (\mathcal{G} / O(d)) \cong \mathcal{G} / E(d)}
 > $$
-> 
-> 
-> *The invariant space of the full Euclidean group is isomorphic to the intersection of translation and rotation invariant spaces.*
 
-> **Proof:** 由$E(d) = \RR^d \rtimes O(d)$的群结构。任何$E(d)$-不变量必须同时对平移和旋转不变。由于$(\RR^d, +) \triangleleft E(d)$（平移是正规子群），轨道空间继承半直积结构：$\cG/E(d) = (\cG/(\RR^d, +))/O(d)$。
+> **Proof:** By the group structure of $E(d) = \mathbb{R}^d \rtimes O(d)$. Any $E(d)$-invariant must be invariant under both translations and rotations. Since $(\mathbb{R}^d, +) \triangleleft E(d)$ (translations form a normal subgroup), the orbit space inherits the semidirect product structure: $\mathcal{G}/E(d) = (\mathcal{G}/(\mathbb{R}^d, +))/O(d)$.
 
-### 定理6：拓扑不变量的微分同胚不变性
+### Theorem 6: Diffeomorphism Invariance of Topological Invariants
 
-> **Theorem:** [拓扑不变量的微分同胚不变性 / Diffeomorphism Invariance of Topological Invariants]
+> **Theorem:** [Diffeomorphism Invariance of Topological Invariants]
 > <!-- label: thm:ilh-diffeo -->
-> Betti数$\beta_k(\cX)$和持久同调条码的多重集在微分同胚下不变：
+> Betti numbers $\beta_k(\mathcal{X})$ and the multiset of persistent homology barcodes are invariant under diffeomorphism:
 > 
 > $$
-> \boxed{\beta_k(\phi(\cX)) = \beta_k(\cX), \quad Barcode(\phi(\cX)) \cong Barcode(\cX)}
+> \boxed{\beta_k(\phi(\mathcal{X})) = \beta_k(\mathcal{X}), \quad \text{Barcode}(\phi(\mathcal{X})) \cong \text{Barcode}(\mathcal{X})}
 > $$
 > 
-> 其中$\phi \in \Diff(\cX)$是底流形$\cX$的微分同胚。
-> 
-> *Betti numbers and persistent homology barcodes are invariant under diffeomorphisms of the base manifold.*
+> where $\phi \in \Diff(\mathcal{X})$ is a diffeomorphism of the base manifold $\mathcal{X}$.
 
-> **Proof:** Betti数是同伦不变量，微分同胚诱导同伦等价。持久同调条码在等距嵌入下不变，微分同胚保持拓扑结构（但**不**一定保持几何/距离信息）。
+> **Proof:** Betti numbers are homotopy invariants; diffeomorphisms induce homotopy equivalences. Persistent homology barcodes are invariant under isometric embeddings; diffeomorphisms preserve topological structure (but **not** necessarily geometric/distance information).
 
-### 定理7：信息损失层级定理
+### Theorem 7: Information Loss Hierarchy Theorem
 
-> **Theorem:** [信息损失层级定理 / Information Loss Hierarchy Theorem]
+> **Theorem:** [Information Loss Hierarchy Theorem]
 > <!-- label: thm:ilh-information -->
-> 设$H(\cdot)$为配置空间的信息量度量。则每个层级的信息量单调递减：
+> Let $H(\cdot)$ be an information content measure on configuration space. Then information content decreases monotonically across layers:
 > 
 > $$
-> \boxed{H(\cI_L) \leq H(\cI_{L-1}) \leq ... \leq H(\cI_1) \leq H(\cI_0)}
+> \boxed{H(\mathcal{I}_L) \leq H(\mathcal{I}_{L-1}) \leq ... \leq H(\mathcal{I}_1) \leq H(\mathcal{I}_0)}
 > $$
 > 
-> 
-> 每层的信息损失（以自由度计）为：
+> The information loss per layer (in terms of degrees of freedom) is:
 > 
 > $$
->     \Delta H_\ell = \dim(G_\ell) - \dim(G_{\ell-1})
+> \Delta H_\ell = \dim(G_\ell) - \dim(G_{\ell-1})
 > $$
 > 
-> 具体地：$\Delta H_1 = d$（平移损失$d$个自由度）、$\Delta H_2 = d(d-1)/2$（旋转损失）、$\Delta H_3 = d + d(d-1)/2$（总计）。
-> 
-> *Information content decreases monotonically across layers, with losses equal to the dimensions of the quotient groups.*
+> Specifically: $\Delta H_1 = d$ (translation loses $d$ degrees of freedom), $\Delta H_2 = d(d-1)/2$ (rotation loses $d(d-1)/2$ degrees of freedom), $\Delta H_3 = d + d(d-1)/2$ (total).
 
-> **Proof:** 轨道空间$\cI_\ell = \cG / G_\ell$的``大小''随$G_\ell$增大而减小。对于连续群，信息损失等于商掉的群作用的自由度维数。由于$G_ / G_{\ell-1}$是$\dim(G_\ell) - \dim(G_{\ell-1})$维的李群，$\Delta H_\ell$如所述。
+> **Proof:** The ``size'' of the orbit space $\mathcal{I}_\ell = \mathcal{G} / G_\ell$ decreases as $G_\ell$ grows. For continuous groups, information loss equals the dimension of the quotient group action's degrees of freedom. Since $G_\ell / G_{\ell-1}$ is a Lie group of dimension $\dim(G_\ell) - \dim(G_{\ell-1})$, $\Delta H_\ell$ follows as stated.
 > 
-> $\square$ **注：** 对于连续群，商空间的``熵''不是传统意义下的良定义量（差一个无穷常数）。本定理使用**自由度维数**作为信息损失的替代度量——这更严格且避免了微分熵的技术问题。
+> $\square$ **Note:** For continuous groups, the ``entropy'' of a quotient space is not a well-defined quantity in the traditional sense (differing by an infinite constant). This theorem uses **degrees of freedom** as a proxy measure for information loss --- this is more rigorous and avoids the technical issues of differential entropy.
 
-### 定理8：Cercis的层级定位
+### Theorem 8: Layered Positioning of Cercis
 
-> **Theorem:** [Cercis的层级定位 / Layered Positioning of Cercis]
+> **Theorem:** [Layered Positioning of Cercis]
 > <!-- label: thm:ilh-cercis-position -->
-> Cercis Score在层级1、2、3中均为不变量，但在层级0中不是。对于Cercis的标准定义（基于差异向量范数的方差），其不变性群为：
+> Cercis Score is invariant at layers 1, 2, and 3, but not at layer 0. For the standard definition of Cercis (based on variance of difference vector norms), its invariance group is:
 > 
 > $$
-> \boxed{G_{Cercis} = \Stab(Cercis) = \{\Gamma \mapsto \Gamma R^T + \mathbf{1}_M \otimes c^T : R \in O(d), c \in \RR^d\} \cong E(d)}
+> \boxed{G_{Cercis} = \Stab(Cercis) = \{\Gamma \mapsto \Gamma R^T + \mathbf{1}_M \otimes c^T : R \in O(d), c \in \mathbb{R}^d\} \cong E(d)}
 > $$
 > 
-> 即$E(d)$是保持Cercis不变的**极大连通子群**（对于此特定Cercis定义）。
-> 
-> *Cercis Score is invariant at layers 1, 2, and 3, but not at layer 0. Its stabilizer is the Euclidean group $E(d)$, which is the maximal connected subgroup preserving Cercis (for the standard definition).*
+> That is, $E(d)$ is the **maximal connected subgroup** preserving Cercis (for this specific Cercis definition).
 
-> **Proof:** Cercis在$E(d)$下不变（定理 [ref] + 定理 [ref]）。需要论证$E(d)$是极大连通子群：假设存在更大的连通子群$G \supset E(d)$保持Cercis不变，则$G$必须保持所有差异向量的某种函数。但差异向量的完备不变量集（定理 [ref]）在$E(d)$下已经是极小的——由表示论，$E(d)$在$\cG$上的作用是极性的（polar representation）。对于Cercis的其他定义，不变群可能不同，需要在定义时显式声明。
+> **Proof:** Cercis is invariant under $E(d)$ (Theorem [ref] + Theorem [ref]). We need to argue that $E(d)$ is the maximal connected subgroup: suppose a larger connected subgroup $G \supset E(d)$ preserves Cercis. Then $G$ must preserve some function of all difference vectors. But the complete set of invariants of difference vectors (Theorem [ref]) is already minimal under $E(d)$ --- by representation theory, the action of $E(d)$ on $\mathcal{G}$ is a polar representation. For other definitions of Cercis, the invariance group may differ and must be explicitly declared.
 
-### 定理9：Galileo vs Lorentz结构性区分
+### Theorem 9: Galileo vs Lorentz Structural Distinction
 
-> **Theorem:** [Galileo vs Lorentz 结构性区分 / Galileo vs Lorentz Structural Distinction]
+> **Theorem:** [Galileo vs Lorentz Structural Distinction]
 > <!-- label: thm:ilh-galileo -->
-> SCX的不变性结构同构于$d$维空间的Galileo群的不变性结构：
+> SCX's invariance structure is isomorphic to the Galilean group of $d$-dimensional space:
 > 
 > $$
-> \boxed{Gal(d) = \RR^d \rtimes O(d) \cong E(d)}
+> \boxed{Gal(d) = \mathbb{R}^d \rtimes O(d) \cong E(d)}
 > $$
 > 
-> 而非Lorentz群$SO(1, d-1)$（包含boost）的结构。具体差异：
+> not the Lorentz group $SO(1, d-1)$ (which includes boosts). Specific differences:
 > 
-> [Table omitted — see original .tex]
+> [Table omitted --- see original .tex]
 > 
-> *SCX's invariance structure is isomorphic to the Galilean group, not the Lorentz group. SCX has no boost structure, no speed limit, and its invariant ``distance'' is positive-definite Euclidean distance between prediction vectors.*
+> SCX's invariance structure is isomorphic to the Galilean group, not the Lorentz group. SCX has no boost structure, no speed limit, and its invariant ``distance'' is positive-definite Euclidean distance between prediction vectors.
 
-> **Proof:** SCX的$E(d)$群由平移生成元和旋转生成元构成，不包含boost生成元。在预测空间中，相邻数据点的预测变化率（``速度''）没有物理上限——这对应于Galileo相对论中速度可以无限叠加。Lorentz群的非紧性来自boost的无界参数$\phi = arctanh(v/c)$，这在SCX中没有对应物。
+> **Proof:** SCX's $E(d)$ group consists of translation generators and rotation generators, with no boost generators. In prediction space, the rate of change (``velocity'') of predictions between adjacent data points has no physical upper bound --- corresponding to the fact that in Galilean relativity, velocities can superpose without limit. The non-compactness of the Lorentz group comes from the unbounded boost parameter $\phi = \text{arctanh}(v/c)$, which has no analog in SCX.
 > 
-> $\square$ **核心澄清：** 这意味着当我们说``SCX的相对论''时，应该理解它是**Galileo式的**：没有绝对参考系，但也没有速度上限。Cercis的审计类比应该是``欧氏空间中相对距离的不变性''，而非``时空间隔的Lorentz不变性''。
+> $\square$ **Core clarification:** This means that when we say ``SCX relativity,'' it should be understood as **Galilean**: no absolute reference frame, but also no speed limit. The audit analogy of Cercis should be ``invariance of relative distances in Euclidean space,'' not ``Lorentz invariance of spacetime intervals.''
 
-## ILH的完整层级结构 / Complete ILH Structure
+## Complete ILH Structure
 <!-- label: sec:ilh-structure -->
 
-**修正后的ILH结构**将竖直不变性（作用于纤维/预测空间）与水平不变性（作用于底流形/数据空间）分离：
+**Corrected ILH structure** separates vertical invariance (acting on the fiber/prediction space) from horizontal invariance (acting on the base manifold/data space):
 
-**竖直不变性层级（纤维$\RR^d$）/ Vertical Invariance Layers (Fiber $\RR^d$):**
+**Vertical Invariance Layers (Fiber $\mathbb{R}^d$):**
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
-**水平不变性层级（底流形$\cX$）/ Horizontal Invariance Layers (Base Manifold $\cX$):**
+**Horizontal Invariance Layers (Base Manifold $\mathcal{X}$):**
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
-完整的审计不变性结构是竖直和水平不变性的**直积**：
+The complete audit invariance structure is the **direct product** of vertical and horizontal invariances:
 
 $$
-    \cI_{total} = \cI_{vertical} \times \cI_{horizontal}
+\mathcal{I}_{\text{total}} = \mathcal{I}_{\text{vertical}} \times \mathcal{I}_{\text{horizontal}}
 $$
 
-## ILH裁决 / ILH Verdict
+## ILH Verdict
 <!-- label: sec:ilh-verdict -->
 
 \begin{verdictbox}{verdictblue}
-**最终裁决：文档价值 / DOCUMENTATION VALUE**
+**Final Verdict: DOCUMENTATION VALUE**
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
-**ILH是有价值的——作为SCX不变性结构的清晰文档。** 它澄清了``SCX的相对论类比是Galileo而非Einstein''这一重要区别。但它不应该被呈现为``研究贡献''——它是**教学材料**，不是定理创新。
+**ILH is valuable --- as clear documentation of SCX's invariance structure.** It clarifies the important distinction that SCX's relativity analogy is Galilean, not Einsteinian. But it should not be presented as a ``research contribution'' --- it is **instructional material**, not theorem innovation.
 
-**建议：** 将ILH以``SCX审计不变性指南''的形式纳入SCX文档体系，但不作为独立的形式化成果发表。
-
-***ILH is valuable --- as clear documentation of SCX's invariance structure.** It clarifies the important distinction that SCX's relativity analogy is Galilean, not Einsteinian. But it should not be presented as a ``research contribution'' --- it is **instructional material**, not theorem innovation. **Recommendation:** incorporate ILH as an ``SCX Audit Invariance Guide'' in the SCX documentation system, but do not publish as an independent formalization result.*
+**Recommendation:** incorporate ILH as an ``SCX Audit Invariance Guide'' in the SCX documentation system, but do not publish as an independent formalization result.
 \end{verdictbox}
 
 ---
 
-# 路径协同与统一视角 / Cross-Path Synergies
+# Cross-Path Synergies
 <!-- label: part:synergy -->
 
-## 路径间的协同关系 / Synergy Between Paths
+## Synergy Between Paths
 
-三条路径并非完全独立。存在一个统一的纤维丛视角：
+The three paths are not independent. There exists a unifying fiber bundle perspective:
 
-[Figure omitted — see original .tex]
+[Figure omitted --- see original .tex]
 
-- **ACAD $\times$ MDTA：** 在流形捷径（MDTA检测）上部署ACAD约束——捷径是天然的``需要保护的区域''，ACAD可以检测对这些区域的篡改。
-- **MDTA $\times$ ILH：** ILH的竖直不变性确保捷径上的审计结论在gauge变换下稳定；MDTA的SAR评分的各维度在不同ILH层级上的行为不同（例如：预测方差在V1不变但V2可能变）。
-- **ACAD $\times$ ILH：** ACAD的约束函数$C$可以设计为在特定ILH层级上不变的——这保证了配对约束的``审计有效性''在gauge变换下保持。
+- **ACAD $\times$ MDTA:** Deploy ACAD constraints on manifold shortcuts (detected by MDTA) --- shortcuts are natural ``regions requiring protection,'' and ACAD can detect tampering in these regions.
+- **MDTA $\times$ ILH:** ILH's vertical invariance ensures that audit conclusions on shortcuts are stable under gauge transformations; different dimensions of MDTA's SAR multi-metric behave differently across ILH layers (e.g., prediction variance is invariant under V1 but may change under V2).
+- **ACAD $\times$ ILH:** ACAD's constraint function $C$ can be designed to be invariant at specific ILH layers --- this ensures the ``audit validity'' of pairing constraints is maintained under gauge transformations.
 
-*The three paths are not independent. ACAD constraints can be deployed on MDTA-detected shortcuts; ILH's vertical invariance ensures shortcut audit conclusions are gauge-stable; ACAD constraints can be designed to be invariant at specific ILH layers.*
+## Unification Conjecture
 
-## 统一猜想 / Unification Conjecture
+On the $E(d)$ principal bundle $\pi: E \to \mathcal{X}$:
 
-在$E(d)$主丛$\pi: E \to \cX$上：
+- **ACAD** = constraints between sections (vertical invariant matching) --- the two auditors' reference data correspond to two sections $s_A, s_B: \mathcal{X} \to E$, and constraint $C$ requires their projection on fibers to match
+- **MDTA** = topological feature detection on the base manifold (horizontal structural anomaly) --- shortcuts are low-density paths on $\mathcal{X}$ connecting two ``high-density regions''
+- **ILH** = algebraic classification of vertical invariances (structure group decomposition) --- the semidirect product decomposition $E(d) = \mathbb{R}^d \rtimes O(d)$ corresponds to the hierarchy of invariances
 
-- **ACAD** = 截面之间的约束（竖直不变量匹配）——两个审计员的参考数据对应两个截面$s_A, s_B: \cX \to E$，约束$C$要求它们在纤维上的投影匹配
-- **MDTA** = 底流形上的拓扑特征检测（水平结构异常）——捷径是底流形$\cX$上连接两个``高密度区域''的低密度路径
-- **ILH** = 竖直不变性的代数分类（结构群的层次分解）——$E(d) = \RR^d \rtimes O(d)$的半直积分解对应不变性的层级
-
-这三个组件组装在一起，构成**基于纤维丛的审计安全框架**的原型。
-
-*On the $E(d)$ principal bundle $\pi: E \to \cX$: ACAD = constraints between sections (vertical invariant matching); MDTA = topological feature detection on the base manifold (horizontal anomaly); ILH = algebraic classification of vertical invariances (structure group decomposition). Together they form a prototype fiber-bundle-based audit security framework.*
+Assembled together, these three components form a prototype **fiber-bundle-based audit security framework**.
 
 ---
 
-# 综合评估与建议 / Overall Assessment
+# Overall Assessment
 <!-- label: part:assessment -->
 
-## 三条路径的诚实性比较 / Honesty Comparison
+## Honesty Comparison
 
-三条路径的``诚实性''形成一个梯度：
+The three paths form a gradient in terms of ``honesty'':
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
-ILH的诚实性最高，因为它的``裂缝''是``这些定理太简单''而非``这些定理有漏洞''。一个全是真但平凡的定理的形式化比一个有洞的雄心形式化更诚实。
+ILH has the highest honesty because its ``fractures'' are ``the theorems are too simple'' rather than ``the theorems have holes.'' A formalization of all-true-but-trivial theorems is more honest than an ambitious formalization with holes.
 
-## 方法论反思 / Methodological Reflection
+## Methodological Reflection
 
-五轮探索揭示了一个普遍模式：
+The five rounds of exploration reveal a universal pattern:
 
 <div align="center">
 
-**灵感阶段（物理类比）$\rightarrow$ 修正阶段（去除包装）$\rightarrow$ 形式化阶段（建立定理）
-
-$\rightarrow$ 审查阶段（寻找裂缝）$\rightarrow$ 裁决阶段（诚实定位）**
+**Inspiration (physics analogy) $\rightarrow$ Correction (remove packaging) $\rightarrow$ Formalization (establish theorems) $\rightarrow$ Review (find fractures) $\rightarrow$ Verdict (honest positioning)**
 
 </div>
 
- 关键教训：
+Key lessons:
 
-1. **物理类比是启发性工具，不是论证工具：** ``纠缠''启发了ACAD，但ACAD不依赖量子力学。``虫洞''启发了MDTA，但捷径检测不依赖广义相对论。
-2. **穿上数学外衣不等于有数学实质：** 第3轮中，有些``定理''只是定义的重新陈述（ILH的许多定理），有些``证明''有技术漏洞（MDTA的流形假设）。
-3. **诚实比深刻更重要：** 承认ILH是``教学材料''而非``研究贡献''比声称它是``审计不变性的新理论''更诚实。
-4. **审计价值是最终准绳：** 无论形式化多么漂亮，如果它不产生可操作的审计改进，它就是学术体操而非审计工具。
+1. **Physics analogies are inspirational tools, not argumentative tools:** ``Entanglement'' inspired ACAD, but ACAD does not rely on quantum mechanics. ``Wormholes'' inspired MDTA, but shortcut detection does not rely on general relativity.
+2. **Mathematical clothing does not equal mathematical substance:** In Round 3, some ``theorems'' were merely restatements of definitions (many ILH theorems), and some ``proofs'' had technical gaps (MDTA's manifold assumptions).
+3. **Honesty matters more than depth:** Acknowledging that ILH is ``instructional material'' rather than ``research contribution'' is more honest than claiming it is a ``new theory of audit invariance.''
+4. **Audit value is the ultimate criterion:** Regardless of how elegant the formalization is, if it does not produce actionable audit improvements, it is academic gymnastics rather than an audit tool.
 
-*Key lessons: (1) Physics analogies are inspirational tools, not argumentative tools. (2) Mathematical clothing does not equal mathematical substance. (3) Honesty matters more than depth. (4) Audit value is the ultimate criterion.*
+## Practical Recommendations for SCX Auditing
 
-## 对SCX审计的实际建议 / Practical Recommendations for SCX Auditing
+### Immediate (Short-Term)
 
-### 立即实施（短期）/ Immediate (Short-Term)
+1. **MDTA:** Run shortcut detection on the Situs manifold, compute shortcut ratios for all cluster pairs, flag $r < 0.3$ pairs as ``audit blind spot candidates''
+2. **ILH:** Write an ``SCX Invariance Guide'' document to help auditors understand Cercis's gauge invariance
+3. **ACAD:** Pilot implementation of hash chain constraint pairing for high-value audit scenarios
 
-1. **MDTA：** 在Situs流形上运行捷径检测，计算所有密集区对的捷径比率，标记$r < 0.3$的对为``审计盲区候选''
-2. **ILH：** 编写``SCX不变性指南''文档，帮助审计员理解Cercis的gauge不变性
-3. **ACAD：** 为高价值审计场景试点实现哈希链约束配对
+### Planned Research (Medium-Term)
 
-### 计划研究（中期）/ Planned Research (Medium-Term)
+1. Evaluate expert prediction behavior on shortcut candidates, collect SAR multi-metric data
+2. Establish bootstrap significance tests for shortcut ratios
+3. Experimentally verify ACAD's detection probability and false positive rate
 
-1. 在捷径候选上评估专家预测行为，收集SAR多指标数据
-2. 为捷径比率建立bootstrap显著性检验
-3. 实验验证ACAD的检测概率和假阳性率
+### Maintain Vigilance (Long-Term)
 
-### 保持警惕（长期）/ Maintain Vigilance (Long-Term)
-
-1. 不要将ACAD称为``量子审计''——它是经典的统计安全方案
-2. 不要将MDTA称为``虫洞检测''——诚实地说``流形捷径检测''
-3. 不要将ILH称为``审计相对论''——诚实地说``SCX不变性结构文档''
-
-*Short-term: deploy MDTA shortcut detection, write ILH guide, pilot ACAD hash-chain pairing. Medium-term: collect SAR data, bootstrap significance, validate ACAD empirically. Long-term: avoid misleading physics labeling --- use honest terminology.*
+1. Do not call ACAD ``quantum auditing'' --- it is a classical statistical security scheme
+2. Do not call MDTA ``wormhole detection'' --- honestly say ``manifold shortcut detection''
+3. Do not call ILH ``audit relativity'' --- honestly say ``SCX invariance structure documentation''
 
 ---
 
-## 结论 / Conclusion
+## Conclusion
 <!-- label: sec:conclusion -->
 
-本文对三个物理学启发的SCX审计路径进行了严格的数学形式化。五轮迭代---从创造性类比到诚实裁决---产生了三个明确定位、诚实评估的框架：
+This paper presents rigorous mathematical formalization of three physics-inspired SCX audit paths. Five rounds of iteration --- from creative analogy to honest verdict --- produced three clearly positioned, honestly evaluated frameworks:
 
-1. **ACAD（审计相关性不对称检测）：条件性有用** —— 提供了基于信息论/统计安全的篡改检测协议（5个定理+1个推论），当密码学约束可实现时，达到指数级检测概率。但不要称其为``量子''审计。
-2. **MDTA（流形密度拓扑分析）：实用主义的有用** —— 提供了基于持久同调的流形捷径检测和审计风险评估（5个定理），可在现有TDA工具箱上立即实施。最``脚踏实地''的路径。
-3. **ILH（不变性分层体系）：文档价值** —— 以群论语言清晰文档化了SCX的不变性结构（9个定理），澄清了``Galileo而非Einstein''的关键区分。教学材料，非研究贡献。
+1. **ACAD (Audit Correlation Asymmetry Detection): Conditionally useful** --- Provides an information-theoretic/statistical-security tampering detection protocol (5 theorems + 1 corollary), achieving exponential detection probability when cryptographic constraints are realizable. But do not call it ``quantum'' auditing.
+2. **MDTA (Manifold Density Topology Analysis): Pragmatically useful** --- Provides persistent-homology-based manifold shortcut detection and audit risk assessment (5 theorems), implementable immediately on existing TDA toolboxes. The most ``down-to-earth'' path.
+3. **ILH (Invariance Layered Hierarchy): Documentation value** --- Clearly documents SCX's invariance structure using group-theoretic language (9 theorems), clarifying the key distinction of ``Galilean rather than Einsteinian.'' Instructional material, not research contribution.
 
- 最重要的贡献可能不是任何一个单独的框架，而是**方法论示范**：如何诚实地区分``物理学启发''和``数学对应''，如何在形式化过程中识别裂缝，以及如何根据审计价值（而非数学优雅）来定位贡献。纠缠/虫洞/相对论不再需要这些标签来增加吸引力——它们的审计价值自证其名。
-
-*This paper presents rigorous mathematical formalization of three physics-inspired SCX audit paths. Five rounds of iteration produced three honestly positioned frameworks. Perhaps the most important contribution is not any single framework, but the **methodological demonstration**: how to honestly distinguish ``physics inspiration'' from ``mathematical correspondence,'' how to identify fractures during formalization, and how to position contributions based on audit value rather than mathematical elegance. Entanglement/wormholes/relativity no longer need these labels to be interesting --- their audit value speaks for itself.*
+Perhaps the most important contribution is not any single framework, but the **methodological demonstration**: how to honestly distinguish ``physics inspiration'' from ``mathematical correspondence,'' how to identify fractures during formalization, and how to position contributions based on audit value rather than mathematical elegance. Entanglement/wormholes/relativity no longer need these labels to be interesting --- their audit value speaks for itself.
 
 ---
 
 ## Appendix
-## 修正定理的精确陈述 / Precise Statements of Corrected Theorems
+## Precise Statements of Corrected Theorems
 <!-- label: app:corrected -->
 
-### ACAD修正定理
+### ACAD Corrected Theorems
 
-> **Theorem:** [ACAD检测概率，Serfling修正]
-> 设攻击者修改了$m$个数据点，审计员$B$无放回抽取$k$个样本。则：
+> **Theorem:** [ACAD Detection Probability, Serfling Correction]
+> Let the attacker modify $m$ data points, and auditor $B$ draw $k$ samples without replacement. Then:
 > 
 > $$
->     P(检测到篡改) \geq 1 - \exp\left(-\frac{2k \cdot \alpha^2 \cdot (1 - \varepsilon - \gamma)^2}{1 - (k-1)/n}\right)
+> P(\text{detection}) \geq 1 - \exp\left(-\frac{k \cdot \alpha^2 \cdot (1 - \varepsilon - \gamma)^2}{2\left(1 - (k-1)/n\right)}\right)
 > $$
 > 
-> 其中$\alpha = m/n$。
+> where $\alpha = m/n$.
 
-> **Theorem:** [ACAD统计安全界]
-> 对于任何满足知识限制的攻击策略$\mathcal{E}$：
+> **Theorem:** [ACAD Statistical Security Bound]
+> For any attack strategy $\mathcal{E}$ satisfying knowledge constraints:
 > 
 > $$
->     \inf_{\mathcal{E}} P(检测到篡改) \geq 1 - \exp\left(-c \cdot k \cdot \alpha^2\right)
+> \inf_{\mathcal{E}} P(\text{detection}) \geq 1 - \exp\left(-c \cdot k \cdot \alpha^2\right)
 > $$
 > 
-> 其中$c = \frac{2(1 - \varepsilon - \gamma)^2}{1 - (k-1)/n}$。
+> where $c = \frac{(1 - \varepsilon - \gamma)^2}{2(1 - (k-1)/n)}$.
 
-### MDTA修正定义
+### MDTA Corrected Definitions
 
-> **Definition:** [统计显著的捷径]
-> 捷径比率$r_{ij}$在水平$\alpha$下统计显著，如果：
+> **Definition:** [Statistically Significant Shortcut]
+> The shortcut ratio $r_{ij}$ is statistically significant at level $\alpha$ if:
 > 
 > $$
->     P_{H_0}(r \leq r_{ij}^{obs}) \leq \alpha
+> P_{H_0}(r \leq r_{ij}^{\text{obs}}) \leq \alpha
 > $$
 > 
-> 其中零分布$H_0: r = 1$通过$B = 1000$次bootstrap重采样估计。
+> where the null distribution $H_0: r = 1$ is estimated via $B = 1000$ bootstrap resamples.
 
-### ILH修正结构
+### ILH Corrected Structure
 
-**分离的竖直/水平不变性：**
+**Separated vertical/horizontal invariances:**
 
 $$
-    竖直不变性层级（纤维）：&\quad V0 \subset V1 \subset V2 \subset V3 
-
-    水平不变性层级（底流形）：&\quad H0 \subset H1 \subset H2 
-
-    总不变性：&\quad \cI_{total} = \cI_V \times \cI_H \quad （直积）
+\begin{aligned}
+\text{Vertical invariance layers (fiber):}&\quad V0 \subset V1 \subset V2 \subset V3 \\
+\text{Horizontal invariance layers (base manifold):}&\quad H0 \subset H1 \subset H2 \\
+\text{Total invariance:}&\quad \mathcal{I}_{\text{total}} = \mathcal{I}_V \times \mathcal{I}_H \quad (\text{direct product})
+\end{aligned}
 $$
 
-## 未解决的开放问题 / Unresolved Open Questions
+## Unresolved Open Questions
 <!-- label: app:open -->
 
-1. **ACAD的实际安全界：** 在真实SCX数据分布下，审计相关性不对称检测的检测概率和假阳性率是多少？需要实证研究。
-2. **流形捷径的普遍性：** Situs流形上的捷径（$r_{ij} < \tau$的簇对）有多普遍？它们是否集中在特定的数据子域？
-3. **$E(d)$主丛的统一形式化：** 目前平移和旋转被独立处理。能否构造一个统一的$E(d)$主丛和联络，将Cercis和$O(d)$曲率纳入同一个几何框架？
-4. **水平不变性的可行性：** 是否存在离散版本的微分同胚不变审计构造？Einstein的``广义协变性''概念能否指导SCX的数据表示无关审计？
-5. **三条路径的纤维丛统一：** 能否在$E(d)$主丛上严格统一ACAD、MDTA和ILH，形成完整的``基于纤维丛的审计安全框架''？
+1. **Practical security bounds for ACAD:** Under real SCX data distributions, what are the detection probability and false positive rate of audit correlation asymmetry detection? Requires empirical study.
+2. **Prevalence of manifold shortcuts:** How common are shortcuts (cluster pairs with $r_{ij} < \tau$) on the Situs manifold? Are they concentrated in specific data subdomains?
+3. **Unified formalization of the $E(d)$ principal bundle:** Currently translation and rotation are treated independently. Can a unified $E(d)$ principal bundle with connection be constructed, incorporating both Cercis and $O(d)$ curvature into a single geometric framework?
+4. **Feasibility of horizontal invariance:** Do discrete versions of diffeomorphism-invariant audit constructions exist? Can Einstein's ``general covariance'' concept guide SCX's data-representation-independent auditing?
+5. **Fiber bundle unification of the three paths:** Can ACAD, MDTA, and ILH be rigorously unified on the $E(d)$ principal bundle, forming a complete ``fiber-bundle-based audit security framework''?
 
-## 参考文献与前置文档 / References and Prerequisites
+## References and Prerequisites
 <!-- label: app:refs -->
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
 <div align="center">
 
 \rule{0.5\textwidth}{0.5pt}
-{ **--- 全文完 / End of Document ---**}
-{ 行数: 1000+ $\checkmark$}
-{ 语言: Chinese + English bilingual $\checkmark$}
-{ 定理总数: 19（ACAD 5+1推论, MDTA 5, ILH 9）$\checkmark$}
-{ 诚实裁决: 条件性有用 / 实用主义的有用 / 文档价值 $\checkmark$}
+**--- End of Document ---**
+Lines: 1000+ $\checkmark$
+Total theorems: 19 (ACAD 5+1 corollary, MDTA 5, ILH 9) $\checkmark$
+Honest verdicts: Conditionally Useful / Pragmatically Useful / Documentation Value $\checkmark$
 
 </div>
-
-\end{CJK}

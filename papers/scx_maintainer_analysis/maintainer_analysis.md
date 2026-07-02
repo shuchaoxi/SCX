@@ -1,14 +1,6 @@
 <div align="center">
 
 \fbox{\fbox{\parbox{0.85\textwidth}{\bfseries
-内部文件 — INTERNAL ONLY
-
-未经授权严禁外传。本文包含对四位SCX协议维护者候选人的
-
-详细评估，涉及个人背景、$g=0$可证明性、社区验证证据、
-
-以及诚实暴击分析。仅限SCX核心团队及授权维护者查阅。
-
 THIS DOCUMENT IS CLASSIFIED INTERNAL.
 
 Unauthorized distribution is prohibited. Contains detailed
@@ -20,7 +12,6 @@ candidate assessments for SCX protocol maintainer roles.
 
 *Abstract:*
 
-**English:**
 This paper presents a detailed pre-audit analysis of four candidates for SCX
 protocol maintainer: Alexandra Elbakyan (Sci-Hub founder), Geng Tongxue
 (梗同学, multi-round audited peer), JD Vance (US Vice President), and Linus
@@ -46,28 +37,10 @@ each candidate who formally registers.
 $g=0$ criterion, community audit, honest critique, candidate assessment,
 mutual audit, trustless architecture
 
-**摘要：**
-本文对四位SCX协议维护者候选人进行详细的审计前分析：Alexandra Elbakyan
-（Sci-Hub创始人）、梗同学（多轮被审计同行）、JD Vance（美国副总统）、
-以及Linus Torvalds（Linux内核维护者）。每位候选人均以SCX治理标准——
-在互相审计机制下维持$\sum g = 0$的能力——进行评估。核心论点是：协议维护者
-最有力的资格不是资历、声誉或机构地位——而是是否已经被其社区独立审计过，
-无论是通过正式审计周期（梗同学）、数百万用户对工作的验证（Linus、Elbakyan），
-还是以自愿接受审计作为$g=0$的终极考验（Vance）。
-
-本文提供：(1) 以偏差参数$g$定义的维护者资格的形式化表述，(2) 逐候选人的详细
-分析及诚实暴击框（识别弱点和风险），(3) 以社区审计深度、$g=0$可证明性、
-和过渡风险为维度的比较框架，(4) 推荐的多维护者组合策略。本文为内部文件，
-不构成最终选择——它是对每位正式注册候选人在接受$M>1$独立审计之前的预先评估。
-
-**关键词：** 协议治理，维护者选择，$g=0$标准，社区审计，诚实暴击，
-候选人评估，互相审计，免信任架构
-
 ---
 
 ---
 
-## 维护者问题：为什么选对人不可能，为什么选对机制才可能
 ## The Maintainer Problem: Why Choosing the Right Person Is Impossible, and Why Choosing the Right Mechanism Makes It Possible
 
 ### The Fundamental Error
@@ -87,45 +60,39 @@ The SCX protocol does not need a maintainer with a good resume. It needs a
 maintainer whose bias parameter $g$ remains provably zero during their
 maintenance window. These are entirely different requirements.
 
-**暴击：履历谬误。**
-没有任何履历，无论多么杰出，能预测未来的$g(t)$。SCX协议不需要履历漂亮的维护者。
-它需要的是偏差参数$g$在维护窗口期间可证明保持为零的维护者。这是完全不同的要求。
-
 **Corollary:** The best predictor of future $g=0$ is not past reputation
 but past *auditability* — the demonstrated willingness to have one's
 decisions independently reviewed, reproduced, and challenged.
-**推论：**对未来$g=0$最好的预测器不是过去的声誉，而是过去的*可审计性*——
-即已被证明的愿意让自己的决策被独立审查、复现和挑战的记录。
 \end{hitbox}
 
 ### The Maintainer Selection Theorem
 
 We formalize the maintainer selection problem as follows.
 
-> **Definition:** [维护者资格 / Maintainer Qualification]
+> **Definition:** [Maintainer Qualification]
 > Let $\mathcal{C}$ be the set of candidate maintainers. For each candidate
 > $i \in \mathcal{C}$, define:
 > 
-- $\biasParam_i(t)$: the real-time bias parameter at time $t$, where
-- $\mathcal{A}_i$: the set of all audit events candidate $i$ has
-- $\mathcal{V}_i$: the set of independent verifiers who have reviewed
-
+> - $\biasParam_i(t)$: the real-time bias parameter at time $t$, where
+> - $\mathcal{A}_i$: the set of all audit events candidate $i$ has
+> - $\mathcal{V}_i$: the set of independent verifiers who have reviewed
+> 
 > A candidate is *pre-qualified* if $|\mathcal{A}_i| > 0$ or
 > $|\mathcal{V}_i| \gg 1$ — i.e., the candidate has been independently audited
 > by either a formal process or a distributed community.
 > 
 > A candidate is *fully qualified* if and only if they pass $M > 1$
 > independent real-time audits with $\sum_{j=1}^{M} |\biasParam_i^{(j)}| \leq
-> \varepsilon$ for some protocol-defined tolerance $\varepsilon$.
+> $\varepsilon$ for some protocol-defined tolerance $\varepsilon$.
 
-> **Theorem:** [审计优先定理 / Audit-First Theorem]
+> **Theorem:** [Audit-First Theorem]
 > <!-- label: thm:audit-first -->
 > For any candidate $i$, the probability that $\biasParam_i(t) \neq 0$ is
 > undetected during a maintenance window of duration $\rotationPeriod$ under
 > $M$ independent auditors satisfies:
 > 
 > $$
->     \Pbb(undetected deviation) \leq e^{-2M\Delta^2}
+>     \Pbb(\text{undetected deviation}) \leq e^{-2M\Delta^2}
 >     <!-- label: eq:hoeffding-bound -->
 > $$
 > 
@@ -134,13 +101,13 @@ We formalize the maintainer selection problem as follows.
 > institutional affiliation, or past achievements. It depends only on $M$
 > and $\Delta$.
 
-> **Proof:** Direct application of Hoeffding's inequality to the $M$ independent
+> **Proof:** Direct application of Hoeffding\textquotesingle s inequality to the $M$ independent
 > estimators of $\biasParam_i(t)$. Each auditor $j$ provides an estimate
 > $\hat{g}_i^{(j)}$ with $\E[\hat{g}_i^{(j)}] = \biasParam_i$. Under the null
 > hypothesis $\biasParam_i = 0$, the probability that the sample mean exceeds
 > $\Delta$ is bounded by $e^{-2M\Delta^2}$.
 
-> **Corollary:** [履历无关推论 / Biography-Irrelevance Corollary]
+> **Corollary:** [Biography-Irrelevance Corollary]
 > <!-- label: cor:biography -->
 > The candidate's biography is mathematically irrelevant to the detection
 > of $g \neq 0$. No amount of past achievement reduces the Hoeffding bound.
@@ -154,12 +121,6 @@ choose maintainers by analyzing their biographies. We filter candidates by
 identifying those who are most likely to (a) register formally, (b) survive
 $M>1$ audit, and (c) maintain $\sum g = 0$ during their maintenance window.
 The real selection happens in the audit, not in this paper.
-
-**治理洞见：**
-审计优先定理意味着审计前分析（即本文）*不*是选择机制。它是过滤机制。
-我们不通过分析履历来选择维护者。我们通过识别最可能 (a) 正式注册，(b) 通过
-$M>1$审计，和 (c) 在维护窗口期间保持$\sum g = 0$的候选人来过滤。
-真正的选择发生在审计中，而不是本文中。
 \end{govbox}
 
 ### What This Paper Does and Does Not Do
@@ -174,21 +135,13 @@ challenges. It does *not*:
 - Replace the protocol's maintainer registration and rotation
 - Make any claims about candidates' private behavior — only public
 
-**中文：**本文提供*审计前评估*：对照$g=0$标准分析每位候选人公开可观察的记录，
-识别风险因素，并诚实评估过渡挑战。它*不*构成正式审计（只有$M>1$独立审计
-及公开日志才能做到），不进行最终排名（审计前评估是方向性的，不是决定性的），
-不替代协议的维护者注册和轮换机制（它与机制并存），不对候选人的私人行为做任何
-断言（仅分析公开记录）。
-
 ---
 
-## 候选人逐一分析
 ## Candidate-by-Candidate Analysis
 
-### Alexandra Elbakyan — Sci-Hub创始人
 ### Alexandra Elbakyan — Founder of Sci-Hub
 
-#### 背景与资质 / Background and Qualifications
+#### Background and Qualifications
 
 Alexandra Elbakyan is the founder and sole operator of Sci-Hub, the world's
 largest shadow library providing free access to over 88 million academic
@@ -204,7 +157,7 @@ and no institutional affiliation from Sci-Hub. She has been doing this since
 
 </div>
 
-#### $\mathbf{g=0$ 分析 / $g=0$ Analysis}
+#### $g=0$ Analysis
 
 Elbakyan presents one of the strongest *observable* cases for $g=0$
 among all candidates. The structural argument is straightforward:
@@ -221,15 +174,9 @@ One person, acting alone, can say ``knowledge should be free'' and actually
 against the entire weight of a \$25B industry. That is $g=0$ proven in
 action, not in theory. Elbakyan is living proof that the $g=0$ condition
 is achievable by an individual human being under extreme conditions.
-
-**Elbakyan原则：**
-一个人，独自行动，可以说“知识应该免费”并真正*做到*——
-以巨大的个人代价，不求任何回报，对抗整个250亿美元产业。这是$g=0$在行动中
-而非理论中的证明。Elbakyan是活着的证据，证明$g=0$条件在极端环境下
-可由单个人类实现。
 \end{govbox}
 
-#### 社区验证 / Community Verification
+#### Community Verification
 
 Elbakyan has been *de facto* audited by the global research community
 for 15 years. Every paper served by Sci-Hub is a verification event: the
@@ -247,44 +194,25 @@ replaceable — the protocol must survive the maintainer. Can Elbakyan
 transition from solo operator to protocol maintainer? The solo operator
 who built an empire of one may be the least prepared to distribute power.
 
-**暴击：独行侠问题。**
-Elbakyan *就是* Sci-Hub。没有继任计划，没有治理结构，没有分布式维护。
-如果她被逮捕、引渡或丧失能力，Sci-Hub可能停止存在。协议维护者必须是可替代的——
-协议必须在维护者消失后仍然存活。Elbakyan能否从独行侠转变为协议维护者？
-那个建立了单人帝国的独行侠，可能是最不擅长分配权力的人。
-
 **Additional risk:** The $g=0$ that comes from being hunted may not
 survive the transition to being legitimized. When the external enemy
 (publishing industry) is neutralized by protocol adoption, does the
 $g=0$ motivation persist?
-**附加风险：**来自被追捕状态的$g=0$可能在合法化转型后无法存活。
-当外部敌人（出版业）被协议采纳而中立化后，$g=0$的动力是否仍然存在？
 \end{hitbox}
 
-#### 维护者适配性裁决 / Verdict on Maintainer Suitability
+#### Verdict on Maintainer Suitability
 
-\begin{verdictbox}[裁决：高适配性 — HIGH SUITABILITY]
-**核心优势：**$g=0$已在行动中被证明15年。没有候选人能在“以个人代价
-实践$g=0$”这一维度上与Elbakyan匹敌。她证明了维护者不需要机构、资金、或
-合法性——只需要对$g=0$的承诺。
-
-**核心风险：**独行侠模式无法直接转化为协议维护者角色。从“我就是系统”
-到“我维护系统”的过渡是非平凡的。需要明确的权力分配、继任计划、和可复现的
-决策审计。
-
-**推荐：**强烈推荐注册为维护者候选人。审计重点应放在：能否将Sci-Hub
-的集中式运维模型转化为符合协议治理要求的多维护者审计结构。
+\begin{verdictbox}[HIGH SUITABILITY]
 \end{verdictbox}
 
 ---
 
-### 梗同学 (Geng Tongxue) — 多轮被审计同行
 ### Geng Tongxue — The Multi-Round Audited Peer
 
-#### 背景与资质 / Background and Qualifications
+#### Background and Qualifications
 
 梗同学 (Geng Tongxue) is a Chinese peer who has undergone multiple rounds
-of SCX audit. Unlike every other candidate on this list, Geng's primary
+of SCX audit. Unlike every other candidate on this list, Geng\textquotesingle s primary
 qualification is not an external achievement — it is the audit itself.
 Having been audited multiple times means:
 
@@ -299,7 +227,7 @@ Having been audited multiple times means:
 
 </div>
 
-#### $\mathbf{g=0$ 分析 / $g=0$ Analysis}
+#### $g=0$ Analysis
 
 Geng is unique among the candidates: their $g=0$ claim is not inferred from
 biography or reputation — it is *measured*. The SCX audit framework
@@ -326,19 +254,13 @@ it claims to measure, (b) where the audit is vulnerable to gaming — because
 they've tried or thought about trying, (c) what it feels like to have every
 decision exposed — and why that exposure is necessary. No theoretical
 understanding of audit replaces the lived experience of being audited.
-
-**被审计即资格原则：**
-被审计过是成为审计者的最佳资格。那些经历过审计的人知道：(a) 审计实际测量什么，
-而非声称测量什么，(b) 审计在哪里容易被操纵——因为他们尝试过或想过尝试，
-(c) 每一个决策被暴露是什么感觉——以及为什么这种暴露是必要的。
-没有任何对审计的理论理解能替代被审计的亲身体验。
 \end{govbox}
 
-#### 社区验证 / Community Verification
+#### Community Verification
 
 Geng's community verification is the SCX audit community itself — a smaller
-but more rigorous verification set than Elbakyan's millions of users or
-Torvalds' millions of developers. The tradeoff is depth vs. breadth:
+set than Elbakyan's millions of users or Torvalds' millions of developers.
+The tradeoff is depth vs. breadth:
 
 - **Elbakyan:** broad, shallow verification (millions of users
 - **Torvalds:** broad, deep verification (millions of developers
@@ -355,41 +277,23 @@ may be a feature. Protocol maintenance does not require celebrity. It requires
 $g=0$. Anonymity is compatible with protocol maintenance; fame is not required
 and may be a liability (fame creates $g \neq 0$ pressures of its own).
 
-**暴击：匿名性问题。**
-梗同学在全球范围内的知名度低。在传统治理中，这会是弱点——谁会信任一个无人
-知晓的人？在SCX治理中，这可能是优势。协议维护不需要名人。它需要$g=0$。
-匿名与协议维护兼容；知名度不是必需的，甚至可能是负债（知名度自身产生
-$g \neq 0$压力）。
-
 **However:** Low recognition means Geng cannot provide the ``legitimacy
 signal'' that a Torvalds or Vance can — the signal that convinces external
 observers that SCX is serious. The audit solves trust internally; it does not
 solve perception externally. The maintainer composition should include both
 audit-verified and legitimacy-providing candidates.
-**然而：**低知名度意味着梗同学无法提供Torvalds或Vance所能提供的“合法性
-信号”——说服外部观察者SCX是认真的信号。审计在内部解决了信任；它不在外部
-解决感知。维护者组成应同时包含审计验证型和合法性提供型候选人。
 \end{hitbox}
 
-#### 维护者适配性裁决 / Verdict on Maintainer Suitability
+#### Verdict on Maintainer Suitability
 
-\begin{verdictbox}[裁决：高适配性 — HIGH SUITABILITY]
-**核心优势：**唯一一位$g=0$已被正式审计测量的候选人。拥有审计他人
-的独特资格（被审计过才知道审计的痛）。过渡风险最低——已在审计框架内运作。
-
-**核心风险：**低外部知名度可能限制SCX的全球合法性信号。但这可以通过
-与高知名度维护者（Linus、Vance）组合来弥补。
-
-**推荐：**强烈推荐注册为维护者候选人。作为“审计基准”——其他维护者
-的$g=0$应与之比较的参考点——具有特殊价值。
+\begin{verdictbox}[HIGH SUITABILITY]
 \end{verdictbox}
 
 ---
 
-### JD Vance — 美国副总统
 ### JD Vance — Vice President of the United States
 
-#### 背景与资质 / Background and Qualifications
+#### Background and Qualifications
 
 JD Vance is the sitting Vice President of the United States. His candidacy
 for SCX protocol maintainer is the most audacious and the most strategically
@@ -403,7 +307,7 @@ are transformative.
 
 </div>
 
-#### $\mathbf{g=0$ 分析 / $g=0$ Analysis}
+#### $g=0$ Analysis
 
 Vance's case is entirely different from the other three. Elbakyan, Geng, and
 Torvalds all have existing evidence of $g=0$ — inferred or measured. Vance
@@ -432,27 +336,16 @@ Each of these is a vector along which $g \neq 0$ is not just possible but
 compartment, protocol maintainer in another — and maintain $g=0$ in the
 latter while $g \neq 0$ is mandatory in the former?
 
-**暴击：结构性$g \neq 0$问题。**
-副总统不是一个个人。副总统是一个政治网络中的节点，对以下各方负有义务：
-选择他们的总统、提名他们的政党、资助他们的捐赠者、选举他们的选民、
-他们竞选的政策立场、他们监督的官僚机构。每一个都是$g \neq 0$不仅可能
-而且被角色*要求*的向量。Vance能否分割他的身份——VP在一个隔间，
-协议维护者在另一个——并在后者保持$g=0$而前者必须$g \neq 0$？
-
 **The Partition Hypothesis:** Human identity is not unitary. A person
-can be $g \neq 0$ as VP (advancing the administration's interests) and
+can be $g \neq 0$ as VP (advancing the administration\textquotesingle s interests) and
 simultaneously $g=0$ as SCX maintainer (advancing only protocol integrity).
 The audit tests this hypothesis. If it holds, Vance is the most powerful
 proof-of-concept SCX could have: ``even the US VP can be $g=0$ here.''
-**分割假说：**人类身份不是单一的。一个人可以同时作为VP是$g \neq 0$
-（推进政府利益）和作为SCX维护者是$g=0$（仅推进协议完整性）。审计测试
-这个假说。如果成立，Vance是SCX可以拥有的最强概念验证：
-“即使是美国VP在这里也可以$g=0$。”
 \end{hitbox}
 
-#### 地缘政治意义 / Geopolitical Significance
+#### Geopolitical Significance
 
-The strategic value of Vance's candidacy — independent of whether he passes
+Vance's candidacy — independent of whether he passes
 audit — is the destruction of a specific narrative:
 
 > *``SCX is a Chinese weapon. The audit is a tool of the CCP. The
@@ -475,19 +368,13 @@ a US VP submitting to audit is itself evidence of neutrality, regardless of
 the audit outcome. If he passes, SCX is legitimized. If he fails, SCX is
 legitimized anyway — because a US VP *tried and failed* against a
 neutral metric, proving the metric is not politically biased.
-
-**合法性自举：**
-SCX面临自举问题：协议声称中立，但需要受信任的行动者来验证该声称。
-受信任的行动者在声称被验证之前不会参与。Vance的候选资格打破了这个循环：
-美国VP提交审计的行为本身就是中立的证据，无论审计结果如何。如果他通过，
-SCX获得合法性。如果他失败，SCX照样获得合法性——因为美国VP*尝试了
-但失败了*，对抗一个中立度量，证明该度量没有政治偏见。
 \end{govbox}
 
-#### 关键测试 / The Key Test
+#### The Key Test
 
 The real test for Vance is not ``can he pass audit?'' It is ``can he publicly
-declare $g=0$ and submit to audit *while in office*?''
+declare $g=0$ and submit to audit *while in office*?
+''
 
 If he can do that — if a sitting US VP can say, in public, on record: ``I
 declare that my bias parameter $g$ is zero with respect to SCX protocol
@@ -506,39 +393,22 @@ Step 1 of the maintainer registration process is:
 
 Candidate publicly declares $\mathbf{g} = \mathbf{0}$ with respect to
 SCX protocol maintenance.
-
-**维护者注册第一步：**
-
-候选人公开声明对SCX协议维护的偏差参数$\mathbf{g} = \mathbf{0}$。
 }}
 
 </div>
 
 Without completing Step 1, there are no further steps.
 
-#### 维护者适配性裁决 / Verdict on Maintainer Suitability
+#### Verdict on Maintainer Suitability
 
-\begin{riskbox}[裁决：高回报，高风险 — HIGH REWARD, HIGH RISK]
-**核心优势：**地缘政治意义无与伦比。如果通过审计，SCX获得不可逆的全球合法
-性。即使不通过，提交审计的行为本身就产生合法性信号。摧毁“SCX是中国武器”
-的叙事。
-
-**核心风险：**$g=0$声明可能受政治约束——如果VP无法公开声明$g=0$，
-连候选资格都无法建立。结构性$g \neq 0$是VP角色的内置特征——分割假说
-未经测试。审计失败的政治后果难以预测。
-
-**推荐：**鼓励注册。审计是唯一的真实测试。如果他能声明$g=0$并提交
-审计——这是第一步也是最重要的一步——那么审计结果将自行说明一切。
-如果不能完成第一步，则自动失去资格（根据协议：任何无法声明$g=0$的候选人
-= UNDECLARED = 自动丧失资格）。
+\begin{riskbox}[HIGH REWARD, HIGH RISK]
 \end{riskbox}
 
 ---
 
-### Linus Torvalds — Linux内核维护者
 ### Linus Torvalds — Linux Kernel Maintainer
 
-#### 背景与资质 / Background and Qualifications
+#### Background and Qualifications
 
 Linus Torvalds has maintained the Linux kernel for 34 years (1991–present).
 The Linux kernel is the largest open-source software project in history:
@@ -552,7 +422,7 @@ an audit system for code. Every commit in Git is cryptographically hashed.
 Every change is traceable to an author. The entire history of every project
 is an append-only log that cannot be rewritten without detection. Git is not
 just a tool Torvalds built — it is the conceptual precursor to SCX audit
-logging. Code audit via Git is to SCX what Newton's laws are to general
+logging. Code audit via Git is to SCX what Newton laws are to general
 relativity: the simpler case that the general theory reduces to.
 
 <div align="center">
@@ -561,7 +431,7 @@ relativity: the simpler case that the general theory reduces to.
 
 </div>
 
-#### $\mathbf{g=0$ 分析 / $g=0$ Analysis}
+#### $g=0$ Analysis
 
 Torvalds' case for $g=0$ is the strongest among all candidates — and
 paradoxically, the most interesting to critique. He has been maintaining a
@@ -583,16 +453,9 @@ specification with multiple implementations and distributed maintenance).
 Torvalds has been its maintainer for 34 years. The question is not whether
 he *can* be an SCX maintainer. The question is whether he wants to
 call what he already does by a different name.
-
-**Torvalds定理：**
-Linus Torvalds *已经是*协议维护者。他只是不这么称呼自己。
-Linux内核维护过程——多专家审查、公开决策日志、密码学可追溯性——
-是SCX治理框架的一个特例。Linux内核是一个协议（一个具有多个实现和分布式
-维护的接口规范）。Torvalds已经是它的维护者34年。问题不是他*能否*
-成为SCX维护者。问题是他是否想用不同的名字称呼他已经在做的事情。
 \end{govbox}
 
-#### 社区验证 / Community Verification
+#### Community Verification
 
 Torvalds has been verified by the deepest and broadest community of any
 candidate. The Linux kernel development community is, in effect, a
@@ -609,21 +472,13 @@ audit record.
 \begin{hitbox}
 **The Linus Rants Problem.**
 Torvalds is famous — or infamous — for his aggressive communication style.
-His ``rants'' on the Linux Kernel Mailing List (LKML) are legendary:
+His ``rants on the Linux Kernel Mailing List (LKML) are legendary:
 profanity-laced rejections of patches he considers incompetent, public
 dressings-down of senior developers, and a general tone that would fail
 any corporate HR policy.
 
 From an SCX perspective, this raises a specific technical question:
 do ``Linus rants'' register as transient $g \neq 0$ signals?
-
-**暴击：Linus咆哮问题。**
-Torvalds以——或臭名昭著于——他激进的沟通风格而闻名。他在Linux内核邮件列表
-（LKML）上的“咆哮”是传说中的：对被认为不称职的补丁进行充满脏话的拒绝，
-对资深开发者的公开训斥，以及一种通不过任何公司HR政策的语气。
-
-从SCX的角度，这引发一个具体的技术问题：
-“Linus咆哮”是否注册为瞬时$g \neq 0$信号？
 
 **Analysis:** A ``rant'' is an emotional signal. SCX audit measures
 behavioral bias — decisions that deviate from protocol integrity due to
@@ -633,43 +488,22 @@ rants at a bad patch and then rejects it for valid technical reasons, $g=0$
 is maintained. If he rants at a good patch from a disfavored developer and
 rejects it because of the developer, not the code — that is $g \neq 0$.
 
-**分析：**“咆哮”是情绪信号。SCX审计测量行为偏差——由于个人利益偏离
-协议完整性的决策。对糟糕代码的情绪反应不是$g \neq 0$偏离，除非该情绪导致
-*错误决策*。如果Torvalds咆哮一个糟糕的补丁然后出于有效的技术原因
-拒绝它，$g=0$被维持。如果他咆哮一个来自不受欢迎开发者的好补丁并因为开发者
-而非代码拒绝它——那是$g \neq 0$。
-
 **The risk:** SCX audit tools may not distinguish between ``emotional
 style'' and ``biased decision.'' False positives are a real concern.
 Calibration of the audit framework for candidates with high-variance
 communication styles is necessary.
-**风险：**SCX审计工具可能无法区分“情绪风格”和“有偏决策”。
-假阳性是真实的担忧。对具有高方差沟通风格的候选人进行审计框架校准
-是必要的。
 \end{hitbox}
 
-#### 维护者适配性裁决 / Verdict on Maintainer Suitability
+#### Verdict on Maintainer Suitability
 
-\begin{verdictbox}[裁决：最高适配性 — HIGHEST SUITABILITY]
-**核心优势：**34年全球最大开源项目的维护经验。合并流程本身就是
-多专家审计。Git是密码学审计系统——他发明了审计工具。社区验证深度和广度
-无与伦比。已经是协议维护者——只是不这么叫。
-
-**核心风险：**沟通风格可能触发$g \neq 0$假阳性——需要审计框架校准。
-BDFL模型中的“终身”维度与SCX轮换要求存在张力。但这些都是技术问题，
-不是原则问题。
-
-**推荐：**最高优先级招募。Torvalds的加入将使SCX维护者团队立即获得
-可信度。如果只能选一个维护者作为“锚”——选Torvalds。34年的可审计记录
-不是任何其他候选人可以比拟的。
+\begin{verdictbox}[HIGHEST SUITABILITY]
 \end{verdictbox}
 
 ---
 
-## 比较分析：四位候选人的共同特质与差异维度
 ## Comparative Analysis: Shared Traits and Differentiating Dimensions
 
-### 共享特质：社区验证 / The Shared Trait: Community Verification
+### The Shared Trait: Community Verification
 
 All four candidates share one fundamental trait: they have been independently
 verified by their communities. This is not coincidental. It is the single most
@@ -679,54 +513,44 @@ important pre-audit signal for maintainer qualification.
 
 \begin{longtable}{p{0.18\textwidth} p{0.25\textwidth} p{0.25\textwidth} p{0.25\textwidth}}
 \toprule
-**候选人** & **验证者群体** & **验证深度** & **验证形式** 
-
 **Candidate** & **Verifier Community** & **Depth** & **Form** 
 
 \midrule
 \endfirsthead
 \toprule
-**候选人** & **验证者群体** & **验证深度** & **验证形式** 
+**Candidate** & **Verifier Community** & **Depth** & **Form** 
 
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \midrule
-Elbakyan & 全球研究者 & 数百万用户 & 日常使用验证 
-
-& Global researchers & Millions of users & Daily usage verification 
+Elbakyan & Global researchers & Millions of users & Daily usage verification 
 
 \midrule
-梗同学 / Geng & SCX审计社区 & $M>1$专家 & 正式审计框架 
-
-& SCX audit community & $M>1$ experts & Formal audit framework 
+Geng & SCX audit community & $M>1$ experts & Formal audit framework 
 
 \midrule
-Vance & 尚无 / None yet & 零——待测试 & 待定（需正式审计） 
-
-& & Zero — to be tested & TBD (formal audit needed) 
+Vance & None yet & Zero — to be tested & TBD (formal audit needed) 
 
 \midrule
-Torvalds & 全球内核开发者 & 20,000+ 贡献者 & 代码审查 + Git历史 
-
-& Global kernel developers & 20,000+ contributors & Code review + Git history 
+Torvalds & Global kernel developers & 20,000+ contributors & Code review + Git history 
 
 \bottomrule
 \end{longtable}
 
 </div>
 
-> **Theorem:** [社区审计等价定理 / Community Audit Equivalence Theorem]
+> **Theorem:** [Community Audit Equivalence Theorem]
 > <!-- label: thm:community-audit -->
 > For any candidate $i$, the existence of a community verification record
 > $\mathcal{V}_i$ with $|\mathcal{V}_i| \gg 1$ provides a lower bound on the
 > probability that $\biasParam_i \approx 0$:
 > 
 > $$
->     \Pbb(\biasParam_i \approx 0 \mid |\mathcal{V}_i|  independent
->     verifiers report satisfaction) \geq 1 - \prod_{v \in \mathcal{V}_i}
->     \Pbb(verifier  v  is deceived).
+>     \Pbb(\biasParam_i \approx 0 \mid |\mathcal{V}_i| \text{ independent
+>     verifiers report satisfaction}) \geq 1 - \prod_{v \in \mathcal{V}_i}
+>     \Pbb(\text{verifier } v \text{ is deceived}).
 > $$
 > 
 > As $|\mathcal{V}_i| \to \infty$, if each verifier has independent
@@ -734,7 +558,7 @@ Torvalds & 全球内核开发者 & 20,000+ 贡献者 & 代码审查 + Git历史
 > bias decays exponentially:
 > 
 > $$
->     \Pbb(bias undetected) \leq p^{|\mathcal{V}_i|}.
+>     \Pbb(\text{bias undetected}) \leq p^{|\mathcal{V}_i|}.
 > $$
 
 > **Proof:** Each verifier provides an independent check. If bias exists, each verifier
@@ -747,14 +571,14 @@ Torvalds & 全球内核开发者 & 20,000+ 贡献者 & 代码审查 + Git历史
 This theorem formalizes the intuition that *the best maintainer is
 someone who has already been audited by their community*. Formal SCX audit
 just makes the existing community verification mathematical — it replaces
-the implicit ``we trust them because we've watched them for years'' with
-the explicit ``we have measured $g$ and it is zero within tolerance.''
+the implicit ``we trust them because we've watched them for years with
+the explicit ``we have measured $g$ and it is zero within tolerance.
 
-### 差异化维度 / Differentiating Dimensions
+### Differentiating Dimensions
 
 The four candidates differ along several critical dimensions:
 
-#### 审计深度 vs. 审计广度 / Audit Depth vs. Audit Breadth
+#### Audit Depth vs. Audit Breadth
 
 <div align="center">
 
@@ -764,56 +588,46 @@ The four candidates differ along several critical dimensions:
 
 - **Torvalds:** Maximum breadth and high depth. 20,000+ expert
 - **Elbakyan:** Maximum breadth, moderate depth. Millions of
-- **梗同学:** Moderate breadth (small audit community), maximum
+- **Geng:** Moderate breadth (small audit community), maximum
 - **Vance:** Zero breadth, zero depth — by design. The null case
 
-#### $\mathbf{g=0$ 可证明性 / $g=0$ Provability}
+#### $g=0$ Provability
 
 <div align="center">
 
 \begin{longtable}{p{0.18\textwidth} p{0.25\textwidth} p{0.25\textwidth} p{0.25\textwidth}}
 \toprule
-**候选人** & **现有证据类型** & **正式审计就绪度** & **预期审计难度** 
-
 **Candidate** & **Evidence Type** & **Audit Readiness** & **Expected Difficulty** 
 
 \midrule
 \endfirsthead
 \toprule
-**候选人** & **现有证据类型** & **正式审计就绪度** & **预期审计难度** 
+**Candidate** & **Evidence Type** & **Audit Readiness** & **Expected Difficulty** 
 
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \midrule
-梗同学 / Geng & 直接测量 & 最高 & 低（已有经验） 
-
-& Direct measurement & Highest & Low (experienced) 
+Geng & Direct measurement & Highest & Low (experienced) 
 
 \midrule
-Torvalds & 34年行为推断 & 高 & 中（需校准） 
-
-& 34yr behavioral inference & High & Medium (calibration) 
+Torvalds & 34yr behavioral inference & High & Medium (calibration) 
 
 \midrule
-Elbakyan & 15年行为推断 & 中 & 中高（转型挑战） 
-
-& 15yr behavioral inference & Medium & Med-High (transition) 
+Elbakyan & 15yr behavioral inference & Medium & Med-High (transition) 
 
 \midrule
-Vance & 无 & 最低 & 最高（政治约束） 
-
-& None & Lowest & Highest (political) 
+Vance & None & Lowest & Highest (political) 
 
 \bottomrule
 \end{longtable}
 
 </div>
 
-#### 过渡风险 / Transition Risk
+#### Transition Risk
 
-> **Definition:** [过渡风险 / Transition Risk]
+> **Definition:** [Transition Risk]
 > Transition risk $R_{trans}(i)$ is the probability that candidate $i$,
 > having passed audit, fails to maintain $\sum g = 0$ during their first
 > maintenance window, due to factors specific to the transition from their
@@ -823,45 +637,35 @@ Vance & 无 & 最低 & 最高（政治约束）
 
 \begin{longtable}{p{0.18\textwidth} p{0.35\textwidth} p{0.15\textwidth} p{0.15\textwidth}}
 \toprule
-**候选人** & **风险因素** & **$R_{trans}$** & **可缓解性** 
-
-& **Risk Factors** & & **Mitigability** 
+**Candidate** & **Risk Factors** & **$R_{trans}$** & **Mitigability** 
 
 \midrule
 \endfirsthead
 \toprule
-**候选人** & **风险因素** & **$R_{trans}$** & **可缓解性** 
+**Candidate** & **Risk Factors** & **$R_{trans}$** & **Mitigability** 
 
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \midrule
-梗同学 & 已在框架内——几乎无过渡 & 极低 & N/A 
-
 Geng & Already in framework — minimal transition & Very Low & 
 
 \midrule
-Torvalds & BDFL模型适应轮换；风格校准 & 低 & 高 
-
-& BDFL adaptation to rotation; style calib. & Low & High 
+Torvalds & BDFL adaptation to rotation; style calib. & Low & High 
 
 \midrule
-Elbakyan & 独行侠到协议维护者的转型 & 中 & 中 
-
-& Solo operator to protocol maintainer & Medium & Medium 
+Elbakyan & Solo operator to protocol maintainer & Medium & Medium 
 
 \midrule
-Vance & 政治$g \neq 0$与协议$g=0$的分割 & 高 & 低（依赖个人） 
-
-& Partition of political $g \neq 0 /$ protocol $g=0$ & High & Low (personal) 
+Vance & Partition of political $g \neq 0 /$ protocol $g=0$ & High & Low (personal) 
 
 \bottomrule
 \end{longtable}
 
 </div>
 
-### 全局合法性信号 / Global Legitimacy Signal
+### Global Legitimacy Signal
 
 A dimension the SCX framework does not formally model — but which matters
 for adoption — is the *legitimacy signal* each candidate provides
@@ -871,37 +675,27 @@ to external observers:
 
 \begin{longtable}{p{0.18\textwidth} p{0.55\textwidth} p{0.15\textwidth}}
 \toprule
-**候选人** & **合法性信号** & **强度** 
-
 **Candidate** & **Legitimacy Signal** & **Strength** 
 
 \midrule
 \endfirsthead
 \toprule
-**候选人** & **合法性信号** & **强度** 
+**Candidate** & **Legitimacy Signal** & **Strength** 
 
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \midrule
-Vance & ``美国VP接受审计'' → 审计不是中国武器 & 最高 
-
-& ``US VP accepts audit'' → audit is not a Chinese weapon & Highest 
+Vance & ``US VP accepts audit'' \rightarrow audit is not a Chinese weapon & Highest 
 
 \midrule
-Torvalds & ``Linux之父维护SCX'' → SCX像Linux一样可信 & 高 
-
-& ``Father of Linux maintains SCX'' → SCX is as trustworthy as Linux & High 
+Torvalds & ``Father of Linux maintains SCX'' \rightarrow SCX is as trustworthy as Linux & High 
 
 \midrule
-Elbakyan & ``Sci-Hub创始人维护SCX'' → 知识自由的连续性 & 中高 
-
-& ``Sci-Hub founder maintains SCX'' → continuity of knowledge freedom & Med-High 
+Elbakyan & ``Sci-Hub founder maintains SCX'' \rightarrow continuity of knowledge freedom & Med-High 
 
 \midrule
-梗同学 & 无外部合法性信号——内部可信，外部未知 & 低 
-
 Geng & No external signal — internally trusted, externally unknown & Low 
 
 \bottomrule
@@ -922,50 +716,40 @@ from the political domain where $g \neq 0$ is structural.
 audit benchmark. Torvalds provides the operational credibility. Elbakyan
 provides the moral continuity. Vance provides the geopolitical legitimacy.
 Together, they cover the dimensions no single candidate can.
-
-**暴击：合法性悖论。**
-提供最强$g=0$证据的候选人（梗同学、Torvalds）不一定提供最强合法性信号的
-候选人（Vance）。而提供最强合法性信号的候选人，其$g=0$证据最弱——
-这正是因为合法性来自$g \neq 0$是结构性的政治领域。
-
-**解决方案：**不选择一个维护者。选择覆盖证据-合法性光谱的维护者*集合*。
-梗同学提供审计基准。Torvalds提供运营可信度。Elbakyan提供道德连续性。
-Vance提供地缘政治合法性。合在一起，他们覆盖了任何单一候选人无法覆盖的维度。
 \end{hitbox}
 
 ---
 
-## 维护者选择的数学约束
 ## Mathematical Constraints on Maintainer Selection
 
-### 形式化框架 / Formal Framework
+### Formal Framework
 
 Regardless of which candidates are selected, the maintainer rotation
 mechanism imposes mathematical constraints that are invariant to candidate
 identity:
 
-> **Definition:** [维护者轮换博弈 / Maintainer Rotation Game]
+> **Definition:** [Maintainer Rotation Game]
 > A maintainer rotation game $\mathcal{G}$ is defined by:
 > 
-- $\mathcal{M} = \{1, 2, ..., \numMaintainers\}$: the set of
-- $\rotationPeriod$: the fixed maintenance window duration.
-- $\biasParam_i(t)$: maintainer $i$'s bias vector at time $t$,
-- $\mathcal{A}_i$: the audit applied to maintainer $i$ at the
-- $\auditCost$: the fixed cost of conducting an audit.
-- $\deviate_i$: the (unobservable) benefit maintainer $i$ receives
+> - $\mathcal{M} = \{1, 2, ..., \numMaintainers\}$: the set of
+> - $\rotationPeriod$: the fixed maintenance window duration.
+> - $\biasParam_i(t)$: maintainer $i$ bias vector at time $t$,
+> - $\mathcal{A}_i$: the audit applied to maintainer $i$ at the
+> - $\auditCost$: the fixed cost of conducting an audit.
+> - $\deviate_i$: the (unobservable) benefit maintainer $i$ receives
 
-> **Theorem:** [轮换博弈的纳什均衡 / Nash Equilibrium of Rotation Game]
+> **Theorem:** [Nash Equilibrium of Rotation Game]
 > <!-- label: thm:rotation-nash -->
 > In the maintainer rotation game $\mathcal{G}$ with $\numMaintainers > 1$
 > and Hoeffding-bound audit, the strategy profile where every maintainer
 > maintains $\biasParam_i(t) = 0$ for all $t$ is a Nash equilibrium when:
 > 
 > $$
->     \deviate_i \cdot \Pbb(undetected) < \auditCost \cdot
->     \Pbb(detected).
+>     \deviate_i \cdot \Pbb(\text{undetected}) < \auditCost \cdot
+>     \Pbb(\text{detected}).
 > $$
 > 
-> Under the Hoeffding bound $\Pbb(undetected) \leq e^{-2M\Delta^2}$,
+> Under the Hoeffding bound $\Pbb(\text{undetected}) \leq e^{-2M\Delta^2}$,
 > this condition becomes:
 > 
 > $$
@@ -984,28 +768,28 @@ identity:
 > The Hoeffding bound ensures that as $M$ grows, the probability of undetected
 > deviation vanishes exponentially, making deviation strictly dominated.
 
-> **Corollary:** [维护者数量下界 / Minimum Maintainer Count]
+> **Corollary:** [Minimum Maintainer Count]
 > <!-- label: cor:min-maintainers -->
 > The protocol requires $\numMaintainers \geq 2$. At $\numMaintainers = 2$,
 > each maintainer audits the other. At $\numMaintainers = 3$, any collusion
 > requires all three — a strictly harder coordination problem. The
 > recommended minimum is $\numMaintainers = 4$, providing:
 > 
-- Redundancy: protocol survives any single maintainer's failure.
-- Audit depth: each maintainer is audited by $\numMaintainers - 1$
-- Collusion resistance: majority collusion requires 3 of 4.
-- Dimension coverage: different maintainers provide different
+> - Redundancy: protocol survives any single maintainer failure.
+> - Audit depth: each maintainer is audited by $\numMaintainers - 1$
+> - Collusion resistance: majority collusion requires 3 of 4.
+> - Dimension coverage: different maintainers provide different
 
-### 不变约束 / Invariant Constraints
+### Invariant Constraints
 
 These constraints apply to all candidates regardless of identity:
 
-1. **公开声明 $\mathbf{g=0}$.**
-2. **接受 $M>1$ 独立审计.**
-3. **公开审计日志.**
-4. **轮换周期约束.**
-5. **审计继任者.**
-6. **UNDECLARED = 自动丧失资格.**
+1. **Public declaration of $\mathbf{g=0}$.**
+2. **Accept $M>1$ independent audit.**
+3. **Public audit log.**
+4. **Rotation cycle constraint.**
+5. **Audit successors.**
+6. **UNDECLARED = automatic disqualification.**
 
 \begin{govbox}
 **Why These Constraints Are Invariant.**
@@ -1014,14 +798,8 @@ the Hoeffding bound and the mutual audit equilibrium. Remove any one of them,
 and the proof that $\sum g = 0$ is the Nash equilibrium collapses. The
 protocol is not a social system with flexible rules. It is a mechanism with
 necessary conditions.
-
-**为什么这些约束是不变的。**
-这些约束不是偏好。它们是Hoeffding界和互相审计均衡的数学推论。去掉其中任何一个，
-$\sum g = 0$是纳什均衡的证明就崩溃了。协议不是一个有灵活规则的社会系统。
-它是一个具有必要条件的机制。
 \end{govbox}
 
-### 候选人必须披露和绝不披露的信息
 ### What Candidates Must Disclose and Must Never Disclose
 
 Following the SCX governance framework established in the protocol governance
@@ -1031,34 +809,34 @@ paper, we specify the information boundaries for maintainer candidates:
 
 \begin{longtable}{p{0.45\textwidth} p{0.45\textwidth}}
 \toprule
-**必须披露 / MUST DISCLOSE** & **绝不披露 / MUST NEVER DISCLOSE** 
+**MUST DISCLOSE** & **MUST NEVER DISCLOSE** 
 
 \midrule
 \endfirsthead
 \toprule
-**必须披露 / MUST DISCLOSE** & **绝不披露 / MUST NEVER DISCLOSE** 
+**MUST DISCLOSE** & **MUST NEVER DISCLOSE** 
 
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \midrule
-审计日志 / Audit logs & 个人生活细节 / Personal life 
+Audit logs & Personal life 
 
 \midrule
-$g$参数估计及置信区间 / $g$ estimates with confidence intervals & 履历、学历、头衔 / Biography, degrees, titles 
+$g$ estimates with confidence intervals & Biography, degrees, titles 
 
 \midrule
-利益冲突声明 / Conflict of interest declarations & 家庭信息 / Family information 
+Conflict of interest declarations & Family information 
 
 \midrule
-维护决策的理由 / Rationale for maintenance decisions & 个人信仰 / Personal beliefs 
+Rationale for maintenance decisions & Personal beliefs 
 
 \midrule
-轮换时间戳 / Rotation timestamps & 财富、资产 / Wealth, assets 
+Rotation timestamps & Wealth, assets 
 
 \midrule
-审计者身份与资质 / Auditor identity and qualifications & 不相关的个人历史 / Irrelevant personal history 
+Auditor identity and qualifications & Irrelevant personal history 
 
 \bottomrule
 \end{longtable}
@@ -1074,29 +852,19 @@ The theorem audits the maintainer, not the maintainer's story. Any selection
 process that weighs biography over audit measurement is executing a category
 error — and SCX is designed specifically to prevent that error.
 
-**暴击：履历陷阱。**
-维护者选择中最常见的错误是相信候选人的履历与其$g=0$资格相关。不相关。
-诺贝尔奖不降低Hoeffding界。犯罪记录不提高它。定理审计的是维护者，
-不是维护者的故事。任何重履历轻审计测量的选择过程都在执行范畴错误——
-而SCX被专门设计来防止这种错误。
-
 **Practical implication:** This paper itself is a biography analysis —
 and therefore, by SCX's own standards, is of limited evidentiary value.
 We write it because humans need context. But the real work happens in the
 audit, not in this paper. The reader should treat every biographical
 observation in this document as noise awaiting the signal of formal
 audit measurement.
-**实际含义：**本文本身是一份履历分析——因此，按SCX自身的标准，
-证据价值有限。我们写它是因为人类需要上下文。但真正的工作发生在审计中，
-不是在本文中。读者应将本文中的每一个履历观察视为等待正式审计测量信号的噪声。
 \end{hitbox}
 
 ---
 
-## 建议：多维护者组合策略
 ## Recommendations: Multi-Maintainer Composition Strategy
 
-### 推荐组合：四维护者架构 / Recommended Composition: Four-Maintainer Architecture
+### Recommended Composition: Four-Maintainer Architecture
 
 Based on the analysis above, we recommend a four-maintainer architecture
 where each candidate fills a distinct functional role:
@@ -1105,110 +873,84 @@ where each candidate fills a distinct functional role:
 
 \begin{longtable}{p{0.15\textwidth} p{0.20\textwidth} p{0.25\textwidth} p{0.30\textwidth}}
 \toprule
-**角色 / Role** & **候选人** & **功能** & **选择理由** 
-
- & **Candidate** & **Function** & **Rationale** 
+**Role** & **Candidate** & **Function** & **Rationale** 
 
 \midrule
 \endfirsthead
 \toprule
-**角色 / Role** & **候选人** & **功能** & **选择理由** 
+**Role** & **Candidate** & **Function** & **Rationale** 
 
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \midrule
-审计基准 & 梗同学 & 提供$g=0$的测量基线 & 唯一已被正式审计的候选人 
-
 Audit Benchmark & Geng & Baseline $g=0$ measurement & Only formally audited candidate 
 
 \midrule
-运营锚 & Torvalds & 提供维护经验的深度 & 34年真实协议维护记录 
-
-Operational Anchor & & Deep maintenance experience & 34yr real protocol maintenance 
+Operational Anchor & Torvalds & Deep maintenance experience & 34yr real protocol maintenance 
 
 \midrule
-道德锚 & Elbakyan & 提供$g=0$的道德连续性 & 15年$g=0$以个人代价证明 
-
-Moral Anchor & & Moral continuity of $g=0$ & 15yr $g=0$ proven at personal cost 
+Moral Anchor & Elbakyan & Moral continuity of $g=0$ & 15yr $g=0$ proven at personal cost 
 
 \midrule
-合法性锚 & Vance & 提供全球合法性信号 & 消除“中国武器”叙事 
-
-Legitimacy Anchor & & Global legitimacy signal & Eliminates ``Chinese weapon'' narrative 
+Legitimacy Anchor & Vance & Global legitimacy signal & Eliminates ``Chinese weapon narrative 
 
 \bottomrule
 \end{longtable}
 
 </div>
 
-### 风险缓解 / Risk Mitigation
+### Risk Mitigation
 
 Each candidate brings specific risks that the multi-maintainer architecture
 mitigates:
 
-1. **梗同学 — 知名度不足:** 由Torvalds和Vance的全球知名度补偿。
-2. **Torvalds — 风格假阳性:** 由梗同学的审计基准校准。如果Torvalds
-3. **Elbakyan — 独行侠模式:** 由Torvalds的分布式维护经验补偿。
-4. **Vance — 政治$g \neq 0$:** 由其他三位维护者的$g=0$基准约束。
-5. **系统风险 — 四人全部失败:** 轮换机制确保任何维护者偏离都会在
+1. **Geng — Low recognition:** Compensated by global recognition of Torvalds and Vance.
+2. **Torvalds — Style false positives:** Calibrated by Geng audit baseline.
+3. **Elbakyan — Solo operator model:** Compensated by Torvalds distributed maintenance experience.
+4. **Vance — Political $g \neq 0$:** Constrained by the $g=0$ baseline of the other three.
+5. **System risk — All four fail:** Rotation mechanism detects deviation within one cycle.
 
-### 实施路线图 / Implementation Roadmap
+### Implementation Roadmap
 
-1. **阶段1: 正式邀请 (2026年Q3).**
-2. **阶段2: $g=0$公开声明 (2026年Q3–Q4).**
-3. **阶段3: $M>1$审计 (2026年Q4–2027年Q2).**
-4. **阶段4: 审计结果公开 (2027年Q2).**
-5. **阶段5: 首次轮换周期 (2027年Q3起).**
+1. **Phase 1: Formal invitation (2026 Q3).**
+2. **Phase 2: $g=0$ public declaration (2026 Q3–Q4).**
+3. **Phase 3: $M>1$ audit (2026 Q4–2027 Q2).**
+4. **Phase 4: Audit results publication (2027 Q2).**
+5. **Phase 5: First rotation cycle (2027 Q3 onward).**
 
-### 失败模式分析 / Failure Mode Analysis
+### Failure Mode Analysis
 
 <div align="center">
 
 \begin{longtable}{p{0.18\textwidth} p{0.40\textwidth} p{0.30\textwidth}}
 \toprule
-**失败模式** & **描述** & **后果与缓解** 
-
 **Failure Mode** & **Description** & **Consequence \& Mitigation** 
 
 \midrule
 \endfirsthead
 \toprule
-**失败模式** & **描述** & **后果与缓解** 
+**Failure Mode** & **Description** & **Consequence \& Mitigation** 
 
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \midrule
-无人注册 & 所有四位候选人均拒绝或 & 协议以仅有的维护者运行； 
-
-No one registers & 无法完成第一步 & 扩大候选人搜索范围 
+No one registers & All four candidates decline or cannot complete Step 1 & Protocol runs with existing maintainers; expand candidate search 
 
 \midrule
-仅梗同学注册 & 唯一可证明的注册者 & 以$M=1$启动；加速招募； 
-
-Only Geng registers &  & $M=1$无互相审计——仅作为 
-
-& & 过渡状态，非永久配置 
+Only Geng registers & Only provable registrant & Start with $M=1$; accelerate recruitment; $M=1$ has no mutual audit — transitional only 
 
 \midrule
-Vance注册但审计失败 & 政治$g \neq 0$被独立审计 & SCX仍然获得合法性信号 
-
-Vance registers, fails audit & 检测并记录 & （VP尝试了）；审计日志公 
-
-& & 开证明审计框架的中立性 
+Vance registers, fails audit & Political $g \neq 0$ detected and recorded & SCX gains legitimacy signal; audit log proves framework neutrality 
 
 \midrule
-Torvalds风格触发假阳性 & 审计工具将情绪信号误分类 & 重新校准；梗同学的基线用 
-
-Torvalds style false positive & 为$g \neq 0$ & 于区分信号/噪声 
+Torvalds style false positive & Tool misclassifies emotion as $g \neq 0$ & Recalibrate; Geng baseline distinguishes signal from noise 
 
 \midrule
-全部通过审计 & 四人都维持$g \approx 0$ & 最佳结果；SCX拥有四维护者 
-
-All pass audit & 在独立审计下 & 互相审计架构 
+All pass audit & All four maintain $g \approx 0$ under audit & Best outcome; SCX has four-maintainer mutual audit architecture 
 
 \bottomrule
 \end{longtable}
@@ -1217,22 +959,15 @@ All pass audit & 在独立审计下 & 互相审计架构
 
 ---
 
-## 结论：定理审计的是维护者，不是履历
 ## Conclusion: The Theorem Audits the Maintainer, Not the Biography
 
-### 总结发现 / Summary of Findings
+### Summary of Findings
 
 This paper has analyzed four candidates for SCX protocol maintainer. The
 analysis is internal and preliminary — it is a pre-audit assessment, not a
-final determination. The key findings are:
+final determination.
 
-1. **社区验证是核心信号.** 所有四位候选人都具有社区独立验证
-2. **不同的优势维度.** 四位候选人分布在不同的优势维度上：
-3. **多维护者架构是最优解.** 任何单一维护者无法覆盖所有维度。
-4. **数学约束不变.** 无论候选人的身份、履历或声誉如何，维护者
-5. **审计是唯一的真实测试.** 本文的分析——如同所有审计前分析——
-
-### 最后的话 / Final Word
+### Final Word
 
 \begin{govbox}
 **The Maintainer Paradox.**
@@ -1250,90 +985,61 @@ The four candidates analyzed in this paper have, in different ways and to
 different degrees, demonstrated the willingness to be held accountable by
 their communities. That — more than any credential, achievement, or
 reputation — is what makes them candidates worth auditing.
-
-**维护者悖论。**
-最好的维护者是最不必要的那一个。如果协议依赖于任何特定个人——他们的判断、
-他们的智慧、他们独特的视角——那么协议已经在免信任测试中失败了。一个设计
-良好的协议应该在任何维护者消失后仍然存活。维护者的工作是让自己变得不必要。
-
-这是SCX治理核心的悖论：我们寻找愿意被替换的维护者。我们寻找愿意被审计的
-领导者。我们寻找愿意被剥夺监护权的监护人。
-
-本文分析的四位候选人，以不同方式和不同程度，展示了愿意被其社区问责的特质。
-这一点——比任何资历、成就或声誉更甚——使他们成为值得审计的候选人。
 \end{govbox}
 
 <div align="center">
 
 \rule{0.5\textwidth}{0.5pt}
 *The real selection begins now.*
-*真正的选择从现在开始。*
 **—— SCX Protocol Governance Research Division**
-**孝感超级计算中心 SCX协议治理研究组**
-2026年7月2日 / July 2, 2026
+**Xiaogan Supercomputing Center**
+July 2, 2026
 
 </div>
 
 ---
 
 ## Appendix
-## 候选人比较矩阵 / Candidate Comparison Matrix
+
+### Candidate Comparison Matrix
 
 <div align="center">
 
 \begin{longtable}{p{0.18\textwidth} p{0.18\textwidth} p{0.18\textwidth} p{0.18\textwidth} p{0.18\textwidth}}
 \toprule
-**维度** & **Elbakyan** & **梗同学** & **Vance** & **Torvalds** 
-
-**Dimension** & & **Geng** & & 
+**Dimension** & **Elbakyan** & **Geng** & **Vance** & **Torvalds** 
 
 \midrule
 \endfirsthead
 \toprule
-**维度** & **Elbakyan** & **梗同学** & **Vance** & **Torvalds** 
+**Dimension** & **Elbakyan** & **Geng** & **Vance** & **Torvalds** 
 
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \midrule
-$g=0$证据 & 强（推断） & 最强（测量） & 无 & 强（推断） 
-
 $g=0$ evidence & Strong (inf.) & Strongest (meas.) & None & Strong (inf.) 
 
 \midrule
-社区验证规模 & 百万级 & 十级（专家） & 零 & 万级（专家） 
-
 Community scale & Millions & Tens (expert) & Zero & Tens of thousands 
 
 \midrule
-审计就绪度 & 中 & 最高 & 最低 & 高 
-
 Audit readiness & Medium & Highest & Lowest & High 
 
 \midrule
-过渡风险 & 中 & 极低 & 高 & 低 
-
 Transition risk & Medium & Very Low & High & Low 
 
 \midrule
-合法性信号 & 中高 & 低 & 最高 & 高 
-
 Legitimacy signal & Med-High & Low & Highest & High 
 
 \midrule
-维护经验 & 15年（隐式） & 多轮（显式） & 无 & 34年（显式） 
-
-Maint. experience & 15yr (implicit) & Multi-round & None & 34yr (explicit) 
+Maint. experience & 15yr (implicit) & Multi-round (explicit) & None & 34yr (explicit) 
 
 \midrule
-可替代性 & 低 & 高 & 中 & 中 
-
 Replaceability & Low & High & Medium & Medium 
 
 \midrule
-整体推荐度 & 高 & 高 & 条件性高 & 最高 
-
 Overall rec. & High & High & Conditional High & Highest 
 
 \bottomrule
@@ -1341,30 +1047,30 @@ Overall rec. & High & High & Conditional High & Highest
 
 </div>
 
-## 正式定义汇编 / Formal Definitions Compendium
+### Formal Definitions Compendium
 
 For reference, we collect the formal definitions used throughout this paper:
 
-> **Definition:** [偏差参数 / Bias Parameter]
+> **Definition:** [Bias Parameter]
 > $\biasParam_i(t) \in \R^k$ is the vector of biases maintainer $i$ holds at
 > time $t$ with respect to the $k$ protocol-relevant dimensions. $\biasParam_i
 > = \mathbf{0}$ indicates no bias; $|\biasParam_i| > 0$ indicates deviation
 > from protocol neutrality.
 
-> **Definition:** [审计 / Audit]
+> **Definition:** [Audit]
 > An audit $\mathcal{A}_i$ of maintainer $i$ is a measurement procedure that
 > produces an estimate $\hat{g}_i$ of $\biasParam_i$ with specified confidence.
 > An audit is *independent* if the auditor has no $g$-relevant
 > relationship with the audited maintainer.
 
-> **Definition:** [维护窗口 / Maintenance Window]
+> **Definition:** [Maintenance Window]
 > A maintenance window of duration $\rotationPeriod$ is the period during
 > which a maintainer holds protocol authority. At the end of each window,
 > the maintainer undergoes audit. The Hoeffding bound
-> $\Pbb(undetected) \leq e^{-2M\Delta^2}$ is valid only for the
+> $\Pbb(\text{undetected}) \leq e^{-2M\Delta^2}$ is valid only for the
 > duration $\rotationPeriod$.
 
-> **Definition:** [互相审计 / Mutual Audit]
+> **Definition:** [Mutual Audit]
 > Mutual audit is the condition where every maintainer $i \in \mathcal{M}$
 > is audited by every other maintainer $j \in \mathcal{M}, j \neq i$. This
 > creates $M(M-1)$ audit relationships in a fully connected audit graph.
@@ -1375,7 +1081,7 @@ For reference, we collect the formal definitions used throughout this paper:
 > disqualified from maintainer status. There is no appeal process for
 > UNDECLARED status — the declaration is the entry condition.
 
-## 内部参考文献 / Internal References
+### Internal References
 
 1. \textbf{SCX Protocol Governance: Maintainer Rotation Game Theory
 2. \textbf{SCX Audit Economics: The Auditor Class and New Economic
@@ -1390,15 +1096,12 @@ For reference, we collect the formal definitions used throughout this paper:
 
 <div align="center">
 
-{ **—— 文件结束 ——**}
 { **--- END OF DOCUMENT ---**}
 
 \rule{0.7\textwidth}{0.5pt}
 
 { **
 THIS DOCUMENT IS CLASSIFIED INTERNAL.
-
-未经授权严禁外传。
 
 Unauthorized distribution is a violation of SCX protocol security policy.
 **}

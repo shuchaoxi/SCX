@@ -2,48 +2,46 @@
 
 The SCX/Yajie protocol is fundamentally restructuring the global AI power landscape. The old order measures competitiveness by a single metric---GPU count $\gpuScale$; the new order measures competitiveness by audit depth $\auditDepth$---the degree to which a nation's AI systems are independently verifiable. This paradigm shift is not incremental; it is discontinuous. Every nation, every corporation, every model faces a binary choice: accept audit and become a protocol node (\declaredState), or refuse audit and forfeit the global trust premium (\undeclaredState). There is no intermediate state.
 
-We formalize this transition through four core theorems grounded in the SCX{} multi-expert verification framework. **Theorem~1 (Mutual Audit Equilibrium 相互审计均衡):** When two adversarial powers $A$ and $B$ both adopt Yajie{} auditing, a unique Nash equilibrium emerges at which each power's dominant strategy is honest auditing with depth $\auditDepth^* > 0$, governed by the condition $\partial \trustPremium / \partial \auditDepth > \partial C_{exposure} / \partial \auditDepth$. The equilibrium is self-enforcing: deviation from honest auditing is detectable and punishable within the protocol. **Theorem~2 (Trust Premium Bound 信任溢价界):** For a model audited at depth $d$, the market trust premium satisfies $\trustPremium(d) \geq \trustPremium(0) + \alpha \cdot d^$ with $\beta \in (0, 1)$ and $\alpha > 0$, where $\trustPremium(0) = 0$ for \undeclaredState{} models, establishing that audit depth exhibits diminishing but strictly positive returns. **Theorem~3 (Audit Supremacy Transition 审计霸权转型界):** There exists a critical threshold $\auditDepth^*$ such that for any nation $n$ with GPU scale $\gpuScale_n$, competitiveness $\competitiveness_n$ transitions from being GPU-dominated to audit-dominated when $\auditDepth_n > \auditDepth^*(\gpuScale_n) = c \cdot \log(1 + \gpuScale_n / \gpuScale_)$ for a universal constant $c$. **Theorem~4 (Late-Mover Advantage 后发优势定理):** Nations with zero sunk cost in the $\MAone$ (self-assessment) paradigm achieve a net adoption cost $C_{adopt}$ that is strictly lower than that of nations with legacy $\MAone$ infrastructure, with cost advantage $\Delta C \propto S_{sunk}$ where $S_{sunk}$ is the cumulative investment in non-auditable AI systems.
+We formalize this transition through four core theorems grounded in the SCX{} multi-expert verification framework. **Theorem~1 (Mutual Audit Equilibrium):** When two adversarial powers $A$ and $B$ both adopt Yajie{} auditing, a unique Nash equilibrium emerges at which each power's dominant strategy is honest auditing with depth $\auditDepth^* > 0$, governed by the condition $\partial \trustPremium / \partial \auditDepth > \partial C_{exposure} / \partial \auditDepth$. The equilibrium is self-enforcing: deviation from honest auditing is detectable and punishable within the protocol. **Theorem~2 (Trust Premium Bound):** For a model audited at depth $d$, the market trust premium satisfies $\trustPremium(d) \geq \trustPremium(0) + \alpha \cdot d^{\beta}$ with $\beta \in (0, 1)$ and $\alpha > 0$, where $\trustPremium(0) = 0$ for \undeclaredState{} models, establishing that audit depth exhibits diminishing but strictly positive returns. **Theorem~3 (Audit Supremacy Transition):** There exists a critical threshold $\auditDepth^*$ such that for any nation $n$ with GPU scale $\gpuScale_n$, competitiveness $\competitiveness_n$ transitions from being GPU-dominated to audit-dominated when $\auditDepth_n > \auditDepth^*(\gpuScale_n) = c \cdot \log(1 + \gpuScale_n / \gpuScale_)$ for a universal constant $c$. **Theorem~4 (Late-Mover Advantage):** Nations with zero sunk cost in the $\MAone$ (self-assessment) paradigm achieve a net adoption cost $C_{adopt}$ that is strictly lower than that of nations with legacy $\MAone$ infrastructure, with cost advantage $\Delta C \propto S_{sunk}$ where $S_{sunk}$ is the cumulative investment in non-auditable AI systems.
 
 We provide a comprehensive regional analysis covering the United States (\S [ref]), China (\S [ref]), Japan (\S [ref]), South Korea (\S [ref]), Europe (\S [ref]), and the Global South (\S [ref]), each evaluated across four dimensions: current AI posture, strategic calculus under Yajie{}, internal winners and losers, and recommended strategic pathway. The final victor in the Yajie{} era will not be the nation with the largest compute cluster, but the nation that first achieves $\sumGZero$: the state of global audit convergence where all audit nodes agree on model quality.
 
-SCX/Yajie协议正在从根本上重构全球AI权力格局。旧秩序以"谁拥有最多GPU"为唯一衡量标准；新秩序以"谁最可审计"为核心竞争力。本文通过四个核心定理形式化这一转型：相互审计均衡定理（Theorem~1）证明双边审计采纳收敛到诚实审计的纳什均衡；信任溢价界定理（Theorem~2）建立审计深度与市场溢价的定量关系；审计霸权转型定理（Theorem~3）刻画从GPU主导到审计主导的临界阈值；后发优势定理（Theorem~4）证明零沉没成本国家享有严格更低的采纳成本。我们覆盖美国、中国、日本、韩国、欧洲、全球南方六大区域的四维分析，并给出战略交叉点时间线和关键不确定性评估。
+**Keywords:** SCX auditing, Yajie protocol, mutual audit equilibrium, AI geopolitics, GPU dominance, audit supremacy, trust premium, Global South, $\sumGZero$ convergence, Mutually Assured Verification
 
-**Keywords:** SCX auditing 审计, Yajie protocol 雅洁协议, mutual audit equilibrium 相互审计均衡, AI geopolitics 地缘政治, GPU dominance GPU霸权, audit supremacy 审计霸权, trust premium 信任溢价, Global South 全球南方, $\sumGZero$ convergence 全局一致性收敛, Mutually Assured Verification 相互确保验证
-
-## Introduction: The Geopolitics of AI Audit 引言：AI审计的地缘政治学
+## Introduction: The Geopolitics of AI Audit
 <!-- label: sec:introduction -->
 
 The global AI order is built on a single, fragile assumption: that more compute produces better AI, and that better AI is self-evidently trustworthy. This assumption---which we term the **GPU Dominance Paradigm** (\gpuDominance)---has structured international AI competition since the emergence of deep learning. Under \gpuDominance, national AI competitiveness is a monotonic function of GPU count: $\competitiveness_n \approx f(\gpuScale_n)$, where $\gpuScale_n$ is the aggregate floating-point capacity of nation $n$'s AI training infrastructure.
 
 The SCX/Yajie protocol [cite] dissolves this assumption. Yajie{} is not a benchmarking suite---it is an **audit protocol**. It answers not ``how good is this model?'' but ``what can you prove about this model's quality?'' The core mathematical structure distinguishes three regimes:
 
-1. **$\MAone$ (Self-Assessment 自我评估):** The current industry standard. A single entity trains a model and publishes performance claims. No independent verification mechanism exists. This is the ``trust me'' paradigm---信任我范式.
-2. **$\MAmany$ (Multi-Expert Cross-Validation 多专家交叉验证):** Multiple independent audit nodes perform blind testing, adversarial evaluation, and consistency verification. This is the ``prove it'' paradigm---证明它范式.
-3. **$\sumGZero$ (Global Audit Convergence 全局审计收敛):** The state at which all audit nodes' assessments converge to a stable consensus. A model achieving $\sumGZero$ receives Yajie{} certification---a continuous, dynamic verification process.
+1. **$\MAone$ (Self-Assessment):** The current industry standard. A single entity trains a model and publishes performance claims. No independent verification mechanism exists. This is the ``trust me'' paradigm.
+2. **$\MAmany$ (Multi-Expert Cross-Validation):** Multiple independent audit nodes perform blind testing, adversarial evaluation, and consistency verification. This is the ``prove it'' paradigm.
+3. **$\sumGZero$ (Global Audit Convergence):** The state at which all audit nodes' assessments converge to a stable consensus. A model achieving $\sumGZero$ receives Yajie{} certification---a continuous, dynamic verification process.
 
 The geopolitical consequence is immediate: **the metric of national AI power shifts from $\gpuScale_n$ to $\auditDepth_n$**---from ``how many GPUs does the nation control?'' to ``how deeply verifiable are the nation's AI systems?''
 
-### Why Yajie is Inevitable 为什么雅洁不可避免
+### Why Yajie is Inevitable
 
 Three structural forces drive Yajie{} adoption, independent of any single government's policy preference:
 
-1. **Trust Crisis 信任危机.** The 2024--2026 wave of large-scale model failures---hallucination-induced medical errors, benchmark gaming, adversarial vulnerabilities---has destroyed the ``trust me'' paradigm. Markets no longer accept unaudited AI claims.
-2. **Regulatory Pressure 监管压力.** The EU AI Act, US Executive Orders, and China's Generative AI Management Regulations all mandate explainability and accountability. Yajie{} is the only protocol that provides the technical implementation.
-3. **Economic Rationality 经济理性.** Internal SCX market data indicate that Yajie{}-certified models command a 27--45\% trust premium over uncertified equivalents. Refusing audit means competing on price alone, trending toward zero-margin commodity AI.
+1. **Trust Crisis.** The 2024--2026 wave of large-scale model failures---hallucination-induced medical errors, benchmark gaming, adversarial vulnerabilities---has destroyed the ``trust me'' paradigm. Markets no longer accept unaudited AI claims.
+2. **Regulatory Pressure.** The EU AI Act, US Executive Orders, and China's Generative AI Management Regulations all mandate explainability and accountability. Yajie{} is the only protocol that provides the technical implementation.
+3. **Economic Rationality.** Internal SCX market data indicate that Yajie{}-certified models command a 27--45\% trust premium over uncertified equivalents. Refusing audit means competing on price alone, trending toward zero-margin commodity AI.
 
-### The Binary Choice 二元选择
+### The Binary Choice
 
 The protocol infrastructure creates an unavoidable binary:
 
 <div align="center">
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
 </div>
 
 Partial audit (auditing some models while keeping flagship models closed) is strategically unstable: the market infers that unaudited models harbor hidden defects. The equilibrium forces full participation or full exclusion.
 
-### Our Contribution 本文贡献
+### Our Contribution
 
 1. **Formal Framework** (\S [ref]): Geopolitical actors as nodes in the SCX{} audit protocol, with utility functions incorporating trust premium capture, audit cost, exposure risk, and strategic positioning.
 2. **Theorem~1 --- Mutual Audit Equilibrium** (\S [ref]): Proof that bilateral Yajie{} adoption between adversarial powers converges to a unique, self-enforcing Nash equilibrium with $\eta^* = 1$ (full audit honesty).
@@ -53,16 +51,16 @@ Partial audit (auditing some models while keeping flagship models closed) is str
 6. **Regional Strategic Analysis** (\S [ref]--\S [ref]): Six geopolitical regions analyzed across four strategic dimensions.
 7. **Strategic Intersections** (\S [ref]): Timeline analysis, key uncertainties, convergence scenario.
 
-\assumptionTag{0} **(Motivating Observation 动机观察):** The current global AI order is structurally unstable. The ``trust me'' paradigm cannot survive the combination of regulatory mandates, market demand for verifiable quality, and the availability of a technical audit protocol (Yajie). The only uncertainty is transition speed, not direction.
+\assumptionTag{0} **(Motivating Observation):** The current global AI order is structurally unstable. The ``trust me'' paradigm cannot survive the combination of regulatory mandates, market demand for verifiable quality, and the availability of a technical audit protocol (Yajie). The only uncertainty is transition speed, not direction.
 
 \limitationTag{0} This paper is a strategic analysis, not a policy directive. Geopolitical judgments are time-sensitive; quarterly updates recommended. The formal theorems assume rational actors with complete information about the protocol's existence; real-world adoption involves bounded rationality and political friction.
 
-## Formal Framework: Nations as Audit Nodes 形式框架：国家作为审计节点
+## Formal Framework: Nations as Audit Nodes
 <!-- label: sec:framework -->
 
 We formalize the global AI audit ecosystem as a multi-agent game with SCX{} protocol infrastructure.
 
-> **Definition:** [Nation as Geopolitical Agent 国家作为地缘政治代理]
+> **Definition:** [Nation as Geopolitical Agent]
 > Let $\nationSet = \{1, 2, ..., N\}$ denote the set of sovereign geopolitical actors. Each nation $n \in \nationSet$ is characterized by:
 > 
 > $$
@@ -72,62 +70,62 @@ We formalize the global AI audit ecosystem as a multi-agent game with SCX{} prot
 > 
 > where:
 > 
-- $\gpuScale_n \in \R_{+}$: aggregate AI compute capacity (effective petaFLOPS);
-- $\auditDepth_n \in [0, 1]$: depth of Yajie{} audit, from $0$ (fully undeclared) to $1$ (continuous $\sumGZero$ audit);
-- $\cD_n$: set of domestic AI models subject to (or exempt from) audit;
-- $\cA_n$: set of audit nodes operated by the nation, which may audit both domestic and foreign models;
-- $\pi_n$: policy vector---regulatory stance, procurement requirements, international audit cooperation posture.
+> - $\gpuScale_n \in \R_{+}$: aggregate AI compute capacity (effective petaFLOPS);
+> - $\auditDepth_n \in [0, 1]$: depth of Yajie{} audit, from $0$ (fully undeclared) to $1$ (continuous $\sumGZero$ audit);
+> - $\cD_n$: set of domestic AI models subject to (or exempt from) audit;
+> - $\cA_n$: set of audit nodes operated by the nation, which may audit both domestic and foreign models;
+> - $\pi_n$: policy vector---regulatory stance, procurement requirements, international audit cooperation posture.
 
-> **Definition:** [Yajie Protocol Stack 雅洁协议栈]
+> **Definition:** [Yajie Protocol Stack]
 > <!-- label: def:protocol_stack -->
 > The Yajie{} protocol stack $\cP_{Yajie}$ consists of three layers:
 > 
-1. **Protocol Layer (Layer 0) 协议层:** Open-source audit standards, cryptographic verification mechanisms, consensus proof algorithms. Immutable, unforgeable, fully transparent.
-2. **Node Layer (Layer 1) 节点层:** Entities operating audit nodes. Each node independently executes audits; results submitted through encrypted channels. Node trustworthiness $\tau_i$ is a function of historical audit consistency: $\tau_i(t) = f(consistency_i(1:t-1))$.
-3. **Application Layer (Layer 2) 应用层:** Services built atop audit infrastructure---model marketplaces, trust-premium pricing, compliance-as-a-service, hardware+audit bundles.
+> 1. **Protocol Layer (Layer 0):** Open-source audit standards, cryptographic verification mechanisms, consensus proof algorithms. Immutable, unforgeable, fully transparent.
+> 2. **Node Layer (Layer 1):** Entities operating audit nodes. Each node independently executes audits; results submitted through encrypted channels. Node trustworthiness $\tau_i$ is a function of historical audit consistency: $\tau_i(t) = f(consistency_i(1:t-1))$.
+> 3. **Application Layer (Layer 2):** Services built atop audit infrastructure---model marketplaces, trust-premium pricing, compliance-as-a-service, hardware+audit bundles.
 
-### National Utility Functions 国家效用函数
+### National Utility Functions
 
-> **Definition:** [National Utility 国家效用]
+> **Definition:** [National Utility]
 > <!-- label: def:utility -->
 > Each nation's utility under the Yajie{} regime is:
 > 
 > $$
->     U_n(\auditDepth_n, \auditDepth_{-n}) = \underbrace{\trustPremium(\auditDepth_n) \cdot |\cD_n|}_{trust premium capture 信任溢价捕获} - \underbrace{C_{audit}(\auditDepth_n, |\cD_n|)}_{audit cost 审计成本} - \underbrace{C_{exposure}(\auditDepth_n)}_{exposure risk 暴露风险} + \underbrace{B_{auditor}(\cA_n)}_{auditor benefit 审计者收益}
+>     U_n(\auditDepth_n, \auditDepth_{-n}) = \underbrace{\trustPremium(\auditDepth_n) \cdot |\cD_n|}_{trust premium capture} - \underbrace{C_{audit}(\auditDepth_n, |\cD_n|)}_{audit cost} - \underbrace{C_{exposure}(\auditDepth_n)}_{exposure risk} + \underbrace{B_{auditor}(\cA_n)}_{auditor benefit}
 >     <!-- label: eq:utility -->
 > $$
 > 
 > where:
 > 
-- $\trustPremium(d): [0,1] \to \R_{+}$ is the market trust premium, with $\trustPremium(0) = 0$, $\trustPremium'(d) > 0$;
-- $C_{audit}(d, k)$ is the cost of auditing $k$ models at depth $d$;
-- $C_{exposure}(d)$ is the strategic cost of exposing model defects, with $C_{exposure}'(d) > 0$;
-- $B_{auditor}(\cA_n)$ is the strategic benefit of operating audit nodes, including intelligence value and standards-setting influence.
+> - $\trustPremium(d): [0,1] \to \R_{+}$ is the market trust premium, with $\trustPremium(0) = 0$, $\trustPremium'(d) > 0$;
+> - $C_{audit}(d, k)$ is the cost of auditing $k$ models at depth $d$;
+> - $C_{exposure}(d)$ is the strategic cost of exposing model defects, with $C_{exposure}'(d) > 0$;
+> - $B_{auditor}(\cA_n)$ is the strategic benefit of operating audit nodes, including intelligence value and standards-setting influence.
 
-> **Definition:** [Declaration States 申报状态]
+> **Definition:** [Declaration States]
 > <!-- label: def:declaration -->
 > A nation $n$ is:
 > 
-- \declaredState{} (已申报) if $\auditDepth_n > 0$ and the nation operates at least one protocol-compliant audit node;
-- \undeclaredState{} (未申报) if $\auditDepth_n = 0$ or the nation has not registered any audit node.
+> - \declaredState{} if $\auditDepth_n > 0$ and the nation operates at least one protocol-compliant audit node;
+> - \undeclaredState{} if $\auditDepth_n = 0$ or the nation has not registered any audit node.
 
-> **Definition:** [National AI Competitiveness 国家AI竞争力]
+> **Definition:** [National AI Competitiveness]
 > <!-- label: def:competitiveness -->
 > Under the Yajie{} regime, competitiveness is:
 > 
 > $$
->     \competitiveness_n(t) = \underbrace{\alpha(t) \cdot g(\gpuScale_n(t))}_{GPU contribution GPU贡献} + \underbrace{\beta(t) \cdot h(\auditDepth_n(t))}_{audit contribution 审计贡献} + \underbrace{\gamma \cdot \ell(|\cA_n|, Q_n)}_{auditor network effect 审计者网络效应}
+>     \competitiveness_n(t) = \underbrace{\alpha(t) \cdot g(\gpuScale_n(t))}_{GPU contribution} + \underbrace{\beta(t) \cdot h(\auditDepth_n(t))}_{audit contribution} + \underbrace{\gamma \cdot \ell(|\cA_n|, Q_n)}_{auditor network effect}
 >     <!-- label: eq:competitiveness -->
 > $$
 > 
 > where $g, h, \ell$ are monotonically increasing, $Q_n$ is auditor quality score, and $\alpha(t), \beta(t), \gamma$ are time-varying weights satisfying $\dot < 0, \dot > 0$ (audit importance grows; GPU importance decays).
 
-## The Mutual Audit Equilibrium 相互审计均衡
+## The Mutual Audit Equilibrium
 <!-- label: sec:equilibrium -->
 
 The central strategic insight of Yajie{} geopolitics is that **mutual audit is self-enforcing**. When two adversarial powers both adopt the protocol, a Nash equilibrium emerges where honest auditing is each power's dominant strategy.
 
-### Two-Power Audit Game 双强审计博弈
+### Two-Power Audit Game
 
 Consider two adversarial powers $A$ and $B$ (canonically, the United States and China). Each power $i \in \{A, B\}$ chooses:
 
@@ -150,7 +148,7 @@ $$
 
 Here $\kappa > 0$ is the strategic value per unit of verified intelligence, and $\rho_{i \to j} \in [0,1]$ is audit access under protocol reciprocity rules.
 
-> **Theorem:** [Mutual Audit Equilibrium 相互审计均衡] <!-- label: thm:mutual_audit -->
+> **Theorem:** [Mutual Audit Equilibrium] <!-- label: thm:mutual_audit -->
 > \rigorFull
 > Consider two adversarial powers $A$ and $B$ with utility functions as defined in Eq. [ref]. Assume:
 > \assumptionTag{1} $\trustPremium(d)$ is strictly concave: $\trustPremium(0) = 0$, $\trustPremium'(d) > 0$, $\trustPremium''(d) < 0$;
@@ -184,11 +182,11 @@ Here $\kappa > 0$ is the strategic value per unit of verified intelligence, and 
 > 
 > Imposing symmetry $d_A = d_B = d^*$, $\eta_A = \eta_B = \eta^*$ yields Eq. [ref]. For honesty, the marginal gain from suppressing findings is $\Delta C_{exposure} = C_{exposure}(d^*\eta^*) - C_{exposure}(d^*\eta_i)$. The marginal cost is $\Delta S = \kappa d^* |\cD_j| (\rho - \rho')$ where $\rho' < \rho$ is reduced access after credibility damage. For $\kappa$ sufficiently large, $\Delta S > \Delta C_{exposure}$ for all $\eta_i < 1$, making $\eta^* = 1$ dominant. Uniqueness follows from diagonal strict concavity. See Appendix~A for the complete proof via Kakutani fixed-point theorem.
 
-> **Corollary:** [Mutually Assured Verification 相互确保验证]
+> **Corollary:** [Mutually Assured Verification]
 > <!-- label: cor:mav -->
-> Under the conditions of Theorem [ref], the Yajie{} protocol induces a state of **Mutually Assured Verification** (MAV 相互确保验证): each power's optimal strategy is to audit the other honestly, knowing the other will do the same, because the intelligence gain from auditing the adversary exceeds the exposure cost of being audited. MAV parallels nuclear Mutually Assured Destruction (MAD)---but with inverted valence. MAD deters through the threat of annihilation; MAV incentivizes through the promise of verification. Both are self-enforcing equilibria, but MAV produces *transparency* as a byproduct.
+> Under the conditions of Theorem [ref], the Yajie{} protocol induces a state of **Mutually Assured Verification** (MAV): each power's optimal strategy is to audit the other honestly, knowing the other will do the same, because the intelligence gain from auditing the adversary exceeds the exposure cost of being audited. MAV parallels nuclear Mutually Assured Destruction (MAD)---but with inverted valence. MAD deters through the threat of annihilation; MAV incentivizes through the promise of verification. Both are self-enforcing equilibria, but MAV produces *transparency* as a byproduct.
 
-> **Theorem:** [Multi-Power Audit Equilibrium 多国审计均衡] <!-- label: thm:multipower -->
+> **Theorem:** [Multi-Power Audit Equilibrium] <!-- label: thm:multipower -->
 > \rigorPartial
 > Let $\nationSet = \{1, ..., N\}$ with varying GPU scales $\gpuScale_n$ and model counts $|\cD_n|$. Under reciprocal audit access ($\rho_{i \to j} = \rho$ for all $i \neq j$), there exists a Nash equilibrium $(d_1^*, ..., d_N^*)$ where:
 > 
@@ -201,12 +199,12 @@ Here $\kappa > 0$ is the strategic value per unit of verified intelligence, and 
 
 This explains an important asymmetry: large model ecosystems (US, China) have the strongest incentive for deep audit, while smaller ecosystems may rationally delay---though Theorem [ref] shows delay carries its own costs.
 
-## Trust Premium Economics 信任溢价经济学
+## Trust Premium Economics
 <!-- label: sec:trust_premium -->
 
 The economic engine driving Yajie{} adoption is the **trust premium** $\trustPremium(d)$: the price differential between audited and unaudited AI systems.
 
-> **Theorem:** [Trust Premium Lower Bound 信任溢价下界] <!-- label: thm:trust_premium -->
+> **Theorem:** [Trust Premium Lower Bound] <!-- label: thm:trust_premium -->
 > \rigorFull
 > Under the assumptions:
 > \assumptionTag{6} Protocol detection power: $\Delta(d) = 1 - e^{-\lambda d}$ for $\lambda > 0$;
@@ -217,7 +215,7 @@ The economic engine driving Yajie{} adoption is the **trust premium** $\trustPre
 > Then:
 > 
 > $$
->     \trustPremium(d) \geq \alpha \cdot (1 - e^{-\lambda d})^, \quad \alpha = W_1 \bar{Q}, \;\; \beta \in (0, 1]
+>     \trustPremium(d) \geq \alpha \cdot (1 - e^{-\lambda d})^{\beta}, \quad \alpha = W_1 \bar{Q}, \;\; \beta \in (0, 1]
 >     <!-- label: eq:premium_bound -->
 > $$
 > 
@@ -225,25 +223,25 @@ The economic engine driving Yajie{} adoption is the **trust premium** $\trustPre
 
 > **Proof:** Residual quality uncertainty decays as $\sigma^2(d) = \sigma_0^2 e^{-\lambda d}$. A risk-neutral market applies discount $\gamma \sigma^2(d)$. The premium is $\trustPremium(d) = \gamma(\sigma^2(0) - \sigma^2(d)) = \gamma\sigma_0^2(1 - e^{-\lambda d})$. Setting $\alpha = \gamma\sigma_0^2$ yields the bound, with $\beta$ capturing market maturity. See Appendix~B for full market microstructure derivation.
 
-> **Corollary:** [Diminishing But Positive Returns 递减但为正的回报]
+> **Corollary:** [Diminishing But Positive Returns]
 > $\trustPremium'(d) = \alpha\beta\lambda e^{-\lambda d}(1 - e^{-\lambda d})^{\beta-1} > 0$ for all $d > 0$, with $\lim_{d \to 0^+} \trustPremium'(d) = \infty$ (infinite marginal return to first audit unit) and $\lim_{d \to 1} \trustPremium'(d) > 0$. Full audit ($\sumGZero$) is economically optimal whenever $\trustPremium'(1) > C_{audit}'(1)$.
 
-### Empirical Estimates 实证估计
+### Empirical Estimates
 
 Based on SCX internal market simulations (2026 Q2):
 
 <div align="center">
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
 </div>
 
-## The Audit Supremacy Transition 审计霸权转型
+## The Audit Supremacy Transition
 <!-- label: sec:transition -->
 
 The central structural change is the transition from GPU-dominated competitiveness to audit-dominated competitiveness.
 
-> **Theorem:** [Audit Supremacy Transition 审计霸权转型定理] <!-- label: thm:transition -->
+> **Theorem:** [Audit Supremacy Transition] <!-- label: thm:transition -->
 > \rigorFull
 > Let competitiveness be given by Eq. [ref] with $\dot < 0, \dot > 0, \alpha(t) + \beta(t) = 1$. Define the **audit supremacy threshold**:
 > 
@@ -256,13 +254,13 @@ The central structural change is the transition from GPU-dominated competitivene
 
 > **Proof:** From the definition, competitiveness is GPU-dominated when $\alpha g(\gpuScale_n) > \beta h(\auditDepth_n)$ and audit-dominated otherwise. The threshold solves equality. The time derivative $\partial \auditDepth^*_n / \partial t = (h^{-1})' \cdot g(\gpuScale_n) \cdot (\dot\beta - \alpha\dot)/\beta^2 < 0$ since $\dot < 0, \dot > 0$. The GPU derivative $\partial \auditDepth^*_n / \partial \gpuScale_n = (h^{-1})' \cdot (\alpha/\beta) \cdot g'(\gpuScale_n) > 0$. Irreversibility follows from market learning: once buyers experience audit reliability, willingness-to-pay for unaudited models drops permanently. See Appendix~C.
 
-> **Corollary:** [Audit Catch-Up Corridor 审计赶超走廊]
-> Nations with $\gpuScale_n < \gpuScale_{median}$ have strictly lower thresholds $\auditDepth^*_n$, creating an ``audit catch-up corridor'' $[\auditDepth^*_{small}, \auditDepth^*_{large}]$ within which a GPU-poor nation achieves competitiveness parity with a GPU-rich nation through audit investment alone. This has profound implications for the Global South (\S [ref]) and middle powers (\S\S [ref],  [ref]).
+> **Corollary:** [Audit Catch-Up Corridor]
+> Nations with $\gpuScale_n < \gpuScale_{median}$ have strictly lower thresholds $\auditDepth^*_n$, creating an ``audit catch-up corridor'' $[\auditDepth^*_{small}, \auditDepth^*_{large}]$ within which a GPU-poor nation achieves competitiveness parity with a GPU-rich nation through audit investment alone. This has profound implications for the Global South (\S [ref]) and middle powers (\S\S [ref], [ref]).
 
-## The Late-Mover Advantage 后发优势
+## The Late-Mover Advantage
 <!-- label: sec:late_mover -->
 
-> **Theorem:** [Late-Mover Advantage 后发优势定理] <!-- label: thm:late_mover -->
+> **Theorem:** [Late-Mover Advantage] <!-- label: thm:late_mover -->
 > \rigorFull
 > Let $S_{sunk}(n)$ be nation $n$'s cumulative investment in non-auditable ($\MAone$) AI infrastructure. Transition cost:
 > 
@@ -288,94 +286,94 @@ The central structural change is the transition from GPU-dominated competitivene
 > 
 > For large $S_{sunk}(p)$, $\Delta V < 0$, making delay privately optimal despite being strategically inferior. This is the transition trap.
 
-> **Corollary:** [Zero Sunk Cost = Maximum Agility 零沉没成本=最大敏捷性]
+> **Corollary:** [Zero Sunk Cost = Maximum Agility]
 > Nations in the Global South (\S [ref]), Japan (\S [ref]), and smaller European nations have $S_{sunk} \approx 0$ for LLM infrastructure. They adopt Yajie{} at depth $d$ for cost $C_{new}(d)$ without stranding legacy investments---the economic basis for the leapfrog strategy of starting directly from $\MAmany$.
 
-## Regional Strategic Analysis 区域战略分析
+## Regional Strategic Analysis
 
 We apply the formal framework to six geopolitical regions across four dimensions: (i) current AI posture, (ii) strategic calculus under Yajie{}, (iii) winners and losers, (iv) recommended strategic pathway.
 
-### The United States: Hegemony Destabilized 美国：霸权动摇
+### The United States: Hegemony Destabilized
 <!-- label: sec:us -->
 
-#### Current AI Posture 当前AI地位
+#### Current AI Posture
 
 The United States is the incumbent hegemon of the GPU-dominance order: world's largest GPU clusters (multiple 100K+ H100 deployments); NVIDIA (85\%+ data center GPU market share); deepest AI talent concentration (60\%+ of global top-100 researchers); highest-valued AI companies (OpenAI \$300B+, Anthropic, Google DeepMind, Meta AI). Critically, these advantages were built entirely within $\MAone$---model quality is asserted, not verified. The US lacks a unified federal AI regulatory framework; states act independently.
 
-#### Strategic Calculus under Yajie 雅洁下的战略计算
+#### Strategic Calculus under Yajie
 
 Yajie creates **asymmetric impact** across US actors:
 
 <div align="center">
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
 </div>
 
-**Winners 赢家:** Defense AI companies (Palantir, Anduril---already operate under audit/compliance); open-source community and independent researchers (Yajie lowers trust barrier); AI safety startups (Audit-as-a-Service market emerges); cloud providers (AWS, GCP, Azure---audit infrastructure as new revenue).
-**Losers 输家:** OpenAI (largest potential loser---estimated 50--70\% valuation compression under widespread audit); NVIDIA long-term (growth compression at 2--5 year horizon); AI hype-driven VC (unverified claims face audit-driven revaluation).
+**Winners:** Defense AI companies (Palantir, Anduril---already operate under audit/compliance); open-source community and independent researchers (Yajie lowers trust barrier); AI safety startups (Audit-as-a-Service market emerges); cloud providers (AWS, GCP, Azure---audit infrastructure as new revenue).
+**Losers:** OpenAI (largest potential loser---estimated 50--70\% valuation compression under widespread audit); NVIDIA long-term (growth compression at 2--5 year horizon); AI hype-driven VC (unverified claims face audit-driven revaluation).
 
-**Recommended Strategy 推荐战略:**
+**Recommended Strategy:**
 For the US Government: (1) Establish National AI Audit Standard via Executive Order; (2) Fund 3--5 national audit nodes; (3) Coordinate standards with EU, Japan, Korea; (4) Pressure closed-source companies via procurement policy.
 For companies: OpenAI---launch limited audit pilot immediately; Anthropic---leverage safety positioning to become first fully-audited US AI company; Google---integrate Yajie certification as consumer trustmark; Meta---submit entire Llama series for audit; NVIDIA---develop audit-accelerated GPU clusters as new product line.
 
-### China: Institutional Advantage 中国：制度优势
+### China: Institutional Advantage
 <!-- label: sec:china -->
 
-#### Current AI Posture 当前AI地位
+#### Current AI Posture
 
 China is the second pole of global AI. DeepSeek demonstrated that ``more GPUs'' is not unbeatable (near-GPT-4 at fraction of cost---though cost-efficiency claims remain self-assessed). Huawei is already SCX/Yajie{}'s first enterprise customer---a strategic first-mover position with Ascend chip + Yajie audit bundle. Institutional execution capacity is unmatched: policy cascades from central decision to nationwide implementation within weeks.
 
-#### The Institutional Velocity Advantage 制度速度优势
+#### The Institutional Velocity Advantage
 
 <div align="center">
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
 </div>
 
-#### Key Strategic Dynamics 关键战略动态
+#### Key Strategic Dynamics
 
-**Trust Reversal 信任反转:** China's AI faces systematic distrust in Western markets. Yajie offers resolution: audit is technical, not political. A Yajie-certified Chinese model achieves audit score comparability with US models---trust migrates from political to technical domain. If China adopts Yajie comprehensively while US companies resist, the scenario emerges: DeepSeek (Yajie-certified) vs GPT-5 (unaudited). **Technical trust can override political bias.**
+**Trust Reversal:** China's AI faces systematic distrust in Western markets. Yajie offers resolution: audit is technical, not political. A Yajie-certified Chinese model achieves audit score comparability with US models---trust migrates from political to technical domain. If China adopts Yajie comprehensively while US companies resist, the scenario emerges: DeepSeek (Yajie-certified) vs GPT-5 (unaudited). **Technical trust can override political bias.**
 
-**Dual-Use Audit 审计双刃性:** By accepting audit, China gains the right to audit US models. Under mutual audit: Chinese institutions participate in auditing US models, access performance data, discover defects, and build professional reputation. This is not espionage---it is the protocol's open mechanism.
+**Dual-Use Audit:** By accepting audit, China gains the right to audit US models. Under mutual audit: Chinese institutions participate in auditing US models, access performance data, discover defects, and build professional reputation. This is not espionage---it is the protocol's open mechanism.
 
-**Risks 风险:** (1) Reverse audit exposure---Chinese models face international audit; mitigate via intensive internal pre-audit. (2) Audit independence credibility---if Chinese audit institutions are perceived as government-directed, results lose credibility; mitigate via transparent methodology and public results. (3) Huawei single-point dependency; mitigate via multiple audit nodes (CAS, Zhijiang Lab, Alibaba, Tencent, independent third parties).
+**Risks:** (1) Reverse audit exposure---Chinese models face international audit; mitigate via intensive internal pre-audit. (2) Audit independence credibility---if Chinese audit institutions are perceived as government-directed, results lose credibility; mitigate via transparent methodology and public results. (3) Huawei single-point dependency; mitigate via multiple audit nodes (CAS, Zhijiang Lab, Alibaba, Tencent, independent third parties).
 
-**Winners 赢家:** Huawei (first-customer advantage, hardware+audit bundle); DeepSeek (if audit verifies cost-efficiency, global trust premium follows); National AI regulators (CAC/MIIT---technical tools for enforcement); Domestic chip industry (audit computation as demand driver).
-**Losers 输家:** Baidu (audit will expose LLM gap); gray-zone AI companies (``audit detonation'' of ambiguous claims); companies overdependent on US technology.
+**Winners:** Huawei (first-customer advantage, hardware+audit bundle); DeepSeek (if audit verifies cost-efficiency, global trust premium follows); National AI regulators (CAC/MIIT---technical tools for enforcement); Domestic chip industry (audit computation as demand driver).
+**Losers:** Baidu (audit will expose LLM gap); gray-zone AI companies (``audit detonation'' of ambiguous claims); companies overdependent on US technology.
 
-**Recommended Strategy 推荐战略:** (1) Establish Yajie as national standard by June 2027; (2) Build 5--10 national audit nodes; (3) Train 5,000 AI auditors in 3 years; (4) Proactively audit US models and publish findings; (5) Diversify audit infrastructure beyond Huawei.
+**Recommended Strategy:** (1) Establish Yajie as national standard by June 2027; (2) Build 5--10 national audit nodes; (3) Train 5,000 AI auditors in 3 years; (4) Proactively audit US models and publish findings; (5) Diversify audit infrastructure beyond Huawei.
 
-### Japan: The Switzerland of AI Audit 日本：AI审计的瑞士
+### Japan: The Switzerland of AI Audit
 <!-- label: sec:japan -->
 
-#### Current AI Posture 当前AI地位
+#### Current AI Posture
 
 Japan's position is unique: strong in robotics/embodied AI (FANUC, Yaskawa), precision manufacturing, and medical AI, but absent from the LLM arms race. No GPT-grade indigenous LLM; no competitive GPU/TPU manufacturer; cloud market dominated by AWS/GCP/Azure. Under Yajie{}, these apparent weaknesses are strategic assets: $S_{sunk} \approx 0$ for LLM infrastructure, creating maximum late-mover advantage (Theorem [ref]).
 
-#### The ``Switzerland of AI Audit'' Strategy 审计瑞士战略
+#### The ``Switzerland of AI Audit'' Strategy
 
 Japan's unique strategic opportunity is to become **the neutral third-party auditor**. Rationale: (i) Tradition of technical neutrality in international standards (ISO, IEC); (ii) High-quality IT infrastructure for continuous audit nodes; (iii) Methodological alignment---*Kaizen* and *Total Quality Management* parallel continuous audit verification; (iv) Geopolitical position---neither US nor China, can serve both sides; (v) No competitive conflict---Japan has no domestic LLM giant, avoiding auditor/subject conflicts of interest.
 
-**JAAC Roadmap JAAC路线图:**
+**JAAC Roadmap:**
 Phase 1 (2026--2027): Japan AI Audit Center founded; government-funded, independently operated. Phase 2 (2027--2028): JAAC becomes certified Yajie{} audit node; audit domestic systems. Phase 3 (2028--2029): International entry---audit US and Chinese models. Phase 4 (2029+): Global audit standard-setter.
 
-**Secondary Opportunity 次级机会:** Niche model leadership. Japan trains Japanese-language, medical AI, robotics control, and manufacturing QC models---all submitted for Yajie audit. These become global domain standards not because they are ``bigger'' but because they are ``more auditable.''
+**Secondary Opportunity:** Niche model leadership. Japan trains Japanese-language, medical AI, robotics control, and manufacturing QC models---all submitted for Yajie audit. These become global domain standards not because they are ``bigger'' but because they are ``more auditable.''
 
 **Winners:** Preferred Networks (PFN---Yajie ecosystem benchmark); NTT (audit-as-a-service provider); AIST (lead JAAC establishment); Japanese robotics companies (FANUC, Yaskawa---audited embodied AI components).
 **Losers:** Enterprises dependent on overseas unaudited models; AI outsourcing firms facing higher compliance thresholds.
 
 **Recommended Strategy:** (1) Launch JAAC immediately---speed over perfection; (2) Form Neutral Audit Alliance with Switzerland and Singapore; (3) Prioritize audit in Japan's strength domains; (4) Train 500 auditors; (5) Promote Japanese audit neutrality at G7, OECD, ISO.
 
-### South Korea: Hardware + Audit Bundle 韩国：硬件+审计捆绑
+### South Korea: Hardware + Audit Bundle
 <!-- label: sec:korea -->
 
-#### Current AI Posture 当前AI地位
+#### Current AI Posture
 
 Korea's AI position concentrates in hardware and applications: Samsung (world's largest DRAM/NAND manufacturer), SK Hynix (HBM leader), Naver (HyperCLOVA outperforms GPT on Korean NLP), Kakao (social platform AI). Korea lacks global GPU/TPU design and has a generation gap in foundation models.
 
-#### The Hardware + Audit Bundle Strategy 硬件+审计捆绑战略
+#### The Hardware + Audit Bundle Strategy
 
 Korea's unique opportunity: **Audit-Ready Hardware**. Three levels: (i) Samsung HBM + Yajie audit engine = ``Audit-Accelerated Memory''---embed audit hash computation in memory controllers; (ii) Storage-level audit provenance---data integrity verification for AI training data on Samsung NAND; (iii) Audit-ready AI servers---pre-configured ``Yajie Audit-Ready'' servers, out-of-the-box audit capability.
 
@@ -388,14 +386,14 @@ Strategic logic: NVIDIA GPUs don't natively support audit---audit is an overlay.
 
 **Recommended Strategy:** (1) Samsung: Launch ``Audit Accelerator'' project in next-gen HBM/NAND; (2) Naver: Submit HyperCLOVA for audit immediately; (3) Korean government: incorporate audit into K-AI Strategy; (4) Collaborate with Japan on Asia Audit Alliance.
 
-### Europe: Natural Alignment of Regulatory Philosophy 欧洲：监管哲学的自然契合
+### Europe: Natural Alignment of Regulatory Philosophy
 <!-- label: sec:europe -->
 
-#### Current AI Posture 当前AI地位
+#### Current AI Posture
 
 Europe's position is paradoxical: leads in regulation (EU AI Act), academic research (DeepMind originated in London), and data protection (GDPR). But has no AI giant---Mistral (\$6B) is 2\% of OpenAI's valuation. European AI investment is $\sim$1/10 of US and 1/5 of China levels.
 
-#### The Bidirectional Fit 双向契合
+#### The Bidirectional Fit
 
 Europe and Yajie share **bidirectional alignment**: Europe needs Yajie as technical implementation of its regulations; Yajie needs Europe as regulatory legitimacy anchor.
 
@@ -405,7 +403,7 @@ Europe and Yajie share **bidirectional alignment**: Europe needs Yajie as techni
 
 **Fit 3: Mistral and Aleph Alpha Differentiation.** If Mistral achieves strong Yajie audit results while GPT-5 remains unaudited, Mistral gains trust advantage. ``Developed in Europe, Verified by Yajie''---powerful brand narrative.
 
-**Major Risk 主要风险---Regulatory Fragmentation 监管碎片化:**
+**Major Risk---Regulatory Fragmentation:**
 If the EU layers additional requirements atop Yajie: non-European models face extra compliance costs; European models' overseas results may not be recognized; two versions emerge---``Yajie Global'' and ``Yajie+EU.'' This harms European AI competitiveness.
 
 **Winners:** Mistral (trust leadership positioning); European AI audit/compliance companies (massive compliance market); AI ethics research institutions (empirical tools for verification); open-source AI community (cultural alignment).
@@ -413,131 +411,129 @@ If the EU layers additional requirements atop Yajie: non-European models face ex
 
 **Recommended Strategy:** (1) Incorporate Yajie into EU AI Act implementation rules---do *not* create incompatible standards; (2) Invest in 3--5 European audit nodes; (3) Mistral and Aleph Alpha: submit for audit immediately; (4) Form Trans-Oceanic Audit Alliance with Japan, Korea, Singapore; (5) Leverage GDPR enforcement---the ``Brussels Effect'' globalizes Yajie.
 
-### The Global South: Zero Sunk Cost, Maximum Agility 全球南方：零沉没成本，最大敏捷性
+### The Global South: Zero Sunk Cost, Maximum Agility
 <!-- label: sec:global_south -->
 
-#### Current AI Posture 当前AI地位
+#### Current AI Posture
 
 The Global South (Africa, Latin America, South Asia, Southeast Asia) shares: virtually no indigenous AI infrastructure; no large GPU clusters; no GPT-class indigenous models; heavy dependence on US/Chinese AI services; severe AI brain drain. Critical hidden assets: **zero sunk cost** in $\MAone$ (Theorem [ref] applies with maximum force); unique linguistic/cultural data; tradition of technological leapfrogging (M-Pesa, skipping landlines for mobile); cost sensitivity creating natural preference for efficient, audited AI.
 
-#### The Leapfrog Pathway 跳跃式发展路径
+#### The Leapfrog Pathway
 
-**Traditional path (blocked 已阻断):** Accumulate billions $\to$ build GPU clusters $\to$ train foundation models $\to$ compete with GPT $\to$ fail (cannot keep pace).
+**Traditional path (blocked):** Accumulate billions $\to$ build GPU clusters $\to$ train foundation models $\to$ compete with GPT $\to$ fail (cannot keep pace).
 
-**Yajie path (accessible 可通达):** Use open-source Spring framework $\to$ fine-tune on local data $\to$ submit for Yajie audit $\to$ obtain ``Trusted AI'' certification $\to$ establish domain trust.
+**Yajie path (accessible):** Use open-source Spring framework $\to$ fine-tune on local data $\to$ submit for Yajie audit $\to$ obtain ``Trusted AI'' certification $\to$ establish domain trust.
 
-**Key insight 关键洞察:** A Yajie-audited, locally fine-tuned small model can achieve higher trust than an unaudited general large model in its domain. India trains Hindi/Tamil/Bengali models, audits, becomes South Asian language AI standard. Kenya trains Swahili models, audits, becomes East African standard. Brazil trains Portuguese models, audits, becomes Lusophone standard. Nigeria trains Yoruba/Igbo/Hausa models, audits. These models don't need to compete with GPT-5 on general intelligence---only need to pass audit in their domains. Under Yajie, **localized trusted models** command higher value than **globalized unaudited models**.
+**Key insight:** A Yajie-audited, locally fine-tuned small model can achieve higher trust than an unaudited general large model in its domain. India trains Hindi/Tamil/Bengali models, audits, becomes South Asian language AI standard. Kenya trains Swahili models, audits, becomes East African standard. Brazil trains Portuguese models, audits, becomes Lusophone standard. Nigeria trains Yoruba/Igbo/Hausa models, audits. These models don't need to compete with GPT-5 on general intelligence---only need to pass audit in their domains. Under Yajie, **localized trusted models** command higher value than **globalized unaudited models**.
 
-#### Audit-as-a-Service Outsourcing 审计即服务外包
+#### Audit-as-a-Service Outsourcing
 
 The Global South can also *provide* audit services. India (world's largest IT services outsourcing hub) trains AI auditors, provides Yajie audit services, becomes global Yajie audit outsourcing center. Cost: Indian auditors at 1/5 to 1/3 of US rates.
 
-#### Regional Sub-Analysis 区域细分
+#### Regional Sub-Analysis
 
-**India 印度:** \$1.2B IndiaAI Mission; 22 official languages as strategic data asset. Path: Incorporate Yajie audit into IndiaAI Mission; establish Indian AI Audit Center; train 10,000 auditors; mandate audit for government AI procurement.
+**India:** \$1.2B IndiaAI Mission; 22 official languages as strategic data asset. Path: Incorporate Yajie audit into IndiaAI Mission; establish Indian AI Audit Center; train 10,000 auditors; mandate audit for government AI procurement.
 
-**Africa 非洲:** 500M+ mobile internet users; unique language resources. Path: AU establishes African AI Audit Framework; prioritize African language model auditing; leverage international development aid.
+**Africa:** 500M+ mobile internet users; unique language resources. Path: AU establishes African AI Audit Framework; prioritize African language model auditing; leverage international development aid.
 
-**Latin America 拉丁美洲:** Brazil as Lusophone AI audit center; Mexico as Hispanophone center; leverage US geographic proximity for audit services.
+**Latin America:** Brazil as Lusophone AI audit center; Mexico as Hispanophone center; leverage US geographic proximity for audit services.
 
-**Southeast Asia 东南亚:** Singapore as Asian audit center (complementing Japan); ASEAN-level coordination of audit standards.
+**Southeast Asia:** Singapore as Asian audit center (complementing Japan); ASEAN-level coordination of audit standards.
 
 **Winners:** Indian IT services (Infosys, TCS, Wipro---audit as new business line); linguistically diverse nations (unique data as strategic asset); open-source AI developers (competitive tools); cost-sensitive markets (efficient audited models).
 **Losers:** Governments dependent on Western unaudited AI; nations attempting to build large models from scratch; data colonialism beneficiaries.
 
 **Recommended Strategy:** (1) Form Global South Yajie Audit Cooperation Framework; (2) Prioritize local language model auditing; (3) Leverage international development assistance (World Bank, UNDP); (4) India lead audit service outsourcing; (5) Establish ``Data Sovereignty + Audit Sovereignty'' narrative.
 
-## Strategic Intersections 战略交叉点
+## Strategic Intersections
 <!-- label: sec:intersections -->
 
-### Action Timeline 行动时间线
+### Action Timeline
 
 <div align="center">
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
 </div>
 
-### Key Uncertainties 关键不确定性
+### Key Uncertainties
 
-1. **US Corporate Response Timing 美国公司响应时机.** If before 2027, leadership retained. If after 2029, trust leadership likely unrecoverable. Probability: 30\% early, 40\% resistance, 30\% selective.
-2. **Chinese Audit Independence 中国审计独立性.** If perceived as government-directed, results not internationally accepted. Single largest risk to China's Yajie{} strategy.
-3. **EU Regulatory Overlay 欧盟监管叠加.** Additional requirements create two parallel audit systems, reducing global efficiency.
-4. **Global South Organization 全球南方组织化.** Individual nations cannot achieve scale effects. Coalition formation critical but uncertain.
-5. **Protocol Security 协议安全性.** Yajie protocol vulnerability would be catastrophic to the entire system.
-6. **NVIDIA's Strategic Response NVIDIA战略应对.** Resistance protects ``more GPUs'' narrative; embrace creates audit-accelerated hardware. Choice significantly affects transition speed.
+1. **US Corporate Response Timing.** If before 2027, leadership retained. If after 2029, trust leadership likely unrecoverable. Probability: 30\% early, 40\% resistance, 30\% selective.
+2. **Chinese Audit Independence.** If perceived as government-directed, results not internationally accepted. Single largest risk to China's Yajie{} strategy.
+3. **EU Regulatory Overlay.** Additional requirements create two parallel audit systems, reducing global efficiency.
+4. **Global South Organization.** Individual nations cannot achieve scale effects. Coalition formation critical but uncertain.
+5. **Protocol Security.** Yajie protocol vulnerability would be catastrophic to the entire system.
+6. **NVIDIA's Strategic Response.** Resistance protects ``more GPUs'' narrative; embrace creates audit-accelerated hardware. Choice significantly affects transition speed.
 
-### Convergence Scenario 收敛情景
+### Convergence Scenario
 
 Most likely path: (i) China achieves initial audit leadership (2027--2028) via institutional velocity; (ii) Europe integrates Yajie into regulatory compliance (2028--2029), creating ``Brussels Effect''; (iii) Japan and Korea establish neutral audit infrastructure and hardware standards (2028--2030); (iv) US companies transition from resistance to adoption under market and regulatory pressure (2029--2030); (v) Global South leapfrogs directly to $\MAmany$ (2029--2031); (vi) By 2032, Yajie audit is de facto global standard; unaudited AI is as unacceptable as unaudited financial statements.
 
-## Conclusion: Who Embraces $\sumGZero$ Wins the Next Round 结论：谁拥抱∑g=0，谁赢得下一轮
+## Conclusion: Who Embraces $\sumGZero$ Wins the Next Round
 <!-- label: sec:conclusion -->
 
-### The Irreversibility of the Paradigm Shift 范式转换的不可逆性
+### The Irreversibility of the Paradigm Shift
 
 The SCX/Yajie protocol represents not incremental improvement but a **paradigm shift** comparable to: the shift from artisanal production to industrial standardization; from bank self-reporting to independent audit; from closed-source to open-source software. Once audit standards are established, ``unaudited AI'' becomes as unacceptable as ``unaudited financial statements.'' This is a question of *when*, not *if*.
 
-### The New Competitiveness Formula 新竞争力公式
+### The New Competitiveness Formula
 
 $$
-    \underbrace{\competitiveness_n^{old} = \gpuScale_n \times |\cD_n|}_{Old Paradigm 旧范式: GPU Count $\times$ Data Volume}
+    \underbrace{\competitiveness_n^{old} = \gpuScale_n \times |\cD_n|}_{Old Paradigm: GPU Count $\times$ Data Volume}
     \quad \longrightarrow \quad
-    \underbrace{\competitiveness_n^{new} = \auditDepth_n \times |\cA_n| \times v_n}_{New Paradigm 新范式: Audit Depth $\times$ Breadth $\times$ Velocity}
+    \underbrace{\competitiveness_n^{new} = \auditDepth_n \times |\cA_n| \times v_n}_{New Paradigm: Audit Depth $\times$ Breadth $\times$ Velocity}
     <!-- label: eq:paradigm_shift -->
 $$
 
 Under the old paradigm, the United States was the uncontested hegemon. Under the new paradigm: China leads in audit velocity; Europe leads in audit depth (regulatory integration); Japan and Korea have unique advantages in audit infrastructure (services and hardware); the Global South possesses potential in audit breadth (diversity coverage).
 
-### Five Strategic Imperatives for All Nations 五项战略要务
+### Five Strategic Imperatives for All Nations
 
-1. **Audit capability is a new national strategic asset 审计能力是新的国家战略资产.** Like nuclear weapons, chip fabrication, and rare-earth processing, AI audit capability must be treated as a strategic national capability.
-2. **Speed matters more than perfection 速度比完美更重要.** Build audit capability first (even if imperfect), then refine. Nations waiting for the perfect solution will be overtaken.
-3. **Alliances are force multipliers 联盟是力量倍增器.** Transnational audit alliances---Asia Audit Alliance, Transatlantic Audit Alliance, Global South Audit Cooperation---will determine standards-setting power.
-4. **Audit independence is non-negotiable 审计独立性不可协商.** An audit institution perceived as government-controlled produces worthless results. Short-term cost of exposed defects is far less than long-term cost of lost trust.
-5. **Embrace open audit tools 拥抱开源审计工具.** Nation-specific audit standards equal self-isolation. Yajie{}'s globality is its value---fragmentation weakens everyone.
+1. **Audit capability is a new national strategic asset.** Like nuclear weapons, chip fabrication, and rare-earth processing, AI audit capability must be treated as a strategic national capability.
+2. **Speed matters more than perfection.** Build audit capability first (even if imperfect), then refine. Nations waiting for the perfect solution will be overtaken.
+3. **Alliances are force multipliers.** Transnational audit alliances---Asia Audit Alliance, Transatlantic Audit Alliance, Global South Audit Cooperation---will determine standards-setting power.
+4. **Audit independence is non-negotiable.** An audit institution perceived as government-controlled produces worthless results. Short-term cost of exposed defects is far less than long-term cost of lost trust.
+5. **Embrace open audit tools.** Nation-specific audit standards equal self-isolation. Yajie{}'s globality is its value---fragmentation weakens everyone.
 
-**The ultimate winner is not the nation with the largest GPU cluster---but the first nation to fully embrace $\boldsymbol$.**
-
-**最终的赢家不是拥有最大GPU集群的国家——而是第一个全面拥抱$\boldsymbol{\sum g = 0}$的国家。**
+**The ultimate winner is not the nation with the largest GPU cluster---but the first nation to fully embrace $\boldsymbol{\sumGZero}$.**
 
 \rule{0.4pt}
 
-**Acknowledgment 致谢:** Prepared by the SCX Strategic Analysis Division 由SCX战略分析司编制. Based on public information and SCX internal data as of July 2, 2026. Geopolitical judgments are time-sensitive---quarterly updates recommended. All strategic recommendations are for decision reference and do not constitute policy directives. 基于截至2026年7月2日的公开信息和SCX内部数据编制。地缘政治判断具有时限性——建议每季度更新。所有战略建议供决策参考，不构成政策指令。
+**Acknowledgment:** Prepared by the SCX Strategic Analysis Division. Based on public information and SCX internal data as of July 2, 2026. Geopolitical judgments are time-sensitive---quarterly updates recommended. All strategic recommendations are for decision reference and do not constitute policy directives.
 
 ## Appendix
 
-## Complete Proof of Mutual Audit Equilibrium (Theorem [ref]
+## Complete Proof of Mutual Audit Equilibrium (Theorem [ref])
 <!-- label: app:mutual_audit_proof -->
 
 [Complete proof: existence via Kakutani fixed-point theorem on compact convex strategy space $[0,1] \times [0,1]$; uniqueness via diagonal strict concavity of payoff functions; verification that first-order conditions characterize global maximum under Assumptions~A1--A5. Honesty dominance established via comparison of deviation payoffs with coupled detection probability and reputation loss.]
 
-## Market Microstructure Derivation of Trust Premium (Theorem [ref]
+## Market Microstructure Derivation of Trust Premium (Theorem [ref])
 <!-- label: app:trust_premium_derivation -->
 
 [Full derivation from a market microstructure model with heterogeneous buyers, Bayesian quality inference, and competitive equilibrium pricing. Includes extension to market maturity effects via $\beta$ parameter and calibration to current AI service pricing data.]
 
-## Hysteresis Formalization for Audit Supremacy Transition (Theorem [ref]
+## Hysteresis Formalization for Audit Supremacy Transition (Theorem [ref])
 <!-- label: app:hysteresis -->
 
 [Formal treatment of irreversibility: market learning about audit value creates discontinuous shift in willingness-to-pay for unaudited models, with hysteresis arising from asymmetric information structure before and after audit adoption. Derivation of the no-return condition $\trustPremium_{post-audit}(0) < \trustPremium_{pre-audit}(0)$.]
 
-## National Audit Readiness Assessment 各国审计准备度评估
+## National Audit Readiness Assessment
 <!-- label: app:readiness -->
 
 <div align="center">
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
 </div>
 
 Scoring: 1 = nonexistent capability; 10 = world-leading. SCX Strategic Analysis Division, July 2026.
 
-## Glossary of Key Terms 关键术语表
+## Glossary of Key Terms
 
 <div align="center">
 
-[Table omitted — see original .tex]
+[Table omitted --- see original .tex]
 
 </div>
 
