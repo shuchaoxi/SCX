@@ -13,11 +13,12 @@
 
 | | |
 |:--|:--|
-| Papers 论文 | 92+ |
-| Review rounds 审查轮次 | 100+ |
-| Tests 测试 | 678 passed |
+| Papers 论文 | 195+ |
+| Review rounds 审查轮次 | 105+ |
+| Tests 测试 | 676 passed |
 | Converged items 已收敛 | 24/24 |
 | P0 critical fixes | ✅ 全部清零 |
+| Formalization 形式化 | ✅ 全部完成 |
 
 → [Full audit status 完整审计状态](AUDIT_STATUS.md)
 
