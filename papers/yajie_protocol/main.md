@@ -149,7 +149,7 @@ Critically, the first developer triggers fragmentation for *all* jurisdictions, 
 7. **支付的可加可分性与碎片化的公共性：** 支付函数具有方程(4)--(5)所规定的可加结构。碎片化指标 $\mathbb{I}[n_D > 0]$ 是公共信息——一旦任何辖区开发，碎片化成本立即施加于全体辖区。*含义：碎片化是一种"公共劣品"（public bad），其供给由首个开发者的行为触发，消费是非排他和非竞争的。*
 
 > **Remark:** [假设之间的逻辑依赖]
-> 假设A2和A1共同保证采纳优势 $\Delta(|\mathcal{E}|)$ 随CEC规模严格单调递增。假设A4的 $\lambda > \kappa$ 排序保证全体采纳均衡的稳定性裕度为正且随 $|\mathcal{E}|$ 递增。若 $\lambda \leq \kappa$，则碎片化成本不足以威慑单一扩散，非扩散均衡的稳定性将显著削弱——此时需要 $n$ 较小或额外的制度性约束（如条约义务）来维持均衡。
+> 假设A2和A1共同保证采纳优势 $\Delta(|\mathcal{E}|)$ 随CEC规模严格单调递增。A3（$c^{develop} > c^{adopt}$）与A4（$\kappa > 0$）共同保证 $\Delta(0) = c^{develop} - c^{adopt} + \kappa > 0$——即采纳优势在CEC为空的初始时刻已严格为正，$(A, ..., A)$ 从博弈的第一时刻起即为唯一严格纳什均衡。假设A4的 $\lambda > \kappa$ 排序进一步增强均衡的稳定性裕度。
 
 ### 纳什均衡的严格存在性、唯一性与特征
 
@@ -286,7 +286,7 @@ $$
 > 
 > **(iv)** 半衰期的存在性：函数 $f(t) = \Delta(|\mathcal{E}_t|) + \lambda$ 在 $[T^*, \infty)$ 上连续（A1--A2保证）、严格递减至零或正值下限（取决于 $\lim_{|\mathcal{E}| \to \infty} \Delta(|\mathcal{E}|)$ 与 $-\lambda$ 的关系）。若下限大于 $\frac{1}{2}[\Delta(|\mathcal{E}_{T^*}|) + \lambda]$，则半衰期有限（由中值定理）。若下限更小，半衰期仍有限——$f(t)$ 最终穿越半值线。唯一例外是 $\Delta(|\mathcal{E}|) \equiv const$（要求 $V$ 线性且 $\theta$ 恒定，与A1--A2矛盾），此时半衰期无定义但此情形不会发生。
 > 
-> **(v)** NPE的制度转型：将方程( [ref])中的 $\Delta(|\mathcal{E}|)$ 分解为先发者私有贡献与公共CEC贡献。国际化前，$\Delta(|\mathcal{E}|) = \Delta(|\mathcal{E}^{private}|)$；国际化后，所有辖区的采纳优势趋同于 $\Delta(|\mathcal{E}^{public}|)$。条件 $\Delta(|\mathcal{E}^{public}|) \geq -\lambda$ 不涉及任何辖区的身份——先发优势在采纳博弈层面消失。
+> **(v)** NPE的制度转型：将方程( [ref])中的 $\Delta(|\mathcal{E}|)$ 分解为先发者私有贡献与公共CEC贡献。国际化前，$\Delta(|\mathcal{E}|) = \Delta(|\mathcal{E}^{private}|)$；国际化后，所有辖区的采纳优势趋同于 $\Delta(|\mathcal{E}^{public}|)$。由于 $\Delta(|\mathcal{E}^{public}|) > 0$ 恒成立（A3与A4），全体采纳均衡条件始终满足——先发优势在采纳博弈层面消失。
 
 > **Remark:** [先发优势衰减与核不扩散条约的结构类比]
 > 推论 [ref]完成了NPT类比（第3.5节）的一个关键制度推论。NPT第VI条要求核武器国家"真诚地谈判"以实现核裁军——即核先发优势的衰减承诺。类似地，CEC的国际化构成了审计先发优势的"第VI条"：先发者承诺将CEC转变为全球公共品，从而使其先发优势随时间衰减。但正如NPT的裁军承诺面临可信性危机（Joyner, 2011），CEC国际化的可信性同样取决于制度设计——先发者是否有激励在达到 $S_3$（护城河形成）后仍然推进国际化（参见命题 [ref]的干预窗单调闭合）。

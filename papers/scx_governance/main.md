@@ -437,7 +437,7 @@ Transparency requires not only accurate reporting of published statistics but al
 > $$
 > 
 > 
-> For a published statistic ($k \in \mathcal{K}_{\mathrm{pub}}$), $Z_j^{(k)} = 0$ by definition (the statistic is available). For an unpublished statistic ($k \notin \mathcal{K}_{\mathrm{pub}}$), auditor $j$ detects the gap with probability at least $p_ > 0$, reflecting the auditor's capacity to independently estimate the statistic.
+> For a published statistic ($k \in \mathcal{K}_{\mathrm{pub}}$), $Z_j^{(k)} = 0$ by definition (the statistic is available). For an unpublished statistic ($k \notin \mathcal{K}_{\mathrm{pub}}$), auditor $j$ detects the gap with probability at least $p_{\min} > 0$, reflecting the auditor's capacity to independently estimate the statistic.
 
 ### Theorem Statement and Proof
 
@@ -466,21 +466,21 @@ Transparency requires not only accurate reporting of published statistics but al
 > **Step 2: Community-level detection.** Detection at the community level occurs if *any* auditor detects *any* gap. Under Assumption [ref] (conditional independence), the auditors' detection events are independent across $j$. The community non-detection probability is:
 > 
 > $$
->     \Pbb(no auditor detects) = \prod_{j=1}^{M} (1 - q_j) \leq \prod_{j=1}^{M} (1 - q_) = (1 - q_)^M,
+>     \Pbb(no auditor detects) = \prod_{j=1}^{M} (1 - q_j) \leq \prod_{j=1}^{M} (1 - q_\min) = (1 - q_\min)^M,
 >     <!-- label: eq:no_detection -->
 > $$
 > 
-> where $q_ = \min_j q_j$.
+> where $q_\min = \min_j q_j$.
 > 
-> **Step 3: Lower-bounding $q_$.** We now establish a lower bound on $q_$ in terms of the publication gap. For each auditor $j$, consider the fraction of unpublished statistics they can independently estimate. Let $r_j = |\{k \notin \mathcal{K}_{\mathrm{pub}} : auditor $j$ can estimate $k$\}| / (K_ - K_{\mathrm{pub}})$ be the coverage ratio. If $r_j \geq r_ > 0$ for all $j$, then:
+> **Step 3: Lower-bounding $q_\min$.** We now establish a lower bound on $q_\min$ in terms of the publication gap. For each auditor $j$, consider the fraction of unpublished statistics they can independently estimate. Let $r_j = |\{k \notin \mathcal{K}_{\mathrm{pub}} : auditor $j$ can estimate $k$\}| / (K_* - K_{\mathrm{pub}})$ be the coverage ratio. If $r_j \geq r_\min > 0$ for all $j$, then:
 > 
 > $$
->     q_j \geq p_ \cdot r_ \cdot (K_ - K_{\mathrm{pub}}) / K_.
+>     q_j \geq p_{\min} \cdot r_\min \cdot (K_* - K_{\mathrm{pub}}) / K_*.
 >     <!-- label: eq:q_bound -->
 > $$
 > 
 > 
-> In the favorable case where auditors collectively cover all statistics ($\max_j r_j \to 1$ combined), each unpublished statistic is covered by at least one auditor. For uniform coverage, $q_ \geq p_ \cdot (1 - K_{\mathrm{pub}}/K_)$.
+> In the favorable case where auditors collectively cover all statistics ($\max_j r_j \to 1$ combined), each unpublished statistic is covered by at least one auditor. For uniform coverage, $q_\min \geq p_{\min} \cdot (1 - K_{\mathrm{pub}}/K_*)$.
 > 
 > **Step 4: Exact Chernoff bound (Bernoulli).** Consider the random variable $D_j \in \{0, 1\}$ indicating whether auditor $j$ detects any gap. Then:
 > 
@@ -1111,8 +1111,13 @@ P.~W. Holland.
 
 \bibitem{Hoeffding1963}
 W.~Hoeffding.
-\newblock Probability inequalities for sums of bounded random variables.
-\newblock {\em Journal of the American Statistical Association}, 58(301):13--30, 1963.
+\\newblock Probability inequalities for sums of bounded random variables.
+\\newblock {\\em Journal of the American Statistical Association}, 58(301):13--30, 1963.
+
+\bibitem{Chernoff1952}
+H.~Chernoff.
+\\newblock A measure of asymptotic efficiency for tests of a hypothesis based on the sum of observations.
+\\newblock {\\em Annals of Mathematical Statistics}, 23(4):493--507, 1952.
 
 \bibitem{Liang1986}
 K.-Y. Liang and S.~L. Zeger.
