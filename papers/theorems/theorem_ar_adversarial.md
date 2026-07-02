@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 Theorem~3 of the SCX framework establishes a binary noise--difficulty

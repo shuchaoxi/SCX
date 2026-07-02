@@ -1,3 +1,7 @@
+# The Matrix Lens — All of ML in One Language 矩阵透镜——一种语言描述所有机器学习
+
+**Author:** SCX
+
 *Abstract:*
 
 Every machine learning algorithm, from the Transformer to Mixture-of-Experts (MoE), 

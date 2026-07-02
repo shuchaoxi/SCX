@@ -1,6 +1,8 @@
-\section{BBP Spectral Proxy: A Computable Alternative to SCX Theorem 2's
+# BBP Spectral Proxy: A Computable Alternative to SCX Theorem 2's
 Mutual
-Information}<!-- label: bbp-spectral-proxy-a-computable-alternative-to-scx-theorem-2s-mutual-information -->
+Information
+
+**Author:** SCX
 
 > **Status:** Proposal |{} **Date:** 2026-06-27
 > **Purpose:** Develop a computable spectral proxy for the mutual
@@ -38,8 +40,8 @@ Information}<!-- label: bbp-spectral-proxy-a-computable-alternative-to-scx-theor
 
 </div>
 
-\subsection{1. The Problem: Why Mutual Information Is Not
-Enough}<!-- label: the-problem-why-mutual-information-is-not-enough -->
+### 1. The Problem: Why Mutual Information Is Not
+Enough<!-- label: the-problem-why-mutual-information-is-not-enough -->
 
 #### 1.1 Theorem 2 in Brief<!-- label: theorem-2-in-brief -->
 
@@ -56,8 +58,8 @@ tilde(P) where phi and S are independent, applies Pinsker's inequality
 to bound TV(P, tilde(P)) \textless= sqrt(delta/2), and uses
 data-processing to transfer this to detection performance.
 
-\subsubsection{1.2 The Computational
-Obstacle}<!-- label: the-computational-obstacle -->
+#### 1.2 The Computational
+Obstacle<!-- label: the-computational-obstacle -->
 
 Delta = I(phi(X); S) is mathematically elegant but practically
 intractable for three reasons:
@@ -66,8 +68,8 @@ intractable for three reasons:
 2. 
 3. 
 
-\subsubsection{1.3 What a Proxy Must
-Deliver}<!-- label: what-a-proxy-must-deliver -->
+#### 1.3 What a Proxy Must
+Deliver<!-- label: what-a-proxy-must-deliver -->
 
 A usable proxy for delta must be: - **Computable** from finite data
 with standard numerical linear algebra - **Interpretable** in SCX's
@@ -81,11 +83,11 @@ it must tell practitioners whether SCX will work
 
 </div>
 
-\subsection{2. The BBP Phase Transition in a
-Nutshell}<!-- label: the-bbp-phase-transition-in-a-nutshell -->
+### 2. The BBP Phase Transition in a
+Nutshell<!-- label: the-bbp-phase-transition-in-a-nutshell -->
 
-\subsubsection{2.1 Setup: The Spiked Covariance
-Model}<!-- label: setup-the-spiked-covariance-model -->
+#### 2.1 Setup: The Spiked Covariance
+Model<!-- label: setup-the-spiked-covariance-model -->
 
 Let Phi be an N x d feature matrix whose rows phi(x\_i) in R\^{}d are
 drawn from a K-component mixture model satisfying SCX's Assumption A5
@@ -107,8 +109,8 @@ discovery) is:
 
 \[K = \frac{1}{N} \Phi \Phi^T \quad (N \times N)\]
 
-\subsubsection{2.2 The Marchenko-Pastur
-Law}<!-- label: the-marchenko-pastur-law -->
+#### 2.2 The Marchenko-Pastur
+Law<!-- label: the-marchenko-pastur-law -->
 
 In the null case where there is no state structure (all mu\_k equal, so
 B = 0), the entries of Phi are i.i.d. N(0, sigma\^{}2). As N, d
@@ -125,8 +127,8 @@ with support edges:
 The bulk of eigenvalues concentrates in {[}lambda\_-, lambda\_+{]}. The
 largest eigenvalue lambda\_1 converges to lambda\_+ almost surely.
 
-\subsubsection{2.3 The BBP Phase
-Transition}<!-- label: the-bbp-phase-transition -->
+#### 2.3 The BBP Phase
+Transition<!-- label: the-bbp-phase-transition -->
 
 Now introduce a rank-1 ``spike'' into the population covariance: Sigma =
 sigma\^{}2 I + theta * vv\^{}T, where theta is the spike magnitude and v
@@ -139,8 +141,8 @@ means). The BBP transition (Baik, Ben Arous, Peche, 2005) states:
 The phase transition is **sharp**: there is no intermediate regime
 where the spike is partially detectable.
 
-\subsubsection{2.4 Extension to Rank-K
-Spikes}<!-- label: extension-to-rank-k-spikes -->
+#### 2.4 Extension to Rank-K
+Spikes<!-- label: extension-to-rank-k-spikes -->
 
 For K states, the between-state scatter B has rank r = K-1 (assuming
 distinct means). The eigenvalues of B/sigma\^{}2 are theta\_1
@@ -205,9 +207,9 @@ geometries; see Section 13).
 
 </div>
 
-\subsection{3. Effective Signal Strength: The Bridge Between I(phi; S)
+### 3. Effective Signal Strength: The Bridge Between I(phi; S)
 and Spectral
-Structure}<!-- label: effective-signal-strength-the-bridge-between-iphi-s-and-spectral-structure -->
+Structure<!-- label: effective-signal-strength-the-bridge-between-iphi-s-and-spectral-structure -->
 
 #### 3.1 Defining Theta<!-- label: defining-theta -->
 
@@ -224,8 +226,8 @@ In the homoscedastic Gaussian mixture model (Assumption A5 with
 isotropy), this is the signal-to-noise ratio for the most separated pair
 of state means.
 
-\subsubsection{3.2 Relating Theta to I(phi;
-S)}<!-- label: relating-theta-to-iphi-s -->
+#### 3.2 Relating Theta to I(phi;
+S)<!-- label: relating-theta-to-iphi-s -->
 
 Under the isotropic Gaussian mixture model:
 
@@ -233,8 +235,8 @@ Under the isotropic Gaussian mixture model:
 2. 
 3. 
 
-\subsubsection{3.3 The Key Inequality: Theta Implies
-Delta}<!-- label: the-key-inequality-theta-implies-delta -->
+#### 3.3 The Key Inequality: Theta Implies
+Delta<!-- label: the-key-inequality-theta-implies-delta -->
 
 For the isotropic Gaussian mixture:
 
@@ -250,9 +252,9 @@ regime (theta\_j \textless\textless{} 1), this gives:
 
 \[\delta \geq \frac{1}{4} \sum_{j=1}^{K-1} \theta_j^2 + O(\theta_j^3)\]
 
-\subsubsection{3.4 The Reverse Direction: From Theta to an Upper Bound
+#### 3.4 The Reverse Direction: From Theta to an Upper Bound
 on
-Delta}<!-- label: the-reverse-direction-from-theta-to-an-upper-bound-on-delta -->
+Delta<!-- label: the-reverse-direction-from-theta-to-an-upper-bound-on-delta -->
 
 In the strong-signal regime (theta \textgreater\textgreater{} 1), the
 mutual information between phi and S is approximately:
@@ -282,8 +284,8 @@ condition.
 
 </div>
 
-\subsection{4. BBP Spectral Proxy
-Theorem}<!-- label: bbp-spectral-proxy-theorem -->
+### 4. BBP Spectral Proxy
+Theorem<!-- label: bbp-spectral-proxy-theorem -->
 
 #### 4.1 Theorem Statement<!-- label: theorem-statement -->
 
@@ -380,8 +382,8 @@ N\^{}\{-2/3\} with a Tracy-Widom limiting distribution. For finite N,
 the convergence rate of lambda\_1 to MP\_+ (under the null) or to the
 BBP spike limit (under the alternative) is O(N\^{}\{-2/3\}).
 
-\subsubsection{4.3 Corollary: Spectral Sufficient Condition for SCX
-Applicability}<!-- label: corollary-spectral-sufficient-condition-for-scx-applicability -->
+#### 4.3 Corollary: Spectral Sufficient Condition for SCX
+Applicability<!-- label: corollary-spectral-sufficient-condition-for-scx-applicability -->
 
 **Corollary 1 (Spectral Diagnostic).** Let hat(delta) be the
 spectral proxy. If:
@@ -411,8 +413,8 @@ practitioner's question: ``Will SCX work for my data?''
 
 </div>
 
-\subsection{5. Effective Null Hypothesis and Test
-Procedure}<!-- label: effective-null-hypothesis-and-test-procedure -->
+### 5. Effective Null Hypothesis and Test
+Procedure<!-- label: effective-null-hypothesis-and-test-procedure -->
 
 #### 5.1 The Spectral Test<!-- label: the-spectral-test -->
 
@@ -430,8 +432,8 @@ Rejection region: T \textgreater{} (1 + sqrt(d/N))\^{}2 +
 epsilon\_N(alpha) where epsilon\_N(alpha) is a size-alpha critical value
 from the Tracy-Widom distribution.
 
-\subsubsection{5.2 Tracy-Widom Critical
-Values}<!-- label: tracy-widom-critical-values -->
+#### 5.2 Tracy-Widom Critical
+Values<!-- label: tracy-widom-critical-values -->
 
 Under the null (no spike), the centered and scaled largest eigenvalue
 converges to the Tracy-Widom distribution of order 1 (TW\_1, for
@@ -470,8 +472,8 @@ For a test at significance level alpha = 0.05:
 
 \[Reject  H_0  if  \lambda_1 > \left(1 + \sqrt{\frac{d}{N}}\right)^2 + 0.98 \cdot \left(1 + \sqrt{\frac{d}{N}}\right) \left(\frac{1}{\sqrt{N}} + \frac{1}{\sqrt{d}}\right)^{2/3}\]
 
-\subsubsection{5.3 Practical
-Implementation}<!-- label: practical-implementation -->
+#### 5.3 Practical
+Implementation<!-- label: practical-implementation -->
 
 In practice, since sigma\^{}2 is unknown, we must estimate it. The
 natural estimator is the median or trimmed mean of the bulk eigenvalues:
@@ -517,8 +519,8 @@ MP edge.
 
 </div>
 
-\subsection{6. Connecting the Proxy Back to Theorem
-2}<!-- label: connecting-the-proxy-back-to-theorem-2 -->
+### 6. Connecting the Proxy Back to Theorem
+2<!-- label: connecting-the-proxy-back-to-theorem-2 -->
 
 #### 6.1 The Bridge Inequality<!-- label: the-bridge-inequality -->
 
@@ -561,8 +563,8 @@ Requires **no knowledge** of the true state partition S - Provides
 the same qualitative message as Theorem 2: small hat(delta) implies SCX
 cannot improve over baseline
 
-\subsubsection{6.3 Finite-Sample
-Correction}<!-- label: finite-sample-correction -->
+#### 6.3 Finite-Sample
+Correction<!-- label: finite-sample-correction -->
 
 For finite N, d, the bound becomes:
 
@@ -572,8 +574,8 @@ where Delta\_TW(alpha) = sigma\_\{N,d\} * q\_alpha is the Tracy-Widom
 critical value at level alpha. This additional term accounts for the
 uncertainty in lambda\_1 due to finite-sample fluctuations.
 
-\subsubsection{6.4 The Key Difference from Theorem
-2}<!-- label: the-key-difference-from-theorem-2 -->
+#### 6.4 The Key Difference from Theorem
+2<!-- label: the-key-difference-from-theorem-2 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1194}}
@@ -624,8 +626,8 @@ diagnostic that the original Theorem 2 cannot provide.
 
 ### 7. Practical Algorithm<!-- label: practical-algorithm -->
 
-\subsubsection{7.1 Algorithm: BBP Spectral Proxy for
-SCX}<!-- label: algorithm-bbp-spectral-proxy-for-scx -->
+#### 7.1 Algorithm: BBP Spectral Proxy for
+SCX<!-- label: algorithm-bbp-spectral-proxy-for-scx -->
 
 \begin{verbatim}
 Input:
@@ -736,11 +738,11 @@ data are missing, impute or use a robust eigendecomposition method.
 
 </div>
 
-\subsection{8. Calibration Constant C: Derivation and
-Estimation}<!-- label: calibration-constant-c-derivation-and-estimation -->
+### 8. Calibration Constant C: Derivation and
+Estimation<!-- label: calibration-constant-c-derivation-and-estimation -->
 
-\subsubsection{8.1 Theoretical Calibration Under the Gaussian
-Mixture}<!-- label: theoretical-calibration-under-the-gaussian-mixture -->
+#### 8.1 Theoretical Calibration Under the Gaussian
+Mixture<!-- label: theoretical-calibration-under-the-gaussian-mixture -->
 
 The calibration constant C in hat(delta) = (lambda\_1 - MP\_+) / C maps
 the spectral excess to mutual information units. Under the isotropic
@@ -769,8 +771,8 @@ Therefore, the calibration constant is:
 This depends on theta, creating a circular dependence. In practice, we
 estimate C by plugging in a rough estimate of theta from lambda\_1.
 
-\subsubsection{8.2 Self-Consistent Estimation of
-C}<!-- label: self-consistent-estimation-of-c -->
+#### 8.2 Self-Consistent Estimation of
+C<!-- label: self-consistent-estimation-of-c -->
 
 Given that C depends on the unknown theta, we use the sample estimate:
 
@@ -778,8 +780,8 @@ Given that C depends on the unknown theta, we use the sample estimate:
 2. 
 3. 
 
-\subsubsection{8.3 Practical Default: C =
-2}<!-- label: practical-default-c-2 -->
+#### 8.3 Practical Default: C =
+2<!-- label: practical-default-c-2 -->
 
 For most practical purposes, C = 2 gives a reasonable calibration: -
 From the binary Gaussian mixture: delta ≈ theta/2 and Delta\_lambda /
@@ -820,11 +822,11 @@ with hat(delta)\_single is tighter than with hat(delta)\_multi).
 
 </div>
 
-\subsection{9. Validation Predictions for Three SCX
-Datasets}<!-- label: validation-predictions-for-three-scx-datasets -->
+### 9. Validation Predictions for Three SCX
+Datasets<!-- label: validation-predictions-for-three-scx-datasets -->
 
-\subsubsection{9.1 AlN v3 (ACE
-Descriptors)}<!-- label: aln-v3-ace-descriptors -->
+#### 9.1 AlN v3 (ACE
+Descriptors)<!-- label: aln-v3-ace-descriptors -->
 
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
@@ -864,8 +866,8 @@ but the signal is strong enough to supercritical.
 \textless\textless{} 0.001 - hat(delta) significantly positive -
 Verdict: ``Features strong'' --- consistent with SCX working
 
-\subsubsection{9.2 CIFAR-10 (Deep
-Embeddings)}<!-- label: cifar-10-deep-embeddings -->
+#### 9.2 CIFAR-10 (Deep
+Embeddings)<!-- label: cifar-10-deep-embeddings -->
 
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
@@ -904,8 +906,8 @@ detectable spike.
 \textless\textless{} 0.001 - hat(delta) \textgreater\textgreater{} 0 -
 Verdict: ``Features strong'' --- SCX should work
 
-\subsubsection{9.3 DermaMNIST (SimpleCNN
-Features)}<!-- label: dermamnist-simplecnn-features -->
+#### 9.3 DermaMNIST (SimpleCNN
+Features)<!-- label: dermamnist-simplecnn-features -->
 
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
@@ -959,8 +961,8 @@ Theorem 2 predicts small or zero improvement. If hat(delta) is large,
 SCX may improve (but is not guaranteed to --- redundancy and expert
 quality also matter).
 
-\subsubsection{9.5 Expected Cross-Dataset
-Behavior}<!-- label: expected-cross-dataset-behavior -->
+#### 9.5 Expected Cross-Dataset
+Behavior<!-- label: expected-cross-dataset-behavior -->
 
 \begin{verbatim}
 Dataset       | gamma  | lambda_1 | lambda_1/MP_+ | delta_hat | SCX delta_F1
@@ -1024,8 +1026,8 @@ equivalent to continuous relaxation of k-means. - **Used for:**
 Justifying why the eigendecomposition of K = Phi Phi\^{}T is relevant to
 SCX's state discovery.
 
-\subsubsection{10.2 SCX-Relevant Spectral Clustering
-Literature}<!-- label: scx-relevant-spectral-clustering-literature -->
+#### 10.2 SCX-Relevant Spectral Clustering
+Literature<!-- label: scx-relevant-spectral-clustering-literature -->
 
 **Lei \& Zhu (2018)** - Lei, J., \& Zhu, L. (2018). A general
 spectral method for high-dimensional k-means clustering. *Annals of
@@ -1049,8 +1051,8 @@ graph partitioning and k-means. - **Used for:** The conceptual link
 between SCX's k-means state discovery and the eigendecomposition of the
 Gram matrix.
 
-\subsubsection{10.3 Information-Theoretic-Spectral Bridge
-Literature}<!-- label: information-theoretic-spectral-bridge-literature -->
+#### 10.3 Information-Theoretic-Spectral Bridge
+Literature<!-- label: information-theoretic-spectral-bridge-literature -->
 
 **Bickel \& Sarkar (2016)** - Bickel, P. J., \& Sarkar, P. (2016).
 Hypothesis testing for automated community detection in networks.
@@ -1087,8 +1089,8 @@ of lambda\_1 in spiked models, giving optimal rates. -
 lambda\_1 can be estimated, which informs the calibration of C and the
 TW test.
 
-\subsubsection{10.4 What Is Already Known vs.~What Is New
-Here}<!-- label: what-is-already-known-vs.-what-is-new-here -->
+#### 10.4 What Is Already Known vs.~What Is New
+Here<!-- label: what-is-already-known-vs.-what-is-new-here -->
 
 **Already known:** 1. The BBP phase transition for spiked
 covariance models (Baik et al., 2005). 2. The connection between k-means
@@ -1115,8 +1117,8 @@ spectral estimate.
 
 </div>
 
-\subsection{11. Honest Novelty
-Assessment}<!-- label: honest-novelty-assessment -->
+### 11. Honest Novelty
+Assessment<!-- label: honest-novelty-assessment -->
 
 #### 11.1 What Is Genuinely New<!-- label: what-is-genuinely-new -->
 
@@ -1225,8 +1227,8 @@ result.
 
 </div>
 
-\subsection{12. Practical Value: Does This Actually Help SCX
-Users?}<!-- label: practical-value-does-this-actually-help-scx-users -->
+### 12. Practical Value: Does This Actually Help SCX
+Users?<!-- label: practical-value-does-this-actually-help-scx-users -->
 
 #### 12.1 Yes, for Three Reasons<!-- label: yes-for-three-reasons -->
 
@@ -1275,8 +1277,8 @@ learn from
 The spectral proxy only diagnoses one necessary condition (feature
 strength). It does not provide a complete SCX feasibility diagnostic.
 
-\subsubsection{12.3 Decision Flow for
-Practitioners}<!-- label: decision-flow-for-practitioners -->
+#### 12.3 Decision Flow for
+Practitioners<!-- label: decision-flow-for-practitioners -->
 
 \begin{verbatim}
 Start: New dataset with features phi, experts f_1..f_M, labels Y
@@ -1302,8 +1304,8 @@ Start: New dataset with features phi, experts f_1..f_M, labels Y
   |             -> Or: use loss baseline directly (no SCX needed)
 \end{verbatim}
 
-\subsubsection{12.4 Comparison to Existing Diagnostics in Theorem
-2}<!-- label: comparison-to-existing-diagnostics-in-theorem-2 -->
+#### 12.4 Comparison to Existing Diagnostics in Theorem
+2<!-- label: comparison-to-existing-diagnostics-in-theorem-2 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2857}}
@@ -1366,8 +1368,8 @@ The spectral proxy relies on three main assumptions:
 eigenvalues, which is MP-distribution-dependent). Validate with
 synthetic data where the true spike structure is known.
 
-\subsubsection{13.2 The ``Non-Isotropic''
-Problem}<!-- label: the-non-isotropic-problem -->
+#### 13.2 The ``Non-Isotropic''
+Problem<!-- label: the-non-isotropic-problem -->
 
 When within-state covariance is not isotropic, the MP law no longer
 describes the null eigenvalue distribution. The eigenvalues are now a
@@ -1388,8 +1390,8 @@ under the null. Compare the observed lambda\_1 to this empirical null. -
 mean and variance) has known phase transitions (Berthet \& Rigollet,
 2013), but this is an active research area.
 
-\subsubsection{13.3 The ``Weak Signal but Detectable''
-Regime}<!-- label: the-weak-signal-but-detectable-regime -->
+#### 13.3 The ``Weak Signal but Detectable''
+Regime<!-- label: the-weak-signal-but-detectable-regime -->
 
 For K states with small but balanced separation in many directions, the
 total mutual information I(phi; S) may be non-negligible even though no
@@ -1428,8 +1430,8 @@ Gram matrix is rank-deficient and the spectral proxy must use the dual
 formulation. The MP law still applies (with gamma = d/N, potentially
 \textgreater{} 1), but the bulk edge formula changes.
 
-\subsubsection{13.5 The ``Signal in the Bulk''
-Problem}<!-- label: the-signal-in-the-bulk-problem -->
+#### 13.5 The ``Signal in the Bulk''
+Problem<!-- label: the-signal-in-the-bulk-problem -->
 
 The spectral proxy assumes that state-relevant information is captured
 by the leading eigenvalues. However, in some settings, the structure
@@ -1452,8 +1454,8 @@ detection conditioned on state discovery).
 
 ### 14. References<!-- label: references -->
 
-\subsubsection{Core RMT and Spiked
-Covariance}<!-- label: core-rmt-and-spiked-covariance -->
+#### Core RMT and Spiked
+Covariance<!-- label: core-rmt-and-spiked-covariance -->
 
 1. 
 2. 
@@ -1462,15 +1464,15 @@ Covariance}<!-- label: core-rmt-and-spiked-covariance -->
 5. 
 6. 
 
-\subsubsection{Spectral Clustering and
-K-means}<!-- label: spectral-clustering-and-k-means -->
+#### Spectral Clustering and
+K-means<!-- label: spectral-clustering-and-k-means -->
 
 1. 
 2. 
 3. 
 
-\subsubsection{Phase Transitions in Detection and
-Clustering}<!-- label: phase-transitions-in-detection-and-clustering -->
+#### Phase Transitions in Detection and
+Clustering<!-- label: phase-transitions-in-detection-and-clustering -->
 
 1. 
 2. 
@@ -1487,9 +1489,9 @@ Clustering}<!-- label: phase-transitions-in-detection-and-clustering -->
 1. 
 2. 
 
-\subsubsection{Estimation of Mutual Information (Context for Why We Need
+#### Estimation of Mutual Information (Context for Why We Need
 a
-Proxy)}<!-- label: estimation-of-mutual-information-context-for-why-we-need-a-proxy -->
+Proxy)<!-- label: estimation-of-mutual-information-context-for-why-we-need-a-proxy -->
 
 1. 
 2. 
@@ -1500,11 +1502,11 @@ Proxy)}<!-- label: estimation-of-mutual-information-context-for-why-we-need-a-pr
 
 </div>
 
-\subsection{Appendix A: Relationship to the Broader SCX
-Theory}<!-- label: appendix-a-relationship-to-the-broader-scx-theory -->
+### Appendix A: Relationship to the Broader SCX
+Theory<!-- label: appendix-a-relationship-to-the-broader-scx-theory -->
 
-\subsubsection{A.1 Where the Spectral Proxy Sits in the
-Architecture}<!-- label: a.1-where-the-spectral-proxy-sits-in-the-architecture -->
+#### A.1 Where the Spectral Proxy Sits in the
+Architecture<!-- label: a.1-where-the-spectral-proxy-sits-in-the-architecture -->
 
 \begin{verbatim}
 Theorem 2 (Mutual Information Bound)
@@ -1527,8 +1529,8 @@ Operational Diagnostic
     |-- "Borderline" -> consider alternatives (fewer states, stronger features)
 \end{verbatim}
 
-\subsubsection{A.2 Interaction with Other SCX
-Results}<!-- label: a.2-interaction-with-other-scx-results -->
+#### A.2 Interaction with Other SCX
+Results<!-- label: a.2-interaction-with-other-scx-results -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.1905}}
@@ -1564,8 +1566,8 @@ proxy
 
 \end{longtable}
 
-\subsubsection{A.3 Relationship to the Minimax and Asymptotic
-Explorations}<!-- label: a.3-relationship-to-the-minimax-and-asymptotic-explorations -->
+#### A.3 Relationship to the Minimax and Asymptotic
+Explorations<!-- label: a.3-relationship-to-the-minimax-and-asymptotic-explorations -->
 
 The spectral proxy is **orthogonal** to the minimax lower bound
 effort (explored in `minimax\_optimality.md`): - The minimax

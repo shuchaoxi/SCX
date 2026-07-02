@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 The SCX framework has been built entirely on classical information theory:

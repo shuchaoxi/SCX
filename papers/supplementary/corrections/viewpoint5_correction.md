@@ -1,3 +1,7 @@
+# 原始声明 (被审查)
+
+**Author:** SCX
+
 ## 原始声明 (被审查) 
  Original Claim (Under Review)
 

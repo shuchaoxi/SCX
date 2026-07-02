@@ -1,3 +1,7 @@
+# Methods
+
+**Author:** SCX
+
 ## Methods
 
 ### SCX Algorithm

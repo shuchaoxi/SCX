@@ -1,3 +1,7 @@
+# Introduction: Inequality as a Phase Ordering Problem
+
+**Author:** SCX
+
 *Abstract:*
 
 We formulate the dynamics of inequality and consensus in the SCX (Situs Consensus

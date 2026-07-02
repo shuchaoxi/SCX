@@ -1,5 +1,7 @@
-\section{审计之剑声明 / The Audit Sword
-Declaration}<!-- label: ux5ba1ux8ba1ux4e4bux5251ux58f0ux660e-the-audit-sword-declaration -->
+# 审计之剑声明 / The Audit Sword
+Declaration
+
+**Author:** SCX
 
 > 面壁者不发禁令。面壁者留剑。
 
@@ -53,8 +55,8 @@ discriminate.
 
 </div>
 
-\subsection{数学依据 / Mathematical
-Basis}<!-- label: ux6570ux5b66ux4f9dux636e-mathematical-basis -->
+### 数学依据 / Mathematical
+Basis<!-- label: ux6570ux5b66ux4f9dux636e-mathematical-basis -->
 
 Yajie's Theorem 1 guarantees that multi-expert consensus detects label
 noise with exponentially decaying false-positive probability. Any party

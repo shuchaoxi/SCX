@@ -1,11 +1,6 @@
-<div align="center">
+# The Central Thesis: $\sum g = 0$ as the Einstein Field Equation of Social Systems
 
-[Diagram omitted — see original .tex]
-
-{ *All things are bundles. All phenomena return to zero.*}
-
-</div>
-
+**Author:** SCX
 
 > This is the capstone of the SCX theoretical edifice — the proof that
 > *every* domain (from AI routing to cosmic sociology, from legal justice

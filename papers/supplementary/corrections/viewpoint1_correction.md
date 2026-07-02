@@ -1,3 +1,7 @@
+# Original Claim (Incorrect) / 原始观点 (有误)
+
+**Author:** SCX
+
 ## Original Claim (Incorrect) / 原始观点 (有误)
 
 > **Original Viewpoint 1:**

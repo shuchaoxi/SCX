@@ -1,5 +1,7 @@
-\section{SCX
-净室代码检查报告}<!-- label: scx-ux51c0ux5ba4ux4ee3ux7801ux68c0ux67e5ux62a5ux544a -->
+# SCX
+净室代码检查报告
+
+**Author:** SCX
 
 > 检查日期：2026-06-26 检查工具：`src/scx/`
 > 及周边目录的自动模式扫描 检查目标：确认 SCX 代码不含学校/课题组特定引用
@@ -85,8 +87,8 @@
 
 </div>
 
-\subsection{核心 Python
-包：确认洁净}<!-- label: ux6838ux5fc3-python-ux5305ux786eux8ba4ux6d01ux51c0 -->
+### 核心 Python
+包：确认洁净<!-- label: ux6838ux5fc3-python-ux5305ux786eux8ba4ux6d01ux51c0 -->
 
 `src/scx/` 下的所有 `.py`
 文件**未发现**任何以下模式： -

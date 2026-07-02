@@ -1,5 +1,7 @@
-\section{Verification Report: Exact Constant Minimax Optimality Proof
-Chain}<!-- label: verification-report-exact-constant-minimax-optimality-proof-chain -->
+# Verification Report: Exact Constant Minimax Optimality Proof
+Chain
+
+**Author:** SCX
 
 > **Reviewer**: Adversarial mathematical review for Annals of
 > Statistics. **Files reviewed**: exact\_constant\_minimax.md,
@@ -52,11 +54,11 @@ Below follows a detailed enumeration of every flaw.
 
 </div>
 
-\subsection{1. Check 1: Definition Alignment -- FAIL
-(Critical)}<!-- label: check-1-definition-alignment-fail-critical -->
+### 1. Check 1: Definition Alignment -- FAIL
+(Critical)<!-- label: check-1-definition-alignment-fail-critical -->
 
-\subsubsection{1.1 C\_min is defined inconsistently in THREE
-places}<!-- label: c_min-is-defined-inconsistently-in-three-places -->
+#### 1.1 C\_min is defined inconsistently in THREE
+places<!-- label: c_min-is-defined-inconsistently-in-three-places -->
 
 Three distinct formulas for C\_min appear across the manuscripts, and
 **none of them match**:
@@ -108,8 +110,8 @@ C\_min. 2. Delete or replace all other C\_min formulas in the
 architecture document. 3. Theorem 4'(a) must be rewritten with the
 correct constant.
 
-\subsubsection{1.2 Lemma D Theorem D.7 contradicts Lemma
-E}<!-- label: lemma-d-theorem-d.7-contradicts-lemma-e -->
+#### 1.2 Lemma D Theorem D.7 contradicts Lemma
+E<!-- label: lemma-d-theorem-d.7-contradicts-lemma-e -->
 
 **Theorem D.7** states:
 
@@ -156,8 +158,8 @@ constant equals Lemma E's constant to machine precision).
 ### 2. Check 2: kappa \textgreater= 2Delta\^{2 Issue -- FAIL
 (High)}<!-- label: check-2-kappa-2delta2-issue-fail-high -->
 
-\subsubsection{2.1 Claimed ordering is
-reversed}<!-- label: claimed-ordering-is-reversed -->
+#### 2.1 Claimed ordering is
+reversed<!-- label: claimed-ordering-is-reversed -->
 
 **Architecture document Section 2.3** claims:
 
@@ -187,8 +189,8 @@ kappa is typically smaller than 2(p1-p0)\^{}2, especially for
 well-separated distributions. This means the CHERNOFF LOWER BOUND on the
 optimal error rate is smaller (weaker) than the Hoeffding-based bound.''
 
-\subsubsection{2.2 No implicit reliance on kappa \textgreater=
-2Delta\^{}2}<!-- label: no-implicit-reliance-on-kappa-2delta2 -->
+#### 2.2 No implicit reliance on kappa \textgreater=
+2Delta\^{2}<!-- label: no-implicit-reliance-on-kappa-2delta2 -->
 
 After careful audit: **no lemma implicitly relies on kappa
 \textgreater= 2Delta\^{}2**. Lemma C explicitly corrects this
@@ -196,8 +198,8 @@ misconception (Proposition C.4). The old Theorem 4 v2 uses 2Delta\^{}2
 as its rate, which is a coarser bound superseded by Theorem 4'. The
 confusion is limited to the architecture document's Section 2.3 prose.
 
-\subsubsection{2.3 Hidden confusion about
-rates}<!-- label: hidden-confusion-about-rates -->
+#### 2.3 Hidden confusion about
+rates<!-- label: hidden-confusion-about-rates -->
 
 The architecture document's Section 0 claims:
 
@@ -226,11 +228,11 @@ bound and the new kappa bound.
 
 </div>
 
-\subsection{3. Check 3: O(1/M) Term Consistency --
-FAIL}<!-- label: check-3-o1m-term-consistency-fail -->
+### 3. Check 3: O(1/M) Term Consistency --
+FAIL<!-- label: check-3-o1m-term-consistency-fail -->
 
-\subsubsection{3.1 Lemma D does not propagate the O(1/M) shift
-correctly}<!-- label: lemma-d-does-not-propagate-the-o1m-shift-correctly -->
+#### 3.1 Lemma D does not propagate the O(1/M) shift
+correctly<!-- label: lemma-d-does-not-propagate-the-o1m-shift-correctly -->
 
 Lemma D.2 correctly shows:
 
@@ -260,8 +262,8 @@ when multiplied by M, which is what appears in the exponent. The text
 should say: ``Thus M*KL(theta\_opt|| p0) = M*kappa +
 O(1).''
 
-\subsubsection{3.2 The constant factor from the O(1/M) shift is
-lost}<!-- label: the-constant-factor-from-the-o1m-shift-is-lost -->
+#### 3.2 The constant factor from the O(1/M) shift is
+lost<!-- label: the-constant-factor-from-the-o1m-shift-is-lost -->
 
 Section D.5 then plugs theta\_opt into the SCX expression and obtains
 the SAME constant as at theta* (Theorem D.7). This is **wrong**
@@ -273,8 +275,8 @@ constant equals Lemma E's lower bound (4.591 for Case 1), while Lemma
 D's Theorem D.7 gives 7.819 for Case 1. The adaptive threshold does
 achieve optimality, but Lemma D's proof does not correctly derive this.
 
-\subsubsection{3.3 Self-contradictory derivation in Lemma D Section
-D.4}<!-- label: self-contradictory-derivation-in-lemma-d-section-d.4 -->
+#### 3.3 Self-contradictory derivation in Lemma D Section
+D.4<!-- label: self-contradictory-derivation-in-lemma-d-section-d.4 -->
 
 Section D.4 contains a confused derivation with a ``Wait --- this gives
 a constant 1/2, not 1'' self-correction moment. The derivation wanders
@@ -294,11 +296,11 @@ Theorem D.7 must be corrected to match Lemma E's constant.
 
 </div>
 
-\subsection{4. Check 4: Hidden Assumptions -- PASS (with
-caveats)}<!-- label: check-4-hidden-assumptions-pass-with-caveats -->
+### 4. Check 4: Hidden Assumptions -- PASS (with
+caveats)<!-- label: check-4-hidden-assumptions-pass-with-caveats -->
 
-\subsubsection{4.1 eta bounded away from 0 or
-1}<!-- label: eta-bounded-away-from-0-or-1 -->
+#### 4.1 eta bounded away from 0 or
+1<!-- label: eta-bounded-away-from-0-or-1 -->
 
 - 
 - 
@@ -310,23 +312,23 @@ caveats)}<!-- label: check-4-hidden-assumptions-pass-with-caveats -->
 - 
 - 
 
-\subsubsection{4.3 Reduction to hypothesis testing in Lemma
-E}<!-- label: reduction-to-hypothesis-testing-in-lemma-e -->
+#### 4.3 Reduction to hypothesis testing in Lemma
+E<!-- label: reduction-to-hypothesis-testing-in-lemma-e -->
 
 - 
 - 
 - 
 - 
 
-\subsubsection{4.4 i.i.d. assumption on expert
-errors}<!-- label: i.i.d.-assumption-on-expert-errors -->
+#### 4.4 i.i.d. assumption on expert
+errors<!-- label: i.i.d.-assumption-on-expert-errors -->
 
 - 
 - 
 - 
 
-\subsubsection{4.5 Lemma F's linearity of
-F1}<!-- label: lemma-fs-linearity-of-f1 -->
+#### 4.5 Lemma F's linearity of
+F1<!-- label: lemma-fs-linearity-of-f1 -->
 
 - 
 - 
@@ -339,11 +341,11 @@ F1}<!-- label: lemma-fs-linearity-of-f1 -->
 
 </div>
 
-\subsection{5. Check 5: Numerical Consistency -- FAIL
-(Critical)}<!-- label: check-5-numerical-consistency-fail-critical -->
+### 5. Check 5: Numerical Consistency -- FAIL
+(Critical)<!-- label: check-5-numerical-consistency-fail-critical -->
 
-\subsubsection{5.1 C\_min/C\_SCX
-verification}<!-- label: c_minc_scx-verification -->
+#### 5.1 C\_min/C\_SCX
+verification<!-- label: c_minc_scx-verification -->
 
 For all three parameter sets, the following was verified
 programmatically:
@@ -390,16 +392,16 @@ SCX at theta* is NOT constant-optimal. The adaptive threshold test
 (Lemma D with theta\_opt) does achieve C\_min (verified numerically to
 machine precision).
 
-\subsubsection{5.2 The architecture document's C\_min formulas are
-wrong}<!-- label: the-architecture-documents-c_min-formulas-are-wrong -->
+#### 5.2 The architecture document's C\_min formulas are
+wrong<!-- label: the-architecture-documents-c_min-formulas-are-wrong -->
 
 All three C\_min formulas from the architecture document (Section 4.3
 and Theorem 4') give values that are **15-18x smaller** than Lemma
 E's correct C\_min. This is because they use different functional forms
 that do not match the Bayes test derivation.
 
-\subsubsection{5.3 F1 bounds are in
-{[}0,1{]}}<!-- label: f1-bounds-are-in-01 -->
+#### 5.3 F1 bounds are in
+{[0,1{]}}<!-- label: f1-bounds-are-in-01 -->
 
 For all numerical tests, the computed asymptotic constants produce 1-F1
 in (0,1) for sufficiently large M. PASS on this sub-check.
@@ -410,8 +412,8 @@ in (0,1) for sufficiently large M. PASS on this sub-check.
 
 </div>
 
-\subsection{6. Check 6: Edge Cases --
-PASS}<!-- label: check-6-edge-cases-pass -->
+### 6. Check 6: Edge Cases --
+PASS<!-- label: check-6-edge-cases-pass -->
 
 #### 6.1 eta -\textgreater{ 0}<!-- label: eta---0 -->
 
@@ -447,8 +449,8 @@ PASS}<!-- label: check-6-edge-cases-pass -->
 
 ### 7. Additional Issues Found<!-- label: additional-issues-found -->
 
-\subsubsection{7.1 Lemma D Section D.4 is mathematically
-incoherent}<!-- label: lemma-d-section-d.4-is-mathematically-incoherent -->
+#### 7.1 Lemma D Section D.4 is mathematically
+incoherent<!-- label: lemma-d-section-d.4-is-mathematically-incoherent -->
 
 The derivation in Section D.4 contains: - A ``Wait --- this gives a
 constant 1/2, not 1'' self-contradiction - An unresolved factor of 2
@@ -457,8 +459,8 @@ tends to 1 - Multiple incomplete re-derivations
 
 This section should be entirely rewritten.
 
-\subsubsection{7.2 Lemma A's lattice correction
-factor}<!-- label: lemma-as-lattice-correction-factor -->
+#### 7.2 Lemma A's lattice correction
+factor<!-- label: lemma-as-lattice-correction-factor -->
 
 Lemma A (Section A.4.2) derives the lattice correction factor
 lambda*/(1-e\^{}\{-lambda}\*) but then the summary table (Section
@@ -467,8 +469,8 @@ is acceptable if the correction is tracked through the constant, but the
 parent document does not discuss whether this correction appears in the
 F1 constant.
 
-\subsubsection{7.3 Theorem 4'(a)
-normalization}<!-- label: theorem-4a-normalization -->
+#### 7.3 Theorem 4'(a)
+normalization<!-- label: theorem-4a-normalization -->
 
 Theorem 4'(a) writes:
 
@@ -492,8 +494,8 @@ normalization.
 
 </div>
 
-\subsection{8. Summary of Required
-Fixes}<!-- label: summary-of-required-fixes -->
+### 8. Summary of Required
+Fixes<!-- label: summary-of-required-fixes -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3125}}

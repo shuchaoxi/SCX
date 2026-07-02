@@ -1,5 +1,7 @@
-\section{Connections Between SCX Self-Evolution and Known
-Theories}<!-- label: connections-between-scx-self-evolution-and-known-theories -->
+# Connections Between SCX Self-Evolution and Known
+Theories
+
+**Author:** SCX
 
 > **Part of the SCX Self-Evolution Theory Series** **Status**:
 > Formal comparison |{} **Audit**: Pre-review
@@ -192,8 +194,8 @@ current state
 
 \end{longtable}
 
-\subsubsection{2.3 Formal Comparison: Acquisition
-Functions}<!-- label: formal-comparison-acquisition-functions -->
+#### 2.3 Formal Comparison: Acquisition
+Functions<!-- label: formal-comparison-acquisition-functions -->
 
 **BO's Expected Improvement (EI)**:
 \[\alpha_{EI}(x) = \mathbb{E}\left[\max(0, f(x) - f_{best}) \mid \mathcal{D}_{1:t}\right]\]
@@ -313,8 +315,8 @@ capacity
 
 \end{longtable}
 
-\subsubsection{3.3 Comparison of Query
-Strategies}<!-- label: comparison-of-query-strategies -->
+#### 3.3 Comparison of Query
+Strategies<!-- label: comparison-of-query-strategies -->
 
 **Standard AL strategies**:
 
@@ -333,8 +335,8 @@ The utility is computed from state-level statistics:
 
 \[U(validate, s) = \underbrace{\hat{R}(s)}_{expert disagreement} \cdot \underbrace{(1 - SCX(s))}_{reliability gap} \cdot \underbrace{\rho(s)}_{state size}\]
 
-\subsubsection{3.4 Comparison of Query
-Strategies}<!-- label: comparison-of-query-strategies-1 -->
+#### 3.4 Comparison of Query
+Strategies<!-- label: comparison-of-query-strategies-1 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1852}}
@@ -377,8 +379,8 @@ SCX-Compress & Both aim for coverage
 
 \end{longtable}
 
-\subsubsection{3.5 SCX's State-Certified Active
-Learning}<!-- label: scxs-state-certified-active-learning -->
+#### 3.5 SCX's State-Certified Active
+Learning<!-- label: scxs-state-certified-active-learning -->
 
 The key innovation of SCX's approach is the **state-level
 certification**. Unlike point-wise active learning, which treats each
@@ -388,8 +390,8 @@ sample independently:
 2. 
 3. 
 
-\subsubsection{3.6 Sample Complexity
-Comparison}<!-- label: sample-complexity-comparison -->
+#### 3.6 Sample Complexity
+Comparison<!-- label: sample-complexity-comparison -->
 
 **Standard AL sample complexity** (Balcan et al., 2009): Under the
 disagreement coefficient \(\theta\), active learning achieves label
@@ -513,8 +515,8 @@ converges to the truth with probability 1 for any computable environment
 (Hutter, 2005). SCX converges to a fixed point (Theorem SE-2) but may
 not converge to the truth (Theorem 3).
 
-\subsubsection{4.4 Key Limitations of the
-Analogy}<!-- label: key-limitations-of-the-analogy -->
+#### 4.4 Key Limitations of the
+Analogy<!-- label: key-limitations-of-the-analogy -->
 
 1. 
 2. 
@@ -540,8 +542,8 @@ from overfitting to noise in the expert consensus signals.
 
 </div>
 
-\subsection{5. Comprehensive Comparison
-Table}<!-- label: comprehensive-comparison-table -->
+### 5. Comprehensive Comparison
+Table<!-- label: comprehensive-comparison-table -->
 
 #### 5.1 Unified Comparison<!-- label: unified-comparison -->
 
@@ -612,8 +614,8 @@ Unknown physical law (uncomputable in general)
 
 \end{longtable}
 
-\subsubsection{5.2 Detailed Metric
-Comparison}<!-- label: detailed-metric-comparison -->
+#### 5.2 Detailed Metric
+Comparison<!-- label: detailed-metric-comparison -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2051}}
@@ -679,8 +681,8 @@ evaluations (\(O(n)\)) & Labeled pool & All past data & Memory bank
 
 </div>
 
-\subsection{6. Synthesis: What Is and Is Not
-New}<!-- label: synthesis-what-is-and-is-not-new -->
+### 6. Synthesis: What Is and Is Not
+New<!-- label: synthesis-what-is-and-is-not-new -->
 
 #### 6.1 Aspects That Are Novel<!-- label: aspects-that-are-novel -->
 
@@ -689,8 +691,8 @@ New}<!-- label: synthesis-what-is-and-is-not-new -->
 3. 
 4. 
 
-\subsubsection{6.2 Aspects That Are Not
-Novel}<!-- label: aspects-that-are-not-novel -->
+#### 6.2 Aspects That Are Not
+Novel<!-- label: aspects-that-are-not-novel -->
 
 1. 
 2. 

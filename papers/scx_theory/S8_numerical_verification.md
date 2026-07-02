@@ -1,3 +1,7 @@
+# Numerical Verification of Theoretical Constants
+
+**Author:** SCX
+
 ## Numerical Verification of Theoretical Constants
 
 This section provides numerical verification of the exact constant minimax optimality result (Theorem~4' in Supplementary Information S4). All computations are performed using the Python script `numerical\_verify.py` with standard double-precision arithmetic.

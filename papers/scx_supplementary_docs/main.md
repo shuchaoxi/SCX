@@ -1,5 +1,7 @@
-\section{SCX
-附加材料清单}<!-- label: scx-ux9644ux52a0ux6750ux6599ux6e05ux5355 -->
+# SCX
+附加材料清单
+
+**Author:** SCX
 
 > 配合 paper/arxiv/README.md 论文索引使用
 

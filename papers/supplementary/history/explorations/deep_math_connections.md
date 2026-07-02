@@ -1,5 +1,7 @@
-\section{Deep Mathematical Connections of the SCX
-Theory}<!-- label: deep-mathematical-connections-of-the-scx-theory -->
+# Deep Mathematical Connections of the SCX
+Theory
+
+**Author:** SCX
 
 > **Date**: 2026-06-28 |{} **Type**: Theoretical analysis
 > **Status**: Contains both proven connections and speculative
@@ -31,8 +33,8 @@ Theory}<!-- label: deep-mathematical-connections-of-the-scx-theory -->
 
 </div>
 
-\subsection{1. What Mathematical Domain Does SCX Belong
-To?}<!-- label: what-mathematical-domain-does-scx-belong-to -->
+### 1. What Mathematical Domain Does SCX Belong
+To?<!-- label: what-mathematical-domain-does-scx-belong-to -->
 
 #### 1.1 The Surface Answer<!-- label: the-surface-answer -->
 
@@ -135,8 +137,8 @@ able to claim it entirely. This is precisely what makes it novel.
 
 </div>
 
-\subsection{2. What Is the Core Mathematical
-Object?}<!-- label: what-is-the-core-mathematical-object -->
+### 2. What Is the Core Mathematical
+Object?<!-- label: what-is-the-core-mathematical-object -->
 
 #### 2.1 The Surface Answer<!-- label: the-surface-answer-1 -->
 
@@ -176,8 +178,8 @@ label distribution, where:
   difficulty
 \end{itemize}
 
-\subsubsection{2.3 Is It a Special Case of a Known
-Structure?}<!-- label: is-it-a-special-case-of-a-known-structure -->
+#### 2.3 Is It a Special Case of a Known
+Structure?<!-- label: is-it-a-special-case-of-a-known-structure -->
 
 **Yes, partially:**
 
@@ -185,9 +187,9 @@ Structure?}<!-- label: is-it-a-special-case-of-a-known-structure -->
 2. 
 3. 
 
-\subsubsection{2.4 Can the Entire Theory Be Expressed as a Consequence
+#### 2.4 Can the Entire Theory Be Expressed as a Consequence
 of a Deeper
-Theorem?}<!-- label: can-the-entire-theory-be-expressed-as-a-consequence-of-a-deeper-theorem -->
+Theorem?<!-- label: can-the-entire-theory-be-expressed-as-a-consequence-of-a-deeper-theorem -->
 
 **Not a single one, but a chain:**
 
@@ -218,11 +220,11 @@ equivalence).**
 
 </div>
 
-\subsection{3. Linear Algebra
-Connections}<!-- label: linear-algebra-connections -->
+### 3. Linear Algebra
+Connections<!-- label: linear-algebra-connections -->
 
-\subsubsection{3.1 The Consistency Score as a Linear
-Functional}<!-- label: the-consistency-score-as-a-linear-functional -->
+#### 3.1 The Consistency Score as a Linear
+Functional<!-- label: the-consistency-score-as-a-linear-functional -->
 
 Let \(\mathbf{e}(x) = (e_1(x), ..., e_M(x))^T \in \{0,1\}^M\) be the
 vector of expert error indicators for sample x. Then:
@@ -254,8 +256,8 @@ The first term \(\|\mathbf{e}\|^2\) counts how many experts erred; the
 second \(M\bar{e}^2\) is the ``explained'' variation captured by the
 consensus.
 
-\subsubsection{3.2 k-means State Discovery as Matrix
-Factorization}<!-- label: k-means-state-discovery-as-matrix-factorization -->
+#### 3.2 k-means State Discovery as Matrix
+Factorization<!-- label: k-means-state-discovery-as-matrix-factorization -->
 
 The k-means objective minimized during state discovery is:
 
@@ -289,8 +291,8 @@ result can thus be interpreted as: under strong separation, spectral
 clustering on the feature Gram matrix recovers the true state partition
 with exponentially decaying error.
 
-\subsubsection{3.3 Gauge Fixing in EGP (Paper IV) as Projection onto a
-Quotient}<!-- label: gauge-fixing-in-egp-paper-iv-as-projection-onto-a-quotient -->
+#### 3.3 Gauge Fixing in EGP (Paper IV) as Projection onto a
+Quotient<!-- label: gauge-fixing-in-egp-paper-iv-as-projection-onto-a-quotient -->
 
 In the Expert Governance Protocol (Paper IV), the expert-level
 corrections \((c_0, c_Z)\) transform under:
@@ -329,8 +331,8 @@ organized hierarchically (tree structure), the gauge group could be
 parent-child edges. The gauge condition would correspond to fixing a
 section of this bundle.
 
-\subsubsection{3.4 F1 Bound as Matrix
-Inequality}<!-- label: f1-bound-as-matrix-inequality -->
+#### 3.4 F1 Bound as Matrix
+Inequality<!-- label: f1-bound-as-matrix-inequality -->
 
 The F1 lower bound in Theorem 1:
 
@@ -371,8 +373,8 @@ involving the confusion matrix and an exponential damping matrix.
 
 ### 4. Group Theory Connections<!-- label: group-theory-connections -->
 
-\subsubsection{4.1 The Gauge Group (Paper IV) -- Proven
-Connection}<!-- label: the-gauge-group-paper-iv-proven-connection -->
+#### 4.1 The Gauge Group (Paper IV) -- Proven
+Connection<!-- label: the-gauge-group-paper-iv-proven-connection -->
 
 As established in Section 3.3, the EGP gauge transformation is an action
 of \((\mathbb{R}, +)\) on the space of expert corrections. This is a
@@ -390,9 +392,9 @@ non-Abelian, e.g., \(\mathbb{R}^k\) with a symplectic constraint. This
 would map to a more complex Lie group structure, possibly
 \(SO(k, 1)\) for hierarchical expert structures.
 
-\subsubsection{4.2 The Symmetric Group S\_M Acting on Experts --
+#### 4.2 The Symmetric Group S\_M Acting on Experts --
 Partially
-Proven}<!-- label: the-symmetric-group-s_m-acting-on-experts-partially-proven -->
+Proven<!-- label: the-symmetric-group-s_m-acting-on-experts-partially-proven -->
 
 **Observation**: Under Assumption A2 (conditional independence),
 the expert errors \(e_1, ..., e_M\) are exchangeable within each state
@@ -415,8 +417,8 @@ under \(S_M\):
 - 
 - 
 
-\subsubsection{4.3 Automorphism Groups of the State
-Partition}<!-- label: automorphism-groups-of-the-state-partition -->
+#### 4.3 Automorphism Groups of the State
+Partition<!-- label: automorphism-groups-of-the-state-partition -->
 
 **Definition**: Let \(\Pi = \{s_1, ..., s_K\}\) be a measurable
 partition of \(\mathcal{X}\). The **automorphism group**
@@ -438,8 +440,8 @@ governed by Theorem 5's concentration bound. This would establish a
 **consistency of automorphism groups**, analogous to the
 consistency of the partition itself.
 
-\subsubsection{4.4 Galois-like Correspondence --
-Conjectural}<!-- label: galois-like-correspondence-conjectural -->
+#### 4.4 Galois-like Correspondence --
+Conjectural<!-- label: galois-like-correspondence-conjectural -->
 
 **Setup**: Consider the following analogy:
 
@@ -491,11 +493,11 @@ present in SCX).
 
 </div>
 
-\subsection{5. Topology and Geometry
-Connections}<!-- label: topology-and-geometry-connections -->
+### 5. Topology and Geometry
+Connections<!-- label: topology-and-geometry-connections -->
 
-\subsubsection{5.1 State Space Decomposition as Topological
-Partition}<!-- label: state-space-decomposition-as-topological-partition -->
+#### 5.1 State Space Decomposition as Topological
+Partition<!-- label: state-space-decomposition-as-topological-partition -->
 
 The state partition \(\Pi = \{s_1, ..., s_K\}\) of \(\mathcal{X}\)
 induces the **quotient space** \(\mathcal{X}/\Pi\) with the
@@ -513,8 +515,8 @@ is well-defined empirically.
 quotient with probability
 \(1 - \exp(-c n_ \Delta_^2 / (\sigma^2 d_\phi))\).
 
-\subsubsection{5.2 Theorem 3 as a Fiber Bundle -- Proven
-Structure}<!-- label: theorem-3-as-a-fiber-bundle-proven-structure -->
+#### 5.2 Theorem 3 as a Fiber Bundle -- Proven
+Structure<!-- label: theorem-3-as-a-fiber-bundle-proven-structure -->
 
 **Model**: Let \(\mathcal{P}\) be the space of data-generating
 processes satisfying the SCX assumptions. Let \(\mathcal{Q}\) be the
@@ -549,9 +551,9 @@ conjecture is that \(\mathcal{I}(P_{noise})\) is a
 extreme points corresponding to different allocations of ``noise
 vs.~hardness'' across the ambiguous subset.
 
-\subsubsection{\texorpdfstring{5.3 The Detection Boundary \(\Delta_s\)
+#### \texorpdfstring{5.3 The Detection Boundary \(\Delta_s\)
 as Geodesic
-Distance}{5.3 The Detection Boundary \ Delta\_s as Geodesic Distance}}<!-- label: the-detection-boundary-delta_s-as-geodesic-distance -->
+Distance{5.3 The Detection Boundary \ Delta\_s as Geodesic Distance}}<!-- label: the-detection-boundary-delta_s-as-geodesic-distance -->
 
 On the space of Bernoulli distributions
 \(\{Bern(p) : p \in (0,1)\}\), the **Fisher information
@@ -597,8 +599,8 @@ For small \(p_0\), \(p_0(1-p_0) \approx p_0\), so
 than the Hoeffding bound. This is exactly the numerical finding in
 Section 4.3 of the unified document (ratio 2.46-3.41).
 
-\subsubsection{5.4 Information Geometry of the Multi-State
-Problem}<!-- label: information-geometry-of-the-multi-state-problem -->
+#### 5.4 Information Geometry of the Multi-State
+Problem<!-- label: information-geometry-of-the-multi-state-problem -->
 
 **Conjectural**: The full SCX model (multi-state, multi-expert)
 lives on a **product of statistical manifolds**:
@@ -621,11 +623,11 @@ boundary.
 
 </div>
 
-\subsection{6. Category Theory
-Connections}<!-- label: category-theory-connections -->
+### 6. Category Theory
+Connections<!-- label: category-theory-connections -->
 
-\subsubsection{6.1 State-Conditioned Expertise as a Functor --
-Conjectural}<!-- label: state-conditioned-expertise-as-a-functor-conjectural -->
+#### 6.1 State-Conditioned Expertise as a Functor --
+Conjectural<!-- label: state-conditioned-expertise-as-a-functor-conjectural -->
 
 Define two categories:
 
@@ -656,8 +658,8 @@ i.e., the risk is invariant under state-preserving transformations. This
 would make \(R_m(s)\) a **functor from the category of
 state-marked probability spaces to the category of real numbers**.
 
-\subsubsection{6.2 Two-Layer Architecture as a Natural
-Transformation}<!-- label: two-layer-architecture-as-a-natural-transformation -->
+#### 6.2 Two-Layer Architecture as a Natural
+Transformation<!-- label: two-layer-architecture-as-a-natural-transformation -->
 
 The SCX two-layer architecture consists of:
 
@@ -696,8 +698,8 @@ two-layer architecture should be ``representation-agnostic'' -- the
 state assignment should depend only on the features, not on the
 representation of the input space.
 
-\subsubsection{6.3 Curation-Exploration Tradeoff as an Adjunction --
-Speculative}<!-- label: curation-exploration-tradeoff-as-an-adjunction-speculative -->
+#### 6.3 Curation-Exploration Tradeoff as an Adjunction --
+Speculative<!-- label: curation-exploration-tradeoff-as-an-adjunction-speculative -->
 
 The SCX workflow cycle is:
 
@@ -735,11 +737,11 @@ is precisely the error probability \(\exp(-2M\Delta^2)\) in Theorem 1.
 
 </div>
 
-\subsection{7. Analogous Mathematical
-Structures}<!-- label: analogous-mathematical-structures -->
+### 7. Analogous Mathematical
+Structures<!-- label: analogous-mathematical-structures -->
 
-\subsubsection{7.1 Arrow's Impossibility Theorem -- PROVEN ANALOGY,
-REMOVED}<!-- label: arrows-impossibility-theorem-proven-analogy-removed -->
+#### 7.1 Arrow's Impossibility Theorem -- PROVEN ANALOGY,
+REMOVED<!-- label: arrows-impossibility-theorem-proven-analogy-removed -->
 
 This analogy was explored and **removed** from the theory files.
 The mapping was:
@@ -778,8 +780,8 @@ the SCX result.
 
 **Verdict**: False analogy. Notational only.
 
-\subsubsection{7.2 No Free Lunch Theorem -- GENUINE
-ANALOGY}<!-- label: no-free-lunch-theorem-genuine-analogy -->
+#### 7.2 No Free Lunch Theorem -- GENUINE
+ANALOGY<!-- label: no-free-lunch-theorem-genuine-analogy -->
 
 The No Free Lunch (NFL) theorem for optimization states: for any
 algorithm A, the average performance over all possible objective
@@ -800,8 +802,8 @@ bounds the worst case over a restricted class (features with bounded
 mutual information). The SCX bound is tighter because the class is
 smaller.
 
-\subsubsection{7.3 Cramer-Rao Bound -- GENUINE ANALOGY (already noted in
-theory)}<!-- label: cramer-rao-bound-genuine-analogy-already-noted-in-theory -->
+#### 7.3 Cramer-Rao Bound -- GENUINE ANALOGY (already noted in
+theory)<!-- label: cramer-rao-bound-genuine-analogy-already-noted-in-theory -->
 
 The Cramer-Rao lower bound states: for any unbiased estimator
 \(\hat\) of a parameter \(\theta\),
@@ -861,8 +863,8 @@ The C-R bound is polynomial in \(n\), while SCX's bound is exponential
 in \(M\). This is because C-R is about **estimation** (smooth
 parameter) while SCX is about **testing** (discrete hypothesis).
 
-\subsubsection{7.4 Gelfand-Naimark Theorem (C*-algebras) -- SPECULATIVE
-ANALOGY}<!-- label: gelfand-naimark-theorem-c-algebras-speculative-analogy -->
+#### 7.4 Gelfand-Naimark Theorem (C*-algebras) -- SPECULATIVE
+ANALOGY<!-- label: gelfand-naimark-theorem-c-algebras-speculative-analogy -->
 
 **Gelfand-Naimark**: Every commutative C*-algebra is
 isometrically *-isomorphic to \(C_0(X)\) for some locally compact
@@ -886,8 +888,8 @@ random variable, not a quantum observable. The analogy is
 **Verdict**: Weak analogy. The C*-algebra framework adds no new
 insight.
 
-\subsubsection{7.5 Shannon's Source Coding Theorem -- NUMERIC
-ANALOGY}<!-- label: shannons-source-coding-theorem-numeric-analogy -->
+#### 7.5 Shannon's Source Coding Theorem -- NUMERIC
+ANALOGY<!-- label: shannons-source-coding-theorem-numeric-analogy -->
 
 Shannon's theorem: For a source \(X\) with rate-distortion function
 \(R(D)\), the optimal compression at distortion \(D\) requires rate
@@ -937,8 +939,8 @@ Asymptotic form & \(R(D) = I + O(1/\sqrt{n})\) &
 
 \end{longtable}
 
-\subsubsection{7.6 The Ising Model / Statistical Physics -- CONJECTURAL
-ANALOGY}<!-- label: the-ising-model-statistical-physics-conjectural-analogy -->
+#### 7.6 The Ising Model / Statistical Physics -- CONJECTURAL
+ANALOGY<!-- label: the-ising-model-statistical-physics-conjectural-analogy -->
 
 **Conjectural**: The SCX consensus score \(C(x)\) behaves like a
 **magnetization** in a Curie-Weiss model with M spins.
@@ -972,12 +974,12 @@ potentially useful if A2 is relaxed (correlated experts).
 
 </div>
 
-\subsection{8. Is SCX a Special Case of Something
-Bigger?}<!-- label: is-scx-a-special-case-of-something-bigger -->
+### 8. Is SCX a Special Case of Something
+Bigger?<!-- label: is-scx-a-special-case-of-something-bigger -->
 
-\subsubsection{\texorpdfstring{8.1 The Exponential Bound
+#### \texorpdfstring{8.1 The Exponential Bound
 \(\exp(-2M\Delta^2)\) as a Special Case of
-Hoeffding}{8.1 The Exponential Bound \ exp(-2M\ Delta\^{}2) as a Special Case of Hoeffding}}<!-- label: the-exponential-bound-exp-2mdelta2-as-a-special-case-of-hoeffding -->
+Hoeffding{8.1 The Exponential Bound \ exp(-2M\ Delta\^{}2) as a Special Case of Hoeffding}}<!-- label: the-exponential-bound-exp-2mdelta2-as-a-special-case-of-hoeffding -->
 
 **Proven**: The bound \(\exp(-2M\Delta^2)\) is a special case of
 **Hoeffding's inequality** for sums of bounded independent random
@@ -1027,8 +1029,8 @@ Thus Theorem 1 is a **corollary of Hoeffding's inequality plus a
 union bound**, and Theorem 4' is the **sharpening** obtained by
 replacing Hoeffding with Cramer + Bahadur-Rao.
 
-\subsubsection{8.2 Theorem 3 as a Special Case of General
-Unidentifiability}<!-- label: theorem-3-as-a-special-case-of-general-unidentifiability -->
+#### 8.2 Theorem 3 as a Special Case of General
+Unidentifiability<!-- label: theorem-3-as-a-special-case-of-general-unidentifiability -->
 
 **Proven**: Theorem 3 is a special case of the
 **non-identifiability of mixture models**.
@@ -1061,8 +1063,8 @@ data-generating processes map to the same observable distribution. This
 is the ``atomic'' unidentifiability from which larger families can be
 built by convex combination.
 
-\subsubsection{8.3 Theorem 4' as a Special Case of Exact Asymptotics
-Theory}<!-- label: theorem-4-as-a-special-case-of-exact-asymptotics-theory -->
+#### 8.3 Theorem 4' as a Special Case of Exact Asymptotics
+Theory<!-- label: theorem-4-as-a-special-case-of-exact-asymptotics-theory -->
 
 **Proven**: Theorem 4'\,'s exact constant result is a special case
 of **second-order asymptotics for hypothesis testing** (also called
@@ -1101,8 +1103,8 @@ composite hypothesis testing under weighted error rates**, where:
 Under this general theory, Theorem 4' would be the **Bernoulli
 special case** with \(p_0 = \mu, p_1 = 1 - C_{bal}\mu/(K-1)\).
 
-\subsubsection{8.4 Summary: What Larger Principles Does SCX
-Exemplify?}<!-- label: summary-what-larger-principles-does-scx-exemplify -->
+#### 8.4 Summary: What Larger Principles Does SCX
+Exemplify?<!-- label: summary-what-larger-principles-does-scx-exemplify -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2647}}
@@ -1158,11 +1160,11 @@ No existing theory captures this full chain.
 
 </div>
 
-\subsection{9. What Is ``SCX''
-Mathematically?}<!-- label: what-is-scx-mathematically -->
+### 9. What Is ``SCX''
+Mathematically?<!-- label: what-is-scx-mathematically -->
 
-\subsubsection{9.1 The One-Sentence
-Definition}<!-- label: the-one-sentence-definition -->
+#### 9.1 The One-Sentence
+Definition<!-- label: the-one-sentence-definition -->
 
 **SCX is the minimax-optimal statistical decision theory of
 detecting label contamination in a multi-expert system, where the
@@ -1172,8 +1174,8 @@ space with information-constrained fidelity, and the detection threshold
 is adaptively shifted by O(1/M) to achieve the exact Chernoff constant
 under F1 risk.**
 
-\subsubsection{9.2 More Precisely, in Pure
-Mathematics}<!-- label: more-precisely-in-pure-mathematics -->
+#### 9.2 More Precisely, in Pure
+Mathematics<!-- label: more-precisely-in-pure-mathematics -->
 
 Let us define the components formally:
 
@@ -1212,8 +1214,8 @@ informative (Thm 2,
 \(F1 \leq F1_{base} + O(\sqrt{I(\phi;S)})\)), while
 an unidentifiability gap prohibits perfect detection (Thm 3).
 
-\subsubsection{9.3 Alternative
-Characterizations}<!-- label: alternative-characterizations -->
+#### 9.3 Alternative
+Characterizations<!-- label: alternative-characterizations -->
 
 **As a statistical decision theory**: SCX is the characterization
 of the minimax-optimal Bayes decision boundary between two Bernoulli

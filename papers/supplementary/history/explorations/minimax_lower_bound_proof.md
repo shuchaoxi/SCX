@@ -1,6 +1,8 @@
-\section{Minimax Lower Bound for Multi-Expert Noise Detection: Matching
+# Minimax Lower Bound for Multi-Expert Noise Detection: Matching
 Theorem
-1}<!-- label: minimax-lower-bound-for-multi-expert-noise-detection-matching-theorem-1 -->
+1
+
+**Author:** SCX
 
 > **Purpose**: Prove a matching minimax lower bound for Theorem 1's
 > exponential rate, establishing that the exponent \(2M\Delta_s^2\) is
@@ -38,8 +40,8 @@ Theorem
 
 ### 1. Overview and Main Result<!-- label: overview-and-main-result -->
 
-\subsubsection{1.1 What Theorem 1 Gives (Upper
-Bound)}<!-- label: what-theorem-1-gives-upper-bound -->
+#### 1.1 What Theorem 1 Gives (Upper
+Bound)<!-- label: what-theorem-1-gives-upper-bound -->
 
 Theorem 1 (proved in `01\_noise\_detection\_guarantee.md`) states
 that for the SCX noise detector with consistency score
@@ -57,8 +59,8 @@ Hoeffding's inequality. A natural question: is \(2\) the best possible
 constant in the exponent? Could a fundamentally different method achieve
 \(\exp(-cM\Delta^2)\) with \(c > 2\)?
 
-\subsubsection{1.2 Main Result (Lower
-Bound)}<!-- label: main-result-lower-bound -->
+#### 1.2 Main Result (Lower
+Bound)<!-- label: main-result-lower-bound -->
 
 **Theorem 4 (Minimax Lower Bound for Multi-Expert Noise
 Detection).** Assume (A1)-(A6). Fix a state \(s\) with separation gap
@@ -113,8 +115,8 @@ information-theoretic limit.
 
 </div>
 
-\subsection{2. Preliminaries and
-Notation}<!-- label: preliminaries-and-notation -->
+### 2. Preliminaries and
+Notation<!-- label: preliminaries-and-notation -->
 
 #### 2.1 Setup<!-- label: setup -->
 
@@ -136,17 +138,17 @@ For a lower bound, we consider the hardest (least favorable) case: all
 perfectly balanced across wrong classes. This gives the largest
 separation and therefore the strongest lower bound.
 
-\paragraph{\texorpdfstring{Distribution of the error vector
+##### \texorpdfstring{Distribution of the error vector
 \(E = (e_1, ..., e_M)\) under
-\(P_0\):}{Distribution of the error vector E = (e\_1, \ dots, e\_M) under P\_0:}}<!-- label: distribution-of-the-error-vector-e-e_1-dots-e_m-under-p_0 -->
+\(P_0\):{Distribution of the error vector E = (e\_1, \ dots, e\_M) under P\_0:}}<!-- label: distribution-of-the-error-vector-e-e_1-dots-e_m-under-p_0 -->
 
 \[P_0(e_1, ..., e_M) = \prod_{m=1}^M Bernoulli(e_m \mid \mu)\]
 
 i.e., \(M\) i.i.d. Bernoulli(\(\mu\)) variables. The number of errors
 \(S = \sum_{m=1}^M e_m \sim Binomial(M, \mu)\).
 
-\paragraph{\texorpdfstring{Distribution of \(E\) under
-\(P_1\):}{Distribution of E under P\_1:}}<!-- label: distribution-of-e-under-p_1 -->
+##### \texorpdfstring{Distribution of \(E\) under
+\(P_1\):{Distribution of E under P\_1:}}<!-- label: distribution-of-e-under-p_1 -->
 
 \[P_1(e_1, ..., e_M) = \frac{1}{K-1} \sum_{c \neq y^*} \prod_{m=1}^M Bernoulli\!\left(e_m \;\Big|\; 1 - \frac{K-1}\right)\]
 
@@ -179,8 +181,8 @@ fundamental separation parameter.
 
 ### 3. Technical Lemmas<!-- label: technical-lemmas -->
 
-\subsubsection{3.1 Lemma 1: Bernoulli Total
-Variation}<!-- label: lemma-1-bernoulli-total-variation -->
+#### 3.1 Lemma 1: Bernoulli Total
+Variation<!-- label: lemma-1-bernoulli-total-variation -->
 
 **Lemma 1 (TV of Two Bernoulli Distributions).** For
 \(p, q \in [0,1]\):
@@ -197,8 +199,8 @@ TV(P, Q) &= \frac{1}{2} \bigl(|p - q| + |(1-p) - (1-q)|\bigr)
 $$
 \]
 
-\subsubsection{3.2 Lemma 2: Chi-Square Divergence of Two Bernoulli
-Distributions}<!-- label: lemma-2-chi-square-divergence-of-two-bernoulli-distributions -->
+#### 3.2 Lemma 2: Chi-Square Divergence of Two Bernoulli
+Distributions<!-- label: lemma-2-chi-square-divergence-of-two-bernoulli-distributions -->
 
 **Lemma 2 (\(\chi^2\) of Two Bernoullis).** For \(p, q \in (0,1)\):
 
@@ -217,8 +219,8 @@ $$
 $$
 \]
 
-\subsubsection{3.3 Lemma 3: Chi-Square Tensorization for Product
-Distributions}<!-- label: lemma-3-chi-square-tensorization-for-product-distributions -->
+#### 3.3 Lemma 3: Chi-Square Tensorization for Product
+Distributions<!-- label: lemma-3-chi-square-tensorization-for-product-distributions -->
 
 **Lemma 3 (\(\chi^2\) Tensorization).** For product distributions
 \(P = \prod_{m=1}^M P_m\) and \(Q = \prod_{m=1}^M Q_m\):
@@ -242,8 +244,8 @@ $$
 where the cross terms vanish because each \(\frac{dP_m}{dQ_m}\) has mean
 1 under \(Q_m\). \(\square\)
 
-\subsubsection{3.4 Lemma 4: Mixture-Product TV Bound (Key Technical
-Lemma)}<!-- label: lemma-4-mixture-product-tv-bound-key-technical-lemma -->
+#### 3.4 Lemma 4: Mixture-Product TV Bound (Key Technical
+Lemma)<!-- label: lemma-4-mixture-product-tv-bound-key-technical-lemma -->
 
 **Lemma 4 (Mixture-Product TV Bound).** Let
 \(P_0 = \prod_{m=1}^M Bern(p_0)\) be a product distribution. Let
@@ -280,8 +282,8 @@ all \(\ell\)):
 
 since the average over \(\ell\) collapses to a single term.
 
-\subsubsection{3.5 Lemma 5: Bernoulli Chi-Square for the Clean vs.~Noise
-Comparison}<!-- label: lemma-5-bernoulli-chi-square-for-the-clean-vs.-noise-comparison -->
+#### 3.5 Lemma 5: Bernoulli Chi-Square for the Clean vs.~Noise
+Comparison<!-- label: lemma-5-bernoulli-chi-square-for-the-clean-vs.-noise-comparison -->
 
 **Lemma 5 (Clean-Noise Bernoulli \(\chi^2\)).** For clean expert
 error probability \(p_0 = \mu\) and noise-conditioned error probability
@@ -311,8 +313,8 @@ Combining gives the result. \(\square\)
 where \(1 - \mu \cdot K/(K-1) = 1 - 2\mu\), which is exactly
 \(2\Delta^*\) (the full separation gap, not halved).
 
-\subsubsection{3.6 Lemma 6: Le Cam's Two-Point
-Method}<!-- label: lemma-6-le-cams-two-point-method -->
+#### 3.6 Lemma 6: Le Cam's Two-Point
+Method<!-- label: lemma-6-le-cams-two-point-method -->
 
 **Lemma 6 (Le Cam, 1973; Yu, 1997).** Let \(\mathbb{P}_0\) and
 \(\mathbb{P}_1\) be two probability distributions on the same measurable
@@ -325,8 +327,8 @@ Equivalently, the minimax error for testing \(H_0: P = P_0\) vs
 
 **Proof.** Standard. See Tsybakov (2009), Lemma 2.1. \(\square\)
 
-\subsubsection{3.7 Lemma 7: Binomial Tail Lower Bound (Slud's
-Inequality)}<!-- label: lemma-7-binomial-tail-lower-bound-sluds-inequality -->
+#### 3.7 Lemma 7: Binomial Tail Lower Bound (Slud's
+Inequality)<!-- label: lemma-7-binomial-tail-lower-bound-sluds-inequality -->
 
 **Lemma 7 (Slud's Inequality).** Let
 \(S_M \sim Binomial(M, p)\) with \(p \leq 1/2\). For any
@@ -345,8 +347,8 @@ CDF. The factor \(1/2\) is a universal constant. \(\square\)
 
 </div>
 
-\subsection{4. Main Proof: Le Cam Two-Point
-Construction}<!-- label: main-proof-le-cam-two-point-construction -->
+### 4. Main Proof: Le Cam Two-Point
+Construction<!-- label: main-proof-le-cam-two-point-construction -->
 
 #### 4.1 Strategy<!-- label: strategy -->
 
@@ -365,8 +367,8 @@ possible construction within the allowed class. We set symmetric experts
 (\(C_{bal} = 1\)), and the hardest state \(s\) (smallest
 \(\Delta\)). These choices make the lower bound as strong as possible.
 
-\subsubsection{\texorpdfstring{4.2 Construction (\(K=2\)
-case)}{4.2 Construction (K=2 case)}}<!-- label: construction-k2-case -->
+#### \texorpdfstring{4.2 Construction (\(K=2\)
+case){4.2 Construction (K=2 case)}}<!-- label: construction-k2-case -->
 
 Consider the binary classification setting \(K=2\), labels
 \(\mathcal{Y} = \{0,1\}\). Fix a state \(s\) with clean error rate
@@ -396,8 +398,8 @@ is simply a product distribution:
 issue vanishes. \(P_0\) and \(P_1\) are both product distributions with
 different Bernoulli parameters. This makes the TV computation exact.
 
-\subsubsection{4.3 Reduction to Binomial
-Testing}<!-- label: reduction-to-binomial-testing -->
+#### 4.3 Reduction to Binomial
+Testing<!-- label: reduction-to-binomial-testing -->
 
 For \(K=2\), the error vector under \(P_0\) and \(P_1\) gives:
 
@@ -416,8 +418,8 @@ simple hypotheses) rejects \(P_0\) when \(S > M/2\), since
 \(1-\mu > \mu\) for \(\mu < 1/2\). Ties \((S = M/2)\) can be broken
 arbitrarily.
 
-\subsubsection{4.4 Applying the Binomial Tail Lower
-Bound}<!-- label: applying-the-binomial-tail-lower-bound -->
+#### 4.4 Applying the Binomial Tail Lower
+Bound<!-- label: applying-the-binomial-tail-lower-bound -->
 
 For the optimal Bayes test \(\psi^*\):
 
@@ -473,8 +475,8 @@ assumption class \(\mathcal{P}_\Delta\) (it satisfies A1-A6 with
 
 This proves Part (a) of Theorem 4 for \(K=2\).
 
-\subsubsection{\texorpdfstring{4.6 Extension to
-\(K > 2\)}{4.6 Extension to K \textgreater{} 2}}<!-- label: extension-to-k-2 -->
+#### \texorpdfstring{4.6 Extension to
+\(K > 2\){4.6 Extension to K \textgreater{} 2}}<!-- label: extension-to-k-2 -->
 
 For \(K > 2\), the noise distribution becomes a mixture of \(L = K-1\)
 product distributions:
@@ -525,8 +527,8 @@ where the constant \(1/2\) may depend on \(K\) and \(\mu\), but the rate
 
 ### 5. Extension to F1 Risk<!-- label: extension-to-f1-risk -->
 
-\subsubsection{5.1 Relating Testing Error to
-F1}<!-- label: relating-testing-error-to-f1 -->
+#### 5.1 Relating Testing Error to
+F1<!-- label: relating-testing-error-to-f1 -->
 
 The F1 score is a population-level summary that involves both false
 positives and false negatives. To convert our per-sample testing lower
@@ -648,8 +650,8 @@ numerator. The current bound (without \(\eta\)) is sufficient for rate
 optimality; the \(\eta\)-dependent refinement is left for future work.
 \(\square\)
 
-\subsubsection{5.3 Verification of Upper-Lower Bound
-Match}<!-- label: verification-of-upper-lower-bound-match -->
+#### 5.3 Verification of Upper-Lower Bound
+Match<!-- label: verification-of-upper-lower-bound-match -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1818}}
@@ -690,11 +692,11 @@ bounds often differ by constants).
 
 </div>
 
-\subsection{6. Large-Deviations
-Refinement}<!-- label: large-deviations-refinement -->
+### 6. Large-Deviations
+Refinement<!-- label: large-deviations-refinement -->
 
-\subsubsection{6.1 Exact Rate via
-Cramer-Chernoff}<!-- label: exact-rate-via-cramer-chernoff -->
+#### 6.1 Exact Rate via
+Cramer-Chernoff<!-- label: exact-rate-via-cramer-chernoff -->
 
 The exponent \(2M\Delta^2\) in Theorem 4 is derived from Hoeffding-type
 bounds. The exact large-deviations rate (as \(M \to \infty\)) is given
@@ -709,8 +711,8 @@ Bernoulli(\(\mu\)) variables \(e_1,...,e_M\), the sample mean
 for any \(\theta > \mu\), where
 \(KL(\theta \parallel \mu) = \theta\log\frac + (1-\theta)\log\frac{1-\theta}{1-\mu}\).
 
-\subsubsection{6.2 Rate Comparison: Hoeffding
-vs.~Exact}<!-- label: rate-comparison-hoeffding-vs.-exact -->
+#### 6.2 Rate Comparison: Hoeffding
+vs.~Exact<!-- label: rate-comparison-hoeffding-vs.-exact -->
 
 For optimal threshold \(\theta^*\):
 
@@ -743,8 +745,8 @@ exact exponent is larger, meaning the true minimax rate is
 faster than \(\exp(-2M\Delta^2)\). The Hoeffding exponent \(2\) is the
 minimax-optimal **guaranteed** exponent.
 
-\subsubsection{6.3 Proof of Corollary (Large-Deviations
-Refinement)}<!-- label: proof-of-corollary-large-deviations-refinement -->
+#### 6.3 Proof of Corollary (Large-Deviations
+Refinement)<!-- label: proof-of-corollary-large-deviations-refinement -->
 
 For the binary symmetric case (\(K=2\), \(\theta^* = 1/2\),
 \(\mu = 1/2 - \Delta\)):
@@ -786,8 +788,8 @@ exponent is exactly \(2\) in the small-gap (high-dimensional) limit.
 
 </div>
 
-\subsection{7. Discussion of Tightness and
-Gaps}<!-- label: discussion-of-tightness-and-gaps -->
+### 7. Discussion of Tightness and
+Gaps<!-- label: discussion-of-tightness-and-gaps -->
 
 #### 7.1 What Has Been Proved<!-- label: what-has-been-proved -->
 
@@ -893,8 +895,8 @@ constant may differ
 
 \end{longtable}
 
-\subsubsection{7.4 Connection to Theorem 3
-(Unidentifiability)}<!-- label: connection-to-theorem-3-unidentifiability -->
+#### 7.4 Connection to Theorem 3
+(Unidentifiability)<!-- label: connection-to-theorem-3-unidentifiability -->
 
 Theorem 3 shows that without assumptions (A1)-(A6), noise and difficulty
 are observationally indistinguishable. Theorem 4 shows that even WITH
@@ -939,8 +941,8 @@ What even the best detector achieves: \(\sim\exp(-2M\Delta^2)\) (Theorem
 
 </div>
 
-\subsection{Appendix A: Slud's Inequality -- Statement and Proof
-Sketch}<!-- label: appendix-a-sluds-inequality-statement-and-proof-sketch -->
+### Appendix A: Slud's Inequality -- Statement and Proof
+Sketch<!-- label: appendix-a-sluds-inequality-statement-and-proof-sketch -->
 
 #### Statement<!-- label: statement -->
 
@@ -973,8 +975,8 @@ Binomial probability can be bounded below by the Gaussian approximation
 times a factor that depends on \(p(1-p)\). The worst case \(p = 1/2\)
 gives the factor \(1/2\).
 
-\subsubsection{Why the Factor 1/2 is
-Important}<!-- label: why-the-factor-12-is-important -->
+#### Why the Factor 1/2 is
+Important<!-- label: why-the-factor-12-is-important -->
 
 The factor \(1/2\) in Slud's inequality is what makes the lower bound
 non-trivial. Without it, the bound could be arbitrarily close to \(0\)
@@ -983,8 +985,8 @@ the Binomial tail probability is at least half the Hoeffding bound,
 establishing that the Hoeffding exponent is tight (up to constant
 factors).
 
-\subsubsection{Connection to Central Limit
-Theorem}<!-- label: connection-to-central-limit-theorem -->
+#### Connection to Central Limit
+Theorem<!-- label: connection-to-central-limit-theorem -->
 
 For large \(M\), the de Moivre--Laplace theorem gives:
 
@@ -1002,8 +1004,8 @@ an alternative (asymptotic) verification of the \(2M\Delta^2\) exponent.
 
 </div>
 
-\subsection{Appendix B: Numerical
-Illustration}<!-- label: appendix-b-numerical-illustration -->
+### Appendix B: Numerical
+Illustration<!-- label: appendix-b-numerical-illustration -->
 
 For concrete parameter values, the lower bound on testing error gives:
 
@@ -1047,8 +1049,8 @@ pre-exponential constant, but the exponent \(2M\Delta^2\) is identical.
 
 </div>
 
-\subsection{Appendix C: Adversarial Construction for the Lower
-Bound}<!-- label: appendix-c-adversarial-construction-for-the-lower-bound -->
+### Appendix C: Adversarial Construction for the Lower
+Bound<!-- label: appendix-c-adversarial-construction-for-the-lower-bound -->
 
 The proof of Theorem 4 constructs a pair \((P_0, P_1)\) within the class
 \(\mathcal{P}_\Delta\). Here we verify that this construction satisfies

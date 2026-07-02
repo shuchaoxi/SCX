@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 We apply the SCX quality audit framework to neural computational fluid dynamics (CFD) for finite element aerodynamics.

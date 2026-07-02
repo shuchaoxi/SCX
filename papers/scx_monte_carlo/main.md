@@ -1,11 +1,6 @@
-<div align="center">
+# 预备知识：SCX 审计的概率框架
 
-[Diagram omitted — see original .tex]
-
-{ 万物可采样 万象皆收敛}
-{ *All things are samplable. All phenomena converge.*}
-
-</div>
+**Author:** SCX
 
 > **审计即采样。Audit is sampling.**
 > 

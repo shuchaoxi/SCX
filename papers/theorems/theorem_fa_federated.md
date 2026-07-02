@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 The SCX Audit Sword establishes that any use of the Cercis Score can be

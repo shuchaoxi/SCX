@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 We present a theoretical framework for distilling VASP PAW pseudopotentials into neural network representations under the SCX{} auditing paradigm. The core contributions are: (i) a distillation detection guarantee—for $M$ independently trained neural pseudopotentials with effective multiplicity $M_{\mathrm{eff}}$, the probability of missing a distillation error of magnitude $\Delta$ is bounded above by $\exp(-2M_{\mathrm{eff}}\Delta^2)$; (ii) an unidentifiability theorem establishing that PAW approximation error and neural network training error produce observationally equivalent outputs, forcing explicit assumption declaration in pseudopotential design; (iii) the Cercis{} score $S(p) = Q(p) + \eta N(p)$ for ranking pseudopotential libraries by combined transferability accuracy and chemical novelty; (iv) a Yajie{} consensus mechanism across $M$ heterogeneous neural architectures for detecting element-specific failures. All theorems are stated with explicit assumptions under the SCX{} convention. We provide proofs at \rigorFull, \rigorPartial, and \rigorSketch{} levels as appropriate, and identify open conjectures where full rigor remains incomplete.

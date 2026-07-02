@@ -1,6 +1,8 @@
-\section{SCX Self-Evolution: Lyapunov Descent Analysis --- Proof Attempt
+# SCX Self-Evolution: Lyapunov Descent Analysis --- Proof Attempt
 and Gap
-Identification}<!-- label: scx-self-evolution-lyapunov-descent-analysis-proof-attempt-and-gap-identification -->
+Identification
+
+**Author:** SCX
 
 > **Version**: 2026-06-28 |{} **Status**: Proof attempt
 > (partial) |{} **Prerequisite**: Documents 01, 02, 06, and
@@ -36,8 +38,8 @@ Identification}<!-- label: scx-self-evolution-lyapunov-descent-analysis-proof-at
 
 </div>
 
-\subsection{1. Setup: Reference-Set Lyapunov
-Function}<!-- label: setup-reference-set-lyapunov-function -->
+### 1. Setup: Reference-Set Lyapunov
+Function<!-- label: setup-reference-set-lyapunov-function -->
 
 #### 1.1 Explicit Definition<!-- label: explicit-definition -->
 
@@ -101,8 +103,8 @@ vs.~student
 > `01\_noise\_detection\_guarantee.md` and
 > `01\_symbol\_system.md` §12.5.
 
-\subsubsection{\texorpdfstring{1.2 Why \(M_0\) (and Not
-\(M_t\))?}{1.2 Why M\_0 (and Not M\_t)?}}<!-- label: why-m_0-and-not-m_t -->
+#### \texorpdfstring{1.2 Why \(M_0\) (and Not
+\(M_t\))?{1.2 Why M\_0 (and Not M\_t)?}}<!-- label: why-m_0-and-not-m_t -->
 
 The original Lyapunov candidate (Document 06, Lemma SE-1.1) evaluated on
 \(P_{S_t}\) (the acceptance-biased distribution) suffers from a
@@ -179,8 +181,8 @@ acceptance & Coverage guarantee
 
 ### 2. One-Step Decomposition<!-- label: one-step-decomposition -->
 
-\subsubsection{\texorpdfstring{2.1 The Change
-\(\Delta\Phi\)}{2.1 The Change \ Delta\ Phi}}<!-- label: the-change-deltaphi -->
+#### \texorpdfstring{2.1 The Change
+\(\Delta\Phi\){2.1 The Change \ Delta\ Phi}}<!-- label: the-change-deltaphi -->
 
 Define the one-step change:
 
@@ -192,8 +194,8 @@ The system evolves in three coupled sub-steps within one round:
 2. 
 3. 
 
-\subsubsection{2.2 Decomposition into Four
-Terms}<!-- label: decomposition-into-four-terms -->
+#### 2.2 Decomposition into Four
+Terms<!-- label: decomposition-into-four-terms -->
 
 We decompose \(\Delta\Phi_t\) into four interpretable components by
 considering the effect of each sub-step, evaluated on the fixed
@@ -218,8 +220,8 @@ $$
 
 </div>
 
-\subsection{\texorpdfstring{3. Term A: Student Improvement
-\(\Delta_{student}\)}{3. Term A: Student Improvement \ Delta\_\{\ text\{student\}\}}}<!-- label: term-a-student-improvement-delta_textstudent -->
+### \texorpdfstring{3. Term A: Student Improvement
+\(\Delta_{student\)}{3. Term A: Student Improvement \ Delta\_\{\ text\{student\}\}}}<!-- label: term-a-student-improvement-delta_textstudent -->
 
 #### 3.1 Setup<!-- label: setup -->
 
@@ -232,8 +234,8 @@ But we evaluate the student on the **reference set** \(V_0\):
 
 \[\Phi_{student}(\theta) = \frac{1}{|V_0|} \sum_{(x,y) \in V_0} \ell(f_\theta(x), y).\]
 
-\subsubsection{3.2 Descent on Training Distribution
-(Standard)}<!-- label: descent-on-training-distribution-standard -->
+#### 3.2 Descent on Training Distribution
+(Standard)<!-- label: descent-on-training-distribution-standard -->
 
 **Lemma A.1 (SGD Descent on Training Distribution).** Under C2
 (Lipschitz student) and C4 (RM rates), with
@@ -257,8 +259,8 @@ taking conditional expectation yields the result. \(\square\)
 **Status: PROVEN.** This is standard Robbins-Monro analysis
 (Document 05, Theorem 5.1).
 
-\subsubsection{\texorpdfstring{3.3 The Generalization Gap: From
-\(P_{S_t}\) to
+#### \texorpdfstring{3.3 The Generalization Gap: From
+\(P_{S_t\) to
 \(V_0\)}{3.3 The Generalization Gap: From P\_\{S\_t\} to V\_0}}<!-- label: the-generalization-gap-from-p_s_t-to-v_0 -->
 
 **This is where the proof encounters its first major difficulty.**
@@ -285,8 +287,8 @@ the input space, so \(TV(V_0, P_{S_t})\) is bounded. But the exact
 relationship between the gradient on \(P_{S_t}\) and the improvement on
 \(V_0\) is not characterized.*
 
-\subsubsection{3.4 Bounding the Static Distribution
-Gap}<!-- label: bounding-the-static-distribution-gap -->
+#### 3.4 Bounding the Static Distribution
+Gap<!-- label: bounding-the-static-distribution-gap -->
 
 **Lemma A.3 (Static Gap Under Exploration --- PARTIALLY PROVEN).**
 Under condition C9 (random exploration with fraction
@@ -315,8 +317,8 @@ non-random samples. \(\square\)
 the training distribution does not collapse to a measure-zero subset of
 the reference support.
 
-\subsubsection{3.5 Assembled Student
-Bound}<!-- label: assembled-student-bound -->
+#### 3.5 Assembled Student
+Bound<!-- label: assembled-student-bound -->
 
 **Proposition A.1 (Student Contribution --- CONDITIONAL).** Under
 C2, C4, C9, and assuming Lemma A.2 holds:
@@ -338,8 +340,8 @@ exploration condition C9 to control the TV distance.*
 
 </div>
 
-\subsection{\texorpdfstring{4. Term B: Gatekeeper Update
-\(\Delta_{gatekeeper}\)}{4. Term B: Gatekeeper Update \ Delta\_\{\ text\{gatekeeper\}\}}}<!-- label: term-b-gatekeeper-update-delta_textgatekeeper -->
+### \texorpdfstring{4. Term B: Gatekeeper Update
+\(\Delta_{gatekeeper\)}{4. Term B: Gatekeeper Update \ Delta\_\{\ text\{gatekeeper\}\}}}<!-- label: term-b-gatekeeper-update-delta_textgatekeeper -->
 
 #### 4.1 Setup<!-- label: setup-1 -->
 
@@ -351,8 +353,8 @@ We evaluate the gatekeeper on the reference set \(M_0\):
 
 \[\Phi_{gate}(S) = \frac{1}{|M_0|} \sum_{x \in M_0} (S(x, y(x)) - \hat{C}(x))^2.\]
 
-\subsubsection{4.2 Descent When SCXUpdate Points Toward
-Consensus}<!-- label: descent-when-scxupdate-points-toward-consensus -->
+#### 4.2 Descent When SCXUpdate Points Toward
+Consensus<!-- label: descent-when-scxupdate-points-toward-consensus -->
 
 **Lemma B.1 (Gatekeeper Improvement --- Conditional on Update
 Direction).** Let \(S_t^{\hat{C}} = \hat{C}\) be the target (consensus
@@ -420,8 +422,8 @@ alignment between \(\Delta_t\) (computed on \(M_{t+1}\)) and
 gatekeeper update can push \(S_t\) **away** from consensus on the
 reference set, even as it appears to improve on the biased memory bank.
 
-\subsubsection{4.5 Sufficient Condition for
-Alignment}<!-- label: sufficient-condition-for-alignment -->
+#### 4.5 Sufficient Condition for
+Alignment<!-- label: sufficient-condition-for-alignment -->
 
 **Proposition B.1 (Sufficient Condition for Alignment ---
 PROVEN).** A sufficient condition for \(\rho_t > 0\) is:
@@ -449,8 +451,8 @@ may be slow.
 
 </div>
 
-\subsection{\texorpdfstring{5. Term C: Distribution Shift
-\(\Delta_{selection}\)}{5. Term C: Distribution Shift \ Delta\_\{\ text\{selection\}\}}}<!-- label: term-c-distribution-shift-delta_textselection -->
+### \texorpdfstring{5. Term C: Distribution Shift
+\(\Delta_{selection\)}{5. Term C: Distribution Shift \ Delta\_\{\ text\{selection\}\}}}<!-- label: term-c-distribution-shift-delta_textselection -->
 
 #### 5.1 Definition<!-- label: definition -->
 
@@ -463,8 +465,8 @@ student's update direction:
 This term is zero only if \(P_{S_{t+1}} = P_{S_t}\) (no distribution
 shift).
 
-\subsubsection{5.2 Bounding Distribution
-Shift}<!-- label: bounding-distribution-shift -->
+#### 5.2 Bounding Distribution
+Shift<!-- label: bounding-distribution-shift -->
 
 **Lemma C.1 (Distribution Shift Bound --- PROVEN).** Under
 condition C6' (two-timescale, \(\beta_t = o(\alpha_t)\)) and C7 (bounded
@@ -517,8 +519,8 @@ $$
 
 **Status: PROVEN.**
 
-\subsubsection{5.4 Assembled Selection
-Bound}<!-- label: assembled-selection-bound -->
+#### 5.4 Assembled Selection
+Bound<!-- label: assembled-selection-bound -->
 
 **Proposition C.1 (Selection Contribution --- PROVEN).** Under C6',
 C7, C2:
@@ -541,8 +543,8 @@ by the two-timescale condition.
 
 </div>
 
-\subsection{\texorpdfstring{6. Term D: Cross-Coupling
-\(\Delta_{cross}\)}{6. Term D: Cross-Coupling \ Delta\_\{\ text\{cross\}\}}}<!-- label: term-d-cross-coupling-delta_textcross -->
+### \texorpdfstring{6. Term D: Cross-Coupling
+\(\Delta_{cross\)}{6. Term D: Cross-Coupling \ Delta\_\{\ text\{cross\}\}}}<!-- label: term-d-cross-coupling-delta_textcross -->
 
 #### 6.1 Definition<!-- label: definition-1 -->
 
@@ -599,8 +601,8 @@ cross-term.
 
 ### 7. Assembly: Combined Bound<!-- label: assembly-combined-bound -->
 
-\subsubsection{7.1 Putting It All
-Together}<!-- label: putting-it-all-together -->
+#### 7.1 Putting It All
+Together<!-- label: putting-it-all-together -->
 
 Combining the bounds from Sections 3-6:
 
@@ -618,8 +620,8 @@ $$
 $$
 }\]
 
-\subsubsection{\texorpdfstring{7.2 Dominant Terms for Large
-\(t\)}{7.2 Dominant Terms for Large t}}<!-- label: dominant-terms-for-large-t -->
+#### \texorpdfstring{7.2 Dominant Terms for Large
+\(t\){7.2 Dominant Terms for Large t}}<!-- label: dominant-terms-for-large-t -->
 
 Under the two-timescale condition C6' (\(\beta_t = o(\alpha_t)\)):
 
@@ -658,8 +660,8 @@ consistently point toward consensus on the reference set.
 
 </div>
 
-\subsection{8. The Blocking Term: Why a Full Proof
-Fails}<!-- label: the-blocking-term-why-a-full-proof-fails -->
+### 8. The Blocking Term: Why a Full Proof
+Fails<!-- label: the-blocking-term-why-a-full-proof-fails -->
 
 #### 8.1 The Central Obstacle<!-- label: the-central-obstacle -->
 
@@ -696,8 +698,8 @@ is small, the hard samples are severely under-represented. - The
 student's gradient updates are dominated by easy samples. - The
 convergence of \(\theta_t\) on \(V_0\) may be arbitrarily slow.
 
-\subsubsection{8.3 Can the Alignment Condition (Term B) Be
-Proven?}<!-- label: can-the-alignment-condition-term-b-be-proven -->
+#### 8.3 Can the Alignment Condition (Term B) Be
+Proven?<!-- label: can-the-alignment-condition-term-b-be-proven -->
 
 **Second critical obstacle**: \(\rho_t > 0\) (alignment of
 SCXUpdate on \(M_{t+1}\) with \(S_t - \hat{C}\) on \(M_0\)).
@@ -716,8 +718,8 @@ i.e., the SCX update **increases** the discrepancy with consensus
 on the reference set. This occurs precisely when the acceptance bias in
 \(M_{t+1}\) points SCXUpdate in the wrong direction relative to \(M_0\).
 
-\subsubsection{8.4 Summary of What Blocks the
-Proof}<!-- label: summary-of-what-blocks-the-proof -->
+#### 8.4 Summary of What Blocks the
+Proof<!-- label: summary-of-what-blocks-the-proof -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2000}}
@@ -761,14 +763,14 @@ reference set
 
 </div>
 
-\subsection{9. Partial Results: What CAN Be
-Proven}<!-- label: partial-results-what-can-be-proven -->
+### 9. Partial Results: What CAN Be
+Proven<!-- label: partial-results-what-can-be-proven -->
 
 Despite the blocking terms, several non-trivial results can be
 established.
 
-\subsubsection{9.1 Cesàro-Mean
-Convergence}<!-- label: cesuxe0ro-mean-convergence -->
+#### 9.1 Cesàro-Mean
+Convergence<!-- label: cesuxe0ro-mean-convergence -->
 
 **Theorem 10.1 (Cesàro-Mean Convergence --- CONDITIONAL).** Under
 conditions C2, C4, C6', C7, C9, and assuming \(\Phi\) is bounded below:
@@ -792,8 +794,8 @@ increase unboundedly, which is guaranteed by the boundedness of losses.
 The Cesàro-mean convergence is weaker than the pointwise descent but
 still provides a meaningful convergence guarantee.
 
-\subsubsection{9.2 Fixed-Point
-Stationarity}<!-- label: fixed-point-stationarity -->
+#### 9.2 Fixed-Point
+Stationarity<!-- label: fixed-point-stationarity -->
 
 **Theorem 10.2 (Fixed-Point Stationarity --- PROVEN).** Under
 C2-C7, if \(\Phi_t \to \Phi_\infty\) almost surely, then any limit point
@@ -812,8 +814,8 @@ and that the memory bank stabilizes (from C1'). \(\square\)
 **Status: PROVEN.** The fixed-point characterization does not
 depend on the Lyapunov descent.
 
-\subsubsection{9.3 Local Descent Under
-Coverage}<!-- label: local-descent-under-coverage -->
+#### 9.3 Local Descent Under
+Coverage<!-- label: local-descent-under-coverage -->
 
 **Theorem 10.3 (Local Descent Under Full Coverage --- PROVEN).** If
 at time \(t\), the gatekeeper's acceptance region covers the full
@@ -834,8 +836,8 @@ gatekeeper is sufficiently permissive, descent is guaranteed. The
 challenge is maintaining descent as the gatekeeper becomes more
 selective (which is necessary for noise filtering).
 
-\subsubsection{9.4 Descent Under Bounded
-TV}<!-- label: descent-under-bounded-tv -->
+#### 9.4 Descent Under Bounded
+TV<!-- label: descent-under-bounded-tv -->
 
 **Theorem 10.4 (Descent Under Bounded Distribution Shift ---
 PROVEN).** If \(TV(P_{S_t}, P_0) \leq \delta\) for all \(t\) (gatekeeper
@@ -857,11 +859,11 @@ stationarity, the distribution shift may dominate.
 
 </div>
 
-\subsection{10. Path Forward: Conditions for Closing the
-Gap}<!-- label: path-forward-conditions-for-closing-the-gap -->
+### 10. Path Forward: Conditions for Closing the
+Gap<!-- label: path-forward-conditions-for-closing-the-gap -->
 
-\subsubsection{\texorpdfstring{10.1 What Would Close the
-\(D_{static}\)
+#### \texorpdfstring{10.1 What Would Close the
+\(D_{static\)
 Gap}{10.1 What Would Close the D\_\{\ text\{static\}\} Gap}}<!-- label: what-would-close-the-d_textstatic-gap -->
 
 To prove \(D_{static} = o(\alpha_t)\), one would need to
@@ -891,8 +893,8 @@ samples from all regions). These two requirements are in **direct
 tension** and cannot be simultaneously satisfied without a more
 sophisticated mechanism.
 
-\subsubsection{10.2 What Would Close the Alignment
-Gap}<!-- label: what-would-close-the-alignment-gap -->
+#### 10.2 What Would Close the Alignment
+Gap<!-- label: what-would-close-the-alignment-gap -->
 
 To prove \(\rho_t \geq \rho_ > 0\), one would need:
 
@@ -912,8 +914,8 @@ from \(P_{S_t}\), but we need the update to target \(P_0\). The bias is:
 Without importance weights or a correction mechanism, this bias is
 generally non-zero.
 
-\subsubsection{10.3 Proposed Resolution: Reference-Set
-Replay}<!-- label: proposed-resolution-reference-set-replay -->
+#### 10.3 Proposed Resolution: Reference-Set
+Replay<!-- label: proposed-resolution-reference-set-replay -->
 
 A practical path to closing both gaps simultaneously:
 
@@ -1032,11 +1034,11 @@ from the training distribution.
 
 </div>
 
-\subsection{12. Attempted Gap Closure Under Two-Timescale
-Condition}<!-- label: attempted-gap-closure-under-two-timescale-condition -->
+### 12. Attempted Gap Closure Under Two-Timescale
+Condition<!-- label: attempted-gap-closure-under-two-timescale-condition -->
 
-\subsubsection{12.1 Formal Statement of the Two Blocking
-Terms}<!-- label: formal-statement-of-the-two-blocking-terms -->
+#### 12.1 Formal Statement of the Two Blocking
+Terms<!-- label: formal-statement-of-the-two-blocking-terms -->
 
 We restate the two terms that block a complete Lyapunov descent proof
 with maximal precision.
@@ -1064,9 +1066,9 @@ Since SCXUpdate is computed on \(M_{t+1}\) (acceptance-biased) rather
 than \(M_0\) (reference), \(\rho_t\) may be negative --- the update can
 push \(S_t\) **away** from consensus on \(M_0\).
 
-\subsubsection{\texorpdfstring{12.2 What the Two-Timescale Condition
+#### \texorpdfstring{12.2 What the Two-Timescale Condition
 \(\beta_t = o(\alpha_t)\)
-Guarantees}{12.2 What the Two-Timescale Condition \ beta\_t = o(\ alpha\_t) Guarantees}}<!-- label: what-the-two-timescale-condition-beta_t-oalpha_t-guarantees -->
+Guarantees{12.2 What the Two-Timescale Condition \ beta\_t = o(\ alpha\_t) Guarantees}}<!-- label: what-the-two-timescale-condition-beta_t-oalpha_t-guarantees -->
 
 The condition \(\beta_t = o(\alpha_t)\) (condition C6') implies several
 structural properties that constrain the system's behavior. We enumerate
@@ -1106,8 +1108,8 @@ two-timescale condition does **not** guarantee: - That
 the reference) - That the SCX update on \(M_{t+1}\) aligns with the
 optimal update on \(M_0\)
 
-\subsubsection{\texorpdfstring{12.3 Domain Adaptation Bound for
-\(D_{static}\)}{12.3 Domain Adaptation Bound for D\_\{\ text\{static\}\}}}<!-- label: domain-adaptation-bound-for-d_textstatic -->
+#### \texorpdfstring{12.3 Domain Adaptation Bound for
+\(D_{static\)}{12.3 Domain Adaptation Bound for D\_\{\ text\{static\}\}}}<!-- label: domain-adaptation-bound-for-d_textstatic -->
 
 We now provide the tightest possible bound on \(D_{static}\)
 using domain adaptation theory (Ben-David et al., 2010).
@@ -1161,8 +1163,8 @@ but does not force it to zero. This is the fundamental reason the
 Lyapunov descent cannot be proven without a mechanism that reduces the
 distribution gap.
 
-\subsubsection{12.4 Alignment Bias
-Decomposition}<!-- label: alignment-bias-decomposition -->
+#### 12.4 Alignment Bias
+Decomposition<!-- label: alignment-bias-decomposition -->
 
 We now provide the tightest possible decomposition of the alignment term
 \(\rho_t\).
@@ -1221,8 +1223,8 @@ If \(L_{data}\) is large (sensitive SCX update) or
 may be negative, meaning the gatekeeper update **increases**
 \(\Phi_{gate}\) on \(M_0\).
 
-\subsubsection{12.5 The Tightest Possible Combined
-Bound}<!-- label: the-tightest-possible-combined-bound -->
+#### 12.5 The Tightest Possible Combined
+Bound<!-- label: the-tightest-possible-combined-bound -->
 
 **Theorem 12.1 (Tightest Lyapunov Bound Without Additional
 Assumptions).** Under conditions C1'-C9, the one-step expected change in
@@ -1274,8 +1276,8 @@ the gatekeeper (noise filtering). Therefore, **without an
 additional mechanism, Lyapunov descent on the reference-set-based
 \(\Phi\) is formally impossible in the asymptotic regime.**
 
-\subsubsection{12.6 What Would Close Each
-Gap}<!-- label: what-would-close-each-gap -->
+#### 12.6 What Would Close Each
+Gap<!-- label: what-would-close-each-gap -->
 
 **Gap 1 (\(D_{static}\)):** Can be closed by importance
 sampling or reference-set replay.
@@ -1327,9 +1329,9 @@ gatekeeper term is guaranteed non-positive. \(\square\)
 **Status: PROVEN.** Computing SCXUpdate on \(M_0\) eliminates the
 alignment gap.
 
-\subsubsection{12.7 Joint Resolution: Reference-Set Replay Mechanism ---
+#### 12.7 Joint Resolution: Reference-Set Replay Mechanism ---
 Complete
-Proof}<!-- label: joint-resolution-reference-set-replay-mechanism-complete-proof -->
+Proof<!-- label: joint-resolution-reference-set-replay-mechanism-complete-proof -->
 
 **Theorem 12.5 (Lyapunov Descent Under Reference-Set Replay ---
 FULL PROOF).** Assume: 1. **Student side**: Importance sampling
@@ -1378,8 +1380,8 @@ require density ratio estimation \(P_0(x)/P_{S_t}(x)\), implementable
 via logistic regression discrimination, kernel density estimation, or
 k-NN methods --- all \(O(|M_0| \log |M_0|)\) per gatekeeper update.
 
-\subsubsection{12.8 Final Status: What the Two-Timescale Condition Alone
-Achieves}<!-- label: final-status-what-the-two-timescale-condition-alone-achieves -->
+#### 12.8 Final Status: What the Two-Timescale Condition Alone
+Achieves<!-- label: final-status-what-the-two-timescale-condition-alone-achieves -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1493}}

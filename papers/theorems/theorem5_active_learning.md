@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 We derive the optimal sampling distribution and a closed-form optimal sampling

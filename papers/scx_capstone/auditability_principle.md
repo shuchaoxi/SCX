@@ -1,3 +1,7 @@
+# Preamble: Why the Auditability Principle Is Necessary
+
+**Author:** SCX
+
 *Abstract:*
 
 **English Abstract:** We propose the **Auditability Principle** (AP) — the SCX analog of the Church-Turing Thesis:

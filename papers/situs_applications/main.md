@@ -1,14 +1,6 @@
-<div align="center">
+# SCX + Situs in One Picture
 
-**Document Type**: Perspective / Position Paper (no new experiments)
-
-**Target Journals**: *Nature Computational Science* or *Scientific Data*
-**Status Legend**:
-\;$\blacksquare$ Verified (mathematical proof or physical data)
-\;$\blacksquare$ Projected (theoretically grounded, unverified)
-\;$\blacksquare$ Known hard boundary / failure mode
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

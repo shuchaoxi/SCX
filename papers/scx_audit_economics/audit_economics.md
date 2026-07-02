@@ -1,3 +1,7 @@
+# Trust as a Commodity: Structural Anatomy of the Pre-Yajie Economy
+
+**Author:** SCX
+
 *Abstract:*
 
 The Yajie protocol does not merely improve audit efficiency — it creates an entirely new

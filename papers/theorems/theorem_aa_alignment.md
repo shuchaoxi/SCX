@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 AI alignment---ensuring that AI systems behave consistently with human values---

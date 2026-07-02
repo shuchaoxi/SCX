@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 \title{Consistency-Constrained Expert Merging for Transferable ACE 
 
 Machine-Learned Interatomic Potentials}

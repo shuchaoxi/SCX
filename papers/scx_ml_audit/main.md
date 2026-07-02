@@ -1,3 +1,7 @@
+# Prologue — The Indictment 序言——起诉书
+
+**Author:** SCX
+
 *Abstract:*
 
 Machine learning's 70-year history has produced thousands of algorithms. Not one declares its $M$ parameter — the minimum number of independent experts needed to certify output quality at error rate $\varepsilon$. Not one provides a formal quality guarantee backed by multi-expert consensus. We audit 27 major ML algorithms against the SCX{} framework's five theorems (multi-expert detection, self-audit prohibition, noise-signal unidentifiability, reviewer complicity, and Cercis scoring). Every algorithm is found **UNDECLARED** of at least one structural deficiency. The best classical algorithm (Random Forest, 随机森林) is deemed **VERIFIED** — it accidentally implements Theorem~1 through bootstrap + random subspace sampling. The worst (GAN, RL, Self-Supervised Learning) are **UNDECLARED** of $M=1$ or self-audit — epistemically equivalent to no audit at all. We rank all 27 algorithms by the Cercis{} Score $S = Q + \eta N$, where $Q$ measures formal quality guarantees and $N$ measures empirical novelty. The verdict: the 70-year history of ML is the history of algorithms that work — until they don't — with no way to know when or why. SCX{} provides the answer: declare $M$. If $M$ is high and verified, trust. If $M$ is low or undeclared, don't.

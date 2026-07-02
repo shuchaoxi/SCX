@@ -1,5 +1,7 @@
-\section{SCX Self-Evolution as a Discrete Dynamical
-System}<!-- label: scx-self-evolution-as-a-discrete-dynamical-system -->
+# SCX Self-Evolution as a Discrete Dynamical
+System
+
+**Author:** SCX
 
 > **Version**: 2026-06-28 |{} **Status**: Theoretical
 > development |{} **Audit**: Pre-verification
@@ -34,8 +36,8 @@ System}<!-- label: scx-self-evolution-as-a-discrete-dynamical-system -->
 
 </div>
 
-\subsection{1. Discrete Dynamical System
-Formulation}<!-- label: discrete-dynamical-system-formulation -->
+### 1. Discrete Dynamical System
+Formulation<!-- label: discrete-dynamical-system-formulation -->
 
 #### 1.1 Basic Formulation<!-- label: basic-formulation -->
 
@@ -57,8 +59,8 @@ state space (Section 5 of Document 01) -
 of Document 01) - \(\mathbb{N}_0 = \{0, 1, 2, ...\}\) is the discrete
 time index
 
-\subsubsection{1.2 Decomposition into Component
-Maps}<!-- label: decomposition-into-component-maps -->
+#### 1.2 Decomposition into Component
+Maps<!-- label: decomposition-into-component-maps -->
 
 The operator \(\Phi\) decomposes into three coupled maps:
 
@@ -93,8 +95,8 @@ depends only on \(S_t\) (not on \(M_t\) or \(\theta_t\));
 
 </div>
 
-\subsection{\texorpdfstring{2. State Space Topology and Metric on
-\(S_t\)}{2. State Space Topology and Metric on S\_t}}<!-- label: state-space-topology-and-metric-on-s_t -->
+### \texorpdfstring{2. State Space Topology and Metric on
+\(S_t\){2. State Space Topology and Metric on S\_t}}<!-- label: state-space-topology-and-metric-on-s_t -->
 
 #### 2.1 Metric Structure<!-- label: metric-structure -->
 
@@ -116,8 +118,8 @@ product space \((\mathcal{Z}, d_{\mathcal{Z}})\) is complete.
 \(\Theta \subseteq \mathbb{R}^{d_\theta}\) is complete if closed. The
 product of complete metric spaces is complete. \(\square\)
 
-\subsubsection{2.2 Compactness
-Considerations}<!-- label: compactness-considerations -->
+#### 2.2 Compactness
+Considerations<!-- label: compactness-considerations -->
 
 For existence of fixed points and attractors, compactness of the state
 space is desirable.
@@ -140,8 +142,8 @@ well-posedness.
 
 </div>
 
-\subsection{\texorpdfstring{3. Orbits Under
-\(\Phi\)}{3. Orbits Under \ Phi}}<!-- label: orbits-under-phi -->
+### \texorpdfstring{3. Orbits Under
+\(\Phi\){3. Orbits Under \ Phi}}<!-- label: orbits-under-phi -->
 
 #### 3.1 Definition<!-- label: definition -->
 
@@ -191,8 +193,8 @@ all \(t\). \(\square\)
 
 </div>
 
-\subsection{\texorpdfstring{4. Attractors and \(\omega\)-Limit
-Sets}{4. Attractors and \ omega-Limit Sets}}<!-- label: attractors-and-omega-limit-sets -->
+### \texorpdfstring{4. Attractors and \(\omega\)-Limit
+Sets{4. Attractors and \ omega-Limit Sets}}<!-- label: attractors-and-omega-limit-sets -->
 
 #### 4.1 Definition<!-- label: definition-1 -->
 
@@ -212,8 +214,8 @@ The **basin of attraction** of \(A\) is:
 
 \[\mathcal{B}(A) = \{ z \in \mathcal{Z} : \omega(z) \subseteq A \}\]
 
-\subsubsection{4.2 Candidate Attractors for
-SCX}<!-- label: candidate-attractors-for-scx -->
+#### 4.2 Candidate Attractors for
+SCX<!-- label: candidate-attractors-for-scx -->
 
 **Proposition 7 (Fixed Points as Attractors).** If \(z^*\) is an
 asymptotically stable fixed point (Definition 21), then \(\{z^*\}\) is
@@ -325,8 +327,8 @@ inspection. For stability claims, see Section 8. \(\square\)
 
 </div>
 
-\subsection{6. Existence Conditions for Fixed
-Points}<!-- label: existence-conditions-for-fixed-points -->
+### 6. Existence Conditions for Fixed
+Points<!-- label: existence-conditions-for-fixed-points -->
 
 #### 6.1 General Existence<!-- label: general-existence -->
 
@@ -350,8 +352,8 @@ the \(\arg\min\) in \(\Phi_\theta\) is set-valued if the minimum is not
 unique. Formalizing \(\Phi\) as a selection from a correspondence (upper
 hemicontinuous) allows using the Kakutani fixed-point theorem instead.
 
-\subsubsection{6.2 Specific Existence for
-SCX}<!-- label: specific-existence-for-scx -->
+#### 6.2 Specific Existence for
+SCX<!-- label: specific-existence-for-scx -->
 
 **Theorem 5 (Fixed Point Existence for SCX with Convex Loss).**
 Suppose: 1. The gatekeeper loss \(L_{gate}(S; M)\) is strictly
@@ -373,8 +375,8 @@ fixed point gives existence. \(\square\)
 In practice, neural network losses are non-convex, so the conditions are
 violated. The theorem provides an idealized benchmark.*
 
-\subsubsection{6.3 Necessary Condition for Non-Trivial Fixed
-Point}<!-- label: necessary-condition-for-non-trivial-fixed-point -->
+#### 6.3 Necessary Condition for Non-Trivial Fixed
+Point<!-- label: necessary-condition-for-non-trivial-fixed-point -->
 
 **Proposition 9 (Necessary Condition).** If \(z^*\) is a fixed
 point with \(M^* \neq \varnothing\), then the NEP student
@@ -398,8 +400,8 @@ admitted samples). \(\square\)
 
 </div>
 
-\subsection{7. Lyapunov Function --- Explicit Candidate (DEFECT-03/04
-Fix)}<!-- label: lyapunov-function-explicit-candidate-defect-0304-fix -->
+### 7. Lyapunov Function --- Explicit Candidate (DEFECT-03/04
+Fix)<!-- label: lyapunov-function-explicit-candidate-defect-0304-fix -->
 
 > **Status change (2026-06-28).** The original Section 7 defined a
 > vague Lyapunov candidate
@@ -412,8 +414,8 @@ Fix)}<!-- label: lyapunov-function-explicit-candidate-defect-0304-fix -->
 > concrete target for future proof. The convergence claim is downgraded
 > from ``Proven'' to **Conjecture**.
 
-\subsubsection{7.1 Concrete Lyapunov Function
-Candidate}<!-- label: concrete-lyapunov-function-candidate -->
+#### 7.1 Concrete Lyapunov Function
+Candidate<!-- label: concrete-lyapunov-function-candidate -->
 
 **Definition 23 (Concrete Lyapunov Function Candidate).** Define
 \(\Psi: \mathcal{F} \times \Theta \to \mathbb{R}_{\geq 0}\):
@@ -444,8 +446,8 @@ improving its true discriminative ability. By evaluating on a fixed
 reference set \(M_0\) that does not change with \(t\), we ensure that a
 decrease in \(\Phi\) reflects genuine improvement.
 
-\subsubsection{7.2 Component
-Decomposition}<!-- label: component-decomposition -->
+#### 7.2 Component
+Decomposition<!-- label: component-decomposition -->
 
 The Lyapunov function decomposes into two interpretable terms:
 
@@ -479,8 +481,8 @@ term decreases when the student learns better representations:
 finite \(M_0\), the empirical average is continuous in each argument.
 \(\square\)
 
-\subsubsection{7.4 Descent Analysis --- Honest
-Assessment}<!-- label: descent-analysis-honest-assessment -->
+#### 7.4 Descent Analysis --- Honest
+Assessment<!-- label: descent-analysis-honest-assessment -->
 
 **Definition 24 (Lyapunov Descent Property).** \(\Psi\) is a
 Lyapunov function for the dynamical system \((\mathcal{Z}, \Phi)\)
@@ -541,8 +543,8 @@ additional conditions (C6', C8, C9) are designed to close these gaps,
 but their formal sufficiency has not been established. **The
 descent property is therefore a conjecture, not a theorem.**
 
-\subsubsection{7.5 Downgraded Convergence
-Claim}<!-- label: downgraded-convergence-claim -->
+#### 7.5 Downgraded Convergence
+Claim<!-- label: downgraded-convergence-claim -->
 
 **Conjecture SE-1 (formerly ``Theorem SE-1'').** With the explicit
 Lyapunov candidate \(\Psi\) defined above and under conditions
@@ -588,8 +590,8 @@ where the expectation is over the random sampling of batches.
 for sufficiently small step sizes (standard result for SGD with unbiased
 gradients). \(\square\)
 
-\subsubsection{8.2 Strict Monotonicity
-Gap}<!-- label: strict-monotonicity-gap -->
+#### 8.2 Strict Monotonicity
+Gap<!-- label: strict-monotonicity-gap -->
 
 **Proposition 11 (Strict Decrease Condition).** The inequality
 \(\Delta V(z_t) < 0\) is strict unless both of the following hold: 1.
@@ -602,8 +604,8 @@ If either gradient is non-zero, the gradient step strictly decreases the
 respective loss (for sufficiently small step sizes), giving
 \(\Delta V(z_t) < 0\).
 
-\subsubsection{8.3 Monotonicity of Memory
-Bank}<!-- label: monotonicity-of-memory-bank -->
+#### 8.3 Monotonicity of Memory
+Bank<!-- label: monotonicity-of-memory-bank -->
 
 A separate monotonicity holds for the memory bank:
 
@@ -618,8 +620,8 @@ and converges to \(N_\infty \leq \infty\).
 \(N_t \leq N_{t+1}\). Monotone bounded sequences converge (possibly to
 \(\infty\)). \(\square\)
 
-\subsubsection{\texorpdfstring{8.4 Relationship Between \(V\) and
-\(N_t\)}{8.4 Relationship Between V and N\_t}}<!-- label: relationship-between-v-and-n_t -->
+#### \texorpdfstring{8.4 Relationship Between \(V\) and
+\(N_t\){8.4 Relationship Between V and N\_t}}<!-- label: relationship-between-v-and-n_t -->
 
 **Proposition 13 (Consistency of Monotonicities).** A decreasing
 Lyapunov function \(V(z_t)\) and an increasing memory size \(N_t\) are
@@ -636,8 +638,8 @@ accumulate more data (higher \(N_t\)).
 
 ### 9. Phase Portrait<!-- label: phase-portrait -->
 
-\subsubsection{9.1 Qualitative
-Description}<!-- label: qualitative-description -->
+#### 9.1 Qualitative
+Description<!-- label: qualitative-description -->
 
 Based on the analysis above, the SCX self-evolution system has the
 following qualitative phase portrait:
@@ -735,11 +737,11 @@ requires analyzing the noise propagation eigenvalue (see Proposition
 
 </div>
 
-\subsection{10. Connection to Existing Theorems
-1-3}<!-- label: connection-to-existing-theorems-1-3 -->
+### 10. Connection to Existing Theorems
+1-3<!-- label: connection-to-existing-theorems-1-3 -->
 
-\subsubsection{10.1 Theorem 1: Noise Detection
-Guarantee}<!-- label: theorem-1-noise-detection-guarantee -->
+#### 10.1 Theorem 1: Noise Detection
+Guarantee<!-- label: theorem-1-noise-detection-guarantee -->
 
 Theorem 1 provides the **initialization guarantee** for the
 dynamical system:
@@ -755,8 +757,8 @@ exponentially in \(M\). A larger \(M\) gives a better initialization,
 reducing the number of evolution rounds needed to reach a given
 performance level.
 
-\subsubsection{10.2 Theorem 2: Weak Feature Failure Lower
-Bound}<!-- label: theorem-2-weak-feature-failure-lower-bound -->
+#### 10.2 Theorem 2: Weak Feature Failure Lower
+Bound<!-- label: theorem-2-weak-feature-failure-lower-bound -->
 
 Theorem 2 constrains the **improvement rate** of the dynamical
 system:
@@ -784,8 +786,8 @@ constant of the F1 score.
 that self-evolution cannot amplify information not present in the
 features. The information bottleneck principle suggests this is true.*
 
-\subsubsection{10.3 Theorem 3: Noise-Difficulty
-Unidentifiability}<!-- label: theorem-3-noise-difficulty-unidentifiability -->
+#### 10.3 Theorem 3: Noise-Difficulty
+Unidentifiability<!-- label: theorem-3-noise-difficulty-unidentifiability -->
 
 Theorem 3 establishes a fundamental **obstacle** to convergence to
 the perfect fixed point:
@@ -840,8 +842,8 @@ initialization → improvement (bounded by feature quality) → saturation
 
 </div>
 
-\subsection{11. Summary of Proven vs.~Conjectured
-Claims}<!-- label: summary-of-proven-vs.-conjectured-claims -->
+### 11. Summary of Proven vs.~Conjectured
+Claims<!-- label: summary-of-proven-vs.-conjectured-claims -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2800}}

@@ -1,3 +1,7 @@
+# Introduction 引言
+
+**Author:** SCX
+
 *Abstract:*
 
 We formalize legal evidence evaluation as a multi-expert audit problem under the SCX{} (Structured Causal eXamination) framework. In this formulation, each legal witness $w \in \witnessSet$ is an **expert** who produces a **testimony** $\tau_w = (m_w, \mathcal{A}_w)$ consisting of a factual claim $m_w$ and a set of declared assumptions $\mathcal{A}_w$ under which the claim holds. Cross-examination is modeled as an **audit procedure** $\crossexam$ that interrogates the internal consistency and assumption-coverage of each testimony. Corroborating testimonies across independent witnesses form a Yajie{} **consensus** with bounded error probability; contradictory testimonies yield a **discrepancy signal** $\discrepancy$ whose source is unidentifiable without declared assumptions. The evidence chain is formalized as a **cryptographic hash chain** $\evidenceChain = (e_0, ..., e_K)$ where $h_i = \hashFunc(e_i \| h_{i-1})$, guaranteeing tamper-proof sequential integrity.

@@ -1,3 +1,7 @@
+# Introduction: Why Quantum for Audit Security?
+
+**Author:** SCX
+
 *Abstract:*
 
 We present a rigorous formalization of **quantum-secured audit communication**

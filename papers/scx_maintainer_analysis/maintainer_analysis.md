@@ -1,14 +1,6 @@
-<div align="center">
+# The Maintainer Problem: Why Choosing the Right Person Is Impossible, and Why Choosing the Right Mechanism Makes It Possible
 
-\fbox{\fbox{\parbox{0.85\textwidth}{\bfseries
-THIS DOCUMENT IS CLASSIFIED INTERNAL.
-
-Unauthorized distribution is prohibited. Contains detailed
-
-candidate assessments for SCX protocol maintainer roles.
-}}}
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

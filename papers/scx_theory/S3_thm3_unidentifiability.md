@@ -1,3 +1,7 @@
+# Theorem 3: The Honest Person Theorem (The Honest Person Theorem)
+
+**Author:** SCX
+
 ## Theorem 3: The Honest Person Theorem (The Honest Person Theorem)
 <!-- label: sec:thm3 -->
 

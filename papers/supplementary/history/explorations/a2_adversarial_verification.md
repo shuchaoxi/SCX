@@ -1,6 +1,8 @@
-\section{Adversarial Verification: Conditional Independence of
+# Adversarial Verification: Conditional Independence of
 Bootstrap-Trained Expert Error
-Indicators}<!-- label: adversarial-verification-conditional-independence-of-bootstrap-trained-expert-error-indicators -->
+Indicators
+
+**Author:** SCX
 
 **Claim under review**: If M experts are trained on independent
 bootstrap samples D\_1, ..., D\_M (drawn i.i.d. with replacement from
@@ -17,9 +19,9 @@ fundamentally from bootstrap. See below.
 
 </div>
 
-\subsection{Attack 1: Bootstrap samples are NOT independent --- the
+### Attack 1: Bootstrap samples are NOT independent --- the
 claim's premise is
-false}<!-- label: attack-1-bootstrap-samples-are-not-independent-the-claims-premise-is-false -->
+false<!-- label: attack-1-bootstrap-samples-are-not-independent-the-claims-premise-is-false -->
 
 **Description**: The claim asserts ``D\_1, ..., D\_M are
 independent by construction (bootstrap).'' This is mathematically
@@ -80,8 +82,8 @@ positive probability due to both depending on the same D\_original.
 
 </div>
 
-\subsection{Attack 2: The proof sketch ignores the shared label
-y}<!-- label: attack-2-the-proof-sketch-ignores-the-shared-label-y -->
+### Attack 2: The proof sketch ignores the shared label
+y<!-- label: attack-2-the-proof-sketch-ignores-the-shared-label-y -->
 
 **Description**: The proof states ``e\_m(x) depends only on
 f\_m(x).'' This is false. The error indicator is:
@@ -150,8 +152,8 @@ but the proof as written is incorrect.
 
 </div>
 
-\subsection{Attack 3: Fatal mismatch between the claim and the paper's
-A1}<!-- label: attack-3-fatal-mismatch-between-the-claim-and-the-papers-a1 -->
+### Attack 3: Fatal mismatch between the claim and the paper's
+A1<!-- label: attack-3-fatal-mismatch-between-the-claim-and-the-papers-a1 -->
 
 **Description**: The paper's A1 states:
 
@@ -207,8 +209,8 @@ paper's A1 (disjoint).
 
 </div>
 
-\subsection{Attack 4: Non-deterministic training and hidden shared
-randomness}<!-- label: attack-4-non-deterministic-training-and-hidden-shared-randomness -->
+### Attack 4: Non-deterministic training and hidden shared
+randomness<!-- label: attack-4-non-deterministic-training-and-hidden-shared-randomness -->
 
 **Description**: The claim assumes f\_m = A(D\_m) where A is
 deterministic. In practice:
@@ -250,9 +252,9 @@ mathematical claim if the independence of ξ\_m is explicitly assumed.
 
 </div>
 
-\subsection{Attack 5: ``Independent random functions'' does not
+### Attack 5: ``Independent random functions'' does not
 automatically imply pointwise independence for random test
-points}<!-- label: attack-5-independent-random-functions-does-not-automatically-imply-pointwise-independence-for-random-test-points -->
+points<!-- label: attack-5-independent-random-functions-does-not-automatically-imply-pointwise-independence-for-random-test-points -->
 
 **Description**: The claim says ``f\_m are independent random
 functions, therefore f\_m(x) are independent for fixed x.'' This is
@@ -275,9 +277,9 @@ handles this.
 
 </div>
 
-\subsection{Attack 6: In the bootstrap setting, overlapping training
+### Attack 6: In the bootstrap setting, overlapping training
 data creates dependence beyond
-D\_original}<!-- label: attack-6-in-the-bootstrap-setting-overlapping-training-data-creates-dependence-beyond-d_original -->
+D\_original<!-- label: attack-6-in-the-bootstrap-setting-overlapping-training-data-creates-dependence-beyond-d_original -->
 
 **Description**: Even when D\_original is treated as fixed
 (conditional inference), bootstrap samples are conditionally independent
@@ -338,9 +340,9 @@ the bootstrap interpretation.
 
 </div>
 
-\subsection{Attack 7: The label y might come from the same distribution
+### Attack 7: The label y might come from the same distribution
 as the training data, creating subtle
-dependence}<!-- label: attack-7-the-label-y-might-come-from-the-same-distribution-as-the-training-data-creating-subtle-dependence -->
+dependence<!-- label: attack-7-the-label-y-might-come-from-the-same-distribution-as-the-training-data-creating-subtle-dependence -->
 
 **Description**: In the paper's label noise model (A4), the
 observed label y is:

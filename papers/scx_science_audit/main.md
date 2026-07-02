@@ -1,3 +1,7 @@
+# Theorem 4 — Reviewer Complicity 审稿人同谋对等定理
+
+**Author:** SCX
+
 95|
 96|
 97|

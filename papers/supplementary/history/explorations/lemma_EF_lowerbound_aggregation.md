@@ -1,5 +1,7 @@
-\section{Lemma E \& Lemma F: Second-Order Lower Bound and Multi-State
-Aggregation}<!-- label: lemma-e-lemma-f-second-order-lower-bound-and-multi-state-aggregation -->
+# Lemma E \& Lemma F: Second-Order Lower Bound and Multi-State
+Aggregation
+
+**Author:** SCX
 
 > **Status**: Complete proofs. **Prerequisites**: Lemma A
 > (Bahadur-Rao for Bernoulli), Lemma B (F1 asymptotic expansion), Lemma C
@@ -13,8 +15,8 @@ Aggregation}<!-- label: lemma-e-lemma-f-second-order-lower-bound-and-multi-state
 
 </div>
 
-\subsection{Lemma E: Second-Order Asymptotic Lower Bound (Exact Constant
-Minimax)}<!-- label: lemma-e-second-order-asymptotic-lower-bound-exact-constant-minimax -->
+### Lemma E: Second-Order Asymptotic Lower Bound (Exact Constant
+Minimax)<!-- label: lemma-e-second-order-asymptotic-lower-bound-exact-constant-minimax -->
 
 #### Statement<!-- label: statement -->
 
@@ -86,8 +88,8 @@ The proof proceeds in five parts.
 
 </div>
 
-\paragraph{Part 1: Reduction to a binary hypothesis
-test}<!-- label: part-1-reduction-to-a-binary-hypothesis-test -->
+##### Part 1: Reduction to a binary hypothesis
+test<!-- label: part-1-reduction-to-a-binary-hypothesis-test -->
 
 Within a fixed state \(s\), Assumption (A5) guarantees that the expert
 errors are conditionally i.i.d. given the state. Under the clean label
@@ -131,8 +133,8 @@ decision rules \(\delta_M\).
 
 </div>
 
-\paragraph{Part 2: Application of the Neyman-Pearson
-lemma}<!-- label: part-2-application-of-the-neyman-pearson-lemma -->
+##### Part 2: Application of the Neyman-Pearson
+lemma<!-- label: part-2-application-of-the-neyman-pearson-lemma -->
 
 Consider the simple-versus-simple testing problem
 \(\mathrm{H}_0: p=p_0\) vs \(\mathrm{H}_1: p=p_1\). The likelihood ratio
@@ -201,8 +203,8 @@ where
 
 </div>
 
-\paragraph{Part 3: Exact asymptotics of the Bayes
-test}<!-- label: part-3-exact-asymptotics-of-the-bayes-test -->
+##### Part 3: Exact asymptotics of the Bayes
+test<!-- label: part-3-exact-asymptotics-of-the-bayes-test -->
 
 The Bayes test rejects \(\mathrm{H}_0\) when the log-likelihood ratio
 exceeds \(\log((1-\eta)/\eta)\). Write
@@ -277,8 +279,8 @@ in the prefactors are uniform in a neighbourhood of \(\theta^*\).
 
 </div>
 
-\paragraph{Part 4: Expansion around the Chernoff
-point}<!-- label: part-4-expansion-around-the-chernoff-point -->
+##### Part 4: Expansion around the Chernoff
+point<!-- label: part-4-expansion-around-the-chernoff-point -->
 
 Write \(\delta = \delta_M\) and expand the KL divergences:
 
@@ -368,9 +370,9 @@ Multiplying by \(e^{M\kappa}\sqrt{2\pi M}\) and taking the limit gives
 
 </div>
 
-\paragraph{\texorpdfstring{Part 5: Conversion to the \(F_1\) lower bound
+##### \texorpdfstring{Part 5: Conversion to the \(F_1\) lower bound
 and edge
-cases}{Part 5: Conversion to the F\_1 lower bound and edge cases}}<!-- label: part-5-conversion-to-the-f_1-lower-bound-and-edge-cases -->
+cases{Part 5: Conversion to the F\_1 lower bound and edge cases}}<!-- label: part-5-conversion-to-the-f_1-lower-bound-and-edge-cases -->
 
 From Part 1,
 \(1-\operatorname{F1}_{\mathcal{A}} = R_M(\delta_{\mathcal{A}}) + o(1)\).
@@ -437,8 +439,8 @@ lower bound holds. This completes the proof of Lemma E. \(\square\)
 
 </div>
 
-\subsection{Lemma F: Multi-State
-Aggregation}<!-- label: lemma-f-multi-state-aggregation -->
+### Lemma F: Multi-State
+Aggregation<!-- label: lemma-f-multi-state-aggregation -->
 
 #### Statement<!-- label: statement-1 -->
 
@@ -503,8 +505,8 @@ Since the sum is finite and linearity of expectation applies, we obtain
 
 This holds exactly for every finite \(M\), with no approximation.
 
-\paragraph{Part 2: Asymptotic rate and the bottleneck
-state}<!-- label: part-2-asymptotic-rate-and-the-bottleneck-state -->
+##### Part 2: Asymptotic rate and the bottleneck
+state<!-- label: part-2-asymptotic-rate-and-the-bottleneck-state -->
 
 From Lemma E, each state contributes
 
@@ -553,8 +555,8 @@ with weights \(\rho_s\) gives
 \ge \frac{1}\sum_{s\in\mathcal{S}_} \rho_s C_s.
 \]
 
-\paragraph{Part 3: Dominant-state
-selection}<!-- label: part-3-dominant-state-selection -->
+##### Part 3: Dominant-state
+selection<!-- label: part-3-dominant-state-selection -->
 
 From the expression above, only the set \(\mathcal{S}_\)
 contributes to the leading constant. Within \(\mathcal{S}_\), each
@@ -572,8 +574,8 @@ If \(|\mathcal{S}_| \ge 2\), the single largest product
 \(C_{global} = \rho_{s_0} C_{s_0}\) for
 \(s_0 = \arg\min \kappa_s\).
 
-\paragraph{\texorpdfstring{Part 4: Finite-\(M\) upper
-bound}{Part 4: Finite-M upper bound}}<!-- label: part-4-finite-m-upper-bound -->
+##### \texorpdfstring{Part 4: Finite-\(M\) upper
+bound{Part 4: Finite-M upper bound}}<!-- label: part-4-finite-m-upper-bound -->
 
 From the additivity property and the fact that each
 \(1-\operatorname{F1}_s(M) \ge 0\):
@@ -666,8 +668,8 @@ lower-bound constant
 
 \end{longtable}
 
-\subsubsection{C\_min Canonical Form and Across-File
-Reconciliation}<!-- label: c_min-canonical-form-and-across-file-reconciliation -->
+#### C\_min Canonical Form and Across-File
+Reconciliation<!-- label: c_min-canonical-form-and-across-file-reconciliation -->
 
 **FIXED (2026-06-28, DEFECT-09):** The constant \(C_\) was
 defined inconsistently across three files (architecture document §3.4,

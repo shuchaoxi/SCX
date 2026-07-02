@@ -1,3 +1,7 @@
+# Theorem~4': Exact Constant Minimax Optimality
+
+**Author:** SCX
+
 ## Theorem~4': Exact Constant Minimax Optimality
 <!-- label: sec:thm4 -->
 

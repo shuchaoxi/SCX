@@ -1,3 +1,7 @@
+# Theorem 2: Weak Feature Failure Boundary (The Impossible Demand Theorem)
+
+**Author:** SCX
+
 ## Theorem 2: Weak Feature Failure Boundary (The Impossible Demand Theorem)
 <!-- label: sec:thm2 -->
 

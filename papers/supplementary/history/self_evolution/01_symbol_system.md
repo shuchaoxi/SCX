@@ -1,5 +1,7 @@
-\section{SCX Self-Evolution: Symbol System and Problem
-Setup}<!-- label: scx-self-evolution-symbol-system-and-problem-setup -->
+# SCX Self-Evolution: Symbol System and Problem
+Setup
+
+**Author:** SCX
 
 > **Version**: 2026-06-28 |{} **Status**: Foundational
 > |{} **Audit**: Pre-verification **Purpose**: Define
@@ -61,8 +63,8 @@ properties (Document 02) and the online learning regret (Document 03).
 
 </div>
 
-\subsection{2. Preliminary: Inherited Notation from Core SCX
-Theory}<!-- label: preliminary-inherited-notation-from-core-scx-theory -->
+### 2. Preliminary: Inherited Notation from Core SCX
+Theory<!-- label: preliminary-inherited-notation-from-core-scx-theory -->
 
 We inherit the following from THEOREMS\_UNIFIED.md. Any symbol not
 redefined below retains its meaning from the core theory.
@@ -148,8 +150,8 @@ Thm 2, 5
 
 </div>
 
-\subsection{3. New Objects for
-Self-Evolution}<!-- label: new-objects-for-self-evolution -->
+### 3. New Objects for
+Self-Evolution<!-- label: new-objects-for-self-evolution -->
 
 The self-evolution framework introduces the following new objects:
 
@@ -199,8 +201,8 @@ self-evolution). Time advances forward as the loop executes.
 
 </div>
 
-\subsection{\texorpdfstring{4. Structure Space
-\(\mathcal{X}\)}{4. Structure Space \ mathcal\{X\}}}<!-- label: structure-space-mathcalx -->
+### \texorpdfstring{4. Structure Space
+\(\mathcal{X\)}{4. Structure Space \ mathcal\{X\}}}<!-- label: structure-space-mathcalx -->
 
 #### 4.1 Definition<!-- label: definition -->
 
@@ -225,8 +227,8 @@ parameters. - The key structural variable for the self-evolution
 analysis is the pair \((\mathcal{S}, s(\cdot))\) (the state partition)
 because errors in state discovery propagate to all downstream estimates.
 
-\subsubsection{4.2 Metric on Structure
-Space}<!-- label: metric-on-structure-space -->
+#### 4.2 Metric on Structure
+Space<!-- label: metric-on-structure-space -->
 
 For theoretical analysis, we endow \(\mathcal{X}\) with a metric induced
 by the total variation distance between the implied consensus score
@@ -267,8 +269,8 @@ the evolution state space, with:
 - 
 - 
 
-\subsubsection{\texorpdfstring{5.2 Topology on
-\(\mathcal{F}\)}{5.2 Topology on \ mathcal\{F\}}}<!-- label: topology-on-mathcalf -->
+#### \texorpdfstring{5.2 Topology on
+\(\mathcal{F\)}{5.2 Topology on \ mathcal\{F\}}}<!-- label: topology-on-mathcalf -->
 
 We equip \(\mathcal{F}\) with the topology of pointwise convergence,
 equivalently the product topology. For analysis, the relevant metric is:
@@ -285,8 +287,8 @@ functions. Under standard regularity conditions (e.g., \(S\) is
 Lipschitz in its parameters), \(d_{\mathcal{F}}\) is equivalent to the
 \(L^1(\mathcal{D})\) distance.
 
-\subsubsection{\texorpdfstring{5.3 Topology on
-\(\mathcal{M}\)}{5.3 Topology on \ mathcal\{M\}}}<!-- label: topology-on-mathcalm -->
+#### \texorpdfstring{5.3 Topology on
+\(\mathcal{M\)}{5.3 Topology on \ mathcal\{M\}}}<!-- label: topology-on-mathcalm -->
 
 The memory bank \(M_t\) is a finite multiset. We equip \(\mathcal{M}\)
 with the metric induced by the Hausdorff distance on the
@@ -320,8 +322,8 @@ equipped with the product metric:
 
 </div>
 
-\subsection{\texorpdfstring{6. Scoring Function
-\(S_t\)}{6. Scoring Function S\_t}}<!-- label: scoring-function-s_t -->
+### \texorpdfstring{6. Scoring Function
+\(S_t\){6. Scoring Function S\_t}}<!-- label: scoring-function-s_t -->
 
 #### 6.1 Definition<!-- label: definition-2 -->
 
@@ -378,8 +380,8 @@ targets for the NEP student
 
 </div>
 
-\subsection{\texorpdfstring{7. Memory Bank
-\(M_t\)}{7. Memory Bank M\_t}}<!-- label: memory-bank-m_t -->
+### \texorpdfstring{7. Memory Bank
+\(M_t\){7. Memory Bank M\_t}}<!-- label: memory-bank-m_t -->
 
 #### 7.1 Definition<!-- label: definition-3 -->
 
@@ -449,8 +451,8 @@ expectation. \(\square\)
 
 </div>
 
-\subsection{\texorpdfstring{8. NEP Student
-\(f_{\theta_t}\)}{8. NEP Student f\_\{\ theta\_t\}}}<!-- label: nep-student-f_theta_t -->
+### \texorpdfstring{8. NEP Student
+\(f_{\theta_t\)}{8. NEP Student f\_\{\ theta\_t\}}}<!-- label: nep-student-f_theta_t -->
 
 #### 8.1 Definition<!-- label: definition-4 -->
 
@@ -501,8 +503,8 @@ and \(M_0\) is populated with expert consensus labels.
 
 </div>
 
-\subsection{\texorpdfstring{9. Update Operator
-\(\Phi\)}{9. Update Operator \ Phi}}<!-- label: update-operator-phi -->
+### \texorpdfstring{9. Update Operator
+\(\Phi\){9. Update Operator \ Phi}}<!-- label: update-operator-phi -->
 
 #### 9.1 Definition<!-- label: definition-5 -->
 
@@ -525,8 +527,8 @@ where:
 2. 
 3. 
 
-\subsubsection{9.2 Deferred Update
-Variant}<!-- label: deferred-update-variant -->
+#### 9.2 Deferred Update
+Variant<!-- label: deferred-update-variant -->
 
 In practice, updates may be applied at different frequencies. Define the
 **update interval** \(\Delta_t\) as the number of evolution rounds
@@ -552,8 +554,8 @@ Let \(\Phi^{(k)}\) denote \(k\) successive applications:
 
 ### 10. Loss Functions<!-- label: loss-functions -->
 
-\subsubsection{\texorpdfstring{10.1 Gatekeeper Loss
-\(L_{gate}\)}{10.1 Gatekeeper Loss L\_\{\ text\{gate\}\}}}<!-- label: gatekeeper-loss-l_textgate -->
+#### \texorpdfstring{10.1 Gatekeeper Loss
+\(L_{gate\)}{10.1 Gatekeeper Loss L\_\{\ text\{gate\}\}}}<!-- label: gatekeeper-loss-l_textgate -->
 
 **Definition 10 (Gatekeeper Loss).** For a scoring function \(S\)
 and a sample \((x, y)\) with (possibly unknown) ground-truth noise
@@ -590,8 +592,8 @@ probability \(\mathbb{P}(z=0 \mid x, y)\). Applying Bayes' rule gives
 the expression. Under A4, \(\mathbb{P}(y \mid x, noise)\) is
 uniform, simplifying the ratio. \(\square\)
 
-\subsubsection{\texorpdfstring{10.2 NEP Student Loss
-\(L_{nep}\)}{10.2 NEP Student Loss L\_\{\ text\{nep\}\}}}<!-- label: nep-student-loss-l_textnep -->
+#### \texorpdfstring{10.2 NEP Student Loss
+\(L_{nep\)}{10.2 NEP Student Loss L\_\{\ text\{nep\}\}}}<!-- label: nep-student-loss-l_textnep -->
 
 **Definition 11 (NEP Student Loss).** The NEP student is trained
 with a noise-robust loss function:
@@ -608,8 +610,8 @@ The **empirical NEP loss** on memory bank \(M_t\):
 
 \[\hat{L}_{nep}(f_\theta; M_t) = \frac{1}{N_t} \sum_{i=1}^{N_t} \ell_{CE}(f_\theta(x_i), y_i) + \frac{N_t} \sum_{i=1}^{N_t} \ell_{cons}(f_\theta(x_i), f_{expert}(x_i))\]
 
-\subsubsection{10.3 Composite Loss for
-Self-Evolution}<!-- label: composite-loss-for-self-evolution -->
+#### 10.3 Composite Loss for
+Self-Evolution<!-- label: composite-loss-for-self-evolution -->
 
 The overall objective guiding self-evolution is:
 
@@ -682,11 +684,11 @@ where: - \(Recall_t = DetectionRate_t\) -
 
 </div>
 
-\subsection{12. Relationship to Existing
-Definitions}<!-- label: relationship-to-existing-definitions -->
+### 12. Relationship to Existing
+Definitions<!-- label: relationship-to-existing-definitions -->
 
-\subsubsection{12.1 From Static to
-Dynamic}<!-- label: from-static-to-dynamic -->
+#### 12.1 From Static to
+Dynamic<!-- label: from-static-to-dynamic -->
 
 The existing SCX theory (THEOREMS\_UNIFIED.md) provides guarantees for a
 **static** gatekeeper \(S_{static}\) defined as:
@@ -701,8 +703,8 @@ S_{static}(x, y) & t = 0  (initialization)
 Update(S_{t-1}, M_{t-1}, f_{\theta_{t-1}}) & t \geq 1
 \end{cases}\]
 
-\subsubsection{12.2 Connection to State-Conditioned
-Risk}<!-- label: connection-to-state-conditioned-risk -->
+#### 12.2 Connection to State-Conditioned
+Risk<!-- label: connection-to-state-conditioned-risk -->
 
 The expert risk \(R_m(s)\) and reliability score \(SCX_m(s)\)
 from the static theory appear in the initialization:
@@ -712,8 +714,8 @@ from the static theory appear in the initialization:
 where
 \(SCX_m(s) = \mathbb{P}(\ell(f_m(x), y) < \tau \mid x \in s)\).
 
-\subsubsection{12.3 Connection to Consensus
-Score}<!-- label: connection-to-consensus-score -->
+#### 12.3 Connection to Consensus
+Score<!-- label: connection-to-consensus-score -->
 
 The consensus score \(C(x)\) is related to \(S_0\) via:
 
@@ -724,8 +726,8 @@ This gives the key insight: the initial gatekeeper is the
 that the sample is erroneous (\(C(x)\) near 1) means low gatekeeper
 score (\(S_0\) near 0), flagging the sample as potentially noisy.
 
-\subsubsection{12.4 Theorems 1-3 in the Dynamic
-Setting}<!-- label: theorems-1-3-in-the-dynamic-setting -->
+#### 12.4 Theorems 1-3 in the Dynamic
+Setting<!-- label: theorems-1-3-in-the-dynamic-setting -->
 
 - 
 - 
@@ -742,9 +744,9 @@ contains sufficient clean samples.
 
 *Status: **Conjecture** --- not yet proven.*
 
-\subsubsection{12.5 Assumption A2: Untestability and Violation
+#### 12.5 Assumption A2: Untestability and Violation
 Degradation (DEFECT-07
-Fix)}<!-- label: assumption-a2-untestability-and-violation-degradation-defect-07-fix -->
+Fix)<!-- label: assumption-a2-untestability-and-violation-degradation-defect-07-fix -->
 
 **Original claim.** Assumption A2 jointly requires **both**
 requirements: (i) experts are trained on disjoint data (ensuring
@@ -797,8 +799,8 @@ assumption is not empirically testable from the SCX pipeline's data.**
 When violated (e.g., due to shared inductive biases), replace \(M\) with
 \(M_{eff}\) in all concentration bounds.''
 
-\subsection{13. Assumption Catalog for Self-Evolution
-(B1-B6)}<!-- label: assumption-catalog-for-self-evolution-b1-b6 -->
+### 13. Assumption Catalog for Self-Evolution
+(B1-B6)<!-- label: assumption-catalog-for-self-evolution-b1-b6 -->
 
 These assumptions extend the core A1-A6 into the self-evolution regime.
 
@@ -852,8 +854,8 @@ delay & Doc 03 & For delay analysis
 
 \end{longtable}
 
-\subsubsection{13.1 Relationship to Core Assumptions
-A1-A6}<!-- label: relationship-to-core-assumptions-a1-a6 -->
+#### 13.1 Relationship to Core Assumptions
+A1-A6<!-- label: relationship-to-core-assumptions-a1-a6 -->
 
 The core assumptions A1-A6 operate at the level of individual expert
 models and sample statistics. The self-evolution assumptions B1-B6

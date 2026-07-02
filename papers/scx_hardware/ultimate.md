@@ -1,5 +1,7 @@
-\section{🏔️ 面壁者终极限配置 ---
-一步到位}<!-- label: ux9762ux58c1ux8005ux7ec8ux6781ux9650ux914dux7f6e-ux4e00ux6b65ux5230ux4f4d -->
+# 🏔️ 面壁者终极限配置 ---
+一步到位
+
+**Author:** SCX
 
 ### 核心思想<!-- label: ux6838ux5fc3ux601dux60f3 -->
 

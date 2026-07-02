@@ -1,5 +1,7 @@
-\section{SCX Theory: Full Proof Chain
-Audit}<!-- label: scx-theory-full-proof-chain-audit -->
+# SCX Theory: Full Proof Chain
+Audit
+
+**Author:** SCX
 
 > **Date**: 2026-06-28 |{} **Status**: Pre-submission
 > audit **Purpose**: Cross-check every theorem dependency, verify no
@@ -13,8 +15,8 @@ Audit}<!-- label: scx-theory-full-proof-chain-audit -->
 
 </div>
 
-\subsection{1. Dependency Graph
-(Verified)}<!-- label: dependency-graph-verified -->
+### 1. Dependency Graph
+(Verified)<!-- label: dependency-graph-verified -->
 
 \begin{verbatim}
                          ┌──────────────────────┐
@@ -101,11 +103,11 @@ acyclic graph). **No circular dependencies found.**
 
 </div>
 
-\subsection{2. Dependency-by-Dependency
-Verification}<!-- label: dependency-by-dependency-verification -->
+### 2. Dependency-by-Dependency
+Verification<!-- label: dependency-by-dependency-verification -->
 
-\subsubsection{2.1 Chain: Thm 3 → A1-A6 → Thm
-1}<!-- label: chain-thm-3-a1-a6-thm-1 -->
+#### 2.1 Chain: Thm 3 → A1-A6 → Thm
+1<!-- label: chain-thm-3-a1-a6-thm-1 -->
 
 **Claim**: Theorem 1's assumptions (A1-A6) are justified by Theorem
 3's unidentifiability result.
@@ -167,8 +169,8 @@ arXiv submission.
 
 </div>
 
-\subsubsection{2.2 Chain: Thm 1 → Spring-1 (Noise Detection → Gatekeeper
-Initialization)}<!-- label: chain-thm-1-spring-1-noise-detection-gatekeeper-initialization -->
+#### 2.2 Chain: Thm 1 → Spring-1 (Noise Detection → Gatekeeper
+Initialization)<!-- label: chain-thm-1-spring-1-noise-detection-gatekeeper-initialization -->
 
 **Claim**: Theorem 1's noise detection guarantee provides the
 signal that initializes the gatekeeper \(S_0\) and continuously
@@ -228,8 +230,8 @@ independent of A1-A6.
 
 </div>
 
-\subsubsection{2.3 Chain: Thm 2 → Spring-1 (Weak Feature → Degradation
-Rate)}<!-- label: chain-thm-2-spring-1-weak-feature-degradation-rate -->
+#### 2.3 Chain: Thm 2 → Spring-1 (Weak Feature → Degradation
+Rate)<!-- label: chain-thm-2-spring-1-weak-feature-degradation-rate -->
 
 **Claim**: Theorem 2's weak feature bound characterizes when SCX
 cannot outperform the loss baseline, providing the boundary condition
@@ -291,8 +293,8 @@ itself.
 
 </div>
 
-\subsubsection{2.4 Chain: Spring-1 → Spring-2 (Convergence →
-Completeness)}<!-- label: chain-spring-1-spring-2-convergence-completeness -->
+#### 2.4 Chain: Spring-1 → Spring-2 (Convergence →
+Completeness)<!-- label: chain-spring-1-spring-2-convergence-completeness -->
 
 **Claim**: Theorem SE-1's convergence guarantee provides the
 Lyapunov structure that Theorem SE-2 uses to prove finite-time
@@ -356,8 +358,8 @@ are independent and verifiable.
 
 </div>
 
-\subsubsection{2.5 Cross-Verification: Hidden
-Assumptions}<!-- label: cross-verification-hidden-assumptions -->
+#### 2.5 Cross-Verification: Hidden
+Assumptions<!-- label: cross-verification-hidden-assumptions -->
 
 We check for assumptions that are used but not explicitly stated in the
 dependency chain.
@@ -420,11 +422,11 @@ strengthens the theorem.
 
 </div>
 
-\subsection{3. Notation Consistency
-Audit}<!-- label: notation-consistency-audit -->
+### 3. Notation Consistency
+Audit<!-- label: notation-consistency-audit -->
 
-\subsubsection{3.1 Critical Notation
-Checks}<!-- label: critical-notation-checks -->
+#### 3.1 Critical Notation
+Checks<!-- label: critical-notation-checks -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1290}}
@@ -498,8 +500,8 @@ Lyapunov)
 
 \end{longtable}
 
-\subsubsection{3.2 Notation Conflicts Requiring
-Attention}<!-- label: notation-conflicts-requiring-attention -->
+#### 3.2 Notation Conflicts Requiring
+Attention<!-- label: notation-conflicts-requiring-attention -->
 
 **Conflict 1: \(\mathcal{S}\) (state space) vs.~\(S_t\)
 (gatekeeper scoring function)** - **Affected documents**: Theorems
@@ -532,8 +534,8 @@ in both. - **Recommendation**: Spring documents should use
 \(\Phi\), or Thm 2 should use \(\mathcal{F}_\) for the feature
 space.
 
-\subsubsection{3.3 Notation Conflicts:
-Assessment}<!-- label: notation-conflicts-assessment -->
+#### 3.3 Notation Conflicts:
+Assessment<!-- label: notation-conflicts-assessment -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3704}}
@@ -572,11 +574,11 @@ with minor renaming.
 
 </div>
 
-\subsection{4. Dependency Strength
-Assessment}<!-- label: dependency-strength-assessment -->
+### 4. Dependency Strength
+Assessment<!-- label: dependency-strength-assessment -->
 
-\subsubsection{4.1 Logical Dependencies
-(Proof-Critical)}<!-- label: logical-dependencies-proof-critical -->
+#### 4.1 Logical Dependencies
+(Proof-Critical)<!-- label: logical-dependencies-proof-critical -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1395}}
@@ -615,8 +617,8 @@ on these inequalities
 
 \end{longtable}
 
-\subsubsection{4.2 Conceptual Dependencies
-(Motivation/Interpretation)}<!-- label: conceptual-dependencies-motivationinterpretation -->
+#### 4.2 Conceptual Dependencies
+(Motivation/Interpretation)<!-- label: conceptual-dependencies-motivationinterpretation -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2143}}
@@ -674,8 +676,8 @@ theorem's proof is invalid. Currently:
 
 </div>
 
-\subsection{5. Gap Inventory (What Is NOT
-Proven)}<!-- label: gap-inventory-what-is-not-proven -->
+### 5. Gap Inventory (What Is NOT
+Proven)<!-- label: gap-inventory-what-is-not-proven -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1509}}
@@ -850,8 +852,8 @@ Open problem
 
 </div>
 
-\subsection{References
-(Audit-Specific)}<!-- label: references-audit-specific -->
+### References
+(Audit-Specific)<!-- label: references-audit-specific -->
 
 1. 
 2. 

@@ -1,8 +1,6 @@
-<div align="center">
+# I. The Arc
 
-{ **A Document of Principle**}
-
-</div>
+**Author:** SCX
 
 > 
 > *This document states what SCX is, what it stands for, and what it refuses to become. It is not a research paper. It is not a roadmap. It is a declaration of the intellectual commitments from which the mathematics follows---and a description of the arc that connects them.*

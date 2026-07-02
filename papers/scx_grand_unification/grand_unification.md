@@ -1,3 +1,7 @@
+# Introduction: The One Condition
+
+**Author:** SCX
+
 \begin{CJK}{UTF8}{gbsn}
 
 \title{
@@ -309,7 +313,8 @@ for MoE routing is **nonlinear**: the variance of the gate distribution across
 the batch must be controlled to prevent representation collapse:
 
 $$
-    oxed{\operatorname{Var}_{x \in \mathcal{B}}\left[\sum_{i=1}^N \mathbb{1}_{	ext{select}}(i \mid x)ight] \leq 	au}
+    oxed{\operatorname{Var}_{x \in \mathcal{B}}\left[\sum_{i=1}^N \mathbb{1}_{	ext{select}}(i \mid x)
+ight] \leq 	au}
 $$
 
 This reduces to two practical sub-conditions:

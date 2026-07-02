@@ -1,5 +1,7 @@
-\section{SCX Self-Evolution Theory: Verification
-Report}<!-- label: scx-self-evolution-theory-verification-report -->
+# SCX Self-Evolution Theory: Verification
+Report
+
+**Author:** SCX
 
 > **Part of the SCX Self-Evolution Theory Series** **Status**:
 > Pre-review verification **Version**: 2026-06-28 **Purpose**:
@@ -30,8 +32,8 @@ Report}<!-- label: scx-self-evolution-theory-verification-report -->
 
 </div>
 
-\subsection{1. Consistency Check of New
-Definitions}<!-- label: consistency-check-of-new-definitions -->
+### 1. Consistency Check of New
+Definitions<!-- label: consistency-check-of-new-definitions -->
 
 #### 1.1 Definition Inventory<!-- label: definition-inventory -->
 
@@ -94,8 +96,8 @@ File 08
 
 \end{longtable}
 
-\subsubsection{1.2 Internal Consistency
-Checks}<!-- label: internal-consistency-checks -->
+#### 1.2 Internal Consistency
+Checks<!-- label: internal-consistency-checks -->
 
 **Check 1: \(S_t\) domain and range.** - Domain: \(\mathcal{X}\)
 (input space) -- consistent with existing theory (\(\mathcal{X}\) is the
@@ -183,11 +185,11 @@ recommend \(\hat{\mathcal{S}}_t\) for estimated partition
 
 </div>
 
-\subsection{2. Cross-Reference with Existing Theorems
-1-5}<!-- label: cross-reference-with-existing-theorems-1-5 -->
+### 2. Cross-Reference with Existing Theorems
+1-5<!-- label: cross-reference-with-existing-theorems-1-5 -->
 
-\subsubsection{2.1 Theorem SE-1 vs.~Theorem 1 (Noise
-Detection)}<!-- label: theorem-se-1-vs.-theorem-1-noise-detection -->
+#### 2.1 Theorem SE-1 vs.~Theorem 1 (Noise
+Detection)<!-- label: theorem-se-1-vs.-theorem-1-noise-detection -->
 
 **Question**: Does Theorem SE-1 rely on or contradict Theorem 1?
 
@@ -212,8 +214,8 @@ existence of states with \(\Delta_s > 0\).
 
 **Verdict**: Consistent (with explicit dependency needed).
 
-\subsubsection{2.2 Self-Evolution vs.~Theorem 2 (Weak Feature
-Failure)}<!-- label: self-evolution-vs.-theorem-2-weak-feature-failure -->
+#### 2.2 Self-Evolution vs.~Theorem 2 (Weak Feature
+Failure)<!-- label: self-evolution-vs.-theorem-2-weak-feature-failure -->
 
 **Question**: Does the self-evolution framework respect Theorem 2's
 limitation? Can it overcome weak features through iteration?
@@ -242,8 +244,8 @@ system is fundamentally bottlenecked by the initial feature choice.
 
 **Verdict**: Consistent (with feature escape as future work).
 
-\subsubsection{2.3 Self-Evolution vs.~Theorem 3
-(Unidentifiability)}<!-- label: self-evolution-vs.-theorem-3-unidentifiability -->
+#### 2.3 Self-Evolution vs.~Theorem 3
+(Unidentifiability)<!-- label: self-evolution-vs.-theorem-3-unidentifiability -->
 
 **Question**: Does the self-evolution framework progressively
 resolve Theorem 3's unidentifiability?
@@ -277,8 +279,8 @@ which noise vs.~difficulty is undecidable given the available evidence.
 **Verdict**: Consistent. Self-evolution reduces practical ambiguity
 but cannot eliminate the fundamental bound.
 
-\subsubsection{2.4 Self-Evolution vs.~Theorem 4' (Exact
-Constant)}<!-- label: self-evolution-vs.-theorem-4-exact-constant -->
+#### 2.4 Self-Evolution vs.~Theorem 4' (Exact
+Constant)<!-- label: self-evolution-vs.-theorem-4-exact-constant -->
 
 **Question**: Does the self-evolution framework align with Theorem
 4'\,'s optimality claims?
@@ -307,8 +309,8 @@ improve noise detection.
 **Verdict**: Consistent. The connection should be made explicit in
 the definition of \(\Phi\).
 
-\subsubsection{2.5 Self-Evolution vs.~Theorem 5 and Proposition
-6}<!-- label: self-evolution-vs.-theorem-5-and-proposition-6 -->
+#### 2.5 Self-Evolution vs.~Theorem 5 and Proposition
+6<!-- label: self-evolution-vs.-theorem-5-and-proposition-6 -->
 
 **Question**: How does self-evolution depend on state discovery
 quality?
@@ -330,8 +332,8 @@ the self-evolution files.
 
 **Verdict**: Consistent (with precondition check recommended).
 
-\subsubsection{2.6 Cross-Reference
-Summary}<!-- label: cross-reference-summary -->
+#### 2.6 Cross-Reference
+Summary<!-- label: cross-reference-summary -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3269}}
@@ -378,8 +380,8 @@ statistics & Consistent (precondition check recommended)
 
 ### 3. Notation Conflict Check<!-- label: notation-conflict-check -->
 
-\subsubsection{3.1 Symbol Usage Across Self-Evolution and Existing
-Theory}<!-- label: symbol-usage-across-self-evolution-and-existing-theory -->
+#### 3.1 Symbol Usage Across Self-Evolution and Existing
+Theory<!-- label: symbol-usage-across-self-evolution-and-existing-theory -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1379}}
@@ -432,8 +434,8 @@ function & **YES** -- \(\Phi\) (capital phi) vs \(\phi\)
 
 \end{longtable}
 
-\subsubsection{3.2 Resolution of
-Conflicts}<!-- label: resolution-of-conflicts -->
+#### 3.2 Resolution of
+Conflicts<!-- label: resolution-of-conflicts -->
 
 **Conflict 1: \(\mathcal{S}\) vs.~\(\mathcal{S}_t\)**: -
 **Recommendation**: Use \(\hat{\mathcal{S}}_t\) (estimated state
@@ -463,8 +465,8 @@ self-evolution files should always write \(\Phi(\cdot)\) with explicit
 arguments to avoid confusion with \(\phi(X)\). - **Priority**: Low.
 Mostly a readability concern.
 
-\subsubsection{3.3 Symbol Collision Risk
-Summary}<!-- label: symbol-collision-risk-summary -->
+#### 3.3 Symbol Collision Risk
+Summary<!-- label: symbol-collision-risk-summary -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2391}}
@@ -505,11 +507,11 @@ arguments (acceptable)
 
 </div>
 
-\subsection{4. Assumption Dependency
-Map}<!-- label: assumption-dependency-map -->
+### 4. Assumption Dependency
+Map<!-- label: assumption-dependency-map -->
 
-\subsubsection{4.1 Existing Assumptions (A1-A6) Needed for
-Self-Evolution}<!-- label: existing-assumptions-a1-a6-needed-for-self-evolution -->
+#### 4.1 Existing Assumptions (A1-A6) Needed for
+Self-Evolution<!-- label: existing-assumptions-a1-a6-needed-for-self-evolution -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4400}}
@@ -554,8 +556,8 @@ framework can operate without it but with degraded guarantees.
 
 \end{longtable}
 
-\subsubsection{4.2 New Assumptions Introduced by
-Self-Evolution}<!-- label: new-assumptions-introduced-by-self-evolution -->
+#### 4.2 New Assumptions Introduced by
+Self-Evolution<!-- label: new-assumptions-introduced-by-self-evolution -->
 
 The self-evolution theory introduces the following new assumptions:
 
@@ -611,8 +613,8 @@ Standard in dynamical systems
 
 \end{longtable}
 
-\subsubsection{4.3 Assumption Dependency
-Graph}<!-- label: assumption-dependency-graph -->
+#### 4.3 Assumption Dependency
+Graph<!-- label: assumption-dependency-graph -->
 
 \begin{verbatim}
 Existing Assumptions:
@@ -710,8 +712,8 @@ work
 
 \end{longtable}
 
-\subsubsection{5.2 Detailed Gap
-Descriptions}<!-- label: detailed-gap-descriptions -->
+#### 5.2 Detailed Gap
+Descriptions<!-- label: detailed-gap-descriptions -->
 
 **GAP-1 (Critical): Lyapunov Function Not Explicitly Defined** The
 self-evolution theory asserts the existence of a Lyapunov function
@@ -864,9 +866,9 @@ GAP-10 ████░░░░░░░░░░░░░░░░░░░░�
 The self-evolution theory suggests several open problems for future
 investigation:
 
-\subsubsection{\texorpdfstring{Problem 1: Sharp Convergence Rate for
+#### \texorpdfstring{Problem 1: Sharp Convergence Rate for
 Coupled \(S_t\)-\(\theta_t\)
-System}{Problem 1: Sharp Convergence Rate for Coupled S\_t-\ theta\_t System}}<!-- label: problem-1-sharp-convergence-rate-for-coupled-s_t-theta_t-system -->
+System{Problem 1: Sharp Convergence Rate for Coupled S\_t-\ theta\_t System}}<!-- label: problem-1-sharp-convergence-rate-for-coupled-s_t-theta_t-system -->
 
 **Problem**: Derive the convergence rate of the coupled
 gatekeeper-student system \((S_t, f_{\theta_t})\) under the Lyapunov
@@ -883,8 +885,8 @@ state discovery process (from Theorem 5) - The signal-to-noise ratio
 **Difficulty**: Hard. Requires precise control of the state
 discovery convergence and the gatekeeper update dynamics.
 
-\subsubsection{Problem 2: Tight Lower Bound on Required Memory
-Size}<!-- label: problem-2-tight-lower-bound-on-required-memory-size -->
+#### Problem 2: Tight Lower Bound on Required Memory
+Size<!-- label: problem-2-tight-lower-bound-on-required-memory-size -->
 
 **Problem**: What is the minimum memory bank size \(|M_t|\)
 required to achieve \(\varepsilon\)-optimal gatekeeper performance? The
@@ -902,8 +904,8 @@ is the failure probability.
 **Difficulty**: Moderate. Related to sample complexity in
 state-level estimation.
 
-\subsubsection{Problem 3: Phase Transition Between Four Convergence
-Regimes}<!-- label: problem-3-phase-transition-between-four-convergence-regimes -->
+#### Problem 3: Phase Transition Between Four Convergence
+Regimes<!-- label: problem-3-phase-transition-between-four-convergence-regimes -->
 
 **Problem**: Characterize the conditions under which the
 self-evolution exhibits each of four regimes:
@@ -916,8 +918,8 @@ self-evolution exhibits each of four regimes:
 **Difficulty**: Hard. Requires a dynamical systems analysis of the
 SCX update rules.
 
-\subsubsection{Problem 4: Optimal Gatekeeper Update
-Frequency}<!-- label: problem-4-optimal-gatekeeper-update-frequency -->
+#### Problem 4: Optimal Gatekeeper Update
+Frequency<!-- label: problem-4-optimal-gatekeeper-update-frequency -->
 
 **Problem**: How often should the gatekeeper be updated relative to
 the student? Currently, the framework updates both every iteration.
@@ -936,8 +938,8 @@ When the consensus signal is stable, update the student more frequently.
 **Difficulty**: Moderate. An empirical study could establish
 guidelines even without a fully rigorous theory.
 
-\subsubsection{Problem 5: Finite-Time Guarantees (Non-Asymptotic
-Bounds)}<!-- label: problem-5-finite-time-guarantees-non-asymptotic-bounds -->
+#### Problem 5: Finite-Time Guarantees (Non-Asymptotic
+Bounds)<!-- label: problem-5-finite-time-guarantees-non-asymptotic-bounds -->
 
 **Problem**: Provide non-asymptotic bounds on the Lyapunov gap
 \(\Phi(q_t) - \Phi_{opt}\) after \(t\) iterations. The current
@@ -962,11 +964,11 @@ sequential, adaptive process.
 
 </div>
 
-\subsection{7. Numerical Verification
-Suggestions}<!-- label: numerical-verification-suggestions -->
+### 7. Numerical Verification
+Suggestions<!-- label: numerical-verification-suggestions -->
 
-\subsubsection{7.1 Experiment 1: Lyapunov Descent
-Verification}<!-- label: experiment-1-lyapunov-descent-verification -->
+#### 7.1 Experiment 1: Lyapunov Descent
+Verification<!-- label: experiment-1-lyapunov-descent-verification -->
 
 **Objective**: Verify that the Lyapunov function \(\Phi\) (once
 defined) decreases monotonically.
@@ -986,8 +988,8 @@ detection: identify \(T^*\) where \(\Phi\) stabilizes (change
 plateau before reaching the global minimum). The descent rate depends on
 \(\Delta_\) and the validation budget.
 
-\subsubsection{7.2 Experiment 2: Theorem SE-2 Termination
-Bound}<!-- label: experiment-2-theorem-se-2-termination-bound -->
+#### 7.2 Experiment 2: Theorem SE-2 Termination
+Bound<!-- label: experiment-2-theorem-se-2-termination-bound -->
 
 **Objective**: Test whether the system reaches a fixed point in
 finite time, and measure \(T^*\) as a function of problem parameters.
@@ -1004,8 +1006,8 @@ configuration, run the self-evolution loop until \(\Phi\) stabilizes.
 for large \(\Delta_\), transitioning to exponential scaling as
 \(\Delta_ \to 0\).
 
-\subsubsection{7.3 Experiment 3: Fixed Point Quality vs.~Theorem
-4'}<!-- label: experiment-3-fixed-point-quality-vs.-theorem-4 -->
+#### 7.3 Experiment 3: Fixed Point Quality vs.~Theorem
+4'<!-- label: experiment-3-fixed-point-quality-vs.-theorem-4 -->
 
 **Objective**: Verify that the fixed point's noise detection F1
 matches Theorem 4'\,'s optimal constant.
@@ -1023,8 +1025,8 @@ approach 1 as \(M \to \infty\). - Sensitivity to \(p_0\), \(p_1\),
 \(M \geq 20\). Divergence for small \(M\) where asymptotic
 approximations break down.
 
-\subsubsection{7.4 Experiment 4: Feature Bottleneck (Theorem 2
-Confirmation)}<!-- label: experiment-4-feature-bottleneck-theorem-2-confirmation -->
+#### 7.4 Experiment 4: Feature Bottleneck (Theorem 2
+Confirmation)<!-- label: experiment-4-feature-bottleneck-theorem-2-confirmation -->
 
 **Objective**: Verify that the self-evolution converges to a fixed
 point that respects Theorem 2's bound.
@@ -1046,8 +1048,8 @@ bound. For small \(\delta\), the fixed point F1 is close to the bound
 \(\delta\), the fixed point may be significantly below the bound (the
 gatekeeper or student is the bottleneck).
 
-\subsubsection{7.5 Experiment 5: External Validation Escape from
-Incompleteness}<!-- label: experiment-5-external-validation-escape-from-incompleteness -->
+#### 7.5 Experiment 5: External Validation Escape from
+Incompleteness<!-- label: experiment-5-external-validation-escape-from-incompleteness -->
 
 **Objective**: Test the Claim SE-C2 about external validation
 escaping incompleteness.
@@ -1111,8 +1113,8 @@ stage.
 
 \end{longtable}
 
-\subsubsection{8.2 Claim-by-Claim
-Assessment}<!-- label: claim-by-claim-assessment -->
+#### 8.2 Claim-by-Claim
+Assessment<!-- label: claim-by-claim-assessment -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1944}}
@@ -1211,8 +1213,8 @@ The Godel incompleteness analogy (Claims SE-C1, SE-C2) is
 **illuminating but not rigorous**. It serves as a conceptual guide
 rather than a mathematical result.
 
-\subsubsection{8.4 Priority
-Recommendations}<!-- label: priority-recommendations -->
+#### 8.4 Priority
+Recommendations<!-- label: priority-recommendations -->
 
 To move from the current conjectural state to a rigorous theory, the
 following steps are recommended in priority order:
@@ -1247,11 +1249,11 @@ bound)
 
 </div>
 
-\subsection{9. Summary of Verification
-Status}<!-- label: summary-of-verification-status -->
+### 9. Summary of Verification
+Status<!-- label: summary-of-verification-status -->
 
-\subsubsection{9.1 Pass / Fail / Gap
-Summary}<!-- label: pass-fail-gap-summary -->
+#### 9.1 Pass / Fail / Gap
+Summary<!-- label: pass-fail-gap-summary -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4231}}

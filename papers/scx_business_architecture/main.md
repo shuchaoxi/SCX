@@ -1,5 +1,7 @@
-\section{SCX 商业架构 ---
-首席维护者模型}<!-- label: scx-ux5546ux4e1aux67b6ux6784-ux9996ux5e2dux7ef4ux62a4ux8005ux6a21ux578b -->
+# SCX 商业架构 ---
+首席维护者模型
+
+**Author:** SCX
 
 > **内部参考。不进入论文。** **最后更新**: 2026-06-28
 
@@ -47,8 +49,8 @@ SCX Foundation（瑞士/新加坡注册，非营利）
 
 </div>
 
-\subsection{为什么不是 CEO /
-董事长}<!-- label: ux4e3aux4ec0ux4e48ux4e0dux662f-ceo-ux8463ux4e8bux957f -->
+### 为什么不是 CEO /
+董事长<!-- label: ux4e3aux4ec0ux4e48ux4e0dux662f-ceo-ux8463ux4e8bux957f -->
 
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
@@ -76,8 +78,8 @@ CEO / 董事长 & Principal Maintainer
 
 </div>
 
-\subsection{为什么 Foundation
-在瑞士/新加坡}<!-- label: ux4e3aux4ec0ux4e48-foundation-ux5728ux745eux58ebux65b0ux52a0ux5761 -->
+### 为什么 Foundation
+在瑞士/新加坡<!-- label: ux4e3aux4ec0ux4e48-foundation-ux5728ux745eux58ebux65b0ux52a0ux5761 -->
 
 - 
 - 

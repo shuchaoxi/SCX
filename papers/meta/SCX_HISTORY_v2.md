@@ -1,6 +1,11 @@
+# The SCX Story: How a Gauge-Fixing Problem Became an Uncertainty
+66|Principle
+
+**Author:** SCX
+
 64|
-65|\section{The SCX Story: How a Gauge-Fixing Problem Became an Uncertainty
-66|Principle}<!-- label: the-scx-story-how-a-gauge-fixing-problem-became-an-uncertainty-principle -->
+65|## The SCX Story: How a Gauge-Fixing Problem Became an Uncertainty
+66|Principle<!-- label: the-scx-story-how-a-gauge-fixing-problem-became-an-uncertainty-principle -->
 67|
 68|
 > 69|A candid intellectual history of the State-Conditioned eXpertise
@@ -18,8 +23,8 @@
 </div>
 
 76|
-77|\subsection{Preface: On Telling the Truth About
-78|Research}<!-- label: preface-on-telling-the-truth-about-research -->
+77|### Preface: On Telling the Truth About
+78|Research<!-- label: preface-on-telling-the-truth-about-research -->
 79|
 80|Most papers lie about how they were written. The introduction presents a
 81|clean logical arc from problem to solution, as if the author woke up one
@@ -55,8 +60,8 @@
 </div>
 
 107|
-108|\subsection{Chapter 1: Origins --- The EGP Gauge-Fixing
-109|Problem}<!-- label: chapter-1-origins-the-egp-gauge-fixing-problem -->
+108|### Chapter 1: Origins --- The EGP Gauge-Fixing
+109|Problem<!-- label: chapter-1-origins-the-egp-gauge-fixing-problem -->
 110|
 111|#### 1.1 The Practical Problem<!-- label: the-practical-problem -->
 112|
@@ -74,8 +79,8 @@
 124|particularly natural: coefficients are just vectors, and vectors can be
 125|averaged.
 126|
-127|\subsubsection{1.2 Why Direct Merging
-128|Fails}<!-- label: why-direct-merging-fails -->
+127|#### 1.2 Why Direct Merging
+128|Fails<!-- label: why-direct-merging-fails -->
 129|
 130|It doesn't work. The naive merge---averaging the coefficient vectors of
 131|independently trained experts---produces catastrophic errors: \(C_{33}\)
@@ -116,8 +121,8 @@
 166|own data distribution. Naively combining them can cancel or amplify
 167|corrections in physically arbitrary ways.
 168|
-169|\subsubsection{1.3 The Gauge-Fixing
-170|Solution}<!-- label: the-gauge-fixing-solution -->
+169|#### 1.3 The Gauge-Fixing
+170|Solution<!-- label: the-gauge-fixing-solution -->
 171|
 172|The first contribution of the EGP paper was a post-hoc gauge-fixing
 173|procedure: after training each expert without constraints, apply the
@@ -141,8 +146,8 @@
 191|during optimization, when the constraint subspace is orthogonal to the
 192|objective landscape.**
 193|
-194|\subsubsection{1.4 The Observation That Started
-195|Everything}<!-- label: the-observation-that-started-everything -->
+194|#### 1.4 The Observation That Started
+195|Everything<!-- label: the-observation-that-started-everything -->
 196|
 197|During the EGP work, the author noticed a recurring phenomenon: the same
 198|expert potential's prediction reliability varied dramatically across
@@ -164,11 +169,11 @@
 </div>
 
 210|
-211|\subsection{Chapter 2: State Crystallization --- Naming the Third Core
-212|Algorithm}<!-- label: chapter-2-state-crystallization-naming-the-third-core-algorithm -->
+211|### Chapter 2: State Crystallization --- Naming the Third Core
+212|Algorithm<!-- label: chapter-2-state-crystallization-naming-the-third-core-algorithm -->
 213|
-214|\subsubsection{2.1 From ``PBE Operation'' to a
-215|Concept}<!-- label: from-pbe-operation-to-a-concept -->
+214|#### 2.1 From ``PBE Operation'' to a
+215|Concept<!-- label: from-pbe-operation-to-a-concept -->
 216|
 217|For several weeks, a fundamental operation in the SCX pipeline existed
 218|without a name. It was referred to as ``the PBE operation'' or ``Layer 2
@@ -200,8 +205,8 @@
 244|described the mechanical step. Neither captured the ontological claim:
 245|**states are discovered, not defined.**
 246|
-247|\subsubsection{2.3 State Crystallization ≠
-248|BPE}<!-- label: state-crystallization-bpe -->
+247|#### 2.3 State Crystallization ≠
+248|BPE<!-- label: state-crystallization-bpe -->
 249|
 250|The natural LLM analogue is Byte Pair Encoding (BPE), which also
 251|produces discrete tokens from a less-structured input. But the analogy
@@ -308,8 +313,8 @@
 </div>
 
 336|
-337|\subsection{Chapter 3: Yajie --- Four Theorems on Label
-338|Noise}<!-- label: chapter-3-yajie-four-theorems-on-label-noise -->
+337|### Chapter 3: Yajie --- Four Theorems on Label
+338|Noise<!-- label: chapter-3-yajie-four-theorems-on-label-noise -->
 339|
 340|#### 3.1 The Core Insight<!-- label: the-core-insight -->
 341|
@@ -329,8 +334,8 @@
 355|experts on samples. The distinction is not a refinement---it is a
 356|different category of question.
 357|
-358|\subsubsection{3.2 Theorem 1: Consensus-Based Noise
-359|Detection}<!-- label: theorem-1-consensus-based-noise-detection -->
+358|#### 3.2 Theorem 1: Consensus-Based Noise
+359|Detection<!-- label: theorem-1-consensus-based-noise-detection -->
 360|
 361|**Statement (informal).** Let \(M\) independently trained experts
 362|vote on the correctness of a label for a sample in state \(s\). If the
@@ -360,8 +365,8 @@
 386|gaps that would have been caught in review, but the adversarial audit
 387|caught them first.
 388|
-389|\subsubsection{3.3 Theorem 2: Weak Feature Failure Lower
-390|Bound}<!-- label: theorem-2-weak-feature-failure-lower-bound -->
+389|#### 3.3 Theorem 2: Weak Feature Failure Lower
+390|Bound<!-- label: theorem-2-weak-feature-failure-lower-bound -->
 391|
 392|**Statement (informal).** If every feature \(X_j\) in state \(s\)
 393|has mutual information with the label error below a threshold
@@ -390,8 +395,8 @@
 416|absolute AUC level. A cluster balance qualifier was added (the bound
 417|degrades when state populations are highly imbalanced).
 418|
-419|\subsubsection{3.4 Theorem 3: The Unidentifiability of Noise and
-420|Difficulty}<!-- label: theorem-3-the-unidentifiability-of-noise-and-difficulty -->
+419|#### 3.4 Theorem 3: The Unidentifiability of Noise and
+420|Difficulty<!-- label: theorem-3-the-unidentifiability-of-noise-and-difficulty -->
 421|
 422|**Statement (informal).** There exist two worlds---World A (noisy
 423|labels) and World B (hard-but-clean labels)---that produce identical
@@ -420,8 +425,8 @@
 446|**We discuss Theorem 3's independence and standalone significance
 447|in Chapter 8.**
 448|
-449|\subsubsection{3.5 Theorem 4: Minimax
-450|Optimality}<!-- label: theorem-4-minimax-optimality -->
+449|#### 3.5 Theorem 4: Minimax
+450|Optimality<!-- label: theorem-4-minimax-optimality -->
 451|
 452|**Statement (informal).** SCX's adaptive threshold achieves the
 453|exact minimax optimal rate for noise detection. No algorithm can achieve
@@ -436,8 +441,8 @@
 462|as the optimal solution to a well-defined problem, not merely one
 463|heuristic among many.
 464|
-465|\subsubsection{\texorpdfstring{3.6 The Cercis Score:
-466|\(S = Q + \eta N\)}{3.6 The Cercis Score: S = Q + \ eta N}}<!-- label: the-cercis-score-s-q-eta-n -->
+465|#### \texorpdfstring{3.6 The Cercis Score:
+466|\(S = Q + \eta N\){3.6 The Cercis Score: S = Q + \ eta N}}<!-- label: the-cercis-score-s-q-eta-n -->
 467|
 468|The Yajie audit engine evaluates every state-conditioned (configuration,
 469|label) pair using the Cercis Score:

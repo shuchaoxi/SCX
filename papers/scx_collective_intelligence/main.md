@@ -1,3 +1,7 @@
+# SCX Collective Intelligence
+
+**Author:** SCX
+
 *Abstract:*
 
 Condorcet 陪审团定理（CJT）奠定了集体智能的数学基础：

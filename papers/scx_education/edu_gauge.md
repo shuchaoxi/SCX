@@ -1,3 +1,7 @@
+# Introduction: Education as a Potential Surface
+
+**Author:** SCX
+
 *Abstract:*
 
 **中文摘要.**

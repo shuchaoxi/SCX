@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 When two mutually incompatible audit protocols compete for adoption in a

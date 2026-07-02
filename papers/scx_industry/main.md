@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 **Abstract:**
 
 This paper presents a systematic analysis of trust-mechanism restructuring under the SCX/Yajie Protocol across six critical industries: professional services, manufacturing, semiconductors, natural resources, banking, and civil service.

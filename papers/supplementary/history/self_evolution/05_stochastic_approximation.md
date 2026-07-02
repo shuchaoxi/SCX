@@ -1,5 +1,7 @@
-\section{Stochastic Approximation Analysis of NEP Student
-Evolution}<!-- label: stochastic-approximation-analysis-of-nep-student-evolution -->
+# Stochastic Approximation Analysis of NEP Student
+Evolution
+
+**Author:** SCX
 
 > **Version**: 2026-06-28 |{} **Status**: Theoretical
 > framework |{} **Scope**: Analysis of the coupled NEP student
@@ -37,8 +39,8 @@ Evolution}<!-- label: stochastic-approximation-analysis-of-nep-student-evolution
 
 </div>
 
-\subsection{1. Introduction: The Coupled Learning
-System}<!-- label: introduction-the-coupled-learning-system -->
+### 1. Introduction: The Coupled Learning
+System<!-- label: introduction-the-coupled-learning-system -->
 
 The self-evolution loop creates a **coupled dynamical system**
 between the gatekeeper \(S_t\) and the NEP student \(f_{\theta_t}\):
@@ -69,8 +71,8 @@ stationary target; we must extend it to handle this drift.
 
 </div>
 
-\subsection{2. Robbins-Monro Formulation of NEP Student
-Update}<!-- label: robbins-monro-formulation-of-nep-student-update -->
+### 2. Robbins-Monro Formulation of NEP Student
+Update<!-- label: robbins-monro-formulation-of-nep-student-update -->
 
 **Definition 5.1 (Stochastic Gradient Update).** The NEP student
 parameters \(\theta_t \in \mathbb{R}^{d_\theta}\) evolve according to:
@@ -170,8 +172,8 @@ distance to the optimum is \(O(\alpha)\) (Kushner \& Yin, 2003, Chapter
 
 </div>
 
-\subsection{4. Gradient Properties and
-Boundedness}<!-- label: gradient-properties-and-boundedness -->
+### 4. Gradient Properties and
+Boundedness<!-- label: gradient-properties-and-boundedness -->
 
 **Assumption SE-A7 (Gradient Lipschitz Continuity).** The loss
 function \(\ell(f_\theta(x), y)\) is once-differentiable in \(\theta\)
@@ -204,8 +206,8 @@ SE-A7:
 
 </div>
 
-\subsection{5. Convergence to Stationary
-Point}<!-- label: convergence-to-stationary-point -->
+### 5. Convergence to Stationary
+Point<!-- label: convergence-to-stationary-point -->
 
 **Theorem 5.1 (Convergence of Robbins-Monro for NEP Student).** Let
 assumptions SE-A5 (noise model), SE-A6 (decaying learning rate), SE-A7
@@ -259,8 +261,8 @@ in the basin of attraction.
 
 </div>
 
-\subsection{6. Distribution Shift
-Analysis}<!-- label: distribution-shift-analysis -->
+### 6. Distribution Shift
+Analysis<!-- label: distribution-shift-analysis -->
 
 **Definition 5.3 (Distribution Shift Operator).** The distribution
 \(P_t\) evolves according to the gatekeeper dynamics:
@@ -517,8 +519,8 @@ This is the continuous-time analog of Theorem 5.3.
 
 </div>
 
-\subsection{9. Connection to State-Conditioned
-Risk}<!-- label: connection-to-state-conditioned-risk -->
+### 9. Connection to State-Conditioned
+Risk<!-- label: connection-to-state-conditioned-risk -->
 
 **Definition 5.6 (State-Conditioned NEP Loss).** For a given state
 \(s \in \mathcal{S}\) (the state space from the existing SCX theory),
@@ -600,8 +602,8 @@ accounts for approximation error (capacity gap).
 
 </div>
 
-\subsection{10. Full Proof Sketch: Convergence Under Robbins-Monro
-Conditions}<!-- label: full-proof-sketch-convergence-under-robbins-monro-conditions -->
+### 10. Full Proof Sketch: Convergence Under Robbins-Monro
+Conditions<!-- label: full-proof-sketch-convergence-under-robbins-monro-conditions -->
 
 Here we provide a detailed proof sketch for Theorem 5.1.
 
@@ -696,8 +698,8 @@ from standard RM analysis, giving
 
 </div>
 
-\subsection{11. What Breaks When Distribution Shifts Too
-Rapidly}<!-- label: what-breaks-when-distribution-shifts-too-rapidly -->
+### 11. What Breaks When Distribution Shifts Too
+Rapidly<!-- label: what-breaks-when-distribution-shifts-too-rapidly -->
 
 **Definition 5.7 (Critical Drift Rate).** Define the data
 distribution drift per student step:
@@ -776,8 +778,8 @@ convergence guarantee in the self-evolution context.
 
 </div>
 
-\subsection{12. Summary of Proven vs.~Conjectured
-Claims}<!-- label: summary-of-proven-vs.-conjectured-claims -->
+### 12. Summary of Proven vs.~Conjectured
+Claims<!-- label: summary-of-proven-vs.-conjectured-claims -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3182}}

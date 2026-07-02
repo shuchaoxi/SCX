@@ -1,3 +1,7 @@
+# Introduction 引言：评分即声明，评卷人即专家
+
+**Author:** SCX
+
 *Abstract:*
 
 Educational assessment---from classroom grading to high-stakes standardized testing---relies on the fundamental act of assigning scores to student work. Yet the scoring enterprise lacks formal certification: a single grader (teacher, examiner, or automated system) produces a single score, and that score is treated as truth. We apply the SCX{} (Structured Causal eXamination) auditing framework to educational assessment, treating each grader as an **expert** and each score as a **claim** about student competence. The core thesis: unless $M \ge M_$ independent graders certify a score through Yajie{} consensus, that score is unverifiable. We prove five theorems:

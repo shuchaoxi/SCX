@@ -1,5 +1,7 @@
-\section{Minimax Optimality of SCX Noise Detection --- Feasibility
-Analysis}<!-- label: minimax-optimality-of-scx-noise-detection-feasibility-analysis -->
+# Minimax Optimality of SCX Noise Detection --- Feasibility
+Analysis
+
+**Author:** SCX
 
 > **Purpose**: Assess whether a matching lower bound for Theorem 1's
 > exponential rate can be proved, establishing minimax optimality.
@@ -69,11 +71,11 @@ statistician.
 
 </div>
 
-\subsection{2. Feasibility Assessment by
-Regime}<!-- label: feasibility-assessment-by-regime -->
+### 2. Feasibility Assessment by
+Regime<!-- label: feasibility-assessment-by-regime -->
 
-\subsubsection{2.1 M-Regime: Exponent in Number of Experts ---
-HARD}<!-- label: m-regime-exponent-in-number-of-experts-hard -->
+#### 2.1 M-Regime: Exponent in Number of Experts ---
+HARD<!-- label: m-regime-exponent-in-number-of-experts-hard -->
 
 **Goal**: Show that for any noise detector ψ observing M experts,
 `inf\_ψ\ sup\_P\ (1\ -\ F1(ψ,\ P))\ ≥\ C·exp(-cMΔ²)` for some
@@ -85,8 +87,8 @@ HARD}<!-- label: m-regime-exponent-in-number-of-experts-hard -->
 2. 
 3. 
 
-\subsubsection{2.2 δ-Regime: Feature Weakness --- STANDARD
-(well-understood)}<!-- label: ux3b4-regime-feature-weakness-standard-well-understood -->
+#### 2.2 δ-Regime: Feature Weakness --- STANDARD
+(well-understood)<!-- label: ux3b4-regime-feature-weakness-standard-well-understood -->
 
 **Goal**: Show that
 `inf\_φ\ sup\_\{P:\ I(φ;S)\ ≤\ δ\}\ (F1\_base\ -\ F1(ψ,\ P))\ ≥\ C·√δ`.
@@ -110,8 +112,8 @@ weak). The true minimax claim would be the CONVERSE: no OTHER detector
 can beat SCX's rate. This inverse direction requires showing SCX is
 optimal among all methods, not just that it degrades gracefully.
 
-\subsubsection{2.3 The Gap in the JMLR
-Plan}<!-- label: the-gap-in-the-jmlr-plan -->
+#### 2.3 The Gap in the JMLR
+Plan<!-- label: the-gap-in-the-jmlr-plan -->
 
 The JMLR PAPER\_FRAMEWORK conflates these two regimes. Section 3.2 is
 titled ``Weak Feature Lower Bound'' (δ-regime) but claims to prove a
@@ -132,11 +134,11 @@ and it is NOT what the current Section 3.2 delivers.
 
 </div>
 
-\subsection{3. Technical Approach: What Would
-Work}<!-- label: technical-approach-what-would-work -->
+### 3. Technical Approach: What Would
+Work<!-- label: technical-approach-what-would-work -->
 
-\subsubsection{3.1 Preferred Method: Le Cam's Two-Point Method
-(M-regime)}<!-- label: preferred-method-le-cams-two-point-method-m-regime -->
+#### 3.1 Preferred Method: Le Cam's Two-Point Method
+(M-regime)<!-- label: preferred-method-le-cams-two-point-method-m-regime -->
 
 **Setup**: Construct two data-generating processes P₀ and P₁ that:
 - Are hard to distinguish (bounded divergence) - Have different noise
@@ -194,8 +196,8 @@ which is too loose for large M.
 
 **The M-dependence in the exponent is the core difficulty.**
 
-\subsubsection{3.2 Alternative: Fano's Method with
-Packing}<!-- label: alternative-fanos-method-with-packing -->
+#### 3.2 Alternative: Fano's Method with
+Packing<!-- label: alternative-fanos-method-with-packing -->
 
 **Why not Fano**: Fano's inequality is typically used for MULTI-way
 hypothesis testing (K ≥ 3 hypotheses). For a TWO-point problem (clean
@@ -204,8 +206,8 @@ problems with many states (K states → 2\^{}K hypercube for Assouad). But
 the M-regime is fundamentally a two-point problem (test noise
 vs.~clean), so Fano doesn't add value here.
 
-\subsubsection{3.3 Alternative: Assouad's
-Method}<!-- label: alternative-assouads-method -->
+#### 3.3 Alternative: Assouad's
+Method<!-- label: alternative-assouads-method -->
 
 **When Assouad helps**: For δ-regime with K states, Assouad gives
 the `Ω(√K·√δ)` rate. This matches the
@@ -215,8 +217,8 @@ the `Ω(√K·√δ)` rate. This matches the
 parameter of interest (noise detection rate) is not a hypercube of
 binary parameters.
 
-\subsubsection{3.4 Recommended Strategy: Three-Step
-Proof}<!-- label: recommended-strategy-three-step-proof -->
+#### 3.4 Recommended Strategy: Three-Step
+Proof<!-- label: recommended-strategy-three-step-proof -->
 
 **Step 1** (Easier): Prove a LOWER BOUND ON TESTING ERROR, not F1.
 - Show that for any detector ψ: P(ψ correctly classifies sample as
@@ -254,8 +256,8 @@ the **constant** 2 in the exponent can be improved by using the
 Chernoff form. The optimal constant depends on the specific Bernoulli
 parameters.
 
-\subsubsection{3.5 Summary of What is
-Provable}<!-- label: summary-of-what-is-provable -->
+#### 3.5 Summary of What is
+Provable<!-- label: summary-of-what-is-provable -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2683}}
@@ -300,11 +302,11 @@ essentially done) & \textless1 week
 
 </div>
 
-\subsection{4. What the Result Would Look
-Like}<!-- label: what-the-result-would-look-like -->
+### 4. What the Result Would Look
+Like<!-- label: what-the-result-would-look-like -->
 
-\subsubsection{4.1 Conjectured Theorem
-(M-Regime)}<!-- label: conjectured-theorem-m-regime -->
+#### 4.1 Conjectured Theorem
+(M-Regime)<!-- label: conjectured-theorem-m-regime -->
 
 **Theorem (Minimax Lower Bound for Consistency-Based Noise
 Detection).** Assume B1-B3 (conditional independence, state-conditional
@@ -334,8 +336,8 @@ Therefore, SCX is **minimax rate-optimal**.
 confirming that the exponent 2Δ² per expert is the information-theoretic
 limit.
 
-\subsubsection{4.2 Conjectured Theorem (δ-Regime --- matching Thm
-2)}<!-- label: conjectured-theorem-ux3b4-regime-matching-thm-2 -->
+#### 4.2 Conjectured Theorem (δ-Regime --- matching Thm
+2)<!-- label: conjectured-theorem-ux3b4-regime-matching-thm-2 -->
 
 **Theorem (Minimax Lower Bound for Weak Feature Noise Detection).**
 Let φ be a feature mapping with I(φ(X); S) ≤ δ. For any noise detector h
@@ -362,8 +364,8 @@ SCX's rate.)
 
 ### 5. Key Challenges (Detailed)<!-- label: key-challenges-detailed -->
 
-\subsubsection{Challenge 1: Marginal Dependence Under Noise (MOST
-SERIOUS)}<!-- label: challenge-1-marginal-dependence-under-noise-most-serious -->
+#### Challenge 1: Marginal Dependence Under Noise (MOST
+SERIOUS)<!-- label: challenge-1-marginal-dependence-under-noise-most-serious -->
 
 **The problem**: - Under noise, P(e₁,...,e\_M |{} noise)
 = (1/(K-1))·∑\_c ∏\_m P(e\_m |{} noise, c) - This is a MIXTURE of
@@ -388,8 +390,8 @@ distinguish, meaning the bound is loose (lower bound becomes too weak).
 This is acceptable --- a weak lower bound is still a valid lower bound
 for minimax purposes --- but it limits the sharpness of the result.
 
-\subsubsection{Challenge 2: F1 Risk Does Not
-Factorize}<!-- label: challenge-2-f1-risk-does-not-factorize -->
+#### Challenge 2: F1 Risk Does Not
+Factorize<!-- label: challenge-2-f1-risk-does-not-factorize -->
 
 **The problem**: - F1 is a ratio of expectations, not an
 expectation of a ratio - Most minimax lower bound techniques work for
@@ -407,8 +409,8 @@ factor of η but preserves the exponential rate
 true F1 lower bound has denominator effects. This is acceptable for rate
 optimality but loses constant factors.
 
-\subsubsection{Challenge 3: Separation Gap Δ Must Be ``Known'' to the
-Detector}<!-- label: challenge-3-separation-gap-ux3b4-must-be-known-to-the-detector -->
+#### Challenge 3: Separation Gap Δ Must Be ``Known'' to the
+Detector<!-- label: challenge-3-separation-gap-ux3b4-must-be-known-to-the-detector -->
 
 **The problem**: - A minimax lower bound must hold for ANY
 detector, even one that knows Δ exactly - The lower bound construction
@@ -421,8 +423,8 @@ classifier is exactly \texttt{ψ\ =\ 1\{C(x)\ \textgreater{}\ θ\}} for
 some θ. Then any detector must pay the minimax price. This is feasible
 by making the clean and noisy distributions have different means.
 
-\subsubsection{Challenge 4: Proving the Exact Constant c =
-2}<!-- label: challenge-4-proving-the-exact-constant-c-2 -->
+#### Challenge 4: Proving the Exact Constant c =
+2<!-- label: challenge-4-proving-the-exact-constant-c-2 -->
 
 **The problem**: - For finite M, the Hoeffding constant 2 is not
 necessarily tight - The exact minimax rate depends on Bernoulli
@@ -441,8 +443,8 @@ constant-optimal. A more precise lower bound would be:
 
 This is larger than exp(-2MΔ²) for Δ \textgreater{} 0.
 
-\subsubsection{Challenge 5: State
-Aggregation}<!-- label: challenge-5-state-aggregation -->
+#### Challenge 5: State
+Aggregation<!-- label: challenge-5-state-aggregation -->
 
 **The problem**: - Theorem 1's F1 bound aggregates over states s
 via ρ\_s - A minimax lower bound should also allow state aggregation -
@@ -506,8 +508,8 @@ notice the asymmetry between Theorem 1 (upper bound only) and Theorem 2
 (upper+bound + lower bound). They may ask: ``Why do you provide a lower
 bound for feature weakness but not for the statistical rate?''
 
-\subsubsection{6.2 What JMLR Reviewers Will
-Ask}<!-- label: what-jmlr-reviewers-will-ask -->
+#### 6.2 What JMLR Reviewers Will
+Ask<!-- label: what-jmlr-reviewers-will-ask -->
 
 1. 
 2. 
@@ -531,8 +533,8 @@ textbook) will likely:
 
 ### 7. Estimated Effort<!-- label: estimated-effort -->
 
-\subsubsection{7.1 Pessimistic Estimate (Academic
-Mathematician/Statistician)}<!-- label: pessimistic-estimate-academic-mathematicianstatistician -->
+#### 7.1 Pessimistic Estimate (Academic
+Mathematician/Statistician)<!-- label: pessimistic-estimate-academic-mathematicianstatistician -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3438}}
@@ -570,8 +572,8 @@ months full-time**
 
 \end{longtable}
 
-\subsubsection{7.2 Optimistic Estimate (If All Technical Choices
-Work)}<!-- label: optimistic-estimate-if-all-technical-choices-work -->
+#### 7.2 Optimistic Estimate (If All Technical Choices
+Work)<!-- label: optimistic-estimate-if-all-technical-choices-work -->
 
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
@@ -593,8 +595,8 @@ Writing & 1 week
 
 \end{longtable}
 
-\subsubsection{7.3 What the JMLR Framework Says
-vs.~Reality}<!-- label: what-the-jmlr-framework-says-vs.-reality -->
+#### 7.3 What the JMLR Framework Says
+vs.~Reality<!-- label: what-the-jmlr-framework-says-vs.-reality -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.7429}}
@@ -632,11 +634,11 @@ should be presented as a separate, partially open result.
 
 </div>
 
-\subsection{8. Dependencies and New Tools
-Required}<!-- label: dependencies-and-new-tools-required -->
+### 8. Dependencies and New Tools
+Required<!-- label: dependencies-and-new-tools-required -->
 
-\subsubsection{8.1 Does This Need New
-Assumptions?}<!-- label: does-this-need-new-assumptions -->
+#### 8.1 Does This Need New
+Assumptions?<!-- label: does-this-need-new-assumptions -->
 
 **No new assumptions needed** for a rate-optimality result
 (exponent in M): - B1-B3 (or A1-A6) are sufficient for the lower bound
@@ -655,8 +657,8 @@ These can be presented as the setting for the lower bound: ``Even in the
 simplest case (symmetric experts, binary classification, known state
 structure), no detector can surpass exp(-2MΔ²).''
 
-\subsubsection{8.2 New Mathematical Tools
-Required}<!-- label: new-mathematical-tools-required -->
+#### 8.2 New Mathematical Tools
+Required<!-- label: new-mathematical-tools-required -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2727}}
@@ -815,33 +817,33 @@ not.
 
 </div>
 
-\subsection{10. Recommended Path
-Forward}<!-- label: recommended-path-forward -->
+### 10. Recommended Path
+Forward<!-- label: recommended-path-forward -->
 
-\subsubsection{Phase 1 (Week 1-2): Quick
-Wins}<!-- label: phase-1-week-1-2-quick-wins -->
-
-- 
-- 
-- 
-
-\subsubsection{Phase 2 (Week 3-6): Core M-Regime Lower
-Bound}<!-- label: phase-2-week-3-6-core-m-regime-lower-bound -->
-
-- 
-- 
-- 
-- 
-
-\subsubsection{Phase 3 (Week 7-10): F1
-Extension}<!-- label: phase-3-week-7-10-f1-extension -->
+#### Phase 1 (Week 1-2): Quick
+Wins<!-- label: phase-1-week-1-2-quick-wins -->
 
 - 
 - 
 - 
 
-\subsubsection{Phase 4 (Optional, Beyond Paper 3): Constant
-Refinement}<!-- label: phase-4-optional-beyond-paper-3-constant-refinement -->
+#### Phase 2 (Week 3-6): Core M-Regime Lower
+Bound<!-- label: phase-2-week-3-6-core-m-regime-lower-bound -->
+
+- 
+- 
+- 
+- 
+
+#### Phase 3 (Week 7-10): F1
+Extension<!-- label: phase-3-week-7-10-f1-extension -->
+
+- 
+- 
+- 
+
+#### Phase 4 (Optional, Beyond Paper 3): Constant
+Refinement<!-- label: phase-4-optional-beyond-paper-3-constant-refinement -->
 
 - 
 - 

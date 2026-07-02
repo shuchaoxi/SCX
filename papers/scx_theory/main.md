@@ -1,3 +1,7 @@
+# Main Text
+
+**Author:** SCX
+
 *Abstract:*
 
 All machine learning depends on data quality, yet the field lacks a rigorous understanding of when data errors can be detected at all. Here we prove a fundamental impossibility: distinguishing mislabeled samples from intrinsically difficult-but-correct samples is mathematically impossible from observational data alone. We identify the minimal set of structural assumptions that break this impossibility---disjoint expert training, uniform noise, and state-homogeneous error rates---and prove that under these conditions, multi-expert consistency detects label noise with an exponential convergence rate that is minimax optimal, including the exact asymptotic constant. The theoretical bounds are empirically tight: on a materials science benchmark, the predicted detection limit matches the observed F1 score exactly. Our results establish that every data-cleaning method makes implicit assumptions that must be stated for its claims to be scientifically meaningful, and provide both the necessary conditions and the optimal algorithm for the problem.

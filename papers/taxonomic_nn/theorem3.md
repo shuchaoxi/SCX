@@ -1,3 +1,7 @@
+# The Problem
+
+**Author:** SCX
+
 *Abstract:*
 
 We prove a fundamental impossibility theorem for data quality assessment: given only the observed outputs of multiple independent expert models, it is mathematically impossible to distinguish whether a label disagreement arises from label noise or from inherent sample difficulty. The two worlds — one where the label is randomly flipped, another where the sample admits multiple valid labels — produce identical joint observation distributions. No algorithm operating solely on these observations can separate them. We call this SCX's Uncertainty Principle.

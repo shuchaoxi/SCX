@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 The SCX ``Audit Sword'' principle asserts that every use of the Cercis Score

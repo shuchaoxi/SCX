@@ -1,5 +1,7 @@
-\section{Nature Comp Sci 审稿报告：SCX in
-Space}<!-- label: nature-comp-sci-ux5ba1ux7a3fux62a5ux544ascx-in-space -->
+# Nature Comp Sci 审稿报告：SCX in
+Space
+
+**Author:** SCX
 
 保存日期：2026-06-29
 

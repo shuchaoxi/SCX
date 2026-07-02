@@ -1,6 +1,8 @@
-\section{Feature Strength via k-means Stability: A Practical Diagnostic
+# Feature Strength via k-means Stability: A Practical Diagnostic
 for
-SCX}<!-- label: feature-strength-via-k-means-stability-a-practical-diagnostic-for-scx -->
+SCX
+
+**Author:** SCX
 
 > **Status:** Proposal |{} **Date:** 2026-06-27
 > **Purpose:** Replace the failed BBP spectral bridge with a
@@ -35,8 +37,8 @@ SCX}<!-- label: feature-strength-via-k-means-stability-a-practical-diagnostic-fo
 
 </div>
 
-\subsection{1. Why the BBP Bridge
-Failed}<!-- label: why-the-bbp-bridge-failed -->
+### 1. Why the BBP Bridge
+Failed<!-- label: why-the-bbp-bridge-failed -->
 
 The BBP spectral proxy (`bbp\_spectral\_proxy.md`) attempted to
 connect Theorem 2's mutual information delta = I(phi; S) to the largest
@@ -44,8 +46,8 @@ eigenvalue lambda\_1 of the feature Gram matrix. The goal was to replace
 an intractable quantity (MI) with a computable one (eigenvalue). The
 attempt failed for five reasons, each independently fatal:
 
-\subsubsection{1.1 The Information-Spectral Bridge Was
-Hand-Waving}<!-- label: the-information-spectral-bridge-was-hand-waving -->
+#### 1.1 The Information-Spectral Bridge Was
+Hand-Waving<!-- label: the-information-spectral-bridge-was-hand-waving -->
 
 The core claim was that delta\_hat = (lambda\_1 - MP\_+) / C serves as a
 proxy for delta = I(phi; S). But lambda\_1 measures the **maximum
@@ -64,8 +66,8 @@ geometries with identical theta produce deltas differing by a factor of
 2theta, disproving monotonicity even within the isotropic Gaussian
 model.
 
-\subsubsection{1.2 The Gaussian Assumption Is Fatal for SCX's Real
-Features}<!-- label: the-gaussian-assumption-is-fatal-for-scxs-real-features -->
+#### 1.2 The Gaussian Assumption Is Fatal for SCX's Real
+Features<!-- label: the-gaussian-assumption-is-fatal-for-scxs-real-features -->
 
 The entire BBP derivation assumes isotropic Gaussian within-state
 distributions. SCX's actual features violate this:
@@ -77,8 +79,8 @@ distributions. SCX's actual features violate this:
 Without isotropy, the Marchenko-Pastur bulk edge MP\_+ is wrong, the BBP
 threshold sqrt(gamma) is wrong, and the entire spectral test is invalid.
 
-\subsubsection{1.3 The Calibration Constant C Was
-Circular}<!-- label: the-calibration-constant-c-was-circular -->
+#### 1.3 The Calibration Constant C Was
+Circular<!-- label: the-calibration-constant-c-was-circular -->
 
 The calibration C = (lambda\_1 - MP\_+) / delta depends on the unknown
 theta, which is inferred from lambda\_1. This is algebraically
@@ -92,8 +94,8 @@ theta \textgreater\textgreater{} sqrt(gamma), K = 2, and d
 \textgreater\textgreater{} theta --- conditions that fail for every SCX
 dataset.
 
-\subsubsection{1.4 The Tracy-Widom Test Is Invalid for Non-i.i.d.
-Features}<!-- label: the-tracy-widom-test-is-invalid-for-non-i.i.d.-features -->
+#### 1.4 The Tracy-Widom Test Is Invalid for Non-i.i.d.
+Features<!-- label: the-tracy-widom-test-is-invalid-for-non-i.i.d.-features -->
 
 The TW\_1 critical values require i.i.d. entries with finite fourth
 moment. SCX features violate this in multiple ways: - Row dependence
@@ -105,8 +107,8 @@ spike near cutoffs)
 The resulting anti-conservative test produces false positives at rates
 exceeding the nominal significance level.
 
-\subsubsection{1.5 The ``Many Weak Signals'' Regime Is Not
-Addressable}<!-- label: the-many-weak-signals-regime-is-not-addressable -->
+#### 1.5 The ``Many Weak Signals'' Regime Is Not
+Addressable<!-- label: the-many-weak-signals-regime-is-not-addressable -->
 
 For K states with balanced separation in many directions, the total
 mutual information can be large while every individual eigenvalue is
@@ -131,8 +133,8 @@ what SCX actually does.
 
 </div>
 
-\subsection{2. The Stability-Based
-Alternative}<!-- label: the-stability-based-alternative -->
+### 2. The Stability-Based
+Alternative<!-- label: the-stability-based-alternative -->
 
 #### 2.1 Core Idea<!-- label: core-idea -->
 
@@ -217,8 +219,8 @@ k-means solution.
 
 </div>
 
-\subsection{3. Theorem: Clustering Stability Criterion for SCX
-Reliability}<!-- label: theorem-clustering-stability-criterion-for-scx-reliability -->
+### 3. Theorem: Clustering Stability Criterion for SCX
+Reliability<!-- label: theorem-clustering-stability-criterion-for-scx-reliability -->
 
 #### 3.1 Setup<!-- label: setup -->
 
@@ -349,8 +351,8 @@ does not align with the noise structure.
 
 </div>
 
-\subsection{4. Corollary: Practical Threshold
-Rule}<!-- label: corollary-practical-threshold-rule -->
+### 4. Corollary: Practical Threshold
+Rule<!-- label: corollary-practical-threshold-rule -->
 
 #### 4.1 Heuristic Threshold<!-- label: heuristic-threshold -->
 
@@ -409,8 +411,8 @@ Improve features
 
 \end{longtable}
 
-\subsubsection{4.3 Relationship to the Number of
-Initializations}<!-- label: relationship-to-the-number-of-initializations -->
+#### 4.3 Relationship to the Number of
+Initializations<!-- label: relationship-to-the-number-of-initializations -->
 
 Standard k-means already runs multiple random initializations and picks
 the one with the lowest objective. The stability diagnostic additionally
@@ -429,8 +431,8 @@ computational cost.
 
 ### 5. Practical Algorithm<!-- label: practical-algorithm -->
 
-\subsubsection{5.1 Algorithm: Clustering Stability
-Diagnostic}<!-- label: algorithm-clustering-stability-diagnostic -->
+#### 5.1 Algorithm: Clustering Stability
+Diagnostic<!-- label: algorithm-clustering-stability-diagnostic -->
 
 \begin{verbatim}
 Input:
@@ -618,8 +620,8 @@ The stability diagnostic should be added as a new method in
 \end{Highlighting}
 \end{Shaded}
 
-\subsubsection{6.2 Integration with Existing
-Pipeline}<!-- label: integration-with-existing-pipeline -->
+#### 6.2 Integration with Existing
+Pipeline<!-- label: integration-with-existing-pipeline -->
 
 The diagnostic fits naturally into the SCX workflow:
 
@@ -635,9 +637,9 @@ Feature extraction (phi) -> State discovery (k-means) -> StateValue analysis
                                             If stability < 0.5: recommend feature engineering
 \end{verbatim}
 
-\subsubsection{\texorpdfstring{6.3 Relationship to
+#### \texorpdfstring{6.3 Relationship to
 `feature\_strength\_diagnostic()`
-(Existing)}{6.3 Relationship to feature\_strength\_diagnostic() (Existing)}}<!-- label: relationship-to-feature_strength_diagnostic-existing -->
+(Existing){6.3 Relationship to feature\_strength\_diagnostic() (Existing)}}<!-- label: relationship-to-feature_strength_diagnostic-existing -->
 
 The existing `feature\_strength\_diagnostic()` (lines 589-671 of
 `state\_value.py`) computes mutual information I(phi; S) using
@@ -664,8 +666,8 @@ synthetic experiments or benchmark datasets).
 
 </div>
 
-\subsection{\texorpdfstring{7. Comparison to Existing
-`feature\_strength\_diagnostic()`}{7. Comparison to Existing feature\_strength\_diagnostic()}}<!-- label: comparison-to-existing-feature_strength_diagnostic -->
+### \texorpdfstring{7. Comparison to Existing
+`feature\_strength\_diagnostic()`{7. Comparison to Existing feature\_strength\_diagnostic()}}<!-- label: comparison-to-existing-feature_strength_diagnostic -->
 
 #### 7.1 Current Implementation<!-- label: current-implementation -->
 
@@ -677,8 +679,8 @@ works as follows:
 3. 
 4. 
 
-\subsubsection{7.2 Limitations of the Existing
-Diagnostic}<!-- label: limitations-of-the-existing-diagnostic -->
+#### 7.2 Limitations of the Existing
+Diagnostic<!-- label: limitations-of-the-existing-diagnostic -->
 
 1. 
 2. 
@@ -752,8 +754,8 @@ False negative mode & N/A (needs true labels) & Possible (see Section
 
 ### 8. Validation Strategy<!-- label: validation-strategy -->
 
-\subsubsection{8.1 Synthetic Data
-Validation}<!-- label: synthetic-data-validation -->
+#### 8.1 Synthetic Data
+Validation<!-- label: synthetic-data-validation -->
 
 Generate data from a K-component Gaussian mixture (ground truth known)
 and vary the center separation Delta. For each separation level:
@@ -766,8 +768,8 @@ and vary the center separation Delta. For each separation level:
 Expected result: S \textgreater{} 0.7 corresponds to detectable F1
 improvement for all tested configurations.
 
-\subsubsection{8.2 Real-Data Validation (Three SCX
-Datasets)}<!-- label: real-data-validation-three-scx-datasets -->
+#### 8.2 Real-Data Validation (Three SCX
+Datasets)<!-- label: real-data-validation-three-scx-datasets -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1364}}
@@ -798,8 +800,8 @@ Weak
 
 \end{longtable}
 
-\subsubsection{8.3 Ablation: How Many Bootstrap
-Resamples?}<!-- label: ablation-how-many-bootstrap-resamples -->
+#### 8.3 Ablation: How Many Bootstrap
+Resamples?<!-- label: ablation-how-many-bootstrap-resamples -->
 
 Evaluate stability as a function of B (10, 20, 50, 100, 200):
 
@@ -826,8 +828,8 @@ that maximizes stability is a good candidate.
 
 ### 9. Honest Limitations<!-- label: honest-limitations -->
 
-\subsubsection{9.1 Stability Is a Sufficient Condition, Not a Necessary
-One}<!-- label: stability-is-a-sufficient-condition-not-a-necessary-one -->
+#### 9.1 Stability Is a Sufficient Condition, Not a Necessary
+One<!-- label: stability-is-a-sufficient-condition-not-a-necessary-one -->
 
 The most important limitation: stable clustering does not guarantee that
 SCX will succeed. A stable clustering may separate samples along a
@@ -860,8 +862,8 @@ For the largest datasets, the fast approximation options (mini-batch
 k-means, reduced B, subset sampling) should be offered as configurable
 alternatives.
 
-\subsubsection{9.3 The Threshold 0.7 Is a
-Heuristic}<!-- label: the-threshold-0.7-is-a-heuristic -->
+#### 9.3 The Threshold 0.7 Is a
+Heuristic<!-- label: the-threshold-0.7-is-a-heuristic -->
 
 The threshold tau = 0.7 is borrowed from the Cohen's kappa agreement
 literature (Landis \& Koch, 1977). It is not derived from first
@@ -872,8 +874,8 @@ synthetic data (Section 4.2). The diagnostic reports the raw stability
 value, not just the verdict, allowing users to make their own threshold
 decisions.
 
-\subsubsection{9.4 Label Alignment
-Artifacts}<!-- label: label-alignment-artifacts -->
+#### 9.4 Label Alignment
+Artifacts<!-- label: label-alignment-artifacts -->
 
 Aligning cluster labels between baseline and bootstrap runs requires
 solving a matching problem. If K is large (\textgreater{} 20), the
@@ -886,8 +888,8 @@ initialization seeds produce consistently labeled clusters. The
 Hungarian alignment is only a safety net for when the algorithm
 converges to genuinely different local optima.
 
-\subsubsection{9.5 Sensitivity to
-Outliers}<!-- label: sensitivity-to-outliers -->
+#### 9.5 Sensitivity to
+Outliers<!-- label: sensitivity-to-outliers -->
 
 A single outlier far from all cluster centers can dominate the k-means
 objective without being part of any meaningful state structure. If the
@@ -898,16 +900,16 @@ reduce stability even in the presence of strong structure.
 values. The stability diagnostic should be run after standard
 preprocessing (centering, scaling, outlier removal).
 
-\subsubsection{9.6 Stability Under k = 1 or Degenerate
-Cases}<!-- label: stability-under-k-1-or-degenerate-cases -->
+#### 9.6 Stability Under k = 1 or Degenerate
+Cases<!-- label: stability-under-k-1-or-degenerate-cases -->
 
 If K = 1 (no state structure), the stability diagnostic is undefined
 (ARI requires at least 2 clusters). If K = N (each sample its own
 state), ARI = 1 trivially. The diagnostic should check for degenerate K
 values and return appropriate warnings.
 
-\subsubsection{9.7 Relationship to Theorem 2 Is Empirical, Not
-Formal}<!-- label: relationship-to-theorem-2-is-empirical-not-formal -->
+#### 9.7 Relationship to Theorem 2 Is Empirical, Not
+Formal<!-- label: relationship-to-theorem-2-is-empirical-not-formal -->
 
 Unlike the BBP spectral proxy (which attempted to prove an analytic
 connection to delta), the stability diagnostic makes a
@@ -931,8 +933,8 @@ diagnostic.
 
 ### 10. References<!-- label: references -->
 
-\subsubsection{Clustering Stability
-(Primary)}<!-- label: clustering-stability-primary -->
+#### Clustering Stability
+(Primary)<!-- label: clustering-stability-primary -->
 
 1. 
 2. 
@@ -952,14 +954,14 @@ diagnostic.
 
 1. 
 
-\subsubsection{Applications in Material Science (SCX
-Context)}<!-- label: applications-in-material-science-scx-context -->
+#### Applications in Material Science (SCX
+Context)<!-- label: applications-in-material-science-scx-context -->
 
 1. 
 2. 
 
-\subsubsection{Cohen's Kappa and Agreement
-Thresholds}<!-- label: cohens-kappa-and-agreement-thresholds -->
+#### Cohen's Kappa and Agreement
+Thresholds<!-- label: cohens-kappa-and-agreement-thresholds -->
 
 1. 
 
@@ -969,11 +971,11 @@ Thresholds}<!-- label: cohens-kappa-and-agreement-thresholds -->
 
 </div>
 
-\subsection{Appendix A: Relationship to Previous
-Attempts}<!-- label: appendix-a-relationship-to-previous-attempts -->
+### Appendix A: Relationship to Previous
+Attempts<!-- label: appendix-a-relationship-to-previous-attempts -->
 
-\subsubsection{A.1 Comparison to BBP Spectral
-Proxy}<!-- label: a.1-comparison-to-bbp-spectral-proxy -->
+#### A.1 Comparison to BBP Spectral
+Proxy<!-- label: a.1-comparison-to-bbp-spectral-proxy -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1667}}

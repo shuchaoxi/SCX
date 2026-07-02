@@ -1,5 +1,7 @@
-\section{Bayesian Update Interpretation of SCX
-Self-Evolution}<!-- label: bayesian-update-interpretation-of-scx-self-evolution -->
+# Bayesian Update Interpretation of SCX
+Self-Evolution
+
+**Author:** SCX
 
 > **Version**: 2026-06-28 |{} **Status**: Theoretical
 > framework |{} **Scope**: Formal Bayesian analysis of the
@@ -39,8 +41,8 @@ Self-Evolution}<!-- label: bayesian-update-interpretation-of-scx-self-evolution 
 
 </div>
 
-\subsection{1. Introduction: The Self-Evolution
-Loop}<!-- label: introduction-the-self-evolution-loop -->
+### 1. Introduction: The Self-Evolution
+Loop<!-- label: introduction-the-self-evolution-loop -->
 
 The SCX self-evolution framework operates as a closed-loop system:
 
@@ -97,8 +99,8 @@ functions.
 
 </div>
 
-\subsection{2. Bayesian Formulation of Gatekeeper
-Evolution}<!-- label: bayesian-formulation-of-gatekeeper-evolution -->
+### 2. Bayesian Formulation of Gatekeeper
+Evolution<!-- label: bayesian-formulation-of-gatekeeper-evolution -->
 
 Let \(\mathcal{G} = \{S: \mathcal{X} \times \mathcal{Y} \to [0,1]\}\) be
 the space of gatekeeper functions. Define a probability measure over
@@ -125,8 +127,8 @@ reliability.
 
 </div>
 
-\subsection{3. Prior Distribution Over Gatekeeper
-Functions}<!-- label: prior-distribution-over-gatekeeper-functions -->
+### 3. Prior Distribution Over Gatekeeper
+Functions<!-- label: prior-distribution-over-gatekeeper-functions -->
 
 **Definition 4.2 (Prior).** At initialization time \(t=0\), we
 place a prior distribution \(P_0\) over \(\mathcal{G}\):
@@ -154,8 +156,8 @@ constant.
 
 </div>
 
-\subsection{4. Likelihood: Memory Bank as
-Evidence}<!-- label: likelihood-memory-bank-as-evidence -->
+### 4. Likelihood: Memory Bank as
+Evidence<!-- label: likelihood-memory-bank-as-evidence -->
 
 The memory bank
 \(\mathcal{M}_t = \{(x_i, y_i, S_i, f_{\theta_i})\}_{i=1}^{N_t}\) is not
@@ -227,8 +229,8 @@ iterated, this creates a virtuous (or vicious) cycle.
 
 </div>
 
-\subsection{5. Posterior Update
-Recursion}<!-- label: posterior-update-recursion -->
+### 5. Posterior Update
+Recursion<!-- label: posterior-update-recursion -->
 
 **Theorem 4.1 (Bayesian Update Recursion).** Let \(P_t\) be the
 posterior over gatekeeper functions at time \(t\), and let
@@ -276,8 +278,8 @@ This is a standard sequential Bayesian update: the posterior at time
 
 </div>
 
-\subsection{6. Posterior Mean
-Gatekeeper}<!-- label: posterior-mean-gatekeeper -->
+### 6. Posterior Mean
+Gatekeeper<!-- label: posterior-mean-gatekeeper -->
 
 **Definition 4.4 (Gatekeeper as Posterior Mean).** At any time
 \(t\), the deployed gatekeeper is:
@@ -320,8 +322,8 @@ bridges the Bayesian formulation to the existing SCX theory.
 
 </div>
 
-\subsection{7. Conjugate Prior Structure: Gaussian Process
-Formulation}<!-- label: conjugate-prior-structure-gaussian-process-formulation -->
+### 7. Conjugate Prior Structure: Gaussian Process
+Formulation<!-- label: conjugate-prior-structure-gaussian-process-formulation -->
 
 **Definition 4.5 (Gaussian Process Gatekeeper).** Let the
 gatekeeper function \(S: \mathcal{X} \times \mathcal{Y} \to \mathbb{R}\)
@@ -408,8 +410,8 @@ family.
 
 </div>
 
-\subsection{8. Bayesian Martingale
-Property}<!-- label: bayesian-martingale-property -->
+### 8. Bayesian Martingale
+Property<!-- label: bayesian-martingale-property -->
 
 **Theorem 4.3 (Posterior Mean Martingale).** Let
 \(S_t(x,y) = \mathbb{E}_{P_t}[S(x,y)]\) be the posterior mean
@@ -458,8 +460,8 @@ of evaluation points, then \(\{S_t(z)\}_{t \geq 0}\) for
 
 </div>
 
-\subsection{9. Martingale Convergence
-Theorem}<!-- label: martingale-convergence-theorem -->
+### 9. Martingale Convergence
+Theorem<!-- label: martingale-convergence-theorem -->
 
 **Theorem 4.4 (Martingale Convergence of Gatekeeper).** Under the
 Bayesian update framework, the sequence of gatekeeper functions
@@ -523,8 +525,8 @@ is \(O_p(t^{-\nu/(2\nu+d)})\).
 
 </div>
 
-\subsection{10. Prior Misspecification
-Analysis}<!-- label: prior-misspecification-analysis -->
+### 10. Prior Misspecification
+Analysis<!-- label: prior-misspecification-analysis -->
 
 **Definition 4.6 (Misspecified Prior).** The prior \(P_0\) is
 **misspecified** if the true oracle gatekeeper \(S^*\) lies outside
@@ -592,8 +594,8 @@ continuous mapping: if \(P_t \to \delta_{S^\dagger}\), then
 
 </div>
 
-\subsection{11. KL Divergence
-Contraction}<!-- label: kl-divergence-contraction -->
+### 11. KL Divergence
+Contraction<!-- label: kl-divergence-contraction -->
 
 **Definition 4.7 (KL Divergence Between Data Distributions).** Let
 \(P^*\) be the true data-generating distribution induced by the oracle
@@ -659,8 +661,8 @@ yields the decomposition.
 
 </div>
 
-\subsection{12. Bernstein-von Mises Theorem
-Connection}<!-- label: bernstein-von-mises-theorem-connection -->
+### 12. Bernstein-von Mises Theorem
+Connection<!-- label: bernstein-von-mises-theorem-connection -->
 
 **Theorem 4.7 (Bernstein-von Mises for Gatekeeper).** Under
 regularity conditions (identifiability, smoothness, and correct
@@ -732,24 +734,24 @@ Vaart, 2012).
 
 ### 13. Proof Sketches<!-- label: proof-sketches -->
 
-\subsubsection{Proof Sketch for Theorem 4.3 (Martingale
-Property)}<!-- label: proof-sketch-for-theorem-4.3-martingale-property -->
+#### Proof Sketch for Theorem 4.3 (Martingale
+Property)<!-- label: proof-sketch-for-theorem-4.3-martingale-property -->
 
 1. 
 2. 
 3. 
 4. 
 
-\subsubsection{Proof Sketch for Theorem 4.4 (Martingale
-Convergence)}<!-- label: proof-sketch-for-theorem-4.4-martingale-convergence -->
+#### Proof Sketch for Theorem 4.4 (Martingale
+Convergence)<!-- label: proof-sketch-for-theorem-4.4-martingale-convergence -->
 
 1. 
 2. 
 3. 
 4. 
 
-\subsubsection{Proof Sketch for Proposition 4.1 (Likelihood
-Form)}<!-- label: proof-sketch-for-proposition-4.1-likelihood-form -->
+#### Proof Sketch for Proposition 4.1 (Likelihood
+Form)<!-- label: proof-sketch-for-proposition-4.1-likelihood-form -->
 
 1. 
 2. 
@@ -757,8 +759,8 @@ Form)}<!-- label: proof-sketch-for-proposition-4.1-likelihood-form -->
 4. 
 5. 
 
-\subsubsection{Proof Sketch for Theorem 4.6 (KL
-Contraction)}<!-- label: proof-sketch-for-theorem-4.6-kl-contraction -->
+#### Proof Sketch for Theorem 4.6 (KL
+Contraction)<!-- label: proof-sketch-for-theorem-4.6-kl-contraction -->
 
 1. 
 2. 
@@ -771,8 +773,8 @@ Contraction)}<!-- label: proof-sketch-for-theorem-4.6-kl-contraction -->
 
 </div>
 
-\subsection{14. Summary of Proven vs.~Conjectured
-Claims}<!-- label: summary-of-proven-vs.-conjectured-claims -->
+### 14. Summary of Proven vs.~Conjectured
+Claims<!-- label: summary-of-proven-vs.-conjectured-claims -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3182}}

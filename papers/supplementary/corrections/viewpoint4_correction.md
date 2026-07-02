@@ -1,3 +1,7 @@
+# 审查裁决 / Review Verdict
+
+**Author:** SCX
+
 ## 审查裁决 / Review Verdict
 
 <div align="center">

@@ -1,6 +1,8 @@
-\section{Minimax Lower Bound for Multi-Expert Noise Detection: Hellinger
+# Minimax Lower Bound for Multi-Expert Noise Detection: Hellinger
 Distance
-Proof}<!-- label: minimax-lower-bound-for-multi-expert-noise-detection-hellinger-distance-proof -->
+Proof
+
+**Author:** SCX
 
 > **Purpose**: Rewrite the minimax lower bound proof using Hellinger
 > distance tensorization, replacing the invalid Slud-inequality approach
@@ -52,8 +54,8 @@ Proof}<!-- label: minimax-lower-bound-for-multi-expert-noise-detection-hellinger
 
 ### 1. Setup and Main Result<!-- label: setup-and-main-result -->
 
-\subsubsection{1.1 The Statistical
-Problem}<!-- label: the-statistical-problem -->
+#### 1.1 The Statistical
+Problem<!-- label: the-statistical-problem -->
 
 We consider the multi-expert noise detection problem from Theorem 1. Fix
 a state \(s\) with clean error rate \(\mu_s \in (0, 1/2)\). For a given
@@ -121,11 +123,11 @@ in the \(M\)-regime.
 
 </div>
 
-\subsection{2. Hellinger Distance for One
-Expert}<!-- label: hellinger-distance-for-one-expert -->
+### 2. Hellinger Distance for One
+Expert<!-- label: hellinger-distance-for-one-expert -->
 
-\subsubsection{2.1 Definition and
-Properties}<!-- label: definition-and-properties -->
+#### 2.1 Definition and
+Properties<!-- label: definition-and-properties -->
 
 The **Hellinger distance** between two probability distributions
 \(P\) and \(Q\) on a discrete space is:
@@ -141,8 +143,8 @@ and:
 
 \[H^2(P, Q) = 1 - \rho(P, Q)\]
 
-\subsubsection{2.2 Hellinger Distance for Bernoulli
-Distributions}<!-- label: hellinger-distance-for-bernoulli-distributions -->
+#### 2.2 Hellinger Distance for Bernoulli
+Distributions<!-- label: hellinger-distance-for-bernoulli-distributions -->
 
 For a single expert under \(K=2\):
 
@@ -198,11 +200,11 @@ distributions are identical).
 
 </div>
 
-\subsection{3. Tensorization Across M
-Experts}<!-- label: tensorization-across-m-experts -->
+### 3. Tensorization Across M
+Experts<!-- label: tensorization-across-m-experts -->
 
-\subsubsection{3.1 The Tensorization
-Property}<!-- label: the-tensorization-property -->
+#### 3.1 The Tensorization
+Property<!-- label: the-tensorization-property -->
 
 A fundamental property of Hellinger distance is its behavior under
 product measures. For product distributions \(P^{\otimes M}\) and
@@ -238,8 +240,8 @@ The squared Hellinger distance follows:
 \(H^2(P^{\otimes M}, Q^{\otimes M}) = 1 - \rho^M\). Note that this
 tensorization is exact -- there is no slack or inequality.
 
-\subsubsection{3.2 Application to the Multi-Expert
-Problem}<!-- label: application-to-the-multi-expert-problem -->
+#### 3.2 Application to the Multi-Expert
+Problem<!-- label: application-to-the-multi-expert-problem -->
 
 For \(K=2\), the clean and noise distributions are product
 distributions:
@@ -269,8 +271,8 @@ tensorization exact.
 
 ### 4. Total Variation Bound<!-- label: total-variation-bound -->
 
-\subsubsection{4.1 The TV-Hellinger
-Inequality}<!-- label: the-tv-hellinger-inequality -->
+#### 4.1 The TV-Hellinger
+Inequality<!-- label: the-tv-hellinger-inequality -->
 
 **Lemma 1 (TV-Hellinger bound).** For any two probability
 distributions \(P\) and \(Q\):
@@ -323,8 +325,8 @@ Let \(\rho = 2\sqrt{\mu_s(1-\mu_s)}\). Then:
 
 \[TV(P_0, P_1) \leq \sqrt{1 - \rho^M}\]
 
-\subsubsection{4.3 Comparison with Other
-Bounds}<!-- label: comparison-with-other-bounds -->
+#### 4.3 Comparison with Other
+Bounds<!-- label: comparison-with-other-bounds -->
 
 The TV-Hellinger bound is tighter than the TV-\(\chi^2\) bound
 (\(TV \leq \sqrt{\chi^2/2}\)) in the following sense:
@@ -341,8 +343,8 @@ square root.
 
 </div>
 
-\subsection{5. Le Cam Two-Point Lower
-Bound}<!-- label: le-cam-two-point-lower-bound -->
+### 5. Le Cam Two-Point Lower
+Bound<!-- label: le-cam-two-point-lower-bound -->
 
 #### 5.1 Le Cam's Lemma<!-- label: le-cams-lemma -->
 
@@ -374,8 +376,8 @@ $$
 The last inequality uses the definition of TV as the maximum difference
 in probability over measurable sets. \(\square\)
 
-\subsubsection{5.2 Applying Le Cam with the Hellinger TV
-Bound}<!-- label: applying-le-cam-with-the-hellinger-tv-bound -->
+#### 5.2 Applying Le Cam with the Hellinger TV
+Bound<!-- label: applying-le-cam-with-the-hellinger-tv-bound -->
 
 Combining Lemma 2 with the TV bound from Section 4:
 
@@ -424,18 +426,18 @@ lower bound weaker but still valid) - The final bound
 
 </div>
 
-\subsection{6. Expression in Terms of the Separation
-Gap}<!-- label: expression-in-terms-of-the-separation-gap -->
+### 6. Expression in Terms of the Separation
+Gap<!-- label: expression-in-terms-of-the-separation-gap -->
 
-\subsubsection{\texorpdfstring{6.1 The Separation Gap
-\(\Delta\)}{6.1 The Separation Gap \ Delta}}<!-- label: the-separation-gap-delta -->
+#### \texorpdfstring{6.1 The Separation Gap
+\(\Delta\){6.1 The Separation Gap \ Delta}}<!-- label: the-separation-gap-delta -->
 
 For \(K=2\) with clean error rate \(\mu_s\), the separation gap is:
 
 \[\mu_s = \frac12 - \Delta, \quadwhere  \Delta \in (0, 1/2)\]
 
-\subsubsection{\texorpdfstring{6.2 Expressing \(\rho\) in Terms of
-\(\Delta\)}{6.2 Expressing \ rho in Terms of \ Delta}}<!-- label: expressing-rho-in-terms-of-delta -->
+#### \texorpdfstring{6.2 Expressing \(\rho\) in Terms of
+\(\Delta\){6.2 Expressing \ rho in Terms of \ Delta}}<!-- label: expressing-rho-in-terms-of-delta -->
 
 \[
 $$
@@ -449,13 +451,13 @@ $$
 $$
 \]
 
-\subsubsection{\texorpdfstring{6.3 The Lower Bound in Terms of
-\(\Delta\)}{6.3 The Lower Bound in Terms of \ Delta}}<!-- label: the-lower-bound-in-terms-of-delta -->
+#### \texorpdfstring{6.3 The Lower Bound in Terms of
+\(\Delta\){6.3 The Lower Bound in Terms of \ Delta}}<!-- label: the-lower-bound-in-terms-of-delta -->
 
 \[R(\psi) \geq \frac14 \bigl(\sqrt{1-4\Delta^2}\bigr)^M = \frac14 (1-4\Delta^2)^{M/2}\]
 
-\subsubsection{\texorpdfstring{6.4 Small-\(\Delta\)
-Approximation}{6.4 Small-\ Delta Approximation}}<!-- label: small-delta-approximation -->
+#### \texorpdfstring{6.4 Small-\(\Delta\)
+Approximation{6.4 Small-\ Delta Approximation}}<!-- label: small-delta-approximation -->
 
 For small \(\Delta\), using
 \(\log(1-4\Delta^2) = -4\Delta^2 - 8\Delta^4/3 - O(\Delta^6)\):
@@ -473,8 +475,8 @@ $$
 The leading exponent is \(2M\Delta^2\). This matches the Hoeffding
 exponent in Theorem 1's upper bound.
 
-\subsubsection{6.5 Alternative Expression (Exact, No
-Approximation)}<!-- label: alternative-expression-exact-no-approximation -->
+#### 6.5 Alternative Expression (Exact, No
+Approximation)<!-- label: alternative-expression-exact-no-approximation -->
 
 For any \(\Delta\) (not necessarily small):
 
@@ -492,8 +494,8 @@ ceiling issues or parameter restrictions.
 
 ### 7. F1 Lower Bound<!-- label: f1-lower-bound -->
 
-\subsubsection{7.1 From Testing Error to
-F1}<!-- label: from-testing-error-to-f1 -->
+#### 7.1 From Testing Error to
+F1<!-- label: from-testing-error-to-f1 -->
 
 The F1 score is defined at the population level:
 
@@ -508,8 +510,8 @@ where: -
 
 with \(\alpha = P_0(\psi=1)\) and \(\beta = P_1(\psi=0)\).
 
-\subsubsection{7.2 Upper Bound on F1 from the Testing
-Bound}<!-- label: upper-bound-on-f1-from-the-testing-bound -->
+#### 7.2 Upper Bound on F1 from the Testing
+Bound<!-- label: upper-bound-on-f1-from-the-testing-bound -->
 
 From Section 5, we have
 \(R(\psi) = \max(\alpha, \beta) \geq \varepsilon\) where
@@ -550,8 +552,8 @@ and:
 
 \[1 - F1 \geq \frac{(1-\eta)\varepsilon}{2\eta + (1-\eta)\varepsilon}\]
 
-\subsubsection{7.3 The Universal F1 Lower
-Bound}<!-- label: the-universal-f1-lower-bound -->
+#### 7.3 The Universal F1 Lower
+Bound<!-- label: the-universal-f1-lower-bound -->
 
 From the case analysis in Section 7.5, the universal bound is:
 
@@ -574,8 +576,8 @@ constant \(1/8\)), which is a stronger statement than the earlier
 incorrect derivation that introduced \(1/(16\eta)\). The exponent
 \(-\log\rho\) is unaffected by this correction.
 
-\subsubsection{\texorpdfstring{7.4 Expression in Terms of
-\(\Delta\)}{7.4 Expression in Terms of \ Delta}}<!-- label: expression-in-terms-of-delta -->
+#### \texorpdfstring{7.4 Expression in Terms of
+\(\Delta\){7.4 Expression in Terms of \ Delta}}<!-- label: expression-in-terms-of-delta -->
 
 \[1 - F1 \geq \frac18 (1-4\Delta^2)^{M/2}\]
 
@@ -583,8 +585,8 @@ For small \(\Delta\):
 
 \[1 - F1 \geq \frac18 \exp\!\bigl(-2M\Delta^2 - 4M\Delta^4 - O(M\Delta^6)\bigr)\]
 
-\subsubsection{7.5 Verification of the F1 Bound
-Direction}<!-- label: verification-of-the-f1-bound-direction -->
+#### 7.5 Verification of the F1 Bound
+Direction<!-- label: verification-of-the-f1-bound-direction -->
 
 **Claim**: \(1 - F1 \geq \frac{2-\varepsilon}\)
 when \(\max(\alpha, \beta) \geq \varepsilon\).
@@ -635,8 +637,8 @@ wrong classes:
 where under assumption A6 with \(C_{bal} = 1\), all mixture
 components have the same Bernoulli parameter \(p_c = 1 - \mu_s/(K-1)\).
 
-\subsubsection{8.2 Reduction to Binary
-Case}<!-- label: reduction-to-binary-case -->
+#### 8.2 Reduction to Binary
+Case<!-- label: reduction-to-binary-case -->
 
 **Lemma 4 (K=2 is the hardest case under A6 with C\_bal=1).** When
 all mixture components are identical, the noise distribution \(P_1\) is
@@ -681,8 +683,8 @@ errors). The SCX minimax optimality claim in Theorem 4' should
 explicitly note the \(C_{bal} = 1\) restriction for the exact
 constant, while the rate optimality (\(\kappa\)) is unaffected.
 
-\subsubsection{8.3 Comparing the
-Separation}<!-- label: comparing-the-separation -->
+#### 8.3 Comparing the
+Separation<!-- label: comparing-the-separation -->
 
 For \(K > 2\) with \(C_{bal} = 1\), the clean and noise Bernoulli
 parameters are:
@@ -735,8 +737,8 @@ product distribution, and the tensorization is exact.
 ### 9. Extension to C\_bal \textgreater{
 1}<!-- label: extension-to-c_bal-1 -->
 
-\subsubsection{9.1 Non-Uniform Error
-Distribution}<!-- label: non-uniform-error-distribution -->
+#### 9.1 Non-Uniform Error
+Distribution<!-- label: non-uniform-error-distribution -->
 
 When \(C_{bal} > 1\), the mixture components may have different
 Bernoulli parameters. The worst-case component (giving the largest
@@ -745,8 +747,8 @@ distribution) has error probability:
 
 \[p_ = \max_{c \neq y^*} \Bigl(1 - \frac{\mu_s}{K-1} \cdot C_{bal}\Bigr)\]
 
-\subsubsection{9.2 Hellinger Bound for
-Mixtures}<!-- label: hellinger-bound-for-mixtures -->
+#### 9.2 Hellinger Bound for
+Mixtures<!-- label: hellinger-bound-for-mixtures -->
 
 For the mixture \(P_1 = \frac{1}{L} \sum_{\ell=1}^L Q_\ell\) where
 \(Q_\ell\) are product distributions, we can bound the Hellinger
@@ -841,8 +843,8 @@ optimality (exponent in \(M\)) is unaffected.
 
 ### 10. Rate Optimality<!-- label: rate-optimality -->
 
-\subsubsection{10.1 Upper Bound (Theorem
-1)}<!-- label: upper-bound-theorem-1 -->
+#### 10.1 Upper Bound (Theorem
+1)<!-- label: upper-bound-theorem-1 -->
 
 From Theorem 1 (Hoeffding form):
 
@@ -852,8 +854,8 @@ For the hardest state \(s^* = \arg\min_s \Delta_s\), this gives:
 
 \[1 - F1 \leq \frac{1} \exp\!\bigl(-2M\Delta_{s^*}^2\bigr)\]
 
-\subsubsection{10.2 Lower Bound (Theorem 4, this
-document)}<!-- label: lower-bound-theorem-4-this-document -->
+#### 10.2 Lower Bound (Theorem 4, this
+document)<!-- label: lower-bound-theorem-4-this-document -->
 
 From Section 7:
 
@@ -894,8 +896,8 @@ detection under assumptions (A1)-(A6).
 
 </div>
 
-\subsection{11. Connection to Theorem 1: Chernoff
-Exactness}<!-- label: connection-to-theorem-1-chernoff-exactness -->
+### 11. Connection to Theorem 1: Chernoff
+Exactness<!-- label: connection-to-theorem-1-chernoff-exactness -->
 
 #### 11.1 The Chernoff Exponent<!-- label: the-chernoff-exponent -->
 
@@ -909,8 +911,8 @@ is given by the Cramer-Chernoff theorem. The optimal threshold is
 \[KL\!\left(\frac12 \;\Big\|\; \mu_s\right) = \frac12 \log\frac{1}{2\mu_s} + \frac12 \log\frac{1}{2(1-\mu_s)}
 = -\log\bigl(2\sqrt{\mu_s(1-\mu_s)}\bigr)\]
 
-\subsubsection{11.2 The Hellinger-Chernoff
-Correspondence}<!-- label: the-hellinger-chernoff-correspondence -->
+#### 11.2 The Hellinger-Chernoff
+Correspondence<!-- label: the-hellinger-chernoff-correspondence -->
 
 The per-expert Hellinger exponent is:
 
@@ -921,8 +923,8 @@ These are **exactly equal**. This means:
 - 
 - 
 
-\subsubsection{11.3 Taylor Expansion
-Comparison}<!-- label: taylor-expansion-comparison -->
+#### 11.3 Taylor Expansion
+Comparison<!-- label: taylor-expansion-comparison -->
 
 For small \(\Delta\):
 
@@ -989,8 +991,8 @@ level -- not just up to constants, but exactly.
 
 ### 12. Numerical Verification<!-- label: numerical-verification -->
 
-\subsubsection{12.1 Testing Error Lower
-Bound}<!-- label: testing-error-lower-bound -->
+#### 12.1 Testing Error Lower
+Bound<!-- label: testing-error-lower-bound -->
 
 The lower bound \(R(\psi) \geq \rho^M/4\) for various parameter values:
 
@@ -1087,8 +1089,8 @@ Implied \(F1 \leq\)
 bound only requires that \(\max(\alpha, \beta) \geq \varepsilon\), not
 that both are large. A more refined construction could tighten this.
 
-\subsubsection{12.3 Verification of Key
-Inequalities}<!-- label: verification-of-key-inequalities -->
+#### 12.3 Verification of Key
+Inequalities<!-- label: verification-of-key-inequalities -->
 
 We verify the key inequality \(1-\sqrt{1-x} \geq x/2\) for the relevant
 range:
@@ -1116,8 +1118,8 @@ range:
 
 The inequality holds with slack increasing in \(x\).
 
-\subsubsection{12.4 Comparison with Exact Optimal
-Test}<!-- label: comparison-with-exact-optimal-test -->
+#### 12.4 Comparison with Exact Optimal
+Test<!-- label: comparison-with-exact-optimal-test -->
 
 For \(K=2\), the optimal Bayes test for equal priors is:
 
@@ -1144,11 +1146,11 @@ The Hellinger bound (\(0.027\)) is slightly below the actual error
 
 </div>
 
-\subsection{13. Resolution of Review
-Issues}<!-- label: resolution-of-review-issues -->
+### 13. Resolution of Review
+Issues<!-- label: resolution-of-review-issues -->
 
-\subsubsection{13.1 Issue 1: Lemma 7 (Slud's inequality) was
-false}<!-- label: issue-1-lemma-7-sluds-inequality-was-false -->
+#### 13.1 Issue 1: Lemma 7 (Slud's inequality) was
+false<!-- label: issue-1-lemma-7-sluds-inequality-was-false -->
 
 **Original problem**: The v1 proof claimed
 \(\mathbb{P}(Bin(M,\mu) \geq M/2) \geq
@@ -1165,9 +1167,9 @@ All inequalities are in the correct direction, and no Binomial tail
 bound is required. The Hellinger approach works for any \(M\), any
 \(\mu_s\), without ceiling issues or parameter restrictions.
 
-\subsubsection{13.2 Issue 2: K=2 to K\textgreater2 reduction used bound
+#### 13.2 Issue 2: K=2 to K\textgreater2 reduction used bound
 direction
-incorrectly}<!-- label: issue-2-k2-to-k2-reduction-used-bound-direction-incorrectly -->
+incorrectly<!-- label: issue-2-k2-to-k2-reduction-used-bound-direction-incorrectly -->
 
 **Original problem**: The v1 proof argued that larger \(\chi^2\)
 for \(K>2\) implies the \(K=2\) case is hardest. This used the bound
@@ -1182,8 +1184,8 @@ separation \(p_1 - p_0 = 1 - \mu_s K/(K-1)\) increases with \(K\),
 making \(K=2\) the hardest case. No bounding of the mixture distribution
 is needed.
 
-\subsubsection{13.3 Issue 3: F1 derivation was algebraically
-unsound}<!-- label: issue-3-f1-derivation-was-algebraically-unsound -->
+#### 13.3 Issue 3: F1 derivation was algebraically
+unsound<!-- label: issue-3-f1-derivation-was-algebraically-unsound -->
 
 **Original problem**: The v1 proof's Lemma 8 attempted to show
 \(1-F1 \geq 1-TPR\) without verifying the validity
@@ -1200,8 +1202,8 @@ Verifies all inequality directions explicitly
 The bound \(1-F1 \geq \rho^M/8\) is valid for all
 \(\eta \leq 1/2\) without additional conditions.
 
-\subsubsection{13.4 Summary of
-Improvements}<!-- label: summary-of-improvements -->
+#### 13.4 Summary of
+Improvements<!-- label: summary-of-improvements -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2286}}
@@ -1271,8 +1273,8 @@ Numerical validity & Fails counterexamples & Verified numerically
 
 </div>
 
-\subsection{Appendix A: Glossary of Key
-Quantities}<!-- label: appendix-a-glossary-of-key-quantities -->
+### Appendix A: Glossary of Key
+Quantities<!-- label: appendix-a-glossary-of-key-quantities -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2759}}
@@ -1321,8 +1323,8 @@ affinity
 
 </div>
 
-\subsection{Appendix B: Direct Calculation of Hellinger for
-Products}<!-- label: appendix-b-direct-calculation-of-hellinger-for-products -->
+### Appendix B: Direct Calculation of Hellinger for
+Products<!-- label: appendix-b-direct-calculation-of-hellinger-for-products -->
 
 For completeness, we verify the tensorization property explicitly for
 the \(M\)-expert case.
@@ -1374,11 +1376,11 @@ to a product over \(M\) independent factors.
 
 </div>
 
-\subsection{Appendix C: Why the Hellinger Approach Works and Slud's
-Fails}<!-- label: appendix-c-why-the-hellinger-approach-works-and-sluds-fails -->
+### Appendix C: Why the Hellinger Approach Works and Slud's
+Fails<!-- label: appendix-c-why-the-hellinger-approach-works-and-sluds-fails -->
 
-\subsubsection{C.1 The Fundamental Issue with
-Slud}<!-- label: c.1-the-fundamental-issue-with-slud -->
+#### C.1 The Fundamental Issue with
+Slud<!-- label: c.1-the-fundamental-issue-with-slud -->
 
 Slud's inequality gives a lower bound on Binomial tail probabilities in
 terms of the Gaussian CDF:
@@ -1414,8 +1416,8 @@ Slud gives
 \(\mathbb{P}(Bin(20,0.4) \geq 10) \geq 0.181/2 = 0.090\), not
 \(0.5\cdot e^{-0.4} \approx 0.335\) as claimed in v1.
 
-\subsubsection{C.2 Why Hellinger Avoids
-This}<!-- label: c.2-why-hellinger-avoids-this -->
+#### C.2 Why Hellinger Avoids
+This<!-- label: c.2-why-hellinger-avoids-this -->
 
 The Hellinger approach directly computes the divergence between \(P_0\)
 and \(P_1\) without going through Binomial tail bounds:
@@ -1428,8 +1430,8 @@ No tail bounds, no Gaussian approximations, no ceiling issues. The
 Hellinger approach is ``robust by design'' because it works at the level
 of densities rather than tail events.
 
-\subsubsection{C.3 The Ceiling Issue (Odd
-M)}<!-- label: c.3-the-ceiling-issue-odd-m -->
+#### C.3 The Ceiling Issue (Odd
+M)<!-- label: c.3-the-ceiling-issue-odd-m -->
 
 The v1 proof applied Slud with \(k = \lceil M/2\rceil\), but Slud
 requires \(k/M \leq 1/2\). For odd \(M\), \(\lceil M/2\rceil/M > 1/2\),

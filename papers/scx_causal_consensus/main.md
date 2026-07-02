@@ -1,3 +1,7 @@
+# 本文提出四项核心结果：
+
+**Author:** SCX
+
 *Abstract:*
 
 从 **SCX因果框架**（scx\_causal）出发，我们将 3-SCM 不可辨识性定理

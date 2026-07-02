@@ -1,5 +1,7 @@
-\section{Random Matrix Theory and Free Probability: Connections to
-SCX}<!-- label: random-matrix-theory-and-free-probability-connections-to-scx -->
+# Random Matrix Theory and Free Probability: Connections to
+SCX
+
+**Author:** SCX
 
 > Status: **Exploratory** |{} Date: 2026-06-27 Purpose: Assess
 > whether RMT/free probability offers a genuine mathematical deepening for
@@ -11,14 +13,14 @@ SCX}<!-- label: random-matrix-theory-and-free-probability-connections-to-scx -->
 
 </div>
 
-\subsection{1. Viability: Is There a REAL
-Connection?}<!-- label: viability-is-there-a-real-connection -->
+### 1. Viability: Is There a REAL
+Connection?<!-- label: viability-is-there-a-real-connection -->
 
 **Verdict: Partially real, partially forced. Two distinct objects
 in SCX map to RMT with very different strength.**
 
-\subsubsection{Object A: The Expert Error Matrix E (M x N) -- Weak
-Connection}<!-- label: object-a-the-expert-error-matrix-e-m-x-n-weak-connection -->
+#### Object A: The Expert Error Matrix E (M x N) -- Weak
+Connection<!-- label: object-a-the-expert-error-matrix-e-m-x-n-weak-connection -->
 
 The matrix E with entries E\_\{m,i\} = loss(f\_m(x\_i), y\_i) naturally
 yields an M x M expert covariance:
@@ -82,8 +84,8 @@ structure under A5 all point to a **genuine connection** to RMT.
 This is not a high-dimensional regression problem in disguise -- it is a
 structural spectral problem.
 
-\subsubsection{Object C: Free Probability -- Weak/Forced
-Connection}<!-- label: object-c-free-probability-weakforced-connection -->
+#### Object C: Free Probability -- Weak/Forced
+Connection<!-- label: object-c-free-probability-weakforced-connection -->
 
 Free probability (Voiculescu, 1991) describes the spectral behavior of
 **freely independent** non-commutative random variables. The free
@@ -115,8 +117,8 @@ machinery without commensurate insight.
 The **BBP (Baik-Ben Arous-Peche) phase transition for spiked
 covariance models** applied to the feature Gram matrix K = Phi Phi\^{}T.
 
-\subsubsection{The Core Mathematical
-Connection}<!-- label: the-core-mathematical-connection -->
+#### The Core Mathematical
+Connection<!-- label: the-core-mathematical-connection -->
 
 Let the feature matrix Phi (N x d) have rows phi(x\_i) in R\^{}d.~Under
 the state model (A5), the row vectors are drawn from a K-component
@@ -148,8 +150,8 @@ The BBP phase transition says: as N, d -\textgreater{} infinity with d/N
 - 
 - 
 
-\subsubsection{Mapping to SCX's Weak/Strong Feature
-Regime}<!-- label: mapping-to-scxs-weakstrong-feature-regime -->
+#### Mapping to SCX's Weak/Strong Feature
+Regime<!-- label: mapping-to-scxs-weakstrong-feature-regime -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
@@ -192,8 +194,8 @@ eigenvectors encode state partition
 
 \end{longtable}
 
-\subsubsection{What This Adds That Theorem 2 Does
-Not}<!-- label: what-this-adds-that-theorem-2-does-not -->
+#### What This Adds That Theorem 2 Does
+Not<!-- label: what-this-adds-that-theorem-2-does-not -->
 
 **Theorem 2** characterizes the weak feature regime via the mutual
 information delta = I(phi; S), which is a purely information-theoretic
@@ -217,11 +219,11 @@ between SCX's theoretical guarantees and practical implementation.
 
 </div>
 
-\subsection{3. What Would the Theorem Look
-Like?}<!-- label: what-would-the-theorem-look-like -->
+### 3. What Would the Theorem Look
+Like?<!-- label: what-would-the-theorem-look-like -->
 
-\subsubsection{Proposed Theorem Statement
-(Sketch)}<!-- label: proposed-theorem-statement-sketch -->
+#### Proposed Theorem Statement
+(Sketch)<!-- label: proposed-theorem-statement-sketch -->
 
 **Theorem (Spectral Phase Transition for SCX State Discovery).**
 Let Phi be an N x d feature matrix with rows phi(x\_i) i.i.d. from a
@@ -246,8 +248,8 @@ Then:
 2. 
 3. 
 
-\subsubsection{What This Is Really
-Saying}<!-- label: what-this-is-really-saying -->
+#### What This Is Really
+Saying<!-- label: what-this-is-really-saying -->
 
 The theorem formalizes: ``If the between-state variation of features is
 too small relative to the within-state noise (scaled by dimension
@@ -281,28 +283,28 @@ need to draw on:
 4. 
 5. 
 
-\subsubsection{Applied to Spectral
-Clustering}<!-- label: applied-to-spectral-clustering -->
+#### Applied to Spectral
+Clustering<!-- label: applied-to-spectral-clustering -->
 
 1. 
 2. 
 
-\subsubsection{High-Dimensional Clustering and Community
-Detection}<!-- label: high-dimensional-clustering-and-community-detection -->
+#### High-Dimensional Clustering and Community
+Detection<!-- label: high-dimensional-clustering-and-community-detection -->
 
 1. 
 2. 
 
-\subsubsection{For the Mutual Information to Spectral
-Mapping}<!-- label: for-the-mutual-information-to-spectral-mapping -->
+#### For the Mutual Information to Spectral
+Mapping<!-- label: for-the-mutual-information-to-spectral-mapping -->
 
 1. 
 
 *Citation*: Nica, A., \& Speicher, R. (2006). *Lectures on the
 Combinatorics of Free Probability*. Cambridge University Press.
 
-\subsubsection{Bayesian / Spectral
-Connection}<!-- label: bayesian-spectral-connection -->
+#### Bayesian / Spectral
+Connection<!-- label: bayesian-spectral-connection -->
 
 1. 
 
@@ -319,8 +321,8 @@ own.**
 
 The honest assessment:
 
-\subsubsection{What Annals of Statistics
-Publishes}<!-- label: what-annals-of-statistics-publishes -->
+#### What Annals of Statistics
+Publishes<!-- label: what-annals-of-statistics-publishes -->
 
 Annals of Statistics accepts papers that provide **fundamentally
 new statistical theory** -- new limiting distributions, new testing
@@ -330,8 +332,8 @@ Recent papers on RMT and clustering (Lei \& Zhu, 2018; Bickel \& Sarkar,
 methodology** (new spectral algorithms, new testing procedures), not just
 connections between existing ideas.
 
-\subsubsection{What SCX + RMT Would
-Offer}<!-- label: what-scx-rmt-would-offer -->
+#### What SCX + RMT Would
+Offer<!-- label: what-scx-rmt-would-offer -->
 
 The value proposition would be:
 
@@ -382,8 +384,8 @@ strength, would be a genuine Annals contribution. - A paper just showing
 ``the eigenvalues of the Gram matrix follow MP law'' would be
 desk-rejected.
 
-\subsubsection{The Real Annals-Level
-Angle}<!-- label: the-real-annals-level-angle -->
+#### The Real Annals-Level
+Angle<!-- label: the-real-annals-level-angle -->
 
 The most novel Annals-worthy contribution would be the following:
 
@@ -483,8 +485,8 @@ theory is genuinely new.
 
 </div>
 
-\subsection{7. Risk: Is This Already
-Known?}<!-- label: risk-is-this-already-known -->
+### 7. Risk: Is This Already
+Known?<!-- label: risk-is-this-already-known -->
 
 #### What is Already Known<!-- label: what-is-already-known -->
 
@@ -544,8 +546,8 @@ be manageable
 
 </div>
 
-\subsection{8. Recommended Reading List (5 Papers to Read Before
-Committing)}<!-- label: recommended-reading-list-5-papers-to-read-before-committing -->
+### 8. Recommended Reading List (5 Papers to Read Before
+Committing)<!-- label: recommended-reading-list-5-papers-to-read-before-committing -->
 
 #### Paper 1: The Foundation<!-- label: paper-1-the-foundation -->
 
@@ -562,8 +564,8 @@ orthogonal polynomial methods. Focus on the statement (Theorem 1.1) and
 the phase transition behavior. *Focus:* The threshold value and the
 limiting distribution above/below it.
 
-\subsubsection{Paper 2: The K-means
-Connection}<!-- label: paper-2-the-k-means-connection -->
+#### Paper 2: The K-means
+Connection<!-- label: paper-2-the-k-means-connection -->
 
 **Lei, J., \& Zhu, L. (2018). A general spectral method for
 high-dimensional k-means clustering. *Annals of Statistics*,
@@ -578,8 +580,8 @@ eigenvector perturbation). *Focus:* Theorem 2.1 (misclassification
 rate bound), Assumption 3 (spiked covariance structure), and the phase
 transition in the signal-to-noise ratio.
 
-\subsubsection{Paper 3: The Spectral Clustering
-Tutorial}<!-- label: paper-3-the-spectral-clustering-tutorial -->
+#### Paper 3: The Spectral Clustering
+Tutorial<!-- label: paper-3-the-spectral-clustering-tutorial -->
 
 **Von Luxburg, U. (2007). A tutorial on spectral clustering.
 *Statistics and Computing*, 17(4), 395-416.**
@@ -591,8 +593,8 @@ analysis of Phi Phi\^{}T is relevant to SCX's state discovery.
 *Focus:* Section 5-6 (connection between spectral clustering and
 graph cut / k-means), Section 8 (consistency).
 
-\subsubsection{Paper 4: The Information-Theoretic-Spectral
-Bridge}<!-- label: paper-4-the-information-theoretic-spectral-bridge -->
+#### Paper 4: The Information-Theoretic-Spectral
+Bridge<!-- label: paper-4-the-information-theoretic-spectral-bridge -->
 
 **Bickel, P. J., \& Sarkar, P. (2016). Hypothesis testing for
 automated community detection in networks. *JRSS-B*, 78(1),
@@ -607,8 +609,8 @@ where spectral methods succeed/fail coincides with the
 information-theoretic threshold. This isomorphism is what SCX needs to
 replicate.
 
-\subsubsection{Paper 5: The Expert-Error Matrix as Random Matrix (Novel
-Angle)}<!-- label: paper-5-the-expert-error-matrix-as-random-matrix-novel-angle -->
+#### Paper 5: The Expert-Error Matrix as Random Matrix (Novel
+Angle)<!-- label: paper-5-the-expert-error-matrix-as-random-matrix-novel-angle -->
 
 **Paul, D. (2007). Asymptotics of sample eigenstructure for a
 large dimensional spiked covariance model. *Statistica Sinica*,
@@ -624,8 +626,8 @@ Technical but well-structured. *Focus:* The eigenvector
 inconsistency phase transition (Section 3), which is the key result for
 understanding when expert communities are recoverable.
 
-\subsubsection{Bonus: For the Free Probability Angle (Only if
-Pursued)}<!-- label: bonus-for-the-free-probability-angle-only-if-pursued -->
+#### Bonus: For the Free Probability Angle (Only if
+Pursued)<!-- label: bonus-for-the-free-probability-angle-only-if-pursued -->
 
 **Nica, A., \& Speicher, R. (2006). *Lectures on the
 Combinatorics of Free Probability*. Cambridge University Press.**
@@ -641,8 +643,8 @@ likely unnecessary.
 
 </div>
 
-\subsection{Summary and
-Recommendation}<!-- label: summary-and-recommendation -->
+### Summary and
+Recommendation<!-- label: summary-and-recommendation -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}

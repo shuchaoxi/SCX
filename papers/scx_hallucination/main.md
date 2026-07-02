@@ -1,3 +1,7 @@
+# Definition:
+
+**Author:** SCX
+
 *Abstract:*
 
 Proves that high-confidence hallucinations are inevitable for any single-model (M=1) LLM. Only multi-model auditing (M>1) provides exponential detection guarantees.

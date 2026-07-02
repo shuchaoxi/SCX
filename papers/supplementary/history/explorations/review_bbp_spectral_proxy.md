@@ -1,6 +1,8 @@
-\section{Referee Report: ``BBP Spectral Proxy: A Computable Alternative
+# Referee Report: ``BBP Spectral Proxy: A Computable Alternative
 to SCX Theorem 2's Mutual
-Information''}<!-- label: referee-report-bbp-spectral-proxy-a-computable-alternative-to-scx-theorem-2s-mutual-information -->
+Information''
+
+**Author:** SCX
 
 **Review requested by:** Editor-in-Chief (hostile review mode)
 **Venue:** Annals of Statistics (imagined) **Recommendation:**
@@ -31,8 +33,8 @@ flaws below.
 
 </div>
 
-\subsection{1. The Information-Spectral Bridge is Fundamentally
-Misconceived}<!-- label: the-information-spectral-bridge-is-fundamentally-misconceived -->
+### 1. The Information-Spectral Bridge is Fundamentally
+Misconceived<!-- label: the-information-spectral-bridge-is-fundamentally-misconceived -->
 
 The core claim is that delta\_hat = max(0, (lambda\_1 - MP\_+)/C) serves
 as a proxy for delta = I(phi; S). This conflates two quantities that
@@ -90,8 +92,8 @@ and ``nuisance variance.''
 
 </div>
 
-\subsection{2. The ``Monotonic Relationship'' Claim is
-Unsupported}<!-- label: the-monotonic-relationship-claim-is-unsupported -->
+### 2. The ``Monotonic Relationship'' Claim is
+Unsupported<!-- label: the-monotonic-relationship-claim-is-unsupported -->
 
 Section 3.4 states: ``The effective signal strength theta and the mutual
 information delta are **monotonically related** under the isotropic
@@ -136,8 +138,8 @@ not a theorem --- it is a heuristic.
 
 </div>
 
-\subsection{3. The Gaussian Mixture Assumption is Fatal for SCX's Actual
-Features}<!-- label: the-gaussian-mixture-assumption-is-fatal-for-scxs-actual-features -->
+### 3. The Gaussian Mixture Assumption is Fatal for SCX's Actual
+Features<!-- label: the-gaussian-mixture-assumption-is-fatal-for-scxs-actual-features -->
 
 The entire derivation assumes:
 
@@ -177,8 +179,8 @@ the phase transition location are unknown.
 
 </div>
 
-\subsection{4. The Tracy-Widom Test is Invalid for SCX
-Features}<!-- label: the-tracy-widom-test-is-invalid-for-scx-features -->
+### 4. The Tracy-Widom Test is Invalid for SCX
+Features<!-- label: the-tracy-widom-test-is-invalid-for-scx-features -->
 
 The test statistic uses TW\_1 critical values derived for the largest
 eigenvalue of a sample covariance matrix whose entries are i.i.d. with
@@ -203,8 +205,8 @@ ignore the excess variance from non-i.i.d. features.
 
 </div>
 
-\subsection{5. The Calibration Constant C is a Free
-Parameter}<!-- label: the-calibration-constant-c-is-a-free-parameter -->
+### 5. The Calibration Constant C is a Free
+Parameter<!-- label: the-calibration-constant-c-is-a-free-parameter -->
 
 The treatment of C is the weakest part of the paper, revealing that the
 ``theorem'' is not a theorem at all.
@@ -265,9 +267,9 @@ propagation. This is not a theorem --- it is an ad-hoc calibration.
 
 </div>
 
-\subsection{6. The ``Sufficient but Not Necessary'' Defense Acknowledges
+### 6. The ``Sufficient but Not Necessary'' Defense Acknowledges
 the Fatal
-Flaw}<!-- label: the-sufficient-but-not-necessary-defense-acknowledges-the-fatal-flaw -->
+Flaw<!-- label: the-sufficient-but-not-necessary-defense-acknowledges-the-fatal-flaw -->
 
 Section 12.2 admits: ``If lambda\_1 is below the MP edge, it does NOT
 guarantee SCX will fail.'' This is not a minor caveat --- it is the core
@@ -381,9 +383,9 @@ strong spike (theta = 0.5, lambda\_1 ≈ 1.8) as subcritical.
 
 </div>
 
-\subsection{8. The Comparison to Lei \& Zhu (2018) Reveals No
+### 8. The Comparison to Lei \& Zhu (2018) Reveals No
 Mathematical
-Contribution}<!-- label: the-comparison-to-lei-zhu-2018-reveals-no-mathematical-contribution -->
+Contribution<!-- label: the-comparison-to-lei-zhu-2018-reveals-no-mathematical-contribution -->
 
 Lei \& Zhu (2018) already proved:
 
@@ -436,11 +438,11 @@ collapses with them.
 
 </div>
 
-\subsection{Additional Mathematical
-Issues}<!-- label: additional-mathematical-issues -->
+### Additional Mathematical
+Issues<!-- label: additional-mathematical-issues -->
 
-\subsubsection{9. The ``Proof Sketch'' is Not a
-Proof}<!-- label: the-proof-sketch-is-not-a-proof -->
+#### 9. The ``Proof Sketch'' is Not a
+Proof<!-- label: the-proof-sketch-is-not-a-proof -->
 
 Section 4.2 calls itself a ``proof sketch'' but contains no proof. It
 consists of: - Part (a): ``follows directly from the BBP phase
@@ -464,8 +466,8 @@ knowing the true delta.
 - 
 - 
 
-\subsubsection{10. Part (b) of the Theorem is Internally
-Contradictory}<!-- label: part-b-of-the-theorem-is-internally-contradictory -->
+#### 10. Part (b) of the Theorem is Internally
+Contradictory<!-- label: part-b-of-the-theorem-is-internally-contradictory -->
 
 The theorem states two inequality claims: - (b1) delta\_hat \textless=
 delta + o(1) {[}upper bound: proxy is conservative{]} - (b2) delta\_hat
@@ -484,8 +486,8 @@ O((theta - sqrt(gamma))\^{}2 / theta) -\textgreater{} 0 as theta
 vanishingly small exactly when we need it most --- near the detection
 boundary.
 
-\subsubsection{11. The Plug-in to Theorem 2 (Section 6) is
-Circular}<!-- label: the-plug-in-to-theorem-2-section-6-is-circular -->
+#### 11. The Plug-in to Theorem 2 (Section 6) is
+Circular<!-- label: the-plug-in-to-theorem-2-section-6-is-circular -->
 
 The bound is: F1\_SCX \textless= F1\_base + C\_F * sqrt(2 * delta\_hat)
 + error
@@ -501,8 +503,8 @@ TW fluctuations is dwarfed by the calibration error O(1) from C.
 
 The statement ``The bound remains valid'' assumes the conclusion.
 
-\subsubsection{12. The Validation Predictions (Section 9) are
-Tautological}<!-- label: the-validation-predictions-section-9-are-tautological -->
+#### 12. The Validation Predictions (Section 9) are
+Tautological<!-- label: the-validation-predictions-section-9-are-tautological -->
 
 The three datasets are chosen to match the expected outcomes: - AlN
 (strong SCX improvement) -\textgreater{} ``strong features'' - CIFAR-10
@@ -521,9 +523,9 @@ numbers.
 
 This is not validation. It is storytelling.
 
-\subsubsection{13. The ``Many Weak Signals'' Regime (Section 13.3) is
+#### 13. The ``Many Weak Signals'' Regime (Section 13.3) is
 Dismissed Too
-Quickly}<!-- label: the-many-weak-signals-regime-section-13.3-is-dismissed-too-quickly -->
+Quickly<!-- label: the-many-weak-signals-regime-section-13.3-is-dismissed-too-quickly -->
 
 The author acknowledges that for K states with small but balanced
 separation, all eigenvalues can be subcritical while the total mutual

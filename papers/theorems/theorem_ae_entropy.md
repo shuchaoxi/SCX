@@ -1,3 +1,7 @@
+# Theorems
+
+**Author:** SCX
+
 *Abstract:*
 
 热力学教导我们，孤立系统不可逆地朝向最大熵演化。我们追问 SCX 审计是否服从类似的规律：审计者关于标签噪声的残留不确定性是否单调演化，如果是，则趋向什么极限？我们定义 **审计熵** $H_A(t)=H(\varepsilon\mid\cI_A^{(t)})$ —— 给定审计者在时刻 $t$ 的累积信息集 $\cI_A^{(t)}$ 时真实噪声标签 $\varepsilon$ 的条件熵 —— 并证明四个定理。(i)~**审计第二律**（定理 [ref]）：在``无遗忘''条件 $\cI_A^{(t)}\subseteq\cI_A^{(t+1)}$ 下，$H_A(t+1)\leq H_A(t)$，等号成立当且仅当第 $(t+1)$ 步审计提供关于 $\varepsilon$ 的零新信息。这是信息论数据处理不等式的 **严格** 推论。(ii)~**审计的朗道尔代价**（定理 [ref]）：将 $H_A$ 降低 $\Delta H$ 需要物理能量 $E_{\mathrm{audit}}\geq k_B T\cdot\Delta H\cdot\ln2$，这是来自朗道尔原理的 **严格** 下界；该下界是否可由最优审计协议达到是 **开放问题**。(iii)~**审计热寂**（定理 [ref]）：$\lim_{t\to\infty}H_A(t)=H_>0$，其中 $H_=H(\varepsilon\mid S)$ 是定理~3 保证的不可消除的无知。\rigorous (iv)~**多审计者熵合并**（定理 [ref]）：$H_A(1\oplus2)\leq\min(H_A(1),H_A(2))$，以及链式展开的严格等式刻画，为联邦 SCX 审计提供信息论基础。\rigorous

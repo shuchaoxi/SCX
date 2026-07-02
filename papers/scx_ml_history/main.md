@@ -1,3 +1,7 @@
+# Introduction — ML History Through the SCX Lens
+
+**Author:** SCX
+
 *Abstract:*
 
 Machine learning history is conventionally narrated as a sequence of empirical discoveries — backpropagation, dropout, attention, batch normalization — each validated by benchmark performance rather than theoretical derivation. We present a systematic re-audit: every major ML algorithm can be re-derived, or at minimum rigorously characterized, from SCX{} first principles. What appeared as empirical discoveries were, in many cases, implicit approximations of SCX{} theorems. The audit question is twofold: which algorithms ``accidentally'' implement SCX{} guarantees, and which rely on assumptions that SCX{} proves necessary?

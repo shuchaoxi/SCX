@@ -1,5 +1,7 @@
-\section{Review: Minimax Lower Bound v2 (Hellinger Distance
-Proof)}<!-- label: review-minimax-lower-bound-v2-hellinger-distance-proof -->
+# Review: Minimax Lower Bound v2 (Hellinger Distance
+Proof)
+
+**Author:** SCX
 
 > **File reviewed**:
 > `G:\{}Xiaogan\_Supercomputing\_data\{}SCX\{}theory\{}explorations\{}minimax\_lower\_bound\_v2.md`
@@ -388,8 +390,8 @@ affected.
 
 </div>
 
-\subsection{3. Algebraic Verification of F1
-Conversion}<!-- label: algebraic-verification-of-f1-conversion -->
+### 3. Algebraic Verification of F1
+Conversion<!-- label: algebraic-verification-of-f1-conversion -->
 
 This is the most critical section. Below is a complete, corrected
 derivation of the F1 lower bound.
@@ -400,8 +402,8 @@ derivation of the F1 lower bound.
 - 
 - 
 
-\subsubsection{F1 in terms of alpha,
-beta}<!-- label: f1-in-terms-of-alpha-beta -->
+#### F1 in terms of alpha,
+beta<!-- label: f1-in-terms-of-alpha-beta -->
 
 \begin{verbatim}
 F1 = 2*TP/(2*TP + FP + FN)
@@ -505,8 +507,8 @@ The claimed bound is **stronger than justified** for all
 `eta\ \textless{}\ 1/2`, with the discrepancy growing as
 `eta` decreases.
 
-\subsubsection{Rate optimality
-preserved}<!-- label: rate-optimality-preserved -->
+#### Rate optimality
+preserved<!-- label: rate-optimality-preserved -->
 
 Both the correct bound `rho\^{}M/8` and the claimed bound
 `rho\^{}M/(16*eta)` have leading term `rho\^{}M` =
@@ -520,8 +522,8 @@ confirming that Part (c) is unaffected.
 
 </div>
 
-\subsection{4. Summary of Correct vs.~Claimed
-Results}<!-- label: summary-of-correct-vs.-claimed-results -->
+### 4. Summary of Correct vs.~Claimed
+Results<!-- label: summary-of-correct-vs.-claimed-results -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2000}}
@@ -573,8 +575,8 @@ Taylor coeff & `-8/3*Delta\^{}4` & `-8*Delta\^{}4` &
 
 </div>
 
-\subsection{5. Comparison to v1: What is Fixed, What
-Remains}<!-- label: comparison-to-v1-what-is-fixed-what-remains -->
+### 5. Comparison to v1: What is Fixed, What
+Remains<!-- label: comparison-to-v1-what-is-fixed-what-remains -->
 
 #### Fixed from v1<!-- label: fixed-from-v1 -->
 
@@ -611,8 +613,8 @@ Odd M ceiling & Unaddressed & Works for all M & **Fixed**
 
 \end{longtable}
 
-\subsubsection{Remaining issues (this
-review)}<!-- label: remaining-issues-this-review -->
+#### Remaining issues (this
+review)<!-- label: remaining-issues-this-review -->
 
 1. 
 2. 

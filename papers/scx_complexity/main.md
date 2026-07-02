@@ -1,3 +1,7 @@
+# The Oracle
+
+**Author:** SCX
+
 *Abstract:*
 
 Baker, Gill, and Solovay (1975) proved that the P vs NP question cannot be resolved by diagonalization alone: there exist oracles $A$ and $B$ such that $\PP^A = \NP^A$ and $\PP^B \neq \NP^B$. We observe that the SCX multi-expert audit mechanism **is** such an oracle $B$ — one relative to which $\PP \neq \NP$. Specifically, the SCX oracle $\mathcal{O}_{SCX}$ accepts an instance $x$ and $M$ solver outputs, audits their consistency via Hoeffding concentration, and certifies $x \in L$ only when the consensus exceeds a threshold. We prove that relative to $\mathcal{O}_{SCX}$, the class of problems solvable by a single polynomial-time machine ($\PP^{\mathcal{O}_{SCX}}$) is strictly contained in the class where $M > 1$ independent solvers with audit achieve the guarantee ($\NP^{\mathcal{O}_{SCX}}$). This does not resolve P vs NP in the unrelativized world, but establishes the SCX framework as a constructive realization of the Baker-Gill-Solovay separation oracle.

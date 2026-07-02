@@ -1,3 +1,7 @@
+# Meta Review Of Codex
+
+**Author:** SCX
+
 1|# Codex 审查的 Meta-Review
 2|
 3|**审查对象**: `theory/hostile_review_2026.md`（Codex 输出的 10 证明链审查）

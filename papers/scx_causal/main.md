@@ -1,3 +1,7 @@
+# SCX Causal Theory
+
+**Author:** SCX
+
 *Abstract:*
 
 Proves that causal direction claims are unidentifiable from observational data without declared identification assumptions. Three mutually incompatible Structural Causal Models produce identical observational distributions.

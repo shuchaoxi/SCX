@@ -1,11 +1,6 @@
-<div align="center">
+# 本文提出 Agentic Multi-Agent SCX——一个面向人工智能安全场景的对抗性多智能体审计理论框架
 
-**版本：** v1.0 (2026-06-30) \quad
-**分类：** 博弈论 $\cdot$ AI安全 $\cdot$ 多智能体系统 
-
-**致谢：** 本文理论框架继承自Yajie博弈论体系。
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

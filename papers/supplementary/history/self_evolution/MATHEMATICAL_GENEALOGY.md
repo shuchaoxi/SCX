@@ -1,5 +1,7 @@
-\section{Spring 自进化算法 ---
-数学谱系学}<!-- label: spring-ux81eaux8fdbux5316ux7b97ux6cd5-ux6570ux5b66ux8c31ux7cfbux5b66 -->
+# Spring 自进化算法 ---
+数学谱系学
+
+**Author:** SCX
 
 > **Spring (春季)** = Spring Self-Evolving Gatekeeper (SSEG)
 > **地位**: Paper 2 (Nature Computational Science 目标) 的核心算法
@@ -32,8 +34,8 @@
 Spring
 自进化算法并非属于单一数学领域，而是跨越七个经典数学领域，在它们的交汇处合成全新结构。
 
-\subsubsection{1.1 随机逼近 (Stochastic
-Approximation)}<!-- label: ux968fux673aux903cux8fd1-stochastic-approximation -->
+#### 1.1 随机逼近 (Stochastic
+Approximation)<!-- label: ux968fux673aux903cux8fd1-stochastic-approximation -->
 
 **根源**: Robbins \& Monro (1951). ``A stochastic approximation
 method.'' *Annals of Mathematical Statistics*, 22(3), 400-407.
@@ -61,8 +63,8 @@ Applications* - Borkar (2008). *Stochastic Approximation: A
 Dynamical Systems Viewpoint* - Polyak \& Juditsky (1992). ``Acceleration
 of stochastic approximation by averaging''
 
-\subsubsection{1.2 动力系统 / Lyapunov
-稳定性}<!-- label: ux52a8ux529bux7cfbux7edf-lyapunov-ux7a33ux5b9aux6027 -->
+#### 1.2 动力系统 / Lyapunov
+稳定性<!-- label: ux52a8ux529bux7cfbux7edf-lyapunov-ux7a33ux5b9aux6027 -->
 
 **根源**: Lyapunov, A. M. (1892). *The General Problem of the
 Stability of Motion*. Kharkov Mathematical Society.
@@ -92,8 +94,8 @@ Stability of Motion* - Khalil (2002). *Nonlinear Systems* (3rd ed.)
 - Strogatz (2018). *Nonlinear Dynamics and Chaos* (2nd ed.) -
 Conley (1978). *Isolated Invariant Sets and the Morse Index*
 
-\subsubsection{1.3 贝叶斯推断 /
-鞅理论}<!-- label: ux8d1dux53f6ux65afux63a8ux65ad-ux9785ux7406ux8bba -->
+#### 1.3 贝叶斯推断 /
+鞅理论<!-- label: ux8d1dux53f6ux65afux63a8ux65ad-ux9785ux7406ux8bba -->
 
 **根源**: Doob, J. L. (1953). *Stochastic Processes*. Wiley.
 
@@ -118,8 +120,8 @@ Ramamoorthi (2003). *Bayesian Nonparametrics* - van der Vaart
 (1998). *Asymptotic Statistics* - Kleijn \& van der Vaart (2012).
 ``The Bernstein-von Mises theorem under misspecification''
 
-\subsubsection{1.4 在线学习 /
-遗憾分析}<!-- label: ux5728ux7ebfux5b66ux4e60-ux9057ux61beux5206ux6790 -->
+#### 1.4 在线学习 /
+遗憾分析<!-- label: ux5728ux7ebfux5b66ux4e60-ux9057ux61beux5206ux6790 -->
 
 **根源**: Zinkevich, M. (2003). ``Online convex programming and
 generalized infinitesimal gradient ascent.'' *ICML 2003*.
@@ -205,11 +207,11 @@ Methods in Statistical Decision Theory* - Tsybakov (2009).
 
 </div>
 
-\subsection{2.
-关键思想与证明工具}<!-- label: ux5173ux952eux601dux60f3ux4e0eux8bc1ux660eux5de5ux5177 -->
+### 2.
+关键思想与证明工具<!-- label: ux5173ux952eux601dux60f3ux4e0eux8bc1ux660eux5de5ux5177 -->
 
-\subsubsection{\texorpdfstring{2.1 双时间尺度分离
-(\(\beta_t = o(\alpha_t)\))}{2.1 双时间尺度分离 (\ beta\_t = o(\ alpha\_t))}}<!-- label: ux53ccux65f6ux95f4ux5c3aux5ea6ux5206ux79bb-beta_t-oalpha_t -->
+#### \texorpdfstring{2.1 双时间尺度分离
+(\(\beta_t = o(\alpha_t)\)){2.1 双时间尺度分离 (\ beta\_t = o(\ alpha\_t))}}<!-- label: ux53ccux65f6ux95f4ux5c3aux5ea6ux5206ux79bb-beta_t-oalpha_t -->
 
 Spring 最关键的架构创新。条件 C6' 要求 gatekeeper 更新速率 \(\beta_t\)
 是学生更新速率 \(\alpha_t\) 的低阶无穷小：
@@ -226,8 +228,8 @@ Spring 最关键的架构创新。条件 C6' 要求 gatekeeper 更新速率 \(\b
 \(\sum \beta_t < \infty\)（有限总分布偏移），\(\sum \beta_t^2 < \infty\)（方差控制）
 - \(\beta_t / \alpha_t = t^{-0.6} \to 0\)（时间尺度分离）
 
-\subsubsection{2.2
-参考集重放打破选择偏差}<!-- label: ux53c2ux8003ux96c6ux91cdux653eux6253ux7834ux9009ux62e9ux504fux5dee -->
+#### 2.2
+参考集重放打破选择偏差<!-- label: ux53c2ux8003ux96c6ux91cdux653eux6253ux7834ux9009ux62e9ux504fux5dee -->
 
 Spring 最深刻的证明工具。Theorem 12.2
 证明：**没有参考集重放，Lyapunov
@@ -240,8 +242,8 @@ Spring 最深刻的证明工具。Theorem 12.2
 SCXUpdate，消除对齐偏差 3. **代价**: 重要性权重方差膨胀因子
 \(W \leq 1/\varepsilon_{explore} < \infty\)
 
-\subsubsection{2.3 Lipschitz-almost-everywhere
-引理}<!-- label: lipschitz-almost-everywhere-ux5f15ux7406 -->
+#### 2.3 Lipschitz-almost-everywhere
+引理<!-- label: lipschitz-almost-everywhere-ux5f15ux7406 -->
 
 解决了一个基本的数学障碍 (Lemma SE-1.0, B9 fix)：
 
@@ -255,8 +257,8 @@ SCXUpdate，消除对齐偏差 3. **代价**: 重要性权重方差膨胀因子
 对于连续分布上的光滑函数
 \(\ell(f_m(x), y)\)。期望不受零测集修改的影响，Lyapunov 分析保留有效。
 
-\subsubsection{2.4 贝叶斯后验更新作为 Gatekeeper
-进化}<!-- label: ux8d1dux53f6ux65afux540eux9a8cux66f4ux65b0ux4f5cux4e3a-gatekeeper-ux8fdbux5316 -->
+#### 2.4 贝叶斯后验更新作为 Gatekeeper
+进化<!-- label: ux8d1dux53f6ux65afux540eux9a8cux66f4ux65b0ux4f5cux4e3a-gatekeeper-ux8fdbux5316 -->
 
 Gatekeeper 的进化被解释为序贯贝叶斯更新：
 
@@ -267,8 +269,8 @@ Gatekeeper 的进化被解释为序贯贝叶斯更新：
 定理保证 a.s. 收敛 2. **KL 收缩**:
 在正确模型下，\(D_{KL}(P^* \| P_t) \to 0\)
 
-\subsubsection{2.5 Lyapunov
-下降与重要性采样}<!-- label: lyapunov-ux4e0bux964dux4e0eux91cdux8981ux6027ux91c7ux6837 -->
+#### 2.5 Lyapunov
+下降与重要性采样<!-- label: lyapunov-ux4e0bux964dux4e0eux91cdux8981ux6027ux91c7ux6837 -->
 
 Theorem 12.5 的完整证明结构证明了
 \(\mathbb{E}[\Delta\Psi_t \mid \mathcal{F}_t] \leq 0\)：
@@ -295,8 +297,8 @@ Theorem 12.5 的完整证明结构证明了
 \(O(t^{-1})\)------与 minimax 下界 \(\Omega(t^{-1})\)
 匹配的最优速率------适用于任何 \(a \in (0.5, 1)\) 且无需精确调谐。
 
-\subsubsection{2.7
-四种失效模式刻画}<!-- label: ux56dbux79cdux5931ux6548ux6a21ux5f0fux523bux753b -->
+#### 2.7
+四种失效模式刻画<!-- label: ux56dbux79cdux5931ux6548ux6a21ux5f0fux523bux753b -->
 
 Spring 系统性地刻画了四种规范失效模式：
 
@@ -339,8 +341,8 @@ Spring 系统性地刻画了四种规范失效模式：
 
 </div>
 
-\subsection{3.
-历史发展时间线}<!-- label: ux5386ux53f2ux53d1ux5c55ux65f6ux95f4ux7ebf -->
+### 3.
+历史发展时间线<!-- label: ux5386ux53f2ux53d1ux5c55ux65f6ux95f4ux7ebf -->
 
 \begin{verbatim}
 1892 ─ Lyapunov 稳定性理论
@@ -436,8 +438,8 @@ Spring 系统性地刻画了四种规范失效模式：
 
 </div>
 
-\subsection{4. Spring
-与前人的对比表}<!-- label: spring-ux4e0eux524dux4ebaux7684ux5bf9ux6bd4ux8868 -->
+### 4. Spring
+与前人的对比表<!-- label: spring-ux4e0eux524dux4ebaux7684ux5bf9ux6bd4ux8868 -->
 
 #### 4.1 核心对比<!-- label: ux6838ux5fc3ux5bf9ux6bd4 -->
 
@@ -493,8 +495,8 @@ Spring 系统性地刻画了四种规范失效模式：
 
 *AlphaZero 在表格情况下有策略迭代的收敛证明；对神经网络情况为经验性。
 
-\subsubsection{4.2 Spring vs AlphaZero
-详细对比}<!-- label: spring-vs-alphazero-ux8be6ux7ec6ux5bf9ux6bd4 -->
+#### 4.2 Spring vs AlphaZero
+详细对比<!-- label: spring-vs-alphazero-ux8be6ux7ec6ux5bf9ux6bd4 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2400}}
@@ -532,8 +534,8 @@ SE-2, 已证明）
 
 \end{longtable}
 
-\subsubsection{4.3 Spring vs
-贝叶斯优化}<!-- label: spring-vs-ux8d1dux53f6ux65afux4f18ux5316 -->
+#### 4.3 Spring vs
+贝叶斯优化<!-- label: spring-vs-ux8d1dux53f6ux65afux4f18ux5316 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2400}}
@@ -571,8 +573,8 @@ R̂(s)·ρ(s)·(1-C(s))
 
 \end{longtable}
 
-\subsubsection{4.4 Spring vs
-主动学习}<!-- label: spring-vs-ux4e3bux52a8ux5b66ux4e60 -->
+#### 4.4 Spring vs
+主动学习<!-- label: spring-vs-ux4e3bux52a8ux5b66ux4e60 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2609}}
@@ -613,13 +615,13 @@ Spring
 
 </div>
 
-\subsection{5. Spring
-独有的贡献}<!-- label: spring-ux72ecux6709ux7684ux8d21ux732e -->
+### 5. Spring
+独有的贡献<!-- label: spring-ux72ecux6709ux7684ux8d21ux732e -->
 
 以下是 Spring 完成而**没有任何前人工作同时完成**的事情：
 
-\subsubsection{5.1
-自进化评估标准（不仅自改进策略）}<!-- label: ux81eaux8fdbux5316ux8bc4ux4f30ux6807ux51c6ux4e0dux4ec5ux81eaux6539ux8fdbux7b56ux7565 -->
+#### 5.1
+自进化评估标准（不仅自改进策略）<!-- label: ux81eaux8fdbux5316ux8bc4ux4f30ux6807ux51c6ux4e0dux4ec5ux81eaux6539ux8fdbux7b56ux7565 -->
 
 **前人限制**: AlphaZero
 自改进其策略（如何下棋），但评估标准（游戏规则）是固定的外部真理。主动学习和贝叶斯优化有固定查询策略/采集函数。
@@ -627,8 +629,8 @@ Spring
 **Spring 的创新**: Gatekeeper \(S_t\)
 **自身**是学习对象------它定义''什么是好的数据''。系统不是在固定评估标准下优化策略，而是**同时进化评估标准本身**。这是一个二阶学习问题：学习如何学习判断数据质量。
 
-\subsubsection{5.2
-单调增长记忆（不替换重放）}<!-- label: ux5355ux8c03ux589eux957fux8bb0ux5fc6ux4e0dux66ffux6362ux91cdux653e -->
+#### 5.2
+单调增长记忆（不替换重放）<!-- label: ux5355ux8c03ux589eux957fux8bb0ux5fc6ux4e0dux66ffux6362ux91cdux653e -->
 
 **前人限制**:
 所有重放缓冲方案（AlphaZero、DQN、经验重放）在某种程度上替换旧记忆------缓冲有界，最旧/最不有用的样本被丢弃。
@@ -662,8 +664,8 @@ gatekeeper 成熟时重新评分
 这在数学上编码为：gatekeeper
 更新可以在任何时间将样本的评分推过阈值，变拒绝为接受------这在主动学习（一旦拒绝即永久丢弃）或贝叶斯优化（一旦评估即消耗预算）中是不可能的。
 
-\subsubsection{5.4 耦合动力系统分析（gatekeeper +
-学生协同进化）}<!-- label: ux8026ux5408ux52a8ux529bux7cfbux7edfux5206ux6790gatekeeper-ux5b66ux751fux534fux540cux8fdbux5316 -->
+#### 5.4 耦合动力系统分析（gatekeeper +
+学生协同进化）<!-- label: ux8026ux5408ux52a8ux529bux7cfbux7edfux5206ux6790gatekeeper-ux5b66ux751fux534fux540cux8fdbux5316 -->
 
 **前人限制**: Robbins-Monro 分析单一递归。AlphaZero
 的策略迭代交替固定一个组件更新另一个（策略评估与策略改进之间无耦合动力系统分析）。
@@ -677,8 +679,8 @@ Jacobian） - 双时间尺度 ODE 分析（快慢方程组） - Lyapunov
 
 没有前人算法在形式耦合动力系统框架中分析两个学习组件的协同进化。
 
-\subsubsection{5.5 精确收敛速率与 Polyak
-平均}<!-- label: ux7cbeux786eux6536ux655bux901fux7387ux4e0e-polyak-ux5e73ux5747 -->
+#### 5.5 精确收敛速率与 Polyak
+平均<!-- label: ux7cbeux786eux6536ux655bux901fux7387ux4e0e-polyak-ux5e73ux5747 -->
 
 **前人限制**: 贝叶斯优化给出累积遗憾界
 \(O(\sqrt{T \cdot \gamma_T})\)
@@ -691,8 +693,8 @@ minimax 下界 \(\Omega(t^{-1})\) - 耦合速率由学生瓶颈 \(O(t^{-a})\)
 主导（Theorem 11.3） - 有限时间（非渐近）界含显式常数（Theorem 11.6,
 已证明）
 
-\subsubsection{5.6
-形式化选择偏差循环分析}<!-- label: ux5f62ux5f0fux5316ux9009ux62e9ux504fux5deeux5faaux73afux5206ux6790 -->
+#### 5.6
+形式化选择偏差循环分析<!-- label: ux5f62ux5f0fux5316ux9009ux62e9ux504fux5deeux5faaux73afux5206ux6790 -->
 
 **前人限制**:
 无前人算法形式化分析其自身数据选择程序创建自强化偏差循环的机制。

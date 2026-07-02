@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 \title{
   { **SCX-Audited Quantitative Finance:**}
   { **Multi-Model Consensus for Certified Derivative**}

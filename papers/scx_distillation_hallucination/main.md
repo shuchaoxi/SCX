@@ -1,10 +1,6 @@
-<div align="center">
+# 引言：幻觉——bug还是宿命？
 
-**版本：** v1.0 \quad | \quad
-**状态：** 预印本 \quad | \quad
-**分类：** SCX理论体系 — 蒸馏幻觉卷
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

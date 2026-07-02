@@ -1,5 +1,7 @@
-\section{Theorem 4': Exact Constant Minimax Optimality of SCX Noise
-Detection}<!-- label: theorem-4-exact-constant-minimax-optimality-of-scx-noise-detection -->
+# Theorem 4': Exact Constant Minimax Optimality of SCX Noise
+Detection
+
+**Author:** SCX
 
 > **目标**: 不仅证明指数 \(2M\Delta^2\) 是 minimax
 > 最优（速率最优，已有），而且证明**指数前面的常数因子**也是最优的。
@@ -13,11 +15,11 @@ Detection}<!-- label: theorem-4-exact-constant-minimax-optimality-of-scx-noise-d
 
 </div>
 
-\subsection{0.
-回顾：当前状态}<!-- label: ux56deux987eux5f53ux524dux72b6ux6001 -->
+### 0.
+回顾：当前状态<!-- label: ux56deux987eux5f53ux524dux72b6ux6001 -->
 
-\subsubsection{已有 (Thm 1 + Thm 4
-v2)}<!-- label: ux5df2ux6709-thm-1-thm-4-v2 -->
+#### 已有 (Thm 1 + Thm 4
+v2)<!-- label: ux5df2ux6709-thm-1-thm-4-v2 -->
 
 - 
 - 
@@ -66,8 +68,8 @@ Step 5: 匹配 → 常数最优性结论
 
 </div>
 
-\subsection{2. Step 1: 精确大偏差渐近
-(Bahadur-Rao)}<!-- label: step-1-ux7cbeux786eux5927ux504fux5deeux6e10ux8fd1-bahadur-rao -->
+### 2. Step 1: 精确大偏差渐近
+(Bahadur-Rao)<!-- label: step-1-ux7cbeux786eux5927ux504fux5deeux6e10ux8fd1-bahadur-rao -->
 
 #### 2.1 设定<!-- label: ux8bbeux5b9a -->
 
@@ -92,8 +94,8 @@ Step 5: 匹配 → 常数最优性结论
 对 Bern(p)，有闭式解:
 \[I_p(\theta) = \theta \log\frac{p} + (1-\theta)\log\frac{1-\theta}{1-p} = KL(\theta \| p), \quad \theta \in [0,1]\]
 
-\subsubsection{2.3 Cramér 定理
-(速率层)}<!-- label: cramuxe9r-ux5b9aux7406-ux901fux7387ux5c42 -->
+#### 2.3 Cramér 定理
+(速率层)<!-- label: cramuxe9r-ux5b9aux7406-ux901fux7387ux5c42 -->
 
 对 i.i.d. Bern(p) 样本:
 \[\lim_{M\to\infty} -\frac{1}{M}\log \mathbb{P}(C_M \geq \theta) = I_p(\theta) = KL(\theta \| p), \quad \theta > p\]
@@ -108,8 +110,8 @@ Step 5: 匹配 → 常数最优性结论
 Hoeffding 不会改变速率的值（\(\kappa < 2\Delta^2\)
 对典型参数），但使界是渐近精确的**------这是从''松弛界''到''精确渐近''的升级，而非从''慢速率''到''快速率''。
 
-\subsubsection{2.4 Bahadur-Rao 定理 (常数层)
-★★★}<!-- label: bahadur-rao-ux5b9aux7406-ux5e38ux6570ux5c42 -->
+#### 2.4 Bahadur-Rao 定理 (常数层)
+★★★<!-- label: bahadur-rao-ux5b9aux7406-ux5e38ux6570ux5c42 -->
 
 **定理 (Bahadur-Rao, 1960)**: 设
 \(X_1, ..., X_M \sim Bern(p)\) i.i.d.，\(\theta > p\)。则：
@@ -144,8 +146,8 @@ Cramér 变换中达到上确界的 \(\lambda\) -
 
 所以倾斜方差 \(\sigma^2(\theta) = \theta(1-\theta)\)。✓
 
-\subsubsection{2.5 应用到 FPR 和
-FNR}<!-- label: ux5e94ux7528ux5230-fpr-ux548c-fnr -->
+#### 2.5 应用到 FPR 和
+FNR<!-- label: ux5e94ux7528ux5230-fpr-ux548c-fnr -->
 
 **假阳性率 (FPR)** --- 清洁样本被误标:
 \[FPR_M = \mathbb{P}(C_M \geq \theta \mid clean) \sim \frac{\exp(-M \cdot KL(\theta \| p_0))}{\lambda_0^* \sqrt{2\pi M \cdot \theta(1-\theta)}}\]
@@ -170,8 +172,8 @@ FNR}<!-- label: ux5e94ux7528ux5230-fpr-ux548c-fnr -->
 
 </div>
 
-\subsection{3. Step 2: F1
-的精确渐近}<!-- label: step-2-f1-ux7684ux7cbeux786eux6e10ux8fd1 -->
+### 3. Step 2: F1
+的精确渐近<!-- label: step-2-f1-ux7684ux7cbeux786eux6e10ux8fd1 -->
 
 #### 3.1 F1 的展开<!-- label: f1-ux7684ux5c55ux5f00 -->
 
@@ -195,8 +197,8 @@ $$
 $$
 \]
 
-\subsubsection{3.2 代入 Bahadur-Rao
-渐近}<!-- label: ux4ee3ux5165-bahadur-rao-ux6e10ux8fd1 -->
+#### 3.2 代入 Bahadur-Rao
+渐近<!-- label: ux4ee3ux5165-bahadur-rao-ux6e10ux8fd1 -->
 
 代入 Step 1 的结果: \[
 $$
@@ -206,8 +208,8 @@ $$
 $$
 \]
 
-\subsubsection{3.3
-最优阈值选择}<!-- label: ux6700ux4f18ux9608ux503cux9009ux62e9 -->
+#### 3.3
+最优阈值选择<!-- label: ux6700ux4f18ux9608ux503cux9009ux62e9 -->
 
 两个指数项分别以速率 \(KL(\theta \| p_0)\) 和
 \(KL(\theta \| p_1)\) 衰减。为平衡两者，选择 \(\theta^*\) 使得:
@@ -222,8 +224,8 @@ $$
 在 \(\theta = \theta^*\) 时:
 \[1 - F1 \sim \frac{e^{-M\kappa}}{\sqrt{2\pi M \cdot \theta^*(1-\theta^*)}} \cdot \left[\frac{1}{2|\lambda_1^*(\theta^*)|} + \frac{1-\eta}{2\eta \cdot \lambda_0^*(\theta^*)}\right]\]
 
-\subsubsection{3.4 SCX
-的精确渐近常数}<!-- label: scx-ux7684ux7cbeux786eux6e10ux8fd1ux5e38ux6570 -->
+#### 3.4 SCX
+的精确渐近常数<!-- label: scx-ux7684ux7cbeux786eux6e10ux8fd1ux5e38ux6570 -->
 
 \[\boxed{C_{SCX} = \frac{\sqrt{2\pi\theta^*(1-\theta^*)}} \cdot \max\left(\frac{1}{2|\lambda_1^*|}, \frac{1-\eta}{2\eta\lambda_0^*}\right)}\]
 
@@ -242,8 +244,8 @@ $$
 
 </div>
 
-\subsection{4. Step 3: 下界 ---
-任意算法的最优常数}<!-- label: step-3-ux4e0bux754c-ux4efbux610fux7b97ux6cd5ux7684ux6700ux4f18ux5e38ux6570 -->
+### 4. Step 3: 下界 ---
+任意算法的最优常数<!-- label: step-3-ux4e0bux754c-ux4efbux610fux7b97ux6cd5ux7684ux6700ux4f18ux5e38ux6570 -->
 
 #### 4.1 问题归约<!-- label: ux95eeux9898ux5f52ux7ea6 -->
 
@@ -252,8 +254,8 @@ $$
 专家错误 \(e_1, ..., e_M\)，这是一个复合假设检验问题（参数 \(p\) 在 H₀
 下为 \(p_0\)，在 H₁ 下为 \(p_1\)）。
 
-\subsubsection{4.2 Chernoff-Stein Lemma
-(误差指数层)}<!-- label: chernoff-stein-lemma-ux8befux5deeux6307ux6570ux5c42 -->
+#### 4.2 Chernoff-Stein Lemma
+(误差指数层)<!-- label: chernoff-stein-lemma-ux8befux5deeux6307ux6570ux5c42 -->
 
 **Stein 引理**: 对于检验 \(M\) 个 i.i.d. Bern(p₀) vs Bern(p₁): 固定
 \(FPR \leq \alpha \in (0,1)\)，最优可达到的 FNR 满足:
@@ -266,8 +268,8 @@ $$
 \(2\Delta^2\)）是精确的误差指数。SCX 的阈值检验（Chernoff 附录形式）以
 KL 速率达到此界------**证明 KL 指数是最优的**。
 
-\subsubsection{4.3 第二阶渐近 (Hoeffding-Anscombe → Exact
-Constant)}<!-- label: ux7b2cux4e8cux9636ux6e10ux8fd1-hoeffding-anscombe-exact-constant -->
+#### 4.3 第二阶渐近 (Hoeffding-Anscombe → Exact
+Constant)<!-- label: ux7b2cux4e8cux9636ux6e10ux8fd1-hoeffding-anscombe-exact-constant -->
 
 这是最难的部分。需要从''误差指数''升级到''误差精确常数''。关键工具:
 
@@ -301,8 +303,8 @@ Constant)}<!-- label: ux7b2cux4e8cux9636ux6e10ux8fd1-hoeffding-anscombe-exact-co
 FPR 和 FNR 贡献中**同时出现**（因 \(s = |\lambda_1^*|/D^*\) 且
 \(1-s = \lambda_0^*/D^*\)），证明见 Lemma E §3-4。
 
-\subsubsection{4.4 比较：简单阈值 vs
-自适应阈值}<!-- label: ux6bd4ux8f83ux7b80ux5355ux9608ux503c-vs-ux81eaux9002ux5e94ux9608ux503c -->
+#### 4.4 比较：简单阈值 vs
+自适应阈值<!-- label: ux6bd4ux8f83ux7b80ux5355ux9608ux503c-vs-ux81eaux9002ux5e94ux9608ux503c -->
 
 **简单阈值 \(\theta^*\)**（Chernoff 信息点，不依赖 \(\eta\)）:
 \[1 - F1(\theta^*) \sim \frac{e^{-M\kappa}}{\sqrt{2\pi M\theta^*(1-\theta^*)}} \left[\frac{1}{2|\lambda_1^*|} + \frac{1-\eta}{2\eta\lambda_0^*}\right]\]
@@ -328,8 +330,8 @@ FPR 和 FNR 贡献中**同时出现**（因 \(s = |\lambda_1^*|/D^*\) 且
 
 </div>
 
-\subsection{5. Step 4: 自适应加权 →
-真正常数最优}<!-- label: step-4-ux81eaux9002ux5e94ux52a0ux6743-ux771fux6b63ux5e38ux6570ux6700ux4f18 -->
+### 5. Step 4: 自适应加权 →
+真正常数最优<!-- label: step-4-ux81eaux9002ux5e94ux52a0ux6743-ux771fux6b63ux5e38ux6570ux6700ux4f18 -->
 
 #### 5.1 关键洞察<!-- label: ux5173ux952eux6d1eux5bdf -->
 
@@ -351,8 +353,8 @@ FNR）来选择:
 \(\theta_{opt} \to \theta^*\)。但常数因子中的比值
 \(\frac{1-\eta}\) 仍然存在。
 
-\subsubsection{5.2
-似然比检验的精确最优性}<!-- label: ux4f3cux7136ux6bd4ux68c0ux9a8cux7684ux7cbeux786eux6700ux4f18ux6027 -->
+#### 5.2
+似然比检验的精确最优性<!-- label: ux4f3cux7136ux6bd4ux68c0ux9a8cux7684ux7cbeux786eux6700ux4f18ux6027 -->
 
 **Neyman-Pearson 引理**: 对于检验简单 H₀ vs 简单 H₁，似然比检验
 (LRT) 是**最优**的（最小化 FNR 给定 FPR，或反之）。
@@ -379,8 +381,8 @@ SCX 检验，其精确常数达���理论下界 \(C_\):
 
 </div>
 
-\subsection{6. 主定理陈述 (Theorem 4': Exact Constant Minimax
-Optimality)}<!-- label: ux4e3bux5b9aux7406ux9648ux8ff0-theorem-4-exact-constant-minimax-optimality -->
+### 6. 主定理陈述 (Theorem 4': Exact Constant Minimax
+Optimality)<!-- label: ux4e3bux5b9aux7406ux9648ux8ff0-theorem-4-exact-constant-minimax-optimality -->
 
 **Theorem 4' (Exact Constant Minimax Optimality of SCX Noise
 Detection).** 在假设 A1-A6 下，对任意状态 \(s\) 满足
@@ -433,8 +435,8 @@ Stirling 误差界和 Lemma B 的二次余项确定）。
 
 </div>
 
-\subsection{7.
-证明链依赖关系}<!-- label: ux8bc1ux660eux94feux4f9dux8d56ux5173ux7cfb -->
+### 7.
+证明链依赖关系<!-- label: ux8bc1ux660eux94feux4f9dux8d56ux5173ux7cfb -->
 
 \begin{verbatim}
 Bahadur-Rao (1960) ──→ FPR/FNR 精确渐近
@@ -458,44 +460,44 @@ C_SCX / C_min ≤ 1 + o(1) ──→ 常数最优性 (使用自适应 θ†)
 
 </div>
 
-\subsection{8. 需要填充的引理 (Agent
-任务)}<!-- label: ux9700ux8981ux586bux5145ux7684ux5f15ux7406-agent-ux4efbux52a1 -->
+### 8. 需要填充的引理 (Agent
+任务)<!-- label: ux9700ux8981ux586bux5145ux7684ux5f15ux7406-agent-ux4efbux52a1 -->
 
-\subsubsection{引理 A: Bahadur-Rao 对于 Bernoulli
-的完整推导}<!-- label: ux5f15ux7406-a-bahadur-rao-ux5bf9ux4e8e-bernoulli-ux7684ux5b8cux6574ux63a8ux5bfc -->
-
-- 
-- 
-- 
-
-\subsubsection{引理 B: F1
-渐近展开的高阶项}<!-- label: ux5f15ux7406-b-f1-ux6e10ux8fd1ux5c55ux5f00ux7684ux9ad8ux9636ux9879 -->
-
-- 
-- 
-
-\subsubsection{引理 C: Chernoff
-信息的显式表达}<!-- label: ux5f15ux7406-c-chernoff-ux4fe1ux606fux7684ux663eux5f0fux8868ux8fbe -->
-
-- 
-- 
-
-\subsubsection{引理 D:
-自适应阈值的最优性}<!-- label: ux5f15ux7406-d-ux81eaux9002ux5e94ux9608ux503cux7684ux6700ux4f18ux6027 -->
+#### 引理 A: Bahadur-Rao 对于 Bernoulli
+的完整推导<!-- label: ux5f15ux7406-a-bahadur-rao-ux5bf9ux4e8e-bernoulli-ux7684ux5b8cux6574ux63a8ux5bfc -->
 
 - 
 - 
 - 
 
-\subsubsection{引理 E: 下界 ---
-第二阶渐近最优性}<!-- label: ux5f15ux7406-e-ux4e0bux754c-ux7b2cux4e8cux9636ux6e10ux8fd1ux6700ux4f18ux6027 -->
+#### 引理 B: F1
+渐近展开的高阶项<!-- label: ux5f15ux7406-b-f1-ux6e10ux8fd1ux5c55ux5f00ux7684ux9ad8ux9636ux9879 -->
+
+- 
+- 
+
+#### 引理 C: Chernoff
+信息的显式表达<!-- label: ux5f15ux7406-c-chernoff-ux4fe1ux606fux7684ux663eux5f0fux8868ux8fbe -->
+
+- 
+- 
+
+#### 引理 D:
+自适应阈值的最优性<!-- label: ux5f15ux7406-d-ux81eaux9002ux5e94ux9608ux503cux7684ux6700ux4f18ux6027 -->
 
 - 
 - 
 - 
 
-\subsubsection{引理 F:
-多状态聚合}<!-- label: ux5f15ux7406-f-ux591aux72b6ux6001ux805aux5408 -->
+#### 引理 E: 下界 ---
+第二阶渐近最优性<!-- label: ux5f15ux7406-e-ux4e0bux754c-ux7b2cux4e8cux9636ux6e10ux8fd1ux6700ux4f18ux6027 -->
+
+- 
+- 
+- 
+
+#### 引理 F:
+多状态聚合<!-- label: ux5f15ux7406-f-ux591aux72b6ux6001ux805aux5408 -->
 
 - 
 - 

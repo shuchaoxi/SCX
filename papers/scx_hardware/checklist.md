@@ -1,5 +1,7 @@
-\section{🏗️ SCX
-研究超级配置清单}<!-- label: scx-ux7814ux7a76ux8d85ux7ea7ux914dux7f6eux6e05ux5355 -->
+# 🏗️ SCX
+研究超级配置清单
+
+**Author:** SCX
 
 > 面壁者研发工作站 · 2026-06-30
 
@@ -137,8 +139,8 @@ fallback & ¥200
 
 </div>
 
-\subsection{四、CC
-工作流优化}<!-- label: ux56dbcc-ux5de5ux4f5cux6d41ux4f18ux5316 -->
+### 四、CC
+工作流优化<!-- label: ux56dbcc-ux5de5ux4f5cux6d41ux4f18ux5316 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3636}}

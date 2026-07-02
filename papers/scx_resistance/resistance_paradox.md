@@ -1,3 +1,7 @@
+# Introduction: The Described Awakens
+
+**Author:** SCX
+
 *Abstract:*
 
 We uncover a fundamental asymmetry in the SCX audit framework: unlike physical systems where the observed passively accepts measurement, SCX audits **humans** — and humans resist being audited. This resistance is not system "noise" to be eliminated, but **the signal itself**: resistance is mathematically equivalent to a public declaration that $ \mathbf{g} \neq \mathbf{0} $. We construct the complete theoretical edifice of this paradox: (1) the SCX reversal of the observer effect — "the system's resistance to observation IS the observation"; (2) formalization of the core paradox — the only way to hide $ \mathbf{g} \neq \mathbf{0} $ is to prove $ \mathbf{g} = \mathbf{0} $ by passing audit; (3) a six-class spectrum of resistance behaviors; (4) the resistance cost function $ R(\mathbf{g}) $ and its convexity theorem; (5) the Ultimate Trap — attacking the SCX framework itself exposes the attacker's $ \mathbf{g} \neq \mathbf{0} $. The theory demonstrates that SCX's mathematical structure guarantees **any attempt to evade audit produces a stronger $ \mathbf{g} \neq \mathbf{0} $ signal than submitting to audit**. The resistance paradox is an intrinsic security property of the SCX framework — it depends not on the auditor's power, but on the irreversible information leakage inherent in the act of resistance itself.

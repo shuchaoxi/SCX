@@ -1,17 +1,6 @@
-<div align="center">
+# Introduction: Why Trust Is the Most Dangerous Assumption in Human Protocols
 
-\fbox{\fbox{\parbox{0.85\textwidth}{\bfseries
-INTERNAL ONLY
-
-Unauthorized distribution is strictly prohibited. This document contains
-the core game-theoretic analysis of SCX protocol governance, including
-formal proofs of maintainer rotation mechanisms, audit equilibrium, and
-trustless architecture.
-
-Restricted to SCX core team and authorized maintainers.
-}}}
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

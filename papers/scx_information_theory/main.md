@@ -1,3 +1,7 @@
+# 引言：为什么SCX需要信息论
+
+**Author:** SCX
+
 *Abstract:*
 
 SCX（State-Conditioned eXpertise）框架通过$M$个独立专家的二元投票机制检测标签噪声和

@@ -1,3 +1,7 @@
+# single reward model or judge
+
+**Author:** SCX
+
 *Abstract:*
 
 Proves M=1 single-judge alignment (RLHF, Constitutional AI) is fundamentally insufficient. Multi-judge consensus (M>1) provides exponential reward-hacking detection guarantees.

@@ -1,3 +1,7 @@
+# Proposition~6: Bootstrap ARI Stability as Feature Strength Diagnostic
+
+**Author:** SCX
+
 ## Proposition~6: Bootstrap ARI Stability as Feature Strength Diagnostic
 <!-- label: sec:prop6 -->
 

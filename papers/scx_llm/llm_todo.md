@@ -1,11 +1,13 @@
-\section{明日推进 TODO ---
-2026-06-29}<!-- label: ux660eux65e5ux63a8ux8fdb-todo-2026-06-29 -->
+# 明日推进 TODO ---
+2026-06-29
 
-\subsection{🔴 全药物数据库下载 + Yajie
-一次性全筛}<!-- label: ux5168ux836fux7269ux6570ux636eux5e93ux4e0bux8f7d-yajie-ux4e00ux6b21ux6027ux5168ux7b5b -->
+**Author:** SCX
 
-\subsubsection{数据库清单（全量，不仅限于
-HIV）}<!-- label: ux6570ux636eux5e93ux6e05ux5355ux5168ux91cfux4e0dux4ec5ux9650ux4e8e-hiv -->
+### 🔴 全药物数据库下载 + Yajie
+一次性全筛<!-- label: ux5168ux836fux7269ux6570ux636eux5e93ux4e0bux8f7d-yajie-ux4e00ux6b21ux6027ux5168ux7b5b -->
+
+#### 数据库清单（全量，不仅限于
+HIV）<!-- label: ux6570ux636eux5e93ux6e05ux5355ux5168ux91cfux4e0dux4ec5ux9650ux4e8e-hiv -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1667}}

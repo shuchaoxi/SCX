@@ -1,10 +1,6 @@
-<div align="center">
+# 引言：大模型的审计真空
 
-**版本：** v1.0 \quad | \quad
-**状态：** 预印本 \quad | \quad
-**分类：** SCX理论体系 — 大模型架构卷·Spring统一框架篇
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

@@ -1,8 +1,6 @@
-<div align="center">
+# Foundations: SCX Gauge Theory and Σg=0
 
-[Diagram: A single fundamental string vibrating in different modes, each mode producing a distinct particle — mapped to a single SCX expert under different gauge parameters g, each g producing a distinct audit verdict.]
-
-</div>
+**Author:** SCX
 
 <div align="center">
 

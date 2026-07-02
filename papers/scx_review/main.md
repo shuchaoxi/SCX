@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 \twocolumn[
   \begin{@twocolumnfalse}
     \title{State-Conditioned Expertise: Data Quality Across Domains

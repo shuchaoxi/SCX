@@ -1,10 +1,6 @@
-<div align="center">
+# 引言：碳排放——文明史上最大的势能盗窃
 
-**版本：** v1.0 \quad | \quad
-**状态：** 预印本 \quad | \quad
-**分类：** SCX理论体系 — 环境卷·代际规范篇
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

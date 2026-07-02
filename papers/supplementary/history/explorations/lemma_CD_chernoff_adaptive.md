@@ -1,8 +1,10 @@
-\section{Lemma C: Chernoff Information --- Closed-Form
-Expression}<!-- label: lemma-c-chernoff-information-closed-form-expression -->
+# Lemma C: Chernoff Information --- Closed-Form
+Expression
 
-\section{Lemma D: Adaptive Threshold --- Exact Optimality
-Proof}<!-- label: lemma-d-adaptive-threshold-exact-optimality-proof -->
+**Author:** SCX
+
+## Lemma D: Adaptive Threshold --- Exact Optimality
+Proof<!-- label: lemma-d-adaptive-threshold-exact-optimality-proof -->
 
 > **Context**: These lemmas support Theorem 4' (Exact Constant
 > Minimax Optimality of SCX Noise Detection). Lemma C derives explicit
@@ -16,8 +18,8 @@ Proof}<!-- label: lemma-d-adaptive-threshold-exact-optimality-proof -->
 
 </div>
 
-\section{Part I --- Lemma C: Chernoff Information Closed
-Form}<!-- label: part-i-lemma-c-chernoff-information-closed-form -->
+## Part I --- Lemma C: Chernoff Information Closed
+Form<!-- label: part-i-lemma-c-chernoff-information-closed-form -->
 
 ### C.1 Setup<!-- label: c.1-setup -->
 
@@ -63,8 +65,8 @@ where \(\kappa = C(P_0,P_1)\).
 
 </div>
 
-\subsection{\texorpdfstring{C.2 Closed-Form Solution for
-\(\theta^*\)}{C.2 Closed-Form Solution for \ theta\^{}*}}<!-- label: c.2-closed-form-solution-for-theta -->
+### \texorpdfstring{C.2 Closed-Form Solution for
+\(\theta^*\){C.2 Closed-Form Solution for \ theta\^{}*}}<!-- label: c.2-closed-form-solution-for-theta -->
 
 **Lemma C.1 (Chernoff point).** The unique solution
 \(\theta^* \in (p_0,p_1)\) of
@@ -138,8 +140,8 @@ and strict convexity, the unique root lies in \((p_0,p_1)\).
 
 </div>
 
-\subsection{\texorpdfstring{C.3 The Chernoff Information
-\(\kappa\)}{C.3 The Chernoff Information \ kappa}}<!-- label: c.3-the-chernoff-information-kappa -->
+### \texorpdfstring{C.3 The Chernoff Information
+\(\kappa\){C.3 The Chernoff Information \ kappa}}<!-- label: c.3-the-chernoff-information-kappa -->
 
 **Lemma C.2 (Chernoff information).** The Chernoff information
 \(\kappa = C(P_0,P_1)\) equals
@@ -206,8 +208,8 @@ iff \(p_0 + p_1 = 1\), for which \(\theta^* = 1/2\).
 
 </div>
 
-\subsection{C.4 Comparison with Hoeffding and
-Hellinger}<!-- label: c.4-comparison-with-hoeffding-and-hellinger -->
+### C.4 Comparison with Hoeffding and
+Hellinger<!-- label: c.4-comparison-with-hoeffding-and-hellinger -->
 
 We compare three measures:
 
@@ -215,8 +217,8 @@ We compare three measures:
 2. 
 3. 
 
-\subsubsection{\texorpdfstring{C.4.1 Asymptotic Local Expansion
-(\(p_1 \to p_0\))}{C.4.1 Asymptotic Local Expansion (p\_1 \ to p\_0)}}<!-- label: c.4.1-asymptotic-local-expansion-p_1-to-p_0 -->
+#### \texorpdfstring{C.4.1 Asymptotic Local Expansion
+(\(p_1 \to p_0\)){C.4.1 Asymptotic Local Expansion (p\_1 \ to p\_0)}}<!-- label: c.4.1-asymptotic-local-expansion-p_1-to-p_0 -->
 
 Let \(\Delta = p_1 - p_0\) with \(\Delta \to 0^+\).
 
@@ -361,8 +363,8 @@ Hence the claimed limit. \(\blacksquare\)
 typically moderate (e.g., \(0.1\) to \(0.4\)),
 \(\kappa < 2(p_1-p_0)^2\).
 
-\subsubsection{C.4.2 Correct Universal
-Comparisons}<!-- label: c.4.2-correct-universal-comparisons -->
+#### C.4.2 Correct Universal
+Comparisons<!-- label: c.4.2-correct-universal-comparisons -->
 
 **Proposition C.4 (Pinsker lower bound for \(\kappa\)).** For any
 \(p_0 < p_1\),
@@ -411,8 +413,8 @@ for a mixture \(p_\alpha\), and evaluating at \(\alpha=0\) or
 \(\alpha=1\) gives \(\frac{1}{2}KL(p_0\|p_1)\) or
 \(\frac{1}{2}KL(p_1\|p_0)\) respectively.
 
-\subsubsection{C.4.3 Numerical
-Comparison}<!-- label: c.4.3-numerical-comparison -->
+#### C.4.3 Numerical
+Comparison<!-- label: c.4.3-numerical-comparison -->
 
 **Table 1: \(\kappa\), \(2\Delta^2\), \(-\log(1-H^2)\) for
 selected \((p_0,p_1)\).**
@@ -495,8 +497,8 @@ provides the tightest (smallest) error exponent. 3. The ordering
 \(p_0\) and large \(p_1\), \(-\log(1-H^2)\) dominates; otherwise
 \(2\Delta^2\) dominates.
 
-\subsubsection{C.4.4 Summary of
-Ordering}<!-- label: c.4.4-summary-of-ordering -->
+#### C.4.4 Summary of
+Ordering<!-- label: c.4.4-summary-of-ordering -->
 
 The relationship among the three measures is
 **parameter-dependent**. In the region relevant to the SCX
@@ -517,8 +519,8 @@ The ordering \(-\log(1-H^2)\) vs \(2(p_1-p_0)^2\) varies: for small
 
 </div>
 
-\section{Part II --- Lemma D: Adaptive Threshold Exact
-Optimality}<!-- label: part-ii-lemma-d-adaptive-threshold-exact-optimality -->
+## Part II --- Lemma D: Adaptive Threshold Exact
+Optimality<!-- label: part-ii-lemma-d-adaptive-threshold-exact-optimality -->
 
 ### D.1 Problem Formulation<!-- label: d.1-problem-formulation -->
 
@@ -632,8 +634,8 @@ leading term simplifies to (D.3). \(\blacksquare\)
 
 </div>
 
-\subsection{D.3 Solution of the First-Order
-Condition}<!-- label: d.3-solution-of-the-first-order-condition -->
+### D.3 Solution of the First-Order
+Condition<!-- label: d.3-solution-of-the-first-order-condition -->
 
 **Lemma D.2 (Leading-order solution).** The solution
 \(\theta_{opt}(M)\) to the asymptotic condition (D.3) satisfies
@@ -741,8 +743,8 @@ The bound follows from Taylor's theorem with Lagrange remainder.
 
 </div>
 
-\subsection{D.4 O(1) Exponential Prefactor from the O(1/M) Threshold
-Shift}<!-- label: d.4-o1-exponential-prefactor-from-the-o1m-threshold-shift -->
+### D.4 O(1) Exponential Prefactor from the O(1/M) Threshold
+Shift<!-- label: d.4-o1-exponential-prefactor-from-the-o1m-threshold-shift -->
 
 The \(O(1/M)\) shift in \(\theta_{opt}\) relative to \(\theta^*\)
 produces an \(O(1)\) multiplicative factor in the exponential. This is
@@ -750,8 +752,8 @@ the key insight: the naive threshold \(\theta^*\) (which ignores
 \(\eta\)) is suboptimal; the adaptive threshold \(\theta_{opt}\)
 (which depends on \(\eta\)) achieves the minimax lower bound.
 
-\subsubsection{D.4.1 Taylor Expansion of the Rate
-Function}<!-- label: d.4.1-taylor-expansion-of-the-rate-function -->
+#### D.4.1 Taylor Expansion of the Rate
+Function<!-- label: d.4.1-taylor-expansion-of-the-rate-function -->
 
 At \(\theta_{opt} = \theta^* + \delta\) with
 \(\delta = \frac{1}{M}\frac{\log((1-\eta)/\eta)}{D^*} + O(1/M^2)\) (from
@@ -767,8 +769,8 @@ The derivatives at \(\theta^*\):
 The equality of second derivatives ensures \(\delta^2\) terms cancel in
 the difference \(KL(\theta\|p_0) - KL(\theta\|p_1)\).
 
-\subsubsection{D.4.2 Exponential Prefactor
-Computation}<!-- label: d.4.2-exponential-prefactor-computation -->
+#### D.4.2 Exponential Prefactor
+Computation<!-- label: d.4.2-exponential-prefactor-computation -->
 
 Multiply by \(M\) and substitute \(\delta\):
 \[M \cdot KL(\theta_{opt} \| p_0) = M\kappa + \lambda_0^* \cdot \frac{\log((1-\eta)/\eta)}{D^*} + O\left(\frac{1}{M}\right)\]
@@ -781,15 +783,15 @@ Exponentiating:
 Define \(s = \frac{|\lambda_1^*|}{D^*} \in (0,1)\). Then
 \(\frac{\lambda_0^*}{D^*} = 1-s\).
 
-\subsubsection{D.4.3 FPR and FNR at the Adaptive
-Threshold}<!-- label: d.4.3-fpr-and-fnr-at-the-adaptive-threshold -->
+#### D.4.3 FPR and FNR at the Adaptive
+Threshold<!-- label: d.4.3-fpr-and-fnr-at-the-adaptive-threshold -->
 
 Substituting into Bahadur-Rao (Lemma A):
 \[FPR_M(\theta_{opt}) \sim \frac{e^{-M\kappa} \cdot \left(\frac{1-\eta}\right)^{-(1-s)}}{\lambda_0^* \sqrt{2\pi M \theta^*(1-\theta^*)}}\]
 \[FNR_M(\theta_{opt}) \sim \frac{e^{-M\kappa} \cdot \left(\frac{1-\eta}\right)^{s}}{|\lambda_1^*| \sqrt{2\pi M \theta^*(1-\theta^*)}}\]
 
-\subsubsection{\texorpdfstring{D.4.4 The Critical Cancellation in
-\(1-F1\)}{D.4.4 The Critical Cancellation in 1-\ text\{F1\}}}<!-- label: d.4.4-the-critical-cancellation-in-1-textf1 -->
+#### \texorpdfstring{D.4.4 The Critical Cancellation in
+\(1-F1\){D.4.4 The Critical Cancellation in 1-\ text\{F1\}}}<!-- label: d.4.4-the-critical-cancellation-in-1-textf1 -->
 
 Recall from Lemma B:
 \(1 - F1 \sim \frac{1}{2}FNR + \frac{1-\eta}{2\eta}FPR\).
@@ -828,8 +830,8 @@ equals \(1\) (perfect balance).
 
 </div>
 
-\subsection{\texorpdfstring{D.5 Exact Asymptotic Constant at
-\(\theta_{opt}\)}{D.5 Exact Asymptotic Constant at \ theta\_\{\ text\{opt\}\}}}<!-- label: d.5-exact-asymptotic-constant-at-theta_textopt -->
+### \texorpdfstring{D.5 Exact Asymptotic Constant at
+\(\theta_{opt\)}{D.5 Exact Asymptotic Constant at \ theta\_\{\ text\{opt\}\}}}<!-- label: d.5-exact-asymptotic-constant-at-theta_textopt -->
 
 Combining the two contributions (D.4.4): \[
 $$
@@ -856,8 +858,8 @@ genuine improvement from \(\eta\)-aware thresholding.
 
 ### D.6 Edge Cases<!-- label: d.6-edge-cases -->
 
-\subsubsection{\texorpdfstring{D.6.1 \(\eta \to 0\) (Rare
-Noise)}{D.6.1 \ eta \ to 0 (Rare Noise)}}<!-- label: d.6.1-eta-to-0-rare-noise -->
+#### \texorpdfstring{D.6.1 \(\eta \to 0\) (Rare
+Noise){D.6.1 \ eta \ to 0 (Rare Noise)}}<!-- label: d.6.1-eta-to-0-rare-noise -->
 
 **Lemma D.5 (Rare noise limit).** As \(\eta \to 0\):
 \(\theta_{opt} \to p_1\) (aggressive --- flag almost nothing as
@@ -870,15 +872,15 @@ Joint limit \(M\to\infty\), \(\eta_M \to 0\) with
 The constant \(((1-\eta)/\eta)^s \sim \eta^{-s}\) diverges, but the
 \(\eta\) in \(C_/\eta\) compensates, keeping the F1 error bounded.
 
-\subsubsection{\texorpdfstring{D.6.2 \(\eta \to 1\) (All
-Noise)}{D.6.2 \ eta \ to 1 (All Noise)}}<!-- label: d.6.2-eta-to-1-all-noise -->
+#### \texorpdfstring{D.6.2 \(\eta \to 1\) (All
+Noise){D.6.2 \ eta \ to 1 (All Noise)}}<!-- label: d.6.2-eta-to-1-all-noise -->
 
 **Corollary D.6.** As \(\eta \to 1\):
 \(\theta_{opt} \to p_0\) (permissive --- flag almost everything).
 Symmetric to D.5.
 
-\subsubsection{\texorpdfstring{D.6.3 \(p_0 \to 0\) (Perfect
-Experts)}{D.6.3 p\_0 \ to 0 (Perfect Experts)}}<!-- label: d.6.3-p_0-to-0-perfect-experts -->
+#### \texorpdfstring{D.6.3 \(p_0 \to 0\) (Perfect
+Experts){D.6.3 p\_0 \ to 0 (Perfect Experts)}}<!-- label: d.6.3-p_0-to-0-perfect-experts -->
 
 When \(p_0 = 0\), \(\lambda_0^* \to \infty\) and \(\kappa \to \infty\).
 Noise detection becomes trivial --- any expert failure definitively
@@ -892,8 +894,8 @@ trivial.
 
 </div>
 
-\subsection{D.7 Constant Optimality
-Theorem}<!-- label: d.7-constant-optimality-theorem -->
+### D.7 Constant Optimality
+Theorem<!-- label: d.7-constant-optimality-theorem -->
 
 **Theorem D.7 (Exact Constant Optimality of Adaptive SCX).** The
 adaptive threshold SCX detector achieves the minimax lower bound:

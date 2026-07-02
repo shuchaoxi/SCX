@@ -1,5 +1,7 @@
-\section{Lemma A: Bahadur-Rao Theorem -- Bernoulli Case, Complete
-Derivation}<!-- label: lemma-a-bahadur-rao-theorem-bernoulli-case-complete-derivation -->
+# Lemma A: Bahadur-Rao Theorem -- Bernoulli Case, Complete
+Derivation
+
+**Author:** SCX
 
 > **Target**: Prove the Bahadur-Rao (1960) theorem specialized to
 > i.i.d. Bernoulli(p) random variables, with explicit constants and error
@@ -30,8 +32,8 @@ probability
 
 </div>
 
-\subsection{A.2 Cumulant Generating Function and Cramer
-Transform}<!-- label: a.2-cumulant-generating-function-and-cramer-transform -->
+### A.2 Cumulant Generating Function and Cramer
+Transform<!-- label: a.2-cumulant-generating-function-and-cramer-transform -->
 
 The moment generating function of a single Bernoulli(p) variable \(X\)
 is
@@ -105,8 +107,8 @@ $$
 
 </div>
 
-\subsection{A.3 Exponential Tilting and the Tilted
-Distribution}<!-- label: a.3-exponential-tilting-and-the-tilted-distribution -->
+### A.3 Exponential Tilting and the Tilted
+Distribution<!-- label: a.3-exponential-tilting-and-the-tilted-distribution -->
 
 Define the exponentially tilted (Esscher-transformed) probability
 measure \(\mathbb{P}_{\lambda^*}\) by
@@ -158,8 +160,8 @@ Substituting \(e^{\lambda^*}\) and
 
 </div>
 
-\subsection{A.4 The Bahadur-Rao Theorem for
-Bernoulli}<!-- label: a.4-the-bahadur-rao-theorem-for-bernoulli -->
+### A.4 The Bahadur-Rao Theorem for
+Bernoulli<!-- label: a.4-the-bahadur-rao-theorem-for-bernoulli -->
 
 #### A.4.1 Statement<!-- label: a.4.1-statement -->
 
@@ -185,8 +187,8 @@ below.*
 non-integer \(M\theta\), and for integer \(M\theta\) the correction is
 absorbed into the \(O(1/M)\) term.
 
-\subsubsection{A.4.2 Proof via Stirling's Formula (Direct Binomial Tail
-Expansion)}<!-- label: a.4.2-proof-via-stirlings-formula-direct-binomial-tail-expansion -->
+#### A.4.2 Proof via Stirling's Formula (Direct Binomial Tail
+Expansion)<!-- label: a.4.2-proof-via-stirlings-formula-direct-binomial-tail-expansion -->
 
 Since \(S_M = \sum_{i=1}^M X_i \sim Binomial(M,p)\), we can work
 directly with the binomial distribution. Let
@@ -370,9 +372,9 @@ Bernoulli. Both forms agree in the \(O(1/M)\) asymptotic expansion up to
 a constant factor, and the \(O(1/M)\) error bound above holds in either
 case.
 
-\subsubsection{\texorpdfstring{A.4.3 Explicit Constant for the
+#### \texorpdfstring{A.4.3 Explicit Constant for the
 \(O(1/M)\)
-Bound}{A.4.3 Explicit Constant for the O(1/M) Bound}}<!-- label: a.4.3-explicit-constant-for-the-o1m-bound -->
+Bound{A.4.3 Explicit Constant for the O(1/M) Bound}}<!-- label: a.4.3-explicit-constant-for-the-o1m-bound -->
 
 **Proposition A.5 (Explicit \(O(1/M)\) bound for Bernoulli)**. For
 \(p \in (0,1)\), \(\theta > p\), let
@@ -412,8 +414,8 @@ quantities can be evaluated numerically.
 
 </div>
 
-\subsection{\texorpdfstring{A.5 Lower Tail Formula
-(\(\theta < p\))}{A.5 Lower Tail Formula (\ theta \textless{} p)}}<!-- label: a.5-lower-tail-formula-theta-p -->
+### \texorpdfstring{A.5 Lower Tail Formula
+(\(\theta < p\)){A.5 Lower Tail Formula (\ theta \textless{} p)}}<!-- label: a.5-lower-tail-formula-theta-p -->
 
 For the **lower tail** \(\mathbb{P}(\bar{X}_M \leq \theta)\) with
 \(\theta < p\), we use the symmetry transformation
@@ -581,8 +583,8 @@ A.5)
 
 </div>
 
-\section{Lemma B: F1 Asymptotic Expansion with Higher-Order
-Terms}<!-- label: lemma-b-f1-asymptotic-expansion-with-higher-order-terms -->
+## Lemma B: F1 Asymptotic Expansion with Higher-Order
+Terms<!-- label: lemma-b-f1-asymptotic-expansion-with-higher-order-terms -->
 
 > **Target**: Starting from the SCX F1 formula, derive the exact
 > asymptotic expansion of \(1-F1\) in terms of FPR and FNR, verify
@@ -639,8 +641,8 @@ $$
 This matches the expression in the proof architecture. No algebraic
 error is present -- the denominator is always positive for \(\eta > 0\).
 
-\subsection{\texorpdfstring{B.2 Exact Expression for
-\(1 - F1\)}{B.2 Exact Expression for 1 - \ text\{F1\}}}<!-- label: b.2-exact-expression-for-1---textf1 -->
+### \texorpdfstring{B.2 Exact Expression for
+\(1 - F1\){B.2 Exact Expression for 1 - \ text\{F1\}}}<!-- label: b.2-exact-expression-for-1---textf1 -->
 
 Substituting \(TPR = 1 - FNR\):
 
@@ -758,8 +760,8 @@ In particular,
 
 </div>
 
-\subsection{B.4 Second-Order Expansion (Explicit
-Terms)}<!-- label: b.4-second-order-expansion-explicit-terms -->
+### B.4 Second-Order Expansion (Explicit
+Terms)<!-- label: b.4-second-order-expansion-explicit-terms -->
 
 Expanding to second order in \(\gamma\):
 
@@ -821,8 +823,8 @@ This gives the explicit constant \(C = 1/(2\eta^2)\) for the
 
 </div>
 
-\subsection{B.5 Substituting the Bahadur-Rao
-Asymptotics}<!-- label: b.5-substituting-the-bahadur-rao-asymptotics -->
+### B.5 Substituting the Bahadur-Rao
+Asymptotics<!-- label: b.5-substituting-the-bahadur-rao-asymptotics -->
 
 Now substitute the leading-order Bahadur-Rao expansions:
 
@@ -851,8 +853,8 @@ Corollary B.2 is bounded by
 since each of FPR\(^2\) and FNR\(^2\) decays with twice the exponent and
 an extra \(1/M\) factor from the square. \(\square\)
 
-\subsubsection{B.5.1 Optimal Threshold: Chernoff
-Point}<!-- label: b.5.1-optimal-threshold-chernoff-point -->
+#### B.5.1 Optimal Threshold: Chernoff
+Point<!-- label: b.5.1-optimal-threshold-chernoff-point -->
 
 The optimal threshold \(\theta^*\) balances the two exponents:
 
@@ -870,11 +872,11 @@ where \(C(\cdot,\cdot)\) is the Chernoff information. At
 
 </div>
 
-\subsection{B.6 Verification of the Expansion at Special
-Cases}<!-- label: b.6-verification-of-the-expansion-at-special-cases -->
+### B.6 Verification of the Expansion at Special
+Cases<!-- label: b.6-verification-of-the-expansion-at-special-cases -->
 
-\subsubsection{\texorpdfstring{B.6.1 Case \(\eta \to 0\) (Sparse
-Noise)}{B.6.1 Case \ eta \ to 0 (Sparse Noise)}}<!-- label: b.6.1-case-eta-to-0-sparse-noise -->
+#### \texorpdfstring{B.6.1 Case \(\eta \to 0\) (Sparse
+Noise){B.6.1 Case \ eta \ to 0 (Sparse Noise)}}<!-- label: b.6.1-case-eta-to-0-sparse-noise -->
 
 As \(\eta \to 0\), the coefficient \((1-\eta)/(2\eta) \to \infty\), so
 the FPR term dominates both the FNR term and the expansion itself. The
@@ -924,8 +926,8 @@ valid whenever
 For realistic \(M\), this threshold is exponentially small, so the
 expansion holds in almost all practical settings.
 
-\subsubsection{\texorpdfstring{B.6.2 Case \(\eta \to 1/2\) (Balanced
-Noise)}{B.6.2 Case \ eta \ to 1/2 (Balanced Noise)}}<!-- label: b.6.2-case-eta-to-12-balanced-noise -->
+#### \texorpdfstring{B.6.2 Case \(\eta \to 1/2\) (Balanced
+Noise){B.6.2 Case \ eta \ to 1/2 (Balanced Noise)}}<!-- label: b.6.2-case-eta-to-12-balanced-noise -->
 
 When \(\eta = 1/2\), the expansion simplifies dramatically:
 
@@ -989,8 +991,8 @@ breaks down)
 
 </div>
 
-\subsection{\texorpdfstring{B.7 Explicit Constant for the \(O(\cdot)\)
-Term}{B.7 Explicit Constant for the O(\ cdot) Term}}<!-- label: b.7-explicit-constant-for-the-ocdot-term -->
+### \texorpdfstring{B.7 Explicit Constant for the \(O(\cdot)\)
+Term{B.7 Explicit Constant for the O(\ cdot) Term}}<!-- label: b.7-explicit-constant-for-the-ocdot-term -->
 
 Collecting the results from Sections B.3-B.5, we have the complete
 asymptotic:
@@ -1036,8 +1038,8 @@ At the Chernoff point \(\theta^*\) where
 
 </div>
 
-\subsection{B.8 Verification: No Denominator
-Bug}<!-- label: b.8-verification-no-denominator-bug -->
+### B.8 Verification: No Denominator
+Bug<!-- label: b.8-verification-no-denominator-bug -->
 
 The user noted a concern about the denominator going negative in v1. We
 verify:

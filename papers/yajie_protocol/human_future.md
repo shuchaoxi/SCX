@@ -1,9 +1,6 @@
-<div align="center">
+# Shannon's Channel, SCX's Signal
 
-\itshape
-``Shannon told us how to send bits without error. SCX tells us how to know which bits to trust. The rest is human.''
-
-</div>
+**Author:** SCX
 
 ## Shannon's Channel, SCX's Signal
 

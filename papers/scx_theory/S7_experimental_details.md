@@ -1,3 +1,7 @@
+# Experimental Details
+
+**Author:** SCX
+
 ## Experimental Details
 
 This section documents the experimental configuration for all datasets used in the main text. All experiments are designed to validate the theoretical predictions of Theorems~1--4, Proposition~6, and the SCX noise detection framework under controlled conditions.

@@ -1,3 +1,7 @@
+# CLAUDE.md --- SCX 项目
+
+**Author:** SCX
+
 ## CLAUDE.md --- SCX 项目<!-- label: claude.md-scx-ux9879ux76ee -->
 
 > 最后更新：2026-06-28
@@ -8,8 +12,8 @@ SCX (State-Conditioned eXpertise) 是一个数学理论 +
 工程框架，核心发现是：**区分标签噪声和样本内在困难------这个问题在不加假设时已被数学证明不可解。**
 在最小充分假设下，多专家一致性可以提供精确常数 minimax 最优的噪声检测。
 
-\subsection{论文矩阵（全部直指 Nature
-系列）}<!-- label: ux8bbaux6587ux77e9ux9635ux5168ux90e8ux76f4ux6307-nature-ux7cfbux5217 -->
+### 论文矩阵（全部直指 Nature
+系列）<!-- label: ux8bbaux6587ux77e9ux9635ux5168ux90e8ux76f4ux6307-nature-ux7cfbux5217 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2000}}

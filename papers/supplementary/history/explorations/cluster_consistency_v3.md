@@ -1,6 +1,8 @@
-\section{Theorem 5 (v3): Fixed-K Cluster Consistency of SCX State
+# Theorem 5 (v3): Fixed-K Cluster Consistency of SCX State
 Discovery Under Strong
-Features}<!-- label: theorem-5-v3-fixed-k-cluster-consistency-of-scx-state-discovery-under-strong-features -->
+Features
+
+**Author:** SCX
 
 > **Core Claim**: When the feature representation \(\phi(x)\)
 > separates the \(K\) true states by a margin \(\Delta_ > 0\)
@@ -46,8 +48,8 @@ hostile review of v2. **Revision date**: 2026-06-28.
 
 ### 1. Setup and Assumptions<!-- label: setup-and-assumptions -->
 
-\subsubsection{1.1 Data-Generating
-Process}<!-- label: data-generating-process -->
+#### 1.1 Data-Generating
+Process<!-- label: data-generating-process -->
 
 Let \((\Omega, \mathcal{F}, P)\) be a probability space. We observe
 \(n\) i.i.d. copies of the feature vector
@@ -126,8 +128,8 @@ Define:
 - 
 - 
 
-\subsubsection{1.4 Separation Condition (Fixed,
-Non-Scaling)}<!-- label: separation-condition-fixed-non-scaling -->
+#### 1.4 Separation Condition (Fixed,
+Non-Scaling)<!-- label: separation-condition-fixed-non-scaling -->
 
 The minimum separation between distinct cluster centers is
 **fixed** --- it does not scale with \(n\) or \(K\):
@@ -192,8 +194,8 @@ For a \(K\)-center set \(\theta\):
 
 ### 2. Technical Preliminaries<!-- label: technical-preliminaries -->
 
-\subsubsection{2.1 Sub-Gaussian
-Concentration}<!-- label: sub-gaussian-concentration -->
+#### 2.1 Sub-Gaussian
+Concentration<!-- label: sub-gaussian-concentration -->
 
 **Lemma S1 (Sub-Gaussian norm bound)**. Let
 \(\varepsilon \in \mathbb{R}^{d_\phi}\) be a zero-mean sub-Gaussian
@@ -227,8 +229,8 @@ the strong separation condition. \(\square\)
 
 **Proof**. Directly from the MGF bound. \(\square\)
 
-\subsubsection{2.2 Covering Number of the Center
-Class}<!-- label: covering-number-of-the-center-class -->
+#### 2.2 Covering Number of the Center
+Class<!-- label: covering-number-of-the-center-class -->
 
 **Lemma S3 (Metric entropy)**. Let
 \(\Theta_K = \{\theta = \{\theta_1,...,\theta_K\} : \theta_k \in \mathbb{R}^{d_\phi}, \|\theta_k\|_2 \leq M\}\)
@@ -247,8 +249,8 @@ product is the max of per-coordinate \(\ell_2\) distances, so the
 covering number of the product is the product of per-coordinate covering
 numbers. Taking logs gives the result. \(\square\)
 
-\subsubsection{2.3 Lipschitz Property of the K-Means
-Loss}<!-- label: lipschitz-property-of-the-k-means-loss -->
+#### 2.3 Lipschitz Property of the K-Means
+Loss<!-- label: lipschitz-property-of-the-k-means-loss -->
 
 **Lemma S4 (Lipschitz constant)**. For any fixed \(x\), the
 function
@@ -273,8 +275,8 @@ using the triangle inequality and \(\|\theta_k\| \leq M\). \(\square\)
 
 </div>
 
-\subsection{3. Lemma 1: Population Minimizer
-Proximity}<!-- label: lemma-1-population-minimizer-proximity -->
+### 3. Lemma 1: Population Minimizer
+Proximity<!-- label: lemma-1-population-minimizer-proximity -->
 
 > **Purpose**: Show that the population \(k\)-means minimizer
 > \(\theta^*\) is exponentially close to the true centers
@@ -482,8 +484,8 @@ logarithmically in the problem parameters. \(\square\)
 
 </div>
 
-\subsection{4. Lemma 2: Exponential Convergence of the Empirical
-Minimizer}<!-- label: lemma-2-exponential-convergence-of-the-empirical-minimizer -->
+### 4. Lemma 2: Exponential Convergence of the Empirical
+Minimizer<!-- label: lemma-2-exponential-convergence-of-the-empirical-minimizer -->
 
 > **Purpose**: Show that the global empirical \(k\)-means minimizer
 > \(\hat_n\) converges to \(\theta^*\) at an exponential rate.
@@ -679,8 +681,8 @@ This establishes the claimed bound. \(\square\)
 
 </div>
 
-\subsection{5. Lemma 3: Deterministic Partition
-Recovery}<!-- label: lemma-3-deterministic-partition-recovery -->
+### 5. Lemma 3: Deterministic Partition
+Recovery<!-- label: lemma-3-deterministic-partition-recovery -->
 
 > **Purpose**: Show that if the estimated centers are within
 > \(\Delta_/4\) of the true centers, then the induced partition
@@ -756,15 +758,15 @@ irreducible noise: even with perfect centers, a point with
 
 </div>
 
-\subsection{6. Lemma 4: Lloyd's Algorithm Under Strong
-Separation}<!-- label: lemma-4-lloyds-algorithm-under-strong-separation -->
+### 6. Lemma 4: Lloyd's Algorithm Under Strong
+Separation<!-- label: lemma-4-lloyds-algorithm-under-strong-separation -->
 
 > **Purpose**: Address the NP-hard gap (Review Issue 3). Show that
 > under the strong separation condition, Lloyd's algorithm with random
 > restarts finds the global empirical minimizer with high probability.
 
-\subsubsection{6.1 Honest Framing of the NP-Hard
-Gap}<!-- label: honest-framing-of-the-np-hard-gap -->
+#### 6.1 Honest Framing of the NP-Hard
+Gap<!-- label: honest-framing-of-the-np-hard-gap -->
 
 \(k\)-means is NP-hard in the worst case (Aloise et al., 2009; Dasgupta,
 2008). The global minimizer \(\hat_n\) defined in Section 1.5 is
@@ -893,8 +895,8 @@ which is polynomial. The solution with the smallest \(W_n\) among the
 
 </div>
 
-\subsection{7. Main Theorem: Statement and
-Proof}<!-- label: main-theorem-statement-and-proof -->
+### 7. Main Theorem: Statement and
+Proof<!-- label: main-theorem-statement-and-proof -->
 
 #### 7.1 Theorem Statement<!-- label: theorem-statement -->
 
@@ -1025,8 +1027,8 @@ The final bound:
 
 This completes the proof of Theorem 5. \(\square\)
 
-\subsubsection{7.3 Verification of Exponents and Inequality
-Directions}<!-- label: verification-of-exponents-and-inequality-directions -->
+#### 7.3 Verification of Exponents and Inequality
+Directions<!-- label: verification-of-exponents-and-inequality-directions -->
 
 We explicitly verify each critical step:
 
@@ -1098,8 +1100,8 @@ positive exponent (fixing Review Issue 2).
 
 </div>
 
-\subsection{8. Corollary: Sample Size
-Guide}<!-- label: corollary-sample-size-guide -->
+### 8. Corollary: Sample Size
+Guide<!-- label: corollary-sample-size-guide -->
 
 **Corollary (Required samples per state)**. To achieve
 misclassification probability \(\leq \delta\) due to center estimation,
@@ -1145,11 +1147,11 @@ These numbers assume \(K \leq 10\), \(d_\phi \leq 64\), and use
 
 </div>
 
-\subsection{9. Discussion of Assumptions and
-Limitations}<!-- label: discussion-of-assumptions-and-limitations -->
+### 9. Discussion of Assumptions and
+Limitations<!-- label: discussion-of-assumptions-and-limitations -->
 
-\subsubsection{\texorpdfstring{9.1 Fixed \(K\) (Not
-Growing)}{9.1 Fixed K (Not Growing)}}<!-- label: fixed-k-not-growing -->
+#### \texorpdfstring{9.1 Fixed \(K\) (Not
+Growing){9.1 Fixed K (Not Growing)}}<!-- label: fixed-k-not-growing -->
 
 The proof relies on \(K\) being fixed. This allows: - The covering
 number
@@ -1169,8 +1171,8 @@ The growing-\(K\) regime requires a separate analysis (see Pollard, 1981
 for strong consistency with growing \(K\) under appropriate conditions;
 or Lei et al., 2013 for minimax rates).
 
-\subsubsection{9.2 The NP-Hard Gap (Issue 3
-Resolution)}<!-- label: the-np-hard-gap-issue-3-resolution -->
+#### 9.2 The NP-Hard Gap (Issue 3
+Resolution)<!-- label: the-np-hard-gap-issue-3-resolution -->
 
 This proof **does** resolve the NP-hard gap within the strong
 separation regime:
@@ -1193,8 +1195,8 @@ claim that there exists some polynomial-time algorithm finding an
 Ostrovsky et al., 2013). - We **acknowledge this gap** and do not
 claim a guarantee for the weak separation regime.
 
-\subsubsection{9.3 Sub-Gaussian Assumption (Issues
-9-10)}<!-- label: sub-gaussian-assumption-issues-9-10 -->
+#### 9.3 Sub-Gaussian Assumption (Issues
+9-10)<!-- label: sub-gaussian-assumption-issues-9-10 -->
 
 The proof assumes \(\varepsilon\) is sub-Gaussian with parameter
 \(\sigma^2\). For the bounds: - Lemma S1 uses the sub-Gaussian norm of
@@ -1209,8 +1211,8 @@ changing the exponential rate to a slower exponential. This is a
 quantitative difference, not a qualitative one --- the theorem still
 holds but with a different constant \(c_1\).
 
-\subsubsection{\texorpdfstring{9.4 Known
-\(K\)}{9.4 Known K}}<!-- label: known-k -->
+#### \texorpdfstring{9.4 Known
+\(K\){9.4 Known K}}<!-- label: known-k -->
 
 The theorem assumes \(K\) is known and fixed. In practice, \(K\) must be
 selected (e.g., via the elbow method, gap statistic, or BIC). Estimating
@@ -1232,8 +1234,8 @@ every individual point is correctly labeled. The misclassification of
 boundary points is a feature of the data distribution, not a failure of
 the estimator.
 
-\subsubsection{9.6 Strong Separation
-Requirement}<!-- label: strong-separation-requirement -->
+#### 9.6 Strong Separation
+Requirement<!-- label: strong-separation-requirement -->
 
 The condition \(\Delta_^2 / (\sigma^2 d_\phi) \geq C_0\) is
 sufficient but not necessary. It guarantees
@@ -1294,12 +1296,12 @@ signal-to-noise ratio and cluster balance. For the theorem's purposes,
 
 </div>
 
-\subsection{11. Appendix: Sub-Gaussian Tail Bounds and Quadratic Lower
-Bound}<!-- label: appendix-sub-gaussian-tail-bounds-and-quadratic-lower-bound -->
+### 11. Appendix: Sub-Gaussian Tail Bounds and Quadratic Lower
+Bound<!-- label: appendix-sub-gaussian-tail-bounds-and-quadratic-lower-bound -->
 
-\subsubsection{\texorpdfstring{Lemma S5: Quadratic Lower Bound for \(W\)
+#### \texorpdfstring{Lemma S5: Quadratic Lower Bound for \(W\)
 Near
-\(\theta^*\)}{Lemma S5: Quadratic Lower Bound for W Near \ theta\^{}*}}<!-- label: lemma-s5-quadratic-lower-bound-for-w-near-theta -->
+\(\theta^*\){Lemma S5: Quadratic Lower Bound for W Near \ theta\^{}*}}<!-- label: lemma-s5-quadratic-lower-bound-for-w-near-theta -->
 
 **Statement**. Under the conditions of Theorem 5, for any
 \(\theta\) with \(\|\theta - \theta^*\| \leq \Delta_/4\):
@@ -1358,8 +1360,8 @@ for exponentially small corrections. \(\square\)
 
 </div>
 
-\subsubsection{Verification Checklist Against Hostile
-Review}<!-- label: verification-checklist-against-hostile-review -->
+#### Verification Checklist Against Hostile
+Review<!-- label: verification-checklist-against-hostile-review -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3095}}

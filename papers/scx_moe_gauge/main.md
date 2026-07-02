@@ -1,12 +1,6 @@
-<div align="center">
+# Core Intuition: Understanding Potential Surface Misalignment in One Page
 
-**Version:** v1.0 \quad | \quad
-
-**Status:** Preprint \quad | \quad
-
-**Category:** SCX Theory System -- Information Theory Volume: Multi-Expert Gauge Chapter
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

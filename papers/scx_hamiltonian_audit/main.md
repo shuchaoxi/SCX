@@ -1,10 +1,6 @@
-<div align="center">
+# 引言：从描述到诊断
 
-**版本：** v1.0 \quad | \quad
-**状态：** 预印本 \quad | \quad
-**分类：** SCX理论体系 — 统计力学卷·审计诊断篇
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

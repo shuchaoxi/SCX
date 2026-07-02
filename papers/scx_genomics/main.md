@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 Variant effect prediction — the computational assessment of whether a genetic variant (\genome{}变异) is pathogenic — underpins clinical genomics, yet individual predictors (\SIFT, \PolyPhen, \CADD, \REVEL, \PrimateAI, \AlphaMissense, \ESM) exhibit systematic disagreements that confound clinical interpretation.

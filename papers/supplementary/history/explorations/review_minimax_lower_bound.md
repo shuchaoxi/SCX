@@ -1,5 +1,7 @@
-\section{Hostile Review: Minimax Lower Bound Proof (Theorem
-4)}<!-- label: hostile-review-minimax-lower-bound-proof-theorem-4 -->
+# Hostile Review: Minimax Lower Bound Proof (Theorem
+4)
+
+**Author:** SCX
 
 **Document reviewed:** `minimax\_lower\_bound\_proof.md`
 **Reviewer stance:** Annals of Statistics hostile reviewer
@@ -14,8 +16,8 @@ invalid inequality in its critical step**. The proof as written is
 
 </div>
 
-\subsection{Summary of Fatal and Non-Fatal
-Issues}<!-- label: summary-of-fatal-and-non-fatal-issues -->
+### Summary of Fatal and Non-Fatal
+Issues<!-- label: summary-of-fatal-and-non-fatal-issues -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2800}}
@@ -70,8 +72,8 @@ leaves the \(\eta\) characterization unresolved
 
 </div>
 
-\subsection{1. Lemma 7 (Slud's Inequality) is False as
-Stated}<!-- label: lemma-7-sluds-inequality-is-false-as-stated -->
+### 1. Lemma 7 (Slud's Inequality) is False as
+Stated<!-- label: lemma-7-sluds-inequality-is-false-as-stated -->
 
 **Claim (Lemma 7).** Let \(S_M \sim Binomial(M,p)\) with
 \(p \leq 1/2\). For any \(k\) with \(p \leq k/M \leq 1/2\):
@@ -81,8 +83,8 @@ Stated}<!-- label: lemma-7-sluds-inequality-is-false-as-stated -->
 **This inequality is not a valid consequence of Slud (1977) and is
 numerically false.**
 
-\subsubsection{1.1 What Slud Actually
-Proves}<!-- label: what-slud-actually-proves -->
+#### 1.1 What Slud Actually
+Proves<!-- label: what-slud-actually-proves -->
 
 Slud (1977), Theorem 2, gives a **Gaussian comparison** inequality:
 
@@ -115,8 +117,8 @@ claiming a *larger* lower bound. This is algebraically impossible
 without a compensating factor that would be enormous (roughly
 \(\exp(M\delta^2\cdot(1/(2p(1-p))-2))\)), and no such factor appears.
 
-\subsubsection{1.2 Numerical
-Counterexamples}<!-- label: numerical-counterexamples -->
+#### 1.2 Numerical
+Counterexamples<!-- label: numerical-counterexamples -->
 
 The claimed inequality fails for multiple parameter settings:
 
@@ -141,8 +143,8 @@ The claimed inequality fails for multiple parameter settings:
 These are not edge cases; they are squarely in the parameter regime the
 proof requires (\(p=\mu<1/2\), \(\delta=1/2-\mu\)).
 
-\subsubsection{\texorpdfstring{1.3 Ceiling Issue for Odd
-\(M\)}{1.3 Ceiling Issue for Odd M}}<!-- label: ceiling-issue-for-odd-m -->
+#### \texorpdfstring{1.3 Ceiling Issue for Odd
+\(M\){1.3 Ceiling Issue for Odd M}}<!-- label: ceiling-issue-for-odd-m -->
 
 The proof applies Slud's inequality with \(k = \lceil M/2\rceil\), but
 Slud's condition requires \(k/M \leq 1/2\). For odd \(M\),
@@ -151,8 +153,8 @@ premise. The author silently replaces \(\lceil M/2\rceil/M\) with
 \(1/2\) in the exponent, which is an approximation that does not respect
 the inequality's domain.
 
-\subsubsection{1.4 Impact on the Main
-Proof}<!-- label: impact-on-the-main-proof -->
+#### 1.4 Impact on the Main
+Proof<!-- label: impact-on-the-main-proof -->
 
 This is not a minor technical issue. The Binomial tail lower bound is
 **the entire content** of the testing lower bound for \(K=2\). If
@@ -199,16 +201,16 @@ approximation -- but as it stands, the proof does not provide this.
 
 </div>
 
-\subsection{2. The K=2 to K\textgreater2 Reduction is Logically
-Inverted}<!-- label: the-k2-to-k2-reduction-is-logically-inverted -->
+### 2. The K=2 to K\textgreater2 Reduction is Logically
+Inverted<!-- label: the-k2-to-k2-reduction-is-logically-inverted -->
 
 **Claim (Section 4.6).** For \(K>2\), the per-component \(\chi^2\)
 divergence is larger than for \(K=2\), and ``since larger \(\chi^2\)
 makes the distributions more distinguishable, the \(K=2\) case is the
 hardest.''
 
-\subsubsection{2.1 The Argument's
-Structure}<!-- label: the-arguments-structure -->
+#### 2.1 The Argument's
+Structure<!-- label: the-arguments-structure -->
 
 The author writes:
 
@@ -248,9 +250,9 @@ possible that \(\sqrt{((1+\chi^2_2)^M - 1)/2} \gg 1\) (bound useless)
 while the actual \(TV(P_0, P_1)\) is close to 0 (very hard to
 distinguish). The bound does not rule this out.
 
-\subsubsection{2.3 Why the Conclusion is Probably Correct (But Not
+#### 2.3 Why the Conclusion is Probably Correct (But Not
 Proved
-Here)}<!-- label: why-the-conclusion-is-probably-correct-but-not-proved-here -->
+Here)<!-- label: why-the-conclusion-is-probably-correct-but-not-proved-here -->
 
 The \(K=2\) case is likely the hardest because under
 \(C_{bal}=1\), all mixture components for \(K>2\) are identical
@@ -271,8 +273,8 @@ equal), and the per-expert TV is \(|1 - \mu K/(K-1)|\), which exceeds
 
 </div>
 
-\subsection{3. The F1 Lower Bound Derivation is Algebraically
-Unsound}<!-- label: the-f1-lower-bound-derivation-is-algebraically-unsound -->
+### 3. The F1 Lower Bound Derivation is Algebraically
+Unsound<!-- label: the-f1-lower-bound-derivation-is-algebraically-unsound -->
 
 #### 3.1 The Claim<!-- label: the-claim -->
 
@@ -343,8 +345,8 @@ acknowledges this in a remark but does not resolve it.
 
 ### 4. Other Issues<!-- label: other-issues -->
 
-\subsubsection{4.1 Lemma 4 (Mixture-Product TV Bound) --
-Correct}<!-- label: lemma-4-mixture-product-tv-bound-correct -->
+#### 4.1 Lemma 4 (Mixture-Product TV Bound) --
+Correct<!-- label: lemma-4-mixture-product-tv-bound-correct -->
 
 The convexity inequality
 \(TV(P_0, \frac{1}{L}\sum_\ell Q_\ell) \leq \frac{1}{L}\sum_\ell TV(P_0, Q_\ell)\)
@@ -353,8 +355,8 @@ bound direction (upper bound on TV) is correct for the Le Cam
 application. For the symmetric case (\(C_{bal}=1\)), all
 \(Q_\ell\) are equal, so the inequality is tight. No issue here.
 
-\subsubsection{4.2 Le Cam Construction --
-Correct}<!-- label: le-cam-construction-correct -->
+#### 4.2 Le Cam Construction --
+Correct<!-- label: le-cam-construction-correct -->
 
 The construction is within the SCX assumption class. Choosing the
 hardest instance within \(\mathcal{P}_\Delta\) is standard for minimax
@@ -362,8 +364,8 @@ lower bounds. The symmetry assumption \(C_{bal}=1\) is
 restrictive but permissible for a lower bound. The construction
 correctly satisfies A1-A6.
 
-\subsubsection{4.3 Cramer-Chernoff Analysis --
-Correct}<!-- label: cramer-chernoff-analysis-correct -->
+#### 4.3 Cramer-Chernoff Analysis --
+Correct<!-- label: cramer-chernoff-analysis-correct -->
 
 The asymptotic analysis is standard and correctly identifies
 \(KL(1/2 \| \mu)\) as the exact error exponent for the optimal
@@ -376,8 +378,8 @@ about ``the adversary chooses the threshold'' is not relevant here, as
 the author is analyzing the optimal Bayes test (which is
 likelihood-ratio based) rather than the threshold-based SCX detector.
 
-\subsubsection{\texorpdfstring{4.4 \(\chi^2\) Tensorization --
-Correct}{4.4 \ chi\^{}2 Tensorization -- Correct}}<!-- label: chi2-tensorization-correct -->
+#### \texorpdfstring{4.4 \(\chi^2\) Tensorization --
+Correct{4.4 \ chi\^{}2 Tensorization -- Correct}}<!-- label: chi2-tensorization-correct -->
 
 The tensorization
 \(\chi^2(\prod P_m \| \prod Q_m) = \prod(1+\chi^2(P_m\|Q_m))-1\) is
@@ -387,8 +389,8 @@ sum of per-component TV terms. Each term involves a product \(Q_\ell\),
 so the tensorization applies to each term individually. There is no
 independence violation.
 
-\subsubsection{\texorpdfstring{4.5 The \(\eta\) Factor
-Gap}{4.5 The \ eta Factor Gap}}<!-- label: the-eta-factor-gap -->
+#### \texorpdfstring{4.5 The \(\eta\) Factor
+Gap{4.5 The \ eta Factor Gap}}<!-- label: the-eta-factor-gap -->
 
 The upper bound from Theorem 1 contains a \(1/\eta\) factor:
 \(F1 \geq 1 - (1/\eta)\exp(-2M\Delta^2)\). The lower bound in
@@ -406,8 +408,8 @@ pre-factor. The author correctly notes this as a limitation.
 
 </div>
 
-\subsection{5. Summary: What Would Need to Be
-Fixed}<!-- label: summary-what-would-need-to-be-fixed -->
+### 5. Summary: What Would Need to Be
+Fixed<!-- label: summary-what-would-need-to-be-fixed -->
 
 #### Required for Publication<!-- label: required-for-publication -->
 

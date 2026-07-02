@@ -1,5 +1,7 @@
-\section{SCX/EGP 竞争分析报告：MoE
-架构、蒸馏与专家治理}<!-- label: scxegp-ux7adeux4e89ux5206ux6790ux62a5ux544amoe-ux67b6ux6784ux84b8ux998fux4e0eux4e13ux5bb6ux6cbbux7406 -->
+# SCX/EGP 竞争分析报告：MoE
+架构、蒸馏与专家治理
+
+**Author:** SCX
 
 > 生成时间：2026-06-25
 > 
@@ -30,11 +32,11 @@
 
 </div>
 
-\subsection{A. Mixture of Experts (MoE) in
-MLIP}<!-- label: a.-mixture-of-experts-moe-in-mlip -->
+### A. Mixture of Experts (MoE) in
+MLIP<!-- label: a.-mixture-of-experts-moe-in-mlip -->
 
-\subsubsection{A1. DeepMD MoE/MoLE --- ``Scaling MLIP with Mixtures of
-Experts''}<!-- label: a1.-deepmd-moemole-scaling-mlip-with-mixtures-of-experts -->
+#### A1. DeepMD MoE/MoLE --- ``Scaling MLIP with Mixtures of
+Experts''<!-- label: a1.-deepmd-moemole-scaling-mlip-with-mixtures-of-experts -->
 
 **论文：** Liu, Zhang, Peng, E, Zhang, Wang. ``Scaling Machine
 Learning Interatomic Potentials with Mixtures of Experts.''
@@ -85,9 +87,9 @@ EGP 的专家可以是异构的（MACE + NEP + SevenNet），DeepMD MoE
 
 </div>
 
-\subsubsection{A2. Allegro/NequIP MoE --- Spatial Partition +
+#### A2. Allegro/NequIP MoE --- Spatial Partition +
 Co-training
-Agreement}<!-- label: a2.-allegronequip-moe-spatial-partition-co-training-agreement -->
+Agreement<!-- label: a2.-allegronequip-moe-spatial-partition-co-training-agreement -->
 
 **论文：** Nascimento et al.~``Mixture of Experts Framework in
 Machine Learning Interatomic Potentials for Atomistic Simulations.''
@@ -132,8 +134,8 @@ MoE 仅适用于可划分的体系。 - SCX/EGP
 
 </div>
 
-\subsubsection{A3. 通用 MoE --- Shazeer et al.~2017, Switch
-Transformer}<!-- label: a3.-ux901aux7528-moe-shazeer-et-al.-2017-switch-transformer -->
+#### A3. 通用 MoE --- Shazeer et al.~2017, Switch
+Transformer<!-- label: a3.-ux901aux7528-moe-shazeer-et-al.-2017-switch-transformer -->
 
 **论文：** - Shazeer et al.~``Outrageously Large Neural Networks:
 The Sparsely-Gated Mixture-of-Experts Layer.'' ICLR 2017. - Fedus, Zoph
@@ -181,8 +183,8 @@ SCX/EGP 中？
 
 </div>
 
-\subsection{B. Knowledge Distillation for
-MLIP}<!-- label: b.-knowledge-distillation-for-mlip -->
+### B. Knowledge Distillation for
+MLIP<!-- label: b.-knowledge-distillation-for-mlip -->
 
 #### B1. MACE → NEP 蒸馏<!-- label: b1.-mace-nep-ux84b8ux998f -->
 
@@ -222,8 +224,8 @@ MACE 教师蒸馏到轻量 **NEP** 模型。 -
 
 </div>
 
-\subsubsection{B2. Ensemble Knowledge Distillation (EKD) for
-MLIP}<!-- label: b2.-ensemble-knowledge-distillation-ekd-for-mlip -->
+#### B2. Ensemble Knowledge Distillation (EKD) for
+MLIP<!-- label: b2.-ensemble-knowledge-distillation-ekd-for-mlip -->
 
 **论文：** Matin et al.~``Ensemble Knowledge Distillation for
 Machine Learning Interatomic Potentials.'' arXiv:2503.14293 (2025).
@@ -253,8 +255,8 @@ MLIP**（多种初始化/架构）。 2.
 
 </div>
 
-\subsubsection{B3. Foundation Model
-Distillation}<!-- label: b3.-foundation-model-distillation -->
+#### B3. Foundation Model
+Distillation<!-- label: b3.-foundation-model-distillation -->
 
 **论文：** Gardner et al.~``Distillation of atomistic foundation
 models across architectures and chemical domains.'' arXiv:2506.10956
@@ -284,8 +286,8 @@ SCX/EGP 的专家候选池之一。
 
 </div>
 
-\subsubsection{B4. Teacher-Student Training for MLIPs (RSC
-2025)}<!-- label: b4.-teacher-student-training-for-mlips-rsc-2025 -->
+#### B4. Teacher-Student Training for MLIPs (RSC
+2025)<!-- label: b4.-teacher-student-training-for-mlips-rsc-2025 -->
 
 **论文：** Matin et al.~``Teacher-student training improves the
 accuracy and efficiency of machine learning interatomic potentials.''
@@ -316,8 +318,8 @@ dominance）：在每个成本点上都优于对照模型
 
 </div>
 
-\subsubsection{B5.
-其他重要蒸馏工作}<!-- label: b5.-ux5176ux4ed6ux91cdux8981ux84b8ux998fux5de5ux4f5c -->
+#### B5.
+其他重要蒸馏工作<!-- label: b5.-ux5176ux4ed6ux91cdux8981ux84b8ux998fux5de5ux4f5c -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1765}}
@@ -375,11 +377,11 @@ learning force fields from universal models.'' Phys. Rev.~Materials,
 
 </div>
 
-\subsection{C. Expert Merging / Gauge / Energy
-Alignment}<!-- label: c.-expert-merging-gauge-energy-alignment -->
+### C. Expert Merging / Gauge / Energy
+Alignment<!-- label: c.-expert-merging-gauge-energy-alignment -->
 
-\subsubsection{C1. Model Merging (Model Soup, Git Re-Basin,
-线性模式连接)}<!-- label: c1.-model-merging-model-soup-git-re-basin-ux7ebfux6027ux6a21ux5f0fux8fdeux63a5 -->
+#### C1. Model Merging (Model Soup, Git Re-Basin,
+线性模式连接)<!-- label: c1.-model-merging-model-soup-git-re-basin-ux7ebfux6027ux6a21ux5f0fux8fdeux63a5 -->
 
 **核心思想：**
 将多个独立训练的模型权重直接平均（或经过排列对齐后平均）获得合并模型，无需再训练。核心假设：不同模型的解在权重空间中通过线性路径连接且损失面平坦。
@@ -449,8 +451,8 @@ MLIP 领域。 - 可以尝试''MLIP
 
 </div>
 
-\subsubsection{C2. MLIP Gauge Freedom 与 Species Energy
-Shift}<!-- label: c2.-mlip-gauge-freedom-ux4e0e-species-energy-shift -->
+#### C2. MLIP Gauge Freedom 与 Species Energy
+Shift<!-- label: c2.-mlip-gauge-freedom-ux4e0e-species-energy-shift -->
 
 **论文：** ``Gauge dependence of total energies and
 cross-functional transfer learning.'' arXiv:2504.05565 (2025).
@@ -493,8 +495,8 @@ NEP）。
 
 </div>
 
-\subsubsection{C3. Species Energy Shift
-标准做法}<!-- label: c3.-species-energy-shift-ux6807ux51c6ux505aux6cd5 -->
+#### C3. Species Energy Shift
+标准做法<!-- label: c3.-species-energy-shift-ux6807ux51c6ux505aux6cd5 -->
 
 当前主流通用 MLIP 中的能量偏移处理：
 
@@ -529,14 +531,14 @@ SevenNet & 隐式 offset & 模型自动学习偏移
 
 </div>
 
-\subsection{D. Expert Compilation / Governance（SCX
-核心创新区）}<!-- label: d.-expert-compilation-governancescx-ux6838ux5fc3ux521bux65b0ux533a -->
+### D. Expert Compilation / Governance（SCX
+核心创新区）<!-- label: d.-expert-compilation-governancescx-ux6838ux5fc3ux521bux65b0ux533a -->
 
 这是 SCX/EGP
 最核心的差异化领域。搜索结果显示，该方向目前**基本没有竞争工作**。以下是搜索覆盖的几个子方向：
 
-\subsubsection{D1. ``蒸馏前的专家规范化''（Expert Normalization Before
-Distillation）}<!-- label: d1.-ux84b8ux998fux524dux7684ux4e13ux5bb6ux89c4ux8303ux5316expert-normalization-before-distillation -->
+#### D1. ``蒸馏前的专家规范化''（Expert Normalization Before
+Distillation）<!-- label: d1.-ux84b8ux998fux524dux7684ux4e13ux5bb6ux89c4ux8303ux5316expert-normalization-before-distillation -->
 
 **搜索结论：没有专门的工作。**
 
@@ -555,8 +557,8 @@ Distillation）}<!-- label: d1.-ux84b8ux998fux524dux7684ux4e13ux5bb6ux89c4ux8303
 
 </div>
 
-\subsubsection{D2. Expert Domain
-Certification}<!-- label: d2.-expert-domain-certification -->
+#### D2. Expert Domain
+Certification<!-- label: d2.-expert-domain-certification -->
 
 **搜索结论：没有适用于 MLIP 的专家域认证工作。**
 
@@ -575,8 +577,8 @@ Domain Certification''的形式化框架。 - 可以借鉴 conformal prediction
 
 </div>
 
-\subsubsection{D3. Multi-Expert Conflict
-Arbitration（多专家冲突仲裁）}<!-- label: d3.-multi-expert-conflict-arbitrationux591aux4e13ux5bb6ux51b2ux7a81ux4ef2ux88c1 -->
+#### D3. Multi-Expert Conflict
+Arbitration（多专家冲突仲裁）<!-- label: d3.-multi-expert-conflict-arbitrationux591aux4e13ux5bb6ux51b2ux7a81ux4ef2ux88c1 -->
 
 **搜索结论：在通用 ML 领域有探索，但在 MLIP 领域为空白。**
 
@@ -634,8 +636,8 @@ Arbitration（多专家冲突仲裁）}<!-- label: d3.-multi-expert-conflict-arb
 
 </div>
 
-\subsubsection{D4.
-多专家性能的输入条件依赖}<!-- label: d4.-ux591aux4e13ux5bb6ux6027ux80fdux7684ux8f93ux5165ux6761ux4ef6ux4f9dux8d56 -->
+#### D4.
+多专家性能的输入条件依赖<!-- label: d4.-ux591aux4e13ux5bb6ux6027ux80fdux7684ux8f93ux5165ux6761ux4ef6ux4f9dux8d56 -->
 
 **搜索结论：没有系统性的工作。**
 
@@ -654,11 +656,11 @@ Arbitration（多专家冲突仲裁）}<!-- label: d3.-multi-expert-conflict-arb
 
 </div>
 
-\subsection{E.
-竞争格局总结与战略建议}<!-- label: e.-ux7adeux4e89ux683cux5c40ux603bux7ed3ux4e0eux6218ux7565ux5efaux8bae -->
+### E.
+竞争格局总结与战略建议<!-- label: e.-ux7adeux4e89ux683cux5c40ux603bux7ed3ux4e0eux6218ux7565ux5efaux8bae -->
 
-\subsubsection{E1.
-创新维度对比矩阵}<!-- label: e1.-ux521bux65b0ux7ef4ux5ea6ux5bf9ux6bd4ux77e9ux9635 -->
+#### E1.
+创新维度对比矩阵<!-- label: e1.-ux521bux65b0ux7ef4ux5ea6ux5bf9ux6bd4ux77e9ux9635 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2857}}
@@ -710,8 +712,8 @@ Gauge 对齐 & N & Y(隐式) & N & N & **Y**
 每个现有工作都只在某些维度上与 SCX/EGP 有交集，但没有任何工作覆盖
 SCX/EGP 的全部创新维度。
 
-\subsubsection{E2.
-竞争风险等级评估}<!-- label: e2.-ux7adeux4e89ux98ceux9669ux7b49ux7ea7ux8bc4ux4f30 -->
+#### E2.
+竞争风险等级评估<!-- label: e2.-ux7adeux4e89ux98ceux9669ux7b49ux7ea7ux8bc4ux4f30 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2381}}
@@ -750,8 +752,8 @@ SCX/EGP 的全部创新维度。
 
 \end{longtable}
 
-\subsubsection{E3. SCX/EGP
-必须主动占领的空白}<!-- label: e3.-scxegp-ux5fc5ux987bux4e3bux52a8ux5360ux9886ux7684ux7a7aux767d -->
+#### E3. SCX/EGP
+必须主动占领的空白<!-- label: e3.-scxegp-ux5fc5ux987bux4e3bux52a8ux5360ux9886ux7684ux7a7aux767d -->
 
 按优先级排序：
 
@@ -798,8 +800,8 @@ P2 & 冲突仲裁方法论论文 & 展示 EGP 的 Route 层如何处理多专家
 
 \end{longtable}
 
-\subsubsection{E5.
-竞争方法背后的团队/组织}<!-- label: e5.-ux7adeux4e89ux65b9ux6cd5ux80ccux540eux7684ux56e2ux961fux7ec4ux7ec7 -->
+#### E5.
+竞争方法背后的团队/组织<!-- label: e5.-ux7adeux4e89ux65b9ux6cd5ux80ccux540eux7684ux56e2ux961fux7ec4ux7ec7 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2857}}
@@ -858,8 +860,8 @@ P2 & 冲突仲裁方法论论文 & 展示 EGP 的 Route 层如何处理多专家
 5. 
 6. 
 
-\subsubsection{B. Knowledge Distillation for
-MLIP}<!-- label: b.-knowledge-distillation-for-mlip-1 -->
+#### B. Knowledge Distillation for
+MLIP<!-- label: b.-knowledge-distillation-for-mlip-1 -->
 
 1. 
 2. 
@@ -870,8 +872,8 @@ MLIP}<!-- label: b.-knowledge-distillation-for-mlip-1 -->
 7. 
 8. 
 
-\subsubsection{C. Expert Merging / Gauge
-Alignment}<!-- label: c.-expert-merging-gauge-alignment -->
+#### C. Expert Merging / Gauge
+Alignment<!-- label: c.-expert-merging-gauge-alignment -->
 
 1. 
 2. 
@@ -880,8 +882,8 @@ Alignment}<!-- label: c.-expert-merging-gauge-alignment -->
 5. 
 6. 
 
-\subsubsection{D. Governance / Arbitration (General
-ML)}<!-- label: d.-governance-arbitration-general-ml -->
+#### D. Governance / Arbitration (General
+ML)<!-- label: d.-governance-arbitration-general-ml -->
 
 1. 
 2. 

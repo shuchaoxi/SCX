@@ -1,5 +1,7 @@
-\section{Cercis Algorithm
-(紫荆花算法)}<!-- label: cercis-algorithm-ux7d2bux8346ux82b1ux7b97ux6cd5 -->
+# Cercis Algorithm
+(紫荆花算法)
+
+**Author:** SCX
 
 > **Formal name**: Cercis Self-Evolving Gatekeeper (CESG)
 > **Location**:

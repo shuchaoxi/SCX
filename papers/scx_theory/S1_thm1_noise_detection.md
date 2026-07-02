@@ -1,3 +1,7 @@
+# Theorem 1: Multi-Expert Consistency Noise Detection Guarantee (The Unlikely Lone Genius Theorem)
+
+**Author:** SCX
+
 ## Theorem 1: Multi-Expert Consistency Noise Detection Guarantee (The Unlikely Lone Genius Theorem)
 <!-- label: sec:thm1 -->
 

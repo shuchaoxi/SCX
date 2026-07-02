@@ -1,5 +1,7 @@
-\section{Online Learning Regret Analysis of SCX
-Gatekeeper}<!-- label: online-learning-regret-analysis-of-scx-gatekeeper -->
+# Online Learning Regret Analysis of SCX
+Gatekeeper
+
+**Author:** SCX
 
 > **Version**: 2026-06-28 |{} **Status**: Theoretical
 > development |{} **Audit**: Pre-verification
@@ -51,8 +53,8 @@ whether the sample was genuinely noisy (\(r_t = 1\)) or clean
 The goal is to minimize cumulative loss relative to the best fixed
 gatekeeper in hindsight.
 
-\subsubsection{1.2 Key Assumptions for Regret
-Analysis}<!-- label: key-assumptions-for-regret-analysis -->
+#### 1.2 Key Assumptions for Regret
+Analysis<!-- label: key-assumptions-for-regret-analysis -->
 
 We make the following assumptions (some inherited from Document 01):
 
@@ -134,8 +136,8 @@ status. We assume \(q_t \geq q_ > 1/2\) for all sufficiently large
 
 </div>
 
-\subsection{2. Per-Round Loss and Regret
-Definition}<!-- label: per-round-loss-and-regret-definition -->
+### 2. Per-Round Loss and Regret
+Definition<!-- label: per-round-loss-and-regret-definition -->
 
 #### 2.1 Per-Round Loss<!-- label: per-round-loss -->
 
@@ -178,8 +180,8 @@ gatekeepers parameterized by \(w \in \mathbb{R}^{d_w}\) with
 
 \[\mathcal{H}_R = \bigl\{ S_w(x,y) = \sigma(w^\top \psi(x,y)) : \|w\|_2 \leq R \bigr\}\]
 
-\subsubsection{2.3 Regret with Delayed
-Feedback}<!-- label: regret-with-delayed-feedback -->
+#### 2.3 Regret with Delayed
+Feedback<!-- label: regret-with-delayed-feedback -->
 
 When feedback arrives at time \(t + d_t\), the loss \(\ell_t(S_t)\) is
 not observable until time \(t + d_t\). The learner must make decisions
@@ -198,11 +200,11 @@ feedback is still pending.
 
 </div>
 
-\subsection{3. Baseline: Online Gradient Descent Without
-Delay}<!-- label: baseline-online-gradient-descent-without-delay -->
+### 3. Baseline: Online Gradient Descent Without
+Delay<!-- label: baseline-online-gradient-descent-without-delay -->
 
-\subsubsection{3.1 Algorithm: OGD for Gatekeeper
-Update}<!-- label: algorithm-ogd-for-gatekeeper-update -->
+#### 3.1 Algorithm: OGD for Gatekeeper
+Update<!-- label: algorithm-ogd-for-gatekeeper-update -->
 
 We first analyze the case with **no delay** (\(d_t = 0\) for all
 \(t\)). The gatekeeper update is:
@@ -235,8 +237,8 @@ Equivalently, the average regret satisfies:
 2. 
 3. 
 
-\subsubsection{3.3 Implication for
-Gatekeeper}<!-- label: implication-for-gatekeeper -->
+#### 3.3 Implication for
+Gatekeeper<!-- label: implication-for-gatekeeper -->
 
 **Corollary 4 (Gatekeeper Convergence).** Under the conditions of
 Theorem 7, the average gatekeeper excess loss converges to zero at rate
@@ -253,8 +255,8 @@ taken over the randomness of the data. \(\square\)
 
 </div>
 
-\subsection{4. Delayed Feedback
-Analysis}<!-- label: delayed-feedback-analysis -->
+### 4. Delayed Feedback
+Analysis<!-- label: delayed-feedback-analysis -->
 
 #### 4.1 The Delayed Setting<!-- label: the-delayed-setting -->
 
@@ -268,8 +270,8 @@ This delay is typically: - **Upper bounded** by \(D_\) (time
 between NEP retraining rounds) - **Variable** (depends on when the
 memory bank accumulates enough samples to trigger NEP retraining)
 
-\subsubsection{4.2 Delay-Regret
-Decomposition}<!-- label: delay-regret-decomposition -->
+#### 4.2 Delay-Regret
+Decomposition<!-- label: delay-regret-decomposition -->
 
 **Theorem 8 (Delayed OGD Regret for Gatekeeper).** Under
 Assumptions B4, B5, B6, C1, C2, C3, with delays bounded by
@@ -294,8 +296,8 @@ Quanrud \& Khashabi, 2015):
 3. 
 4. 
 
-\subsubsection{4.3 Optimality of the Delay-Affected
-Bound}<!-- label: optimality-of-the-delay-affected-bound -->
+#### 4.3 Optimality of the Delay-Affected
+Bound<!-- label: optimality-of-the-delay-affected-bound -->
 
 **Theorem 9 (Delay Lower Bound).** For any online learning
 algorithm operating under delays \(d_t\) with
@@ -316,8 +318,8 @@ is due to the stochastic (non-adversarial) nature of the delays in SCX
 \(\Omega(D_ \sqrt{T})\), while the SCX setting typically has
 \(d_t\) determined by the memory growth dynamics, which is stochastic.
 
-\subsubsection{4.4 Delay Distribution
-Model}<!-- label: delay-distribution-model -->
+#### 4.4 Delay Distribution
+Model<!-- label: delay-distribution-model -->
 
 For SCX, the delay \(d_t\) is better modeled as a stochastic process
 than a worst-case bound.
@@ -345,8 +347,8 @@ that any individual delay exceeds a large threshold. \(\square\)
 
 ### 5. Memory Bank Effect<!-- label: memory-bank-effect -->
 
-\subsubsection{5.1 Memory as Training Data
-Accumulation}<!-- label: memory-as-training-data-accumulation -->
+#### 5.1 Memory as Training Data
+Accumulation<!-- label: memory-as-training-data-accumulation -->
 
 The memory bank \(M_t\) provides an increasingly rich training set for
 both the gatekeeper and the NEP student. This can be viewed as a form of
@@ -382,8 +384,8 @@ for the specific form of \(\Delta_{mem}\) requires additional
 assumptions on the replay schedule and the relationship between the
 memory and current distributions.*
 
-\subsubsection{5.2 Regret with Growing Training
-Set}<!-- label: regret-with-growing-training-set -->
+#### 5.2 Regret with Growing Training
+Set<!-- label: regret-with-growing-training-set -->
 
 A unique feature of the SCX setting is that the **training set
 grows over time**. This gives a form of **sample complexity
@@ -423,8 +425,8 @@ the entire sequence, while the effective regret compares to the best
 \(S\) given knowledge of \(M_T\). The gap is bounded by the uniform
 convergence bound. \(\square\)
 
-\subsubsection{5.3 Memory Saturation and Asymptotic
-Regret}<!-- label: memory-saturation-and-asymptotic-regret -->
+#### 5.3 Memory Saturation and Asymptotic
+Regret<!-- label: memory-saturation-and-asymptotic-regret -->
 
 **Proposition 18 (Asymptotic No-Regret).** If the memory bank
 saturates (\(\lim_{T\to\infty} N_T = \infty\)), then:
@@ -444,8 +446,8 @@ Since \(N_T \to \infty\), the second term vanishes. The first term
 
 </div>
 
-\subsection{6. Comparison to Standard Online Learning
-Bounds}<!-- label: comparison-to-standard-online-learning-bounds -->
+### 6. Comparison to Standard Online Learning
+Bounds<!-- label: comparison-to-standard-online-learning-bounds -->
 
 #### 6.1 Summary of Bounds<!-- label: summary-of-bounds -->
 
@@ -541,8 +543,8 @@ Under delayed feedback, the FTRL bound becomes:
 which matches the OGD delay bound. FTRL does not offer an advantage over
 OGD for this specific setup.
 
-\subsubsection{6.4 When the Loss is Not
-Convex}<!-- label: when-the-loss-is-not-convex -->
+#### 6.4 When the Loss is Not
+Convex<!-- label: when-the-loss-is-not-convex -->
 
 **Conjecture 4 (Non-Convex Gatekeeper Regret).** If the gatekeeper
 is a neural network (non-convex loss), the OGD regret bound degrades to:
@@ -563,8 +565,8 @@ neural network.*
 
 </div>
 
-\subsection{7. Lower Bounds and
-Optimality}<!-- label: lower-bounds-and-optimality -->
+### 7. Lower Bounds and
+Optimality<!-- label: lower-bounds-and-optimality -->
 
 #### 7.1 Minimax Lower Bound<!-- label: minimax-lower-bound -->
 
@@ -617,8 +619,8 @@ dependence is tight.
 
 </div>
 
-\subsection{8. Summary of Proven vs.~Conjectured
-Claims}<!-- label: summary-of-proven-vs.-conjectured-claims -->
+### 8. Summary of Proven vs.~Conjectured
+Claims<!-- label: summary-of-proven-vs.-conjectured-claims -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2800}}

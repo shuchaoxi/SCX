@@ -1,3 +1,7 @@
+# Introduction 引言
+
+**Author:** SCX
+
 *Abstract:*
 
 {\bf 摘要.} 医学诊断是人类决策中风险最高的领域之一：误诊率（误诊率）在临床实践中

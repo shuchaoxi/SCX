@@ -1,5 +1,7 @@
-\section{Situs
-理论最终验证报告}<!-- label: situs-ux7406ux8bbaux6700ux7ec8ux9a8cux8bc1ux62a5ux544a -->
+# Situs
+理论最终验证报告
+
+**Author:** SCX
 
 **验证日期**: 2026-06-29
 
@@ -14,8 +16,8 @@
 
 ### 逐项检查<!-- label: ux9010ux9879ux68c0ux67e5 -->
 
-\subsubsection{1. 定理 1.2.3 Lipschitz 常数是否已修正为
-2√2·π/√d？}<!-- label: ux5b9aux7406-1.2.3-lipschitz-ux5e38ux6570ux662fux5426ux5df2ux4feeux6b63ux4e3a-22ux3c0d -->
+#### 1. 定理 1.2.3 Lipschitz 常数是否已修正为
+2√2·π/√d？<!-- label: ux5b9aux7406-1.2.3-lipschitz-ux5e38ux6570ux662fux5426ux5df2ux4feeux6b63ux4e3a-22ux3c0d -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
@@ -59,9 +61,9 @@ ppe\_rigorous\_derivation.md & L189 &
 
 </div>
 
-\subsubsection{2. 定理 1.2.1 归一化因子是否已加入？md 框内公式是否已去掉
+#### 2. 定理 1.2.1 归一化因子是否已加入？md 框内公式是否已去掉
 L
-依赖？}<!-- label: ux5b9aux7406-1.2.1-ux5f52ux4e00ux5316ux56e0ux5b50ux662fux5426ux5df2ux52a0ux5165md-ux6846ux5185ux516cux5f0fux662fux5426ux5df2ux53bbux6389-l-ux4f9dux8d56 -->
+依赖？<!-- label: ux5b9aux7406-1.2.1-ux5f52ux4e00ux5316ux56e0ux5b50ux662fux5426ux5df2ux52a0ux5165md-ux6846ux5185ux516cux5f0fux662fux5426ux5df2ux53bbux6389-l-ux4f9dux8d56 -->
 
 **2a. 归一化因子 √(2/d)**:
 
@@ -138,8 +140,8 @@ L 仅通过推论 1.2.1 的 Nyquist 条件 `d\_min\ ≈\ L/(2ξ)`
 
 </div>
 
-\subsubsection{3. 定理编号是否统一为
-4.1？}<!-- label: ux5b9aux7406ux7f16ux53f7ux662fux5426ux7edfux4e00ux4e3a-4.1 -->
+#### 3. 定理编号是否统一为
+4.1？<!-- label: ux5b9aux7406ux7f16ux53f7ux662fux5426ux7edfux4e00ux4e3a-4.1 -->
 
 ``定理 4.1'' 指的是''学习型 PE 破坏 Theorem 3 的精确条件''这个定理。
 
@@ -167,8 +169,8 @@ ppe\_rigorous\_derivation.md & L775 & 定理 4.1 & ---
 
 </div>
 
-\subsubsection{4. d\_min 是否修正为
-L/(2ξ)？}<!-- label: d_min-ux662fux5426ux4feeux6b63ux4e3a-l2ux3be -->
+#### 4. d\_min 是否修正为
+L/(2ξ)？<!-- label: d_min-ux662fux5426ux4feeux6b63ux4e3a-l2ux3be -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
@@ -209,8 +211,8 @@ ppe\_rigorous\_derivation.md & L173 &
 
 </div>
 
-\subsubsection{5. 定理 2.4.1
-是否已降级为启发式估计？}<!-- label: ux5b9aux7406-2.4.1-ux662fux5426ux5df2ux964dux7ea7ux4e3aux542fux53d1ux5f0fux4f30ux8ba1 -->
+#### 5. 定理 2.4.1
+是否已降级为启发式估计？<!-- label: ux5b9aux7406-2.4.1-ux662fux5426ux5df2ux964dux7ea7ux4e3aux542fux53d1ux5f0fux4f30ux8ba1 -->
 
 **关键变化**:
 从''定理（下界）``→''命题（启发式估计------非严格下界）``。
@@ -258,8 +260,8 @@ Fano 不等式在两个世界均达到等号（需特定分布条件）''
 
 </div>
 
-\subsubsection{6. 定理 2.2.1 步骤 4
-是否已限定为贝叶斯最优？}<!-- label: ux5b9aux7406-2.2.1-ux6b65ux9aa4-4-ux662fux5426ux5df2ux9650ux5b9aux4e3aux8d1dux53f6ux65afux6700ux4f18 -->
+#### 6. 定理 2.2.1 步骤 4
+是否已限定为贝叶斯最优？<!-- label: ux5b9aux7406-2.2.1-ux6b65ux9aa4-4-ux662fux5426ux5df2ux9650ux5b9aux4e3aux8d1dux53f6ux65afux6700ux4f18 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1395}}
@@ -305,8 +307,8 @@ ppe\_rigorous\_derivation.md
 
 </div>
 
-\subsubsection{7. Theorem 3'
-破坏方向是否已改为开放问题？}<!-- label: theorem-3-ux7834ux574fux65b9ux5411ux662fux5426ux5df2ux6539ux4e3aux5f00ux653eux95eeux9898 -->
+#### 7. Theorem 3'
+破坏方向是否已改为开放问题？<!-- label: theorem-3-ux7834ux574fux65b9ux5411ux662fux5426ux5df2ux6539ux4e3aux5f00ux653eux95eeux9898 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1395}}
@@ -352,8 +354,8 @@ Theorem 3'条目 &
 
 </div>
 
-\subsubsection{8.
-两份文件之间是否还有符号不一致？}<!-- label: ux4e24ux4efdux6587ux4ef6ux4e4bux95f4ux662fux5426ux8fd8ux6709ux7b26ux53f7ux4e0dux4e00ux81f4 -->
+#### 8.
+两份文件之间是否还有符号不一致？<!-- label: ux4e24ux4efdux6587ux4ef6ux4e4bux95f4ux662fux5426ux8fd8ux6709ux7b26ux53f7ux4e0dux4e00ux81f4 -->
 
 **8a. 一致的项目 ✅**<!-- label: a.-ux4e00ux81f4ux7684ux9879ux76ee -->
 
@@ -414,8 +416,8 @@ d\_min & `L/(2ξ)` & `L/(2ξ)` & ✅
 
 \end{longtable}
 
-\paragraph{8b.
-预期差异（非问题）}<!-- label: b.-ux9884ux671fux5deeux5f02ux975eux95eeux9898 -->
+##### 8b.
+预期差异（非问题）<!-- label: b.-ux9884ux671fux5deeux5f02ux975eux95eeux9898 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
@@ -451,8 +453,8 @@ text & 格式差异 ✅
 
 \end{longtable}
 
-\paragraph{8c. ⚠️
-残余不一致（需关注）}<!-- label: c.-ux6b8bux4f59ux4e0dux4e00ux81f4ux9700ux5173ux6ce8 -->
+##### 8c. ⚠️
+残余不一致（需关注）<!-- label: c.-ux6b8bux4f59ux4e0dux4e00ux81f4ux9700ux5173ux6ce8 -->
 
 **R1. Abstract 中的''充要条件''过度声称**
 

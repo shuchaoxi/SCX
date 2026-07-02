@@ -1,11 +1,7 @@
-\section{Physical Positional Encoding (PPE) 在 SCX
-框架中的严密推导}<!-- label: physical-positional-encoding-ppe-ux5728-scx-ux6846ux67b6ux4e2dux7684ux4e25ux5bc6ux63a8ux5bfc -->
+# Physical Positional Encoding (PPE) 在 SCX
+框架中的严密推导
 
-<div align="center">
-
-\rule{0.5\linewidth}{0.5pt}
-
-</div>
+**Author:** SCX
 
 **文档状态**: 严格数学推导
 
@@ -64,8 +60,8 @@
 \(\tau_s = M \cdot \frac{p_{clean,s} + p_{noisy,s}}{2}\)。标记为噪声当
 \(C(s) \geq \tau_s\)。
 
-\subsubsection{Chernoff-Hoeffding
-基础}<!-- label: chernoff-hoeffding-ux57faux7840 -->
+#### Chernoff-Hoeffding
+基础<!-- label: chernoff-hoeffding-ux57faux7840 -->
 
 Hoeffding 不等式：对 i.i.d. Bernoulli 随机变量
 \(v_1, ..., v_M\)，均值为 \(\mu\)：
@@ -94,8 +90,8 @@ II）：\(P_{H_1}(C(s) < \tau_s) \leq \exp\left(-2M\left(p_{noisy,s} - \frac{\ta
 
 </div>
 
-\section{第 1
-部分：编码函数的严密数学形式化}<!-- label: ux7b2c-1-ux90e8ux5206ux7f16ux7801ux51fdux6570ux7684ux4e25ux5bc6ux6570ux5b66ux5f62ux5f0fux5316 -->
+## 第 1
+部分：编码函数的严密数学形式化<!-- label: ux7b2c-1-ux90e8ux5206ux7f16ux7801ux51fdux6570ux7684ux4e25ux5bc6ux6570ux5b66ux5f62ux5f0fux5316 -->
 
 <div align="center">
 
@@ -103,8 +99,8 @@ II）：\(P_{H_1}(C(s) < \tau_s) \leq \exp\left(-2M\left(p_{noisy,s} - \frac{\ta
 
 </div>
 
-\subsection{1.1
-三种物理位置域的定义}<!-- label: ux4e09ux79cdux7269ux7406ux4f4dux7f6eux57dfux7684ux5b9aux4e49 -->
+### 1.1
+三种物理位置域的定义<!-- label: ux4e09ux79cdux7269ux7406ux4f4dux7f6eux57dfux7684ux5b9aux4e49 -->
 
 **定义 1.1.1（标量位置域------蛋白质序列）**
 
@@ -138,8 +134,8 @@ II）：\(P_{H_1}(C(s) < \tau_s) \leq \exp\left(-2M\left(p_{noisy,s} - \frac{\ta
 
 </div>
 
-\subsection{1.2
-标量位置的正弦编码：最优频率谱}<!-- label: ux6807ux91cfux4f4dux7f6eux7684ux6b63ux5f26ux7f16ux7801ux6700ux4f18ux9891ux7387ux8c31 -->
+### 1.2
+标量位置的正弦编码：最优频率谱<!-- label: ux6807ux91cfux4f4dux7f6eux7684ux6b63ux5f26ux7f16ux7801ux6700ux4f18ux9891ux7387ux8c31 -->
 
 #### 1.2.1 编码定义<!-- label: ux7f16ux7801ux5b9aux4e49 -->
 
@@ -179,8 +175,8 @@ II）：\(P_{H_1}(C(s) < \tau_s) \leq \exp\left(-2M\left(p_{noisy,s} - \frac{\ta
 \(d \to \infty\)
 时，\((2/d)K_{PE}(\Delta) \to \int_0^\infty S(\omega)\cos(\omega\Delta)d\omega = k(\Delta)\)。
 
-\subsubsection{1.2.2
-最优频率谱推导}<!-- label: ux6700ux4f18ux9891ux7387ux8c31ux63a8ux5bfc -->
+#### 1.2.2
+最优频率谱推导<!-- label: ux6700ux4f18ux9891ux7387ux8c31ux63a8ux5bfc -->
 
 **问题**：给定编码维度 \(d\) 和物理区间长度 \(L\)，如何选择
 \(\{\lambda_j\}_{j=0}^{d/2-1}\) 使得编码''最优''？
@@ -281,8 +277,8 @@ Fourier 系数控制。与原版本不同，此处使用规范化编码核
 \(k(\Delta)\) 与逼近量处于同一量级（均为 \(O(1)\)），而非
 \(K_{PE}(0)=d/2\) 与 \(k(0)=1\) 的跨量级比较。\(\square\)
 
-\subsubsection{1.2.3 正弦编码的 Lipschitz
-连续性}<!-- label: ux6b63ux5f26ux7f16ux7801ux7684-lipschitz-ux8fdeux7eedux6027 -->
+#### 1.2.3 正弦编码的 Lipschitz
+连续性<!-- label: ux6b63ux5f26ux7f16ux7801ux7684-lipschitz-ux8fdeux7eedux6027 -->
 
 **定理 1.2.3（正弦 PPE 的 Lipschitz 常数）**：标量正弦编码
 \(PE_{scalar}: [0, L] \to \mathbb{R}^d\) 是 Lipschitz
@@ -323,8 +319,8 @@ Fourier 系数控制。与原版本不同，此处使用规范化编码核
 
 </div>
 
-\subsection{1.3 3D
-旋转编码：旋转矩阵参数化}<!-- label: d-ux65cbux8f6cux7f16ux7801ux65cbux8f6cux77e9ux9635ux53c2ux6570ux5316 -->
+### 1.3 3D
+旋转编码：旋转矩阵参数化<!-- label: d-ux65cbux8f6cux7f16ux7801ux65cbux8f6cux77e9ux9635ux53c2ux6570ux5316 -->
 
 #### 1.3.1 编码定义<!-- label: ux7f16ux7801ux5b9aux4e49-1 -->
 
@@ -351,8 +347,8 @@ Fourier 系数控制。与原版本不同，此处使用规范化编码核
 \((4,5)\)（分别对应 \(x, y, z\) 轴）。剩余的 \(d-6\) 个维度被
 \(\mathbf{R}_x, \mathbf{R}_y, \mathbf{R}_z\) 不变地保留（单位矩阵）。
 
-\subsubsection{1.3.2
-旋转矩阵的参数化------群论基础}<!-- label: ux65cbux8f6cux77e9ux9635ux7684ux53c2ux6570ux5316ux7fa4ux8bbaux57faux7840 -->
+#### 1.3.2
+旋转矩阵的参数化------群论基础<!-- label: ux65cbux8f6cux77e9ux9635ux7684ux53c2ux6570ux5316ux7fa4ux8bbaux57faux7840 -->
 
 **命题 1.3.1（\(\mathbb{R}^3 \to SO(d)\) 的嵌入）**：映射
 \(\mathbf{p} \mapsto \mathbf{R}(\mathbf{p})\) 是 \(\mathbb{R}^3\) 到
@@ -377,8 +373,8 @@ $$
 
 （第三步利用了交换性。）
 
-\subsubsection{1.3.3
-内积结构（相对位置编码）}<!-- label: ux5185ux79efux7ed3ux6784ux76f8ux5bf9ux4f4dux7f6eux7f16ux7801 -->
+#### 1.3.3
+内积结构（相对位置编码）<!-- label: ux5185ux79efux7ed3ux6784ux76f8ux5bf9ux4f4dux7f6eux7f16ux7801 -->
 
 对任意两个位置 \(\mathbf{p}, \mathbf{q} \in \mathbb{R}^3\)：
 
@@ -401,8 +397,8 @@ $$
 编码的内积**仅依赖于相对位置**
 \(\Delta\mathbf{p}\)，满足**平移不变性**。
 
-\subsubsection{1.3.4 旋转编码的 Lipschitz
-连续性}<!-- label: ux65cbux8f6cux7f16ux7801ux7684-lipschitz-ux8fdeux7eedux6027 -->
+#### 1.3.4 旋转编码的 Lipschitz
+连续性<!-- label: ux65cbux8f6cux7f16ux7801ux7684-lipschitz-ux8fdeux7eedux6027 -->
 
 **定理 1.3.1（旋转编码的 Lipschitz 常数）**：映射
 \(PE_{rot}: \mathbb{R}^3 \to \mathbb{R}^d\) 是 Lipschitz
@@ -459,8 +455,8 @@ $$
 
 </div>
 
-\subsection{1.4 统一 Lipschitz
-连续性定理}<!-- label: ux7edfux4e00-lipschitz-ux8fdeux7eedux6027ux5b9aux7406 -->
+### 1.4 统一 Lipschitz
+连续性定理<!-- label: ux7edfux4e00-lipschitz-ux8fdeux7eedux6027ux5b9aux7406 -->
 
 **定理 1.4.1（PPE 的统一 Lipschitz 性质）**：设
 \(PE: \mathcal{P} \to \mathbb{R}^{d_{pe}}\)
@@ -510,8 +506,8 @@ $$
 
 </div>
 
-\section{第 2 部分：Theorem 1
-的严格修正}<!-- label: ux7b2c-2-ux90e8ux5206theorem-1-ux7684ux4e25ux683cux4feeux6b63 -->
+## 第 2 部分：Theorem 1
+的严格修正<!-- label: ux7b2c-2-ux90e8ux5206theorem-1-ux7684ux4e25ux683cux4feeux6b63 -->
 
 <div align="center">
 
@@ -519,8 +515,8 @@ $$
 
 </div>
 
-\subsection{2.1
-修正的检测边际------精确表达式}<!-- label: ux4feeux6b63ux7684ux68c0ux6d4bux8fb9ux9645ux7cbeux786eux8868ux8fbeux5f0f -->
+### 2.1
+修正的检测边际------精确表达式<!-- label: ux4feeux6b63ux7684ux68c0ux6d4bux8fb9ux9645ux7cbeux786eux8868ux8fbeux5f0f -->
 
 #### 2.1.1 设定<!-- label: ux8bbeux5b9a -->
 
@@ -855,8 +851,8 @@ Fano 的逆形式或强 Fano 不等式），这需要关于分布的具体假设
 
 </div>
 
-\subsection{2.5 空间局部性正则化------CC
-审计报告结果的修正版}<!-- label: ux7a7aux95f4ux5c40ux90e8ux6027ux6b63ux5219ux5316cc-ux5ba1ux8ba1ux62a5ux544aux7ed3ux679cux7684ux4feeux6b63ux7248 -->
+### 2.5 空间局部性正则化------CC
+审计报告结果的修正版<!-- label: ux7a7aux95f4ux5c40ux90e8ux6027ux6b63ux5219ux5316cc-ux5ba1ux8ba1ux62a5ux544aux7ed3ux679cux7684ux4feeux6b63ux7248 -->
 
 **定理 2.5.1（\(\delta_s^{PE}\) 的空间光滑性）**：设 PE 满足
 Lipschitz 条件（常数为 \(L_{PE}\)），且专家 \(E_m\)
@@ -905,8 +901,8 @@ $$
 
 </div>
 
-\section{第 3 部分：Theorem 2
-的精确修正}<!-- label: ux7b2c-3-ux90e8ux5206theorem-2-ux7684ux7cbeux786eux4feeux6b63 -->
+## 第 3 部分：Theorem 2
+的精确修正<!-- label: ux7b2c-3-ux90e8ux5206theorem-2-ux7684ux7cbeux786eux4feeux6b63 -->
 
 <div align="center">
 
@@ -917,8 +913,8 @@ $$
 ### \texorpdfstring{3.1 编码不完美度 \(\varepsilon_{PE\)
 的精确信息论定义}{3.1 编码不完美度 \ varepsilon\_\{\ text\{PE\}\} 的精确信息论定义}}<!-- label: ux7f16ux7801ux4e0dux5b8cux7f8eux5ea6-varepsilon_textpe-ux7684ux7cbeux786eux4fe1ux606fux8bbaux5b9aux4e49 -->
 
-\subsubsection{3.1.1
-条件互信息的链式分解}<!-- label: ux6761ux4ef6ux4e92ux4fe1ux606fux7684ux94feux5f0fux5206ux89e3 -->
+#### 3.1.1
+条件互信息的链式分解<!-- label: ux6761ux4ef6ux4e92ux4fe1ux606fux7684ux94feux5f0fux5206ux89e3 -->
 
 设随机变量： - \(X\)：原始特征（状态原子 \(S\) 或其表示 \(\phi(S)\)） -
 \(P\)：物理位置（完整信息） - \(PE(P)\)：编码后的物理位置 -
@@ -931,8 +927,8 @@ $$
 （即
 \(Y \perp\!\!\!\perp PE(P) \mid (X, P)\)------编码只丢失信息，不创造信息。）
 
-\subsubsection{3.1.2
-编码不完美度的定义}<!-- label: ux7f16ux7801ux4e0dux5b8cux7f8eux5ea6ux7684ux5b9aux4e49 -->
+#### 3.1.2
+编码不完美度的定义<!-- label: ux7f16ux7801ux4e0dux5b8cux7f8eux5ea6ux7684ux5b9aux4e49 -->
 
 **定义 3.1（编码不完美度
 \(\varepsilon_{PE}\)------信息论定义）**：
@@ -946,8 +942,8 @@ $$
 3. 
 4. 
 
-\subsubsection{3.1.3
-与编码维度的关系}<!-- label: ux4e0eux7f16ux7801ux7ef4ux5ea6ux7684ux5173ux7cfb -->
+#### 3.1.3
+与编码维度的关系<!-- label: ux4e0eux7f16ux7801ux7ef4ux5ea6ux7684ux5173ux7cfb -->
 
 **命题 3.1（维度-信息权衡）**：对正弦编码（\(d\) 维）和 Laplace
 相关核（相关长度 \(\xi\)）：
@@ -969,8 +965,8 @@ $$
 
 </div>
 
-\subsection{3.2 修正的 Theorem
-2------精确陈述和证明}<!-- label: ux4feeux6b63ux7684-theorem-2ux7cbeux786eux9648ux8ff0ux548cux8bc1ux660e -->
+### 3.2 修正的 Theorem
+2------精确陈述和证明<!-- label: ux4feeux6b63ux7684-theorem-2ux7cbeux786eux9648ux8ff0ux548cux8bc1ux660e -->
 
 **Theorem 2'（不完美 PPE 下的弱特征失效上界------精确修正）**
 
@@ -1083,8 +1079,8 @@ Kraskov-Stögbauer-Grassberger (KSG)
 \(X\)，收敛较慢，但 \(\varepsilon_{PE}\)
 本身是**差值**，两个估计器共享相同的偏差，差值估计可能比单独估计更准确（偏差抵消）。
 
-\subsubsection{3.3.2 下界估计（避免高维
-KSG）}<!-- label: ux4e0bux754cux4f30ux8ba1ux907fux514dux9ad8ux7ef4-ksg -->
+#### 3.3.2 下界估计（避免高维
+KSG）<!-- label: ux4e0bux754cux4f30ux8ba1ux907fux514dux9ad8ux7ef4-ksg -->
 
 对于高维 \(X\)，KSG
 估计可能不准确。替代方案：使用**预测性能差异**作为
@@ -1118,8 +1114,8 @@ Theorem 2 的上界。
 
 </div>
 
-\section{第 4 部分：Theorem 3
-的修正（最重要的部分）}<!-- label: ux7b2c-4-ux90e8ux5206theorem-3-ux7684ux4feeux6b63ux6700ux91cdux8981ux7684ux90e8ux5206 -->
+## 第 4 部分：Theorem 3
+的修正（最重要的部分）<!-- label: ux7b2c-4-ux90e8ux5206theorem-3-ux7684ux4feeux6b63ux6700ux91cdux8981ux7684ux90e8ux5206 -->
 
 <div align="center">
 
@@ -1127,8 +1123,8 @@ Theorem 2 的上界。
 
 </div>
 
-\subsection{4.1 原 Theorem 3
-的精确定理陈述}<!-- label: ux539f-theorem-3-ux7684ux7cbeux786eux5b9aux7406ux9648ux8ff0 -->
+### 4.1 原 Theorem 3
+的精确定理陈述<!-- label: ux539f-theorem-3-ux7684ux7cbeux786eux5b9aux7406ux9648ux8ff0 -->
 
 **Theorem 3（原始------噪声与困难样本的不可区分性）**：
 
@@ -1150,8 +1146,8 @@ Theorem 2 的上界。
 
 </div>
 
-\subsection{4.2 学习型 PE
-如何破坏不可区分性------精确条件}<!-- label: ux5b66ux4e60ux578b-pe-ux5982ux4f55ux7834ux574fux4e0dux53efux533aux5206ux6027ux7cbeux786eux6761ux4ef6 -->
+### 4.2 学习型 PE
+如何破坏不可区分性------精确条件<!-- label: ux5b66ux4e60ux578b-pe-ux5982ux4f55ux7834ux574fux4e0dux53efux533aux5206ux6027ux7cbeux786eux6761ux4ef6 -->
 
 #### 4.2.1 设定<!-- label: ux8bbeux5b9a-1 -->
 
@@ -1161,8 +1157,8 @@ Theorem 2 的上界。
 - 
 - 
 
-\subsubsection{4.2.2 固定 PE
-的情况（Trivial）}<!-- label: ux56faux5b9a-pe-ux7684ux60c5ux51b5trivial -->
+#### 4.2.2 固定 PE
+的情况（Trivial）<!-- label: ux56faux5b9a-pe-ux7684ux60c5ux51b5trivial -->
 
 **命题 4.1（固定 PE 保持 Theorem 3）**：若
 \(PE: \mathcal{P} \to \mathbb{R}^{d_{pe}}\)
@@ -1178,8 +1174,8 @@ Theorem 2 的上界。
 \(P\)
 由物理结构决定，独立于标签生成过程的世界选择）。因此增强后的联合分布也相同。\(\square\)
 
-\subsubsection{4.2.3 学习型 PE
-的情况（关键）}<!-- label: ux5b66ux4e60ux578b-pe-ux7684ux60c5ux51b5ux5173ux952e -->
+#### 4.2.3 学习型 PE
+的情况（关键）<!-- label: ux5b66ux4e60ux578b-pe-ux7684ux60c5ux51b5ux5173ux952e -->
 
 **定理 4.1（学习型 PE 破坏 Theorem 3 的精确条件）**：
 
@@ -1207,8 +1203,8 @@ Theorem 2 的上界。
 这意味着：学习型 PE
 破坏不可区分性的机制**不是**来自标签差异（因为标签相同），而是来自模型对''如何去学习''的差异。让我精确分析。
 
-\subsubsection{4.2.4
-精确机制：表征漂移}<!-- label: ux7cbeux786eux673aux5236ux8868ux5f81ux6f02ux79fb -->
+#### 4.2.4
+精确机制：表征漂移<!-- label: ux7cbeux786eux673aux5236ux8868ux5f81ux6f02ux79fb -->
 
 **关键洞察**：在 Theorem 3
 的构造中，\(P_{W_A}(X, Y) = P_{W_B}(X, Y)\)
@@ -1253,8 +1249,8 @@ Theorem 2 的上界。
 PE 参数 \(\theta\)
 会通过泛化行为反映这些差异------即使训练数据看起来相同。
 
-\subsubsection{4.2.5
-精确可区分性条件------最终形式}<!-- label: ux7cbeux786eux53efux533aux5206ux6027ux6761ux4ef6ux6700ux7ec8ux5f62ux5f0f -->
+#### 4.2.5
+精确可区分性条件------最终形式<!-- label: ux7cbeux786eux53efux533aux5206ux6027ux6761ux4ef6ux6700ux7ec8ux5f62ux5f0f -->
 
 让我从更基本的层面重新分析。
 
@@ -1343,8 +1339,8 @@ $$
 
 </div>
 
-\subsection{4.3
-构造性证明：最小示例}<!-- label: ux6784ux9020ux6027ux8bc1ux660eux6700ux5c0fux793aux4f8b -->
+### 4.3
+构造性证明：最小示例<!-- label: ux6784ux9020ux6027ux8bc1ux660eux6700ux5c0fux793aux4f8b -->
 
 #### 4.3.1 构造<!-- label: ux6784ux9020 -->
 
@@ -1397,8 +1393,8 @@ $$
 中，\(P = X\)，\(Y_{true} = X\)，噪声以 20\% 概率翻转。在 \(W_B\)
 中，\(P = X\)，但 \(Y\) 直接由带噪声的通道生成（无隐藏层）。
 
-\subsubsection{4.3.2 学习型 PE
-的可区分性}<!-- label: ux5b66ux4e60ux578b-pe-ux7684ux53efux533aux5206ux6027 -->
+#### 4.3.2 学习型 PE
+的可区分性<!-- label: ux5b66ux4e60ux578b-pe-ux7684ux53efux533aux5206ux6027 -->
 
 引入一个简单的学习型
 PE：\(PE_\theta(p) = \theta \cdot p\)（标量编码，\(\theta \in \mathbb{R}\)
@@ -1430,8 +1426,8 @@ PE：\(PE_\theta(p) = \theta \cdot p\)（标量编码，\(\theta \in \mathbb{R}\
 **这正是 Theorem 3
 的精髓**：如果观测分布完全相同，任何算法都不能区分。
 
-\subsubsection{4.3.3 开放问题：学习型 PE
-真正能区分的条件}<!-- label: ux5f00ux653eux95eeux9898ux5b66ux4e60ux578b-pe-ux771fux6b63ux80fdux533aux5206ux7684ux6761ux4ef6 -->
+#### 4.3.3 开放问题：学习型 PE
+真正能区分的条件<!-- label: ux5f00ux653eux95eeux9898ux5b66ux4e60ux578b-pe-ux771fux6b63ux80fdux533aux5206ux7684ux6761ux4ef6 -->
 
 **此最小示例实际上证明了 Theorem 3
 的鲁棒性，而非其脆弱性**：在这个构造中，即使是学习型 PE
@@ -1466,8 +1462,8 @@ Theorem 3 的构造中被满足，目前没有构造性证明。
 
 </div>
 
-\subsection{4.4 修正后的 Theorem
-3'------完整陈述}<!-- label: ux4feeux6b63ux540eux7684-theorem-3ux5b8cux6574ux9648ux8ff0 -->
+### 4.4 修正后的 Theorem
+3'------完整陈述<!-- label: ux4feeux6b63ux540eux7684-theorem-3ux5b8cux6574ux9648ux8ff0 -->
 
 **Theorem 3'（不可区分性的条件保持------修正版）**：
 
@@ -1502,8 +1498,8 @@ $$
 
 </div>
 
-\subsection{4.5 与 CC 审计报告 §2.5
-的比较}<!-- label: ux4e0e-cc-ux5ba1ux8ba1ux62a5ux544a-2.5-ux7684ux6bd4ux8f83 -->
+### 4.5 与 CC 审计报告 §2.5
+的比较<!-- label: ux4e0e-cc-ux5ba1ux8ba1ux62a5ux544a-2.5-ux7684ux6bd4ux8f83 -->
 
 CC 审计报告对 Theorem 3 的分析是正确的（固定 PE 保持不可区分性，学习型
 PE 可能破坏），但遗漏了以下关键点：

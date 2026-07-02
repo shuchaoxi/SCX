@@ -1,21 +1,6 @@
-<div align="center">
+# 引言与框架背景 Introduction and Framework Background
 
-\fbox{\parbox{0.92\textwidth}{
-
-**摘要 Abstract**
-
-本文为SCX平等论框架中的社会推论模块定义势能算子 $\Sop$ 的操作形式。
-$\Sop$ 将社会实体映射为标量势能值，涵盖三个维度：
-**国家势能**（人均GDP / 基尼系数 / 预期寿命）、
-**财富势能**（净资产分位数 / 收入分位数）、
-**认知势能**（教育年限 / 论文引用 / 抽象思维测试）。
-每个算子满足四个条件：可量化、可审计、满足规范固定条件 $\sum_m g_m = 0$、
-以及跨域可比性。本文在SCX框架内严格形式化这些定义，并提供审计协议与实证校准路径。
-
-*We define the operational form of the potential operator $\Sop$ for the social-inference module of the SCX egalitarian framework. $\Sop$ maps social entities to scalar potential values across three dimensions: **national potential** (per-capita GDP / Gini coefficient / life expectancy), **wealth potential** (net-asset quantile / income quantile), and **cognitive potential** (years of education / citation count / abstract-thinking test). Each operator satisfies four conditions: quantifiability, auditability, the gauge-fixing condition $\sum_m g_m = 0$, and cross-domain comparability. We formalize these definitions rigorously within the SCX framework and provide audit protocols and empirical calibration paths.*
-}}
-
-</div>
+**Author:** SCX
 
 ---
 

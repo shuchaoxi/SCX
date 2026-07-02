@@ -1,8 +1,6 @@
-<div align="center">
+# 基础：SCX 规范理论与 $\sum g = 0$
 
-[Diagram omitted — see original .tex]
-
-</div>
+**Author:** SCX
 
 <div align="center">
 

@@ -1,3 +1,7 @@
+# 引言：当数学框架遇见教育哲学
+
+**Author:** SCX
+
 *Abstract:*
 
 SCX（State-Conditioned eXpertise）框架最初设计用于多专家标签噪声检测，但其核心数学结构

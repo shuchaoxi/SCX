@@ -1,10 +1,6 @@
-<div align="center">
+# 导论：超越阿贝尔平移规范 / Introduction: Beyond Abelian Translation Gauge
 
-**版本：** v2.0 — 形式化完善版 \quad | \quad
-**状态：** 预印本 \quad | \quad
-**分类：** SCX理论体系 — 规范场论卷·形式化篇
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

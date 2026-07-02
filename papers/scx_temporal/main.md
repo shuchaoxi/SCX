@@ -1,3 +1,7 @@
+# 引言：时间进入SCX
+
+**Author:** SCX
+
 *Abstract:*
 
 SCX框架的核心动力学由Spring SE-1驱动——状态空间上的Robbins-Monro随机梯度下降。

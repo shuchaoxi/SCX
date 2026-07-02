@@ -1,3 +1,8 @@
+# Theorem 2: Model Misspecification vs.\ Structural Break
+Unidentifiability
+
+**Author:** SCX
+
 *Abstract:*
 
 We present **SCX-Economics**, a formal framework for audited macroeconomic
@@ -557,8 +562,8 @@ This result provides formal justification for **diversifying across
 model families** (DSGE, VAR, ABM, ML) rather than adding variants within
 a single family --- a key principle of the SCX architecture.
 
-\section{Theorem 2: Model Misspecification vs.\ Structural Break
-Unidentifiability}
+## Theorem 2: Model Misspecification vs.\ Structural Break
+Unidentifiability
 <!-- label: sec:theorem2 -->
 
 ### Motivation: The Lucas Critique
@@ -1049,8 +1054,8 @@ Theorem [ref] has several practical implications:
 4. **Connection to Lucas (1976):** The original Lucas
 5. **Causal claims require declared identification:**
 
-\section{Theorem 3: The Cercis Score for Macroeconomic Forecast
-Evaluation}
+## Theorem 3: The Cercis Score for Macroeconomic Forecast
+Evaluation
 <!-- label: sec:theorem3 -->
 
 ### Motivation

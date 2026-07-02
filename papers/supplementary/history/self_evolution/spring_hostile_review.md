@@ -1,11 +1,7 @@
-\section{Spring
-自进化收敛分析的敌对审稿报告}<!-- label: spring-ux81eaux8fdbux5316ux6536ux655bux5206ux6790ux7684ux654cux5bf9ux5ba1ux7a3fux62a5ux544a -->
+# Spring
+自进化收敛分析的敌对审稿报告
 
-<div align="center">
-
-\rule{0.5\linewidth}{0.5pt}
-
-</div>
+**Author:** SCX
 
 **审稿定位**: 非凸优化方向的严苛审稿人
 
@@ -40,11 +36,11 @@ Spring 动力学中推导出的。以下是逐定理的解剖。
 
 </div>
 
-\subsection{一、Theorem 1.2 的 O(log T/√T) 收敛率------Ghadimi-Lan
-条件的全面攻击}<!-- label: ux4e00theorem-1.2-ux7684-olog-tt-ux6536ux655bux7387ghadimi-lan-ux6761ux4ef6ux7684ux5168ux9762ux653bux51fb -->
+### 一、Theorem 1.2 的 O(log T/√T) 收敛率------Ghadimi-Lan
+条件的全面攻击<!-- label: ux4e00theorem-1.2-ux7684-olog-tt-ux6536ux655bux7387ghadimi-lan-ux6761ux4ef6ux7684ux5168ux9762ux653bux51fb -->
 
-\subsubsection{1.1 Ghadimi-Lan
-框架的适用性审查}<!-- label: ghadimi-lan-ux6846ux67b6ux7684ux9002ux7528ux6027ux5ba1ux67e5 -->
+#### 1.1 Ghadimi-Lan
+框架的适用性审查<!-- label: ghadimi-lan-ux6846ux67b6ux7684ux9002ux7528ux6027ux5ba1ux67e5 -->
 
 Theorem 1.2 声称使用了''标准非凸 SGD 分析''。文献中引用 Ghadimi \& Lan
 (2013)，但未仔细验证其条件是否在 Spring 设置下成立。
@@ -56,9 +52,9 @@ Ghadimi-Lan (2013, SIAM J. Optim.) 的核心假设： - **(GL1)** \(f\)
 \(\mathbb{E}[\|G(x,\xi) - \nabla f(x)\|^2] \leq \sigma^2\) -
 **(GL3)** \(f\) 下方有界：\(\inf_x f(x) > -\infty\)
 
-\subsubsection{\texorpdfstring{1.2 攻击点 \#1：全局 \(L\)-光滑性在
+#### \texorpdfstring{1.2 攻击点 \#1：全局 \(L\)-光滑性在
 Spring
-中不成立（或常数爆炸）}{1.2 攻击点 \#1：全局 L-光滑性在 Spring 中不成立（或常数爆炸）}}<!-- label: ux653bux51fbux70b9-1ux5168ux5c40-l-ux5149ux6ed1ux6027ux5728-spring-ux4e2dux4e0dux6210ux7acbux6216ux5e38ux6570ux7206ux70b8 -->
+中不成立（或常数爆炸）{1.2 攻击点 \#1：全局 L-光滑性在 Spring 中不成立（或常数爆炸）}}<!-- label: ux653bux51fbux70b9-1ux5168ux5c40-l-ux5149ux6ed1ux6027ux5728-spring-ux4e2dux4e0dux6210ux7acbux6216ux5e38ux6570ux7206ux70b8 -->
 
 Spring 损失景观具有 \(K!\)
 个排列对称性（§1.2）。考虑两个位于不同排列盆地的点 \(\theta\) 和
@@ -76,9 +72,9 @@ Lipschitz 常数。
 **文档中无任何关于 \(L\) 的量级估计。** 这是严重遗漏------没有
 \(L\) 的估计，\(O(\log T/\sqrt{T})\) 的常数可能是指数级巨大的。
 
-\subsubsection{\texorpdfstring{1.3 攻击点 \#2：\(\log T\)
+#### \texorpdfstring{1.3 攻击点 \#2：\(\log T\)
 因子是自找的------Ghadimi-Lan
-原本不需要它}{1.3 攻击点 \#2：\ log T 因子是自找的------Ghadimi-Lan 原本不需要它}}<!-- label: ux653bux51fbux70b9-2log-t-ux56e0ux5b50ux662fux81eaux627eux7684ghadimi-lan-ux539fux672cux4e0dux9700ux8981ux5b83 -->
+原本不需要它{1.3 攻击点 \#2：\ log T 因子是自找的------Ghadimi-Lan 原本不需要它}}<!-- label: ux653bux51fbux70b9-2log-t-ux56e0ux5b50ux662fux81eaux627eux7684ghadimi-lan-ux539fux672cux4e0dux9700ux8981ux5b83 -->
 
 Ghadimi-Lan (2013) 的标准结果：取**常数步长**
 \(\alpha_t = \alpha = \sqrt{\frac{2(f(x_1)-f^*)}{L\sigma^2 T}}\)，得到：
@@ -98,8 +94,8 @@ SGD 中已经给出 \(O(1/\sqrt{T})\) 的速率（无
 **要么文档不知道 Ghadimi-Lan
 的常数步长结果（引用但未正确使用），要么故意使用了更慢的调度来使结果看起来更''现实''------两者都不可接受。**
 
-\subsubsection{1.4 攻击点
-\#3：有界方差假设与排列对称性的张力}<!-- label: ux653bux51fbux70b9-3ux6709ux754cux65b9ux5deeux5047ux8bbeux4e0eux6392ux5217ux5bf9ux79f0ux6027ux7684ux5f20ux529b -->
+#### 1.4 攻击点
+\#3：有界方差假设与排列对称性的张力<!-- label: ux653bux51fbux70b9-3ux6709ux754cux65b9ux5deeux5047ux8bbeux4e0eux6392ux5217ux5bf9ux79f0ux6027ux7684ux5f20ux529b -->
 
 \(\mathbb{E}[\|\zeta_t\|^2 | \mathcal{F}_t] \leq \sigma^2\)
 假设梯度噪声有均匀上界。在排列对称盆地的边界处，对于来自不同盆地的样本，mini-batch
@@ -115,8 +111,8 @@ full-batch 梯度之差）的方差可能**在盆地边界处发散**。
 的陈述和证明中并未体现这一限制。定理标注为 `{[}严格证明{]}`
 但没有注明噪声方差均匀性的隐式假设可能不成立。
 
-\subsubsection{1.5 攻击点 \#4：梯度范数收敛 ≠
-损失收敛}<!-- label: ux653bux51fbux70b9-4ux68afux5ea6ux8303ux6570ux6536ux655b-ux635fux5931ux6536ux655b -->
+#### 1.5 攻击点 \#4：梯度范数收敛 ≠
+损失收敛<!-- label: ux653bux51fbux70b9-4ux68afux5ea6ux8303ux6570ux6536ux655b-ux635fux5931ux6536ux655b -->
 
 文档自己承认了这一点（``诚实暴击''），但承认的力度不够。在高度非凸的景观中，\(\|\nabla f\| \approx 0\)
 的点包括： - 局部极小值（可能很浅，损失很高） - 鞍点（损失可能任意高） -
@@ -126,8 +122,8 @@ full-batch 梯度之差）的方差可能**在盆地边界处发散**。
 个等价的全局极小值------但也有指数多的鞍点连接它们。Theorem 1.2
 的界不能区分''收敛到全局极小''和''卡在鞍点''。文档说这是''梯度范数的界，不一定意味着损失函数值收敛''------这应该写进定理陈述中，而不是放在后面的''诚实暴击''里。
 
-\subsubsection{1.6 对 Theorem 1.2
-的判决}<!-- label: ux5bf9-theorem-1.2-ux7684ux5224ux51b3 -->
+#### 1.6 对 Theorem 1.2
+的判决<!-- label: ux5bf9-theorem-1.2-ux7684ux5224ux51b3 -->
 
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
@@ -157,8 +153,8 @@ SGD 分析确实严格），但这是对**某个不一定是 Spring
 
 </div>
 
-\subsection{二、Theorem 1.4
-的信息论下界------构造性示例的逐行攻击}<!-- label: ux4e8ctheorem-1.4-ux7684ux4fe1ux606fux8bbaux4e0bux754cux6784ux9020ux6027ux793aux4f8bux7684ux9010ux884cux653bux51fb -->
+### 二、Theorem 1.4
+的信息论下界------构造性示例的逐行攻击<!-- label: ux4e8ctheorem-1.4-ux7684ux4fe1ux606fux8bbaux4e0bux754cux6784ux9020ux6027ux793aux4f8bux7684ux9010ux884cux653bux51fb -->
 
 #### \texorpdfstring{2.1 攻击点 \#1：\(\sigma^2/\sqrt{T\)
 中的 \(T^{1/4}\)
@@ -186,8 +182,8 @@ SGD 分析确实严格），但这是对**某个不一定是 Spring
 整个噪声驱动位移的论证依赖于这个量级，因此下界中 \(\sigma^2/\sqrt{T}\)
 项的推导是不可靠的。
 
-\subsubsection{2.2 攻击点 \#2：1D 构造不能代表高维 Spring
-景观}<!-- label: ux653bux51fbux70b9-21d-ux6784ux9020ux4e0dux80fdux4ee3ux8868ux9ad8ux7ef4-spring-ux666fux89c2 -->
+#### 2.2 攻击点 \#2：1D 构造不能代表高维 Spring
+景观<!-- label: ux653bux51fbux70b9-21d-ux6784ux9020ux4e0dux80fdux4ee3ux8868ux9ad8ux7ef4-spring-ux666fux89c2 -->
 
 文档构造了 \(f(x) = \sin^2(\pi K x / 2)\) 在 \([0,1]\)
 上的一维函数，声称''模拟了 \(K\) 个头在排列下的等价驻点''。
@@ -206,8 +202,8 @@ SGD 分析确实严格），但这是对**某个不一定是 Spring
 中的极小值数量（\(K!\)）不在同一量级。** 因此该下界的
 \(K\)-依赖性未经验证。
 
-\subsubsection{2.3 攻击点 \#3：函数族是否在 Spring
-的假设类内？}<!-- label: ux653bux51fbux70b9-3ux51fdux6570ux65cfux662fux5426ux5728-spring-ux7684ux5047ux8bbeux7c7bux5185 -->
+#### 2.3 攻击点 \#3：函数族是否在 Spring
+的假设类内？<!-- label: ux653bux51fbux70b9-3ux51fdux6570ux65cfux662fux5426ux5728-spring-ux7684ux5047ux8bbeux7c7bux5185 -->
 
 \(f(x) = \sin^2(\pi K x / 2)\) 是： - 光滑的（\(C^\infty\)）✓ - 周期的
 ✗（Spring
@@ -219,8 +215,8 @@ Weyl chambers 描述的复杂几何） - 下方有界 ✓ -
 个极小值分布在 \(O(K d_s^2)\)
 维的空间中，且极小值之间的连接结构涉及复杂的鞍点网络。用一维周期函数来''下界''这样一个复杂的景观，其论证需要一个**维度约简引理**来形式化------文档没有提供。
 
-\subsubsection{\texorpdfstring{2.4 攻击点 \#4：下界
-\(\Omega(\min(\sigma^2/\sqrt{T}, 1/T))\) 的 \(\min\)
+#### \texorpdfstring{2.4 攻击点 \#4：下界
+\(\Omega(\min(\sigma^2/\sqrt{T, 1/T))\) 的 \(\min\)
 结构可疑}{2.4 攻击点 \#4：下界 \ Omega(\ min(\ sigma\^{}2/\ sqrt\{T\}, 1/T)) 的 \ min 结构可疑}}<!-- label: ux653bux51fbux70b9-4ux4e0bux754c-omegaminsigma2sqrtt-1t-ux7684-min-ux7ed3ux6784ux53efux7591 -->
 
 对于高噪声 \((\sigma^2 \gg 1/\sqrt{T})\)，下界为
@@ -237,8 +233,8 @@ Weyl chambers 描述的复杂几何） - 下方有界 ✓ -
 这个结构的正确性严重依赖于 §2.1
 中的量级分析------而我们已经发现那里有错。
 
-\subsubsection{2.5 对 Theorem 1.4
-的判决}<!-- label: ux5bf9-theorem-1.4-ux7684ux5224ux51b3 -->
+#### 2.5 对 Theorem 1.4
+的判决<!-- label: ux5bf9-theorem-1.4-ux7684ux5224ux51b3 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4286}}
@@ -278,11 +274,11 @@ Weyl chambers 描述的复杂几何） - 下方有界 ✓ -
 
 </div>
 
-\subsection{三、Theorem 2.1 遗憾上界------Exp3
-算法适配的全面审查}<!-- label: ux4e09theorem-2.1-ux9057ux61beux4e0aux754cexp3-ux7b97ux6cd5ux9002ux914dux7684ux5168ux9762ux5ba1ux67e5 -->
+### 三、Theorem 2.1 遗憾上界------Exp3
+算法适配的全面审查<!-- label: ux4e09theorem-2.1-ux9057ux61beux4e0aux754cexp3-ux7b97ux6cd5ux9002ux914dux7684ux5168ux9762ux5ba1ux67e5 -->
 
-\subsubsection{3.1 攻击点 \#1：动作空间的可变性------Exp3
-标准分析的隐藏裂痕}<!-- label: ux653bux51fbux70b9-1ux52a8ux4f5cux7a7aux95f4ux7684ux53efux53d8ux6027exp3-ux6807ux51c6ux5206ux6790ux7684ux9690ux85cfux88c2ux75d5 -->
+#### 3.1 攻击点 \#1：动作空间的可变性------Exp3
+标准分析的隐藏裂痕<!-- label: ux653bux51fbux70b9-1ux52a8ux4f5cux7a7aux95f4ux7684ux53efux53d8ux6027exp3-ux6807ux51c6ux5206ux6790ux7684ux9690ux85cfux88c2ux75d5 -->
 
 Exp3 的标准遗憾界（Auer et al., 2002）假设**固定的动作空间**（\(N\)
 个臂，始终可用）。Spring 的记忆库动态带来两个问题：
@@ -300,8 +296,8 @@ Exp3 的标准遗憾界（Auer et al., 2002）假设**固定的动作空间**（
 \(\mathcal{M}_{t+1}^{dormant}\) 时，Exp3
 需要为它初始化一个权重。文档没有指定初始化规则。如果初始权重过小（相对于已有臂），新臂在很长时间内不会被选择------这增加了遗憾。如果初始权重过大，它可能挤占已有臂的选择概率。
 
-\subsubsection{3.2 攻击点 \#2：对抗性假设------对手是否是 Oblivious
-的？}<!-- label: ux653bux51fbux70b9-2ux5bf9ux6297ux6027ux5047ux8bbeux5bf9ux624bux662fux5426ux662f-oblivious-ux7684 -->
+#### 3.2 攻击点 \#2：对抗性假设------对手是否是 Oblivious
+的？<!-- label: ux653bux51fbux70b9-2ux5bf9ux6297ux6027ux5047ux8bbeux5bf9ux624bux662fux5426ux662f-oblivious-ux7684 -->
 
 文档声称记忆库动态产生**对抗性**奖励（§2.2.1）： \textgreater{}
 ``由于记忆库动态取决于历史选择，奖励序列可能是对抗性的（而非随机
@@ -332,8 +328,8 @@ Cercis 分数或检测边际 \(\Delta_s\) 的估计）``。但 \(\Delta_s\)
 \(\hat_s\) 替代 \(\Delta_s\)
 引入了估计误差，这在遗憾界中没有被建模。
 
-\subsubsection{\texorpdfstring{3.3 攻击点 \#3：比较基准 \(\mu^*\)
-的定义问题}{3.3 攻击点 \#3：比较基准 \ mu\^{}* 的定义问题}}<!-- label: ux653bux51fbux70b9-3ux6bd4ux8f83ux57faux51c6-mu-ux7684ux5b9aux4e49ux95eeux9898 -->
+#### \texorpdfstring{3.3 攻击点 \#3：比较基准 \(\mu^*\)
+的定义问题{3.3 攻击点 \#3：比较基准 \ mu\^{}* 的定义问题}}<!-- label: ux653bux51fbux70b9-3ux6bd4ux8f83ux57faux51c6-mu-ux7684ux5b9aux4e49ux95eeux9898 -->
 
 \[\mu^* = \max_{\mathcal{I} \subset \mathcal{S}, |\mathcal{I}| = B} \frac{1}{B} \sum_{s \in \mathcal{I}} \Delta_s\]
 
@@ -348,8 +344,8 @@ counterfactual 的 Spring 进化轨迹）。所以 \(\mu^*\)
 
 在实际中，唯一可用的比较基准是''事后最优的经验估计''，而非 \(\mu^*\)。
 
-\subsubsection{3.4 攻击点 \#4：Exp3
-的重要性加权在记忆库删除时的未定义行为}<!-- label: ux653bux51fbux70b9-4exp3-ux7684ux91cdux8981ux6027ux52a0ux6743ux5728ux8bb0ux5fc6ux5e93ux5220ux9664ux65f6ux7684ux672aux5b9aux4e49ux884cux4e3a -->
+#### 3.4 攻击点 \#4：Exp3
+的重要性加权在记忆库删除时的未定义行为<!-- label: ux653bux51fbux70b9-4exp3-ux7684ux91cdux8981ux6027ux52a0ux6743ux5728ux8bb0ux5fc6ux5e93ux5220ux9664ux65f6ux7684ux672aux5b9aux4e49ux884cux4e3a -->
 
 Exp3 的更新规则（§2.2.1）：
 
@@ -362,8 +358,8 @@ Exp3 的更新规则（§2.2.1）：
 确实讨论了保守剪枝以避免误删------但这将剪枝从算法的一部分变成了一个需要满足特定不等式的外部约束。如果这些约束不被满足（实际中很难保证），Ext3
 遗憾界需要额外的一项来惩罚误删。
 
-\subsubsection{3.5 对 Theorem 2.1
-的判决}<!-- label: ux5bf9-theorem-2.1-ux7684ux5224ux51b3 -->
+#### 3.5 对 Theorem 2.1
+的判决<!-- label: ux5bf9-theorem-2.1-ux7684ux5224ux51b3 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4286}}
@@ -404,11 +400,11 @@ Spring
 
 </div>
 
-\subsection{四、Theorem 3.1
-的单调性反例------构造的合法性攻击}<!-- label: ux56dbtheorem-3.1-ux7684ux5355ux8c03ux6027ux53cdux4f8bux6784ux9020ux7684ux5408ux6cd5ux6027ux653bux51fb -->
+### 四、Theorem 3.1
+的单调性反例------构造的合法性攻击<!-- label: ux56dbtheorem-3.1-ux7684ux5355ux8c03ux6027ux53cdux4f8bux6784ux9020ux7684ux5408ux6cd5ux6027ux653bux51fb -->
 
-\subsubsection{4.1 攻击点
-\#1：反例中的概率数字是手选的幻数}<!-- label: ux653bux51fbux70b9-1ux53cdux4f8bux4e2dux7684ux6982ux7387ux6570ux5b57ux662fux624bux9009ux7684ux5e7bux6570 -->
+#### 4.1 攻击点
+\#1：反例中的概率数字是手选的幻数<!-- label: ux653bux51fbux70b9-1ux53cdux4f8bux4e2dux7684ux6982ux7387ux6570ux5b57ux662fux624bux9009ux7684ux5e7bux6570 -->
 
 Theorem 3.1 的构造给出了具体数字： -
 \(p_{clean,a}(t) = 0.2 \to p_{clean,a}(t+1) = 0.35\) -
@@ -424,9 +420,9 @@ Theorem 3.1 的构造给出了具体数字： -
 损失的梯度计算 - 专家模型对表示变化的响应函数 -
 从参数变化到分歧概率变化的映射
 
-\subsubsection{4.2 攻击点
+#### 4.2 攻击点
 \#2：反例的核心机制------``过拟合到噪声样本''------与 Spring
-的训练目标不一致}<!-- label: ux653bux51fbux70b9-2ux53cdux4f8bux7684ux6838ux5fc3ux673aux5236ux8fc7ux62dfux5408ux5230ux566aux58f0ux6837ux672cux4e0e-spring-ux7684ux8badux7ec3ux76eeux6807ux4e0dux4e00ux81f4 -->
+的训练目标不一致<!-- label: ux653bux51fbux70b9-2ux53cdux4f8bux7684ux6838ux5fc3ux673aux5236ux8fc7ux62dfux5408ux5230ux566aux58f0ux6837ux672cux4e0e-spring-ux7684ux8badux7ec3ux76eeux6807ux4e0dux4e00ux81f4 -->
 
 **Spring 的训练目标是最小化自重构误差**：
 
@@ -454,8 +450,8 @@ Theorem 3.1 的反例声称 Spring
 可能会学习将它们分开（以最小化各自的重构误差），这反而会增加
 \(\Delta_s\)（而非减少）。
 
-\subsubsection{4.3 攻击点
-\#3：``伪代码''不是模拟------是打印语句}<!-- label: ux653bux51fbux70b9-3ux4f2aux4ee3ux7801ux4e0dux662fux6a21ux62dfux662fux6253ux5370ux8bedux53e5 -->
+#### 4.3 攻击点
+\#3：``伪代码''不是模拟------是打印语句<!-- label: ux653bux51fbux70b9-3ux4f2aux4ee3ux7801ux4e0dux662fux6a21ux62dfux662fux6253ux5370ux8bedux53e5 -->
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -480,8 +476,8 @@ p\_clean\_after = 0.35 和 p\_noisy\_after = 0.65，那么 Δ
 
 当前形式的''伪代码模拟验证''是 0 信息量的。
 
-\subsubsection{4.4 攻击点
-\#4：噪声注入机制是否合法？}<!-- label: ux653bux51fbux70b9-4ux566aux58f0ux6ce8ux5165ux673aux5236ux662fux5426ux5408ux6cd5 -->
+#### 4.4 攻击点
+\#4：噪声注入机制是否合法？<!-- label: ux653bux51fbux70b9-4ux566aux58f0ux6ce8ux5165ux673aux5236ux662fux5426ux5408ux6cd5 -->
 
 反例声称 ``Spring 的自重构损失... 将 \(s_a^{noisy}\)
 的模式作为正常模式来学习''。这隐式地假设：
@@ -494,8 +490,8 @@ autoencoder
 可能会忽略它（高重构误差 →
 小梯度贡献）；如果它处于高密度区域，它与其他干净样本一起定义了流形------此时它不算''噪声''，而只是流形的一部分。
 
-\subsubsection{4.5 对 Theorem 3.1
-的判决}<!-- label: ux5bf9-theorem-3.1-ux7684ux5224ux51b3 -->
+#### 4.5 对 Theorem 3.1
+的判决<!-- label: ux5bf9-theorem-3.1-ux7684ux5224ux51b3 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4286}}
@@ -538,8 +534,8 @@ Cercis
 
 ### 五、方程编号、符号一致性审查<!-- label: ux4e94ux65b9ux7a0bux7f16ux53f7ux7b26ux53f7ux4e00ux81f4ux6027ux5ba1ux67e5 -->
 
-\subsubsection{\texorpdfstring{5.1 \(\Delta_s(t)\) vs \(\Delta_s\) vs
-\(\Delta_{a_t}\)
+#### \texorpdfstring{5.1 \(\Delta_s(t)\) vs \(\Delta_s\) vs
+\(\Delta_{a_t\)
 的混乱}{5.1 \ Delta\_s(t) vs \ Delta\_s vs \ Delta\_\{a\_t\} 的混乱}}<!-- label: delta_st-vs-delta_s-vs-delta_a_t-ux7684ux6df7ux4e71 -->
 
 - 
@@ -565,8 +561,8 @@ Cercis
 是真实检测边际（不可观测），那么在实践中无法计算遗憾。如果它是估计值，那么
 \(R_T\) 是经验遗憾，与 Theorem 2.1-2.3 中分析的理论遗憾不同。
 
-\subsubsection{5.3 记忆库定义中的 Cercis
-评分语义}<!-- label: ux8bb0ux5fc6ux5e93ux5b9aux4e49ux4e2dux7684-cercis-ux8bc4ux5206ux8bedux4e49 -->
+#### 5.3 记忆库定义中的 Cercis
+评分语义<!-- label: ux8bb0ux5fc6ux5e93ux5b9aux4e49ux4e2dux7684-cercis-ux8bc4ux5206ux8bedux4e49 -->
 
 **§0.1**：\(\mathcal{M}_t = \{(s_i, Cercis_t(s_i), audit_t(s_i))\}_{i=1}^{N}\)
 
@@ -577,16 +573,16 @@ Cercis
 的定义包含了所有 \(N\) 个状态原子及其 Cercis/audit
 元数据------哪部分是''休眠''的？``休眠''意味着什么？文档说''未被充分评估的状态原子''------但这与记忆库的定义（记忆库包含了所有状态原子的评分元数据）不一致。
 
-\subsubsection{\texorpdfstring{5.4 §1.4.1 中 \(x\)
-变量的未声明}{5.4 §1.4.1 中 x 变量的未声明}}<!-- label: ux4e2d-x-ux53d8ux91cfux7684ux672aux58f0ux660e -->
+#### \texorpdfstring{5.4 §1.4.1 中 \(x\)
+变量的未声明{5.4 §1.4.1 中 x 变量的未声明}}<!-- label: ux4e2d-x-ux53d8ux91cfux7684ux672aux58f0ux660e -->
 
 Theorem 1.4 的证明引入了 \(f(x) = \sin^2(\pi K x / 2)\)。突然从
 \(\theta\)（高维参数）切换到 \(x\)（一维变量），且未声明 \(x\) 如何与
 \(\theta\) 关联。这个切换是非法跳跃------读者被要求自行脑补一个从
 \(\Theta\) 到 \([0,1]\) 的''序参量''映射。
 
-\subsubsection{5.5 §3.2.2 中的 Fisher
-一致性符号}<!-- label: ux4e2dux7684-fisher-ux4e00ux81f4ux6027ux7b26ux53f7 -->
+#### 5.5 §3.2.2 中的 Fisher
+一致性符号<!-- label: ux4e2dux7684-fisher-ux4e00ux81f4ux6027ux7b26ux53f7 -->
 
 Theorem 3.2 假设 (A2) 声称
 \(\mathbb{E}[E_m(h)] = P(Y_{true} = 1 | h)\)。但专家输出
@@ -603,8 +599,8 @@ Theorem 3.2 假设 (A2) 声称
 
 ### 六、未声明的假设------诚实度赤字<!-- label: ux516dux672aux58f0ux660eux7684ux5047ux8bbeux8bdaux5b9eux5ea6ux8d64ux5b57 -->
 
-\subsubsection{6.1 Proposition
-1.3（鞍点逃逸）------噪声各向同性假设}<!-- label: proposition-1.3ux978dux70b9ux9003ux9038ux566aux58f0ux5404ux5411ux540cux6027ux5047ux8bbe -->
+#### 6.1 Proposition
+1.3（鞍点逃逸）------噪声各向同性假设<!-- label: proposition-1.3ux978dux70b9ux9003ux9038ux566aux58f0ux5404ux5411ux540cux6027ux5047ux8bbe -->
 
 Proposition 1.3 声称商空间上的噪声保持了''各向同性的协方差结构（因为
 \(S_K\) 是紧群，Haar 测度是均匀的）``。这个论证混淆了两个概念： -
@@ -618,8 +614,8 @@ mini-batch 采样------如果 mini-batch
 
 **这个假设没有在定理陈述或证明中声明。**
 
-\subsubsection{6.2 Theorem 3.2（期望单调性）------Fisher
-一致性对神经网络不成立}<!-- label: theorem-3.2ux671fux671bux5355ux8c03ux6027fisher-ux4e00ux81f4ux6027ux5bf9ux795eux7ecfux7f51ux7edcux4e0dux6210ux7acb -->
+#### 6.2 Theorem 3.2（期望单调性）------Fisher
+一致性对神经网络不成立<!-- label: theorem-3.2ux671fux671bux5355ux8c03ux6027fisher-ux4e00ux81f4ux6027ux5bf9ux795eux7ecfux7f51ux7edcux4e0dux6210ux7acb -->
 
 假设 (A2)（专家 Fisher
 一致性）声称每个专家的输出概率在期望意义下逼近条件分布。**对于通过
@@ -632,8 +628,8 @@ SGD 训练的神经网络，这没有有限样本保证。** 事实上： -
 `{[}严格证明，在假设条件下{]}`**。当假设在实际中几乎肯定不成立时，标注''严格''是具有误导性的------定理的有效性完全悬浮在
 Fisher 一致性的空中楼阁上。
 
-\subsubsection{6.3
-未声明的假设汇总表}<!-- label: ux672aux58f0ux660eux7684ux5047ux8bbeux6c47ux603bux8868 -->
+#### 6.3
+未声明的假设汇总表<!-- label: ux672aux58f0ux660eux7684ux5047ux8bbeux6c47ux603bux8868 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2143}}
@@ -705,8 +701,8 @@ Prop 3.1 & Lipschitz 假设在指示函数期望上的可传递性 &
 倍。整个下界的噪声相关项推导需要重做。定理的 `{[}严格证明{]}`
 标签在当前形式下不成立。
 
-\subsubsection{致命缺陷 \#2: Theorem 3.1 的''反例''不是从 Spring
-动力学中推导的}<!-- label: ux81f4ux547dux7f3aux9677-2-theorem-3.1-ux7684ux53cdux4f8bux4e0dux662fux4ece-spring-ux52a8ux529bux5b66ux4e2dux63a8ux5bfcux7684 -->
+#### 致命缺陷 \#2: Theorem 3.1 的''反例''不是从 Spring
+动力学中推导的<!-- label: ux81f4ux547dux7f3aux9677-2-theorem-3.1-ux7684ux53cdux4f8bux4e0dux662fux4ece-spring-ux52a8ux529bux5b66ux4e2dux63a8ux5bfcux7684 -->
 
 **性质**: 构造不完整------手选的幻数而非推导出的量
 
@@ -720,8 +716,8 @@ Prop 3.1 & Lipschitz 假设在指示函数期望上的可传递性 &
 **后果**: 反例的 `{[}严格证明{]}` 标签不实。应降级为
 `{[}启发式猜测{]}` 或补充从 Spring 动力学到概率变化的具体推导。
 
-\subsubsection{致命缺陷 \#3: Theorem 1.2 的 log T
-因子是步长调度选择造成的}<!-- label: ux81f4ux547dux7f3aux9677-3-theorem-1.2-ux7684-log-t-ux56e0ux5b50ux662fux6b65ux957fux8c03ux5ea6ux9009ux62e9ux9020ux6210ux7684 -->
+#### 致命缺陷 \#3: Theorem 1.2 的 log T
+因子是步长调度选择造成的<!-- label: ux81f4ux547dux7f3aux9677-3-theorem-1.2-ux7684-log-t-ux56e0ux5b50ux662fux6b65ux957fux8c03ux5ea6ux9009ux62e9ux9020ux6210ux7684 -->
 
 **性质**: 使用非最优的步长调度，得到了非最优的收敛率
 
@@ -736,8 +732,8 @@ artifact。
 **后果**: 文档给出的收敛率比文献中的最优结果慢了一个 \(\log T\)
 因子。虽然不是数学错误，但将 artifact 呈现为''收敛率''是对文献的误传。
 
-\subsubsection{半致命缺陷 \#4: Theorem 2.1 的 Exp3
-分析忽略动作空间可变性}<!-- label: ux534aux81f4ux547dux7f3aux9677-4-theorem-2.1-ux7684-exp3-ux5206ux6790ux5ffdux7565ux52a8ux4f5cux7a7aux95f4ux53efux53d8ux6027 -->
+#### 半致命缺陷 \#4: Theorem 2.1 的 Exp3
+分析忽略动作空间可变性<!-- label: ux534aux81f4ux547dux7f3aux9677-4-theorem-2.1-ux7684-exp3-ux5206ux6790ux5ffdux7565ux52a8ux4f5cux7a7aux95f4ux53efux53d8ux6027 -->
 
 **性质**: 对 Spring 特异性的建模不足
 
@@ -752,8 +748,8 @@ artifact。
 **后果**: 遗憾界在形式上正确（作为上界），但可能在实际 Spring
 系统中非常松弛。需要更精细的分析来处理可变动作空间。
 
-\subsubsection{半致命缺陷 \#5:
-未声明假设的累积效应}<!-- label: ux534aux81f4ux547dux7f3aux9677-5-ux672aux58f0ux660eux5047ux8bbeux7684ux7d2fux79efux6548ux5e94 -->
+#### 半致命缺陷 \#5:
+未声明假设的累积效应<!-- label: ux534aux81f4ux547dux7f3aux9677-5-ux672aux58f0ux660eux5047ux8bbeux7684ux7d2fux79efux6548ux5e94 -->
 
 **性质**: 诚实度赤字
 
@@ -774,8 +770,8 @@ artifact。
 
 ### 八、附加问题：小但真实<!-- label: ux516bux9644ux52a0ux95eeux9898ux5c0fux4f46ux771fux5b9e -->
 
-\subsubsection{8.1 Theorem 2.2
-的遗憾指数}<!-- label: theorem-2.2-ux7684ux9057ux61beux6307ux6570 -->
+#### 8.1 Theorem 2.2
+的遗憾指数<!-- label: theorem-2.2-ux7684ux9057ux61beux6307ux6570 -->
 
 Theorem 2.2 声称遗憾上界为
 \(O(T^{\frac{d_{eff}}{d_{eff}+2}})\)。文档将其描述为
@@ -785,16 +781,16 @@ Theorem 2.2 声称遗憾上界为
 \(d_{eff}=3\)：\(T^{3/5} = T^{0.6}\)。这与文档摘要中说的''指数约为
 \(4/5\)``（\(=0.8\)）不符------\(T^{0.6} \neq T^{0.8}\)。
 
-\subsubsection{8.2 方程 (1) 的 boxed
-表达式缺失}<!-- label: ux65b9ux7a0b-1-ux7684-boxed-ux8868ux8fbeux5f0fux7f3aux5931 -->
+#### 8.2 方程 (1) 的 boxed
+表达式缺失<!-- label: ux65b9ux7a0b-1-ux7684-boxed-ux8868ux8fbeux5f0fux7f3aux5931 -->
 
 §1.3.1 中 PL
 条件下的递归不等式推导中，\(\Delta_t = \mathcal{L}(\theta_t) - \mathcal{L}(\theta^*)\)
 在期望递推式中出现了 \(\Delta_{t+1}\) 和
 \(\Delta_t\)，但解递归的具体步骤被省略（``解递归不等式得到所述速率''）。对于一个声称''严格证明''的结果，至少应给出递归的闭合解或引用的标准结果。
 
-\subsubsection{\texorpdfstring{8.3 §1.2.1 中 \(H_T = \sum 1/t\)
-出现在定理陈述中}{8.3 §1.2.1 中 H\_T = \ sum 1/t 出现在定理陈述中}}<!-- label: ux4e2d-h_t-sum-1t-ux51faux73b0ux5728ux5b9aux7406ux9648ux8ff0ux4e2d -->
+#### \texorpdfstring{8.3 §1.2.1 中 \(H_T = \sum 1/t\)
+出现在定理陈述中{8.3 §1.2.1 中 H\_T = \ sum 1/t 出现在定理陈述中}}<!-- label: ux4e2d-h_t-sum-1t-ux51faux73b0ux5728ux5b9aux7406ux9648ux8ff0ux4e2d -->
 
 \(H_T = \sum_{t=1}^T 1/t = O(\log T)\)。这是调和数，但定理陈述中将
 \(H_T\) 留在分子中（第 153 行），然后在下一条（第 157 行）转为
@@ -802,8 +798,8 @@ Theorem 2.2 声称遗憾上界为
 的渐近形式。这种''定理陈述中包含未简化表达式''的做法在数学写作中不规范------要么在陈述中就写成
 \(O(\log T)\)，要么将渐近形式放在推论中。
 
-\subsubsection{8.4 参考文献中的 Ghadimi
-拼写}<!-- label: ux53c2ux8003ux6587ux732eux4e2dux7684-ghadimi-ux62fcux5199 -->
+#### 8.4 参考文献中的 Ghadimi
+拼写<!-- label: ux53c2ux8003ux6587ux732eux4e2dux7684-ghadimi-ux62fcux5199 -->
 
 参考文献中写为 ``Ghadimi, S., \& Lan, G.''。正确的名字是
 **Ghadimi**（无误），但第二作者的名字在全文中是 **Guanghui

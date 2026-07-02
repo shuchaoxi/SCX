@@ -1,5 +1,7 @@
-\section{Final Mathematical Verification
-Report}<!-- label: final-mathematical-verification-report -->
+# Final Mathematical Verification
+Report
+
+**Author:** SCX
 
 **Reviewer**: Pure mathematician (formal verification of
 mathematical claims only) **Date**: 2026-06-28 **Scope**:
@@ -29,8 +31,8 @@ reviewed**: -
 
 </div>
 
-\subsection{1. Theorem 1 (Noise Detection
-Guarantee)}<!-- label: theorem-1-noise-detection-guarantee -->
+### 1. Theorem 1 (Noise Detection
+Guarantee)<!-- label: theorem-1-noise-detection-guarantee -->
 
 #### Lemma 1 (Mean Separation)<!-- label: lemma-1-mean-separation -->
 
@@ -189,8 +191,8 @@ acknowledges.
 
 </div>
 
-\subsection{3. Theorem 3
-(Unidentifiability)}<!-- label: theorem-3-unidentifiability -->
+### 3. Theorem 3
+(Unidentifiability)<!-- label: theorem-3-unidentifiability -->
 
 #### K=2 construction<!-- label: k2-construction -->
 
@@ -251,8 +253,8 @@ The bound is tight: achieved at a = 1/2 (random guess on ambiguous set).
 
 </div>
 
-\subsection{4. Theorem 4' (Exact Constant
-Minimax)}<!-- label: theorem-4-exact-constant-minimax -->
+### 4. Theorem 4' (Exact Constant
+Minimax)<!-- label: theorem-4-exact-constant-minimax -->
 
 #### Bahadur-Rao saddlepoint<!-- label: bahadur-rao-saddlepoint -->
 
@@ -371,11 +373,11 @@ achieves it. Match is exact.
 
 </div>
 
-\subsection{5. Theorem 5 (Cluster
-Consistency)}<!-- label: theorem-5-cluster-consistency -->
+### 5. Theorem 5 (Cluster
+Consistency)<!-- label: theorem-5-cluster-consistency -->
 
-\subsubsection{All exponents are
-negative}<!-- label: all-exponents-are-negative -->
+#### All exponents are
+negative<!-- label: all-exponents-are-negative -->
 
 **Claim**:
 -c1*n\_min*Delta\_min\textsuperscript{2/(sigma}2*d\_phi) is always
@@ -398,8 +400,8 @@ Sub-Gaussian tail bound with negative exponent. - Lemma 2 peeling sum:
 each term exp(-c*4\^{}j*t\^{}2) with negative exponent, summed
 exponentially.
 
-\subsubsection{All inequality
-directions}<!-- label: all-inequality-directions -->
+#### All inequality
+directions<!-- label: all-inequality-directions -->
 
 **Claim**: All inequalities point in correct directions.
 
@@ -423,8 +425,8 @@ W\_n(theta\_hat) \textless= W\_n(theta*), expanding and using quadratic
 lower bound. Direction: correct. - Lemma 4: P(no restart lands in B)
 \textless= (1-p0)\^{}R \textless= n\^{}\{-c\}. Direction: correct.
 
-\subsubsection{NP-hard gap honestly
-discussed}<!-- label: np-hard-gap-honestly-discussed -->
+#### NP-hard gap honestly
+discussed<!-- label: np-hard-gap-honestly-discussed -->
 
 **Claim**: The NP-hard gap of k-means is honestly acknowledged and
 addressed.
@@ -450,8 +452,8 @@ hardness.
 
 ### 6. Numerical Verification<!-- label: numerical-verification -->
 
-\subsubsection{Test 1: p0=0.10, p1=0.60,
-eta=0.10}<!-- label: test-1-p00.10-p10.60-eta0.10 -->
+#### Test 1: p0=0.10, p1=0.60,
+eta=0.10<!-- label: test-1-p00.10-p10.60-eta0.10 -->
 
 \begin{longtable}[]{@{}lll@{}}
 \toprule\noalign{}
@@ -484,8 +486,8 @@ C\_SCX & 4.573 & C\_SCX = C\_min/eta: MATCH
 kappa/2Delta\^{}2 comparison: 2*(p1-p0)\^{}2 = 2*0.25 = 0.50.
 kappa/0.50 = 0.1696/0.50 = 0.3392, matching Lemma C table.
 
-\subsubsection{Test 2: p0=0.05, p1=0.80,
-eta=0.05}<!-- label: test-2-p00.05-p10.80-eta0.05 -->
+#### Test 2: p0=0.05, p1=0.80,
+eta=0.05<!-- label: test-2-p00.05-p10.80-eta0.05 -->
 
 \begin{longtable}[]{@{}lll@{}}
 \toprule\noalign{}
@@ -515,8 +517,8 @@ C\_SCX & 3.727 & C\_SCX = C\_min/eta: MATCH
 
 \end{longtable}
 
-\subsubsection{Test 3: p0=0.20, p1=0.50,
-eta=0.30}<!-- label: test-3-p00.20-p10.50-eta0.30 -->
+#### Test 3: p0=0.20, p1=0.50,
+eta=0.30<!-- label: test-3-p00.20-p10.50-eta0.30 -->
 
 \begin{longtable}[]{@{}lll@{}}
 \toprule\noalign{}
@@ -554,8 +556,8 @@ All three numerical test cases confirm the identity C\_SCX = C\_min/eta.
 
 </div>
 
-\subsection{7. Minor Observations and
-Notes}<!-- label: minor-observations-and-notes -->
+### 7. Minor Observations and
+Notes<!-- label: minor-observations-and-notes -->
 
 1. 
 2. 
@@ -568,8 +570,8 @@ Notes}<!-- label: minor-observations-and-notes -->
 
 </div>
 
-\subsection{8. Overall Mathematical
-Verdict}<!-- label: overall-mathematical-verdict -->
+### 8. Overall Mathematical
+Verdict<!-- label: overall-mathematical-verdict -->
 
 All mathematical derivations across Theorems 1-5 and supporting lemmas
 are **CORRECT**.

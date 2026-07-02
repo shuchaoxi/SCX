@@ -1,5 +1,7 @@
-\section{Spring Algorithm
-(春季算法)}<!-- label: spring-algorithm-ux6625ux5b63ux7b97ux6cd5 -->
+# Spring Algorithm
+(春季算法)
+
+**Author:** SCX
 
 > **Formal name**: Spring Self-Evolving Gatekeeper (SSEG)
 > **Abbreviation**: Spring **Location**:

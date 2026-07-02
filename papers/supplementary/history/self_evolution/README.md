@@ -1,3 +1,7 @@
+# SCX Self-Evolution Theory — README
+
+**Author:** SCX
+
 \section{SCX 自我进化理论 ---
 数学形式化}<!-- label: scx-ux81eaux6211ux8fdbux5316ux7406ux8bba-ux6570ux5b66ux5f62ux5f0fux5316 -->
 

@@ -1,11 +1,7 @@
-\section{Spring
-自进化动力学的严密收敛分析}<!-- label: spring-ux81eaux8fdbux5316ux52a8ux529bux5b66ux7684ux4e25ux5bc6ux6536ux655bux5206ux6790 -->
+# Spring
+自进化动力学的严密收敛分析
 
-<div align="center">
-
-\rule{0.5\linewidth}{0.5pt}
-
-</div>
+**Author:** SCX
 
 **文档状态**: 严格数学推导 + 诚实暴击
 
@@ -27,11 +23,11 @@
 
 </div>
 
-\subsection{0.
-符号约定与先备知识}<!-- label: ux7b26ux53f7ux7ea6ux5b9aux4e0eux5148ux5907ux77e5ux8bc6 -->
+### 0.
+符号约定与先备知识<!-- label: ux7b26ux53f7ux7ea6ux5b9aux4e0eux5148ux5907ux77e5ux8bc6 -->
 
-\subsubsection{0.1 Spring
-状态空间}<!-- label: spring-ux72b6ux6001ux7a7aux95f4 -->
+#### 0.1 Spring
+状态空间<!-- label: spring-ux72b6ux6001ux7a7aux95f4 -->
 
 Spring 自进化动力学的完整状态为三元组：
 
@@ -46,8 +42,8 @@ Cercis 评分和雅洁审计结果
 
 参数维度：\(|\theta| = K \cdot (2d_k d_s + d_v d_s) + K d_v d_s\)。
 
-\subsubsection{0.2
-雅洁审计与检测边际}<!-- label: ux96c5ux6d01ux5ba1ux8ba1ux4e0eux68c0ux6d4bux8fb9ux9645 -->
+#### 0.2
+雅洁审计与检测边际<!-- label: ux96c5ux6d01ux5ba1ux8ba1ux4e0eux68c0ux6d4bux8fb9ux9645 -->
 
 对于状态 \(s\)，\(M\) 个独立专家投票
 \(v_m(s) = \mathbf{1}[E_m(s) \neq y]\)。
@@ -65,8 +61,8 @@ Cercis 评分和雅洁审计结果
 轮进化后的专家分歧概率。\(\Delta_s(t) > 0\) 意味着状态 \(s\)
 的噪声可被检测；\(\Delta_s(t)\) 越大，检测越可靠。
 
-\subsubsection{0.3 SE-1: Robbins-Monro
-随机梯度下降}<!-- label: se-1-robbins-monro-ux968fux673aux68afux5ea6ux4e0bux964d -->
+#### 0.3 SE-1: Robbins-Monro
+随机梯度下降<!-- label: se-1-robbins-monro-ux968fux673aux68afux5ea6ux4e0bux964d -->
 
 Spring 参数更新（SE-1）：
 
@@ -102,11 +98,11 @@ Spring 参数更新（SE-1）：
 
 </div>
 
-\section{问题 1：非凸 Robbins-Monro
-收敛率}<!-- label: ux95eeux9898-1ux975eux51f8-robbins-monro-ux6536ux655bux7387 -->
+## 问题 1：非凸 Robbins-Monro
+收敛率<!-- label: ux95eeux9898-1ux975eux51f8-robbins-monro-ux6536ux655bux7387 -->
 
-\subsection{1.1
-问题精确陈述}<!-- label: ux95eeux9898ux7cbeux786eux9648ux8ff0 -->
+### 1.1
+问题精确陈述<!-- label: ux95eeux9898ux7cbeux786eux9648ux8ff0 -->
 
 Multi-Head Spring 有 \(K\) 个头，损失景观有 \(K!\)
 个排列对称驻点。考虑带噪声的梯度下降：
@@ -119,11 +115,11 @@ Multi-Head Spring 有 \(K\) 个头，损失景观有 \(K!\)
 **核心问题**：Noisy Gradient Descent 是否以 \(O(1/\sqrt{t})\)
 速率收敛到某个驻点的邻域？收敛率下界是什么？
 
-\subsection{1.2
-损失景观的排列对称性结构}<!-- label: ux635fux5931ux666fux89c2ux7684ux6392ux5217ux5bf9ux79f0ux6027ux7ed3ux6784 -->
+### 1.2
+损失景观的排列对称性结构<!-- label: ux635fux5931ux666fux89c2ux7684ux6392ux5217ux5bf9ux79f0ux6027ux7ed3ux6784 -->
 
-\subsubsection{\texorpdfstring{1.2.1 商空间构造
-`{[}严格证明{]}`}{1.2.1 商空间构造 {[}严格证明{]}}}<!-- label: ux5546ux7a7aux95f4ux6784ux9020-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{1.2.1 商空间构造
+`{[严格证明{]}`}{1.2.1 商空间构造 {[}严格证明{]}}}<!-- label: ux5546ux7a7aux95f4ux6784ux9020-ux4e25ux683cux8bc1ux660e -->
 
 **定义 1.1（排列商空间）**：定义等价关系
 \(\theta \sim \theta' \iff \exists \pi \in S_K : \theta' = \pi \cdot \theta\)。商空间为
@@ -156,8 +152,8 @@ Multi-Head Spring 有 \(K\) 个头，损失景观有 \(K!\)
 \(\Theta\) 上的作用是 \(\mathcal{L}\) 的对称群。轨道大小 =
 \(|S_K| / |Stab_{S_K}(\theta)|\)。\(\square\)
 
-\subsubsection{\texorpdfstring{1.2.2 鞍点逃逸分析
-`{[}严格证明{]}`}{1.2.2 鞍点逃逸分析 {[}严格证明{]}}}<!-- label: ux978dux70b9ux9003ux9038ux5206ux6790-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{1.2.2 鞍点逃逸分析
+`{[严格证明{]}`}{1.2.2 鞍点逃逸分析 {[}严格证明{]}}}<!-- label: ux978dux70b9ux9003ux9038ux5206ux6790-ux4e25ux683cux8bc1ux660e -->
 
 **命题 1.3（严格鞍点性质）** `{[}严格证明{]}`：设
 \(\mathcal{L}\) 在 \(\Theta\) 上是 \(L\)-光滑的。对于任意
@@ -190,12 +186,12 @@ Hessian 的最小特征值方向）使得：
 \(S_K\)-作用下近似不变，这在实际中可能不成立------每个头的梯度噪声可能具有头特异性结构。这是一个
 `{[}猜想{]}` 要素。
 
-\subsection{\texorpdfstring{1.3 收敛率上界
-`{[}部分严格+猜想{]}`}{1.3 收敛率上界 {[}部分严格+猜想{]}}}<!-- label: ux6536ux655bux7387ux4e0aux754c-ux90e8ux5206ux4e25ux683cux731cux60f3 -->
+### \texorpdfstring{1.3 收敛率上界
+`{[部分严格+猜想{]}`}{1.3 收敛率上界 {[}部分严格+猜想{]}}}<!-- label: ux6536ux655bux7387ux4e0aux754c-ux90e8ux5206ux4e25ux683cux731cux60f3 -->
 
-\subsubsection{\texorpdfstring{1.3.1 非凸 Polyak-Łojasiewicz
+#### \texorpdfstring{1.3.1 非凸 Polyak-Łojasiewicz
 条件下的收敛
-`{[}严格证明{]}`}{1.3.1 非凸 Polyak-Łojasiewicz 条件下的收敛 {[}严格证明{]}}}<!-- label: ux975eux51f8-polyak-ux142ojasiewicz-ux6761ux4ef6ux4e0bux7684ux6536ux655b-ux4e25ux683cux8bc1ux660e -->
+`{[严格证明{]}`}{1.3.1 非凸 Polyak-Łojasiewicz 条件下的收敛 {[}严格证明{]}}}<!-- label: ux975eux51f8-polyak-ux142ojasiewicz-ux6761ux4ef6ux4e0bux7684ux6536ux655b-ux4e25ux683cux8bc1ux660e -->
 
 **假设 1.1（局部 PL 条件）**：存在 \(\mu > 0\) 和驻点
 \([\theta^*]\) 的一个邻域 \(\mathcal{N}\)，使得对所有
@@ -243,8 +239,8 @@ $$
 \(\alpha_t \leq 1/L\)），则
 \(1 - L\alpha_t/2 \geq 1/2\)。解递归不等式得到所述速率。\(\square\)
 
-\subsubsection{\texorpdfstring{1.3.2 一般非凸情形的收敛
-`{[}严格证明{]}`}{1.3.2 一般非凸情形的收敛 {[}严格证明{]}}}<!-- label: ux4e00ux822cux975eux51f8ux60c5ux5f62ux7684ux6536ux655b-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{1.3.2 一般非凸情形的收敛
+`{[严格证明{]}`}{1.3.2 一般非凸情形的收敛 {[}严格证明{]}}}<!-- label: ux4e00ux822cux975eux51f8ux60c5ux5f62ux7684ux6536ux655b-ux4e25ux683cux8bc1ux660e -->
 
 当 PL 条件不成立时，只能保证收敛到某个驻点的邻域。
 
@@ -278,11 +274,11 @@ $$
 Spring 损失景观，\(\|\nabla\mathcal{L}\|\) 很小不保证 \(\mathcal{L}\)
 接近全局最小值------可能只是陷入了一个浅的局部极小或鞍点。
 
-\subsection{\texorpdfstring{1.4 收敛率下界
-`{[}严格证明\ +\ 构造{]}`}{1.4 收敛率下界 {[}严格证明 + 构造{]}}}<!-- label: ux6536ux655bux7387ux4e0bux754c-ux4e25ux683cux8bc1ux660e-ux6784ux9020 -->
+### \texorpdfstring{1.4 收敛率下界
+`{[严格证明\ +\ 构造{]}`}{1.4 收敛率下界 {[}严格证明 + 构造{]}}}<!-- label: ux6536ux655bux7387ux4e0bux754c-ux4e25ux683cux8bc1ux660e-ux6784ux9020 -->
 
-\subsubsection{\texorpdfstring{1.4.1 排列对称性引起的下界
-`{[}严格证明{]}`}{1.4.1 排列对称性引起的下界 {[}严格证明{]}}}<!-- label: ux6392ux5217ux5bf9ux79f0ux6027ux5f15ux8d77ux7684ux4e0bux754c-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{1.4.1 排列对称性引起的下界
+`{[严格证明{]}`}{1.4.1 排列对称性引起的下界 {[}严格证明{]}}}<!-- label: ux6392ux5217ux5bf9ux79f0ux6027ux5f15ux8d77ux7684ux4e0bux754c-ux4e25ux683cux8bc1ux660e -->
 
 **定理 1.3（排列对称驻点间的距离下界）**
 `{[}严格证明{]}`：设两个不同的排列 \(\pi_1 \neq \pi_2\)
@@ -333,8 +329,8 @@ SGD）在 \(T\) 步后的期望梯度范数满足：
 项主导时（高噪声），优化器在驻点间随机游走，无法可靠下降。取
 \(\sigma^2 \geq \Omega(1)\) 即得所述下界。\(\square\)
 
-\subsubsection{\texorpdfstring{1.4.2 排列对称性的正面利用
-`{[}猜想{]}`}{1.4.2 排列对称性的正面利用 {[}猜想{]}}}<!-- label: ux6392ux5217ux5bf9ux79f0ux6027ux7684ux6b63ux9762ux5229ux7528-ux731cux60f3 -->
+#### \texorpdfstring{1.4.2 排列对称性的正面利用
+`{[猜想{]}`}{1.4.2 排列对称性的正面利用 {[}猜想{]}}}<!-- label: ux6392ux5217ux5bf9ux79f0ux6027ux7684ux6b63ux9762ux5229ux7528-ux731cux60f3 -->
 
 **观察 1.1（对称性简化分析）** `{[}猜想{]}`：排列对称性将
 \(K!\) 个驻点折叠为商空间 \(\Theta/S_K\)
@@ -400,14 +396,14 @@ PL
 
 </div>
 
-\section{问题
-2：记忆库遗憾界}<!-- label: ux95eeux9898-2ux8bb0ux5fc6ux5e93ux9057ux61beux754c -->
+## 问题
+2：记忆库遗憾界<!-- label: ux95eeux9898-2ux8bb0ux5fc6ux5e93ux9057ux61beux754c -->
 
-\subsection{2.1
-在线学习形式化}<!-- label: ux5728ux7ebfux5b66ux4e60ux5f62ux5f0fux5316 -->
+### 2.1
+在线学习形式化<!-- label: ux5728ux7ebfux5b66ux4e60ux5f62ux5f0fux5316 -->
 
-\subsubsection{2.1.1
-动作空间与奖励}<!-- label: ux52a8ux4f5cux7a7aux95f4ux4e0eux5956ux52b1 -->
+#### 2.1.1
+动作空间与奖励<!-- label: ux52a8ux4f5cux7a7aux95f4ux4e0eux5956ux52b1 -->
 
 每轮 \(t = 1, ..., T\)： - **动作空间**
 \(\mathcal{A}_t = \mathcal{M}_t^{dormant}\)：当前记忆库中的''休眠''结构（未被充分评估的状态原子）
@@ -418,8 +414,8 @@ Cercis 分数或检测边际 \(\Delta_s\) 的估计） - **奖励**
 \(r_t(a_t) = eval_t(a_t)\) - **记忆库更新**
 \(\mathcal{M}_{t+1} = \mathcal{M}_t \cup \{new\} \setminus \{pruned\}\)
 
-\subsubsection{2.1.2
-比较基准：最优固定策略}<!-- label: ux6bd4ux8f83ux57faux51c6ux6700ux4f18ux56faux5b9aux7b56ux7565 -->
+#### 2.1.2
+比较基准：最优固定策略<!-- label: ux6bd4ux8f83ux57faux51c6ux6700ux4f18ux56faux5b9aux7b56ux7565 -->
 
 定义固定策略 \(\pi^*\)
 为**在事先知道所有结构质量的情况下，始终选择质量最高的 \(B\)
@@ -433,11 +429,11 @@ Cercis 分数或检测边际 \(\Delta_s\) 的估计） - **奖励**
 
 \[\boxed{R_T = T \cdot \mu^* - \sum_{t=1}^{T} \Delta_{a_t}}\]
 
-\subsection{\texorpdfstring{2.2 遗憾上界
-`{[}严格证明{]}`}{2.2 遗憾上界 {[}严格证明{]}}}<!-- label: ux9057ux61beux4e0aux754c-ux4e25ux683cux8bc1ux660e -->
+### \texorpdfstring{2.2 遗憾上界
+`{[严格证明{]}`}{2.2 遗憾上界 {[}严格证明{]}}}<!-- label: ux9057ux61beux4e0aux754c-ux4e25ux683cux8bc1ux660e -->
 
-\subsubsection{\texorpdfstring{2.2.1 Exp3 算法适配
-`{[}严格证明{]}`}{2.2.1 Exp3 算法适配 {[}严格证明{]}}}<!-- label: exp3-ux7b97ux6cd5ux9002ux914d-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{2.2.1 Exp3 算法适配
+`{[严格证明{]}`}{2.2.1 Exp3 算法适配 {[}严格证明{]}}}<!-- label: exp3-ux7b97ux6cd5ux9002ux914d-ux4e25ux683cux8bc1ux660e -->
 
 Spring
 的记忆库探索可以视为一个对抗性多臂老虎机问题：每轮选择一个结构进行评估，环境（由记忆库状态和专家行为决定）产生奖励。由于记忆库动态取决于历史选择，奖励序列可能是**对抗性**的（而非随机
@@ -471,8 +467,8 @@ Nonstochastic Multiarmed Bandit Problem''{]}。关键验证点： 1. 奖励在
 重要性加权估计是无偏的：\(\mathbb{E}[\hat{r}_t(s) \cdot \mathbf{1}[a_t = s] / p_t(s)] = r_t(s)\)
 ✓ 4. 对抗性奖励序列假设涵盖记忆库动态 ✓ \(\square\)
 
-\subsubsection{\texorpdfstring{2.2.2 利用结构信息的改进界
-`{[}严格证明{]}`}{2.2.2 利用结构信息的改进界 {[}严格证明{]}}}<!-- label: ux5229ux7528ux7ed3ux6784ux4fe1ux606fux7684ux6539ux8fdbux754c-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{2.2.2 利用结构信息的改进界
+`{[严格证明{]}`}{2.2.2 利用结构信息的改进界 {[}严格证明{]}}}<!-- label: ux5229ux7528ux7ed3ux6784ux4fe1ux606fux7684ux6539ux8fdbux754c-ux4e25ux683cux8bc1ux660e -->
 
 **定理 2.2（利用 Lipschitz 结构的遗憾上界）**
 `{[}严格证明{]}`：若检测边际 \(\Delta_s\) 在物理位置上满足
@@ -507,8 +503,8 @@ ppe\_rigorous\_derivation.md）仅保证编码后的表示 \(h_i\) 是 Lipschitz
 \(\Delta_s\) 的 Lipschitz 需要额外假设（如 Theorem 2.5.1 中的边界条件 +
 软概率 Lipschitz）。这是 `{[}部分严格+猜想{]}`。
 
-\subsubsection{\texorpdfstring{2.2.3 无 Lipschitz 结构的通用下界
-`{[}严格证明{]}`}{2.2.3 无 Lipschitz 结构的通用下界 {[}严格证明{]}}}<!-- label: ux65e0-lipschitz-ux7ed3ux6784ux7684ux901aux7528ux4e0bux754c-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{2.2.3 无 Lipschitz 结构的通用下界
+`{[严格证明{]}`}{2.2.3 无 Lipschitz 结构的通用下界 {[}严格证明{]}}}<!-- label: ux65e0-lipschitz-ux7ed3ux6784ux7684ux901aux7528ux4e0bux754c-ux4e25ux683cux8bc1ux660e -->
 
 **定理 2.3（遗憾下界）**
 `{[}严格证明{]}`：在不假设任何光滑结构的情况下（即 \(\Delta_s\)
@@ -524,8 +520,8 @@ ppe\_rigorous\_derivation.md）仅保证编码后的表示 \(h_i\) 是 Lipschitz
 随时间变化，因为专家模型在进化），对抗性假设使得下界对 Spring
 的记忆库动态也成立。\(\square\)
 
-\subsubsection{\texorpdfstring{2.2.4 记忆库遗忘的遗憾代价
-`{[}部分严格+猜想{]}`}{2.2.4 记忆库遗忘的遗憾代价 {[}部分严格+猜想{]}}}<!-- label: ux8bb0ux5fc6ux5e93ux9057ux5fd8ux7684ux9057ux61beux4ee3ux4ef7-ux90e8ux5206ux4e25ux683cux731cux60f3 -->
+#### \texorpdfstring{2.2.4 记忆库遗忘的遗憾代价
+`{[部分严格+猜想{]}`}{2.2.4 记忆库遗忘的遗憾代价 {[}部分严格+猜想{]}}}<!-- label: ux8bb0ux5fc6ux5e93ux9057ux5fd8ux7684ux9057ux61beux4ee3ux4ef7-ux90e8ux5206ux4e25ux683cux731cux60f3 -->
 
 Spring
 特有的记忆库操作------``剪枝''（移除被判定为纯噪声的原子）------可能将高质量结构误删。这引入了额外的遗憾。
@@ -602,11 +598,11 @@ Lipschitz 改进界 \(O(T^{(d+1)/(d+2)})\) (Thm 2.2) & 严格（在 Lipschitz
 
 </div>
 
-\section{\texorpdfstring{问题 3：\(\Delta_s(t)\)
-的单调性}{问题 3：\ Delta\_s(t) 的单调性}}<!-- label: ux95eeux9898-3delta_st-ux7684ux5355ux8c03ux6027 -->
+## \texorpdfstring{问题 3：\(\Delta_s(t)\)
+的单调性{问题 3：\ Delta\_s(t) 的单调性}}<!-- label: ux95eeux9898-3delta_st-ux7684ux5355ux8c03ux6027 -->
 
-\subsection{3.1
-问题的精确陈述}<!-- label: ux95eeux9898ux7684ux7cbeux786eux9648ux8ff0 -->
+### 3.1
+问题的精确陈述<!-- label: ux95eeux9898ux7684ux7cbeux786eux9648ux8ff0 -->
 
 Spring 自进化声称通过以下循环改善雅洁检测：
 
@@ -618,11 +614,11 @@ Spring 自进化声称通过以下循环改善雅洁检测：
 
 如果逐点单调性不成立，是否存在更弱的单调性（如期望单调性）？在什么条件下成立？如果存在反例，构造出来。
 
-\subsection{\texorpdfstring{3.2 逐点单调性的否证
-`{[}反例构造，严格{]}`}{3.2 逐点单调性的否证 {[}反例构造，严格{]}}}<!-- label: ux9010ux70b9ux5355ux8c03ux6027ux7684ux5426ux8bc1-ux53cdux4f8bux6784ux9020ux4e25ux683c -->
+### \texorpdfstring{3.2 逐点单调性的否证
+`{[反例构造，严格{]}`}{3.2 逐点单调性的否证 {[}反例构造，严格{]}}}<!-- label: ux9010ux70b9ux5355ux8c03ux6027ux7684ux5426ux8bc1-ux53cdux4f8bux6784ux9020ux4e25ux683c -->
 
-\subsubsection{\texorpdfstring{3.2.1 反例构造
-`{[}严格证明{]}`}{3.2.1 反例构造 {[}严格证明{]}}}<!-- label: ux53cdux4f8bux6784ux9020-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{3.2.1 反例构造
+`{[严格证明{]}`}{3.2.1 反例构造 {[}严格证明{]}}}<!-- label: ux53cdux4f8bux6784ux9020-ux4e25ux683cux8bc1ux660e -->
 
 **定理 3.1（逐点单调性不成立）** `{[}严格证明{]}`：存在
 Spring 自进化动力学的参数配置，使得对某个状态 \(s\) 和某轮 \(t\)：
@@ -667,8 +663,8 @@ Spring 自注意力机制在第 \(t\) 轮更新参数 \(\theta_t\)
 
 检测边际**退化**了 40\%。\(\square\)
 
-\subsubsection{\texorpdfstring{3.2.2 退化的数学本质
-`{[}严格证明{]}`}{3.2.2 退化的数学本质 {[}严格证明{]}}}<!-- label: ux9000ux5316ux7684ux6570ux5b66ux672cux8d28-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{3.2.2 退化的数学本质
+`{[严格证明{]}`}{3.2.2 退化的数学本质 {[}严格证明{]}}}<!-- label: ux9000ux5316ux7684ux6570ux5b66ux672cux8d28-ux4e25ux683cux8bc1ux660e -->
 
 **命题 3.1（退化的必要条件）**
 `{[}严格证明{]}`：\(\Delta_s(t+1) < \Delta_s(t)\)
@@ -684,8 +680,8 @@ Spring 自注意力机制在第 \(t\) 轮更新参数 \(\theta_t\)
 反映噪声样本上的分歧。Spring
 的更新同时影响两类样本的表示分布。退化当且仅当更新对干净样本类内散布的相对增加大于对噪声样本的。\(\square\)
 
-\subsubsection{\texorpdfstring{3.2.3 伪代码模拟验证
-`{[}严格证明——构造{]}`}{3.2.3 伪代码模拟验证 {[}严格证明------构造{]}}}<!-- label: ux4f2aux4ee3ux7801ux6a21ux62dfux9a8cux8bc1-ux4e25ux683cux8bc1ux660eux6784ux9020 -->
+#### \texorpdfstring{3.2.3 伪代码模拟验证
+`{[严格证明——构造{]}`}{3.2.3 伪代码模拟验证 {[}严格证明------构造{]}}}<!-- label: ux4f2aux4ee3ux7801ux6a21ux62dfux9a8cux8bc1-ux4e25ux683cux8bc1ux660eux6784ux9020 -->
 
 以下 Python 伪代码构造了一个最小可复现的反例：
 
@@ -714,13 +710,13 @@ Spring 自注意力机制在第 \(t\) 轮更新参数 \(\theta_t\)
 
 输出：`Δ(0)\ =\ 0.5,\ Δ(1)\ =\ 0.3,\ 退化\ =\ 0.20`
 
-\subsection{3.3
-期望单调性的条件分析}<!-- label: ux671fux671bux5355ux8c03ux6027ux7684ux6761ux4ef6ux5206ux6790 -->
+### 3.3
+期望单调性的条件分析<!-- label: ux671fux671bux5355ux8c03ux6027ux7684ux6761ux4ef6ux5206ux6790 -->
 
 虽然逐点单调性不成立，但我们可以寻找在**期望**下的单调性。
 
-\subsubsection{\texorpdfstring{3.3.1 无偏记忆库条件下的期望单调性
-`{[}严格证明{]}`}{3.3.1 无偏记忆库条件下的期望单调性 {[}严格证明{]}}}<!-- label: ux65e0ux504fux8bb0ux5fc6ux5e93ux6761ux4ef6ux4e0bux7684ux671fux671bux5355ux8c03ux6027-ux4e25ux683cux8bc1ux660e -->
+#### \texorpdfstring{3.3.1 无偏记忆库条件下的期望单调性
+`{[严格证明{]}`}{3.3.1 无偏记忆库条件下的期望单调性 {[}严格证明{]}}}<!-- label: ux65e0ux504fux8bb0ux5fc6ux5e93ux6761ux4ef6ux4e0bux7684ux671fux671bux5355ux8c03ux6027-ux4e25ux683cux8bc1ux660e -->
 
 **定理 3.2（无偏记忆库下的期望单调性）**
 `{[}严格证明，在假设条件下{]}`：假设：
@@ -766,8 +762,8 @@ Spring
 的设定中，自重构是唯一的训练信号，没有显式的标签监督------这意味着 (A3)
 等价于声称自重构和噪声检测之间存在某种形式的**互信息单调性**，这是一个未被证明的性质。
 
-\subsubsection{\texorpdfstring{3.3.2 保守进化条件下的期望单调性
-`{[}部分严格+猜想{]}`}{3.3.2 保守进化条件下的期望单调性 {[}部分严格+猜想{]}}}<!-- label: ux4fddux5b88ux8fdbux5316ux6761ux4ef6ux4e0bux7684ux671fux671bux5355ux8c03ux6027-ux90e8ux5206ux4e25ux683cux731cux60f3 -->
+#### \texorpdfstring{3.3.2 保守进化条件下的期望单调性
+`{[部分严格+猜想{]}`}{3.3.2 保守进化条件下的期望单调性 {[}部分严格+猜想{]}}}<!-- label: ux4fddux5b88ux8fdbux5316ux6761ux4ef6ux4e0bux7684ux671fux671bux5355ux8c03ux6027-ux90e8ux5206ux4e25ux683cux731cux60f3 -->
 
 **定理 3.3（保守进化的期望单调性）**
 `{[}部分严格+猜想{]}`：若 Spring 的记忆库更新采用以下保守策略：
@@ -807,8 +803,8 @@ Lipschitz 连续性依赖于 §2.5 (Theorem 2.5.1)
 0/1 专家投票中不严格成立。需要通过软概率（如 softmax 置信度）的
 Lipschitz 性来桥接。
 
-\subsection{\texorpdfstring{3.4 宏观单调性（聚合度量）
-`{[}严格证明{]}`}{3.4 宏观单调性（聚合度量） {[}严格证明{]}}}<!-- label: ux5b8fux89c2ux5355ux8c03ux6027ux805aux5408ux5ea6ux91cf-ux4e25ux683cux8bc1ux660e -->
+### \texorpdfstring{3.4 宏观单调性（聚合度量）
+`{[严格证明{]}`}{3.4 宏观单调性（聚合度量） {[}严格证明{]}}}<!-- label: ux5b8fux89c2ux5355ux8c03ux6027ux805aux5408ux5ea6ux91cf-ux4e25ux683cux8bc1ux660e -->
 
 虽然逐状态单调性不成立，但聚合度量可能在更弱的条件下单调。
 
@@ -879,8 +875,8 @@ Lipschitz 性来桥接。
 
 ## 4. 全局诚实评估<!-- label: ux5168ux5c40ux8bdaux5b9eux8bc4ux4f30 -->
 
-\subsection{4.1
-三个核心发现的置信度矩阵}<!-- label: ux4e09ux4e2aux6838ux5fc3ux53d1ux73b0ux7684ux7f6eux4fe1ux5ea6ux77e9ux9635 -->
+### 4.1
+三个核心发现的置信度矩阵<!-- label: ux4e09ux4e2aux6838ux5fc3ux53d1ux73b0ux7684ux7f6eux4fe1ux5ea6ux77e9ux9635 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1176}}

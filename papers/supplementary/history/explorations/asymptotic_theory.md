@@ -1,5 +1,7 @@
-\section{Asymptotic Theory for SCX: Feasibility
-Analysis}<!-- label: asymptotic-theory-for-scx-feasibility-analysis -->
+# Asymptotic Theory for SCX: Feasibility
+Analysis
+
+**Author:** SCX
 
 > SCX has three growing parameters (K, M, n) and currently only
 > finite-sample (non-asymptotic) concentration bounds. This document
@@ -93,8 +95,8 @@ asymptotics & High but costly & Low (defer)
 
 </div>
 
-\subsection{2. Current Theoretical
-Landscape}<!-- label: current-theoretical-landscape -->
+### 2. Current Theoretical
+Landscape<!-- label: current-theoretical-landscape -->
 
 #### What Already Exists<!-- label: what-already-exists -->
 
@@ -336,15 +338,15 @@ contribution to statistical learning theory.
 
 </div>
 
-\subsection{4. Low-Hanging Fruit: What Can Be Proved with Standard
-Tools}<!-- label: low-hanging-fruit-what-can-be-proved-with-standard-tools -->
+### 4. Low-Hanging Fruit: What Can Be Proved with Standard
+Tools<!-- label: low-hanging-fruit-what-can-be-proved-with-standard-tools -->
 
 Despite the difficulty of triple asymptotics, there are several results
 that can be obtained with off-the-shelf tools and would add value to the
 SCX theoretical framework.
 
-\subsubsection{4.1 Asymptotic Normality of C(x) (Fixed K, n, M
--\textgreater{} oo)}<!-- label: asymptotic-normality-of-cx-fixed-k-n-m---oo -->
+#### 4.1 Asymptotic Normality of C(x) (Fixed K, n, M
+-\textgreater{ oo)}<!-- label: asymptotic-normality-of-cx-fixed-k-n-m---oo -->
 
 **Claim**: Under (A1)-(A3), for any fixed x and any threshold tau,
 as M -\textgreater{} oo:
@@ -371,8 +373,8 @@ enables hypothesis testing. For example, testing H0: ``x is clean'' vs
 H1: ``x is noisy'' can be done using the asymptotic distribution of
 C(x).
 
-\subsubsection{4.2 Confidence Intervals for SCX\_m(s) (Fixed K, M, n
--\textgreater{}
+#### 4.2 Confidence Intervals for SCX\_m(s) (Fixed K, M, n
+-\textgreater{
 oo)}<!-- label: confidence-intervals-for-scx_ms-fixed-k-m-n---oo -->
 
 **Claim**: As n\_s -\textgreater{} oo:
@@ -392,8 +394,8 @@ CLT holds.
 **Value**: Moderate. Enables standard error bars on SCX reliability
 plots. Useful for practitioners.
 
-\subsubsection{4.3 Consistency of k-means State Discovery (n, K
--\textgreater{}
+#### 4.3 Consistency of k-means State Discovery (n, K
+-\textgreater{
 oo)}<!-- label: consistency-of-k-means-state-discovery-n-k---oo -->
 
 **Claim**: Under suitable regularity conditions on phi(X) and the
@@ -424,8 +426,8 @@ would answer: when does the SCX state discovery procedure actually work?
 cluster consistency). Hard for overlapping states (the typical SCX
 case).
 
-\subsubsection{4.4 Delta Method for Expert Routing
-Weights}<!-- label: delta-method-for-expert-routing-weights -->
+#### 4.4 Delta Method for Expert Routing
+Weights<!-- label: delta-method-for-expert-routing-weights -->
 
 **Claim**: As n\_s -\textgreater{} oo for all s, the empirical
 routing weights:
@@ -444,8 +446,8 @@ where J is the Jacobian of the softmax transformation.
 **Value**: Moderate. Provides asymptotic confidence intervals for
 routing weights. Useful for understanding routing uncertainty.
 
-\subsubsection{4.5 The Optimal K: Bias-Variance
-Tradeoff}<!-- label: the-optimal-k-bias-variance-tradeoff -->
+#### 4.5 The Optimal K: Bias-Variance
+Tradeoff<!-- label: the-optimal-k-bias-variance-tradeoff -->
 
 This is the most valuable ``low-hanging fruit'' --- a precise
 characterization of the optimal number of states for SCX.
@@ -491,11 +493,11 @@ way to choose K given n and M. It would be a practically useful theorem.
 
 </div>
 
-\subsection{5. Hard Problems: What Requires New
-Theory}<!-- label: hard-problems-what-requires-new-theory -->
+### 5. Hard Problems: What Requires New
+Theory<!-- label: hard-problems-what-requires-new-theory -->
 
-\subsubsection{5.1 Joint Distribution of the SCX
-Score}<!-- label: joint-distribution-of-the-scx-score -->
+#### 5.1 Joint Distribution of the SCX
+Score<!-- label: joint-distribution-of-the-scx-score -->
 
 **Problem**: Characterize the joint asymptotic distribution of
 (SCX\_1(s), ..., SCX\_M(s), C(x), NS(x)) as all parameters grow.
@@ -520,8 +522,8 @@ same data is used for selection and estimation.
 **Difficulty**: PhD thesis level. Would require novel selective
 inference tools for clustering-based two-stage estimation.
 
-\subsubsection{5.2 Optimal Scaling Rates for Triple
-Asymptotics}<!-- label: optimal-scaling-rates-for-triple-asymptotics -->
+#### 5.2 Optimal Scaling Rates for Triple
+Asymptotics<!-- label: optimal-scaling-rates-for-triple-asymptotics -->
 
 **Problem**: Find the optimal scaling relationship between K, M,
 and n such that SCX achieves consistency (F1 -\textgreater{} 1) at the
@@ -554,8 +556,8 @@ triple is structurally more complex than either of these.
 **Difficulty**: Open research problem. Would be a significant
 theoretical contribution if solved.
 
-\subsubsection{5.3 Asymptotic Distribution under Model
-Misspecification}<!-- label: asymptotic-distribution-under-model-misspecification -->
+#### 5.3 Asymptotic Distribution under Model
+Misspecification<!-- label: asymptotic-distribution-under-model-misspecification -->
 
 **Problem**: What happens to SCX when the state partition model is
 wrong? Specifically, when the true distribution P(Y| X) does not
@@ -589,8 +591,8 @@ multi-expert aggregation.
 sieve/penalized M-estimation framework (Grenander, 1981; Shen \& Wong,
 1994).
 
-\subsubsection{5.4 Phase Transition in the (delta, eta, K)
-Space}<!-- label: phase-transition-in-the-delta-eta-k-space -->
+#### 5.4 Phase Transition in the (delta, eta, K)
+Space<!-- label: phase-transition-in-the-delta-eta-k-space -->
 
 **Problem**: Characterize the sharp threshold where SCX goes from
 ``works'' to ``fails'' as a function of feature-information delta, noise
@@ -622,14 +624,14 @@ method).
 
 </div>
 
-\subsection{6. Phase Transition
-Conjectures}<!-- label: phase-transition-conjectures -->
+### 6. Phase Transition
+Conjectures<!-- label: phase-transition-conjectures -->
 
 Despite the difficulty of rigorous proof, we can conjecture the phase
 diagram based on the existing finite-sample bounds.
 
-\subsubsection{6.1 The (K, M, n) Phase
-Diagram}<!-- label: the-k-m-n-phase-diagram -->
+#### 6.1 The (K, M, n) Phase
+Diagram<!-- label: the-k-m-n-phase-diagram -->
 
 SCX ``works'' (F1 -\textgreater{} 1 asymptotically) in the following
 regime:
@@ -656,8 +658,8 @@ separate clean from noisy; F1 stuck below some constant \textless{} 1 -
 Condition 3 fails (n * P\_min small): within-state estimates are pure
 noise; state-conditioned weighting becomes worse than global weighting
 
-\subsubsection{6.2 The Sharpness
-Conjecture}<!-- label: the-sharpness-conjecture -->
+#### 6.2 The Sharpness
+Conjecture<!-- label: the-sharpness-conjecture -->
 
 The most likely candidate for a sharp phase transition is in
 **Condition 2** (the detection phase transition), because:
@@ -683,8 +685,8 @@ where the null is ``all samples clean'' and the alternative is
 is exp(-M * KL(C\_clean ||{} C\_noisy)) which scales as
 exp(-M * Delta\^{}2).
 
-\subsubsection{6.3 The Triple Phase
-Transition}<!-- label: the-triple-phase-transition -->
+#### 6.3 The Triple Phase
+Transition<!-- label: the-triple-phase-transition -->
 
 The full phase transition (K, M, n jointly) would have the form:
 
@@ -710,8 +712,8 @@ for all tasks.
 
 ### 7. Would Reviewers Care?<!-- label: would-reviewers-care -->
 
-\subsubsection{7.1 AISTATS / TMLR / NeurIPS
-Norms}<!-- label: aistats-tmlr-neurips-norms -->
+#### 7.1 AISTATS / TMLR / NeurIPS
+Norms<!-- label: aistats-tmlr-neurips-norms -->
 
 **Current norm**: Non-asymptotic (finite-sample) bounds are
 standard and preferred in top ML venues. The majority of learning theory
@@ -729,8 +731,8 @@ M from Theorem 1 is more impactful than a CLT would be. 3.
 matter at finite sample sizes wash out in the limit. Reviewers are
 suspicious of asymptotic arguments that ignore these dependencies.
 
-\subsubsection{7.2 When Asymptotics Add
-Value}<!-- label: when-asymptotics-add-value -->
+#### 7.2 When Asymptotics Add
+Value<!-- label: when-asymptotics-add-value -->
 
 There are specific scenarios where asymptotic results strengthen a
 paper:
@@ -740,8 +742,8 @@ paper:
 3. 
 4. 
 
-\subsubsection{7.3 Recommended Position for Current
-Papers}<!-- label: recommended-position-for-current-papers -->
+#### 7.3 Recommended Position for Current
+Papers<!-- label: recommended-position-for-current-papers -->
 
 **For the first SCX paper** (primary submission): - Keep the
 current finite-sample bounds (Theorems 1-3) - Add the following
@@ -802,8 +804,8 @@ asymptotics
 
 ### 8. Estimated Effort<!-- label: estimated-effort -->
 
-\subsubsection{Feasibility Matrix: Effort
-vs.~Impact}<!-- label: feasibility-matrix-effort-vs.-impact -->
+#### Feasibility Matrix: Effort
+vs.~Impact<!-- label: feasibility-matrix-effort-vs.-impact -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1951}}
@@ -856,8 +858,8 @@ Universal consistency (nonparametric) & 2-6 months & High & Medium &
 
 \end{longtable}
 
-\subsubsection{Recommended Priority
-Order}<!-- label: recommended-priority-order -->
+#### Recommended Priority
+Order<!-- label: recommended-priority-order -->
 
 **Phase 1 (before first paper submission, 1-2 months)**: 1. Cluster
 consistency: prove that k-means on phi(X) recovers the true partition as
@@ -890,8 +892,8 @@ symmetric experts, Gaussian features)
 
 ### 9. Recommended First Step<!-- label: recommended-first-step -->
 
-\subsubsection{Choose One Regime: Cluster Consistency for State
-Discovery}<!-- label: choose-one-regime-cluster-consistency-for-state-discovery -->
+#### Choose One Regime: Cluster Consistency for State
+Discovery<!-- label: choose-one-regime-cluster-consistency-for-state-discovery -->
 
 The single most valuable and tractable asymptotic result is:
 
@@ -920,8 +922,8 @@ useful output (guidance on choosing K). 4. It can be written as a
 self-contained result that doesn't require simultaneous asymptotic
 analysis of M and n.
 
-\subsubsection{What the Proof Would
-Need}<!-- label: what-the-proof-would-need -->
+#### What the Proof Would
+Need<!-- label: what-the-proof-would-need -->
 
 1. 
 2. 
@@ -963,8 +965,8 @@ A 2-3 page proof (or a section in the existing Thm 2 document) showing:
 - 
 - 
 
-\subsubsection{Asymptotic Clustering
-Theory}<!-- label: asymptotic-clustering-theory -->
+#### Asymptotic Clustering
+Theory<!-- label: asymptotic-clustering-theory -->
 
 - 
 - 
@@ -972,29 +974,29 @@ Theory}<!-- label: asymptotic-clustering-theory -->
 - 
 - 
 
-\subsubsection{High-Dimensional and Double
-Asymptotics}<!-- label: high-dimensional-and-double-asymptotics -->
+#### High-Dimensional and Double
+Asymptotics<!-- label: high-dimensional-and-double-asymptotics -->
 
 - 
 - 
 - 
 
-\subsubsection{Selective Inference /
-Post-Clustering}<!-- label: selective-inference-post-clustering -->
+#### Selective Inference /
+Post-Clustering<!-- label: selective-inference-post-clustering -->
 
 - 
 - 
 - 
 
-\subsubsection{Nonparametric Sieve
-Estimation}<!-- label: nonparametric-sieve-estimation -->
+#### Nonparametric Sieve
+Estimation<!-- label: nonparametric-sieve-estimation -->
 
 - 
 - 
 - 
 
-\subsubsection{Phase Transitions in
-Learning}<!-- label: phase-transitions-in-learning -->
+#### Phase Transitions in
+Learning<!-- label: phase-transitions-in-learning -->
 
 - 
 - 
@@ -1006,8 +1008,8 @@ Learning}<!-- label: phase-transitions-in-learning -->
 
 </div>
 
-\subsection{Appendix: Quick Reference --- Parameter Roles in
-SCX}<!-- label: appendix-quick-reference-parameter-roles-in-scx -->
+### Appendix: Quick Reference --- Parameter Roles in
+SCX<!-- label: appendix-quick-reference-parameter-roles-in-scx -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1486}}

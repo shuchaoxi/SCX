@@ -1,5 +1,7 @@
-\section{Completeness Analysis of SCX
-Self-Evolution}<!-- label: completeness-analysis-of-scx-self-evolution -->
+# Completeness Analysis of SCX
+Self-Evolution
+
+**Author:** SCX
 
 > **Part of the SCX Self-Evolution Theory Series** **Status**:
 > Formal analysis |{} **Audit**: Pre-review
@@ -30,11 +32,11 @@ Self-Evolution}<!-- label: completeness-analysis-of-scx-self-evolution -->
 
 </div>
 
-\subsection{1. Finite Structure Space
-Argument}<!-- label: finite-structure-space-argument -->
+### 1. Finite Structure Space
+Argument<!-- label: finite-structure-space-argument -->
 
-\subsubsection{1.1 Physical Constraints on the SCX
-System}<!-- label: physical-constraints-on-the-scx-system -->
+#### 1.1 Physical Constraints on the SCX
+System<!-- label: physical-constraints-on-the-scx-system -->
 
 The SCX self-evolution framework operates under three universal physical
 constraints that render the configuration space finite.
@@ -58,8 +60,8 @@ SCX system are stored with finite machine precision
 differ by less than \(\varepsilon_{mach}\) are physically
 indistinguishable.
 
-\subsubsection{1.2 Distinguishable
-Configurations}<!-- label: distinguishable-configurations -->
+#### 1.2 Distinguishable
+Configurations<!-- label: distinguishable-configurations -->
 
 Let \(\mathcal{F}\) be the class of all possible gatekeeper scoring
 functions \(S_t: \mathcal{X} \to [0,1]\) realizable within the SCX
@@ -105,8 +107,8 @@ system. \(\square\)
 
 ### 2. Covering Number Analysis<!-- label: covering-number-analysis -->
 
-\subsubsection{2.1 Covering Number of the Gatekeeper
-Class}<!-- label: covering-number-of-the-gatekeeper-class -->
+#### 2.1 Covering Number of the Gatekeeper
+Class<!-- label: covering-number-of-the-gatekeeper-class -->
 
 Define the gatekeeper function class \(\mathcal{F}\) as the set of all
 scoring functions realizable by the SCX framework. Let \(\mathcal{F}\)
@@ -172,11 +174,11 @@ entropy is finite for any \(\varepsilon > 0\).
 
 </div>
 
-\subsection{3. Effective State Space Size and Memory
-Capacity}<!-- label: effective-state-space-size-and-memory-capacity -->
+### 3. Effective State Space Size and Memory
+Capacity<!-- label: effective-state-space-size-and-memory-capacity -->
 
-\subsubsection{3.1 Effective State Space
-Size}<!-- label: effective-state-space-size -->
+#### 3.1 Effective State Space
+Size<!-- label: effective-state-space-size -->
 
 Under machine precision \(\varepsilon_{mach}\) and finite feature
 dimension \(d_\phi\), the effective number of distinguishable input
@@ -207,8 +209,8 @@ of NEP data ever generated is finite.
 
 </div>
 
-\subsection{4. Existence of Finite Termination
-Time}<!-- label: existence-of-finite-termination-time -->
+### 4. Existence of Finite Termination
+Time<!-- label: existence-of-finite-termination-time -->
 
 #### 4.1 Monotonic Structure<!-- label: monotonic-structure -->
 
@@ -222,8 +224,8 @@ finite, and the evolution is deterministic (or Markovian), any sequence
 \((S_t, M_t, f_{\theta_t})\) must eventually visit a previously visited
 state.
 
-\subsubsection{4.2 Finite-Time Fixed
-Point}<!-- label: finite-time-fixed-point -->
+#### 4.2 Finite-Time Fixed
+Point<!-- label: finite-time-fixed-point -->
 
 **Lemma SE-2 (Cycle Detection).** In a finite-state deterministic
 dynamical system, any infinite trajectory must eventually enter a cycle.
@@ -287,8 +289,8 @@ must be within \(\varepsilon\) of some previously visited state, and the
 optimality gap must be bounded by \(\varepsilon\) due to the covering
 radius. \(\square\)
 
-\subsubsection{\texorpdfstring{4.3 Explicit Bound on
-\(T^*\)}{4.3 Explicit Bound on T\^{}*}}<!-- label: explicit-bound-on-t -->
+#### \texorpdfstring{4.3 Explicit Bound on
+\(T^*\){4.3 Explicit Bound on T\^{}*}}<!-- label: explicit-bound-on-t -->
 
 A crude but explicit bound on the termination time follows from the size
 of the configuration space:
@@ -310,11 +312,11 @@ is a worst-case theoretical guarantee.
 
 </div>
 
-\subsection{5. Connection to the Physical Church-Turing
-Thesis}<!-- label: connection-to-the-physical-church-turing-thesis -->
+### 5. Connection to the Physical Church-Turing
+Thesis<!-- label: connection-to-the-physical-church-turing-thesis -->
 
-\subsubsection{5.1 The SCX System as a Finite-State
-Machine}<!-- label: the-scx-system-as-a-finite-state-machine -->
+#### 5.1 The SCX System as a Finite-State
+Machine<!-- label: the-scx-system-as-a-finite-state-machine -->
 
 The physical Church-Turing thesis (Deutsch, 1985) states that every
 physically realizable system can be simulated by a universal Turing
@@ -372,8 +374,8 @@ fixed points are possible under the Lyapunov condition.
 
 </div>
 
-\subsection{6. Godel Incompleteness
-Analogy}<!-- label: godel-incompleteness-analogy -->
+### 6. Godel Incompleteness
+Analogy<!-- label: godel-incompleteness-analogy -->
 
 #### 6.1 Structural Parallel<!-- label: structural-parallel -->
 
@@ -412,8 +414,8 @@ model of arithmetic, \(\varphi\) is a Godel sentence, ``noise\((x)\)''
 is the proposition ``sample \(x\) is label noise'', and \(\models\)
 denotes truth in the intended model.
 
-\subsubsection{6.2 Self-Reference: The System Cannot Certify Its Own
-Completeness}<!-- label: self-reference-the-system-cannot-certify-its-own-completeness -->
+#### 6.2 Self-Reference: The System Cannot Certify Its Own
+Completeness<!-- label: self-reference-the-system-cannot-certify-its-own-completeness -->
 
 **Claim (SE-C2): The SCX self-evolution cannot certify its own
 completeness.**
@@ -437,8 +439,8 @@ real: without access to an external oracle, the system cannot
 distinguish between ``I have converged to the truth'' and ``I have
 converged to a self-consistent but incorrect fixed point.''
 
-\subsubsection{6.3 External Validation as Meta-System
-Escape}<!-- label: external-validation-as-meta-system-escape -->
+#### 6.3 External Validation as Meta-System
+Escape<!-- label: external-validation-as-meta-system-escape -->
 
 The NEP physical experiment (direct DFT or experimental validation of
 selected configurations) provides the **meta-system** that escapes
@@ -457,8 +459,8 @@ calculations on samples selected by the gatekeeper) is not merely an
 engineering consideration --- it is **epistemically necessary** for
 the SCX system to escape its own completeness limitations.
 
-\subsubsection{6.4 Two Distinct
-Limitations}<!-- label: two-distinct-limitations -->
+#### 6.4 Two Distinct
+Limitations<!-- label: two-distinct-limitations -->
 
 It is important to distinguish two separate completeness limitations:
 
@@ -512,8 +514,8 @@ Severity & Fundamental & Practical (but addressable)
 
 </div>
 
-\subsection{7. Theorem SE-2: Completeness
-Bound}<!-- label: theorem-se-2-completeness-bound -->
+### 7. Theorem SE-2: Completeness
+Bound<!-- label: theorem-se-2-completeness-bound -->
 
 #### 7.1 Formal Statement<!-- label: formal-statement -->
 
@@ -594,9 +596,9 @@ The second inequality follows from
 descent is at least machine precision). The rightmost bound uses
 \(|\mathcal{Q}|\) as a coarse overestimate. \(\square\)
 
-\subsubsection{7.2 Proof Sketch Using Covering Number + Monotonic Memory
+#### 7.2 Proof Sketch Using Covering Number + Monotonic Memory
 + Bounded
-Improvement}<!-- label: proof-sketch-using-covering-number-monotonic-memory-bounded-improvement -->
+Improvement<!-- label: proof-sketch-using-covering-number-monotonic-memory-bounded-improvement -->
 
 An alternative proof emphasizing the covering-number perspective:
 
@@ -644,8 +646,8 @@ captures the dependence on the complexity of the gatekeeper class.
 
 </div>
 
-\subsection{8. Implications for the Self-Evolution
-Loop}<!-- label: implications-for-the-self-evolution-loop -->
+### 8. Implications for the Self-Evolution
+Loop<!-- label: implications-for-the-self-evolution-loop -->
 
 #### 8.1 Practical Consequences<!-- label: practical-consequences -->
 
@@ -687,16 +689,16 @@ system cannot self-improve arbitrarily many times; there is a finite
 
 \end{longtable}
 
-\subsubsection{8.2 What Theorem SE-2 Does NOT
-Guarantee}<!-- label: what-theorem-se-2-does-not-guarantee -->
+#### 8.2 What Theorem SE-2 Does NOT
+Guarantee<!-- label: what-theorem-se-2-does-not-guarantee -->
 
 1. 
 2. 
 3. 
 4. 
 
-\subsubsection{8.3 Relation to Other
-Theorems}<!-- label: relation-to-other-theorems -->
+#### 8.3 Relation to Other
+Theorems<!-- label: relation-to-other-theorems -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3000}}

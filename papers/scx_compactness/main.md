@@ -1,10 +1,6 @@
-<div align="center">
+# 引言：从有限到无限的桥梁
 
-**版本：** v1.0 \quad | \quad
-**状态：** 预印本 \quad | \quad
-**分类：** SCX理论体系 — 逻辑基础卷
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

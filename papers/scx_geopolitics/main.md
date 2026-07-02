@@ -1,3 +1,7 @@
+# Introduction: The Geopolitics of AI Audit
+
+**Author:** SCX
+
 *Abstract:*
 
 The SCX/Yajie protocol is fundamentally restructuring the global AI power landscape. The old order measures competitiveness by a single metric---GPU count $\gpuScale$; the new order measures competitiveness by audit depth $\auditDepth$---the degree to which a nation's AI systems are independently verifiable. This paradigm shift is not incremental; it is discontinuous. Every nation, every corporation, every model faces a binary choice: accept audit and become a protocol node (\declaredState), or refuse audit and forfeit the global trust premium (\undeclaredState). There is no intermediate state.

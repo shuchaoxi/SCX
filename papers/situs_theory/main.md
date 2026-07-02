@@ -1,3 +1,7 @@
+# 本文提出\Situs{}——一种
+
+**Author:** SCX
+
 *Abstract:*
 
 大语言模型的位置编码（Positional Encoding, PE）本质上是统计驱动的——其频率分布与数据中

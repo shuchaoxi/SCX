@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 Learned world models---exemplified by NVIDIA Cosmos, Isaac Sim, and related

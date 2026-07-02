@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 \cn{SCX 噪声检测依赖于特征 $\phi(X)$ 提供关于样本状态标签 $S$ 的信息。

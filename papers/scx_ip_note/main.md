@@ -1,6 +1,11 @@
+# SCX
+66|项目成果归属说明
+
+**Author:** SCX
+
 64|
-65|\section{SCX
-66|项目成果归属说明}<!-- label: scx-ux9879ux76eeux6210ux679cux5f52ux5c5eux8bf4ux660e -->
+65|## SCX
+66|项目成果归属说明<!-- label: scx-ux9879ux76eeux6210ux679cux5f52ux5c5eux8bf4ux660e -->
 67|
 68|
 > 69|本文件记录 SCX (State-Conditioned eXpertise)
@@ -16,11 +21,11 @@
 </div>
 
 74|
-75|\subsection{一、SCX
-76|项目独立性声明}<!-- label: ux4e00scx-ux9879ux76eeux72ecux7acbux6027ux58f0ux660e -->
+75|### 一、SCX
+76|项目独立性声明<!-- label: ux4e00scx-ux9879ux76eeux72ecux7acbux6027ux58f0ux660e -->
 77|
-78|\subsubsection{1.1 核心性质：SCX 是纯数学/ML
-79|框架}<!-- label: ux6838ux5fc3ux6027ux8d28scx-ux662fux7eafux6570ux5b66ml-ux6846ux67b6 -->
+78|#### 1.1 核心性质：SCX 是纯数学/ML
+79|框架<!-- label: ux6838ux5fc3ux6027ux8d28scx-ux662fux7eafux6570ux5b66ml-ux6846ux67b6 -->
 80|
 81|SCX 是**状态条件专家性**（State-Conditioned
 82|eXpertise）的数学框架，其核心贡献是：
@@ -34,8 +39,8 @@
 95|SCX **不包含**任何 DFT（密度泛函理论）计算代码、VASP
 96|输入文件、或材料科学特定的计算逻辑。
 97|
-98|\subsubsection{1.2
-99|不依赖学校资源}<!-- label: ux4e0dux4f9dux8d56ux5b66ux6821ux8d44ux6e90 -->
+98|#### 1.2
+99|不依赖学校资源<!-- label: ux4e0dux4f9dux8d56ux5b66ux6821ux8d44ux6e90 -->
 100|
 101|\begin{longtable}[]{@{}
 102|  >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2247}}
@@ -83,8 +88,8 @@
 > 147|
 
 148|
-149|\subsubsection{1.4 AI
-150|代码生成声明}<!-- label: ai-ux4ee3ux7801ux751fux6210ux58f0ux660e -->
+149|#### 1.4 AI
+150|代码生成声明<!-- label: ai-ux4ee3ux7801ux751fux6210ux58f0ux660e -->
 151|
 152|SCX Python 包的**全部代码**由 AI 工具 **AI programming tools
 153|(AI)** 在用户的数学框架和设计方向指导下生成。用户是：
@@ -103,11 +108,11 @@
 </div>
 
 166|
-167|\subsection{二、与 EGP / AlGaN / DFT
-168|项目的边界}<!-- label: ux4e8cux4e0e-egp-algan-dft-ux9879ux76eeux7684ux8fb9ux754c -->
+167|### 二、与 EGP / AlGaN / DFT
+168|项目的边界<!-- label: ux4e8cux4e0e-egp-algan-dft-ux9879ux76eeux7684ux8fb9ux754c -->
 169|
-170|\subsubsection{2.1
-171|两个独立项目}<!-- label: ux4e24ux4e2aux72ecux7acbux9879ux76ee -->
+170|#### 2.1
+171|两个独立项目<!-- label: ux4e24ux4e2aux72ecux7acbux9879ux76ee -->
 172|
 173|\begin{longtable}[]{@{}lll@{}}
 174|\toprule\noalign{}
@@ -129,8 +134,8 @@
 
 185|\end{longtable}
 186|
-187|\subsubsection{2.2
-188|唯一交集：概念起源}<!-- label: ux552fux4e00ux4ea4ux96c6ux6982ux5ff5ux8d77ux6e90 -->
+187|#### 2.2
+188|唯一交集：概念起源<!-- label: ux552fux4e00ux4ea4ux96c6ux6982ux5ff5ux8d77ux6e90 -->
 189|
 190|SCX 中**``状态条件专家性''**这一核心概念的思想萌芽来自 EGP Paper 1
 191|的 gauge fixing 工作------在拼接多个 ACE/PACE
@@ -145,8 +150,8 @@
 > 200|
 
 201|
-202|\subsubsection{2.3 EGP 项目的 DFT
-203|数据权属}<!-- label: egp-ux9879ux76eeux7684-dft-ux6570ux636eux6743ux5c5e -->
+202|#### 2.3 EGP 项目的 DFT
+203|数据权属<!-- label: egp-ux9879ux76eeux7684-dft-ux6570ux636eux6743ux5c5e -->
 204|
 205|AlN v3 DFT 数据是在**孝感超算**（学校设备）上使用 VASP 生成的，属于
 206|EGP 项目的成果。SCX 项目**不声称对这部分数据拥有独立所有权**。SCX
@@ -172,8 +177,8 @@
 - 
 
 228|
-229|\subsubsection{3.2
-230|潜在关联与排除}<!-- label: ux6f5cux5728ux5173ux8054ux4e0eux6392ux9664 -->
+229|#### 3.2
+230|潜在关联与排除<!-- label: ux6f5cux5728ux5173ux8054ux4e0eux6392ux9664 -->
 231|
 232|SCX
 233|项目与用户所在课题组之间**没有雇佣、资助或指导关系**。即使存在任何课题组的通用知识（如

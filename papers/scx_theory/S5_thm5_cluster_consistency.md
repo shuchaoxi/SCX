@@ -1,3 +1,7 @@
+# Theorem 5: Cluster Consistency of State Discovery
+
+**Author:** SCX
+
 ## Theorem 5: Cluster Consistency of State Discovery
 <!-- label: sec:S5 -->
 

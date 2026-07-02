@@ -1,5 +1,7 @@
-\section{🖥️ 药物数据库全量筛选 ---
-硬件配置单}<!-- label: ux836fux7269ux6570ux636eux5e93ux5168ux91cfux7b5bux9009-ux786cux4ef6ux914dux7f6eux5355 -->
+# 🖥️ 药物数据库全量筛选 ---
+硬件配置单
+
+**Author:** SCX
 
 ### 计算需求分析<!-- label: ux8ba1ux7b97ux9700ux6c42ux5206ux6790 -->
 
@@ -31,8 +33,8 @@ Yajie 多专家推理 & GPU & ~10\^{}4 drug ×
 
 </div>
 
-\subsection{方案
-A：最低可跑（利用现有设备）}<!-- label: ux65b9ux6848-aux6700ux4f4eux53efux8dd1ux5229ux7528ux73b0ux6709ux8bbeux5907 -->
+### 方案
+A：最低可跑（利用现有设备）<!-- label: ux65b9ux6848-aux6700ux4f4eux53efux8dd1ux5229ux7528ux73b0ux6709ux8bbeux5907 -->
 
 \begin{longtable}[]{@{}lll@{}}
 \toprule\noalign{}
@@ -62,8 +64,8 @@ GPU & 1× RTX 4090 24GB & ✅
 
 </div>
 
-\subsection{方案
-B：生产力配置（推荐）}<!-- label: ux65b9ux6848-bux751fux4ea7ux529bux914dux7f6eux63a8ux8350 -->
+### 方案
+B：生产力配置（推荐）<!-- label: ux65b9ux6848-bux751fux4ea7ux529bux914dux7f6eux63a8ux8350 -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
@@ -118,8 +120,8 @@ GPU & 2× RTX 4090 24GB & ¥26,000 & Yajie 多专家并行推理
 
 </div>
 
-\subsection{方案
-C：全速配置}<!-- label: ux65b9ux6848-cux5168ux901fux914dux7f6e -->
+### 方案
+C：全速配置<!-- label: ux65b9ux6848-cux5168ux901fux914dux7f6e -->
 
 \begin{longtable}[]{@{}llll@{}}
 \toprule\noalign{}

@@ -1,3 +1,7 @@
+# The Measurement Problem as an Audit Problem
+
+**Author:** SCX
+
 *Abstract:*
 
 The quantum measurement problem asks: when and why does the wavefunction collapse? We reframe this as a multi-expert audit problem. Each measurement apparatus (or conscious observer) is an ``expert'' reporting an outcome. The Born rule provides the probability distribution over expert reports. SCX Theorem~3 proves that disagreement among observers cannot be attributed to a specific cause (apparatus error, genuine indeterminacy, or basis mismatch) without declared axioms. We show that three historical experiments---the double-slit, Wigner's friend, and weak measurement---are special cases of SCX multi-expert audit with $M=1$, $M=2$, and $M \gg 1$ observers respectively. Weak measurement emerges as Yajie consensus with partial information preservation. Quantum Darwinism is Spring memory: the environment redundantly encodes information as a permanent audit trail. We derive tight non-asymptotic bounds (Chernoff--Hoeffding) for the multi-observer agreement probability, an exact fidelity--coupling relation for weak measurement, a minimum redundancy formula for quantum Darwinism, and a Bell-inequality audit theorem linking CHSH violation to non-classical multi-expert correlation.

@@ -1,5 +1,7 @@
-\section{SCX Self-Evolution: Convergence Rate Analysis (Spring-1 Rate
-Tightening)}<!-- label: scx-self-evolution-convergence-rate-analysis-spring-1-rate-tightening -->
+# SCX Self-Evolution: Convergence Rate Analysis (Spring-1 Rate
+Tightening)
+
+**Author:** SCX
 
 > **Version**: 2026-06-28 |{} **Status**: Theoretical
 > derivation (partial) |{} **Prerequisite**: Documents 02, 05,
@@ -111,11 +113,11 @@ is the empirical \(L^2\) norm on the reference set, and
 
 </div>
 
-\subsection{2. Current State: Almost-Sure Convergence
-Only}<!-- label: current-state-almost-sure-convergence-only -->
+### 2. Current State: Almost-Sure Convergence
+Only<!-- label: current-state-almost-sure-convergence-only -->
 
-\subsubsection{2.1 What Document 06
-Establishes}<!-- label: what-document-06-establishes -->
+#### 2.1 What Document 06
+Establishes<!-- label: what-document-06-establishes -->
 
 Theorem SE-1 (Document 06) asserts **almost-sure convergence** to a
 fixed point under conditions C1-C7, using a Lyapunov supermartingale
@@ -157,8 +159,8 @@ Dependence of \(\alpha\) on \(L_f\), \(\alpha_t\), \(d_\phi\) &
 
 \end{longtable}
 
-\subsubsection{2.3 Why Almost-Sure is
-Insufficient}<!-- label: why-almost-sure-is-insufficient -->
+#### 2.3 Why Almost-Sure is
+Insufficient<!-- label: why-almost-sure-is-insufficient -->
 
 Almost-sure convergence does not tell us: 1. How many iterations are
 needed to reach a given accuracy. 2. How the rate degrades as dimension
@@ -172,12 +174,12 @@ convergence speed.
 
 </div>
 
-\subsection{\texorpdfstring{3. Rate Under Strong Convexity:
-\(O(t^{-\alpha})\)
+### \texorpdfstring{3. Rate Under Strong Convexity:
+\(O(t^{-\alpha)\)
 Derivation}{3. Rate Under Strong Convexity: O(t\^{}\{-\ alpha\}) Derivation}}<!-- label: rate-under-strong-convexity-ot-alpha-derivation -->
 
-\subsubsection{3.1 Strong Convexity
-Assumption}<!-- label: strong-convexity-assumption -->
+#### 3.1 Strong Convexity
+Assumption<!-- label: strong-convexity-assumption -->
 
 **Assumption SC (Strong Convexity of Limiting Loss).** The limiting
 expected student loss
@@ -192,8 +194,8 @@ neighborhood of a strict local minimum (which is generic for
 overparameterized networks). This is a **local** assumption, valid
 after the system enters the basin of attraction.
 
-\subsubsection{3.2 Student Rate Under Stationary
-Distribution}<!-- label: student-rate-under-stationary-distribution -->
+#### 3.2 Student Rate Under Stationary
+Distribution<!-- label: student-rate-under-stationary-distribution -->
 
 **Theorem 11.1 (Student Rate, Stationary Distribution ---
 PROVEN).** Assume SC (strong convexity), C2 (Lipschitz student), C4 (RM
@@ -234,8 +236,8 @@ stochastic approximation with polynomially decaying step sizes (Polyak
 **Status: PROVEN.** This is a standard result for SGD on strongly
 convex objectives.
 
-\subsubsection{3.3 Gatekeeper Rate Under Fixed
-Memory}<!-- label: gatekeeper-rate-under-fixed-memory -->
+#### 3.3 Gatekeeper Rate Under Fixed
+Memory<!-- label: gatekeeper-rate-under-fixed-memory -->
 
 **Theorem 11.2 (Gatekeeper Rate, Fixed Student --- PROVEN).**
 Assume C3 (Lipschitz gatekeeper), the student is fixed at \(\theta^*\),
@@ -263,8 +265,8 @@ in general --- it depends on the quality of the consensus signal. When
 the consensus is noisy (small \(\Delta_s\) in Theorem 1), \(L_S\) may
 exceed 1.
 
-\subsubsection{3.4 Coupled Rate Under Two-Timescale
-Separation}<!-- label: coupled-rate-under-two-timescale-separation -->
+#### 3.4 Coupled Rate Under Two-Timescale
+Separation<!-- label: coupled-rate-under-two-timescale-separation -->
 
 **Theorem 11.3 (Coupled Rate Under Strong Convexity ---
 CONJECTURED).** Assume SC (strong convexity), C2-C7, C6' (two-timescale,
@@ -298,11 +300,11 @@ verification for the specific SCX coupling structure.
 
 </div>
 
-\subsection{4. Dependence on System
-Parameters}<!-- label: dependence-on-system-parameters -->
+### 4. Dependence on System
+Parameters<!-- label: dependence-on-system-parameters -->
 
-\subsubsection{\texorpdfstring{4.1 Dependence on Lipschitz Constant
-\(L_f\)}{4.1 Dependence on Lipschitz Constant L\_f}}<!-- label: dependence-on-lipschitz-constant-l_f -->
+#### \texorpdfstring{4.1 Dependence on Lipschitz Constant
+\(L_f\){4.1 Dependence on Lipschitz Constant L\_f}}<!-- label: dependence-on-lipschitz-constant-l_f -->
 
 The constant \(C_1\) in Theorem 11.1 depends on \(L_f\) through:
 
@@ -320,8 +322,8 @@ with \(L_g = \Theta(L_f)\):
 where \(\sigma_0^2\) is the base noise level and \(\mu_0\) is the base
 curvature.
 
-\subsubsection{4.2 Dependence on Learning Rate
-Schedule}<!-- label: dependence-on-learning-rate-schedule -->
+#### 4.2 Dependence on Learning Rate
+Schedule<!-- label: dependence-on-learning-rate-schedule -->
 
 The exponent \(\alpha\) in \(O(t^{-\alpha})\) equals the learning rate
 exponent \(a\) (from \(\alpha_t = \alpha_0 t^{-a}\)).
@@ -350,8 +352,8 @@ without precise tuning (Polyak \& Juditsky, 1992).
 
 **Status: PROVEN** (standard result, applies to SCX student).
 
-\subsubsection{\texorpdfstring{4.3 Dependence on Feature Dimension
-\(d_\phi\)}{4.3 Dependence on Feature Dimension d\_\ phi}}<!-- label: dependence-on-feature-dimension-d_phi -->
+#### \texorpdfstring{4.3 Dependence on Feature Dimension
+\(d_\phi\){4.3 Dependence on Feature Dimension d\_\ phi}}<!-- label: dependence-on-feature-dimension-d_phi -->
 
 The feature dimension \(d_\phi\) affects the convergence rate indirectly
 through:
@@ -373,8 +375,8 @@ entropy \(O(d_\phi \log(1/\varepsilon))\)).
 \(d_\phi\) is typical for parametric models (Document 07, Proposition
 SE-5). The exact interplay with the SGD rate requires further analysis.*
 
-\subsubsection{\texorpdfstring{4.4 Dependence on Noise Rate
-\(\eta\)}{4.4 Dependence on Noise Rate \ eta}}<!-- label: dependence-on-noise-rate-eta -->
+#### \texorpdfstring{4.4 Dependence on Noise Rate
+\(\eta\){4.4 Dependence on Noise Rate \ eta}}<!-- label: dependence-on-noise-rate-eta -->
 
 The noise rate \(\eta\) affects the convergence rate through the
 **signal-to-noise ratio** of the consensus score:
@@ -395,8 +397,8 @@ becomes arbitrarily slow.
 
 </div>
 
-\subsection{5. Rate Under Polyak-Łojasiewicz
-Condition}<!-- label: rate-under-polyak-ux142ojasiewicz-condition -->
+### 5. Rate Under Polyak-Łojasiewicz
+Condition<!-- label: rate-under-polyak-ux142ojasiewicz-condition -->
 
 #### 5.1 The PL Condition<!-- label: the-pl-condition -->
 
@@ -408,8 +410,8 @@ Many neural network losses satisfy the weaker **Polyak-Łojasiewicz
 This is sufficient for linear convergence of gradient descent (Karimi et
 al., 2016).
 
-\subsubsection{5.2 PL Rate for SCX
-Student}<!-- label: pl-rate-for-scx-student -->
+#### 5.2 PL Rate for SCX
+Student<!-- label: pl-rate-for-scx-student -->
 
 **Theorem 11.4 (Student Rate Under PL --- PROVEN).** Under the PL
 condition with constant \(\mu_{PL} > 0\), C2, and C4 with
@@ -439,8 +441,8 @@ convexity for neural networks.
 
 </div>
 
-\subsection{6. Rate Under General
-Non-Convexity}<!-- label: rate-under-general-non-convexity -->
+### 6. Rate Under General
+Non-Convexity<!-- label: rate-under-general-non-convexity -->
 
 #### 6.1 The Non-Convex Case<!-- label: the-non-convex-case -->
 
@@ -477,8 +479,8 @@ the claimed bound. \(\square\)
 
 **Status: PROVEN.**
 
-\subsubsection{6.2 Stationarity
-vs.~Optimality}<!-- label: stationarity-vs.-optimality -->
+#### 6.2 Stationarity
+vs.~Optimality<!-- label: stationarity-vs.-optimality -->
 
 The rate \(O(t^{-(1-a)})\) guarantees that the gradient norm converges
 to zero, **not** that the parameters converge to \(\theta^*\). In
@@ -501,8 +503,8 @@ gradient descent with noise).*
 
 </div>
 
-\subsection{7. Finite-Time (Non-Asymptotic)
-Bound}<!-- label: finite-time-non-asymptotic-bound -->
+### 7. Finite-Time (Non-Asymptotic)
+Bound<!-- label: finite-time-non-asymptotic-bound -->
 
 #### 7.1 Why Finite-Time?<!-- label: why-finite-time -->
 
@@ -511,8 +513,8 @@ behavior but say little about what happens at practical timescales
 (\(t = 10^2\)--\(10^4\)). A finite-time bound with explicit constants is
 needed for practical guarantees.
 
-\subsubsection{7.2 Finite-Time Bound Under Strong
-Convexity}<!-- label: finite-time-bound-under-strong-convexity -->
+#### 7.2 Finite-Time Bound Under Strong
+Convexity<!-- label: finite-time-bound-under-strong-convexity -->
 
 **Theorem 11.6 (Finite-Time Student Bound --- PROVEN).** Under SC
 (strong convexity), C2, C4 with \(\alpha_t = \alpha_0 t^{-a}\), for any
@@ -545,8 +547,8 @@ difference sequence. \(\square\)
 **Status: PROVEN.** This gives a non-asymptotic guarantee with
 explicit dependence on all parameters.
 
-\subsubsection{7.3 Finite-Time Gatekeeper
-Bound}<!-- label: finite-time-gatekeeper-bound -->
+#### 7.3 Finite-Time Gatekeeper
+Bound<!-- label: finite-time-gatekeeper-bound -->
 
 **Theorem 11.7 (Finite-Time Gatekeeper Bound --- CONJECTURED).**
 Under C3, C6', C7, C9, for any \(t \geq 1\) and \(\delta \in (0, 1)\):
@@ -567,8 +569,8 @@ statistical error is \(O(1/\sqrt{t})\).
 but the constants require verifying that the SCX update satisfies the
 contraction property with the claimed dependence on \(\Delta_\).
 
-\subsubsection{7.4 Combined Finite-Time
-Bound}<!-- label: combined-finite-time-bound -->
+#### 7.4 Combined Finite-Time
+Bound<!-- label: combined-finite-time-bound -->
 
 **Corollary 11.2 (Combined Finite-Time Bound --- CONJECTURED).**
 Under the conditions of Theorems 11.6 and 11.7, with \(a = 0.5\) and
@@ -588,19 +590,19 @@ stochastic optimization with noisy gradients (Agarwal et al., 2012).
 
 </div>
 
-\subsection{8. Two-Timescale Rate
-Decomposition}<!-- label: two-timescale-rate-decomposition -->
+### 8. Two-Timescale Rate
+Decomposition<!-- label: two-timescale-rate-decomposition -->
 
-\subsubsection{8.1 Fast Timescale: Student
-Convergence}<!-- label: fast-timescale-student-convergence -->
+#### 8.1 Fast Timescale: Student
+Convergence<!-- label: fast-timescale-student-convergence -->
 
 On the fast timescale, the student sees the gatekeeper as approximately
 fixed. The student rate (from Section 3) is:
 
 \[R_\theta(t) = \mathbb{E}[\|\theta_t - \theta^*(S_t)\|^2] = O(t^{-a}).\]
 
-\subsubsection{8.2 Slow Timescale: Gatekeeper
-Convergence}<!-- label: slow-timescale-gatekeeper-convergence -->
+#### 8.2 Slow Timescale: Gatekeeper
+Convergence<!-- label: slow-timescale-gatekeeper-convergence -->
 
 On the slow timescale, the student is approximately at
 \(\theta^*(S_t)\), and the gatekeeper evolves according to a reduced
@@ -621,8 +623,8 @@ The total convergence rate is the slower of the two:
 since \(b > a\). The **student bottleneck dominates** --- the
 system converges only as fast as the NEP learns.
 
-\subsubsection{8.4 Optimal Rate
-Allocation}<!-- label: optimal-rate-allocation -->
+#### 8.4 Optimal Rate
+Allocation<!-- label: optimal-rate-allocation -->
 
 Given a total ``learning budget'' \(\sum (\alpha_t + \beta_t)\), how
 should we allocate between student and gatekeeper?
@@ -650,8 +652,8 @@ convergence while ensuring stable two-timescale behavior.
 
 </div>
 
-\subsection{9. Comparison with Known
-Rates}<!-- label: comparison-with-known-rates -->
+### 9. Comparison with Known
+Rates<!-- label: comparison-with-known-rates -->
 
 #### 9.1 Comparison Table<!-- label: comparison-table -->
 
@@ -713,11 +715,11 @@ Theorem 11.3
 
 </div>
 
-\subsection{10. Gap Between Upper and Lower
-Bounds}<!-- label: gap-between-upper-and-lower-bounds -->
+### 10. Gap Between Upper and Lower
+Bounds<!-- label: gap-between-upper-and-lower-bounds -->
 
-\subsubsection{10.1 Information-Theoretic Lower
-Bound}<!-- label: information-theoretic-lower-bound -->
+#### 10.1 Information-Theoretic Lower
+Bound<!-- label: information-theoretic-lower-bound -->
 
 **Theorem 11.8 (Minimax Lower Bound for Student Convergence ---
 PROVEN).** For any algorithm that updates \(\theta_t\) using stochastic
@@ -774,8 +776,8 @@ by \(O(\sqrt{t})\). The gatekeeper rate has room for improvement --- the
 \(t^{-b}\) dependence from iterative refinement is looser than the
 \(1/\sqrt{N_t}\) statistical rate from memory accumulation.
 
-\subsubsection{10.3 Tightening the Gatekeeper
-Rate}<!-- label: tightening-the-gatekeeper-rate -->
+#### 10.3 Tightening the Gatekeeper
+Rate<!-- label: tightening-the-gatekeeper-rate -->
 
 **Proposition 11.7 (Improved Gatekeeper Rate via Batch Updates ---
 CONJECTURED).** If the gatekeeper is updated using **full-batch**
@@ -866,8 +868,8 @@ Optimal rate allocation \(b = a + \varepsilon\) & **CONJECTURED** &
 
 \end{longtable}
 
-\subsubsection{11.3 Parameter Dependence
-Summary}<!-- label: parameter-dependence-summary -->
+#### 11.3 Parameter Dependence
+Summary<!-- label: parameter-dependence-summary -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1864}}
@@ -901,8 +903,8 @@ Effect on Rate Exponent
 
 \end{longtable}
 
-\subsubsection{11.4 Practical
-Recommendations}<!-- label: practical-recommendations -->
+#### 11.4 Practical
+Recommendations<!-- label: practical-recommendations -->
 
 1. 
 2. 

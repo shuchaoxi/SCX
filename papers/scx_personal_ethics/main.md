@@ -1,3 +1,7 @@
+# Introduction --- The Individual's Dilemma
+
+**Author:** SCX
+
 *Abstract:*
 
 {\bf Abstract.}

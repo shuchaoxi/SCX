@@ -1,3 +1,7 @@
+# Theorem Statement
+
+**Author:** SCX
+
 ## Theorem Statement
 
 Let $\mathcal{X}\times\mathcal{Y}$ be the input-label space with $|\mathcal{Y}|=K\geq2$,

@@ -1,5 +1,7 @@
-\section{Theorem 3: Cluster Consistency of State Discovery Under Strong
-Features}<!-- label: theorem-3-cluster-consistency-of-state-discovery-under-strong-features -->
+# Theorem 3: Cluster Consistency of State Discovery Under Strong
+Features
+
+**Author:** SCX
 
 > **Core Claim**: When the feature representation \(\phi(x)\) carries
 > sufficient information about the true state \(S = s(x)\), k-means
@@ -46,8 +48,8 @@ case)
 
 ### 1. Notation and Setup<!-- label: notation-and-setup -->
 
-\subsubsection{1.1 Data Generating
-Process}<!-- label: data-generating-process -->
+#### 1.1 Data Generating
+Process<!-- label: data-generating-process -->
 
 Let \((\Omega, \mathcal{F}, P)\) be a probability space. We observe
 \(n\) i.i.d. copies of the feature vector
@@ -261,8 +263,8 @@ $$
 
 </div>
 
-\subsection{4. Lemma 3: Uniform Convergence of the k-means
-Risk}<!-- label: lemma-3-uniform-convergence-of-the-k-means-risk -->
+### 4. Lemma 3: Uniform Convergence of the k-means
+Risk<!-- label: lemma-3-uniform-convergence-of-the-k-means-risk -->
 
 **Lemma 3 (Uniform Convergence)**. Let
 \(\Theta_K = \{\mu = \{\mu_1,...,\mu_K\} : \mu_k \in \mathbb{R}^{d_\phi}, \|\mu_k\|_2 \leq M\}\)
@@ -358,8 +360,8 @@ Absorbing constants, we obtain:
 
 </div>
 
-\subsection{5. Lemma 4: Complexity Control via Dudley's Entropy
-Bound}<!-- label: lemma-4-complexity-control-via-dudleys-entropy-bound -->
+### 5. Lemma 4: Complexity Control via Dudley's Entropy
+Bound<!-- label: lemma-4-complexity-control-via-dudleys-entropy-bound -->
 
 **Lemma 4 (Metric Entropy of \(K\)-Center Sets)**. Let
 \(\Theta_K = \{\mu = \{\mu_1,...,\mu_K\} : \mu_k \in \mathbb{R}^{d_\phi}, \|\mu_k\|_2 \leq M\}\)
@@ -418,8 +420,8 @@ numerator of the variance penalty.
 
 </div>
 
-\subsection{6. Lemma 5: Separation Condition and Population
-Uniqueness}<!-- label: lemma-5-separation-condition-and-population-uniqueness -->
+### 6. Lemma 5: Separation Condition and Population
+Uniqueness<!-- label: lemma-5-separation-condition-and-population-uniqueness -->
 
 **Lemma 5 (Population Minimizer Equals True Centers)**. Under the
 generative model \(\phi(x) = S(x) + \varepsilon\) with \(\varepsilon\)
@@ -509,8 +511,8 @@ condition.
 
 </div>
 
-\subsection{7. Lemma 6: Error Propagation -- Empirical to True
-Partition}<!-- label: lemma-6-error-propagation-empirical-to-true-partition -->
+### 7. Lemma 6: Error Propagation -- Empirical to True
+Partition<!-- label: lemma-6-error-propagation-empirical-to-true-partition -->
 
 **Lemma 6 (Risk Gap Implies Partition Error Bound)**. Let
 \(\hat_n\) be any \(K\)-center set with empirical risk
@@ -827,8 +829,8 @@ This completes the proof of Theorem 3. \(\square\)
 
 </div>
 
-\subsection{9. Corollary 1: Optimal K
-Scaling}<!-- label: corollary-1-optimal-k-scaling -->
+### 9. Corollary 1: Optimal K
+Scaling<!-- label: corollary-1-optimal-k-scaling -->
 
 **Corollary 1 (Optimal Number of States)**. Under the conditions of
 Theorem 3, the optimal number of states \(K\) that minimizes the total
@@ -873,8 +875,8 @@ number.
 
 </div>
 
-\subsection{10. Corollary 2: Two-Layer Extension (SCX Layer
-2)}<!-- label: corollary-2-two-layer-extension-scx-layer-2 -->
+### 10. Corollary 2: Two-Layer Extension (SCX Layer
+2)<!-- label: corollary-2-two-layer-extension-scx-layer-2 -->
 
 **Corollary 2 (Error-Driven Projection Preserves Consistency)**.
 Let \(W \in \mathbb{R}^{d_2 \times d_\phi}\) be a linear projection
@@ -951,8 +953,8 @@ which this improvement does not degrade consistency.
 
 </div>
 
-\subsection{11. Corollary 3: Misclassification
-Rate}<!-- label: corollary-3-misclassification-rate -->
+### 11. Corollary 3: Misclassification
+Rate<!-- label: corollary-3-misclassification-rate -->
 
 **Corollary 3 (Exponential Tail for Misclassification)**. Under the
 conditions of Theorem 3, for any \(t > 0\):
@@ -982,11 +984,11 @@ centers). Applying the union bound over \(K\) states gives the factor
 
 </div>
 
-\subsection{12. Practical
-Interpretation}<!-- label: practical-interpretation -->
+### 12. Practical
+Interpretation<!-- label: practical-interpretation -->
 
-\subsubsection{12.1 What This Means for SCX
-Users}<!-- label: what-this-means-for-scx-users -->
+#### 12.1 What This Means for SCX
+Users<!-- label: what-this-means-for-scx-users -->
 
 Theorem 3 provides an operational guide for SCX state discovery:
 
@@ -1007,8 +1009,8 @@ Roughly:
 (\(\Delta_ / \sigma \approx 3\)), and \(n_k \geq 100\) per state
 when separation is marginal (\(\Delta_ / \sigma \approx 1\)).
 
-\subsubsection{12.2 The Bias-Variance Tradeoff in
-Practice}<!-- label: the-bias-variance-tradeoff-in-practice -->
+#### 12.2 The Bias-Variance Tradeoff in
+Practice<!-- label: the-bias-variance-tradeoff-in-practice -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1569}}
@@ -1043,8 +1045,8 @@ Optimal
 
 \end{longtable}
 
-\subsubsection{12.3 Verifying the
-Conditions}<!-- label: verifying-the-conditions -->
+#### 12.3 Verifying the
+Conditions<!-- label: verifying-the-conditions -->
 
 Users can check whether Theorem 3 applies to their data:
 
@@ -1073,8 +1075,8 @@ ratio'' threshold in mixture models.
 
 ### 13. Connection to Theorem 2<!-- label: connection-to-theorem-2 -->
 
-\subsubsection{13.1 Two Sides of the Same
-Coin}<!-- label: two-sides-of-the-same-coin -->
+#### 13.1 Two Sides of the Same
+Coin<!-- label: two-sides-of-the-same-coin -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1600}}
@@ -1112,8 +1114,8 @@ Theorem 3 (Positive)
 
 \end{longtable}
 
-\subsubsection{13.2 Mutual Information and
-Separation}<!-- label: mutual-information-and-separation -->
+#### 13.2 Mutual Information and
+Separation<!-- label: mutual-information-and-separation -->
 
 The two conditions are linked. When the features follow
 \(\phi(x) = \mu_{s(x)} + \varepsilon\) with sub-Gaussian noise, the
@@ -1210,8 +1212,8 @@ features
 
 </div>
 
-\subsection{Appendix A: Proof of the Strong Separation Lower
-Bound}<!-- label: appendix-a-proof-of-the-strong-separation-lower-bound -->
+### Appendix A: Proof of the Strong Separation Lower
+Bound<!-- label: appendix-a-proof-of-the-strong-separation-lower-bound -->
 
 Let \(\phi(x) = \mu_{s(x)} + \varepsilon\) with
 \(\varepsilon \sim sub-Gaussian(0, \sigma^2 I)\). We wish to
@@ -1247,8 +1249,8 @@ probability \(O(\exp(-c\Delta_^2 / \sigma^2))\).
 
 This is the per-point separation guarantee needed in Lemma 5 Step 4.
 
-\subsection{Appendix B: Table of Key
-Bounds}<!-- label: appendix-b-table-of-key-bounds -->
+### Appendix B: Table of Key
+Bounds<!-- label: appendix-b-table-of-key-bounds -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}
@@ -1290,8 +1292,8 @@ Optimal \(K^*\) & \(\Theta((n/\log M)^{1/3})\) & Corollary 1
 
 </div>
 
-\subsection{Appendix C: Relationship to Other Clustering Consistency
-Results}<!-- label: appendix-c-relationship-to-other-clustering-consistency-results -->
+### Appendix C: Relationship to Other Clustering Consistency
+Results<!-- label: appendix-c-relationship-to-other-clustering-consistency-results -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1702}}

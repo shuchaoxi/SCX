@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 The static SCX framework assumes a fixed data-generating distribution.

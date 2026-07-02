@@ -1,3 +1,7 @@
+# 引言 (Introduction)
+
+**Author:** SCX
+
 *Abstract:*
 
 Theorem~3 of the SCX framework proves that noise and difficulty are

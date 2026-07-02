@@ -1,3 +1,7 @@
+# 不变理论：共同的数学根源
+
+**Author:** SCX
+
 *Abstract:*
 
 我们证明Galois理论与SCX（可审计声称）框架之间的数学同构。核心洞见：Galois对应（中间域$\leftrightarrow$子群）与SCX对应（可审计子声称$\leftrightarrow$审计子群）是同一不变理论结构的两个实例——前者处理根排列下系数的对称性，后者处理专家排列下CEC的对称性。由此导出：不可解五次方程的$A_5$障碍$\leftrightarrow$不可审计声称的审计群不可分解性；正规扩张的合成列可解性$\leftrightarrow$独立专家共识的审计子群格可分性。最终结论：SCX审计就是``声称的Galois理论''——声称可验证$\iff$审计群可解。

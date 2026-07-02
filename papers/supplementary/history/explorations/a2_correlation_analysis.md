@@ -1,5 +1,7 @@
-\section{A2 (Conditional Independence) --- Vulnerability Analysis and
-Fix}<!-- label: a2-conditional-independence-vulnerability-analysis-and-fix -->
+# A2 (Conditional Independence) --- Vulnerability Analysis and
+Fix
+
+**Author:** SCX
 
 > **触发**: Hostile review 指出 A2 ``几乎肯定为假，是整个框架的
 > Achilles 之踵'' **结论**:
@@ -53,8 +55,8 @@ F1=0.617。差距无法仅用 \(\mu_s\) 估计误差解释。
 
 当 \(\bar = 0\) 时恢复旧 A2。
 
-\subsubsection{2.2
-弱相关集中不等式}<!-- label: ux5f31ux76f8ux5173ux96c6ux4e2dux4e0dux7b49ux5f0f -->
+#### 2.2
+弱相关集中不等式<!-- label: ux5f31ux76f8ux5173ux96c6ux4e2dux4e0dux7b49ux5f0f -->
 
 **Lemma 2' (弱相关 Hoeffding)**. 设 \(\{e_m\}_{m=1}^M\) 为
 \([0,1]\)-值随机变量，满足 \(\mathbb{E}[e_m \mid s] \leq \mu_s\)，且
@@ -68,8 +70,8 @@ F1=0.617。差距无法仅用 \(\mu_s\) 估计误差解释。
 \(\sigma^2 = \max_m Var(e_m) \leq 1/4\)。应用 Bentkus (2004) 或
 van de Geer \& Lederer (2013) 的弱相关 Hoeffding 界。\(\square\)
 
-\subsubsection{2.3 修正后的 Theorem
-1}<!-- label: ux4feeux6b63ux540eux7684-theorem-1 -->
+#### 2.3 修正后的 Theorem
+1<!-- label: ux4feeux6b63ux540eux7684-theorem-1 -->
 
 \[F1 \geq 1 - \frac{1}\sum_{s} \rho_s \cdot \exp\left(-\frac{2M\Delta_s^2}{1 + (M-1)\bar_s}\right)\]
 
@@ -105,8 +107,8 @@ van de Geer \& Lederer (2013) 的弱相关 Hoeffding 界。\(\square\)
 **关键推论**: 即使 \(\bar_s = 0.05\)（轻微相关），\(M=12\)
 仍然相当于 7.7 个独立专家------指数收敛依然成立，只是常数稍大。
 
-\subsubsection{2.4 A2'
-的可检验性}<!-- label: a2-ux7684ux53efux68c0ux9a8cux6027 -->
+#### 2.4 A2'
+的可检验性<!-- label: a2-ux7684ux53efux68c0ux9a8cux6027 -->
 
 与旧 A2 不同，A2' 是**可检验的**: 1. 对每个状态
 \(s\)，计算专家错误矩阵 \(E_s \in \{0,1\}^{n_s \times M}\) 2.
@@ -124,8 +126,8 @@ van de Geer \& Lederer (2013) 的弱相关 Hoeffding 界。\(\square\)
 
 </div>
 
-\subsection{3. 对 Theorem 4' (Exact Constant Minimax)
-的影响}<!-- label: ux5bf9-theorem-4-exact-constant-minimax-ux7684ux5f71ux54cd -->
+### 3. 对 Theorem 4' (Exact Constant Minimax)
+的影响<!-- label: ux5bf9-theorem-4-exact-constant-minimax-ux7684ux5f71ux54cd -->
 
 #### 3.1 问题<!-- label: ux95eeux9898 -->
 
@@ -154,8 +156,8 @@ Bahadur-Rao 的渐近展开需要修正: 实际方差被放大 \((1+(M-1)\rho)\)
 
 </div>
 
-\subsection{4. 对 Theorem 2
-的影响}<!-- label: ux5bf9-theorem-2-ux7684ux5f71ux54cd -->
+### 4. 对 Theorem 2
+的影响<!-- label: ux5bf9-theorem-2-ux7684ux5f71ux54cd -->
 
 Theorem 2 的 Fano-Pinsker-TV 链**不依赖 A2**------只依赖特征
 \(\phi\) 和状态 \(S\) 之间的互信息。专家相关不影响这个 bound。
@@ -166,8 +168,8 @@ Theorem 2 的 Fano-Pinsker-TV 链**不依赖 A2**------只依赖特征
 
 </div>
 
-\subsection{5. 对 Theorem 3
-的影响}<!-- label: ux5bf9-theorem-3-ux7684ux5f71ux54cd -->
+### 5. 对 Theorem 3
+的影响<!-- label: ux5bf9-theorem-3-ux7684ux5f71ux54cd -->
 
 Theorem 3 的构造（世界 A vs 世界 B）**在 A2'
 下仍然成立**------两个世界都可以容纳相关专家。不可识别性结论不受影响。
@@ -234,8 +236,8 @@ provide a procedure for estimating \(\bar\) from data.''
 
 </div>
 
-\subsection{7. 数值验证：AlN
-数据的相关性}<!-- label: ux6570ux503cux9a8cux8bc1aln-ux6570ux636eux7684ux76f8ux5173ux6027 -->
+### 7. 数值验证：AlN
+数据的相关性<!-- label: ux6570ux503cux9a8cux8bc1aln-ux6570ux636eux7684ux76f8ux5173ux6027 -->
 
 （待跑实验。预期：两层状态发现后，每个状态内专家错误的相关性应该很低------因为专家在不同子集上训练，且状态内样本分布同质。如果
 thermal 状态的 \(\hat{\bar} \gtrsim 0.1\)，则当前 \(M=12\)

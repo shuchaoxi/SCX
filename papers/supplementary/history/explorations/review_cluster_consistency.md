@@ -1,6 +1,8 @@
-\section{Review of ``Theorem 3: Cluster Consistency of State Discovery
+# Review of ``Theorem 3: Cluster Consistency of State Discovery
 Under Strong
-Features''}<!-- label: review-of-theorem-3-cluster-consistency-of-state-discovery-under-strong-features -->
+Features''
+
+**Author:** SCX
 
 **Reviewer:** Hostile reviewer for the Annals of Statistics
 **Manuscript:** Theorem 3 + Corollaries 1-3, SCX Theory
@@ -39,12 +41,12 @@ prove it.
 
 </div>
 
-\subsection{2. Critical Issues (Fatal If
-True)}<!-- label: critical-issues-fatal-if-true -->
+### 2. Critical Issues (Fatal If
+True)<!-- label: critical-issues-fatal-if-true -->
 
-\subsubsection{Issue 1 (FATAL): The main misclassification bound
+#### Issue 1 (FATAL): The main misclassification bound
 diverges, not
-converges}<!-- label: issue-1-fatal-the-main-misclassification-bound-diverges-not-converges -->
+converges<!-- label: issue-1-fatal-the-main-misclassification-bound-diverges-not-converges -->
 
 This is the single most serious error. The algebra in the proof implies
 the opposite of the claimed result.
@@ -96,8 +98,8 @@ pack into a bounded region).
 misclassification \(\to 0\) under \(K = o(n^{1/3})\) -- is
 mathematically impossible under the stated bounds.
 
-\subsubsection{Issue 2 (FATAL): The uniform convergence bound does not
-converge}<!-- label: issue-2-fatal-the-uniform-convergence-bound-does-not-converge -->
+#### Issue 2 (FATAL): The uniform convergence bound does not
+converge<!-- label: issue-2-fatal-the-uniform-convergence-bound-does-not-converge -->
 
 In Step 2 of the proof of Theorem 3 (lines 362-377), the author sets:
 
@@ -127,9 +129,9 @@ As \(n \to \infty\), the probability bound tends to \(+\infty\), meaning
 the bound is vacuous. The uniform convergence does not hold at this
 \(\delta_n\) rate.
 
-\subsubsection{Issue 3 (FATAL): The proof assumes the global optimum of
+#### Issue 3 (FATAL): The proof assumes the global optimum of
 an NP-hard
-problem}<!-- label: issue-3-fatal-the-proof-assumes-the-global-optimum-of-an-np-hard-problem -->
+problem<!-- label: issue-3-fatal-the-proof-assumes-the-global-optimum-of-an-np-hard-problem -->
 
 Line 89 defines \(\hat_n^* = \arg\min W_n(\hat)\) -- the
 global empirical minimizer. The proof never addresses that \(k\)-means
@@ -148,8 +150,8 @@ show that stability of Lloyd's requires additional conditions).
 / \(k\)-means), but proves a result about a computationally intractable
 oracle.** This is a bridge too far.
 
-\subsubsection{Issue 4 (FATAL): Lemma 5's core calculation is
-incorrect}<!-- label: issue-4-fatal-lemma-5s-core-calculation-is-incorrect -->
+#### Issue 4 (FATAL): Lemma 5's core calculation is
+incorrect<!-- label: issue-4-fatal-lemma-5s-core-calculation-is-incorrect -->
 
 The argument that
 \(W(\mu) - W(\mu^*) = \sum_{k=1}^K \pi_k \cdot \delta_k^2\) (lines
@@ -190,12 +192,12 @@ identifiability argument.**
 
 </div>
 
-\subsection{3. Major Issues (Need Substantial
-Work)}<!-- label: major-issues-need-substantial-work -->
+### 3. Major Issues (Need Substantial
+Work)<!-- label: major-issues-need-substantial-work -->
 
-\subsubsection{\texorpdfstring{Issue 5: Confusion between fixed and
+#### \texorpdfstring{Issue 5: Confusion between fixed and
 scaling
-\(\Delta_\)}{Issue 5: Confusion between fixed and scaling \ Delta\_\{\ min\}}}<!-- label: issue-5-confusion-between-fixed-and-scaling-delta_min -->
+\(\Delta_\){Issue 5: Confusion between fixed and scaling \ Delta\_\{\ min\}}}<!-- label: issue-5-confusion-between-fixed-and-scaling-delta_min -->
 
 The document oscillates between two incompatible interpretations of
 \(\Delta_\):
@@ -219,9 +221,9 @@ existing.
 The derivation of the \(1/3\) exponent only works under a very specific
 set of coupled scaling assumptions that are never stated explicitly.
 
-\subsubsection{Issue 6: Lemma 6's conversion from risk gap to
+#### Issue 6: Lemma 6's conversion from risk gap to
 misclassification is not
-rigorous}<!-- label: issue-6-lemma-6s-conversion-from-risk-gap-to-misclassification-is-not-rigorous -->
+rigorous<!-- label: issue-6-lemma-6s-conversion-from-risk-gap-to-misclassification-is-not-rigorous -->
 
 Three specific problems:
 
@@ -260,8 +262,8 @@ vs.~\(\frac{\Delta_}{2} - \|\varepsilon\|\), and the inequality
 requires \(\|\varepsilon\| < 0\) (impossible). The argument as stated
 does not work. The bound needs a more careful treatment of noise.
 
-\subsubsection{Issue 7: The covering number bound is
-insufficient}<!-- label: issue-7-the-covering-number-bound-is-insufficient -->
+#### Issue 7: The covering number bound is
+insufficient<!-- label: issue-7-the-covering-number-bound-is-insufficient -->
 
 Lemma 4 bounds the covering number of \(K\)-center sets, but the
 relevant function class for \(k\)-means is
@@ -280,8 +282,8 @@ because the number of possible labelings grows as \(K^{nd}\) (the number
 of Voronoi partitions). A proper VC bound would give
 \(\log \mathcal{N} = \Omega(K \log K)\), not \(O(K)\).
 
-\subsubsection{Issue 8: Two-layer extension (Corollary 2) assumes the
-result}<!-- label: issue-8-two-layer-extension-corollary-2-assumes-the-result -->
+#### Issue 8: Two-layer extension (Corollary 2) assumes the
+result<!-- label: issue-8-two-layer-extension-corollary-2-assumes-the-result -->
 
 Corollary 2 requires \(\kappa(W) = O(1)\), which is asserted without
 proof (line 591). Since \(W\) is learned from data -- specifically from
@@ -298,8 +300,8 @@ extension.** It merely re-states Theorem 3 under the assumption that
 \(W\) is well-conditioned and then asserts (without proof) that this
 condition holds in practice.
 
-\subsubsection{Issue 9: The sub-Gaussian assumption is
-unverified}<!-- label: issue-9-the-sub-gaussian-assumption-is-unverified -->
+#### Issue 9: The sub-Gaussian assumption is
+unverified<!-- label: issue-9-the-sub-gaussian-assumption-is-unverified -->
 
 The proof assumes \(\varepsilon\) is sub-Gaussian with parameter
 \(\sigma^2\) (line 56). For SCX's actual features:
@@ -312,9 +314,9 @@ If the features are only bounded (not sub-Gaussian), the tail bounds
 degrade from \(\exp(-c n \delta^2)\) to \(\exp(-c n \delta)\) (via
 Hoeffding), which would change the rates entirely.
 
-\subsubsection{Issue 10: Appendix A's sub-Gaussian norm bound is for
+#### Issue 10: Appendix A's sub-Gaussian norm bound is for
 Gaussians, not
-sub-Gaussians}<!-- label: issue-10-appendix-as-sub-gaussian-norm-bound-is-for-gaussians-not-sub-gaussians -->
+sub-Gaussians<!-- label: issue-10-appendix-as-sub-gaussian-norm-bound-is-for-gaussians-not-sub-gaussians -->
 
 Line 770 uses the bound
 \(\|\varepsilon\|_2^2 \leq \sigma^2(d_\phi + 2\sqrt{d_\phi \log n} + 2\log n)\),
@@ -356,8 +358,8 @@ sub-Gaussian vectors.
 
 </div>
 
-\subsection{5. Recommended Fixes for Each
-Issue}<!-- label: recommended-fixes-for-each-issue -->
+### 5. Recommended Fixes for Each
+Issue<!-- label: recommended-fixes-for-each-issue -->
 
 \begin{longtable}[]{@{}
   >{\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3182}}

@@ -1,3 +1,7 @@
+# Definition:
+
+**Author:** SCX
+
 *Abstract:*
 
 Proves a finite-expert lower bound for out-of-distribution detection via Spring gatekeeper scores. Minimum detectable OOD shift: delta_min = sigma/sqrt(M). False alarm and detection power both controlled by Hoeffding bounds exponential in M.

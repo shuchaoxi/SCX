@@ -1,5 +1,7 @@
-\section{SCX Self-Evolution: Edge Cases and Failure
-Modes}<!-- label: scx-self-evolution-edge-cases-and-failure-modes -->
+# SCX Self-Evolution: Edge Cases and Failure
+Modes
+
+**Author:** SCX
 
 > **Version**: 2026-06-28 |{} **Status**: Formal analysis
 > |{} **Prerequisite**: Documents 01, 02, 06, 10, 11
@@ -37,8 +39,8 @@ Modes}<!-- label: scx-self-evolution-edge-cases-and-failure-modes -->
 
 </div>
 
-\subsection{1. Failure Mode 1: Premature Convergence (Gatekeeper
-Freezing)}<!-- label: failure-mode-1-premature-convergence-gatekeeper-freezing -->
+### 1. Failure Mode 1: Premature Convergence (Gatekeeper
+Freezing)<!-- label: failure-mode-1-premature-convergence-gatekeeper-freezing -->
 
 #### 1.1 Phenomenon<!-- label: phenomenon -->
 
@@ -88,8 +90,8 @@ the freezing time. \(\square\)
 **Status: PROVEN.** This is a direct consequence of C7 and the
 numerical precision constraint.
 
-\subsubsection{1.3 When Freezing is
-Premature}<!-- label: when-freezing-is-premature -->
+#### 1.3 When Freezing is
+Premature<!-- label: when-freezing-is-premature -->
 
 Freezing is **premature** if
 \(t_{freeze} < t_{converge}\), where
@@ -121,8 +123,8 @@ which is small enough to be concerning.
 **Status: PROVEN.** The existence of a freezing time is guaranteed;
 whether it is premature depends on parameter choices.
 
-\subsubsection{1.4 Effect of Premature Freezing on Solution
-Quality}<!-- label: effect-of-premature-freezing-on-solution-quality -->
+#### 1.4 Effect of Premature Freezing on Solution
+Quality<!-- label: effect-of-premature-freezing-on-solution-quality -->
 
 **Theorem 12.3 (Suboptimality Gap Under Premature Freezing ---
 PROVEN).** If the gatekeeper freezes at \(S_{t_{freeze}}\) and the
@@ -203,8 +205,8 @@ smooth past frozen states
 
 </div>
 
-\subsection{2. Failure Mode 2: Backlog Problem (Memory
-Overrun)}<!-- label: failure-mode-2-backlog-problem-memory-overrun -->
+### 2. Failure Mode 2: Backlog Problem (Memory
+Overrun)<!-- label: failure-mode-2-backlog-problem-memory-overrun -->
 
 #### 2.1 Phenomenon<!-- label: phenomenon-1 -->
 
@@ -225,8 +227,8 @@ every \(K\) new samples.
 
 A backlog develops when \(r_{in} > r_{score}\).
 
-\subsubsection{2.3 Gatekeeper Scoring
-Complexity}<!-- label: gatekeeper-scoring-complexity -->
+#### 2.3 Gatekeeper Scoring
+Complexity<!-- label: gatekeeper-scoring-complexity -->
 
 The gatekeeper's per-sample scoring cost is:
 
@@ -236,8 +238,8 @@ Total scoring throughput:
 
 \[r_{score} = \frac{1}{T_{score}} = \Omega\!\left(\frac{1}{M + K_S + d_\phi}\right).\]
 
-\subsubsection{2.4 Critical Condition for
-Backlog}<!-- label: critical-condition-for-backlog -->
+#### 2.4 Critical Condition for
+Backlog<!-- label: critical-condition-for-backlog -->
 
 **Theorem 12.4 (Backlog Instability --- PROVEN).** If:
 
@@ -260,8 +262,8 @@ the implicit assumption that \(S_t\) reflects current knowledge.
 
 **Status: PROVEN.** This is a throughput calculation.
 
-\subsubsection{2.5 Effect on Self-Evolution
-Dynamics}<!-- label: effect-on-self-evolution-dynamics -->
+#### 2.5 Effect on Self-Evolution
+Dynamics<!-- label: effect-on-self-evolution-dynamics -->
 
 **Theorem 12.5 (Stale Gatekeeper Error --- CONJECTURED).** If
 sample \(x\) is scored by gatekeeper \(S_{t-\tau}\) (stale by \(\tau\)
@@ -282,8 +284,8 @@ drift exceeds the margin. For small margin, this probability approaches
 probability estimate requires a model of the drift direction, which
 depends on the specific SCX update dynamics.
 
-\subsubsection{2.6 Backlog-Induced Distribution
-Shift}<!-- label: backlog-induced-distribution-shift -->
+#### 2.6 Backlog-Induced Distribution
+Shift<!-- label: backlog-induced-distribution-shift -->
 
 **Proposition 12.1 (Backlog Distribution Bias --- CONJECTURED).**
 When samples are scored with delay \(\tau\), the effective acceptance
@@ -308,8 +310,8 @@ effect is **reduced memory growth**, not incorrect acceptance.
 This introduces **noisy samples** into \(M_t\), degrading all
 downstream estimates.
 
-\subsubsection{2.7 Approximate Scoring for
-Throughput}<!-- label: approximate-scoring-for-throughput -->
+#### 2.7 Approximate Scoring for
+Throughput<!-- label: approximate-scoring-for-throughput -->
 
 To prevent backlog, the gatekeeper can use **approximate scoring**:
 
@@ -377,8 +379,8 @@ exceeds threshold & May miss novel samples
 
 </div>
 
-\subsection{3. Failure Mode 3: Calibration Breakdown (Client
-Divergence)}<!-- label: failure-mode-3-calibration-breakdown-client-divergence -->
+### 3. Failure Mode 3: Calibration Breakdown (Client
+Divergence)<!-- label: failure-mode-3-calibration-breakdown-client-divergence -->
 
 #### 3.1 Phenomenon<!-- label: phenomenon-2 -->
 
@@ -400,8 +402,8 @@ time \(t\) is:
 Divergence is **irreconcilable** if
 \(\liminf_{t \to \infty} D_t(A, B) > 0\).
 
-\subsubsection{3.3 Existence of Multiple Fixed
-Points}<!-- label: existence-of-multiple-fixed-points -->
+#### 3.3 Existence of Multiple Fixed
+Points<!-- label: existence-of-multiple-fixed-points -->
 
 **Theorem 12.7 (Multiple Fixed Points --- PROVEN).** The SCX
 self-evolution dynamics can have multiple fixed points when: 1. The loss
@@ -447,8 +449,8 @@ initial conditions on the boundaries.
 systems is an active research area (Borkar, 2008, Chapter 9). The
 conjecture is plausible but unproven for the specific SCX dynamics.*
 
-\subsubsection{3.5 Condition for Irreconcilable
-Divergence}<!-- label: condition-for-irreconcilable-divergence -->
+#### 3.5 Condition for Irreconcilable
+Divergence<!-- label: condition-for-irreconcilable-divergence -->
 
 **Theorem 12.8 (Irreconcilable Divergence Condition --- PROVEN).**
 Two clients with initial conditions
@@ -472,8 +474,8 @@ disagreement extends to a neighborhood of positive measure, so
 sound; the only gap is the rigorous characterization of basin boundaries
 (Conjecture 12.1).
 
-\subsubsection{3.6 Calibration Degradation
-Rate}<!-- label: calibration-degradation-rate -->
+#### 3.6 Calibration Degradation
+Rate<!-- label: calibration-degradation-rate -->
 
 **Proposition 12.2 (Calibration Drift Under Isolation ---
 CONJECTURED).** If two clients start from \(\varepsilon\)-close initial
@@ -540,8 +542,8 @@ initialization & Loses learned information
 
 </div>
 
-\subsection{4. Failure Mode 4: Adversarial Poisoning (Gatekeeper
-Corruption)}<!-- label: failure-mode-4-adversarial-poisoning-gatekeeper-corruption -->
+### 4. Failure Mode 4: Adversarial Poisoning (Gatekeeper
+Corruption)<!-- label: failure-mode-4-adversarial-poisoning-gatekeeper-corruption -->
 
 #### 4.1 Phenomenon<!-- label: phenomenon-3 -->
 
@@ -563,8 +565,8 @@ the converged gatekeeper.
 We assume the adversary does **not** control the expert models or
 the NEP training procedure --- only the data fed to the gatekeeper.
 
-\subsubsection{4.3 Adversarial Sample
-Construction}<!-- label: adversarial-sample-construction -->
+#### 4.3 Adversarial Sample
+Construction<!-- label: adversarial-sample-construction -->
 
 **Definition 4.2 (Consensus-Minimizing Adversarial Sample).** To
 cause the gatekeeper to reject a clean sample \((x, y_{true})\),
@@ -576,8 +578,8 @@ i.e., an \(\varepsilon\)-perturbation of a clean sample that maximally
 confuses the expert ensemble while remaining indistinguishable to the
 gatekeeper's feature representation.
 
-\subsubsection{4.4 Poisoning Amplification via
-Self-Evolution}<!-- label: poisoning-amplification-via-self-evolution -->
+#### 4.4 Poisoning Amplification via
+Self-Evolution<!-- label: poisoning-amplification-via-self-evolution -->
 
 The key danger in SCX self-evolution is **amplification**: one
 round of poisoning corrupts the gatekeeper, which admits more poisoned
@@ -610,8 +612,8 @@ craft samples that both confuse experts and appear reliable to the
 current gatekeeper. This is a strong assumption that may not hold for
 well-regularized gatekeepers.
 
-\subsubsection{4.5 Detection Boundary for Adversarial
-Samples}<!-- label: detection-boundary-for-adversarial-samples -->
+#### 4.5 Detection Boundary for Adversarial
+Samples<!-- label: detection-boundary-for-adversarial-samples -->
 
 **Theorem 12.10 (Adversarial Detection Boundary --- PARTIALLY
 PROVEN).** Under the consensus score \(\hat{C}(x)\) computed from \(M\)
@@ -634,8 +636,8 @@ within radius \(\rho_\), then no expert error indicator flips, and
 **Status: PROVEN.** This follows from the definition of \(\hat{C}\)
 and provides a clean condition for undetectability.
 
-\subsubsection{4.6 Gatekeeper Robustness
-Certificate}<!-- label: gatekeeper-robustness-certificate -->
+#### 4.6 Gatekeeper Robustness
+Certificate<!-- label: gatekeeper-robustness-certificate -->
 
 **Proposition 12.3 (Lipschitz-Based Robustness --- PROVEN).** Under
 C3 (Lipschitz gatekeeper with constant \(L_S\)), for any perturbation
@@ -653,8 +655,8 @@ gatekeeper is **certifiably robust** for perturbations with
 **Status: PROVEN.** This provides a certified radius within which
 adversarial perturbations cannot change the gatekeeper's decision.
 
-\subsubsection{4.7 When the Student is the
-Vulnerability}<!-- label: when-the-student-is-the-vulnerability -->
+#### 4.7 When the Student is the
+Vulnerability<!-- label: when-the-student-is-the-vulnerability -->
 
 Even if the gatekeeper is robust, the **NEP student** may be
 vulnerable. If poisoned samples enter \(M_t\): 1. The student is trained
@@ -730,11 +732,11 @@ scale
 
 </div>
 
-\subsection{5. Interaction Effects: Compound
-Failures}<!-- label: interaction-effects-compound-failures -->
+### 5. Interaction Effects: Compound
+Failures<!-- label: interaction-effects-compound-failures -->
 
-\subsubsection{5.1 Backlog + Premature
-Freezing}<!-- label: backlog-premature-freezing -->
+#### 5.1 Backlog + Premature
+Freezing<!-- label: backlog-premature-freezing -->
 
 When backlog (Section 2) **and** premature freezing (Section 1)
 co-occur: - The backlog means the gatekeeper's decisions are stale
@@ -745,8 +747,8 @@ earlier (worse) state, and the delay \(\tau\) grows without bound. The
 system becomes **doubly frozen** --- neither the gatekeeper nor the
 scoring process can recover.
 
-\subsubsection{5.2 Adversarial Poisoning + Client
-Divergence}<!-- label: adversarial-poisoning-client-divergence -->
+#### 5.2 Adversarial Poisoning + Client
+Divergence<!-- label: adversarial-poisoning-client-divergence -->
 
 When adversarial poisoning (Section 4) targets one of two clients: -
 Client A (poisoned) converges to a corrupted fixed point. - Client B
@@ -757,8 +759,8 @@ specifically chosen to push A's gatekeeper away from B's. This is a
 **targeted divergence attack**: the adversary exploits the
 multi-fixed-point structure.
 
-\subsubsection{5.3 Backlog + Adversarial
-Poisoning}<!-- label: backlog-adversarial-poisoning -->
+#### 5.3 Backlog + Adversarial
+Poisoning<!-- label: backlog-adversarial-poisoning -->
 
 When backlog means samples are scored by stale gatekeeper
 \(S_{t-\tau}\): - The adversary can inject samples that are
@@ -774,11 +776,11 @@ adversary can exploit the gap between the current and stale gatekeepers.
 
 </div>
 
-\subsection{6. Diagnostic Tests for Each Failure
-Mode}<!-- label: diagnostic-tests-for-each-failure-mode -->
+### 6. Diagnostic Tests for Each Failure
+Mode<!-- label: diagnostic-tests-for-each-failure-mode -->
 
-\subsubsection{6.1 Premature Freezing
-Detection}<!-- label: premature-freezing-detection -->
+#### 6.1 Premature Freezing
+Detection<!-- label: premature-freezing-detection -->
 
 **Test 1 (Gradient Norm Monitor).** Track \(\|\Delta S_t\|_{M_0}\)
 over a sliding window of \(W\) steps. If
@@ -800,8 +802,8 @@ correlation drops to zero.
 (memory growth rate) and \(dScored_t/dt\) (scoring rate). If the
 former consistently exceeds the latter, backlog is growing.
 
-\subsubsection{6.3 Calibration Divergence
-Detection}<!-- label: calibration-divergence-detection -->
+#### 6.3 Calibration Divergence
+Detection<!-- label: calibration-divergence-detection -->
 
 **Test 5 (Inter-Client Disagreement).** Periodically compare
 gatekeeper decisions between clients on a shared validation set. If
@@ -813,8 +815,8 @@ between \(S_t^{(A)}\) and \(S_t^{(B)}\) in function space:
 \(\|S_t^{(A)} - S_t^{(B)}\|_{M_0}\). A monotonically increasing trend
 suggests divergence to different fixed points.
 
-\subsubsection{6.4 Adversarial Poisoning
-Detection}<!-- label: adversarial-poisoning-detection -->
+#### 6.4 Adversarial Poisoning
+Detection<!-- label: adversarial-poisoning-detection -->
 
 **Test 7 (Consensus-Gatekeeper Discrepancy).** Track
 \(\mathbb{E}[|\hat{C}(x) - S_t(x, y(x))|]\) on incoming samples. A

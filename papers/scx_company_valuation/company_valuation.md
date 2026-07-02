@@ -1,3 +1,7 @@
+# 引言：AI行业的三层革命
+
+**Author:** SCX
+
 *Abstract:*
 
 SCX is not a competitor in the AI industry. It is the infrastructure that reorganizes 

@@ -1,10 +1,6 @@
-<div align="center">
+# 引言：为什么规范场论？
 
-**版本：** v1.0 \quad | \quad
-**状态：** 预印本 \quad | \quad
-**分类：** SCX理论体系 — 规范场论卷·物理映射篇
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

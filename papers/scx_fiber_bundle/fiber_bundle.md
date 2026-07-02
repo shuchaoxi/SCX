@@ -1,3 +1,7 @@
+# 引言：从连续假象到离散本质 / Introduction: From Continuous Pretense to Discrete Reality
+
+**Author:** SCX
+
 *Abstract:*
 
 {\bf 中文摘要.}

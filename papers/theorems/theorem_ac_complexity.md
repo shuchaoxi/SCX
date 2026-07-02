@@ -1,3 +1,7 @@
+# Introduction
+
+**Author:** SCX
+
 *Abstract:*
 
 SCX auditing presupposes the availability of auditors --- human experts or

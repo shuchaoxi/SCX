@@ -1,10 +1,6 @@
-<div align="center">
+# 核心直觉：一页读懂诊断中的坐标系不对齐
 
-**版本：** v1.0 \quad | \quad
-**状态：** 预印本 \quad | \quad
-**分类：** SCX理论体系 — 医学卷·诊断规范篇
-
-</div>
+**Author:** SCX
 
 *Abstract:*
 

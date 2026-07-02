@@ -1,3 +1,7 @@
+# Detailed Comparison of SCX vs.\ Existing LLM Data Filtering Methods
+
+**Author:** SCX
+
 ---
 
 ## Detailed Comparison of SCX vs.\ Existing LLM Data Filtering Methods
