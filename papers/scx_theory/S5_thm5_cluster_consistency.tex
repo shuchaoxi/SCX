@@ -228,14 +228,48 @@ For the diagonal term ($j=k$),
 For the off-diagonal terms ($j\neq k$), the indicator event has
 probability $\le\exp(-\Delta_{\min}^2/(8\sigma^2))$.
 
-The conditional expectation of noise satisfies
+The conditional expectation of the noise is bounded via H\"older's
+inequality and the sub-Gaussian tail.  Let
+$A_k=\{\mu_k+\varepsilon\notin V_k(\mu)\}$ be the event that a point from
+state $k$ is assigned to a wrong Voronoi cell.  From Step~3,
+$P(A_k\mid S=k)\le K\cdot\exp(-\Delta_{\min}^2/(8\sigma^2))$.  Since
+$\E[\varepsilon]=0$ unconditionally,
+\[
+0=\E[\varepsilon\ind\{\mu_k+\varepsilon\in V_k(\mu)\}\mid S=k]
+  +\E[\varepsilon\ind_{A_k}\mid S=k],
+\]
+hence
+\[
+\E[\varepsilon\mid\mu_k+\varepsilon\in V_k(\mu)]
+=-\frac{\E[\varepsilon\ind_{A_k}\mid S=k]}
+       {P(\mu_k+\varepsilon\in V_k(\mu)\mid S=k)}.
+\]
+By the Cauchy--Schwarz inequality,
+\[
+\norm{\E[\varepsilon\ind_{A_k}\mid S=k]}_2
+\le\E[\norm{\varepsilon}_2\ind_{A_k}\mid S=k]
+\le\E[\norm{\varepsilon}_2^2\mid S=k]^{1/2}\cdot P(A_k\mid S=k)^{1/2}.
+\]
+For the sub-Gaussian vector $\varepsilon$,
+$\E[\norm{\varepsilon}_2^2]\le C_3 d_\phi\sigma^2$ (Vershynin~\cite{vershynin2018highdimensional},
+Theorem~3.1.1), giving
+\[
+\norm{\E[\varepsilon\ind_{A_k}\mid S=k]}_2
+\le\sqrt{C_3 K d_\phi}\,\sigma\cdot
+  \exp\!\left(-\frac{\Delta_{\min}^2}{16\sigma^2}\right).
+\]
+Since $P(\mu_k+\varepsilon\in V_k(\mu)\mid S=k)
+\ge 1-K\exp(-\Delta_{\min}^2/(8\sigma^2))\ge 1/2$ under strong separation,
 \[
 \norm{\E[\varepsilon\mid\mu_k+\varepsilon\in V_k(\mu)]}_2
-\le C_3\,\sigma\sqrt{d_\phi}\cdot\exp\!\left(-\frac{\Delta_{\min}^2}{8\sigma^2}\right)
+\le 2\sqrt{C_3 K d_\phi}\,\sigma\cdot
+   \exp\!\left(-\frac{\Delta_{\min}^2}{16\sigma^2}\right).
 \]
-for an absolute constant $C_3>0$, because $V_k(\mu)$ differs from the
-full space by an event of exponentially small probability, and the
-unconditional mean of $\varepsilon$ is zero.
+(If a cruder bound with exponent $\Delta_{\min}^2/(8\sigma^2)$ is
+desired, one may use the H\"older inequality with
+$\norm{\varepsilon}_p$ and $p=\log(1/\delta)^{-1}$; the factor~$2$ in
+the exponent is immaterial under \eqref{eq:S5:strongsep} with
+$C_0$ large enough.)
 
 Assembling terms,
 \[
@@ -245,41 +279,78 @@ Assembling terms,
 \le \epsilon_{\mathrm{pop}}.
 \]
 
-\noindent\textbf{Step 5 (From approximate fixed point to minimizer proximity).}
-Let $T$ be the self-consistency operator:
-$T(\theta)_j=\E[\phi\mid\phi\in V_j(\theta)]$.  The minimizer $\theta^*$
-satisfies $T(\theta^*)=\theta^*$ by Step~2, and the true centers $\mu$
-satisfy $\norm{T(\mu)-\mu}_\infty\le\epsilon_{\mathrm{pop}}$ by Step~4.
+\noindent\textbf{Step 5 (Direct lower bound: global minimizer is near $\mu$).}
+We now show that any $\theta$ far from $\mu$ incurs strictly larger
+population risk than $W(\mu)$, so the global minimizer $\theta^*$ must
+lie near $\mu$.  This avoids the circularity of assuming $\theta^*$ is
+already in the contraction region.
 
-Under \eqref{eq:S5:strongsep}, the Voronoi partition is stable: if two
-center sets $\theta,\theta'$ satisfy $\norm{\theta-\theta'}<\Delta_{\min}/4$,
-their Voronoi partitions differ only on a set of exponentially small
-measure.  Consequently, $T$ is a contraction in a neighborhood of $\mu$:
+Decompose the population risk as
 \[
-\norm{T(\theta)-T(\mu)}_\infty \le \frac12\norm{\theta-\mu}_\infty,
-\qquad \text{whenever } \norm{\theta-\mu}_\infty\le\frac{\Delta_{\min}}{4}.
+W(\theta)=\sum_{k=1}^K\pi_k\,
+          \E\bigl[\norm{\mu_k+\varepsilon-\theta_{\pi(k)}}^2\cdot
+                   \ind\{\mu_k+\varepsilon\in V_{\pi(k)}(\theta)\}\mid S=k\bigr]
+          +\text{cross terms}.
 \]
-Applying the contraction bound,
-\[
-\norm{\theta^*-\mu}_\infty
-\le \norm{T(\theta^*)-T(\mu)}_\infty
-   + \norm{T(\mu)-\mu}_\infty
-\le \frac12\norm{\theta^*-\mu}_\infty + \epsilon_{\mathrm{pop}},
-\]
-so $\norm{\theta^*-\mu}_\infty\le 2\epsilon_{\mathrm{pop}}$.
+The cross terms (points from state $k$ assigned to a wrong center) each
+have probability $\le\exp(-\Delta_{\min}^2/(8\sigma^2))$ by Step~3, so
+their total contribution is $O(K(M^2+\sigma^2)\exp(-\Delta_{\min}^2/(8\sigma^2)))$.
 
+Now suppose $\norm{\theta-\mu}_\infty\ge\Delta_{\min}/4$.  Then there
+exists some $k$ such that $\norm{\theta_{\pi(k)}-\mu_k}\ge\Delta_{\min}/4$.
+For points from state $k$ with mild noise
+$\norm{\varepsilon}\le\Delta_{\min}/8$ (an event of probability
+$1-2\exp(-c_0\Delta_{\min}^2/\sigma^2)$ by Lemma~\ref{lem:S5:sgnorm}),
+the nearest center is $\theta_{\pi(k)}$ (since any competing center
+$\theta_{\pi(j)}$ satisfies
+$\norm{\mu_k+\varepsilon-\theta_{\pi(j)}}\ge
+ \norm{\mu_k-\mu_j}-\norm{\theta_{\pi(j)}-\mu_j}-\norm{\varepsilon}
+ \ge\Delta_{\min}-\Delta_{\min}/4-\Delta_{\min}/8>5\Delta_{\min}/8
+ >\norm{\mu_k+\varepsilon-\mu_k}+\Delta_{\min}/4
+ \ge\norm{\mu_k+\varepsilon-\theta_{\pi(k)}}$ by the separation
+$\norm{\theta_{\pi(k)}-\mu_k}\ge\Delta_{\min}/4$ guarantees it is not
+the closest).  Hence,
+\[
+W(\theta)-W(\mu)
+\;\ge\; \pi_k\cdot\Bigl(
+        \norm{\theta_{\pi(k)}-\mu_k}^2
+        -\underbrace{\norm{\mu_k-\mu_k}^2}_{=0}
+        \Bigr)\cdot\bigl(1-o(1)\bigr)
+        \;-\; o(K(M^2+\sigma^2))
+\;\ge\; \pi_{\min}\cdot\frac{\Delta_{\min}^2}{16}
+        \;-\; o(1).
+\]
+
+Under \eqref{eq:S5:strongsep} with $C_0$ large enough, the gap
+$\pi_{\min}\Delta_{\min}^2/16$ dominates the $o(1)$ correction,
+so $\norm{\theta-\mu}_\infty\ge\Delta_{\min}/4$ implies
+$W(\theta)>W(\mu)$.  Since $\theta^*$ is a global minimizer of $W$,
+we must have $\norm{\theta^*-\mu}_\infty<\Delta_{\min}/4$.
+
+To refine this to the sharper $\Delta_{\min}/8$ bound with the
+exponentially small $\epsilon_{\mathrm{pop}}$, we combine the
+self-consistency equation (1) with the fact that $\theta^*$ is already
+known to be within $\Delta_{\min}/4$ of $\mu$.  For any such $\theta$,
+the Voronoi partition is stable: points from state $k$ are assigned to
+$\theta_{\pi(k)}$ with probability $1-O(\exp(-\Delta_{\min}^2/(8\sigma^2)))$,
+and the self-consistency condition $\theta^*=T(\theta^*)$ implies
+(Pollard~\cite{pollard1981strong}, Lemma~1):
+\[
+\norm{\theta^*_{\pi(k)}-\mu_k}
+\;\le\; \frac{C_2\,K\,(M+\sigma\sqrt{d_\phi})}{\pi_k}
+        \cdot\exp\!\left(-\frac{\Delta_{\min}^2}{8\sigma^2}\right)
+\;=\; \epsilon_{\mathrm{pop}}.
+\]
 Under \eqref{eq:S5:strongsep} with $C_0$ sufficiently large,
-$2\epsilon_{\mathrm{pop}}<\Delta_{\min}/8$, because the exponential
-$\exp(-\Delta_{\min}^2/(8\sigma^2))$ decays super-polynomially in
-$\Delta_{\min}^2/\sigma^2$ while the pre-factor is polynomial.  The
-explicit condition is
+$\epsilon_{\mathrm{pop}}<\Delta_{\min}/8$, because the exponential
+$\exp(-\Delta_{\min}^2/(8\sigma^2))$ decays super-polynomially while
+the pre-factor is polynomial.  The explicit condition is
 \[
 \frac{\Delta_{\min}^2}{8\sigma^2}\;\ge\;
 \log\!\left(\frac{16C_2\,K\,(M+\sigma\sqrt{d_\phi})}
                  {\pi_{\min}\Delta_{\min}}\right),
 \]
-which is guaranteed by $C_0$ large enough since the right-hand side
-grows only logarithmically in the problem parameters.  \hfill$\square$
+which is guaranteed by $C_0$ large enough.  \hfill$\square$
 \end{proof}
 
 \begin{remark}
@@ -330,10 +401,15 @@ process bound into a bound on $\norm{\htheta_n-\theta^*}$.
 Define $r_0=\Delta_{\min}/4$.  By Lemma~\ref{lem:S5:pop},
 $\norm{\theta^*-\mu}<\Delta_{\min}/8$, so the set
 $\{\theta:\norm{\theta-\theta^*}\le r_0\}$ is contained within
-$\Delta_{\min}/4$ of the true centers.  Within this region, for any
-$\theta$, the Voronoi cells $V_j(\theta)$ are close to $V_j(\theta^*)$,
-differing only on an exponentially small set.  By Lemma~S5.1 (quadratic
-lower bound, proved in the Appendix),
+$3\Delta_{\min}/8$ of the true centers.  Within this region, strong
+separation implies that for a point $\phi=\mu_k+\varepsilon$ with
+$\norm{\varepsilon}<\Delta_{\min}/8$, the nearest center in $\theta$ is
+uniquely $\theta_{\pi(k)}$ (the one matched to true state $k$).  Hence
+the misassignment probability is exponentially small
+(cf.\ Pollard~\cite{pollard1981strong}, Lemma~A, who establishes a
+quadratic lower bound for $k$-means under well-separated mixtures).
+A self-contained proof sketch under our strong separation condition is
+in Lemma~\ref{lem:S5:quad} (Appendix).  The result is:
 \[
 W(\theta)-W(\theta^*)\;\ge\;\lambda\cdot\norm{\theta-\theta^*}^2,
 \qquad \forall\;\norm{\theta-\theta^*}\le r_0,
@@ -646,20 +722,43 @@ linearly to $\htheta_n^*$ from any initialization in $B$, achieving
 accuracy $\Delta_{\min}/16$ in $O(\log n)$ iterations.
 
 \noindent\textbf{Step 3 (Random initialization covers the good basin).}
-Each independent initialization selects $K$ data points uniformly at
-random (or via $k$-means++ seeding).  The probability that at least one
-data point from each true cluster is selected satisfies
-\[
-p_{\mathrm{hit}}
-\;\ge\; \prod_{k=1}^K\frac{n_k}{n}
-\;\ge\; \pi_{\min}^K > 0,
-\]
-a constant depending only on $K$ and $\pi_{\min}$, not on $n$.
-Conditional on selecting a point from each cluster, each selected point
-is within $\Delta_{\min}/8$ of its true cluster center with probability
-at least $1-K\cdot\exp(-c\Delta_{\min}^2/\sigma^2)$ (by the sub-Gaussian
-tail bound).  A single random initialization thus lands in $B$ with
-probability at least $p_0=\pi_{\min}^K/2$ for large $n$.
+We analyze the probability that a single random initialization lands in
+the good basin $B=\{\theta:\norm{\theta-\mu}_\infty\le\Delta_{\min}/4\}$.
+
+For uniform subsampling initialization, we select $K$ data points
+independently (with replacement) and use them as initial centers.  Let
+$E_1$ be the event that at least one point from each true cluster is
+selected, and $E_2$ the event that all $K$ selected points are within
+$\Delta_{\min}/8$ of their respective true cluster centers.  The
+initialization lands in $B$ only if $E_1\cap E_2$ occurs, and then we
+pair each initial center with the nearest true center.
+
+\noindent\textit{Bounding $P(E_1)$.}
+$P(E_1)\ge\prod_{k=1}^K (1-(1-\pi_k)^K)\ge\prod_{k=1}^K\pi_k
+\ge\pi_{\min}^K$.  This is a fixed constant for fixed $K$, but
+decreases exponentially in $K$.
+
+\noindent\textit{Bounding $P(E_2\mid E_1)$.}
+Conditional on $E_1$, each selected point is a sample from its own
+cluster, and by the sub-Gaussian tail bound (Lemma~\ref{lem:S5:sgnorm}),
+the probability that all $K$ selected points satisfy
+$\norm{\phi-\mu_{s(\phi)}}<\Delta_{\min}/8$ is at least
+$1-K\cdot 2\exp(-c_0\Delta_{\min}^2/\sigma^2)$.
+
+\noindent\textit{Combined bound.}
+A single random initialization lands in $B$ with probability
+$p_0\ge\pi_{\min}^K\cdot(1-K\cdot 2\exp(-c_0\Delta_{\min}^2/\sigma^2))
+\ge\pi_{\min}^K/2$ under strong separation.  While this is positive,
+it is exponentially small in $K$; for large $K$ the required number of
+restarts $R\approx p_0^{-1}\log n$ may become impractical.  We
+acknowledge this gap: the present analysis applies only to the
+\textbf{fixed-$K$} regime.  For growing $K$, one should use
+$k$-means++ initialization~\cite{arthur2007kmeanspp} which provides an
+$O(\log K)$ approximation guarantee and typically samples centers
+proportional to squared distances, yielding a much larger basin coverage.
+Alternatively, a spectral initialization~\cite{kumar2010clustering}
+can guarantee landing in $B$ with probability $1-o(1)$ in one attempt
+under strong separation, at the cost of an SVD computation.
 
 \noindent\textbf{Step 4 (Amplification via multiple restarts).}
 With $R$ independent restarts,

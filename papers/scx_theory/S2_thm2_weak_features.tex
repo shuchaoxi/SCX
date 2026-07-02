@@ -77,6 +77,15 @@ and by Pinsker's inequality,
 \Delta_\phi \leq \sqrt{\frac{\delta}{2}}.
 \label{eq:pinsker-tv}
 \end{equation}
+\textbf{[Heuristic bound.]} This inequality is not rigorous as stated:
+Pinsker's inequality bounds $\operatorname{TV}(P,Q) \leq \sqrt{\operatorname{KL}(P\|Q)/2}$,
+but $\delta = I(\phi;S)$ is the mutual information, which equals
+$\operatorname{KL}(P_{\phi,S}\|P_\phi P_S)$, not a KL divergence between two
+state-conditional distributions. The bound $\Delta_\phi \leq \sqrt{\delta/2}$
+holds approximately when state probabilities are balanced and the
+state-conditional distributions are well-separated, but it should be treated
+as a heuristic rather than a formal consequence of Pinsker. A rigorous
+bound would require additional factors depending on $\min_s \mathbb{P}(S=s)$.
 When $\Delta_\phi$ is small, points from different true states are
 indistinguishable in $\phi$-space.
 
@@ -176,7 +185,7 @@ be the consensus score for an estimated state $\hat{s}$ obtained by clustering
 $\phi$. If $\phi$ is $\delta$-weak, then
 \begin{equation}
 \mathbb{E}\bigl[|C(\hat{S}) - C(S)|\bigr]
-\;\leq\; 2 \cdot \mathbb{P}(\hat{S} \neq S) + O\!\left(\frac{1}{\sqrt{n_{\min}}}\right),
+\;\leq\; \mathbb{P}(\hat{S} \neq S) + O\!\left(\frac{1}{\sqrt{n_{\min}}}\right),
 \label{eq:degradation-bound}
 \end{equation}
 where $n_{\min} = \min_{s \in \mathcal{S}} n_s$ is the minimum per-state
@@ -210,14 +219,14 @@ C(\hat{S}) = \sum_{s \in \mathcal{S}} \mathbb{P}(S = s \mid \hat{S})\, C(s).
 \]
 Since $C(\cdot) \in [0,1]$, the pointwise difference satisfies
 $|C(\hat{S}) - C(S)| \leq 1$, and consequently
-$\mathbb{E}[|C(\hat{S}) - C(S)| \mid \hat{S} \neq S] \leq 2$.
+$\mathbb{E}[|C(\hat{S}) - C(S)| \mid \hat{S} \neq S] \leq 1$.
 
 Combining the two cases,
 \begin{align*}
 \mathbb{E}\bigl[|C(\hat{S}) - C(S)|\bigr]
 &\leq \mathbb{P}(\hat{S}=S) \cdot O(1/\sqrt{n_{\min}})
-   + \mathbb{P}(\hat{S}\neq S) \cdot 2 \\
-&\leq 2 \cdot \mathbb{P}(\hat{S} \neq S) + O(1/\sqrt{n_{\min}}). \qedhere
+   + \mathbb{P}(\hat{S}\neq S) \cdot 1 \\
+&\leq \mathbb{P}(\hat{S} \neq S) + O(1/\sqrt{n_{\min}}). \qedhere
 \end{align*}
 \end{proof}
 
@@ -398,12 +407,15 @@ Combining,
 \label{eq:auc-tv-transfer}
 \end{align*}
 
-\emph{PR-AUC.} The PR-AUC involves an integral over thresholds of precision,
-$\mathbb{P}(Z=1 \mid \hat{z}=1)$. The same amplification argument applies at
-each threshold, yielding the identical bound
-\eqref{eq:prauc-bound}. (A fully rigorous treatment requires additional steps
-to handle the integral over thresholds, but the bound at the level of the joint
-distribution is valid.)
+\emph{PR-AUC.} \textbf{[Claim -- proof incomplete.]}
+The PR-AUC involves an integral over thresholds of precision,
+$\mathbb{P}(Z=1 \mid \hat{z}=1)$. The same amplification argument would apply at
+each threshold, suggesting the identical bound
+\eqref{eq:prauc-bound}. However, a fully rigorous treatment requires
+additional steps to handle the integral over thresholds and the
+$\eta$-dependent amplification of per-threshold TV bounds; the
+argument presented here is therefore incomplete. We state
+\eqref{eq:prauc-bound} as a claim pending a complete proof.
 
 \emph{F1.} The F1 score is a function of the joint distribution
 $P(\hat{z}, Z)$ only:
@@ -506,7 +518,9 @@ the loss baseline itself degenerates to random guessing:
 
 \subsubsection*{Corollary 2: Loss-Uninformative Noise}
 \label{cor:loss-uninformative}
-Under uniform label noise, the loss distribution is independent of the noise
+Under uniform label noise \textbf{and the assumption that experts are random
+guessers} (i.e., each expert predicts labels uniformly at random independent
+of the input), the loss distribution is independent of the noise
 indicator:
 \[
 P(\ell \mid Z=1) = P(\ell \mid Z=0).

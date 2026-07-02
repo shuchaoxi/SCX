@@ -1,6 +1,6 @@
 pdfoutput=1
 \pdfoutput=1
-\section{Proposition~6: Bootstrap ARI Stability as Feature Strength Diagnostic}
+\section{Heuristic Diagnostic~6: Bootstrap ARI Stability as Feature Strength Diagnostic}
 \label{sec:prop6}
 
 The performance of the SCX framework depends critically on the quality of the features used for state discovery. Theorem~2 (main text, Eq.~(3)) establishes that
@@ -13,7 +13,7 @@ where $\delta = I(\phi(X); S)$ is the mutual information between the features $\
 
 This bound motivates a practical need: given an arbitrary feature representation $\phi$, how can a practitioner assess whether the features are ``strong enough'' for SCX to be worthwhile, \emph{before} training multiple experts and running the full pipeline? Directly estimating $\delta = I(\phi(X); S)$ is challenging because the true states $S$ are unobserved; any plug-in estimate $\hat{I}(\phi(X); \hat{S})$ using surrogate cluster assignments suffers from estimation bias that can be large in finite samples~\cite{paninski2003estimation, gao2017efficient}.
 
-Proposition~6 addresses this gap by providing an alternative diagnostic based on the \emph{bootstrap stability} of the clustering induced by $\phi$. The core idea is simple: if the features are genuinely informative about the state structure, then the cluster assignments produced by k-means on $\phi$ should be reproducible across random resamples of the data. If the clusters are unstable---sensitive to which samples happen to be in the training set---then the features are not capturing a robust latent structure, and the mutual information $\delta$ is necessarily bounded above.
+Heuristic Diagnostic~6 addresses this gap by providing an alternative diagnostic based on the \emph{bootstrap stability} of the clustering induced by $\phi$. The core idea is simple: if the features are genuinely informative about the state structure, then the cluster assignments produced by k-means on $\phi$ should be reproducible across random resamples of the data. If the clusters are unstable---sensitive to which samples happen to be in the training set---then the features are not capturing a robust latent structure, and the mutual information $\delta$ is necessarily bounded above.
 
 \subsection{Motivation: Why Not BBP Spectral Analysis}
 
@@ -85,10 +85,13 @@ Algorithm~\ref{alg:bootstrap_stability} summarizes the complete diagnostic proce
 
 \subsection{Connection to Mutual Information $\delta$}
 
-We now establish the formal connection between clustering stability $S(\Phi, K)$ and the feature strength $\delta = I(\phi(X); S)$ that appears in Eq.~(3). The proposition has three parts: a forward direction (strong features imply high stability), a reverse direction (weak features imply low stability), and the diagnostic rule derived from their contrapositive.
+We now establish the formal connection between clustering stability $S(\Phi, K)$ and the feature strength $\delta = I(\phi(X); S)$ that appears in Eq.~(3). The conjecture has three parts: a forward direction (strong features imply high stability), a reverse direction (weak features imply low stability), and the diagnostic rule derived from their contrapositive.
 
-\begin{proposition}[Bootstrap ARI stability bounds feature informativeness]
+\begin{conjecture}[Bootstrap ARI stability bounds feature informativeness]
 \label{prop:bootstrap_ari}
+
+\textbf{Caveat.} This result is classified as a heuristic diagnostic rather than a formal theorem. Parts (a) and (b) are proof sketches under Gaussian isotropic assumptions (Assumptions~A1--A6); part (c) is explicitly heuristic and should not be interpreted as a rigorous bound. The diagnostic provides practical guidance for feature-strength assessment but should be validated empirically for each application domain.
+
 Let $\Phi \in \mathbb{R}^{N \times d}$ be a feature matrix drawn from a distribution with $K$ underlying state clusters, with means $\mu_1, \dots, \mu_K \in \mathbb{R}^d$ and isotropic within-cluster covariance $\sigma^2 I_d$. Define $\Delta_{\min} = \min_{k \neq \ell} \|\mu_k - \mu_\ell\|$ as the minimum inter-cluster separation and $n_{\min} = \min_k n_k$ as the minimum cluster size. Let $S(\Phi, K)$ be the bootstrap ARI stability (Definition~\ref{def:stability}) and $\delta = I(\phi(X); S)$ be the mutual information between features and true states. Then, under Assumptions~A1--A6:
 
 \begin{enumerate}
@@ -114,7 +117,7 @@ Let $\Phi \in \mathbb{R}^{N \times d}$ be a feature matrix drawn from a distribu
     \]
     implying that features are at best weakly informative about the true states. Conversely, if $S(\Phi, K) > 0.7$, the features carry sufficient information to make the SCX multi-expert consistency test meaningful.
 \end{enumerate}
-\end{proposition}
+\end{conjecture}
 
 \begin{proof}[Proof sketch]
 For part (a), under the separation condition, the k-means optimization is well-separated in the sense of~\cite{ostrovsky2013homogeneity}: the global optimum is unique up to permutation, and all local optima lie within $\varepsilon$ of it with high probability. Bootstrap resampling perturbs the empirical distribution by at most $O(1/\sqrt{N})$ in Wasserstein distance~\cite{canas2012wasserstein}, and the k-means solution is Lipschitz in the data distribution under the separation condition~\cite{pollard1981strong}. The ARI between two $\varepsilon$-close partitions is at least $1 - O(\varepsilon K)$. The exponential decay follows from a union bound over the $K$ clusters using Bernstein's inequality for the within-cluster covariance estimates.
@@ -124,11 +127,11 @@ For part (b), when all means are equal, the k-means objective has no true signal
 Part (c) follows from applying Pinsker's inequality to the relationship between $\delta$ and the total variation distance between the true cluster distribution and the feature-induced cluster distribution, which is bounded below by $1 - S(\Phi, K)$ through the ARI's interpretation as a chance-corrected agreement measure. The $0.7$ threshold corresponds to the ``substantial agreement'' level in the Landis--Koch interpretation of Cohen's $\kappa$~\cite{landis1977measurement}. \hfill $\square$
 \end{proof}
 
-Several aspects of Proposition~\ref{prop:bootstrap_ari} warrant discussion. First, part (a) is a \emph{sufficient} condition: when the signal-to-noise ratio is strong enough, stability is guaranteed. The condition involves $d + \log N$ in the numerator, reflecting the well-known curse of dimensionality for clustering---as dimension increases, the separation required to recover clusters grows polynomially~\cite{verma2020dimensionality}. Second, the bound in part (b) establishes that the diagnostic has controlled Type~I error: when no structure exists, the stability is near zero regardless of $N$. Third, the threshold in part (c) is conservative by design: $S > 0.7$ ensures that the features carry enough information to make $\delta$ meaningfully large, but $S \leq 0.7$ does not definitively prove that $\delta$ is small---it merely warns that the features may be insufficient.
+Several aspects of Conjecture~\ref{prop:bootstrap_ari} warrant discussion. First, part (a) is a \emph{sufficient} condition: when the signal-to-noise ratio is strong enough, stability is guaranteed. The condition involves $d + \log N$ in the numerator, reflecting the well-known curse of dimensionality for clustering---as dimension increases, the separation required to recover clusters grows polynomially~\cite{verma2020dimensionality}. Second, the bound in part (b) establishes that the diagnostic has controlled Type~I error: when no structure exists, the stability is near zero regardless of $N$. Third, the threshold in part (c) is conservative by design: $S > 0.7$ ensures that the features carry enough information to make $\delta$ meaningfully large, but $S \leq 0.7$ does not definitively prove that $\delta$ is small---it merely warns that the features may be insufficient.
 
 \subsection{Diagnostic Threshold Calibration}
 
-The threshold $\tau = 0.7$ in Proposition~\ref{prop:bootstrap_ari}(c) is not arbitrary. It corresponds to the widely used ``substantial agreement'' threshold in the Landis--Koch interpretation of Cohen's $\kappa$ statistic~\cite{landis1977measurement}, translated to the ARI through their shared chance-correction framework. The ARI and Cohen's $\kappa$ are both of the form
+The threshold $\tau = 0.7$ in Conjecture~\ref{prop:bootstrap_ari}(c) is not arbitrary. It corresponds to the widely used ``substantial agreement'' threshold in the Landis--Koch interpretation of Cohen's $\kappa$ statistic~\cite{landis1977measurement}, translated to the ARI through their shared chance-correction framework. The ARI and Cohen's $\kappa$ are both of the form
 
 \[
 \text{Index} = \frac{\text{observed agreement} - \text{expected agreement under independence}}{1 - \text{expected agreement under independence}},
@@ -160,7 +163,7 @@ In practice, we find that the default $\tau = 0.7$ is consistent with $\tau_{\te
 Dataset (Features) & $S(\Phi, K)$ & $\delta / \log K$ & SCX F1 & Diagnosis \\
 \midrule
 AlN v3 (ACE descriptors) & $0.93_{(0.02)}$ & $0.15$ & $0.87$ & Strong \\
-CIFAR-10 (ResNet-18 embeddings) & $0.96_{(0.01)}$ & $0.12$ & $0.62$ & Strong \\
+CIFAR-10 (ResNet-18 embeddings) & $0.96_{(0.01)}$ & $0.15$ & $0.62$ & Strong \\
 DermaMNIST (SimpleCNN features) & $0.48_{(0.08)}$ & $0.52$ & $0.10$ & Weak \\
 \bottomrule
 \end{tabular}
@@ -172,11 +175,11 @@ The standard deviations in Table~\ref{tab:expected_stabilities} illustrate anoth
 
 \subsection{Limitations and Practical Guidance}
 
-Proposition~\ref{prop:bootstrap_ari} and the associated bootstrap stability procedure serve as a practical feature-strength diagnostic, but several limitations must be acknowledged.
+Conjecture~\ref{prop:bootstrap_ari} and the associated bootstrap stability procedure serve as a practical feature-strength diagnostic, but several limitations must be acknowledged.
 
 \subsubsection{Stability is sufficient, not necessary}
 
-The most important limitation is that the implication in Proposition~\ref{prop:bootstrap_ari}(a) is one-directional: strong features imply high stability, but high stability does not guarantee that the features are informative for the specific task of state discovery in SCX. It is possible for k-means clustering to be stable (the same clusters appear across bootstrap resamples) while those clusters are not aligned with the true latent states $S$ that determine expert error rates. This can occur when:
+The most important limitation is that the implication in Conjecture~\ref{prop:bootstrap_ari}(a) is one-directional: strong features imply high stability, but high stability does not guarantee that the features are informative for the specific task of state discovery in SCX. It is possible for k-means clustering to be stable (the same clusters appear across bootstrap resamples) while those clusters are not aligned with the true latent states $S$ that determine expert error rates. This can occur when:
 
 \begin{itemize}
     \item The data contain a strong spurious cluster structure (e.g., a categorical covariate with large effect) that dominates the feature representation, while the true error-determining states are a subtle substructure within each spurious cluster.
@@ -214,13 +217,13 @@ The $0.7$ threshold, while grounded in the Landis--Koch convention, is ultimatel
 
 \subsubsection{Connection to Theorem~2 is empirical, not formal}
 
-We emphasize that the relationship between $S(\Phi, K)$ and $\delta$ in Proposition~\ref{prop:bootstrap_ari}(c) is qualitatively informative but not quantitatively precise. The inequality
+We emphasize that the relationship between $S(\Phi, K)$ and $\delta$ in Conjecture~\ref{prop:bootstrap_ari}(c) is qualitatively informative but not quantitatively precise. The inequality
 
 \[
 \frac{\delta}{\log K} \;\gtrsim\; \frac{1}{2}\bigl(1 - S(\Phi, K)\bigr)
 \]
 
-is a heuristic approximation, not a proven bound. The precise relationship depends on the geometry of the clusters, the dimensionality, and the specific $K$ used in clustering. We provide it as guidance for practitioners, not as a rigorous mathematical statement. The formal content of Proposition~\ref{prop:bootstrap_ari} is contained in parts (a) and (b); part (c) is a practical translation whose validity should be verified empirically for each application domain.
+is a heuristic approximation, not a proven bound. The precise relationship depends on the geometry of the clusters, the dimensionality, and the specific $K$ used in clustering. We provide it as guidance for practitioners, not as a rigorous mathematical statement. The formal content of Conjecture~\ref{prop:bootstrap_ari} is contained in parts (a) and (b); part (c) is a practical translation whose validity should be verified empirically for each application domain.
 
 \subsubsection{Choice of $K$}
 
@@ -235,4 +238,4 @@ The bootstrap stability diagnostic is most valuable in two scenarios:
     \item \textbf{Feature selection}: When multiple feature representations are available (e.g., ACE descriptors at different body orders, or CNN features from different layers), computing $S(\Phi, K)$ for each candidate provides a rapid ranking of representational quality without training any models.
 \end{enumerate}
 
-In summary, Proposition~\ref{prop:bootstrap_ari} provides a practical, computationally efficient diagnostic for feature strength that directly tests the clustering procedure used in SCX state discovery. While it has limitations---sufficiency without necessity, heuristic thresholds, and informal connection to $\delta$---it empirically identifies the feature weakness regime where SCX fails to improve over baselines, providing actionable guidance before expensive multi-expert training begins.
+In summary, Conjecture~\ref{prop:bootstrap_ari} provides a practical, computationally efficient diagnostic for feature strength that directly tests the clustering procedure used in SCX state discovery. While it has limitations---sufficiency without necessity, heuristic thresholds, and informal connection to $\delta$---it empirically identifies the feature weakness regime where SCX fails to improve over baselines, providing actionable guidance before expensive multi-expert training begins.
