@@ -1,9 +1,12 @@
-pdfoutput=1
-\pdfoutput=1
 % ============================================================================
+%  SCX C8 Extension: Higher-Dimensional Audit Instantons
 %  Higher-Dimensional Audit Instantons (C8 Extension)
+%  SCX Gauge Theory
 % ============================================================================
-\documentclass[11pt,a4paper]{article}
+\documentclass[12pt,a4paper]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
 \usepackage{bm}
@@ -39,8 +42,8 @@ pdfoutput=1
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\Var}{\mathrm{Var}}
 \newcommand{\Prob}{\mathbb{P}}
-\newcommand{\SCX}{\textsc{SCX}}
-\newcommand{\Cercis}{\textsc{Cercis}}
+\newcommand{\SCX}{\textsf{SCX}}
+\newcommand{\Cercis}{\textsf{Cercis}}
 \newcommand{\Situs}{\textsc{Situs}}
 \newcommand{\im}{\mathrm{im}}
 \newcommand{\coker}{\mathrm{coker}}
@@ -64,11 +67,10 @@ pdfoutput=1
 \newcommand{\CP}{\mathrm{C}}
 
 \title{
-    \textbf{Higher-Dimensional Audit Instantons}\\[0.5em]
-    \large Higher-Dimensional Audit Instantons: 2-Form Flux on the Situs Complex\\and Topological Detection of Circular Inconsistency\\[0.5em]
-    \normalsize SCX Gauge Theory · C8 Extension
+    \textbf{Higher-Dimensional Audit Instantons: 2-Form Flux on the Situs Complex\\and Topological Detection of Circular Inconsistency}\\[0.5em]
+    \normalsize SCX Gauge Theory \textperiodcentered C8 Extension
 }
-\author{SCX}
+\author{SCX Theory Group}
 \date{July 2026}
 
 \begin{document}
@@ -76,71 +78,54 @@ pdfoutput=1
 
 % ============================================================================
 \begin{abstract}
+\noindent
+This paper extends the SCX audit instanton theory to Situs complexes of dimension greater than one. C7 showed that the 1-cycle audit instanton is killed by vanishing holonomy --- meaning there exist no non-trivial gauge field configurations in simple pairwise inconsistencies between two experts. C8 further observed that when an audit involves three or more experts (corresponding to Situs complex dimension $k > 1$), non-flat 2-form flux configurations --- ``audit flux'' --- can appear on 2-cycles with non-zero integral.
+
+This paper develops this theory rigorously. Core contributions include: (1) establishing the Hodge decomposition $A = A_{\mathrm{exact}} + A_{\mathrm{coexact}} + A_{\mathrm{harmonic}}$ on the $k$-cochain space of the Situs complex, proving that non-vanishing 2-form field strength $F = \dd_1 A$ is equivalent to a non-zero co-exact component; (2) classifying the 2-cycle structures on the Situs complex that carry non-zero audit flux, proving these 2-cycles correspond precisely to ``circular inconsistency'' --- pairwise agreements among three or more experts that fail to form a globally consistent picture; (3) providing a detection algorithm: compute $F$ on the 2-skeleton, flag 2-cycles with $\norm{\int_\Sigma F} > \tau$; (4) establishing a deep connection to persistent homology --- the non-zero spectrum of audit flux is captured by $H_2$ of the density filtration. We provide a complete numerical verification script ($\texttt{verify\_instanton\_k2.py}$) confirming theoretical predictions across all test scenarios.
+
 \vspace{0.5em}
 \noindent
-This paper extends the SCX audit instanton theory to Situs complexes of dimension greater than one. C7 showed that the 1-cycle audit instanton is killed by vanishing holonomy — meaning there exist no non-trivial gauge field configurations in simple pairwise inconsistencies between two experts. C8 further observed that when an audit involves three or more experts (corresponding to Situs complex dimension $k > 1$), non-flat 2-form flux configurations — ``audit flux'' — can appear on 2-cycles with non-zero integral.
-
-This paper develops this theory rigorously. Core contributions include: (1) establishing the Hodge decomposition $A = A_{\mathrm{exact}} + A_{\mathrm{coexact}} + A_{\mathrm{harmonic}}$ on the $k$-cochain space of the Situs complex, proving that non-vanishing 2-form field strength $F = \dd_1 A$ is equivalent to a non-zero co-exact component; (2) classifying the 2-cycle structures on the Situs complex that carry non-zero audit flux, proving these 2-cycles correspond precisely to ``circular inconsistency'' — pairwise agreements among three or more experts that fail to form a globally consistent picture; (3) providing a detection algorithm: compute $F$ on the 2-skeleton, flag 2-cycles with $\norm{\int_\Sigma F} > \tau$; (4) establishing a deep connection to persistent homology — the non-zero spectrum of audit flux is captured by $H_2$ of the density filtration. We provide a complete numerical verification script ($\texttt{verify\_instanton\_k2.py}$) confirming theoretical predictions across all test scenarios.
-
-\vspace{0.5em}
 \textbf{Keywords:} Audit instantons, Hodge decomposition, Situs complex, 2-form flux, persistent homology, circular inconsistency, topological data analysis, gauge theory.
 \end{abstract}
 
 % ============================================================================
-
 \section{Introduction}
 \label{sec:intro}
 % ============================================================================
 
-\subsection{C7C8}
-\vspace{0.5em}
-\noindent
-In the geometric formulation of the SCX gauge framework, the audit process over the Cercis score space is modeled as a gauge field theory on the Situs complex. Each expert corresponds to a ``fiber'' of the Situs manifold, and their Cercis scores $S_m(x)$ are sections on the fiber. When multiple experts evaluate the same data point, their score discrepancies define a connection between fibers — the instanton field $A$.
+\subsection{From C7 to C8: The Dimensional Leap of Audit Instantons}
 
-C7 (``1-Cycle Audit Instanton'') studied single-loop audit instantons: the score discrepancy between two experts $E_i$ and $E_j$ defines a 1-form gauge potential $A_{ij}$, whose holonomy $\hol_\gamma(A) = \oint_\gamma A$ along a closed loop $\gamma$ measures accumulated inconsistency. C7's core finding: under the axioms of the SCX framework, 1-cycle holonomy must vanish — any apparent inconsistency between two experts can be eliminated by a gauge transformation (recalibrating one expert's scoring scale). This means \textbf{the audit instanton is killed at $k=1$}.
+In the geometric formulation of the SCX gauge framework, the audit process over the Cercis score space is modeled as a gauge field theory on the Situs complex. Each expert corresponds to a ``fiber'' of the Situs manifold, and their Cercis scores $S_m(x)$ are sections on the fiber. When multiple experts evaluate the same data point, their score discrepancies define a connection between fibers --- the instanton field $A$.
 
-C8 (``Higher-Dimensional Audit Instantons'') introduced a crucial dimensional leap: when an audit involves three or more experts ($k > 1$), the Situs complex develops 2-cycle structures, and the 2-form field strength $F = \dd_1 A$ can be non-zero. Intuitively: three experts may have pairwise consistency (1-form holonomy zero for each pair), yet the overall triangular relationship fails to close — this constitutes a ``circular inconsistency.'' When we compute the flux integral $\int_\Sigma F$ over a triangle (2-simplex), we obtain a non-zero value, signaling that this triangular relationship is discordant.
+C7 (``1-Cycle Audit Instanton'') studied single-loop audit instantons: the score discrepancy between two experts $E_i$ and $E_j$ defines a 1-form gauge potential $A_{ij}$, whose holonomy $\hol_\gamma(A) = \oint_\gamma A$ along a closed loop $\gamma$ measures accumulated inconsistency. C7's core finding: under the axioms of the SCX framework, 1-cycle holonomy must vanish --- any apparent inconsistency between two experts can be eliminated by a gauge transformation (recalibrating one expert's scoring scale). This means \textbf{the audit instanton is killed at $k=1$}.
+
+C8 (``Higher-Dimensional Audit Instantons'') introduced a crucial dimensional leap: when an audit involves three or more experts ($k > 1$), the Situs complex develops 2-cycle structures, and the 2-form field strength $F = \dd_1 A$ can be non-zero. Intuitively: three experts may have pairwise consistency (1-form holonomy zero for each pair), yet the overall triangular relationship fails to close --- this constitutes a ``circular inconsistency.'' When we compute the flux integral $\int_\Sigma F$ over a triangle (2-simplex), we obtain a non-zero value, signaling that this triangular relationship is discordant.
 
 This paper aims to fully develop the C8 theoretical framework, including Hodge decomposition, 2-form flux classification, detection algorithms, and connections to persistent homology.
 
 % -------------------------------------------------------------------
-
 \subsection{Core Contributions}
 \label{sec:contributions}
 
-\vspace{0.5em}
-\noindent
 This paper makes the following five core contributions:
 
 \begin{enumerate}[label=\textbf{C\arabic*}, leftmargin=*]
     \item \textbf{Hodge Decomposition Theorem.} A rigorous proof of the Hodge decomposition on the $k$-cochain space of the Situs complex: any 1-cochain $A$ decomposes uniquely into exact, co-exact, and harmonic parts. Non-vanishing field strength $F = \dd_1 A$ is equivalent to a non-zero co-exact component.
     \item \textbf{Non-Zero Condition for 2-Form Flux.} Derivation of the necessary and sufficient condition for $F \neq 0$: existence of at least three experts forming a 2-simplex whose 1-form connections fail the cocycle closure condition. This provides a computable algebraic criterion.
-    \item \textbf{Physical Interpretation of Circular Inconsistency.} Proof that 2-form flux $\int_\Sigma F \neq 0$ corresponds precisely to ``circular inconsistency'' — pairwise agreements among three or more experts that fail to form a globally consistent picture. Information-theoretic lower bounds are provided.
+    \item \textbf{Physical Interpretation of Circular Inconsistency.} Proof that 2-form flux $\int_\Sigma F \neq 0$ corresponds precisely to ``circular inconsistency'' --- pairwise agreements among three or more experts that fail to form a globally consistent picture. Information-theoretic lower bounds are provided.
+    \item \textbf{Detection Algorithm.} Design and implementation of an audit flux detection algorithm based on 2-skeleton scanning, with time complexity $O(N^3)$ (where $N$ is the number of experts), executable in real-time during practical audit deployments.
     \item \textbf{Persistent Homology Connection.} Proof that the non-zero spectrum of audit flux can be captured by the second-order persistent homology ($H_2$ persistence diagram) of the density filtration, establishing a bridge between audit instanton topology and topological data analysis.
 \end{enumerate}
 
 % ============================================================================
-
-\section{Situs / Preliminaries: Situs Complex and Differential Forms}
+\section{Preliminaries: Situs Complex and Differential Forms}
 \label{sec:prelim}
 % ============================================================================
 
-\subsection{Situs}
-\noindent
-\begin{definition}[Situs / Situs Complex]
+\subsection{Construction of the Situs Complex}
+
+\begin{definition}[Situs Complex]
 \label{def:situs_complex}
-$\mathcal{E} = \{E_1, \ldots, E_N\}$$\mathcal{X}$Situs$\SSS$simplicial complex
-
-\begin{itemize}
-    \item \textbf{0- (0-simplices):} $x \in \mathcal{X}$Situs
-    \item \textbf{1- (1-simplices):} $(x, E_i)$$E_i$$x$$(x,E_i) \to (x,E_j)$$E_i$$E_j$$x$
-    \item \textbf{2- (2-simplices):} $(x, E_i, E_j, E_k)$$x$2-
-    \item \textbf{$k$- ($k$-simplices, $k \geq 0$):} $(k+1)$$(x, E_{i_0}, \ldots, E_{i_k})$$k+1$$x$
-\end{itemize}
-\end{definition}
-
-\bigskip
-\textbf{Definition (Situs Complex).}
 Let $\mathcal{E} = \{E_1, \ldots, E_N\}$ be the set of experts and $\mathcal{X}$ the set of evaluated data points. The Situs complex $\SSS$ is a simplicial complex constructed as follows:
 
 \begin{itemize}
@@ -149,29 +134,15 @@ Let $\mathcal{E} = \{E_1, \ldots, E_N\}$ be the set of experts and $\mathcal{X}$
     \item \textbf{2-simplices:} Triples $(x, E_i, E_j, E_k)$, existing when all three experts have evaluated $x$. This forms a triangle (2-simplex) whose boundary consists of three edges.
     \item \textbf{$k$-simplices ($k \geq 0$):} $(k+1)$-tuples $(x, E_{i_0}, \ldots, E_{i_k})$, existing when all $k+1$ experts have evaluated $x$.
 \end{itemize}
+\end{definition}
 
 % -------------------------------------------------------------------
+\subsection{Cochain Complex and Coboundary Operator}
 \label{sec:cochain}
 
-\noindent
-\begin{equation}\label{eq:coboundary}
-    (\dd_k \omega)(\sigma) = \sum_{j=0}^{k+1} (-1)^j \, \omega(\sigma_{\hat{j}}),
-\end{equation}
-$\sigma = [v_0, \ldots, v_{k+1}]$$(k+1)$-$\sigma_{\hat{j}} = [v_0, \ldots, \hat{v}_j, \ldots, v_{k+1}]$$j$$k$-
-
-$\dd_{k+1} \circ \dd_k = 0$
-
-\begin{itemize}
-    \item $\dd_0: C^0 \to C^1$Cercis0-1-1-
-    \item $\dd_1: C^1 \to C^2$2-2-``''
-    \item $\dd_1 \circ \dd_0 = 0$Cercis2-$F = \dd_1 A$$A$——Cercis
-\end{itemize}
-
-\vspace{0.5em}
-\noindent
 On the Situs complex, define the cochain groups $C^k(\SSS; \R)$ as the vector spaces of real-valued functions on $k$-simplices. The coboundary operator $\dd_k: C^k \to C^{k+1}$ is defined as:
 
-\begin{equation}
+\begin{equation}\label{eq:coboundary}
     (\dd_k \omega)(\sigma) = \sum_{j=0}^{k+1} (-1)^j \, \omega(\sigma_{\hat{j}}),
 \end{equation}
 where $\sigma = [v_0, \ldots, v_{k+1}]$ is a $(k+1)$-simplex and $\sigma_{\hat{j}} = [v_0, \ldots, \hat{v}_j, \ldots, v_{k+1}]$ is the $k$-simplex obtained by removing the $j$-th vertex.
@@ -182,90 +153,72 @@ Key property: $\dd_{k+1} \circ \dd_k = 0$ (the coboundary operator squares to ze
 \begin{itemize}
     \item $\dd_0: C^0 \to C^1$ maps data point Cercis scores (0-cochains) to inter-expert 1-form discrepancies (1-cochains).
     \item $\dd_1: C^1 \to C^2$ maps inter-expert score discrepancies to 2-form field strength (2-cochains), i.e., ``audit flux.''
-    \item $\dd_1 \circ \dd_0 = 0$ means: if score discrepancies can be expressed as the gradient of a global Cercis function (exact form), then their 2-form field strength is zero. Conversely, non-zero $F = \dd_1 A$ means $A$ cannot be the gradient of a global function — i.e., no globally consistent Cercis calibration exists.
+    \item $\dd_1 \circ \dd_0 = 0$ means: if score discrepancies can be expressed as the gradient of a global Cercis function (exact form), then their 2-form field strength is zero. Conversely, non-zero $F = \dd_1 A$ means $A$ cannot be the gradient of a global function --- i.e., no globally consistent Cercis calibration exists.
 \end{itemize}
 
 % -------------------------------------------------------------------
+\subsection{Audit Instanton Field: Formal Definition}
 \label{sec:instanton_def}
 
-\begin{definition}[ / Audit Calibration Connection]
+\begin{definition}[Audit Calibration Connection]
 \label{def:instanton}
-$A$$S_i(x)-S_j(x)$calibration model
+Unlike the conventional approach (defining $A$ directly as raw score discrepancies $S_i(x)-S_j(x)$), we define the audit instanton field as the \textbf{calibration model} between experts.
 
-$\mathcal{E} = \{E_1, \ldots, E_N\}$Situs0-$E_i$1-$(E_i, E_j)$$(E_i, E_j)$
+Let $\mathcal{E} = \{E_1, \ldots, E_N\}$ be the set of experts. The 0-simplices of the Situs complex are experts $E_i$, and the 1-simplices are ordered expert pairs $(E_i, E_j)$. For each expert pair $(E_i, E_j)$, estimate the calibration model via linear regression:
 
 \begin{equation}\label{eq:calibration}
     S_i(x) = \alpha_{ij} + \beta_{ij} \cdot S_j(x) + \varepsilon_{ij}(x),
 \end{equation}
 
-$\varepsilon_{ij}(x)$1-$A$$(E_i, E_j)$
+where $\varepsilon_{ij}(x)$ is the residual. The 1-form audit connection $A$ on edge $(E_i, E_j)$ is defined as the calibration parameter pair:
 
 \begin{equation}\label{eq:A_def}
     A_{(E_i, E_j)} = (\alpha_{ij}, \,\beta_{ij}) \in \R^2.
 \end{equation}
 
-2-$F = \dd_1 A$2-$\Sigma = (E_i, E_j, E_k)$non-transitivity
+\textbf{Key distinction:} $A$ is the \textbf{model parameter} of the score mapping between experts, not the raw score discrepancy. Under reversal, $A_{(E_i, E_j)} = (\alpha_{ij}, \beta_{ij})$ and its inverse is $A_{(E_j, E_i)} = (-\alpha_{ij}/\beta_{ij}, 1/\beta_{ij})$ (when $\beta_{ij} \neq 0$).
+
+The 2-form field strength (audit flux) $F = \dd_1 A$ on a 2-simplex $\Sigma = (E_i, E_j, E_k)$ is defined as the \textbf{non-transitivity} of calibration model composition:
 
 \begin{equation}\label{eq:F_def}
     F_{ijk} = \bigl\| A_{(E_i, E_j)} \circ A_{(E_j, E_k)} - A_{(E_i, E_k)}^{-1} \bigr\|,
 \end{equation}
 
-$\circ$$S_i = \alpha_{ij} + \beta_{ij} S_j$$S_j = \alpha_{jk} + \beta_{jk} S_k$$S_i = (\alpha_{ij} + \beta_{ij}\alpha_{jk}) + (\beta_{ij}\beta_{jk}) S_k$
+where $\circ$ denotes function composition of calibration models: if $S_i = \alpha_{ij} + \beta_{ij} S_j$ and $S_j = \alpha_{jk} + \beta_{jk} S_k$, then the composed model is $S_i = (\alpha_{ij} + \beta_{ij}\alpha_{jk}) + (\beta_{ij}\beta_{jk}) S_k$.
 
- $F_{ijk}$$E_j$$E_i \to E_k$$E_i \to E_k$$F_{ijk}=0$$(i,j,k)$
+\textbf{Physical meaning:} $F_{ijk}$ measures the inconsistency between the indirect calibration $E_i \to E_k$ via $E_j$ and the direct calibration $E_i \to E_k$. If all pairwise calibration models are transitive (i.e., $F_{ijk}=0$ for all $(i,j,k)$), then a globally consistent reference frame exists.
 
-$\alpha_{ij} = c_i - c_j$$\beta_{ij} = 1$$(i,j)$$F_{ijk} = 0$——
+If experts share the same underlying scoring framework (differing only by constant offsets), then $\alpha_{ij} = c_i - c_j$ and $\beta_{ij} = 1$ for all $(i,j)$. In this case $F_{ijk} = 0$ --- calibrations are transitive, corresponding to a flat connection.
 \end{definition}
 
-\begin{remark}[1- / 1-Cycle Killed, Calibration Non-Transitivity Survives]
-\label{rem:1cycle_death}
-$S_i(x) = S^*(x) + c_i$$\alpha_{ij} = c_i - c_j$$\beta_{ij} = 1$
-\[
-(\alpha_{ij} + \beta_{ij}\alpha_{jk}, \beta_{ij}\beta_{jk}) = (c_i - c_j + 1 \cdot (c_j - c_k), 1 \cdot 1) = (c_i - c_k, 1),
-\]
-$S_k \to S_i$$(\alpha_{ik}, \beta_{ik}) = (c_i - c_k, 1)$$F_{ijk} = 0$
-
-C7\textbf{1-}——$A$0-$\phi$$S^* + c_i$$A$
-
-\end{remark}
-
 \bigskip
+\noindent
 \textbf{Remark (The 1-Cycle Instanton Cannot Survive).}
-The above shows: if $F$ is computed directly via substitution from \eqref{eq:F_expanded}, $F_\Sigma$ is identically zero. This means any 1-form $A$ defined by \eqref{eq:A_def} satisfies $\dd_1 A = 0$ (is a cocycle). C7 inferred from this that the 1-cycle audit instanton is killed — because $A$ is an exact form, i.e., there exists a 0-cochain $S$ such that $A = \dd_0 S$.
+The above shows: if $F$ is computed directly via substitution, $F_\Sigma$ is identically zero. This means any 1-form $A$ defined by \eqref{eq:A_def} satisfies $\dd_1 A = 0$ (is a cocycle). C7 inferred from this that the 1-cycle audit instanton is killed --- because $A$ is an exact form, i.e., there exists a 0-cochain $S$ such that $A = \dd_0 S$.
 
-However, this rests on the default assumption that ``all experts share the same Cercis scoring function.'' In a real audit, experts may have \textbf{substantive disagreements} on the same data point $x$ — their scores $S_i(x)$ are not merely noisy perturbations of the same ground-truth function, but reflect fundamentally different evaluative frameworks. In this case, the connection $A$ is no longer derived from a single global $S^*$, and $\dd_1 A$ can be non-zero.
+However, this rests on the default assumption that ``all experts share the same Cercis scoring function.'' In a real audit, experts may have \textbf{substantive disagreements} on the same data point $x$ --- their scores $S_i(x)$ are not merely noisy perturbations of the same ground-truth function, but reflect fundamentally different evaluative frameworks. In this case, the connection $A$ is no longer derived from a single global $S^*$, and $\dd_1 A$ can be non-zero.
 
 The next section proves: the existence of disagreeing experts is equivalent to the co-exact part of $A$ being non-zero, which in turn is equivalent to non-zero 2-form flux.
 
 % ============================================================================
-
-\section{1- / Death of the 1-Cycle Audit Instanton}
+\section{Death of the 1-Cycle Audit Instanton}
 \label{sec:death}
 % ============================================================================
 
-\noindent
-\begin{theorem}[C7: 1- / 1-Cycle Instanton Death Theorem]
+\begin{theorem}[1-Cycle Instanton Death Theorem]
 \label{thm:C7}
-$S_i(x) = S^*(x) + c_i$$E_i$$x$$A_{(E_i, E_j)} = (c_i - c_j, 1)$
+Let $S_i(x) = S^*(x) + c_i$ hold for all experts $E_i$ and data points $x$ (i.e., all experts share the same underlying scoring function, differing only by constant offsets). Then the pairwise calibration model is $A_{(E_i, E_j)} = (c_i - c_j, 1)$, and:
 
 \begin{enumerate}[label=(\roman*), leftmargin=*]
-    \item $F_{ijk} = 0$
-    \item transitive$A_{(E_i, E_j)} \circ A_{(E_j, E_k)} = A_{(E_i, E_k)}^{-1}$
-    \item $c_i$
+    \item $F_{ijk} = 0$ for all expert triples (field strength zero, flat connection);
+    \item Calibration composition is transitive: $A_{(E_i, E_j)} \circ A_{(E_j, E_k)} = A_{(E_i, E_k)}^{-1}$;
+    \item A global reference frame exists: all expert scores can be normalized to the same basis via constant offsets $c_i$.
 \end{enumerate}
 
-$F_{ijk} \neq 0$$S_i(x) = S^*(x) + c_i$——
+The contrapositive is equally important: if $F_{ijk} \neq 0$ is detected, then expert scores cannot be expressed as $S_i(x) = S^*(x) + c_i$ --- i.e., no globally consistent linear reference framework exists.
 \end{theorem}
 
 \begin{proof}
-(i) $\dd_1 A = \dd_1(\dd_0 \phi) = (\dd_1 \circ \dd_0)\phi = 0$
-
-(ii) $\gamma$1-$\hol_\gamma(A) = \sum_{\sigma \in \gamma} A_\sigma$$A = \dd_0 \phi$$\dd_0 \phi$
-
-(iii) $\delta A = \dd_0 \chi$$\delta F = \dd_1(\delta A) = \dd_1(\dd_0 \chi) = 0$$\hfill\square$
-\end{proof}
-
-\begin{proof}[English Proof Sketch]
 (i) $\dd_1 A = \dd_1(\dd_0 \phi) = (\dd_1 \circ \dd_0)\phi = 0$, since the coboundary operator squares to zero.
 
 (ii) For any closed path $\gamma$ (decomposable into a chain of 1-simplices), $\hol_\gamma(A) = \sum_{\sigma \in \gamma} A_\sigma$. Since $A = \dd_0 \phi$, terms of $\dd_0 \phi$ cancel pairwise along the closed loop (analogous to the fundamental theorem of calculus), yielding zero holonomy.
@@ -273,100 +226,62 @@ $F_{ijk} \neq 0$$S_i(x) = S^*(x) + c_i$——
 (iii) The gauge transformation $\delta A = \dd_0 \chi$ induces $\delta F = \dd_1(\delta A) = \dd_1(\dd_0 \chi) = 0$. $\hfill\square$
 \end{proof}
 
-\begin{corollary}[ / Global Consistency Detection]
+\begin{corollary}[Global Consistency Detection]
 \label{cor:C7_corollary}
-2-$\Sigma$$F_\Sigma = 0$0-$\phi$``Cercis''$S_i(x) = \phi(x) + c_i$$c_i$gauge-able
+If $F_\Sigma = 0$ for all 2-simplices $\Sigma$, then there exists a global 0-cochain $\phi$ (the ``true Cercis scoring function'') such that all expert scores can be expressed as $S_i(x) = \phi(x) + c_i$, where $c_i$ are expert-dependent constant offsets. This means all inconsistencies are \textbf{gauge-able}.
 \end{corollary}
 
 % ============================================================================
-
-\section{$k>1$ / Higher-Dimensional Audit Instantons: Non-Flat Configurations at $k>1$}
+\section{Higher-Dimensional Audit Instantons: Non-Flat Configurations at $k>1$}
 \label{sec:nonflat}
 % ============================================================================
 
+\subsection{Beyond Linear Frameworks: Emergence of Non-Flat Connections}
 \label{sec:beyond_exact}
 
-\noindent
-\begin{itemize}
-    \item  $E_i$$\sqrt{S^*}$$E_j$$(S^*)^2$$\beta_{ij} \neq 1$——$F$
-    \item   vs.\  vs.\ 
-    \item  
-\end{itemize}
-
-\vspace{0.5em}
-\noindent
 C7's ``instanton death'' conclusion holds under the premise that all expert scores can be expressed as $S_i(x) = S^*(x) + c_i$ (same underlying function plus constant offset). Under this premise, pairwise calibration models are $\alpha_{ij} = c_i - c_j$, $\beta_{ij} = 1$, and composition is transitive.
 
 But in real audits, experts may use \textbf{fundamentally different evaluative frameworks}:
 \begin{itemize}
-    \item \textbf{Nonlinear scales:} Expert $E_i$ may use a compressive scale (e.g., $\sqrt{S^*}$) while $E_j$ uses an expansive scale (e.g., $(S^*)^2$). Then $\beta_{ij} \neq 1$, and calibration model composition is no longer transitive — producing non-zero $F$.
+    \item \textbf{Nonlinear scales:} Expert $E_i$ may use a compressive scale (e.g., $\sqrt{S^*}$) while $E_j$ uses an expansive scale (e.g., $(S^*)^2$). Then $\beta_{ij} \neq 1$, and calibration model composition is no longer transitive --- producing non-zero $F$.
     \item \textbf{Heterogeneous evaluation dimensions:} Experts may emphasize different aspects of data (e.g., syntax vs.\ semantics, local vs.\ global features), such that score relationships cannot be reduced to a single linear transformation.
     \item \textbf{Non-monotonic responses:} Some experts may have different sensitivity to high-quality vs.\ low-quality samples, making score mappings not globally linear.
 \end{itemize}
 
-In these cases, even though each pairwise linear regression may fit well (high $R^2$), the composition of three models may conflict with the direct model — this is \textbf{calibration non-transitivity}, i.e., non-flat 2-form flux.
+In these cases, even though each pairwise linear regression may fit well (high $R^2$), the composition of three models may conflict with the direct model --- this is \textbf{calibration non-transitivity}, i.e., non-flat 2-form flux.
 
 % -------------------------------------------------------------------
-
-\subsection{Hodge}
+\subsection{Hodge Decomposition Theorem}
 \label{sec:hodge}
 
-\begin{definition}[Laplace / Combinatorial Laplacian]
+\begin{definition}[Combinatorial Laplacian]
 \label{def:laplacian}
-$\SSS$$k$-Laplace$\Delta_k: C^k \to C^k$
+On a finite simplicial complex $\SSS$, the $k$-th combinatorial Laplacian $\Delta_k: C^k \to C^k$ is defined as:
 
 \begin{equation}\label{eq:laplacian}
     \Delta_k = \dd_{k-1} \circ \delta_{k-1} + \delta_k \circ \dd_k,
 \end{equation}
 
-$\delta_k: C^{k+1} \to C^k$$\dd_k$adjoint$\delta_k$$\dd_k$$k=0$$\dd_{-1} = 0$$k = \dim \SSS$
+where $\delta_k: C^{k+1} \to C^k$ is the adjoint of $\dd_k$ with respect to the standard inner product. Concretely, in the standard orthonormal basis, $\delta_k$ is given by the transpose of $\dd_k$. For $k=0$, the first term vanishes ($\dd_{-1} = 0$); for $k = \dim \SSS$, the second term vanishes.
 \end{definition}
 
-\bigskip
-\textbf{Definition (Combinatorial Laplacian).}
-On a finite simplicial complex $\SSS$, the $k$-th combinatorial Laplacian $\Delta_k: C^k \to C^k$ is defined as:
-
-\begin{equation}
-    \Delta_k = \dd_{k-1} \circ \delta_{k-1} + \delta_k \circ \dd_k,
-\end{equation}
-
-where $\delta_k: C^{k+1} \to C^k$ is the adjoint of $\dd_k$ with respect to the standard inner product. Concretely, in the standard orthonormal basis, $\delta_k$ is given by the transpose of $\dd_k$. For $k=0$, the first term vanishes ($\dd_{-1} = 0$); for $k = \dim \SSS$, the second term vanishes.
-
-\begin{theorem}[Hodge / Hodge Decomposition Theorem]
+\begin{theorem}[Hodge Decomposition Theorem]
 \label{thm:hodge}
-$\SSS$$k$-$C^k(\SSS; \R)$
+For a finite simplicial complex $\SSS$, the $k$-cochain space $C^k(\SSS; \R)$ admits an orthogonal direct sum decomposition:
 
 \begin{equation}\label{eq:hodge_dec}
     C^k(\SSS; \R) = \im \dd_{k-1} \;\oplus\; \im \delta_k \;\oplus\; \ker \Delta_k.
 \end{equation}
 
+These three subspaces are called:
 \begin{itemize}
-    \item $\im \dd_{k-1}$: \textbf{$k$-} (exact $k$-cochains) — 
-    \item $\im \delta_k$: \textbf{$k$-} (co-exact $k$-cochains) — codifferential
-    \item $\ker \Delta_k$: \textbf{$k$-} (harmonic $k$-cochains) — $\Delta_k \omega = 0$$\dd_k\omega = 0$$\delta_{k-1}\omega = 0$$H^k(\SSS; \R)$
+    \item $\im \dd_{k-1}$: \textbf{exact $k$-cochains} --- expressible as the coboundary of a lower-dimensional cochain;
+    \item $\im \delta_k$: \textbf{co-exact $k$-cochains} --- expressible as the codifferential of a higher-dimensional cochain;
+    \item $\ker \Delta_k$: \textbf{harmonic $k$-cochains} --- satisfying $\Delta_k \omega = 0$, equivalently $\dd_k\omega = 0$ and $\delta_{k-1}\omega = 0$. Isomorphic to the cohomology group $H^k(\SSS; \R)$.
 \end{itemize}
 \end{theorem}
 
 \begin{proof}
-
-\textbf{1:} $\im \dd_{k-1} \perp \im \delta_k$$\alpha \in C^{k-1}$$\beta \in C^{k+1}$
-\[
-\inner{\dd_{k-1}\alpha}{\delta_k\beta} = \inner{\alpha}{\delta_{k-1}\delta_k\beta} = \inner{\alpha}{0} = 0,
-\]
-$\delta_{k-1}\delta_k = (\dd_k \dd_{k-1})^* = 0^* = 0$
-
-\textbf{2:} $\im \dd_{k-1} \perp \ker \Delta_k$$\alpha \in C^{k-1}$$\omega \in \ker \Delta_k$
-\[
-\inner{\dd_{k-1}\alpha}{\omega} = \inner{\alpha}{\delta_{k-1}\omega}.
-\]
-$\omega \in \ker \Delta_k$$\delta_{k-1}\omega = 0$$\Delta_k\omega = \dd_{k-1}\delta_{k-1}\omega + \delta_k\dd_k\omega = 0$
-
-\textbf{3:} $\im \delta_k \perp \ker \Delta_k$
-
-\textbf{4:} $\im \dd_{k-1} \oplus \im \delta_k = (\ker \Delta_k)^\perp$$\Delta_k$$\hfill\square$
-\end{proof}
-
-\begin{proof}[English Proof Sketch]
 Standard result from elliptic operator theory on finite-dimensional vector spaces.
 
 \textbf{Step 1:} Show $\im \dd_{k-1} \perp \im \delta_k$. For any $\alpha \in C^{k-1}$, $\beta \in C^{k+1}$:
@@ -387,52 +302,34 @@ Since $\omega \in \ker \Delta_k$, we have $\delta_{k-1}\omega = 0$ (because $\De
 \end{proof}
 
 % -------------------------------------------------------------------
+\subsection{Relationship Between Field Strength and Co-Exact Part}
 \label{sec:F_coexact}
 
-\begin{theorem}[- / Field-Strength Co-Exact Relation]
+\begin{theorem}[Field-Strength Co-Exact Relation]
 \label{thm:F_coexact}
-$A \in C^1(\SSS; \R)$1-Hodge
+Let $A \in C^1(\SSS; \R)$ be a 1-form audit connection with Hodge decomposition:
 
 \begin{equation}\label{eq:A_hodge}
     A = A_{\mathrm{exact}} + A_{\mathrm{coexact}} + A_{\mathrm{harmonic}},
 \end{equation}
 
-$A_{\mathrm{exact}} \in \im \dd_0$$A_{\mathrm{coexact}} \in \im \delta_1$$A_{\mathrm{harmonic}} \in \ker \Delta_1$
+where $A_{\mathrm{exact}} \in \im \dd_0$, $A_{\mathrm{coexact}} \in \im \delta_1$, $A_{\mathrm{harmonic}} \in \ker \Delta_1$.
 
-2-$F = \dd_1 A$
+Then the 2-form field strength $F = \dd_1 A$ satisfies:
 
 \begin{equation}\label{eq:F_from_coexact}
     F = \dd_1 A_{\mathrm{coexact}}.
 \end{equation}
 
+In particular:
 \begin{enumerate}[label=(\roman*), leftmargin=*]
-    \item $F = 0$  $A_{\mathrm{coexact}} = 0$$\dd_1$
-    \item $A_{\mathrm{exact}}$$A_{\mathrm{harmonic}}$$F$
-    \item $F_{\mathrm{norm}} \equiv \norm{F}_2 = \norm{\dd_1 A_{\mathrm{coexact}}}_2$
+    \item $F = 0$ if and only if $A_{\mathrm{coexact}} = 0$ (on the subspace where $\dd_1$ is injective);
+    \item $A_{\mathrm{exact}}$ and $A_{\mathrm{harmonic}}$ contribute nothing to $F$;
+    \item $F_{\mathrm{norm}} \equiv \norm{F}_2 = \norm{\dd_1 A_{\mathrm{coexact}}}_2$, which can serve as a measure of the size of the co-exact component.
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-Hodge$F = \dd_1 A$
-
-\[
-F = \dd_1(A_{\mathrm{exact}} + A_{\mathrm{coexact}} + A_{\mathrm{harmonic}}).
-\]
-
-\begin{itemize}
-    \item $\dd_1 A_{\mathrm{exact}} = \dd_1(\dd_0 \phi) = 0$$\phi \in C^0$$\dd_1 \circ \dd_0 = 0$
-    \item $\dd_1 A_{\mathrm{harmonic}} = 0$$A_{\mathrm{harmonic}} \in \ker \Delta_1$$\dd_1 A_{\mathrm{harmonic}} = 0$
-    \item $F = \dd_1 A_{\mathrm{coexact}}$
-\end{itemize}
-
-(i) $A_{\mathrm{coexact}} = 0$$F = 0$$F = 0$$\dd_1 A_{\mathrm{coexact}} = 0$$A_{\mathrm{coexact}} \in \ker \dd_1$$A_{\mathrm{coexact}} \in \im \delta_1$$\im \delta_1 \cap \ker \dd_1 = \{0\}$$\im \delta_1 \subseteq (\ker \dd_1)^\perp$Hodge$A_{\mathrm{coexact}} = 0$
-
-(ii) 
-
-(iii) $F_{\mathrm{norm}}$$\dd_1$$\im \delta_1$$\dd_1$$\norm{F}_2$$\norm{A_{\mathrm{coexact}}}_2$Poincaré$\hfill\square$
-\end{proof}
-
-\begin{proof}[English Proof Sketch]
 Substitute the Hodge decomposition into $F = \dd_1 A$:
 
 \[
@@ -450,136 +347,113 @@ Term-by-term:
 
 (ii) Follows directly from the above.
 
-(iii) $F_{\mathrm{norm}}$ is the operator norm of $\dd_1$ restricted to $\im \delta_1$; since $\dd_1$ is a bounded operator on a finite-dimensional space, $\norm{F}_2$ is proportional to $\norm{A_{\mathrm{coexact}}}_2$ (via the discrete Poincaré inequality on compact complexes). $\hfill\square$
+(iii) $F_{\mathrm{norm}}$ is the operator norm of $\dd_1$ restricted to $\im \delta_1$; since $\dd_1$ is a bounded operator on a finite-dimensional space, $\norm{F}_2$ is proportional to $\norm{A_{\mathrm{coexact}}}_2$ (via the discrete Poincar\'e inequality on compact complexes). $\hfill\square$
 \end{proof}
 
-\begin{corollary}[ / Spectral Signature of Audit Inconsistency]
+\begin{corollary}[Spectral Signature of Audit Inconsistency]
 \label{cor:spectral}
-$F_{\mathrm{norm}}$$N$$M$$\mathbf{D} \in \R^{N \times N}$
+Regard $F_{\mathrm{norm}}$ as a global measure of audit inconsistency. For $N$ experts across $M$ data points, define the inconsistency matrix $\mathbf{D} \in \R^{N \times N}$:
 
 \begin{equation}\label{eq:D_matrix}
     \mathbf{D}_{ij} = \frac{1}{M} \sum_{x \in \mathcal{X}} |S_i(x) - S_j(x)|.
 \end{equation}
 
+Then the following conditions are equivalent:
 \begin{enumerate}[label=(\roman*), leftmargin=*]
-    \item gauge-able$\{c_i\}$$S_i(x) - c_i = S_j(x) - c_j$$i,j,x$
-    \item $F_\Sigma = 0$2-$\Sigma$
-    \item $\mathbf{D}$$\mathbf{D}_{ik} \leq \mathbf{D}_{ij} + \mathbf{D}_{jk}$$\mathbf{D}_{ii} = 0$$\mathbf{D}$
-    \item Hodge$A_{\mathrm{coexact}} = 0$
+    \item All inconsistencies are gauge-able, i.e., there exist offsets $\{c_i\}$ such that $S_i(x) - c_i = S_j(x) - c_j$ for all $i,j,x$;
+    \item $F_\Sigma = 0$ for all 2-simplices $\Sigma$;
+    \item $\mathbf{D}$ satisfies the triangle inequality $\mathbf{D}_{ik} \leq \mathbf{D}_{ij} + \mathbf{D}_{jk}$ and $\mathbf{D}_{ii} = 0$, i.e., $\mathbf{D}$ is a metric;
+    \item $A_{\mathrm{coexact}} = 0$ in the Hodge decomposition.
 \end{enumerate}
 \end{corollary}
 
 % ============================================================================
-
-\section{Situs2- / 2-Cycles on the Situs Complex and Audit Flux}
+\section{2-Cycles on the Situs Complex and Audit Flux}
 \label{sec:2cycles}
 % ============================================================================
 
-\subsection{2-}
+\subsection{2-Cycle Structure on the Expert Graph}
 \label{sec:2cycle_construction}
 
-\noindent
-\begin{definition}[2- / 2-Cycle and Flux on Expert Graph]
+\begin{definition}[2-Cycle and Flux on Expert Graph]
 \label{def:2cycle_flux}
+Let $K_N$ be the complete graph on $N$ experts. A 2-chain $\Sigma$ is an integer-coefficient sum of triangles:
 \begin{equation}\label{eq:2chain}
     \Sigma = \sum_{1 \leq i < j < k \leq N} c_{ijk} \cdot \Delta_{ijk},
 \end{equation}
-$\Delta_{ijk}$$(E_i, E_j, E_k)$$c_{ijk} \in \Z$$\Sigma$2-$\bd_2 \Sigma = 0$
+where $\Delta_{ijk}$ is the triangle $(E_i, E_j, E_k)$ and $c_{ijk} \in \Z$. $\Sigma$ is a 2-cycle iff $\bd_2 \Sigma = 0$.
 
+The audit flux integral is defined as:
 \begin{equation}\label{eq:flux_integral}
     \Phi(\Sigma) = \sum_{i<j<k} c_{ijk} \cdot F_{ijk}.
 \end{equation}
 
-$K_N$$N \geq 3$$F_{ijk} \neq 0$
+When any triangle on the complete graph $K_N$ ($N \geq 3$) has $F_{ijk} \neq 0$, non-trivial audit flux exists.
 \end{definition}
 
+\subsection{Algebraic Criterion for Calibration Non-Transitivity}
 \label{sec:algebraic_criterion}
 
-\begin{theorem}[ / Calibration Non-Transitivity Criterion]
+\begin{theorem}[Calibration Non-Transitivity Criterion]
 \label{thm:2cycle_computation}
-$E_i, E_j, E_k$$F_{ijk}$
+For three experts $E_i, E_j, E_k$, the calibration non-transitivity $F_{ijk}$ involves the following components:
 
 \begin{equation}\label{eq:F_components}
     F_{ijk}^\alpha = |\alpha_{ij} + \beta_{ij}\alpha_{jk} - (-\alpha_{ki}/\beta_{ki})|, \quad
     F_{ijk}^\beta = |\beta_{ij}\beta_{jk} - 1/\beta_{ki}|.
 \end{equation}
 
-$F_{ijk} = \sqrt{(F_{ijk}^\alpha)^2 + (F_{ijk}^\beta)^2}$
+The total field strength $F_{ijk} = \sqrt{(F_{ijk}^\alpha)^2 + (F_{ijk}^\beta)^2}$.
 
- $F_{ijk}^\beta$$\beta$1$F_{ijk}^\alpha$$\beta = 1$$\alpha_{ij} + \alpha_{jk} = \alpha_{ik}$
+\textbf{Geometric interpretation:} $F_{ijk}^\beta$ measures scale non-transitivity ($\beta$ product deviating from 1), $F_{ijk}^\alpha$ measures offset non-transitivity (calibrated intercept inconsistency). When all $\beta = 1$ and $\alpha_{ij} + \alpha_{jk} = \alpha_{ik}$, the flat connection is recovered.
 \end{theorem}
 
 \begin{proof}
-$(E_i \to E_j) \circ (E_j \to E_k)$$S_i = (\alpha_{ij} + \beta_{ij}\alpha_{jk}) + (\beta_{ij}\beta_{jk}) S_k$$(E_k \to E_i)$$S_i = -\alpha_{ki}/\beta_{ki} + (1/\beta_{ki}) S_k$$F_{ijk}$$\hfill\square$
+Direct computation: the composed calibration $(E_i \to E_j) \circ (E_j \to E_k)$ gives $S_i = (\alpha_{ij} + \beta_{ij}\alpha_{jk}) + (\beta_{ij}\beta_{jk}) S_k$. The inverse of $(E_k \to E_i)$ gives $S_i = -\alpha_{ki}/\beta_{ki} + (1/\beta_{ki}) S_k$. The difference norm is precisely $F_{ijk}$. $\hfill\square$
 \end{proof}
 
+\subsection{Information-Theoretic Measure of Non-Transitivity}
 \label{sec:info_measure}
 
-\begin{definition}[ / Circular Inconsistency SNR]
+\begin{definition}[Circular Inconsistency SNR]
 \label{def:circ_snr}
-$(E_i, E_j, E_k)$
+For a triangle $(E_i, E_j, E_k)$, define the signal-to-noise ratio of circular inconsistency:
 
 \begin{equation}\label{eq:circ_snr_def}
     \mathrm{SNR}_{ijk} = \frac{F_{ijk}}{\sigma_{\mathrm{noise}}},
 \end{equation}
 
-$\sigma_{\mathrm{noise}}$SNR
+where $\sigma_{\mathrm{noise}}$ is the mean standard deviation of pairwise calibration residuals. High SNR indicates that the detected non-transitivity significantly exceeds estimated noise, constituting a statistically significant circular inconsistency.
 \end{definition}
 
 % ============================================================================
-
 \section{Physical Meaning: Circular Inconsistency}
 \label{sec:physical}
 % ============================================================================
 
+\subsection{Information-Theoretic Model of Triangular Inconsistency}
 \label{sec:triangular}
 
-\noindent
-\begin{itemize}
-    \item $A$$B$$R^2$
-    \item $B$$C$
-    \item $B$$A \to C$$A \to C$$F_{ABC} \gg 0$
-\end{itemize}
-
-\vspace{0.5em}
-\noindent
-The physical meaning of audit flux $\Phi(\Sigma) \neq 0$ is profound: it signals \textbf{circular inconsistency} — a systematic inconsistency among three or more experts that cannot be reduced to simple pairwise disagreement.
+The physical meaning of audit flux $\Phi(\Sigma) \neq 0$ is profound: it signals \textbf{circular inconsistency} --- a systematic inconsistency among three or more experts that cannot be reduced to simple pairwise disagreement.
 
 Consider three experts $A, B, C$ evaluating the same set of data. The following can occur:
 \begin{itemize}
     \item $A$ and $B$ agree in their evaluative framework (their score discrepancies are eliminable via constant offset);
     \item $B$ and $C$ also agree in their evaluative framework;
-    \item But $A$ and $C$'s evaluative frameworks conflict — cannot be reconciled via constant offset.
+    \item But $A$ and $C$'s evaluative frameworks conflict --- cannot be reconciled via constant offset.
 \end{itemize}
 
 In this case, although each pair of experts is ``apparently consistent'' (1-form holonomy zero), globally the three are self-contradictory. This is \textbf{circular inconsistency}.
 
 % -------------------------------------------------------------------
+\subsection{Formal Model}
 \label{sec:formal_model}
 
-\begin{definition}[ / Circular Inconsistency]
+\begin{definition}[Circular Inconsistency]
 \label{def:circular}
-$\mathcal{E} = \{E_1, \ldots, E_N\}$$N \geq 3$$E_i$$E_j$pairwise consistent$c_{ij} \in \R$$x \in \mathcal{X}$
-
-\begin{equation}\label{eq:pairwise_cons}
-    |S_i(x) - S_j(x) - c_{ij}| \leq \varepsilon,
-\end{equation}
-
-$\varepsilon \geq 0$
-
-$\mathcal{E}$globally consistent$\{c_i\}_{i=1}^N$$i,j$
-
-\begin{equation}\label{eq:global_cons}
-    c_{ij} = c_i - c_j.
-\end{equation}
-
-\end{definition}
-
-\bigskip
-\textbf{Definition (Circular Inconsistency).}
 Let $\mathcal{E} = \{E_1, \ldots, E_N\}$ be $N \geq 3$ experts. Experts $E_i$ and $E_j$ are called \textbf{pairwise consistent} if there exists a constant $c_{ij} \in \R$ such that for all data points $x \in \mathcal{X}$:
 
-\begin{equation}
+\begin{equation}\label{eq:pairwise_cons}
     |S_i(x) - S_j(x) - c_{ij}| \leq \varepsilon,
 \end{equation}
 
@@ -587,35 +461,26 @@ where $\varepsilon \geq 0$ is the tolerance.
 
 The expert set $\mathcal{E}$ is called \textbf{globally consistent} if there exist constants $\{c_i\}_{i=1}^N$ such that for all $i,j$:
 
-\begin{equation}
+\begin{equation}\label{eq:global_cons}
     c_{ij} = c_i - c_j.
 \end{equation}
 
 If all expert pairs are pairwise consistent but not globally consistent, we say there is \textbf{circular inconsistency}.
+\end{definition}
 
-\begin{theorem}[ $\iff$  / Circular Inconsistency $\iff$ Non-Zero Audit Flux]
+\begin{theorem}[Circular Inconsistency $\iff$ Non-Zero Audit Flux]
 \label{thm:circular_flux}
-$N \geq 3$
+For $N \geq 3$ experts, the following conditions are equivalent:
 
 \begin{enumerate}[label=(\roman*), leftmargin=*]
-    \item 
-    \item 2-$\Sigma$$\Phi(\Sigma) \neq 0$
-    \item $\mathbf{C} = (c_{ij})$$\mathbf{c} = (c_1, \ldots, c_N)$$c_{ij} = c_j - c_i$$i,j$
-    \item $\dd_1 \mathbf{C} \neq 0$$\dd_1$1-
+    \item Circular inconsistency exists;
+    \item There exists a 2-cycle $\Sigma$ such that audit flux $\Phi(\Sigma) \neq 0$;
+    \item The offset matrix $\mathbf{C} = (c_{ij})$ does not satisfy the cocycle condition: there is no vector $\mathbf{c} = (c_1, \ldots, c_N)$ such that $c_{ij} = c_j - c_i$ for all $i,j$;
+    \item $\dd_1 \mathbf{C} \neq 0$, where $\dd_1$ acts on 1-cochains on the complete graph with experts as vertices.
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-(i) $\iff$ (iii)
-
-(iii) $\iff$ (iv)$K_N$$\mathbf{C}$1-$(i,j)$$c_{ij}$$\dd_1 \mathbf{C} = 0$$\mathbf{C}$0-$\mathbf{c}$$\mathbf{C} = \dd_0 \mathbf{c}$$c_{ij} = c_j - c_i$
-
-(ii) $\iff$ (iv)$F = \dd_1 A$$A$$(i,j,x)$$S_i(x) - S_j(x)$$\Phi(\Sigma) = \int_\Sigma F = \int_\Sigma \dd_1 A$Stokes$\Phi(\Sigma) = \oint_{\bd\Sigma} A = 0$$\Sigma$$\bd\Sigma = 0$——$\Phi(\Sigma) \neq 0$$\dd_1 A$2-$(i,j,k)$$A_{ij} + A_{jk} + A_{ki} \neq 0$
-
-$A$$\mathbf{C}$$A_{ij} + A_{jk} + A_{ki} \neq 0$$c_{ij} + c_{jk} + c_{ki} \neq 0$$\dd_1 \mathbf{C} \neq 0$$\hfill\square$
-\end{proof}
-
-\begin{proof}[English Proof Sketch]
 (i) $\iff$ (iii): Direct from definition.
 
 (iii) $\iff$ (iv): On the complete graph $K_N$, $\mathbf{C}$ can be viewed as a 1-cochain (taking value $c_{ij}$ on edge $(i,j)$). $\dd_1 \mathbf{C} = 0$ iff $\mathbf{C}$ is a coboundary, i.e., there exists a 0-cochain $\mathbf{c}$ such that $\mathbf{C} = \dd_0 \mathbf{c}$. This is precisely the condition $c_{ij} = c_j - c_i$.
@@ -626,79 +491,76 @@ Now, relating $A$ to an appropriate embedding of the offset matrix $\mathbf{C}$,
 \end{proof}
 
 % -------------------------------------------------------------------
+\subsection{Information-Theoretic Lower Bound}
 \label{sec:info_bound}
 
-\begin{theorem}[ / Information-Theoretic Lower Bound for Circular Inconsistency]
+\begin{theorem}[Information-Theoretic Lower Bound for Circular Inconsistency]
 \label{thm:info_bound}
-$A, B, C$Cercis$\sigma_{AB}^2, \sigma_{BC}^2, \sigma_{CA}^2$
+Let the pairwise Cercis score discrepancies of three experts $A, B, C$ have variances $\sigma_{AB}^2, \sigma_{BC}^2, \sigma_{CA}^2$. Define the signal-to-noise ratio of circular inconsistency:
 
 \begin{equation}\label{eq:SNR}
     \mathrm{SNR}_{\mathrm{circ}} = \frac{|\E[F_{ABC}]|^2}{\Var[F_{ABC}]},
 \end{equation}
 
-$F_{ABC} = (S_A - S_B) + (S_B - S_C) + (S_C - S_A)$
+where $F_{ABC} = (S_A - S_B) + (S_B - S_C) + (S_C - S_A)$ evaluated at a single data point.
+
+If the score discrepancies are independent across pairs, then:
 
 \begin{equation}\label{eq:SNR_bound}
     \Var[F_{ABC}] = \sigma_{AB}^2 + \sigma_{BC}^2 + \sigma_{CA}^2.
 \end{equation}
 
-$\alpha$$F_{ABC} = 0$$M$
+To detect circular inconsistency at significance level $\alpha$ (rejecting the null hypothesis $F_{ABC} = 0$), the required number of data points $M$ satisfies:
 
 \begin{equation}\label{eq:M_bound}
     M \geq \frac{(\sigma_{AB}^2 + \sigma_{BC}^2 + \sigma_{CA}^2) \cdot (z_{1-\alpha/2})^2}{\delta^2},
 \end{equation}
 
-$\delta = |\E[F_{ABC}]|$$z_{1-\alpha/2}$
+where $\delta = |\E[F_{ABC}]|$ is the expected circular inconsistency strength and $z_{1-\alpha/2}$ is the standard normal quantile.
 \end{theorem}
 
 \begin{proof}
-$F_{ABC}$$F_{ABC}$$M$$\Var[F_{ABC}]/M$Wald$\hfill\square$
-\end{proof}
-
-\begin{proof}[English Proof]
 Under independence, the variance of $F_{ABC}$ is the sum of variances of the three independent pairwise differences. Since $F_{ABC}$ is the mean of $M$ i.i.d.\ observations, the variance of the sample mean is $\Var[F_{ABC}]/M$. Under the central limit theorem, the standard normal approximation yields the Wald-test sample size formula. $\hfill\square$
 \end{proof}
 
 % ============================================================================
-
 \section{Detection Algorithm}
 \label{sec:algorithm}
 % ============================================================================
 
-\vspace{0.5em}
-\noindent
 This section describes the algorithm for detecting non-zero audit flux on the 2-skeleton of the Situs complex. Core idea: scan all possible 2-cycles, compute their flux integrals, and flag those exceeding threshold $\tau$.
 
 % -------------------------------------------------------------------
+\subsection{Algorithm Description}
 \label{sec:algo_desc}
 
 \begin{algorithm}[h]
-\caption{ / Audit Flux Detection Algorithm}
+\caption{Audit Flux Detection Algorithm}
 \label{alg:flux_detect}
 \begin{algorithmic}[1]
-\Require  $\mathbf{S} \in \R^{N \times M}$ ($N$$M$)
-\Require  $\tau > 0$
-\Ensure 2- $\mathcal{F}_{\mathrm{bad}}$
+\Require Expert score matrix $\mathbf{S} \in \R^{N \times M}$ ($N$ experts, $M$ data points)
+\Require Detection threshold $\tau > 0$
+\Ensure Labeled set $\mathcal{F}_{\mathrm{bad}}$ of inconsistent 2-cycles
 
-\State \textbf{ 1:} Situs2-
+\State \textbf{Step 1:} Construct the 2-skeleton of the Situs complex
 \For{$x = 1$ \textbf{to} $M$}
     \For{each triple $(i,j,k)$ with $1 \leq i < j < k \leq N$}
-        \State 2- $\sigma_{x,ijk}$ 2- $K_2$
+        \State Add 2-simplex $\sigma_{x,ijk}$ to 2-skeleton $K_2$
     \EndFor
 \EndFor
 
-\State \textbf{ 2:} 2-
-\For{each 2- $\sigma = (x, i, j, k) \in K_2$}
+\State \textbf{Step 2:} Compute 2-form field strength
+\For{each 2-simplex $\sigma = (x, i, j, k) \in K_2$}
     \State $F_{x,ijk} \gets S_i(x) - S_j(x) + S_j(x) - S_k(x) + S_k(x) - S_i(x)$
-    \Comment{2-}
+    \Comment{Identically zero on single-point triangles; non-zero only on cross-point 2-cycles}
 \EndFor
 
-\State \textbf{ 3:} 2-
-\State  $\mathcal{F}_{\mathrm{bad}} \gets \emptyset$
+\State \textbf{Step 3:} Enumerate cross-point 2-cycles
+\State Initialize $\mathcal{F}_{\mathrm{bad}} \gets \emptyset$
 \For{each expert triple $(i,j,k)$}
     \For{each triple of data points $(x_1, x_2, x_3)$ with $x_1 < x_2 < x_3$}
-        \State 2- $\Sigma = \sigma_{x_1,ijk} - \sigma_{x_2,ijk} + \sigma_{x_3,ijk}$
-        \State  $\bd_2 \Sigma = 0$
+        \State Construct cross-point 2-cycle $\Sigma = \sigma_{x_1,ijk} - \sigma_{x_2,ijk} + \sigma_{x_3,ijk}$
+        \State Verify $\bd_2 \Sigma = 0$ (check boundary)
         \If{$\bd_2 \Sigma = 0$}
             \State $\Phi \gets F_{x_1,ijk} - F_{x_2,ijk} + F_{x_3,ijk}$
             \If{$|\Phi| > \tau$}
@@ -708,119 +570,81 @@ This section describes the algorithm for detecting non-zero audit flux on the 2-
     \EndFor
 \EndFor
 
-\State \textbf{ 4:} 
-\State  $\mathbf{D} \in \R^{M \times N \times N}$
+\State \textbf{Step 4:} Compute alternative cross-point flux measure (more efficient)
+\State Construct difference matrix $\mathbf{D} \in \R^{M \times N \times N}$:
 \For{$x = 1$ \textbf{to} $M$}
     \For{$i,j = 1$ \textbf{to} $N$}
         \State $\mathbf{D}_{x,ij} \gets |S_i(x) - S_j(x)|$
     \EndFor
 \EndFor
 
-\State $(i,j,k)$
+\State For each expert triple $(i,j,k)$, compute:
 \State $\mathrm{FluxScore}_{ijk} \gets \frac{1}{M}\sum_{x=1}^M \left|(S_i(x) - S_j(x)) + (S_j(x) - S_k(x)) + (S_k(x) - S_i(x))\right|$
-\State  00——3
+\State \textbf{Note:} This is the mean absolute value of single-point triangle flux. When it is zero, all single-point triangle fluxes are zero (but cross-point flux can still be non-zero --- see Step 3).
 
-\State \textbf{ 5:} 
+\State \textbf{Step 5:} Report results
 \State \Return $\mathcal{F}_{\mathrm{bad}}$
 \end{algorithmic}
 \end{algorithm}
 
 % -------------------------------------------------------------------
+\subsection{Complexity Analysis}
 \label{sec:complexity}
 
-\begin{proposition}[ / Algorithm Complexity]
+\begin{proposition}[Algorithm Complexity]
 \label{prop:complexity}
-~\ref{alg:flux_detect}$O(N^3 \cdot M^3)$2-
-
-\begin{enumerate}[label=(\roman*), leftmargin=*]
-    \item  2$O(N^3 M)$~\ref{thm:2cycle_computation}
-    \item  4$O(N^2 M)$$\mathbf{D}$
-    \item  variance metric$(i,j,k)$
-    \begin{equation}\label{eq:variance_metric}
-        V_{ijk} = \Var_{x \in \mathcal{X}}\left[(S_i(x) - S_j(x)) + (S_j(x) - S_k(x)) + (S_k(x) - S_i(x))\right].
-    \end{equation}
-    $O(N^3 M)$$V_{ijk} > 0$2-
-\end{enumerate}
-
-\end{proposition}
-
-\bigskip
-\textbf{Proposition (Algorithm Complexity).}
 Algorithm~\ref{alg:flux_detect} has time complexity $O(N^3 \cdot M^3)$ in the naive implementation (enumerating all cross-point 2-cycles). This can be significantly reduced via:
 
 \begin{enumerate}[label=(\roman*), leftmargin=*]
     \item \textbf{Precomputing triangle flux:} Step 2 computes all single-point triangle fluxes in $O(N^3 M)$. Since single-point triangle fluxes are algebraically always zero (see Theorem~\ref{thm:2cycle_computation}), this step serves as a consistency check.
     \item \textbf{Difference matrix precomputation:} Step 4 computes $\mathbf{D}$ in $O(N^2 M)$.
     \item \textbf{Cross-point flux:} Instead, compute the \textbf{variance metric}: for an expert triple $(i,j,k)$, define
-    \begin{equation}
+    \begin{equation}\label{eq:variance_metric}
         V_{ijk} = \Var_{x \in \mathcal{X}}\left[(S_i(x) - S_j(x)) + (S_j(x) - S_k(x)) + (S_k(x) - S_i(x))\right].
     \end{equation}
     This metric is computed in $O(N^3 M)$ (for each triple, scan all data points to compute variance), and $V_{ijk} > 0$ iff there exists non-zero flux on some cross-point 2-cycle involving that triple.
 \end{enumerate}
 
 Optimized total time complexity: $O(N^3 M)$, efficiently executable in practical audit settings.
+\end{proposition}
 
 % ============================================================================
-
 \section{Connection to Persistent Homology}
 \label{sec:persistent}
 % ============================================================================
 
-\subsection{$H_2$}
+\subsection{Density Filtration and $H_2$}
 \label{sec:density_filtration}
 
-\vspace{0.5em}
-\noindent
 There is a profound connection between audit flux theory and persistent homology. Persistent homology is a core tool in topological data analysis, capturing the ``birth'' and ``death'' of topological features (connected components, loops, voids, etc.) across multiple scales.
 
-In the audit instanton context, we are concerned with the 2-dimensional homology classes $H_2$ of the Situs complex — these classes correspond to ``voids,'' i.e., ``holes'' enclosed by 2-cycles. Non-zero audit flux appears precisely on such 2-cycles.
+In the audit instanton context, we are concerned with the 2-dimensional homology classes $H_2$ of the Situs complex --- these classes correspond to ``voids,'' i.e., ``holes'' enclosed by 2-cycles. Non-zero audit flux appears precisely on such 2-cycles.
 
-\begin{definition}[ / Density Filtration]
+\begin{definition}[Density Filtration]
 \label{def:density_filtration}
-Situs$\{\SSS_t\}_{t \in \R}$$\SSS_t$$k$-``''$t$
-
-$k$-$\sigma$
-\begin{equation}\label{eq:eval_density}
-    \rho(\sigma) = \frac{\#\{\sigma\}}{\#\{\}}.
-\end{equation}
-
-$\sigma \in \SSS_t$$\rho(\sigma) \geq t$
-\end{definition}
-
-\bigskip
-\textbf{Definition (Density Filtration).}
 Define the density filtration $\{\SSS_t\}_{t \in \R}$ on the Situs complex, where $\SSS_t$ contains all $k$-simplices satisfying: the ``expert evaluation density'' (number of experts evaluating the data points supporting the simplex, divided by total experts) exceeds threshold $t$.
 
 Formally, for a $k$-simplex $\sigma$, define its evaluation density:
-\begin{equation}
+\begin{equation}\label{eq:eval_density}
     \rho(\sigma) = \frac{\#\{\text{experts evaluating data points supporting } \sigma\}}{\#\{\text{total experts}\}}.
 \end{equation}
 
 $\sigma \in \SSS_t$ iff $\rho(\sigma) \geq t$.
+\end{definition}
 
-\begin{theorem}[$H_2$ / Audit Flux and $H_2$ Persistence Diagram]
+\begin{theorem}[Audit Flux and $H_2$ Persistence Diagram]
 \label{thm:persistent_H2}
-$\{\SSS_t\}$$\mathrm{Dgm}_2$$H_2$persistence diagram
+Under the density filtration $\{\SSS_t\}$, let $\mathrm{Dgm}_2$ be the persistence diagram of $H_2$. Then:
 
 \begin{enumerate}[label=(\roman*), leftmargin=*]
-    \item $(b, d) \in \mathrm{Dgm}_2$$b$$d$Situs2-——$b$``''$d$``''
-    \item $[b, d)$2-$\Sigma_{(b,d)}$
-    \item $\Phi(\Sigma_{(b,d)})$$\mathrm{pers}(b,d) = d - b$``''
-    \item $\mathrm{Dgm}_2 = \emptyset$2-$F \equiv 0$
+    \item Each point $(b, d) \in \mathrm{Dgm}_2$ (birth time $b$, death time $d$) corresponds to a 2-dimensional topological feature of the Situs complex --- it is ``born'' (first appears) at filtration value $b$ and ``dies'' (gets filled in) at $d$.
+    \item Within the filtration interval $[b, d)$, the supporting 2-cycle $\Sigma_{(b,d)}$ of this topological feature can carry non-zero audit flux.
+    \item The audit inconsistency intensity $\Phi(\Sigma_{(b,d)})$ is statistically positively correlated with the feature's persistence $\mathrm{pers}(b,d) = d - b$: stronger inconsistency corresponds to more ``persistent'' topological features.
+    \item If all expert evaluations are perfectly consistent, then $\mathrm{Dgm}_2 = \emptyset$ (no 2-dimensional features) and $F \equiv 0$.
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-(i) $\SSS_t$$t$2-$b$$t$2-$d$$t$2-3-
-
-(ii) $[b,d)$$\Sigma_{(b,d)}$2-$\Phi(\Sigma_{(b,d)})$
-
-(iii) 
-
-(iv) 1Situs$t=1$$\mathrm{Dgm}_2 = \emptyset$$F_{ijk} = 0$$\hfill\square$
-\end{proof}
-
-\begin{proof}[English Proof Sketch]
 (i) Fundamental property of persistent homology. As the filtration parameter $t$ decreases, the simplicial complex $\SSS_t$ grows. New 2-dimensional homology classes appear at some birth time $b$ (when $t$ drops low enough for a 2-cycle to form) and disappear at death time $d$ (when $t$ drops further and the 2-cycle becomes the boundary of some 3-simplex).
 
 (ii) In the interval $[b,d)$, $\Sigma_{(b,d)}$ is a valid 2-cycle, so the audit flux integral $\Phi(\Sigma_{(b,d)})$ is defined and can be non-zero.
@@ -831,100 +655,86 @@ $\{\SSS_t\}$$\mathrm{Dgm}_2$$H_2$persistence diagram
 \end{proof}
 
 % -------------------------------------------------------------------
+\subsection{Audit Flux Spectrum and Persistence Barcode}
 \label{sec:barcode}
 
-\begin{definition}[ / Audit Flux Persistence Barcode]
+\begin{definition}[Audit Flux Persistence Barcode]
 \label{def:flux_barcode}
-$\{\SSS_t\}$$\mathrm{Dgm}_2$$(b,d)$$p = d-b$
-
-\begin{equation}\label{eq:flux_intensity}
-    \mathcal{I}(b,d) = \max_{\Sigma \in \mathcal{Z}_2^{(b,d)}} |\Phi(\Sigma)|,
-\end{equation}
-
-$\mathcal{Z}_2^{(b,d)}$$[b,d)$2-
-
-flux persistence barcode$\{(b, d, \mathcal{I}(b,d))\}$2-$[b,d)$/$\mathcal{I}(b,d)$
-\end{definition}
-
-\bigskip
-\textbf{Definition (Audit Flux Persistence Barcode).}
 For each point $(b,d)$ in the persistence diagram $\mathrm{Dgm}_2$ of the density filtration $\{\SSS_t\}$ (with lifetime $p = d-b$), define its \textbf{audit flux intensity}:
 
-\begin{equation}
+\begin{equation}\label{eq:flux_intensity}
     \mathcal{I}(b,d) = \max_{\Sigma \in \mathcal{Z}_2^{(b,d)}} |\Phi(\Sigma)|,
 \end{equation}
 
 where $\mathcal{Z}_2^{(b,d)}$ is the set of all 2-cycles valid in the filtration interval $[b,d)$.
 
 The audit flux persistence barcode is the set $\{(b, d, \mathcal{I}(b,d))\}$, visualized as: each 2-dimensional feature is represented as a horizontal bar $[b,d)$ whose color/width encodes the flux intensity $\mathcal{I}(b,d)$.
+\end{definition}
 
 % ============================================================================
-
 \section{Numerical Verification}
 \label{sec:numerical}
 % ============================================================================
 
+\subsection{Experimental Setup}
 \label{sec:exp_setup}
 
-\noindent
-\begin{enumerate}[label=\textbf{ \arabic*}, leftmargin=*]
-    \item \textbf{ (Experiment 1: Globally Consistent).} $N=5$$S_i(x) = f(x) + c_i + \varepsilon_i(x)$$(\alpha_{ij}=c_i-c_j, \beta_{ij}=1)$→$F \approx 0$≈0
-    \item \textbf{ (Experiment 2: Circular Inconsistency).} $N=3$$S_1 = f$$S_2 = \sqrt{f} + 0.1f$$S_3 = f^2 + 0.2\sin(2\pi f)$→$F \neq 0$
-    \item \textbf{ (Experiment 3: Partial Consistency).} $N=6$3$F \approx 0$$F \neq 0$
-    \item \textbf{Hodge (Experiment 4: Hodge Validation).} $F=0$$F \neq 0$$F$
-\end{enumerate}
-
-\vspace{0.5em}
-\noindent
 To validate theoretical predictions, we designed three numerical experiments corresponding to three typical audit inconsistency scenarios:
 
 \begin{enumerate}[label=\textbf{Experiment \arabic*}, leftmargin=*]
+    \item \textbf{Globally Consistent.} All $N=5$ experts' scores come from the same ground-truth function plus independent noise: $S_i(x) = S^*(x) + \epsilon_i(x)$, with $\epsilon_i(x) \sim \mathcal{N}(0, \sigma^2)$. Prediction: $F = 0$ (all 2-form field strengths zero), $H_2$ persistence diagram empty.
     \item \textbf{Circular Inconsistency.} $N=3$ experts' scores satisfy: $S_1(x) = f(x)$, $S_2(x) = f(x) + \delta_1(x)$, $S_3(x) = f(x) - \delta_1(x) + \delta_2(x)$, where $\delta_1, \delta_2$ are non-trivial $x$-dependent functions. This creates circular inconsistency among $S_1, S_2, S_3$. Prediction: non-zero flux detected on cross-point 2-cycles.
+    \item \textbf{Partial Consistency.} $N=6$ experts split into two consistent subgroups (3 each), internally globally consistent within each subgroup, but the subgroups are disconnected. Prediction: $H_2$ persistence diagram contains two separated 2-dimensional features.
 \end{enumerate}
 
 % -------------------------------------------------------------------
+\subsection{Results}
 \label{sec:results}
 
 % Result table
 \begin{table}[h]
 \centering
-\caption{ / Summary of Numerical Verification Results}
+\caption{Summary of Numerical Verification Results}
 \label{tab:results}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-\textbf{ / Experiment} &
+\textbf{Experiment} &
 \textbf{$F_{\mathrm{max}}$} &
 \textbf{$\|\mathbf{A}_{\mathrm{coexact}}\|$} &
 \textbf{SNR} &
-\textbf{ / Verdict} \\
+\textbf{Verdict} \
 \midrule
-1:  / Globally Consistent &
-✓  / Flat \\
-
-2:  / Circular Inconsistency &
-✓  / Non-Zero Flux \\
-
-3:  / Partial Consistency &
-✓  / Two Frameworks \\
-
-4: Hodge / Hodge Validation &
+Globally Consistent &
+$0.012$ &
+$0.0004$ &
+--- &
+Flat \
+Circular Inconsistency &
+$0.723$ &
+$0.0331$ &
+$5.59$ &
+Non-Zero Flux \
+Partial Consistency &
+$424.5$ (cross-group) &
+$0.135$ (full graph) &
+--- &
+Two Frameworks \
+Hodge Validation &
 $F_{\mathrm{exact}}=0$ &
 $F_{\mathrm{coexact}}=0.051$ &
-✓  / Decomposition Holds \\
+--- &
+Decomposition Holds \
 \bottomrule
 \end{tabular}
 \end{table}
 
-\vspace{0.5em}
-\noindent
-Experiment 1 confirms: when all experts share the same evaluative framework, 2-form field strength is identically zero and $H_2$ persistence diagram is empty — consistent with C7's 1-cycle instanton death theorem. Experiment 2 confirms: circular inconsistency produces non-zero audit flux, clearly detectable by our algorithm. Experiment 3 confirms: in partial consistency scenarios, the $H_2$ persistence diagram captures topological separation between subgroups.
+Experiment 1 confirms: when all experts share the same evaluative framework, 2-form field strength is identically zero and $H_2$ persistence diagram is empty --- consistent with C7's 1-cycle instanton death theorem. Experiment 2 confirms: circular inconsistency produces non-zero audit flux, clearly detectable by our algorithm. Experiment 3 confirms: in partial consistency scenarios, the $H_2$ persistence diagram captures topological separation between subgroups.
 
-\begin{remark}[SCX / Relationship to Core SCX Theorems]
-2SCXTheorem 3-Theorem 3``''``''Theorem 3——2-
+\begin{remark}[Relationship to Core SCX Theorems]
+The circular inconsistency in Experiment 2 has a subtle relationship with SCX Core Theorem 3 (noise-difficulty indistinguishability). When two of three experts agree and the third dissents, Theorem 3 implies that one cannot determine from scores at a single data point whether the third expert is reporting a ``difficult sample'' or ``noisy label.'' However, audit flux detection bypasses the limitation of Theorem 3 through \textbf{cross-data-point statistical patterns} --- if the third expert systematically deviates from the first two across all data points, this deviation pattern produces a detectable flux signal on cross-point 2-cycles.
 \end{remark}
 
 % ============================================================================
-
 \section{Discussion}
 \label{sec:discussion}
 % ============================================================================
@@ -932,23 +742,18 @@ Experiment 1 confirms: when all experts share the same evaluative framework, 2-f
 \subsection{Theoretical Implications}
 \label{sec:theory_implications}
 
-\vspace{0.5em}
-\noindent
 The higher-dimensional audit instanton theory provides several important theoretical deepenings for the SCX framework:
 
 \begin{enumerate}[label=(\arabic*), leftmargin=*]
-    \item \textbf{The leap from 1-form to 2-form.} C7's 1-cycle instanton death theorem shows that pairwise expert inconsistency (1-form) is always gauge-able under SCX axioms. This paper proves: genuinely ``non-gauge-able'' inconsistency appears at dimension $k=2$ — i.e., circular inconsistency among three or more experts. This parallels electromagnetism: an electrostatic field (1-form $A$) is always pure gauge ($\dd A = 0$), while a magnetic field (2-form $F$) can be non-zero.
+    \item \textbf{The leap from 1-form to 2-form.} C7's 1-cycle instanton death theorem shows that pairwise expert inconsistency (1-form) is always gauge-able under SCX axioms. This paper proves: genuinely ``non-gauge-able'' inconsistency appears at dimension $k=2$ --- i.e., circular inconsistency among three or more experts. This parallels electromagnetism: an electrostatic field (1-form $A$) is always pure gauge ($\dd A = 0$), while a magnetic field (2-form $F$) can be non-zero.
     \item \textbf{Diagnostic value of Hodge decomposition.} The Hodge decomposition identifies the co-exact part of the audit connection $A$ as the sole source of field strength $F$. This provides an algebraic tool for diagnosing audit inconsistency: computing the norm of $A_{\mathrm{coexact}}$ quantifies the degree of non-gauge-able inconsistency.
     \item \textbf{Topological data analysis for auditing.} Persistent homology (particularly $H_2$ persistence diagrams) provides a scalable topological diagnostic tool for large-scale multi-expert audit systems. In audit scenarios with large $N$ (tens to hundreds of experts), manual detection of circular inconsistency is infeasible, but persistence barcodes can identify them automatically.
 \end{enumerate}
 
 % -------------------------------------------------------------------
-
 \subsection{Limitations and Future Work}
 \label{sec:limitations}
 
-\vspace{0.5em}
-\noindent
 Current work has the following limitations, pointing to future research directions:
 
 \begin{enumerate}[label=(\arabic*), leftmargin=*]
@@ -960,20 +765,15 @@ Current work has the following limitations, pointing to future research directio
 \end{enumerate}
 
 % ============================================================================
-
 \section{Conclusion}
 \label{sec:conclusion}
 % ============================================================================
 
-SCX``''C7``''C8
-
-\vspace{0.5em}
-\noindent
 This paper completes the rigorous construction of higher-dimensional audit instanton theory (C8 extension) within the SCX framework. Core conclusions:
 
 \begin{enumerate}[label=(\arabic*), leftmargin=*]
-    \item \textbf{Hodge decomposition reveals non-gauge-able inconsistency.} The co-exact part of the 1-form audit connection $A$ is the sole source of the 2-form field strength $F = \dd_1 A$. $F \neq 0$ iff $A$ cannot be expressed as the gradient of a global Cercis function — i.e., there exists non-gauge-able audit inconsistency.
-    \item \textbf{2-cycles carry audit flux.} Cross-point 2-cycles on the Situs complex are natural carriers of non-zero audit flux. These 2-cycles correspond precisely to circular inconsistency — pairwise agreements among three or more experts that fail to form a globally consistent picture.
+    \item \textbf{Hodge decomposition reveals non-gauge-able inconsistency.} The co-exact part of the 1-form audit connection $A$ is the sole source of the 2-form field strength $F = \dd_1 A$. $F \neq 0$ iff $A$ cannot be expressed as the gradient of a global Cercis function --- i.e., there exists non-gauge-able audit inconsistency.
+    \item \textbf{2-cycles carry audit flux.} Cross-point 2-cycles on the Situs complex are natural carriers of non-zero audit flux. These 2-cycles correspond precisely to circular inconsistency --- pairwise agreements among three or more experts that fail to form a globally consistent picture.
     \item \textbf{Detection algorithm is feasible.} An $O(N^3 M)$-time audit flux detection algorithm is proposed, using the variance metric $V_{ijk}$ in place of expensive exhaustive 2-cycle search.
     \item \textbf{Persistent homology provides topological diagnostics.} The $H_2$ persistence diagram of the density filtration captures the topological signature of audit inconsistency. When the audit system is globally consistent, $\mathrm{Dgm}_2 = \emptyset$; inconsistency manifests as non-trivial points in the persistence diagram.
 \end{enumerate}
@@ -981,31 +781,19 @@ This paper completes the rigorous construction of higher-dimensional audit insta
 These results advance the geometric theory of SCX auditing from C7's ``all inconsistency is eliminable'' conclusion to C8's framework where ``non-eliminable inconsistency has a detectable topological signature,'' providing a theoretical foundation and practical algorithms for large-scale automated audit systems.
 
 % ============================================================================
-% 
+% Appendix
 % ============================================================================
 \appendix
 
 \section{Code Verification}
 \label{sec:code_verify}
 
-\noindent
-\begin{itemize}
-    \item 1$N=5$→$F \approx 0$≈0
-    \item 2$N=3$$\sqrt{f}$$f^2$→$F \neq 0$
-    \item 3$N=6$$F \approx 0$$F \neq 0$
-    \item 4Hodge$F$$H^1(K_N)=0$
-    \item $\alpha_{ij}, \beta_{ij}$
-    \item 2-$F_{ijk}$
-    \item Hodge$\alpha$//
-    \item SNR
-\end{itemize}
+\subsection{Verification Script Description}
 
-\vspace{0.5em}
-\noindent
 The verification script \texttt{verify\_instanton\_k2.py} implements:
 \begin{itemize}
-    \item Experiment 1 (Globally Consistent): $N=5$ experts share the same underlying scoring function (constant offsets only), verifying all calibrations are transitive → $F \approx 0$, co-exact part ≈ 0.
-    \item Experiment 2 (Circular Inconsistency): $N=3$ experts use different nonlinear scoring scales ($\sqrt{f}$, $f^2$, etc.), verifying calibration non-transitivity → $F \neq 0$, co-exact part non-zero.
+    \item Experiment 1 (Globally Consistent): $N=5$ experts share the same underlying scoring function (constant offsets only), verifying all calibrations are transitive $\rightarrow$ $F \approx 0$, co-exact part $\approx$ 0.
+    \item Experiment 2 (Circular Inconsistency): $N=3$ experts use different nonlinear scoring scales ($\sqrt{f}$, $f^2$, etc.), verifying calibration non-transitivity $\rightarrow$ $F \neq 0$, co-exact part non-zero.
     \item Experiment 3 (Partial Consistency): $N=6$ experts split into two internally-consistent subgroups (different underlying functions), verifying within-subgroup $F \approx 0$, cross-group $F \neq 0$.
     \item Experiment 4 (Hodge Validation): Construct pure-exact and mixed connections, verifying $F$ depends only on the co-exact part, harmonic part vanishes ($H^1(K_N)=0$).
     \item Pairwise calibration model estimation (linear regression, extracting $\alpha_{ij}, \beta_{ij}$ parameters).
@@ -1019,22 +807,22 @@ The verification script \texttt{verify\_instanton\_k2.py} implements:
 python verify_instanton_k2.py
 \end{verbatim}
 
- / Expected output:
+Expected output:
 \begin{verbatim}
-=== SCX Audit Instanton k>1 — Verification Suite ===
-Key insight: Audit connection A_ij = pairwise calibration model (α,β)
+=== SCX Audit Instanton k>1 --- Verification Suite ===
+Key insight: Audit connection A_ij = pairwise calibration model (alpha,beta)
 F = dA measures failure of calibration transitivity
 
 Experiment 1: Globally Consistent Scenario
   F_max (triangle non-transitivity)      = 0.012402
   ||A_coexact||                          = 0.000430
-  [PASS] F ≈ 0, calibrations transitive
+  [PASS] F ~= 0, calibrations transitive
 
 Experiment 2: Circular Inconsistency Scenario
   F_max (triangle non-transitivity)      = 0.723222
   ||A_coexact||                          = 0.033062
   SNR (|F| / noise)                      = 5.59
-  [PASS] Non-zero audit flux detected — circular inconsistency
+  [PASS] Non-zero audit flux detected - circular inconsistency
 
 Experiment 3: Partial Consistency Scenario
   Subgroup A: F_max = 0.062055
@@ -1043,7 +831,7 @@ Experiment 3: Partial Consistency Scenario
   [PASS] Two disconnected evaluation frameworks confirmed
 
 Experiment 4: Hodge Decomposition Validation
-  Test A (pure exact): F_max ≈ 0, |A_coexact| ≈ 0  [PASS]
+  Test A (pure exact): F_max ~= 0, |A_coexact| ~= 0  [PASS]
   Test B (mixed): F from exact-only = 0, F > 0 for co-exact  [PASS]
   Test C (harmonic): |A_harmonic| = 0 (H^1(K_N)=0)  [PASS]
   [PASS] Hodge decomposition verified
@@ -1052,27 +840,29 @@ Experiment 4: Hodge Decomposition Validation
 \end{verbatim}
 
 % ============================================================================
-
 \section{Supplementary Proofs}
 \label{sec:supp_proofs}
 
-\subsection{Hodge}
+\subsection{Existence and Uniqueness of Discrete Hodge Decomposition}
 \label{sec:hodge_existence}
 
-\begin{lemma}[Hodge / Existence and Uniqueness of Discrete Hodge Decomposition]
+\begin{lemma}[Existence and Uniqueness of Discrete Hodge Decomposition]
 \label{lem:hodge_unique}
-$\SSS$$k$-$\omega \in C^k(\SSS; \R)$Hodge$\omega = \dd_{k-1}\alpha + \delta_k\beta + \gamma$$\gamma \in \ker \Delta_k$
+For any finite simplicial complex $\SSS$ and any $k$-cochain $\omega \in C^k(\SSS; \R)$, the Hodge decomposition $\omega = \dd_{k-1}\alpha + \delta_k\beta + \gamma$ (where $\gamma \in \ker \Delta_k$) exists and is unique.
 
-Hodge$C^k = \im \Delta_k \oplus \ker \Delta_k$$\Delta_k$$\im \Delta_k = \im \dd_{k-1} \oplus \im \delta_k$
+\noindent
+\textbf{Existence:} By the standard finite-dimensional version of the Hodge theorem, $C^k = \im \Delta_k \oplus \ker \Delta_k$ (since $\Delta_k$ is self-adjoint). Moreover, $\im \Delta_k = \im \dd_{k-1} \oplus \im \delta_k$ (orthogonal direct sum).
 
-$\im \dd_{k-1} \cap \im \delta_k = \{0\}$$\im \dd_{k-1} \cap \ker \Delta_k = \{0\}$
+\noindent
+\textbf{Uniqueness:} If two decompositions exist, their difference belongs to $\im \dd_{k-1} \cap \im \delta_k = \{0\}$ and $\im \dd_{k-1} \cap \ker \Delta_k = \{0\}$, etc., and orthogonality forces the difference to be zero.
 \end{lemma}
 
+\subsection{Non-Zero Lower Bound on Cross-Point Flux}
 \label{sec:flux_lowerbound}
 
-\begin{proposition}[ / Lower Bound on Cross-Point Flux]
+\begin{proposition}[Lower Bound on Cross-Point Flux]
 \label{prop:flux_lowerbound}
-2$\delta_1(x), \delta_2(x)$$x$$\Var_x[\delta_1] = \sigma_1^2 > 0$$\Var_x[\delta_2] = \sigma_2^2 > 0$$\delta_1 \indep \delta_2$2-$\Sigma_{\mathrm{cross}}$
+In the circular inconsistency scenario of Experiment 2, if $\delta_1(x), \delta_2(x)$ are $x$-dependent non-trivial functions satisfying $\Var_x[\delta_1] = \sigma_1^2 > 0$ and $\Var_x[\delta_2] = \sigma_2^2 > 0$ with $\delta_1 \perp \delta_2$, then the expected flux on a cross-point 2-cycle $\Sigma_{\mathrm{cross}}$ is bounded below by:
 
 \begin{equation}\label{eq:flux_lower}
     \E[|\Phi(\Sigma_{\mathrm{cross}})|] \geq \frac{1}{\sqrt{2\pi}} \sqrt{2\sigma_1^2 + \sigma_2^2}.
@@ -1080,24 +870,28 @@ $\im \dd_{k-1} \cap \im \delta_k = \{0\}$$\im \dd_{k-1} \cap \ker \Delta_k = \{0
 \end{proposition}
 
 \begin{proof}
-2$S_1 = f$$S_2 = f + \delta_1$$S_3 = f - \delta_1 + \delta_2$
+In the setting of Experiment 2, $S_1 = f$, $S_2 = f + \delta_1$, $S_3 = f - \delta_1 + \delta_2$. At a single data point:
 \begin{align*}
     F_{123} &= (S_1 - S_2) + (S_2 - S_3) + (S_3 - S_1) \\
     &= (-\delta_1) + (2\delta_1 - \delta_2) + (\delta_2 - \delta_1) = 0.
 \end{align*}
 
-2-$\Sigma = \sigma_{x_1,123} - \sigma_{x_2,123} + \sigma_{x_3,123}$
+Now consider the cross-point 2-cycle $\Sigma = \sigma_{x_1,123} - \sigma_{x_2,123} + \sigma_{x_3,123}$. Its flux is:
 \begin{align*}
     \Phi(\Sigma) &= F_{123}(x_1) - F_{123}(x_2) + F_{123}(x_3) = 0 - 0 + 0 = 0.
 \end{align*}
 
+This shows that single-point triangle fluxes on the \textbf{same expert triple} are always zero, and alternating sums are also zero --- because cancellation occurs independently at each point.
+
+\textbf{Genuine non-triviality} appears when the 2-cycle involves \textbf{different expert subsets}. Consider the following 2-cycle:
 \[
-\Sigma' = \sigma(x_1, E_1, E_2, \textcolor{red}{E_4}) - \sigma(x_2, E_1, E_3, E_4) + \sigma(x_3, E_2, E_3, E_4),
+\Sigma' = \sigma(x_1, E_1, E_2, E_4) - \sigma(x_2, E_1, E_3, E_4) + \sigma(x_3, E_2, E_3, E_4),
 \]
+where $E_4$ is an additional fourth expert. Then $F$ depends on combinations of different expert pair discrepancies, and the flux can be non-zero.
 
-2-~\ref{alg:flux_detect}
+Thus a more precise non-triviality condition requires at least four experts distributed across multiple data points forming a 2-cycle. This qualitative observation has been integrated into the design of the detection algorithm (Algorithm~\ref{alg:flux_detect}).
 
-$V_{ijk} = \Var_x[F_{ijk}(x)]$2$F_{ijk}(x) = 0$$S_i(x) - S_j(x)$~\eqref{eq:flux_lower}$\hfill\square$
+For the variance metric lower bound: $V_{ijk} = \Var_x[F_{ijk}(x)]$. In the circular inconsistency scenario of Experiment 2, although $F_{ijk}(x) = 0$ holds pointwise (at a single data point), the \textbf{score discrepancy pattern} (the covariance structure of $S_i(x) - S_j(x)$) varies across data points, producing a non-zero variance metric. The explicit computation yields~\eqref{eq:flux_lower}. $\hfill\square$
 \end{proof}
 
 % ============================================================================
@@ -1107,7 +901,7 @@ $V_{ijk} = \Var_x[F_{ijk}(x)]$2$F_{ijk}(x) = 0$$S_i(x) - S_j(x)$~\eqref{eq:flux_
 SCX Theory Group. C7: 1-Cycle Audit Instanton and Holonomy Vanishing. \textit{SCX Technical Report}, 2026.
 
 \bibitem{scx_c8}
-SCX Theory Group. C8: Higher-Dimensional Audit Instantons — A Conjecture. \textit{SCX Internal Note}, 2026.
+SCX Theory Group. C8: Higher-Dimensional Audit Instantons --- A Conjecture. \textit{SCX Internal Note}, 2026.
 
 \bibitem{scx_core}
 SCX Theory Group. SCX Gauge Theory: Formalized Framework with Six Theorems. \textit{SCX Technical Report}, 2026.

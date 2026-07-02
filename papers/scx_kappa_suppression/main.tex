@@ -1,14 +1,13 @@
-pdfoutput=1
-\pdfoutput=1
 % ============================================================================
-%  SCX C2: κ  — 
-%  SCX C2: κ Suppression Paradox — Triple Mechanism, Elite Erosion, 
+%  SCX C2: kappa Suppression Paradox -- Triple Mechanism, Elite Erosion,
 %           and Mathematical Derivation
-%  SCX  · Core Series C2
-%  Bilingual: Chinese + English
+%  SCX Core Series C2
 % ============================================================================
-\documentclass[11pt,a4paper]{article}
+\documentclass[12pt,a4paper]{article}
 
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
 \usepackage{bm}
@@ -48,9 +47,9 @@ pdfoutput=1
 \newcommand{\abs}[1]{|#1|}
 \newcommand{\norm}[1]{\|#1\|}
 \newcommand{\ind}[1]{\mathbf{1}_{#1}}
-\newcommand{\SCX}{\textsc{SCX}}
-\newcommand{\Cercis}{\textsc{Cercis}}
-\newcommand{\Situs}{\textsc{Situs}}
+\newcommand{\SCX}{\textsf{SCX}}
+\newcommand{\Cercis}{\textsf{Cercis}}
+\newcommand{\Situs}{\textsf{Situs}}
 \newcommand{\calB}{\mathcal{B}}
 \newcommand{\calF}{\mathcal{F}}
 \newcommand{\calI}{\mathcal{I}}
@@ -64,12 +63,10 @@ pdfoutput=1
 \newcommand{\sgn}{\mathrm{sgn}}
 
 \title{
-    \textbf{$\kappa$ Suppression Paradox}\\[0.3em]
-    \large $\kappa$ Suppression Paradox: Triple Suppression Mechanism, \\ Elite Erosion, and the Phase Transition Boundary \\[0.5em]
-    \normalsize \SCX\  C2 \\[0.2em]
-    \normalsize SCX Core Series C2
+    \textbf{$\kappa$ Suppression Paradox: Triple Suppression Mechanism, \\ Elite Erosion, and the Phase Transition Boundary} \\[0.5em]
+    \normalsize \SCX\ Core Series C2
 }
-\author{SCX}
+\author{\SCX\ Theory Group}
 \date{\today}
 
 \begin{document}
@@ -77,32 +74,22 @@ pdfoutput=1
 
 % ============================================================================
 \begin{abstract}
-\vspace{0.5em}
-\noindent
-In multi-expert audit systems, introducing a suppression function $\kappa: \R \to [0,1]$ to dampen outlier scores is a natural engineering practice. However, this paper proves that this leads to the \textbf{$\kappa$ Suppression Paradox}: for every unit increase in $\kappa$'s strength, the ``noise'' it appears to eliminate is replaced by a larger increase in systematic bias, and net audit quality undergoes a phase-transition collapse at a critical strength $\kappa_c$. Core contributions include: (1) the precise form of the $\kappa$ suppression function, decomposed into a triple mechanism — information suppression $\kappa_I$, force suppression $\kappa_F$, and belief suppression $\kappa_B$ — each with distinct scaling laws; (2) the Elite Erosion Theorem: proving that $\kappa$ penalizes high-\Cercis-score experts disproportionately more than low-score ones, leading to loss of cognitive diversity and a ``regression-to-the-mean trap''; (3) the critical threshold: deriving $\kappa_c = \eta/(1+\eta)$, proving that for $\kappa > \kappa_c$, the rate of audit information decay exceeds the rate of noise decay, causing net system degradation; (4) a recovery protocol: proposing an adaptive $\kappa$-annealing strategy with the Cercis consistency condition, preserving robustness while avoiding the suppression paradox; (5) numerical verification: providing a complete Python verification script (\texttt{verify\_kappa.py}) confirming theoretical predictions across all test scenarios.
+
+In multi-expert audit systems, introducing a suppression function $\kappa: \R \to [0,1]$ to dampen outlier scores is a natural engineering practice. However, this paper proves that this leads to the \textbf{$\kappa$ Suppression Paradox}: for every unit increase in $\kappa$'s strength, the ``noise'' it appears to eliminate is replaced by a larger increase in systematic bias, and net audit quality undergoes a phase-transition collapse at a critical strength $\kappa_c$. Core contributions include: (1) the precise form of the $\kappa$ suppression function, decomposed into a triple mechanism --- information suppression $\kappa_I$, force suppression $\kappa_F$, and belief suppression $\kappa_B$ --- each with distinct scaling laws; (2) the Elite Erosion Theorem: proving that $\kappa$ penalizes high-\Cercis-score experts disproportionately more than low-score ones, leading to loss of cognitive diversity and a ``regression-to-the-mean trap''; (3) the critical threshold: deriving $\kappa_c = \eta/(1+\eta)$, proving that for $\kappa > \kappa_c$, the rate of audit information decay exceeds the rate of noise decay, causing net system degradation; (4) a recovery protocol: proposing an adaptive $\kappa$-annealing strategy with the Cercis consistency condition, preserving robustness while avoiding the suppression paradox; (5) numerical verification: providing a complete Python verification script (\texttt{verify\_kappa.py}) confirming theoretical predictions across all test scenarios.
 
 \vspace{0.5em}
+\noindent
 \textbf{Keywords:} $\kappa$ suppression, suppression paradox, elite erosion, Cercis score, triple mechanism, information suppression, force suppression, belief suppression, phase transition, audit quality, SCX framework.
 \end{abstract}
 
 % ============================================================================
-
 \section{Introduction: Why Does Suppression Backfire?}
 \label{sec:intro}
 % ============================================================================
 
+In any multi-expert scoring system, outliers --- individual experts giving scores far from the group consensus --- are typically treated as ``noise'' and suppressed. The engineering intuition is simple and powerful: use a compression function $\kappa: \R \to [0,1]$ to map each score $S_i(x)$ into a ``safe range,'' weakening the influence of extreme values. This intuition is so pervasive in practice that few practitioners question its mathematical foundation.
 
-\noindent
-\begin{equation}
-    \frac{d Q_\kappa}{d\kappa}\bigg|_{\kappa=0} < 0 \quad  \quad \lim_{\kappa \to 1} Q_\kappa = 0,
-\end{equation}
-
-
-\vspace{0.5em}
-\noindent
-In any multi-expert scoring system, outliers — individual experts giving scores far from the group consensus — are typically treated as ``noise'' and suppressed. The engineering intuition is simple and powerful: use a compression function $\kappa: \R \to [0,1]$ to map each score $S_i(x)$ into a ``safe range,'' weakening the influence of extreme values. This intuition is so pervasive in practice that few practitioners question its mathematical foundation.
-
-However, this paper proves that this seemingly innocuous operation conceals a deep \textbf{paradox}. While the suppression function $\kappa$ dampens extreme scores, it also systematically suppresses three things: (i) \textbf{information}: the signal component of high-\Cercis~scores $S(x)$; (ii) \textbf{force}: the self-calibration dynamics driven by score discrepancies; (iii) \textbf{belief}: the ability of experts to update their judgments based on feedback. These three suppressions — information suppression $\kappa_I$, force suppression $\kappa_F$, and belief suppression $\kappa_B$ — constitute the triple mechanism of $\kappa$ suppression.
+However, this paper proves that this seemingly innocuous operation conceals a deep \textbf{paradox}. While the suppression function $\kappa$ dampens extreme scores, it also systematically suppresses three things: (i) \textbf{information}: the signal component of high-\Cercis~scores $S(x)$; (ii) \textbf{force}: the self-calibration dynamics driven by score discrepancies; (iii) \textbf{belief}: the ability of experts to update their judgments based on feedback. These three suppressions --- information suppression $\kappa_I$, force suppression $\kappa_F$, and belief suppression $\kappa_B$ --- constitute the triple mechanism of $\kappa$ suppression.
 
 The core paradox can be stated concisely: let $Q_0$ be the audit quality without suppression, and $Q_\kappa$ be the audit quality after applying suppression $\kappa$. Then there exists a critical value $\kappa_c > 0$ such that
 \begin{equation}
@@ -111,37 +98,24 @@ The core paradox can be stated concisely: let $Q_0$ be the audit quality without
 meaning \textbf{any non-zero suppression immediately degrades audit quality}, and complete suppression destroys all audit information.
 
 % ---------------------------------------------------------------------------
-
 \subsection{Core Contributions}
 \label{sec:contrib}
 
-\vspace{0.5em}
-\noindent
 This paper makes the following six core contributions:
 
 \begin{enumerate}[label=\textbf{C\arabic*}, leftmargin=*]
-    \item \textbf{Precise form of the $\kappa$ suppression function.} Decomposing $\kappa$ into three orthogonal components — information suppression $\kappa_I$, force suppression $\kappa_F$, and belief suppression $\kappa_B$ — and deriving the analytic form of each along with their marginal effects on audit quality.
-    \item \textbf{Elite Erosion Theorem (Theorem 2.1).} Proving that $\kappa$ penalizes experts with above-median \Cercis~scores (``elites'') with disproportionate severity, causing the cognitive diversity of the audit pool to decay at rate $O(e^{-\kappa t})$.
-    \item \textbf{Suppression Phase Transition Theorem (Theorem 3.1).} Deriving the critical suppression strength $\kappa_c = \eta/(1+\eta)$, proving that at $\kappa > \kappa_c$ a second-order phase transition occurs in audit quality, with the system jumping from an information-gain regime to a net-information-loss regime.
+    \item \textbf{Precise form of the $\kappa$ suppression function.} Decomposing $\kappa$ into three orthogonal components --- information suppression $\kappa_I$, force suppression $\kappa_F$, and belief suppression $\kappa_B$ --- and deriving the analytic form of each along with their marginal effects on audit quality.
+    \item \textbf{Elite Erosion Theorem (Theorem \ref{thm:elite_erosion}).} Proving that $\kappa$ penalizes experts with above-median \Cercis~scores (``elites'') with disproportionate severity, causing the cognitive diversity of the audit pool to decay at rate $O(e^{-\kappa t})$.
+    \item \textbf{Suppression Phase Transition Theorem (Theorem \ref{thm:phase_transition}).} Deriving the critical suppression strength $\kappa_c = \eta/(1+\eta)$, proving that at $\kappa > \kappa_c$ a second-order phase transition occurs in audit quality, with the system jumping from an information-gain regime to a net-information-loss regime.
     \item \textbf{Triple Mechanism Scaling Laws.} Proving that $\kappa_I \sim O(\kappa)$, $\kappa_F \sim O(\kappa^2)$, $\kappa_B \sim O(1-e^{-\kappa})$ each obey distinct scaling behavior, and that their combined effect is nonlinear.
     \item \textbf{Adaptive $\kappa$-Annealing Protocol.} Proposing a recovery strategy based on the Cercis consistency condition that avoids the suppression paradox while preserving robustness.
     \item \textbf{Full Numerical Verification.} Providing the \texttt{verify\_kappa.py} script that validates all theoretical predictions across three experimental scenarios (pure noise, mixed signal, realistic audit).
 \end{enumerate}
 
 % ---------------------------------------------------------------------------
-
-\subsection{Relation to the SCX Core Framework}
+\subsection{Relation to the SCX Axiomatic Framework}
 \label{sec:scx_relation}
 
-\noindent
-\begin{itemize}
-    \item \textbf{Theorem 3 (S3, -)}$\kappa$Theorem 3$\Cercis$$\kappa$
-    \item \textbf{Cercis Score $S = Q + \eta N$}$N$SCX
-    \item \textbf{Spring SE-1 ()}$\kappa$Spring SE-1Robbins-Monro$O(1/t)$$O(1/\sqrt{t})$
-\end{itemize}
-
-\vspace{0.5em}
-\noindent
 The $\kappa$ Suppression Paradox is a natural corollary of the SCX framework. Specifically:
 \begin{itemize}
     \item \textbf{Theorem 3 (S3, Noise-Difficulty Indistinguishability)}: If $\kappa$ cannot distinguish noise from signal (and by Theorem 3, no algorithm observing only \Cercis~scores can), then $\kappa$ necessarily suppresses both.
@@ -150,29 +124,12 @@ The $\kappa$ Suppression Paradox is a natural corollary of the SCX framework. Sp
 \end{itemize}
 
 % ============================================================================
-
-\section{$\kappa$}
-
 \section{Precise Form of the $\kappa$ Suppression Function}
 \label{sec:kappa_form}
 % ============================================================================
 
-
 \subsection{Basic Definitions}
 
-\noindent
-\begin{equation}
-    \Delta_i(x) = S_i(x) - \bar{S}(x).
-\end{equation}
-
-$\kappa$
-\begin{equation}
-    \tilde{S}_i(x) = \bar{S}(x) + \kappa(\Delta_i(x)),
-\end{equation}
-$\kappa: \R \to \R$(i) $\kappa(0) = 0$(ii) $\kappa$(iii) $|\kappa(\delta)| \leq |\delta|$(iv) $\kappa$Lipschitz
-
-\vspace{0.5em}
-\noindent
 Let $\calE = \{E_1, \ldots, E_N\}$ be the set of experts and $\calX$ the set of data points under evaluation. Expert $E_i$'s \Cercis~score for data point $x$ is $S_i(x) = Q_i(x) + \eta \cdot N_i(x)$, where $Q_i$ is the quality component, $N_i$ the novelty component, and $\eta \in (0, \infty)$ the novelty weight.
 
 Let $\bar{S}(x) = \frac{1}{N}\sum_{i=1}^N S_i(x)$ be the group mean. The ``outlier degree'' of score $S_i(x)$ is measured by its deviation from $\bar{S}(x)$:
@@ -187,58 +144,35 @@ The suppression function $\kappa$ is a compression map acting on deviations. Its
 where $\kappa: \R \to \R$ satisfies: (i) $\kappa(0) = 0$ (zero deviation unsuppressed); (ii) $\kappa$ is odd or approximately odd (symmetric suppression); (iii) $|\kappa(\delta)| \leq |\delta|$ (no amplification); (iv) $\kappa$ is Lipschitz continuous.
 
 % ---------------------------------------------------------------------------
-
 \subsection{Triple Decomposition}
 
-\begin{definition}[$\kappa$ / $\kappa$ Triple Decomposition]
+\begin{definition}[$\kappa$ Triple Decomposition]
 \label{def:kappa_decomp}
-$\kappa$
+The effect of the suppression function $\kappa$ on audit quality is characterized by its action on three orthogonal dimensions:
 \begin{align}
     \kappa_I(\delta) &= \delta \cdot \frac{\Var[\tilde{S}]}{\Var[S]}, \label{eq:kappa_I} \\
     \kappa_F(\delta) &= \delta \cdot \frac{\Cov[\tilde{S}, \nabla_{\!S}\mathcal{L}]}{\Cov[S, \nabla_{\!S}\mathcal{L}]}, \label{eq:kappa_F} \\
     \kappa_B(\delta) &= \delta \cdot \frac{I(\tilde{S}; \Theta)}{I(S; \Theta)}, \label{eq:kappa_B}
 \end{align}
-$\mathcal{L}$$\Theta$$I(\cdot;\cdot)$
+where $\mathcal{L}$ is the audit loss function, $\Theta$ is the expert's internal belief parameter, and $I(\cdot;\cdot)$ is mutual information.
 
-$\kappa$
+The overall $\kappa$ effect is the composite of the triple mechanism:
 \begin{equation}
     \kappa(\delta) = \delta \cdot \min\left(1, \frac{1}{1 + \alpha_I \kappa_I + \alpha_F \kappa_F + \alpha_B \kappa_B}\right),
 \end{equation}
-$\alpha_I, \alpha_F, \alpha_B > 0$$\alpha_I + \alpha_F + \alpha_B = 1$
+where $\alpha_I, \alpha_F, \alpha_B > 0$ are mechanism weights satisfying $\alpha_I + \alpha_F + \alpha_B = 1$.
 \end{definition}
 
-\textbf{Definition ($\kappa$ Triple Decomposition).}
-The effect of the suppression function $\kappa$ on audit quality is characterized by its action on three orthogonal dimensions as given in Eqs.~\eqref{eq:kappa_I}--\eqref{eq:kappa_B}, where $\mathcal{L}$ is the audit loss function, $\Theta$ is the expert's internal belief parameter, and $I(\cdot;\cdot)$ is mutual information. The overall $\kappa$ effect is given by the composite form above, where $\alpha_I, \alpha_F, \alpha_B > 0$ are mechanism weights satisfying $\alpha_I + \alpha_F + \alpha_B = 1$.
-
-\begin{remark}[]
-$\kappa_I$``''——$\kappa_F$``''——$\kappa_B$``''——
-
-$\kappa$
-\end{remark}
-
 \begin{remark}[Economic Interpretation of the Triple Mechanism]
-Information suppression $\kappa_I$ measures ``signal annihilation'' — the ratio by which score variance is compressed. Force suppression $\kappa_F$ measures ``feedback blunting'' — the attenuation of score-discrepancy-driven gradient descent on the loss. Belief suppression $\kappa_B$ measures ``cognitive closure'' — the ratio by which information about the expert's internal state is erased from scores.
+Information suppression $\kappa_I$ measures ``signal annihilation'' --- the ratio by which score variance is compressed. Force suppression $\kappa_F$ measures ``feedback blunting'' --- the attenuation of score-discrepancy-driven gradient descent on the loss. Belief suppression $\kappa_B$ measures ``cognitive closure'' --- the ratio by which information about the expert's internal state is erased from scores.
 
 These three correspond to the three core functions of an audit system: cognition (information), correction (force), and learning (belief). The paradoxical nature of $\kappa$ lies in the fact that it attacks all three simultaneously.
 \end{remark}
 
 % ---------------------------------------------------------------------------
-
 \subsection{Common Parametric Forms}
 \label{sec:param_forms}
 
-\noindent
-\begin{enumerate}[label=(\roman*)]
-    \item \textbf{ (Hard Clipping)}: $\kappa(\delta) = \sgn(\delta) \cdot \min(|\delta|, \tau)$$\tau$
-    \item \textbf{ (Soft Shrinkage)}: $\kappa(\delta) = \delta \cdot \frac{1}{1 + \lambda|\delta|}$$\lambda > 0$
-    \item \textbf{Tanh}: $\kappa(\delta) = \tau \cdot \tanh(\delta/\tau)$
-    \item \textbf{Winsorized}: $\kappa(\delta) = \delta \cdot \ind{|\delta| \leq \tau} + \tau \cdot \sgn(\delta) \cdot \ind{|\delta| > \tau}$
-\end{enumerate}
-
-Tanh
-
-\vspace{0.5em}
-\noindent
 In practice, $\kappa$ commonly takes one of the following parametric forms:
 
 \begin{enumerate}[label=(\roman*)]
@@ -251,44 +185,38 @@ In practice, $\kappa$ commonly takes one of the following parametric forms:
 This paper primarily analyzes the soft shrinkage and tanh forms due to their differentiability, which facilitates derivative-effect analysis.
 
 % ============================================================================
-
 \section{The Elite Erosion Theorem}
 \label{sec:elite_erosion}
 % ============================================================================
 
-
 \subsection{Problem Statement}
 
-\noindent
+Experts whose \Cercis~scores exceed the group median are termed \textbf{``elites''}:
 \begin{equation}
     \calE_{\text{elite}} = \{E_i \in \calE : \E_x[S_i(x)] \geq \text{median}_j\,\E_x[S_j(x)]\}.
 \end{equation}
 
-
-\vspace{0.5em}
-\noindent
-Experts whose \Cercis~scores exceed the group median are termed \textbf{``elites''} as defined above. Intuitively, elite experts have larger score variance (since higher $S$ typically accompanies larger $N$ variance). $\kappa$ suppression penalizes high-variance groups more strongly, so the penalty on elites is disproportionate.
+Intuitively, elite experts have larger score variance (since higher $S$ typically accompanies larger $N$ variance). $\kappa$ suppression penalizes high-variance groups more strongly, so the penalty on elites is disproportionate.
 
 % ---------------------------------------------------------------------------
-
 \subsection{Elite Erosion Theorem}
 
-\begin{theorem}[ / Elite Erosion Theorem]
+\begin{theorem}[Elite Erosion Theorem]
 \label{thm:elite_erosion}
-$S_i(x) \sim \calD(\mu_i, \sigma_i^2)$$x$$\calE_{\text{elite}}$$\sigma_i^2 > \bar{\sigma}^2$$\bar{\sigma}^2$$\kappa(\delta) = \delta/(1+\lambda|\delta|)$$\lambda > 0$
+Let $S_i(x) \sim \calD(\mu_i, \sigma_i^2)$ be independent and identically distributed (across $x$), where the elite group $\calE_{\text{elite}}$ satisfies $\sigma_i^2 > \bar{\sigma}^2$ ($\bar{\sigma}^2$ being the population average variance). For the soft shrinkage form $\kappa(\delta) = \delta/(1+\lambda|\delta|)$, with $\lambda > 0$:
 
 \begin{enumerate}[label=(\roman*)]
-    \item 
+    \item \textbf{Elite suppression ratio}: The expected magnitude of elite scores is compressed by a greater ratio than that of non-elites:
     \begin{equation}
         R_{\text{elite}} = \frac{\E[|\tilde{S}_{\text{elite}} - \bar{S}|]}{\E[|S_{\text{elite}} - \bar{S}|]} < \frac{\E[|\tilde{S}_{\text{non-elite}} - \bar{S}|]}{\E[|S_{\text{non-elite}} - \bar{S}|]} = R_{\text{non-elite}}.
     \end{equation}
-    
-    \item -KL
+
+    \item \textbf{Diversity decay}: The KL divergence between elite and non-elite score distributions decays exponentially with time:
     \begin{equation}
         \DKL(P_{\text{elite}}^{(t)} \| P_{\text{non-elite}}^{(t)}) \leq \DKL(P_{\text{elite}}^{(0)} \| P_{\text{non-elite}}^{(0)}) \cdot e^{-2\lambda \bar{\sigma}^2 t}.
     \end{equation}
-    
-    \item $\kappa$
+
+    \item \textbf{Regression-to-the-mean trap}: Under sustained $\kappa$, the expected scores of elites converge to the group mean:
     \begin{equation}
         \lim_{t \to \infty} \E[S_{\text{elite}}^{(t)}] = \lim_{t \to \infty} \E[S_{\text{non-elite}}^{(t)}] = \bar{\mu}.
     \end{equation}
@@ -296,117 +224,114 @@ $S_i(x) \sim \calD(\mu_i, \sigma_i^2)$$x$$\calE_{\text{elite}}$$\sigma_i^2 > \ba
 \end{theorem}
 
 \begin{proof}
+\textbf{(i) Elite suppression ratio.} For the soft shrinkage form, $\tilde{S}_i = \bar{S} + \Delta_i/(1+\lambda|\Delta_i|)$. Let the variance of $\Delta_i$ for the elite group be $\sigma_e^2 > \sigma_n^2$ (non-elite variance). Since $\kappa$ is a concave compression function (in $|\delta|$), by Jensen's inequality:
 \begin{equation}
     \E[|\kappa(\Delta_e)|] \leq \kappa(\E[|\Delta_e|]) = \frac{\E[|\Delta_e|]}{1 + \lambda\E[|\Delta_e|]} < \frac{\E[|\Delta_n|]}{1 + \lambda\E[|\Delta_n|]} = \E[|\kappa(\Delta_n)|],
 \end{equation}
-$\E[|\Delta_e|] > \E[|\Delta_n|]$$\sigma_e^2 > \sigma_n^2$$f(x) = x/(1+\lambda x)$$R_{\text{elite}} < R_{\text{non-elite}}$
+where the last strict inequality follows from $\E[|\Delta_e|] > \E[|\Delta_n|]$ (since $\sigma_e^2 > \sigma_n^2$ and the monotonicity of absolute deviation) together with the monotonic increasing property of $f(x) = x/(1+\lambda x)$. Hence $R_{\text{elite}} < R_{\text{non-elite}}$.
 
+\textbf{(ii) Diversity decay.} After $t$ iterations, the elite score distribution is $\tilde{S}_e^{(t)} = \bar{S}^{(t)} + \kappa(\Delta_e^{(t)})$. The compressive effect of $\kappa$ reduces the variance of the elite distribution each round by factor $\gamma = 1/(1+2\lambda\bar{\sigma}^2)$. The contraction of KL divergence:
 \begin{align}
     \DKL(P_e^{(t+1)}\|P_n^{(t+1)}) &= \DKL(\gamma P_e^{(t)} + (1-\gamma)\delta_{\bar{\mu}} \| \gamma P_n^{(t)} + (1-\gamma)\delta_{\bar{\mu}}) \\
     &\leq \gamma \cdot \DKL(P_e^{(t)}\|P_n^{(t)}),
 \end{align}
-KL$\DKL^{(t)} \leq \gamma^t \DKL^{(0)} \leq e^{-2\lambda\bar{\sigma}^2 t} \DKL^{(0)}$
+by joint convexity of KL divergence and the data processing inequality. Iterating gives $\DKL^{(t)} \leq \gamma^t \DKL^{(0)} \leq e^{-2\lambda\bar{\sigma}^2 t} \DKL^{(0)}$.
 
+\textbf{(iii) Regression to the mean.} From (ii), $\DKL^{(t)} \to 0$ as $t \to \infty$. By Pinsker's inequality, $|\E[S_e^{(t)}] - \E[S_n^{(t)}]| \leq \sqrt{2\Var \cdot \DKL^{(t)}} \to 0$, so the mean difference vanishes. Since $\bar{S}^{(t)}$ converges to the global mean $\bar{\mu}$ (law of large numbers), all individual expectations converge to $\bar{\mu}$.
 \end{proof}
 
 % ---------------------------------------------------------------------------
+\subsection{Information-Theoretic Cost of Elite Erosion}
 \label{sec:info_cost}
 
-\begin{corollary}[ / Information Diversity Loss]
+\begin{corollary}[Information Diversity Loss]
 \label{cor:info_loss}
-$I(S; \text{Truth})$
+Under elite erosion, the total mutual information $I(S; \text{Truth})$ of the audit system decreases each time step by:
 \begin{equation}
     \Delta I_t = \E_{x}\left[\log\frac{p(\text{Truth}|S^{(t)}(x))}{p(\text{Truth}|S^{(t-1)}(x))}\right] \leq -\lambda \cdot \Var[S_{\text{elite}}] \cdot (1 - e^{-2\lambda\bar{\sigma}^2 t}).
 \end{equation}
-$t \to \infty$$\Delta I_\infty \to -\lambda \cdot \Var[S_{\text{elite}}]$
+As $t \to \infty$, $\Delta I_\infty \to -\lambda \cdot \Var[S_{\text{elite}}]$, i.e., all elite information is permanently destroyed.
 \end{corollary}
 
 % ============================================================================
-
 \section{Suppression Phase Transition: Critical Threshold and Degradation Boundary}
 \label{sec:phase_transition}
 % ============================================================================
 
+\subsection{Measuring Audit Quality}
 
-\noindent
+Define audit quality $Q_\kappa$ as the Spearman rank correlation between suppressed scores and true labels:
 \begin{equation}
     Q_\kappa = \rho_s(\tilde{S}, Y) = \frac{\Cov[R(\tilde{S}), R(Y)]}{\sigma_{R(\tilde{S})}\sigma_{R(Y)}},
 \end{equation}
-$R(\cdot)$$Y$$I(\tilde{S}; Y)$
-
-\vspace{0.5em}
-\noindent
-Define audit quality $Q_\kappa$ as the Spearman rank correlation between suppressed scores and true labels, or equivalently the mutual information $I(\tilde{S}; Y)$.
+where $R(\cdot)$ denotes rank transformation and $Y$ the true label (when available). Equivalently, mutual information $I(\tilde{S}; Y)$ may be used as an information-theoretic measure.
 
 % ---------------------------------------------------------------------------
-
 \subsection{Suppression Phase Transition Theorem}
 
-\begin{theorem}[ / Suppression Phase Transition Theorem]
+\begin{theorem}[Suppression Phase Transition Theorem]
 \label{thm:phase_transition}
-$S_i(x) = \mu(x) + \varepsilon_i(x)$$\mu(x)$$\varepsilon_i(x) \sim \calN(0, \sigma_\varepsilon^2)$$\kappa(\delta) = \delta/(1 + \lambda|\delta|)$$Q_\kappa(\lambda)$
+Let $S_i(x) = \mu(x) + \varepsilon_i(x)$, where $\mu(x)$ is the true signal (shared across experts), and $\varepsilon_i(x) \sim \calN(0, \sigma_\varepsilon^2)$ is i.i.d.\ noise. For soft shrinkage $\kappa(\delta) = \delta/(1 + \lambda|\delta|)$, audit quality $Q_\kappa(\lambda)$ satisfies:
 
 \begin{enumerate}[label=(\roman*)]
-    \item
+    \item \textbf{Critical compression strength.} There exists a unique
     \begin{equation}
         \lambda_c = \frac{\eta}{2\sigma_\varepsilon(1+\eta)},
     \end{equation}
-    $\lambda < \lambda_c$$dQ_\kappa/d\lambda < 0$$Q_\kappa$$\lambda > \lambda_c$$dQ_\kappa/d\lambda \ll 0$
-    
+    such that: for $\lambda < \lambda_c$, $dQ_\kappa/d\lambda < 0$ but $Q_\kappa$ decays slowly (information-dominated); for $\lambda > \lambda_c$, $dQ_\kappa/d\lambda \ll 0$ with accelerated decay (noise-suppression benefits overtaken by information loss).
+
+    \item \textbf{Second-order phase transition.} $Q_\kappa(\lambda)$ is continuous at $\lambda_c$ but its derivative is discontinuous, satisfying:
     \begin{equation}
         \lim_{\lambda \to \lambda_c^-} \frac{dQ_\kappa}{d\lambda} \neq \lim_{\lambda \to \lambda_c^+} \frac{dQ_\kappa}{d\lambda},
     \end{equation}
-    
+    marking the phase transition from ``controlled degradation'' to ``catastrophic collapse.''
+
+    \item \textbf{Degradation lower bound.} For any $\lambda > 0$:
     \begin{equation}
         Q_\kappa(\lambda) \geq Q_0 \cdot \frac{1 - \lambda\sigma_\varepsilon}{1 + \lambda^2\sigma_\varepsilon^2},
     \end{equation}
-    $\lambda \gg \lambda_c$$Q_\kappa(\lambda) \sim O(1/\lambda^2)$
+    and for $\lambda \gg \lambda_c$, $Q_\kappa(\lambda) \sim O(1/\lambda^2)$ decays rapidly.
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
+\textbf{(i) Critical strength derivation.} Expand $\tilde{S}_i = \bar{S} + \Delta_i/(1+\lambda|\Delta_i|)$ in a Taylor series around small $\Delta_i$:
 \begin{equation}
     \tilde{S}_i = \bar{S} + \Delta_i - \lambda\Delta_i|\Delta_i| + O(\lambda^2).
 \end{equation}
 
-$\mu(x)$$\bar{S}$$\sigma_\mu^2$
+The signal component $\mu(x)$ propagates through $\bar{S}$, with variance $\sigma_\mu^2$. The suppressed signal variance:
 \begin{equation}
     \Var[\text{signal}] = \sigma_\mu^2 \cdot (1 - 2\lambda\E[|\Delta|] + O(\lambda^2)).
 \end{equation}
 
-$\varepsilon_i$
+The noise component $\varepsilon_i$, after compression, has variance:
 \begin{equation}
-    \Var[\text{noise}] = \sigma_\varepsilon^2 \cdot (1 - 2\lambda\sqrt{2/\pi}\,\sigma_\varepsilon + O(\lambda^2)).
+    \Var[\text{noise}] = \sigma_\varepsilon^2 \cdot \left(1 - 2\lambda\sqrt{2/\pi}\,\sigma_\varepsilon + O(\lambda^2)\right).
 \end{equation}
 
-SNR
+The rate of change of the signal-to-noise ratio (SNR) is:
 \begin{equation}
     \frac{d}{d\lambda}\text{SNR} = \frac{\sigma_\mu^2}{\sigma_\varepsilon^2} \cdot 2\left(\sqrt{\frac{2}{\pi}}\sigma_\varepsilon - \E[|\Delta|]\right) + O(\lambda).
 \end{equation}
 
-$\E[|\Delta|] = \sqrt{2/\pi}\,\sigma_\varepsilon$SCX$\E[|\Delta|] = \sigma_\varepsilon \cdot \sqrt{2/\pi} \cdot (1+\eta)/\eta$$N$$\eta/(1+\eta)$$\lambda_c = \eta/(2\sigma_\varepsilon(1+\eta))$
+Setting the derivative to zero yields the critical condition $\E[|\Delta|] = \sqrt{2/\pi}\,\sigma_\varepsilon$. Within the SCX framework, $\E[|\Delta|] = \sigma_\varepsilon \cdot \sqrt{2/\pi} \cdot (1+\eta)/\eta$ (because the novelty component $N$ contributes a fraction $\eta/(1+\eta)$ of the variance). Substituting gives $\lambda_c = \eta/(2\sigma_\varepsilon(1+\eta))$.
 
+\textbf{(ii) Phase transition nature.} For $\lambda < \lambda_c$, the primary effect of $\kappa$ is truncation of tail noise, with signal loss at second order $O(\lambda^2)$. For $\lambda > \lambda_c$, $\kappa$ begins to significantly compress the signal core region, and loss becomes first order $O(\lambda)$. This causes the derivative jump at $\lambda_c$, forming a second-order phase transition.
 
+\textbf{(iii) Degradation lower bound.} By the data processing inequality: $I(\tilde{S}; Y) \leq I(S; Y)$. Specifically,
 \begin{align}
     Q_\kappa &= \rho_s(\tilde{S}, Y) = \rho_s(\bar{S} + \kappa(\Delta), Y) \\
     &\geq \rho_s(\bar{S}, Y) - \frac{\E[|\kappa(\Delta)|^2]}{2\sigma_\mu\sigma_Y} \\
     &\geq Q_0 - \frac{\sigma_\varepsilon^2}{2\sigma_\mu\sigma_Y} \cdot \frac{\lambda\sigma_\varepsilon}{1 + \lambda^2\sigma_\varepsilon^2}.
 \end{align}
-
+Rearranging yields the claimed lower bound.
 \end{proof}
 
 % ---------------------------------------------------------------------------
+\subsection{Phase Diagram and Region Partition}
 \label{sec:phase_diagram}
 
-\noindent
-\begin{enumerate}[label=\textbf{ \Roman*}, leftmargin=*]
-    \item \textbf{ ($\lambda < \lambda_c/2$)}: $Q_\kappa \geq 0.95\,Q_0$
-    \item \textbf{ ($\lambda_c/2 \leq \lambda \leq \lambda_c$)}: $Q_\kappa \in [0.75\,Q_0, 0.95\,Q_0]$
-    \item \textbf{ ($\lambda > \lambda_c$)}: $Q_\kappa < 0.5\,Q_0$
-\end{enumerate}
-
-\vspace{0.5em}
-\noindent
 The $\lambda$--$\eta$ parameter space is divided into three regions:
 
 \begin{enumerate}[label=\textbf{Region \Roman*}, leftmargin=*]
@@ -416,295 +341,247 @@ The $\lambda$--$\eta$ parameter space is divided into three regions:
 \end{enumerate}
 
 % ============================================================================
-
 \section{Scaling Laws of the Triple Mechanism}
 \label{sec:scaling}
 % ============================================================================
 
+\subsection{Information Suppression $\kappa_I$}
 
-\subsection{ $\kappa_I$}
-
-\noindent
+Information suppression $\kappa_I$ measures the compression rate of score variance. For soft shrinkage:
 \begin{equation}
     \kappa_I(\lambda) = \frac{\Var[\tilde{S}]}{\Var[S]} = 1 - 2\lambda\E[|\Delta|] + 3\lambda^2\E[\Delta^2] + O(\lambda^3).
 \end{equation}
 
-$\Delta \sim \calN(0, \sigma^2)$
+For Gaussian deviations $\Delta \sim \calN(0, \sigma^2)$:
 \begin{equation}
     \kappa_I(\lambda) = 1 - 2\lambda\sigma\sqrt{\frac{2}{\pi}} + 3\lambda^2\sigma^2 + O(\lambda^3).
 \end{equation}
 
-: $\kappa_I \sim 1 - c_1\lambda$$c_1 = 2\sigma\sqrt{2/\pi}$
-
-\vspace{0.5em}
-\noindent
-Information suppression $\kappa_I$ measures the compression rate of score variance. For soft shrinkage, as derived above, with Gaussian deviations $\Delta \sim \calN(0, \sigma^2)$ the expansion yields linear decay: $\kappa_I \sim 1 - c_1\lambda$ where $c_1 = 2\sigma\sqrt{2/\pi}$.
+\textbf{Scaling law}: $\kappa_I \sim 1 - c_1\lambda$ (linear decay), where $c_1 = 2\sigma\sqrt{2/\pi}$.
 
 % ---------------------------------------------------------------------------
+\subsection{Force Suppression $\kappa_F$}
 
-\subsection{ $\kappa_F$}
-
-\noindent
+Force suppression $\kappa_F$ measures the attenuation of gradient-descent efficacy driven by score discrepancies. The gradient of the audit loss $\mathcal{L}$ is:
 \begin{equation}
     \nabla_{S_i}\mathcal{L} = \frac{\partial\mathcal{L}}{\partial \tilde{S}_i} \cdot \frac{\partial\tilde{S}_i}{\partial S_i} = \frac{\partial\mathcal{L}}{\partial \tilde{S}_i} \cdot \kappa'(\Delta_i) \cdot \left(1 - \frac{1}{N}\right),
 \end{equation}
-$\kappa'(\delta) = 1/(1+\lambda|\delta|)^2$$\kappa$
+where $\kappa'(\delta) = 1/(1+\lambda|\delta|)^2$ is the derivative of $\kappa$.
 
-
+The decay rate of the effective gradient norm:
 \begin{equation}
     \kappa_F(\lambda) = \frac{\E[\|\nabla_{\tilde{S}}\mathcal{L}\|^2]}{\E[\|\nabla_S\mathcal{L}\|^2]} = \E[|\kappa'(\Delta)|^2] + O(1/N).
 \end{equation}
 
-$\Delta$
+For Gaussian $\Delta$:
 \begin{equation}
     \kappa_F(\lambda) = \frac{1}{\sqrt{\pi}\lambda\sigma} \cdot U\left(\frac{1}{2}, 0, \frac{1}{2\lambda^2\sigma^2}\right) \sim 1 - 4\lambda\sigma\sqrt{\frac{2}{\pi}} + O(\lambda^2),
 \end{equation}
+where $U(a,b,z)$ is the confluent hypergeometric function.
 
-: $\kappa_F \sim 1 - c_2\lambda$$c_2 \approx 2c_1$——
-
-\vspace{0.5em}
-\noindent
-Force suppression $\kappa_F$ measures the attenuation of gradient-descent efficacy driven by score discrepancies. With $\kappa'(\delta) = 1/(1+\lambda|\delta|)^2$, the effective gradient norm decays as given above. For Gaussian $\Delta$, the confluent hypergeometric expansion yields $\kappa_F \sim 1 - c_2\lambda$ with $c_2 \approx 2c_1$ — force suppression decays at twice the rate of information suppression.
+\textbf{Scaling law}: $\kappa_F \sim 1 - c_2\lambda$ (linear decay), but $c_2 \approx 2c_1$ --- force suppression decays at twice the rate of information suppression.
 
 % ---------------------------------------------------------------------------
+\subsection{Belief Suppression $\kappa_B$}
 
-\subsection{ $\kappa_B$}
-
-\noindent
+Belief suppression $\kappa_B$ measures the degradation of the score's information-carrying capacity about the expert's internal state $\Theta$. By the data processing inequality:
 \begin{equation}
     I(\tilde{S}; \Theta) \leq I(S; \Theta).
 \end{equation}
 
-$\kappa$$\lambda$
+The specific decay is governed by the compression ratio of $\kappa$. For small $\lambda$:
 \begin{equation}
     \kappa_B(\lambda) = \frac{I(\tilde{S}; \Theta)}{I(S; \Theta)} \approx 1 - \frac{\lambda^2}{2} \cdot \frac{\E[\Delta^4]}{\E[\Delta^2]} + O(\lambda^4).
 \end{equation}
 
-: $\kappa_B \sim 1 - c_3\lambda^2$$\kappa_B(\lambda) = 1/(1 + \lambda^2\sigma^2)$——$\lambda \sim 1/\sigma$
-
-\vspace{0.5em}
-\noindent
-Belief suppression $\kappa_B$ measures the degradation of the score's information-carrying capacity about the expert's internal state $\Theta$. The scaling law is $\kappa_B \sim 1 - c_3\lambda^2$ (quadratic decay), with non-asymptotic form $\kappa_B(\lambda) = 1/(1 + \lambda^2\sigma^2)$ — belief suppression grows slowly at first but accelerates at $\lambda \sim 1/\sigma$.
+\textbf{Scaling law}: $\kappa_B \sim 1 - c_3\lambda^2$ (quadratic decay), with non-asymptotic form $\kappa_B(\lambda) = 1/(1 + \lambda^2\sigma^2)$ --- belief suppression grows slowly at first but accelerates at $\lambda \sim 1/\sigma$.
 
 % ---------------------------------------------------------------------------
+\subsection{Interaction of the Triple Mechanism}
 \label{sec:interaction}
 
-\begin{theorem}[ / Non-Additivity of the Triple Mechanism]
+\begin{theorem}[Non-Additivity of the Triple Mechanism]
 \label{thm:nonadditive}
-
+The overall degradation of audit quality cannot be expressed as a simple sum of three independent degradation rates:
 \begin{equation}
     Q_\kappa \neq Q_0 - \beta_I(1-\kappa_I) - \beta_F(1-\kappa_F) - \beta_B(1-\kappa_B),
 \end{equation}
-
+but must incorporate interaction terms:
 \begin{equation}
     Q_\kappa = Q_0 \cdot \kappa_I \cdot \kappa_F^{1/2} \cdot \kappa_B^{1/3} \cdot e^{-\gamma \cdot (1-\kappa_I)(1-\kappa_F)},
 \end{equation}
-$\gamma > 0$-
+where $\gamma > 0$ is the information-force synergy loss coefficient, capturing the multiplicative enhancement effect of combined information loss and force loss.
 \end{theorem}
 
 \begin{proof}
-$Q_\kappa = I(\tilde{S}; Y)$
+Audit quality $Q_\kappa = I(\tilde{S}; Y)$ can be decomposed via the chain rule:
 \begin{equation}
-    I(\tilde{S}; Y) = I(S; Y) - I(S; Y|\tilde{S}) = I(S; Y) - [].
+    I(\tilde{S}; Y) = I(S; Y) - I(S; Y|\tilde{S}) = I(S; Y) - [\text{information loss}].
 \end{equation}
 
-(a)  $\propto 1-\kappa_I$(b)  $\propto 1-\kappa_F^{1/2}$$\sqrt{\kappa_F}$(c)  $\propto 1-\kappa_B^{1/3}$Bayesian$\kappa_B^{1/3}$
+The three sources of information loss are: (a) direct signal compression $\propto 1-\kappa_I$; (b) self-calibration degradation from gradient signal attenuation $\propto 1-\kappa_F^{1/2}$ (since convergence rate is proportional to $\sqrt{\kappa_F}$); (c) learning degradation from slowed belief updates $\propto 1-\kappa_B^{1/3}$ (since effective sample size of Bayesian updates is proportional to $\kappa_B^{1/3}$).
 
-$(1-\kappa_I)(1-\kappa_F)$
+The interaction term $(1-\kappa_I)(1-\kappa_F)$ arises because: when information is suppressed, even if force is preserved, there is insufficient information gradient to drive self-calibration; and vice versa. This complementarity produces a multiplicative interaction effect.
 \end{proof}
 
 % ============================================================================
-
-\section{$\kappa$-}
-
 \section{Recovery Strategy: Adaptive $\kappa$-Annealing}
 \label{sec:recovery}
 % ============================================================================
 
+\subsection{Cercis Consistency Condition}
 
-\subsection{Cercis / Cercis Consistency Condition}
-
-\begin{definition}[Cercis / Cercis Consistency Condition]
+\begin{definition}[Cercis Consistency Condition]
 \label{def:cercis_consistency}
-$\kappa$
+The necessary and sufficient condition for suppression $\kappa$ to preserve audit consistency is:
 \begin{equation}
     \E_x\left[\frac{\partial Q_\kappa}{\partial \kappa}\right] \geq 0,
 \end{equation}
-SCX
+i.e., the marginal benefit of suppression (noise reduction) is no less than the marginal cost (signal loss). The equivalent SCX form:
 \begin{equation}
     \frac{\eta}{1+\eta} \cdot \frac{\Var[N]}{\Var[Q]} \leq \frac{\kappa'(0)}{1 - \kappa'(0)},
 \end{equation}
-$\kappa'(0) = \lim_{\delta \to 0} \kappa'(\delta)$
+where $\kappa'(0) = \lim_{\delta \to 0} \kappa'(\delta)$ is the compression slope at the origin.
 \end{definition}
 
-\textbf{Definition (Cercis Consistency Condition).}
-The necessary and sufficient condition for suppression $\kappa$ to preserve audit consistency is that the marginal benefit (noise reduction) is no less than the marginal cost (signal loss), as expressed in the SCX form above, where $\kappa'(0) = \lim_{\delta \to 0} \kappa'(\delta)$ is the compression slope at the origin.
-
 % ---------------------------------------------------------------------------
-
 \subsection{Adaptive Annealing Protocol}
 
-\begin{protocol}[$\kappa$- / Adaptive $\kappa$-Annealing]
+\begin{protocol}[Adaptive $\kappa$-Annealing]
 \label{prot:annealing}
 \begin{algorithmic}[1]
-\State \textbf{:} $\{S^{(t)}\}_{t=1}^T$$\eta$$\beta > 0$
-\State \textbf{:} $\lambda_0 \leftarrow \lambda_{\max}$$t \leftarrow 0$
+\State \textbf{Input:} score sequence $\{S^{(t)}\}_{t=1}^T$, novelty weight $\eta$, annealing parameter $\beta > 0$
+\State \textbf{Initialize:} $\lambda_0 \leftarrow \lambda_{\max}$, $t \leftarrow 0$
 \While{$t < T$}
-    \State $\Cercis$
+    \State Compute current \Cercis~consistency indicator:
     \State \quad $C_t \leftarrow \frac{\eta}{1+\eta} \cdot \frac{\widehat{\Var}[N^{(t)}]}{\widehat{\Var}[Q^{(t)}]}$
-    \State $\kappa'(0)$: $\kappa'_{\text{crit}} \leftarrow C_t / (1 + C_t)$
+    \State Compute critical $\kappa'(0)$: $\kappa'_{\text{crit}} \leftarrow C_t / (1 + C_t)$
     \State \If{$\kappa'_{\lambda_t}(0) < \kappa'_{\text{crit}}$}
-        \State $\lambda_{t+1} \leftarrow \lambda_t \cdot (1 - \beta)$ \Comment{}
+        \State $\lambda_{t+1} \leftarrow \lambda_t \cdot (1 - \beta)$ \Comment{Anneal: reduce suppression}
     \Else
-        \State $\lambda_{t+1} \leftarrow \lambda_t$ \Comment{}
+        \State $\lambda_{t+1} \leftarrow \lambda_t$ \Comment{Maintain current suppression level}
     \EndIf
-    \State : $\tilde{S}^{(t)} \leftarrow \bar{S}^{(t)} + \kappa_{\lambda_t}(\Delta^{(t)})$
+    \State Apply suppression: $\tilde{S}^{(t)} \leftarrow \bar{S}^{(t)} + \kappa_{\lambda_t}(\Delta^{(t)})$
     \State $t \leftarrow t + 1$
 \EndWhile
-\State \textbf{:} $\{\tilde{S}^{(t)}\}$
+\State \textbf{Return:} adaptively suppressed scores $\{\tilde{S}^{(t)}\}$
 \end{algorithmic}
 \end{protocol}
 
+\noindent
 \textbf{Protocol (Adaptive $\kappa$-Annealing).}
 The protocol starts with high suppression and gradually reduces it, guided by the Cercis consistency condition. At each step, if the current suppression level violates consistency (i.e., $\kappa'_{\lambda_t}(0) < \kappa'_{\text{crit}}$), the suppression strength is annealed. Otherwise, it is maintained. This ensures the system converges to the maximal suppression level that still preserves audit quality.
 
-\begin{theorem}[ / Annealing Convergence]
+\begin{theorem}[Annealing Convergence]
 \label{thm:annealing_convergence}
-Protocol~\ref{prot:annealing}$\beta \in (0,1)$$\lambda_0$$\lambda_t$$\lambda^*$Cercis$O((1-\beta)^t)$
+Under Protocol~\ref{prot:annealing}, if $\beta \in (0,1)$ and the initial $\lambda_0$ is sufficiently large, then $\lambda_t$ converges almost surely to $\lambda^*$, satisfying the equality form of the Cercis consistency condition. The convergence rate is $O((1-\beta)^t)$.
 \end{theorem}
 
 \begin{proof}
-Lyapunov$V(\lambda) = |\lambda - \lambda^*|$$\lambda_{t+1} = \max(\lambda_t(1-\beta), \lambda^*)$$\lambda^*$
+Define the Lyapunov function $V(\lambda) = |\lambda - \lambda^*|$. The update rule is $\lambda_{t+1} = \max(\lambda_t(1-\beta), \lambda^*)$ (since once below $\lambda^*$, the consistency condition holds and annealing stops). Therefore:
 \begin{equation}
     \E[V(\lambda_{t+1})|\lambda_t] = \max((1-\beta)V(\lambda_t), 0) \leq (1-\beta)V(\lambda_t),
 \end{equation}
-
+yielding geometric convergence.
 \end{proof}
 
 % ============================================================================
-
-\section{SCX}
-
 \section{Connections to SCX Core Theorems}
 \label{sec:connections}
 % ============================================================================
 
+\subsection{Direct Corollary of Theorem 3 (S3)}
 
-\subsection{Theorem 3 (S3) }
+Theorem 3 (Noise-Difficulty Indistinguishability) is the logical foundation of the $\kappa$ Suppression Paradox. Since no auditor observing only \Cercis~scores can distinguish label noise from intrinsic difficulty, any suppression strategy based solely on score magnitude (which is exactly what $\kappa$ does) cannot selectively suppress noise without harming signal.
 
-\noindent
+Formally, let $\varepsilon$ be the noise component and $D$ the difficulty component. After applying $\kappa$:
 \begin{equation}
     \tilde{S} = \bar{S} + \kappa(S - \bar{S}) = \bar{S} + \kappa(Q + \eta N - \bar{Q} - \eta\bar{N}).
 \end{equation}
 
+Since $Q$ and $N$ are observationally indistinguishable (Theorem 3), $\kappa$ compresses both at the same rate:
 \begin{equation}
     \frac{\partial \tilde{S}}{\partial Q} = \kappa'(S-\bar{S}) = \frac{\partial \tilde{S}}{\partial (\eta N)}.
 \end{equation}
 
-\textbf{$\kappa$-}
-
-\vspace{0.5em}
-\noindent
-Theorem 3 (Noise-Difficulty Indistinguishability) is the logical foundation of the $\kappa$ Suppression Paradox. Since no auditor observing only \Cercis~scores can distinguish label noise from intrinsic difficulty, any suppression strategy based solely on score magnitude (which is exactly what $\kappa$ does) cannot selectively suppress noise without harming signal. This implies \textbf{zero noise-signal selectivity for any $\kappa$ suppression}.
+This directly implies: \textbf{any $\kappa$ suppression has zero noise-signal selectivity}.
 
 % ---------------------------------------------------------------------------
+\subsection{Degradation of Spring SE-1}
 
-\subsection{Spring SE-1 }
-
-\noindent
+Spring SE-1's self-evolving gating relies on \Cercis~score gradient signals for Robbins-Monro stochastic approximation. $\kappa$ suppression attenuates the effective gradient by a factor of $\kappa_F$. Consequently, the convergence rate of Spring SE-1 degrades from the standard $O(1/t)$ to:
 \begin{equation}
     \E[\|\theta_t - \theta^*\|^2] = O\left(\frac{1}{\kappa_F \cdot t}\right) = O\left(\frac{1}{(1-c_2\lambda)t}\right),
 \end{equation}
-$\lambda \to \lambda_c$Spring
-
-\vspace{0.5em}
-\noindent
-Spring SE-1's self-evolving gating relies on \Cercis~score gradient signals for Robbins-Monro stochastic approximation. $\kappa$ suppression attenuates the effective gradient by a factor of $\kappa_F$, degrading the convergence rate as shown above, diverging near $\lambda \to \lambda_c$ and signaling the collapse of Spring dynamics.
+diverging near $\lambda \to \lambda_c$ and signaling the collapse of Spring dynamics.
 
 % ============================================================================
-
 \section{Numerical Experiments}
 \label{sec:experiments}
 % ============================================================================
 
-
 \subsection{Experimental Design}
 
-\noindent
-\begin{enumerate}[label=\textbf{ \arabic*}, leftmargin=*]
-    \item : $S_i = \mu + \varepsilon_i$$\varepsilon_i \sim \calN(0, \sigma^2)$$\mu = 0$$\kappa$
-    \item \textbf{-}: $S_i = \mu_i + \varepsilon_i$$\mu_i \sim \calN(0, \sigma_\mu^2)$$\varepsilon_i \sim \calN(0, \sigma_\varepsilon^2)$$\lambda_c$
-    \item : $N=20$$M=500$10``''10``''
-\end{enumerate}
+Three experimental classes are designed to validate theoretical predictions (see \texttt{verify\_kappa.py}):
 
-\vspace{0.5em}
-\noindent
-Three experimental classes are designed to validate theoretical predictions (see \texttt{verify\_kappa.py}): (1) Pure Gaussian noise — verifying non-selective compression; (2) Mixed signal-noise — verifying phase transition at $\lambda_c$ and elite erosion; (3) Realistic audit simulation — with $N=20$ experts on $M=500$ data points, 10 ``elite'' and 10 ``ordinary'', verifying elite suppression ratio and diversity decay.
+\begin{enumerate}[label=\textbf{Experiment \arabic*}, leftmargin=*]
+    \item \textbf{Pure Gaussian noise}: $S_i = \mu + \varepsilon_i$, $\varepsilon_i \sim \calN(0, \sigma^2)$, $\mu = 0$. Verifies that quality degradation under $\kappa$ with pure noise is entirely due to non-selective compression.
+    \item \textbf{Mixed signal-noise}: $S_i = \mu_i + \varepsilon_i$, $\mu_i \sim \calN(0, \sigma_\mu^2)$, $\varepsilon_i \sim \calN(0, \sigma_\varepsilon^2)$. Verifies the phase transition prediction at $\lambda_c$ and elite erosion.
+    \item \textbf{Realistic audit simulation}: $N=20$ experts on $M=500$ data points, with 10 ``elite'' (high signal variance) and 10 ``ordinary'' (low signal variance). Verifies elite suppression ratio and diversity decay.
+\end{enumerate}
 
 % ---------------------------------------------------------------------------
-
 \subsection{Key Numerical Results}
 
-\noindent
+Numerical experiments confirm the following key findings:
+
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{$\lambda_c$}: 2$\lambda = \lambda_c \pm 0.05\lambda_c$$p < 0.001$bootstrap
-    \item : 3$R_{\text{elite}} = 0.62 \pm 0.03$ vs $R_{\text{non-elite}} = 0.78 \pm 0.02$$\lambda = \lambda_c$62\%78\%$t$-test $p < 10^{-6}$
-    \item : 3KL$t=10$$38\% \pm 5\%$$e^{-2\lambda_c\bar{\sigma}^2 \cdot 10} \approx 0.41$$\chi^2$$p = 0.23$
-    \item : Protocol~\ref{prot:annealing}$t \approx 15$$\lambda$$\lambda_{\max}=5\lambda_c$$\lambda^* \approx 0.8\lambda_c$$Q_{\kappa} = 0.91 Q_0$$\lambda = \lambda_c$$0.76 Q_0$
+    \item \textbf{Accuracy of $\lambda_c$}: In Experiment 2, the derivative of audit quality exhibits a clear slope change at $\lambda = \lambda_c \pm 0.05\lambda_c$ ($p < 0.001$, bootstrap test), confirming the existence of a second-order phase transition.
+    \item \textbf{Elite suppression ratio}: In Experiment 3, $R_{\text{elite}} = 0.62 \pm 0.03$ vs $R_{\text{non-elite}} = 0.78 \pm 0.02$ (at $\lambda = \lambda_c$), elites compressed to 62\% of original magnitude, significantly lower than non-elites at 78\% ($t$-test $p < 10^{-6}$).
+    \item \textbf{Diversity decay}: In Experiment 3, the KL divergence between elites and non-elites decays to $38\% \pm 5\%$ of its initial value after $t=10$ rounds, consistent with the theoretical prediction $e^{-2\lambda_c\bar{\sigma}^2 \cdot 10} \approx 0.41$ ($\chi^2$ goodness-of-fit $p = 0.23$).
+    \item \textbf{Adaptive annealing recovery}: Protocol~\ref{prot:annealing} reduces $\lambda$ from $\lambda_{\max}=5\lambda_c$ to $\lambda^* \approx 0.8\lambda_c$ after approximately $t=15$ rounds, restoring audit quality to $Q_{\kappa} = 0.91 Q_0$, outperforming fixed $\lambda = \lambda_c$ at $0.76 Q_0$.
 \end{enumerate}
 
-\vspace{0.5em}
-\noindent
-Numerical experiments confirm: (i) $\lambda_c$ accuracy — slope change at $\lambda_c \pm 0.05\lambda_c$ ($p < 0.001$); (ii) elite suppression ratio — $R_{\text{elite}} = 0.62$ vs $R_{\text{non-elite}} = 0.78$ ($p < 10^{-6}$); (iii) diversity decay — KL divergence decays to $38\%$ of initial at $t=10$ (theory predicts $\sim 41\%$, $p = 0.23$); (iv) adaptive annealing restores $Q_\kappa$ to $0.91 Q_0$, outperforming fixed $\lambda=\lambda_c$ at $0.76 Q_0$.
-
 % ============================================================================
-
 \section{Discussion: Cultural and Institutional Roots of Suppression}
 \label{sec:discussion}
 % ============================================================================
 
+\subsection{Why Is Suppression Popular in Practice?}
 
-\noindent
+Despite the mathematical self-defeat of $\kappa$ suppression proved here, it is pervasive in practice. This is not accidental --- suppression satisfies three deep psychological and social needs:
+
 \begin{enumerate}[label=(\arabic*)]
-    \item : ``''——SCX
-    \item : ``''——``''
-    \item : L1/L2dropoutgradient clipping$\kappa$
+    \item \textbf{Illusion of surface fairness}: Suppressing extreme scores makes all expert outputs appear ``more consistent,'' satisfying the human psychological preference for consensus. However, this consistency is artificial --- it is built by eliminating disagreement, which is precisely the source of new information in the SCX framework.
+    \item \textbf{Institutional incentives for risk aversion}: In hierarchical organizations, outlier scores mean ``someone who judged differently'' --- this visibility exposes the scorer to accountability risk. Suppression is the organization's defense mechanism: by compressing all scores into a safe range, the organization insulates its members from bearing responsibility for ``wrong'' judgments.
+    \item \textbf{Path dependency from quantification bias}: Regularization techniques in modern machine learning (L1/L2 penalties, dropout, gradient clipping) are mathematically equivalent to specific forms of $\kappa$ suppression. The success of these techniques leads practitioners to uncritically generalize suppression to score calibration, ignoring that \textbf{suppression in training and suppression in target evaluation serve fundamentally different purposes}.
 \end{enumerate}
 
-\vspace{0.5em}
-\noindent
-Despite the mathematical self-defeat of $\kappa$ suppression proved here, it is pervasive in practice. This is not accidental — suppression satisfies three deep psychological and social needs: (1) the illusion of surface fairness through apparent consensus; (2) institutional incentives for risk aversion in hierarchical organizations; (3) path dependency from ML regularization techniques, where practitioners uncritically generalize suppression from training to evaluation, ignoring that suppression in training versus target evaluation serves fundamentally different purposes.
-
 % ---------------------------------------------------------------------------
-
 \subsection{Open Problems}
 
 \begin{enumerate}[label=\textbf{OP\arabic*}, leftmargin=*]
-    \item \textbf{$\kappa$}: Lipschitz$\kappa$$\eta$$\kappa(\delta)=\delta$
-    \item \textbf{$\kappa$}: $\kappa$Nash
-    \item \textbf{$\kappa$}: AR-Theorem$A$$\kappa$AR$\kappa$
-    \item \textbf{SCX-native}: Cercis Score``''$\eta$$\kappa$
+    \item \textbf{Optimal $\kappa$ function space}: Among all Lipschitz-continuous $\kappa$ functions, does there exist a form that strictly outperforms the identity map $\kappa(\delta)=\delta$ for a given $\eta$? We conjecture not, but a rigorous proof remains open.
+    \item \textbf{$\kappa$ game under multi-round feedback}: If experts know their scores will be $\kappa$-suppressed, they will strategically adjust their scoring behavior. What is the Nash equilibrium of this game?
+    \item \textbf{$\kappa$ suppression and adversarial robustness}: Can the adversarial exposure $A$ in the AR-Theorem be interpreted as the counterpart of $\kappa$ suppression in gradient space? If so, do the conclusions of AR constrain an upper bound on $\kappa$?
+    \item \textbf{SCX-native alternative}: Can an ``unsuppressed'' outlier management scheme be constructed directly from the raw definition of the Cercis Score? For example, using adaptive tuning of $\eta$ rather than post-hoc $\kappa$?
 \end{enumerate}
 
 % ============================================================================
-
 \section{Conclusion}
 \label{sec:conclusion}
 % ============================================================================
 
-\noindent
+This paper rigorously establishes the mathematical foundation of the $\kappa$ Suppression Paradox within the SCX framework. Core findings include:
+
 \begin{enumerate}[label=(\arabic*)]
-    \item $\kappa$$\kappa_I$$\kappa_F$$\kappa_B$
-    \item $\kappa$
-    \item $\lambda_c = \eta/(2\sigma_\varepsilon(1+\eta))$
-    \item $\kappa$-
+    \item $\kappa$ suppression attacks the cognition, correction, and learning functions of an audit system simultaneously through the triple mechanism (information suppression $\kappa_I$, force suppression $\kappa_F$, belief suppression $\kappa_B$).
+    \item The Elite Erosion Theorem proves that $\kappa$ penalizes high-quality experts disproportionately, causing cognitive diversity to decay exponentially and ultimately driving all experts toward the mean.
+    \item The Suppression Phase Transition Theorem gives the critical strength $\lambda_c = \eta/(2\sigma_\varepsilon(1+\eta))$, beyond which audit quality undergoes a second-order phase transition collapse.
+    \item The adaptive $\kappa$-annealing protocol provides a practical scheme for avoiding the suppression paradox while maintaining robustness.
 \end{enumerate}
 
-: $\eta$Cercis
-
-\vspace{0.5em}
-\noindent
-This paper rigorously establishes the mathematical foundation of the $\kappa$ Suppression Paradox within the SCX framework. Core findings include: (1) the triple mechanism attacking cognition, correction, and learning; (2) the Elite Erosion Theorem proving disproportionate penalty on high-quality experts; (3) the Suppression Phase Transition Theorem with critical threshold $\lambda_c$; (4) the adaptive $\kappa$-annealing protocol. \textbf{Engineering takeaway}: If your audit system uses any form of score suppression, you are systematically destroying the value of your best experts. Stop suppressing. Adopt adaptive $\eta$ tuning or the Cercis consistency condition instead.
+\textbf{Engineering takeaway}: If your audit system uses any form of score suppression, you are systematically destroying the value of your best experts. Stop suppressing. Adopt adaptive $\eta$ tuning or the Cercis consistency condition instead.
 
 % ============================================================================
 \begin{thebibliography}{99}
@@ -716,7 +593,7 @@ This paper rigorously establishes the mathematical foundation of the $\kappa$ Su
 
 \bibitem{scx_theorem3}
 \SCX\ Theory Group.
-\newblock Theorem 3 (S3): Noise-Difficulty Indistinguishability — The Uncertainty Principle of SCX.
+\newblock Theorem 3 (S3): Noise-Difficulty Indistinguishability --- The Uncertainty Principle of SCX.
 \newblock \textit{SCX Technical Report}, 2025.
 
 \bibitem{scx_cercis}
@@ -796,16 +673,16 @@ Kahneman, D., Sibony, O., \& Sunstein, C.R.
 
 \bibitem{scx_temporal}
 \SCX\ Theory Group.
-\newblock TS-Theorem: Temporal SCX — Drift, Attribution, and Sprint Self-Audit Limits.
+\newblock TS-Theorem: Temporal SCX --- Drift, Attribution, and Sprint Self-Audit Limits.
 \newblock \textit{SCX Technical Report}, 2026.
 
 \end{thebibliography}
 
 % ============================================================================
-% 
+% Verification script reference
 % ============================================================================
 \vspace{1em}
-\noindent\textbf{ / Verification Script:} 
+\noindent\textbf{Verification Script:}
 See accompanying file \texttt{verify\_kappa.py} for complete numerical validation of all theoretical claims in this paper.
 
 \end{document}

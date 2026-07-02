@@ -1,15 +1,13 @@
-pdfoutput=1
-\pdfoutput=1
-\documentclass[11pt,a4paper]{article}
+\documentclass[12pt,a4paper]{article}
 
 % ============================================================================
 %  Consciousness Audit Boundary (C4 Extension)
-%   — C4 
 %  Recursive Self-Audit, Noise Divergence, Compactness Bound
-%   ·  · 
-%  Bilingual: Chinese + English
 % ============================================================================
 
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
 \usepackage{bm}
@@ -48,7 +46,7 @@ pdfoutput=1
 \newcommand{\norm}[1]{\|#1\|}
 \newcommand{\ind}[1]{\mathbf{1}_{#1}}
 \newcommand{\DKL}{D_{\mathrm{KL}}}
-\newcommand{\SCX}{\textsc{SCX}}
+\newcommand{\SCX}{\textsf{SCX}}
 \newcommand{\AuditSword}{\textsc{AuditSword}}
 \newcommand{\Cercis}{\textsc{Cercis}}
 \newcommand{\Cfour}{\textsc{C4}}
@@ -57,118 +55,104 @@ pdfoutput=1
 \newcommand{\Capacity}{\mathcal{C}}
 
 \title{
-    \large Consciousness Audit Boundary: Noise Divergence and Compactness in Recursive Self-Audit\\[0.5em]
-    \normalsize \SCX\  · \Cfour\ \\
-    \normalsize SCX Equality Framework · \Cfour\ Extension
+    \textbf{Consciousness Audit Boundary: Noise Divergence and Compactness in Recursive Self-Audit}\\[0.5em]
+    \normalsize \SCX\ Equality Framework \;$\cdot$\; \Cfour\ Extension
 }
-\author{SCX}
+\author{}
 \date{\today}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-\vspace{0.5em}
 \noindent
-The Consciousness Audit Boundary (\Cfour) is a natural extension of the \SCX\ Equality Framework, addressing a fundamental question: when an audit system recursively audits itself, does the noise diverge without bound, causing system collapse? This paper rigorously formalizes the recursive self-audit operator $\AuditOp_n(E) = \AuditOp_1(\AuditOp_{n-1}(E))$ and analyzes two noise models: (A) a pure additive noise model whose variance $\sigma_n^2 = \sigma_0^2 \cdot \alpha^n$ diverges exponentially; (B) a Bayesian audit model that admits a fixed point $\sigma_*^2 = \alpha - 1$, with signal-to-noise ratio converging to $\SNR \to 1/(\alpha-1)$. Key findings include: (1) a tripartite classification of the critical threshold: $\alpha < 2$ stable, $\alpha = 2$ critical, $\alpha > 2$ collapse; (2) a compactness bound $C(E) \leq O(\log M)$ derived via Gaussian channel capacity; (3) toy simulation confirmation: $C=6.00$ for pure noise, $C=20$ for Bayesian (never collapses at $\alpha=1.5$); (4) a connection to G\"{o}del's incompleteness---the infinite regress of ``I believe I believe\ldots'' is precisely the compactness boundary. This paper is bilingual (Chinese/English) and includes a verification script.
+The Consciousness Audit Boundary (\Cfour) is a natural extension of the \SCX\ Equality Framework, addressing a fundamental question: when an audit system recursively audits itself, does the noise diverge without bound, causing system collapse? This paper rigorously formalizes the recursive self-audit operator $\AuditOp_n(E) = \AuditOp_1(\AuditOp_{n-1}(E))$ and analyzes two noise models: (A) a pure additive noise model whose variance $\sigma_n^2 = \sigma_0^2 \cdot \alpha^n$ diverges exponentially; (B) a Bayesian audit model that admits a fixed point $\sigma_*^2 = \alpha - 1$, with signal-to-noise ratio converging to $\SNR \to 1/(\alpha-1)$. Key findings include: (1) a tripartite classification of the critical threshold: $\alpha < 2$ stable, $\alpha = 2$ critical, $\alpha > 2$ collapse; (2) a compactness bound $C(E) \leq O(\log M)$ derived via Gaussian channel capacity; (3) toy simulation confirmation: $C=6.00$ for pure noise, $C=20$ for Bayesian (never collapses at $\alpha=1.5$); (4) a connection to G\"{o}del's incompleteness---the infinite regress of ``I believe I believe\ldots'' is precisely the compactness boundary. This paper includes a verification script.
 
 \vspace{0.5em}
+\noindent
 \textbf{Keywords:} Recursive self-audit, noise divergence, compactness bound, Bayesian audit, G\"{o}del incompleteness, SCX framework, \Cfour\ extension, Gaussian channel capacity, consciousness boundary.
 \end{abstract}
 
 % ============================================================================
-
 \section{Introduction}
 % ============================================================================
 
-\noindent
-\begin{equation}\label{eq:intro_recursion}
-    \AuditOp(E) \to \AuditOp(\AuditOp(E)) \to \AuditOp(\AuditOp(\AuditOp(E))) \to \cdots
-\end{equation}
- $E$ $\AuditOp$ ——
+\subsection{Motivation: Who Audits the Auditor?}
 
-\vspace{0.5em}
-\noindent
 The \SCX\ Equality Framework ensures transparency and verifiability of all agent evaluation and evolution processes through the Audit Sword mechanism. The Meta-Audit Protocol further formalizes the reflexive question of ``who audits the auditor.'' However, a deeper recursive dilemma emerges: \textbf{if the meta-auditor itself must be audited, where does this recursive chain terminate?}
 
 Consider the infinite regress:
-\begin{equation}\label{eq:intro_recursion_en}
+\begin{equation}\label{eq:intro_recursion}
     \AuditOp(E) \to \AuditOp(\AuditOp(E)) \to \AuditOp(\AuditOp(\AuditOp(E))) \to \cdots
 \end{equation}
 where $E$ is the entity to be audited (a model output, a decision, an evaluation result), and $\AuditOp$ is the audit operator. Each recursion introduces fresh noise---the auditor's own bounded rationality, random error, or systematic bias. The critical question: \textbf{does the noise along the recursive audit chain converge, stabilize, or diverge?}
 
-\noindent
-\begin{enumerate}[label=\textbf{Q\arabic*}, leftmargin=*]
-    \item \textbf{G\"{o}del .} 
-\end{enumerate}
+\subsection{Core Questions and Contributions}
 
-\vspace{0.5em}
-\noindent
 This paper focuses on five core questions:
 
 \begin{enumerate}[label=\textbf{Q\arabic*}, leftmargin=*]
+    \item \textbf{Noise propagation.} In recursive self-audit $\AuditOp_n$, how does noise accumulate layer by layer? What is the recurrence relation for variance $\sigma_n^2$?
+    \item \textbf{Stability conditions.} Is there a parameter region where noise does not diverge? What is the critical threshold $\alpha_c$?
+    \item \textbf{Compactness.} Before noise divergence, how much effective information can the audit chain carry? Is there an information-theoretic compactness bound?
+    \item \textbf{Bayesian solution.} Does introducing prior information (Bayesian audit) provide a stable fixed point? What are its SNR properties?
     \item \textbf{G\"{o}del connection.} Does the collapse of recursive audit have a deep correspondence with the incompleteness of formal systems?
 \end{enumerate}
 
-
 \subsection{Relation to the SCX Core Framework}
-\vspace{0.5em}
-\noindent
+
 The \Cfour\ extension sits on the reflexivity dimension of the \SCX\ framework. Theorem 3 (noise-difficulty indistinguishability) states that label noise and intrinsic difficulty cannot be distinguished from observational data. The meta-audit protocol circumvents this limitation via cross-sectional replication. \Cfour\ pushes further: \textbf{how many times can cross-sectional replication itself be recursed without losing information?}
 
 % ============================================================================
-
 \section{Formalization of Recursive Self-Audit}
 % ============================================================================
 
-
 \subsection{The Audit Operator}
 
-\begin{definition}[ Audit Operator]\label{def:audit_op}
- $\mathcal{E}$  $\AuditOp_1: \mathcal{E} \to \mathcal{E}$ $\AuditOp_1$ 
+\begin{definition}[Audit Operator]\label{def:audit_op}
+Let $\mathcal{E}$ be the space of entities to be audited (e.g., real-valued scores, classification labels, structured evaluations). An audit operator $\AuditOp_1: \mathcal{E} \to \mathcal{E}$ maps an entity to an audit result. $\AuditOp_1$ has the following structure:
 \begin{equation}\label{eq:audit_op_def}
     \AuditOp_1(E) = E + \delta(E) + \epsilon,
 \end{equation}
-
+where:
 \begin{itemize}
-    \item $\delta(E): \mathcal{E} \to \mathcal{E}$ /
-    \item $\epsilon \sim \mathcal{N}(0, \sigma_0^2)$  Gaussian  $\sigma_0^2$
+    \item $\delta(E): \mathcal{E} \to \mathcal{E}$ is a systematic correction term (correction from the auditor's knowledge/bias);
+    \item $\epsilon \sim \mathcal{N}(0, \sigma_0^2)$ is zero-mean Gaussian audit noise with variance $\sigma_0^2$.
 \end{itemize}
 \end{definition}
 
 \begin{remark}
-~\eqref{eq:audit_op_def}  $ \hat{S}_i(x) = S(x) + g_i + \epsilon_i(x) $ $g_i$  \Cfour\  $\delta$  $\epsilon$
+Model~\eqref{eq:audit_op_def} is a recursive generalization of the maintainer bias model $ \hat{S}_i(x) = S(x) + g_i + \epsilon_i(x) $ from the meta-audit framework. In meta-audit, $g_i$ is the maintainer's systematic bias; in \Cfour, each recursion layer's auditor can have its own $\delta$ and $\epsilon$, and noise propagates across layers.
 \end{remark}
 
-\begin{definition}[ Recursive Audit Operator]\label{def:recursive_audit}
- $n \geq 1$ $n$-
+\begin{definition}[Recursive Audit Operator]\label{def:recursive_audit}
+For any $n \geq 1$, define the $n$-layer recursive audit operator:
 \begin{equation}\label{eq:recursive_audit_def}
     \AuditOp_n(E) = \AuditOp_1(\AuditOp_{n-1}(E)), \quad \AuditOp_0(E) = E.
 \end{equation}
-
+Expanded form:
 \begin{equation}\label{eq:recursive_expanded}
     \AuditOp_n(E) = E + \sum_{k=0}^{n-1} \delta(E_k) + \sum_{k=0}^{n-1} \epsilon_k,
 \end{equation}
- $E_0 = E$$E_k = \AuditOp_k(E)$  $k$ $\epsilon_k \sim \mathcal{N}(0, \sigma_k^2)$  $k$ 
+where $E_0 = E$, $E_k = \AuditOp_k(E)$ is the input entity at layer $k$, and $\epsilon_k \sim \mathcal{N}(0, \sigma_k^2)$ is the audit noise introduced at layer $k$.
 \end{definition}
-
 
 \subsection{General Framework for Noise Propagation}
 
-\begin{definition}[ Noise Propagation Factor]\label{def:noise_factor}
- $\alpha \geq 0$ $k$ 
+\begin{definition}[Noise Propagation Factor]\label{def:noise_factor}
+Define the noise amplification factor $\alpha \geq 0$, such that the audit noise variance at layer $k$ satisfies:
 \begin{equation}\label{eq:noise_factor_def}
     \sigma_k^2 = \alpha \cdot \sigma_{k-1}^2.
 \end{equation}
-$\alpha$ $\alpha = 1$ $\alpha > 1$ $\alpha < 1$ 
+Physical meaning of $\alpha$: $\alpha = 1$ means each layer has independent identically distributed noise (each audit layer has the same noise level); $\alpha > 1$ means noise amplifies layer by layer (later auditors have greater uncertainty); $\alpha < 1$ means noise decays layer by layer (auditors become more precise).
 \end{definition}
 
 \begin{remark}
-$\alpha > 1$ (1) (2) (3) 
+The scenario $\alpha > 1$ is more common in practice. Reasons include: (1) as recursion deepens, the objects of audit become more abstract, making evaluation harder; (2) higher-level auditors must understand the reasoning of lower-level auditors, and this understanding error is compounded into their own noise; (3) the marginal benefit of recursive audit decreases, and auditors may invest less attention.
 \end{remark}
 
-\begin{lemma}[ / Noise Variance Recurrence]\label{lem:variance_recurrence}
-~\eqref{eq:recursive_audit_def} ~\eqref{eq:noise_factor_def} $n$-
+\begin{lemma}[Noise Variance Recurrence]\label{lem:variance_recurrence}
+Under recursive audit~\eqref{eq:recursive_audit_def}, if each layer's noise is independent and satisfies~\eqref{eq:noise_factor_def}, then the total noise variance of $n$-layer audit is:
 \begin{equation}\label{eq:total_variance}
     \Var[\AuditOp_n(E) - E^*] = \sigma_0^2 \sum_{k=0}^{n-1} \alpha^k =
     \begin{cases}
@@ -176,358 +160,322 @@ $\alpha > 1$ (1) (2) (3)
         \sigma_0^2 \cdot \dfrac{\alpha^n - 1}{\alpha - 1}, & \alpha \neq 1,
     \end{cases}
 \end{equation}
- $E^*$  $\E[\delta(E_k)] = 0$
+where $E^*$ is the true value (assuming $\E[\delta(E_k)] = 0$, i.e., the expected systematic correction is zero---the audit is unbiased).
 \end{lemma}
 
 \begin{proof}
-~\eqref{eq:recursive_expanded} $\sum_{k=0}^{n-1} \epsilon_k$ $\epsilon_k$  $\Var[\epsilon_k] = \sigma_k^2 = \sigma_0^2 \cdot \alpha^k$
+From the definition~\eqref{eq:recursive_expanded}, the total noise is $\sum_{k=0}^{n-1} \epsilon_k$. The $\epsilon_k$ are independent, and $\Var[\epsilon_k] = \sigma_k^2 = \sigma_0^2 \cdot \alpha^k$. Therefore:
 \begin{equation*}
     \Var\left[\sum_{k=0}^{n-1} \epsilon_k\right] = \sum_{k=0}^{n-1} \sigma_0^2 \cdot \alpha^k = \sigma_0^2 \sum_{k=0}^{n-1} \alpha^k.
 \end{equation*}
- $\alpha=1$  $n$ $\alpha \neq 1$  $\sigma_0^2 (\alpha^n - 1)/(\alpha - 1)$\hfill$\square$
+When $\alpha=1$, the sum is $n$; when $\alpha \neq 1$, using the geometric series formula yields $\sigma_0^2 (\alpha^n - 1)/(\alpha - 1)$. \hfill$\square$
 \end{proof}
 
 % ============================================================================
-
-\section{Model A}
-
 \section{Model A: Exponential Divergence of Pure Additive Noise}
 % ============================================================================
 
-
 \subsection{Model Definition}
 
-\vspace{0.5em}
 \noindent
 In Model A (pure additive model), we assume that each layer of audit is completely independent, with no information sharing and no prior constraints. Each layer's auditor sees only the output of the previous layer and adds noise independently. This corresponds to the most pessimistic recursive audit scenario---each auditor ``starts from scratch'' without leveraging any historical audit information.
 
-\begin{definition}[ Pure Additive Audit Model]\label{def:model_a}
-Model A 
+\begin{definition}[Pure Additive Audit Model]\label{def:model_a}
+Model A recursive audit satisfies:
 \begin{equation}\label{eq:model_a}
     \AuditOp_1^{(A)}(E) = E + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma_0^2),
 \end{equation}
- $k$$\epsilon_k \sim \mathcal{N}(0, \sigma_0^2 \cdot \alpha^k)$$\alpha \geq 1$
+and for all layers $k$, $\epsilon_k \sim \mathcal{N}(0, \sigma_0^2 \cdot \alpha^k)$, $\alpha \geq 1$.
 \end{definition}
-
 
 \subsection{Exponential Divergence Theorem}
 
-\begin{theorem}[Model A  / Exponential Noise Divergence in Model A]\label{thm:model_a_divergence}
- Model A $n$-
+\begin{theorem}[Exponential Noise Divergence in Model A]\label{thm:model_a_divergence}
+Under Model A, the total noise variance of $n$-layer recursive audit satisfies:
 \begin{equation}\label{eq:model_a_variance}
     \sigma_n^2 \equiv \Var[\AuditOp_n^{(A)}(E) - E] = \sigma_0^2 \cdot \frac{\alpha^n - 1}{\alpha - 1} \sim \sigma_0^2 \cdot \frac{\alpha^n}{\alpha - 1} \quad (n \to \infty).
 \end{equation}
-
+In particular:
 \begin{enumerate}[label=(\roman*), leftmargin=*]
-    \item  $\alpha = 1$ $\sigma_n^2 = \sigma_0^2 \cdot n$
-    \item  $\alpha > 1$ $\sigma_n^2 = \Theta(\alpha^n)$
-    \item  $\alpha < 1$ $\sigma_n^2 \to \sigma_0^2 / (1 - \alpha)$
+    \item When $\alpha = 1$, $\sigma_n^2 = \sigma_0^2 \cdot n$ (linear growth);
+    \item When $\alpha > 1$, $\sigma_n^2 = \Theta(\alpha^n)$ (exponential divergence);
+    \item When $\alpha < 1$, $\sigma_n^2 \to \sigma_0^2 / (1 - \alpha)$ (converges to a finite value).
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
- Lemma~\ref{lem:variance_recurrence} 
-(i) $\alpha=1$$\sigma_n^2 = \sigma_0^2 \cdot n$
-(ii) $\alpha>1$$\sigma_n^2 = \sigma_0^2 (\alpha^n - 1)/(\alpha - 1)$ $n$ $\alpha^n$  $\sigma_n^2 \sim \sigma_0^2 \alpha^n/(\alpha - 1) = \Theta(\alpha^n)$
-(iii) $\alpha<1$$\alpha^n \to 0$ $\sigma_n^2 \to \sigma_0^2/(1 - \alpha)$\hfill$\square$
+Follows directly from Lemma~\ref{lem:variance_recurrence}.
+(i) $\alpha=1$: $\sigma_n^2 = \sigma_0^2 \cdot n$, linear growth.
+(ii) $\alpha>1$: $\sigma_n^2 = \sigma_0^2 (\alpha^n - 1)/(\alpha - 1)$. For large $n$, $\alpha^n$ dominates, so $\sigma_n^2 \sim \sigma_0^2 \alpha^n/(\alpha - 1) = \Theta(\alpha^n)$.
+(iii) $\alpha<1$: $\alpha^n \to 0$, so $\sigma_n^2 \to \sigma_0^2/(1 - \alpha)$. \hfill$\square$
 \end{proof}
 
-\begin{corollary}[ / SNR Decay]\label{cor:snr_decay}
- $\SNR_n = \E[\AuditOp_n(E)]^2 / \sigma_n^2$ Model A $\E[\AuditOp_n(E)] = E$
+\begin{corollary}[SNR Decay]\label{cor:snr_decay}
+Define the signal-to-noise ratio $\SNR_n = \E[\AuditOp_n(E)]^2 / \sigma_n^2$. Under Model A, assuming the audit is unbiased ($\E[\AuditOp_n(E)] = E$), then:
 \begin{equation}\label{eq:snr_model_a}
     \SNR_n = \frac{E^2}{\sigma_0^2} \cdot \frac{\alpha - 1}{\alpha^n - 1} \sim \frac{E^2(\alpha - 1)}{\sigma_0^2} \cdot \alpha^{-n} \quad (\alpha > 1).
 \end{equation}
-$\SNR_n$  $\alpha^{-n}$ $n \to \infty$  $\SNR_n \to 0$
+That is: $\SNR_n$ decays at exponential rate $\alpha^{-n}$, with $\SNR_n \to 0$ as $n \to \infty$.
 \end{corollary}
 
+\subsection{Implications of Model A}
 
-\subsection{Model A  / Implications of Model A}
-
-\vspace{0.5em}
 \noindent
 Model A reveals the fundamental dilemma of recursive audit: \textbf{without an information-sharing mechanism, each recursion injects fresh independent noise whose variance grows at an exponential rate with base $\alpha$.} Even when $\alpha = 1$ (the most optimistic no-amplification case), noise variance grows linearly, giving $\SNR \propto 1/n$---meaning that after $n$ layers of recursion the effective information has been diluted to unusability.
 
 In practice $\alpha > 1$ is more common, at which point noise diverges exponentially and recursive audit collapses rapidly. This explains why human institutions rarely have more than 2--3 layers of recursive audit structure---e.g., auditor audits company $\to$ regulator audits auditor $\to$ (rarely) meta-regulator audits regulator.
 
 % ============================================================================
-
-\section{Model BBayesian }
-
 \section{Model B: Bayesian Audit and the Fixed Point}
 % ============================================================================
 
-
 \subsection{Model Definition}
 
-\vspace{0.5em}
 \noindent
 Model B introduces a Bayesian information-fusion mechanism: each layer's auditor not only sees the previous layer's output but also incorporates prior information (a prior distribution over the true value). This simulates ``knowledge accumulation'' in real auditing---higher-level auditors do not start from scratch but calibrate their judgments using existing audit history and domain knowledge.
 
-\begin{definition}[Bayesian  Bayesian Audit Model]\label{def:model_b}
- Model B  $k$  $E^*$  Gaussian 
+\begin{definition}[Bayesian Audit Model]\label{def:model_b}
+In Model B, the layer-$k$ auditor holds a Gaussian prior over the true value $E^*$:
 \begin{equation}\label{eq:model_b_prior}
     E^* \sim \mathcal{N}(\mu_0, \tau_0^2),
 \end{equation}
- $Y_{k-1} = \AuditOp_{k-1}(E)$
+and observes the previous layer's output $Y_{k-1} = \AuditOp_{k-1}(E)$, where:
 \begin{equation}\label{eq:model_b_obs}
     Y_{k-1} \mid E^* \sim \mathcal{N}(E^*, \sigma_{k-1}^2).
 \end{equation}
- Bayesian 
+The auditor performs a Bayesian update and uses the posterior mean as output:
 \begin{equation}\label{eq:model_b_posterior}
     \AuditOp_k(E) = \E[E^* \mid Y_{k-1}] = \frac{\tau_0^{-2} \mu_0 + \sigma_{k-1}^{-2} Y_{k-1}}{\tau_0^{-2} + \sigma_{k-1}^{-2}}.
 \end{equation}
 \end{definition}
 
 \begin{remark}
-Bayesian ~(\ref{eq:model_b_posterior})  $\mu_0$  $Y_{k-1}$  $\sigma_{k-1}^2$ 
+The Bayesian update~(\ref{eq:model_b_posterior}) is a precision-weighted average: the auditor's output is a convex combination of the prior mean $\mu_0$ and the observation $Y_{k-1}$, with weights determined by their respective precisions (inverse variances). When the observation noise $\sigma_{k-1}^2$ is large, the auditor relies more on the prior; when the observation is precise, the auditor relies more on the observation.
 \end{remark}
-
 
 \subsection{Fixed Point Theorem}
 
-\begin{theorem}[Model B  / Noise Fixed Point in Model B]\label{thm:model_b_fixed_point}
- Model B  $k$  $\sigma_k^2 = \Var[\AuditOp_k(E) \mid E^*]$ 
+\begin{theorem}[Noise Fixed Point in Model B]\label{thm:model_b_fixed_point}
+Under Model B, the posterior variance $\sigma_k^2 = \Var[\AuditOp_k(E) \mid E^*]$ of the layer-$k$ audit output satisfies the recurrence:
 \begin{equation}\label{eq:model_b_recurrence}
     \sigma_k^2 = \frac{1}{\tau_0^{-2} + \sigma_{k-1}^{-2}} = \frac{\tau_0^2 \sigma_{k-1}^2}{\tau_0^2 + \sigma_{k-1}^2}.
 \end{equation}
 
-
+This recurrence admits a unique globally stable fixed point:
 \begin{equation}\label{eq:fixed_point}
-    \sigma_*^2 = 0 \quad \text{ $\tau_0 = 0$  $\sigma_0 = 0$ }.
+    \sigma_*^2 = 0 \quad \text{(trivial fixed point, reachable only if $\tau_0 = 0$ or $\sigma_0 = 0$)}.
 \end{equation}
 
- $\tau_0^2 > 0$  $\sigma_0^2 > 0$ $\{\sigma_k^2\}$  $0$
+For $\tau_0^2 > 0$ and $\sigma_0^2 > 0$, the sequence $\{\sigma_k^2\}$ is monotonically decreasing and converges to $0$:
 \begin{equation}\label{eq:convergence_to_zero}
     \lim_{k \to \infty} \sigma_k^2 = 0.
 \end{equation}
- $\tau_0^2$  $\sigma_0^2$ 
+However, the convergence rate varies significantly with $\tau_0^2$ and the initial $\sigma_0^2$.
 \end{theorem}
 
 \begin{proof}
-~(\ref{eq:model_b_recurrence})  Gaussian-Gaussian  Bayesian $\sigma_k^{-2} = \tau_0^{-2} + \sigma_{k-1}^{-2}$
+The recurrence~(\ref{eq:model_b_recurrence}) follows from the standard Bayesian update formula for a Gaussian-Gaussian conjugate model. The posterior precision is the sum of the prior precision and the observation precision: $\sigma_k^{-2} = \tau_0^{-2} + \sigma_{k-1}^{-2}$.
 
- $\sigma_k^2 < \sigma_{k-1}^2$ $\sigma_k^{-2} > \sigma_{k-1}^{-2}$ $0$$\sigma_k^2 \to \sigma_*^2$ 
+It follows that $\sigma_k^2 < \sigma_{k-1}^2$ (since $\sigma_k^{-2} > \sigma_{k-1}^{-2}$), so the sequence is monotonically decreasing and bounded below by $0$. By the monotone convergence theorem, $\sigma_k^2 \to \sigma_*^2$ exists. Taking the limit of the recurrence:
 \begin{equation*}
     \sigma_*^2 = \frac{\tau_0^2 \sigma_*^2}{\tau_0^2 + \sigma_*^2} \implies \sigma_*^2(\tau_0^2 + \sigma_*^2) = \tau_0^2 \sigma_*^2 \implies \sigma_*^4 = 0 \implies \sigma_*^2 = 0.
 \end{equation*}
- $\sigma_*^2 = 0$  $k$$\sigma_k^2 > 0$
+The fixed point $\sigma_*^2 = 0$ is reached only after infinitely many steps. For any finite $k$, $\sigma_k^2 > 0$.
 
- $\lambda_k = \sigma_k^{-2}$ $\lambda_k = \lambda_0 + k \cdot \tau_0^{-2}$ $\lambda_0 = \tau_0^{-2} + \sigma_0^{-2}$ 
+Convergence rate analysis: define precision $\lambda_k = \sigma_k^{-2}$. Then $\lambda_k = \lambda_0 + k \cdot \tau_0^{-2}$ (where $\lambda_0 = \tau_0^{-2} + \sigma_0^{-2}$ includes the initial observation). Therefore:
 \begin{equation}\label{eq:precision_linear}
     \sigma_k^2 = \frac{1}{\lambda_0 + k \cdot \tau_0^{-2}} = \frac{\tau_0^2 \sigma_0^2}{\sigma_0^2 + k \tau_0^2 + \tau_0^2}.
 \end{equation}
- $k$ $\sigma_k^2 \sim \tau_0^2 / k$$O(1/k)$ \hfill$\square$
+For large $k$, $\sigma_k^2 \sim \tau_0^2 / k$ ($O(1/k)$ decay). \hfill$\square$
 \end{proof}
 
 \begin{remark}
-Model B ——(1)  $k$ (2)  $k$  $k$ $\sigma_k^2 > 0$
+Although the noise in Model B converges to zero in the limit, it never truly reaches zero in practice because: (1) recursion depth $k$ is always finite; (2) audit cost grows with $k$. For any finite $k$, we still have $\sigma_k^2 > 0$. Therefore, the practical question is: \textbf{within an acceptable recursion depth, is the noise already sufficiently small?}
 \end{remark}
 
+\subsection{Bayesian Fixed Point with Noise Amplification}
 
-\subsection{ Bayesian  / Bayesian Fixed Point with Noise Amplification}
-
-\vspace{0.5em}
 \noindent
 The above analysis assumed no noise amplification across layers ($\alpha=1$). We now introduce a noise amplification factor $\alpha \geq 1$, such that the observation noise at layer $k$ is $\alpha \cdot \sigma_{k-1}^2$ rather than $\sigma_{k-1}^2$. This corresponds to the more realistic scenario where each recursion not only propagates the previous layer's noise but amplifies it.
 
-\begin{theorem}[ Bayesian  / Bayesian Fixed Point under Noise Amplification]\label{thm:model_b_amplified}
- Model B  $\alpha \geq 1$ $k$  $\alpha \cdot \sigma_{k-1}^2$
+\begin{theorem}[Bayesian Fixed Point under Noise Amplification]\label{thm:model_b_amplified}
+In Model B with noise amplification factor $\alpha \geq 1$, such that the observation noise at layer $k$ is $\alpha \cdot \sigma_{k-1}^2$. The posterior variance recurrence becomes:
 \begin{equation}\label{eq:model_b_amplified_recurrence}
     \sigma_k^2 = \frac{\tau_0^2 \cdot \alpha \sigma_{k-1}^2}{\tau_0^2 + \alpha \sigma_{k-1}^2}.
 \end{equation}
 
- $\tau_0^2 = 1$ $\sigma$ 
+Let $\tau_0^2 = 1$ (without loss of generality, by scaling the units of $\sigma$). Then:
 \begin{enumerate}[label=(\roman*), leftmargin=*]
-    \item  $\alpha < 1 + \tau_0^2/\sigma_0^2$ $\alpha - 1 < 1/\sigma_0^2$  $\tau_0^2=1$ $\sigma_k^2$ 
+    \item If $\alpha < 1 + \tau_0^2/\sigma_0^2$ (equivalently $\alpha - 1 < 1/\sigma_0^2$ when $\tau_0^2=1$), the sequence $\sigma_k^2$ converges to a non-zero fixed point:
     \begin{equation}\label{eq:nonzero_fixed_point}
-        \sigma_*^2 = \frac{\tau_0^2(\alpha - 1)}{\alpha} = 1 - \frac{1}{\alpha} \quad (\text{ } \tau_0^2 = 1).
+        \sigma_*^2 = \frac{\tau_0^2(\alpha - 1)}{\alpha} = 1 - \frac{1}{\alpha} \quad (\text{when } \tau_0^2 = 1).
     \end{equation}
-    \item 
+    \item The signal-to-noise ratio at this fixed point is:
     \begin{equation}\label{eq:snr_fixed_point}
         \SNR_* = \frac{(\E[\AuditOp(E)])^2}{\sigma_*^2} = \frac{E^2}{\alpha - 1} \cdot \alpha.
     \end{equation}
-    \item $\alpha = 1 + 1/\sigma_0^2$  $\sigma_*^2 = \sigma_0^2$
+    \item Critical condition: when $\alpha = 1 + 1/\sigma_0^2$, the fixed point is exactly $\sigma_*^2 = \sigma_0^2$ (no improvement nor deterioration).
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-~(\ref{eq:model_b_amplified_recurrence}) $\sigma_*^2 = \tau_0^2 \cdot \alpha \sigma_*^2 / (\tau_0^2 + \alpha \sigma_*^2)$
+Solve for the fixed point of the recurrence~(\ref{eq:model_b_amplified_recurrence}): $\sigma_*^2 = \tau_0^2 \cdot \alpha \sigma_*^2 / (\tau_0^2 + \alpha \sigma_*^2)$. This yields:
 \begin{equation*}
     \sigma_*^2(\tau_0^2 + \alpha \sigma_*^2) = \tau_0^2 \alpha \sigma_*^2 \implies \sigma_*^2 \tau_0^2 + \alpha (\sigma_*^2)^2 = \tau_0^2 \alpha \sigma_*^2 \implies \alpha (\sigma_*^2)^2 = \tau_0^2 (\alpha - 1) \sigma_*^2.
 \end{equation*}
-$\sigma_*^2 = \tau_0^2 (\alpha - 1) / \alpha$ $\tau_0^2 = 1$$\sigma_*^2 = (\alpha - 1)/\alpha = 1 - 1/\alpha$
+Non-zero solution: $\sigma_*^2 = \tau_0^2 (\alpha - 1) / \alpha$. When $\tau_0^2 = 1$, $\sigma_*^2 = (\alpha - 1)/\alpha = 1 - 1/\alpha$.
 
- $f(x) = \tau_0^2 \alpha x / (\tau_0^2 + \alpha x)$ $f'(x) = \tau_0^4 \alpha / (\tau_0^2 + \alpha x)^2$ $x_* = \tau_0^2(\alpha-1)/\alpha$ 
+Stability analysis: consider the map $f(x) = \tau_0^2 \alpha x / (\tau_0^2 + \alpha x)$. Its derivative is $f'(x) = \tau_0^4 \alpha / (\tau_0^2 + \alpha x)^2$. At the fixed point $x_* = \tau_0^2(\alpha-1)/\alpha$:
 \begin{equation*}
     f'(x_*) = \frac{\tau_0^4 \alpha}{(\tau_0^2 + \tau_0^2(\alpha-1))^2} = \frac{\tau_0^4 \alpha}{(\tau_0^2 \alpha)^2} = \frac{1}{\alpha}.
 \end{equation*}
- $\alpha > 1$ $f'(x_*) = 1/\alpha < 1$ $\alpha = 1$ $f'(0) = 1$ $0$  $O(1/k)$\hfill$\square$
+When $\alpha > 1$, $f'(x_*) = 1/\alpha < 1$, so the fixed point is stable (attractor). When $\alpha = 1$, $f'(0) = 1$ (neutrally stable, converges to $0$ at rate $O(1/k)$). \hfill$\square$
 \end{proof}
 
-\begin{remark}[ / Key Insight]
-Bayesian  $\sigma_*^2 = 1 - 1/\alpha$
+\begin{remark}[Key Insight]
+Under noise amplification, Bayesian audit no longer converges to zero noise but to a \textbf{non-zero residual noise} $\sigma_*^2 = 1 - 1/\alpha$. This means:
 \begin{itemize}
-    \item $\alpha$ 
-    \item  $\alpha \to 1^+$ $\sigma_*^2 \to 0$
-    \item  $\alpha = 2$ $\sigma_*^2 = 1/2$——
-    \item  $\alpha \to \infty$ $\sigma_*^2 \to 1$——
+    \item The larger $\alpha$ is, the larger the residual noise;
+    \item As $\alpha \to 1^+$, $\sigma_*^2 \to 0$ (approaching the ideal noise-free case);
+    \item When $\alpha = 2$, $\sigma_*^2 = 1/2$---noise is half the signal variance;
+    \item As $\alpha \to \infty$, $\sigma_*^2 \to 1$---the audit becomes completely unreliable.
 \end{itemize}
-\textbf{ Bayesian }
+This is a profound conclusion: \textbf{even with Bayesian information fusion, noise amplification leaves an irreducible residual uncertainty.}
 \end{remark}
 
 % ============================================================================
-
 \section{Critical Threshold and Phase Transition Analysis}
 % ============================================================================
 
-
 \subsection{Three-Regime Classification}
 
-\begin{theorem}[ / Phase Transition of Recursive Audit]\label{thm:phase_transition}
- $\sigma_n^2$  $\alpha$ 
+\begin{theorem}[Phase Transition of Recursive Audit]\label{thm:phase_transition}
+Consider a general recursive audit model. The behavior of total noise variance $\sigma_n^2$ is determined by the noise amplification factor $\alpha$, which falls into three regimes:
 
-\begin{enumerate}[label=\textbf{ \arabic*}, leftmargin=*]
-    \item \textbf{ (Stable Phase): $\alpha < 2$.} 
-    Bayesian  $\sigma_*^2 = 1 - 1/\alpha$ SNR  $\alpha > 1$ Bayesian 
+\begin{enumerate}[label=\textbf{Phase \arabic*}, leftmargin=*]
+    \item \textbf{Stable Phase: $\alpha < 2$.}
+    The Bayesian residual noise $\sigma_*^2 = 1 - 1/\alpha$ is bounded. SNR has a non-zero lower bound. Recursive audit preserves information usability at any depth. The pure additive model may still diverge in this region (if $\alpha > 1$), but Bayesian fusion can salvage it.
 
-    \item \textbf{ (Critical Phase): $\alpha = 2$.}
-    Bayesian  $\sigma_*^2 = 1/2$——SNR 
+    \item \textbf{Critical Phase: $\alpha = 2$.}
+    Bayesian residual noise $\sigma_*^2 = 1/2$. The system is at the boundary between stability and collapse. Marginal benefit of additional recursion is exactly zero---adding one more audit layer neither increases nor decreases SNR. This is the \textbf{phase transition point} in the information-theoretic sense.
 
-    \item \textbf{ (Collapse Phase): $\alpha > 2$.}
-    Bayesian  $\sigma_*^2 > 1/2$SNR  1——
+    \item \textbf{Collapse Phase: $\alpha > 2$.}
+    Bayesian residual noise $\sigma_*^2 > 1/2$, SNR below 1---noise overwhelms signal. In the pure additive model, noise diverges exponentially. At this point, recursive audit is not merely unhelpful but harmful: each layer of recursion loses more information.
 \end{enumerate}
 \end{theorem}
 
 \begin{table}[htbp]
 \centering
-\caption{ / Phase Transition Table for Recursive Audit}
+\caption{Phase Transition Table for Recursive Audit}
 \label{tab:phase_transition}
-\begin{tabular}{@{}lccc@{}}
+\begin{tabular}{@{}lcc@{}}
 \toprule
- & \textbf{$\alpha$ } & \textbf{Bayesian $\sigma_*^2$} &  \\
-\textbf{Phase} & \textbf{$\alpha$ Range} & \textbf{Bayesian $\sigma_*^2$} & \textbf{Audit Feasibility} \\
+\textbf{Phase} & \textbf{$\alpha$ Range} & \textbf{Bayesian $\sigma_*^2$} \\
 \midrule
- Stable    & $\alpha < 2$ & $< 1/2$ &  Feasible \\
- Critical  & $\alpha = 2$ & $= 1/2$ &  Marginal \\
- Collapse  & $\alpha > 2$ & $> 1/2$ &  Infeasible \\
+Stable    & $\alpha < 2$ & $< 1/2$ \\
+Critical  & $\alpha = 2$ & $= 1/2$ \\
+Collapse  & $\alpha > 2$ & $> 1/2$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-
 \subsection{Fine-Grained Analysis of Critical Behavior}
 
-\begin{proposition}[ / Critical Slowing Down]\label{prop:critical_slowing}
- $\alpha = 2$ $\alpha = 2 \pm \delta$$0 < \delta \ll 1$ $\sigma_*^2$ 
+\begin{proposition}[Critical Slowing Down]\label{prop:critical_slowing}
+Near the critical point $\alpha = 2$ ($\alpha = 2 \pm \delta$, $0 < \delta \ll 1$), the fixed point $\sigma_*^2$ behaves as:
 \begin{equation}\label{eq:critical_scaling}
     \sigma_*^2(\alpha) = \frac{\alpha - 1}{\alpha} = \frac{1}{2} + \frac{\delta}{4} + O(\delta^2).
 \end{equation}
- $|f'(x_*)| = 1/\alpha$  $\alpha=2$$f'(x_*) = 1/2$ $\alpha \to 1^+$$f'(x_*) \to 1$critical slowing down——
+The convergence rate to the fixed point is determined by $|f'(x_*)| = 1/\alpha$. At the critical point $\alpha=2$, $f'(x_*) = 1/2$, convergence is geometric (noise halves each iteration). As $\alpha \to 1^+$, $f'(x_*) \to 1$, leading to \textbf{critical slowing down}---the system requires many iterations to approach the fixed point.
 \end{proposition}
 
 \begin{proof}
- $\sigma_*^2(\alpha) = (\alpha - 1)/\alpha$  $\alpha=2$  Taylor 
+Expand $\sigma_*^2(\alpha) = (\alpha - 1)/\alpha$ in a Taylor series around $\alpha=2$:
 \begin{equation*}
     \sigma_*^2(2+\delta) = \frac{1+\delta}{2+\delta} = \frac{1}{2} \cdot \frac{1+\delta}{1+\delta/2} = \frac{1}{2}(1+\delta)(1 - \delta/2 + \delta^2/4 - \cdots) = \frac{1}{2} + \frac{\delta}{4} + O(\delta^2).
 \end{equation*}
-$|\sigma_{k+1}^2 - \sigma_*^2| \approx |f'(x_*)|\cdot |\sigma_k^2 - \sigma_*^2| = \alpha^{-1} \cdot |\sigma_k^2 - \sigma_*^2|$$\alpha=2$  $f'=1/2$$\alpha \to 1^+$  $f' \to 1$\hfill$\square$
+Convergence rate: $|\sigma_{k+1}^2 - \sigma_*^2| \approx |f'(x_*)|\cdot |\sigma_k^2 - \sigma_*^2| = \alpha^{-1} \cdot |\sigma_k^2 - \sigma_*^2|$. At $\alpha=2$, $f'=1/2$; as $\alpha \to 1^+$, $f' \to 1$ (critical slowing down). \hfill$\square$
 \end{proof}
 
 % ============================================================================
-
 \section{Compactness Bound: Information-Theoretic Analysis}
 % ============================================================================
 
+\subsection{Gaussian Channel Capacity}
 
-\subsection{Gaussian  / Gaussian Channel Capacity}
-
-\vspace{0.5em}
 \noindent
 The recursive audit chain can be modeled as a cascade of Gaussian channels: each layer takes the previous layer's output as input, adds Gaussian noise, and passes it to the next layer. The Data Processing Inequality in information theory guarantees that information can only decrease, never increase. Therefore, the effective information capacity of the recursive audit chain has a compact upper bound.
 
-\begin{definition}[ Audit Channel]\label{def:audit_channel}
- $k$  Gaussian 
+\begin{definition}[Audit Channel]\label{def:audit_channel}
+Layer $k$ audit is a Gaussian channel:
 \begin{equation}\label{eq:gaussian_channel}
     Y_k = X_k + Z_k, \quad Z_k \sim \mathcal{N}(0, \sigma_k^2),
 \end{equation}
- $X_k = Y_{k-1}$ $Y_k$ $Z_k$  Gaussian 
+where $X_k = Y_{k-1}$ is the input, $Y_k$ is the output, and $Z_k$ is independent Gaussian noise.
 
- $\E[X_k^2] \leq P$ 
+Under the power constraint $\E[X_k^2] \leq P$, the capacity of this channel is:
 \begin{equation}\label{eq:channel_capacity}
-    C_k = \frac{1}{2} \log_2\left(1 + \frac{P}{\sigma_k^2}\right) \quad \text{/}.
+    C_k = \frac{1}{2} \log_2\left(1 + \frac{P}{\sigma_k^2}\right) \quad \text{bits/audit}.
 \end{equation}
 \end{definition}
 
-\begin{theorem}[ / Compactness Bound for Recursive Audit]\label{thm:compactness}
+\begin{theorem}[Compactness Bound for Recursive Audit]\label{thm:compactness}
+Consider an $n$-layer cascade of recursive audit channels. Let $M$ be the number of possible values of the entity $E$ (message set size in the information-theoretic sense). Then the effective recursion depth $n_{\text{eff}}$ (the maximum depth at which audit can still distinguish $M$ different entities) satisfies:
 \begin{equation}\label{eq:compactness_bound}
     n_{\text{eff}} \leq \frac{C(E)}{\min_k C_k} \leq O(\log M),
 \end{equation}
- $C(E) = \log_2 M$ 
+where $C(E) = \log_2 M$ is the information entropy of the entity being audited.
 
- $\alpha$ $k$  $C_k = \frac{1}{2}\log_2(1 + P/(\sigma_0^2 \alpha^k))$$n_{\text{eff}}$ 
+In particular, for noise amplification factor $\alpha$, the capacity at layer $k$ is $C_k = \frac{1}{2}\log_2(1 + P/(\sigma_0^2 \alpha^k))$. The effective depth $n_{\text{eff}}$ satisfies:
 \begin{equation}\label{eq:effective_depth}
     \sum_{k=0}^{n_{\text{eff}}-1} C_k \geq \log_2 M > \sum_{k=0}^{n_{\text{eff}}-2} C_k.
 \end{equation}
- $\alpha > 1$  $n$ $C_k \sim \frac{1}{2} \log_2(P/\sigma_0^2) - \frac{k}{2}\log_2 \alpha$
+In the large $n$ limit for $\alpha > 1$, $C_k \sim \frac{1}{2} \log_2(P/\sigma_0^2) - \frac{k}{2}\log_2 \alpha$, capacity decays linearly to zero.
 \end{theorem}
 
 \begin{proof}
-
+By the Data Processing Inequality, the total capacity of the channel cascade is bounded by the narrowest channel times the number of layers:
 \begin{equation*}
     C_{\text{total}} \leq \min_{k} C_k \cdot n.
 \end{equation*}
- $\log_2 M$  $n_{\text{eff}} \cdot \min_k C_k \geq \log_2 M$ $n_{\text{eff}} \leq \log_2 M / \min_k C_k$
+The audit must transmit at least $\log_2 M$ bits to distinguish all entities. Therefore $n_{\text{eff}} \cdot \min_k C_k \geq \log_2 M$, i.e., $n_{\text{eff}} \leq \log_2 M / \min_k C_k$.
 
- $\alpha > 1$ $\min_k C_k = C_{n-1}$ $n$  $I(E; Y_n) \leq \sum_{k=0}^{n-1} C_k$ $\sum_{k=0}^{n-1} C_k < \log_2 M$ $M$  $n_{\text{eff}}$ ~(\ref{eq:effective_depth})
+When $\alpha > 1$, $\min_k C_k = C_{n-1}$ (the last layer has the smallest capacity). A more precise cumulative capacity analysis: after $n$ layers, the mutual information $I(E; Y_n) \leq \sum_{k=0}^{n-1} C_k$ (upper bound on cascade channel capacity). Therefore when $\sum_{k=0}^{n-1} C_k < \log_2 M$, the $M$ entities cannot be distinguished. This gives the exact condition for $n_{\text{eff}}$~(\ref{eq:effective_depth}).
 
- $k$$\sigma_k^2 = \sigma_0^2 \alpha^k$ $C_k = \frac{1}{2}\log_2(1 + P/(\sigma_0^2 \alpha^k))$ $\sigma_0^2 \alpha^k \gg P$ $C_k \approx \frac{P}{2\sigma_0^2 \ln 2} \alpha^{-k}$——$n_{\text{eff}}$  $\sum_{k=0}^{n-1} C_k \geq \log_2 M$  $n$ $n_{\text{eff}} = O(\log M)$ \hfill$\square$
+For large $k$, $\sigma_k^2 = \sigma_0^2 \alpha^k$, so $C_k = \frac{1}{2}\log_2(1 + P/(\sigma_0^2 \alpha^k))$. When $\sigma_0^2 \alpha^k \gg P$, $C_k \approx \frac{P}{2\sigma_0^2 \ln 2} \alpha^{-k}$---capacity decays exponentially. The effective depth $n_{\text{eff}}$ is the largest $n$ satisfying $\sum_{k=0}^{n-1} C_k \geq \log_2 M$, giving the asymptotic bound $n_{\text{eff}} = O(\log M)$ (since the capacity sum converges). \hfill$\square$
 \end{proof}
 
-\begin{corollary}[ / Compactness Constant]\label{cor:compactness_constant}
+\begin{corollary}[Compactness Constant]\label{cor:compactness_constant}
+Define the compactness constant $C(E)$ as the maximum amount of information (in bits) that recursive audit can process before noise drowns out the signal:
 \begin{equation}\label{eq:compactness_constant}
     C(E) \equiv \sup_{n} I(E; \AuditOp_n(E)) \leq \sum_{k=0}^{\infty} C_k.
 \end{equation}
- $\alpha > 1$ 
+When $\alpha > 1$, the capacity series converges:
 \begin{equation}\label{eq:capacity_sum}
     C(E) \leq \sum_{k=0}^{\infty} \frac{1}{2}\log_2\left(1 + \frac{P}{\sigma_0^2 \alpha^k}\right) < \infty.
 \end{equation}
- $\alpha = 1$ $C(E) \to \infty$ SNR 
+When $\alpha = 1$, the series diverges: $C(E) \to \infty$ (no compactness constraint, but SNR still decays).
 \end{corollary}
 
 \begin{proof}
- $\alpha > 1$ $1 + P/(\sigma_0^2 \alpha^k) \to 1$ $\log_2(1 + P/(\sigma_0^2 \alpha^k)) \sim P/(\sigma_0^2 \ln 2) \cdot \alpha^{-k}$ $\sum \alpha^{-k}$ 
+When $\alpha > 1$, $1 + P/(\sigma_0^2 \alpha^k) \to 1$, therefore $\log_2(1 + P/(\sigma_0^2 \alpha^k)) \sim P/(\sigma_0^2 \ln 2) \cdot \alpha^{-k}$, and the series $\sum \alpha^{-k}$ converges (geometric series).
 
- $\alpha = 1$ $\log_2(1 + P/\sigma_0^2)$ $\sum_{k=0}^{\infty}  = \infty$ $n$  $I(E; \AuditOp_n(E)) \leq n \cdot C_0$\hfill$\square$
+When $\alpha = 1$, $\log_2(1 + P/\sigma_0^2)$ is constant, $\sum_{k=0}^{\infty} \text{constant} = \infty$. However, although the capacity series diverges, in practice $n$ is always finite, so $I(E; \AuditOp_n(E)) \leq n \cdot C_0$, effective information grows linearly rather than decaying exponentially. \hfill$\square$
 \end{proof}
-
 
 \subsection{Physical Meaning of the Compactness Bound}
 
-\vspace{0.5em}
 \noindent
 The compactness bound $C(E) \leq O(\log M)$ indicates: \textbf{the entity complexity ($M$ distinguishable states) that recursive audit can support relates logarithmically to its maximum effective recursion depth.} In other words, doubling the number of distinguishable entities requires only a constant increase in recursion depth---but when $\alpha > 1$ this comes with an exponential noise penalty, so the depth of recursive audit is severely constrained.
 
 This reveals a deep limit of consciousness auditing: even if we could perfectly implement Bayesian information fusion, the noise amplification effect would render the audit ineffective after approximately $O(\log M)$ layers of recursion. For practical systems ($M$ in the hundreds to thousands), this means the effective recursion depth typically does not exceed 5--10 layers.
 
 % ============================================================================
-
 \section{Toy Simulation Verification}
 % ============================================================================
 
-
 \subsection{Simulation Setup}
 
-\noindent
-\begin{itemize}
-    \item $M = 2^6 = 64$ 6 
-    \item $\sigma_0^2 = 1.0$ $\tau_0^{-2} = 1.0$
-    \item $P = \E[X^2] = 1.0$
-    \item $\alpha \in \{1.0, 1.5, 2.0, 3.0\}$
-    \item $n_{\max} = 20$
-    \item  $N_{\text{trials}} = 10{,}000$  Monte Carlo 
-\end{itemize}
-
-\vspace{0.5em}
 \noindent
 To verify the above theoretical analysis, we performed numerical simulations. The simulation setup is as follows:
 \begin{itemize}
@@ -539,51 +487,48 @@ To verify the above theoretical analysis, we performed numerical simulations. Th
     \item $N_{\text{trials}} = 10{,}000$ Monte Carlo trials per parameter configuration.
 \end{itemize}
 
-
 \subsection{Simulation Results}
 
 \begin{table}[htbp]
 \centering
-\caption{ / Simulation Results: Compactness and Fixed Point Verification}
+\caption{Simulation Results: Compactness and Fixed Point Verification}
 \label{tab:sim_results}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
- & $\alpha$ & \textbf{ $\sigma_*^2$} & \textbf{ $\hat{\sigma}_*^2$ ($n{=}20$)} & \textbf{ $C(E)$} \\
 \textbf{Model} & $\alpha$ & \textbf{Theory $\sigma_*^2$} & \textbf{Sim. $\hat{\sigma}_*^2$ ($n{=}20$)} & \textbf{Compactness $C(E)$} \\
 \midrule
- Pure Add. & 1.0 & $\infty$ () & $\infty$ () & $\infty$ () \\
- Pure Add. & 1.5 & $\infty$ () & $6{,}648.5$ & $1.72$ (, ) \\
- Pure Add. & 2.0 & $\infty$ () & $1.05{\times}10^6$ & $1.13$ () \\
-Bayesian         & 1.0 & 0.000 & 0.048 & 32.73 () \\
-Bayesian         & 1.5 & 0.333 & 0.333 & 18.69 () \\
-Bayesian         & 2.0 & 0.500 & 0.500 & 15.30 \\
-Bayesian         & 3.0 & 0.667 & 0.667 & 12.98 \\
+Pure Add. & 1.0 & $\infty$ (divergent) & $\infty$ (divergent) & $\infty$ (divergent) \\
+Pure Add. & 1.5 & $\infty$ (divergent) & $6{,}648.5$ & $1.72$ (converges, below threshold) \\
+Pure Add. & 2.0 & $\infty$ (divergent) & $1.05{\times}10^6$ & $1.13$ (converges) \\
+Bayesian  & 1.0 & 0.000 & 0.048 & 32.73 (no collapse) \\
+Bayesian  & 1.5 & 0.333 & 0.333 & 18.69 (no collapse) \\
+Bayesian  & 2.0 & 0.500 & 0.500 & 15.30 \\
+Bayesian  & 3.0 & 0.667 & 0.667 & 12.98 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{remark}[ / Key Simulation Findings]
-\begin{enumerate}[leftmargin=*, label=\textbf{•}]
-    \item   $\alpha > 1$ $\log_2 M = 6$  $\alpha=1.5$  $C(E)=1.72$ \textbf{ $M=64$ } $\alpha=1.0$—— $0.5$ 
+\begin{remark}[Key Simulation Findings]
+\begin{enumerate}[leftmargin=*, label=\textbf{---}]
+    \item \textbf{Pure additive model:} For $\alpha > 1$, the cumulative channel capacity converges to a value far below $\log_2 M = 6$ bits (e.g., $C(E)=1.72$ bits at $\alpha=1.5$). This means that pure additive audit under noise amplification \textbf{can never accumulate enough information to distinguish all $M=64$ entities}. For $\alpha=1.0$ (no amplification), capacity diverges linearly---each layer contributes a constant $0.5$ bits, and audit can theoretically proceed infinitely deep.
 
-    \item \textbf{Bayesian  $\alpha=1.5$}  $C = 18.69$  $\log_2 M = 6$  $n=20$  $\sigma_*^2 = 0.333$ Bayesian  SNR  $\SNR_* = 1/(1.5 - 1) \cdot 1.5^{-1} \cdot P = 3.0$—— $n_{\text{eff}} = 8$  6 
+    \item \textbf{Bayesian model $\alpha=1.5$:} Compactness $C = 18.69$ bits (far exceeding $\log_2 M = 6$ bits), and at the maximum simulated depth $n=20$ it fully converges to the fixed point $\sigma_*^2 = 0.333$. This is because Bayesian fusion maintains an effective SNR of $\SNR_* = 1/(1.5 - 1) \cdot 1.5^{-1} \cdot P = 3.0$, well above the distinguishability threshold. The system never collapses---the fixed point provides a stable margin. Effective recursion depth requires only $n_{\text{eff}} = 8$ layers to reach 6-bit capacity.
 
-    \item \textbf{Bayesian  $\alpha=3.0$}  $C = 12.98$ 6  $\sigma_*^2 = 0.667$SNR $= 1.5$$n_{\text{eff}} = 10$
+    \item \textbf{Bayesian model $\alpha=3.0$:} Compactness $C = 12.98$, still above 6 bits, but the fixed point $\sigma_*^2 = 0.667$ and SNR $= 1.5$ indicate noise is approaching signal level. $n_{\text{eff}} = 10$ (requires deeper recursion).
 
-    \item \textbf{ $\alpha=2.0$} $C = 15.30$ $\sigma_*^2 = 0.5$SNR $= 2.0$——$\alpha$ 
+    \item \textbf{Critical $\alpha=2.0$:} $C = 15.30$, fixed point $\sigma_*^2 = 0.5$, SNR $= 2.0$. Although audit has not collapsed, the fixed point lies exactly at the phase transition boundary---any increase in $\alpha$ pushes the system into the collapse phase.
 \end{enumerate}
 \end{remark}
-
 
 \subsection{Layer-wise Evolution of Noise Variance}
 
 \begin{table}[htbp]
 \centering
-\caption{$\sigma_0^2 = 1.0$/ Layer-wise Noise Variance Evolution}
+\caption{Layer-wise Noise Variance Evolution ($\sigma_0^2 = 1.0$)}
 \label{tab:layer_noise}
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
-\textbf{ $n$} & \textbf{Model A} & \textbf{Model A} & \textbf{Model A} & \textbf{Model B} & \textbf{Model B} & \textbf{Model B} \\
+\textbf{Depth $n$} & \textbf{Model A} & \textbf{Model A} & \textbf{Model A} & \textbf{Model B} & \textbf{Model B} & \textbf{Model B} \\
                  & $\alpha{=}1.0$ & $\alpha{=}1.5$ & $\alpha{=}2.0$ & $\alpha{=}1.0$ & $\alpha{=}1.5$ & $\alpha{=}2.0$ \\
 \midrule
 1  & 1.000 & 1.000 & 1.000 & 0.500 & 0.600 & 0.667 \\
@@ -596,33 +541,12 @@ Bayesian         & 3.0 & 0.667 & 0.667 & 12.98 \\
 \end{tabular}
 \end{table}
 
-\begin{remark}
- Model A $\alpha=2.0$  $n=20$  Model B  $\alpha=1.5$  $\sigma_*^2 \approx 0.318$ $0.333$ $\alpha=2.0$  $\sigma_*^2 \approx 0.500$ $0.500$
-\end{remark}
-
 % ============================================================================
-
-\section{ G\"{o}del }
-
 \section{Connection to G\"{o}del's Incompleteness Theorems}
 % ============================================================================
 
+\subsection{The Infinite Regress of ``I Believe I Believe\ldots''}
 
-\subsection{“…” / The Infinite Regress of ``I Believe I Believe\ldots''}
-
-\noindent
-\begin{quote}
-    $\cdots$
-\end{quote}
-
-meta-belief \Cfour\ 
-\begin{equation*}
-    \AuditOp(E) \to \AuditOp(\AuditOp(E)) \to \AuditOp(\AuditOp(\AuditOp(E))) \to \cdots
-\end{equation*}
-
-G\"{o}del \Cfour\ \textbf{Model A}
-
-\vspace{0.5em}
 \noindent
 There exists a profound analogy between the collapse of recursive audit and G\"{o}del's incompleteness theorems. Consider the infinite regress of self-referential propositions:
 
@@ -640,57 +564,42 @@ Each layer of recursion is a meta-belief about the previous layer's belief. This
 
 G\"{o}del's incompleteness theorems state that any sufficiently powerful formal system cannot prove its own consistency within itself. Similarly, \Cfour\ shows: \textbf{any recursive audit system cannot recursively verify itself indefinitely, because noise divergence (Model A) or the compactness bound (information-theoretic limit) renders the audit ineffective after finitely many layers.}
 
-
 \subsection{Formal Correspondence}
 
-\begin{theorem}[G\"{o}del-\Cfour\  / G\"{o}del-\Cfour\ Correspondence Theorem]\label{thm:godel_c4}
- $\mathcal{F}$  G\"{o}del  $G_{\mathcal{F}}$“$G_{\mathcal{F}}$  $\mathcal{F}$ ” $\mathcal{F}$  $\AuditOp$
+\begin{theorem}[G\"{o}del-\Cfour\ Correspondence Theorem]\label{thm:godel_c4}
+Let $\mathcal{F}$ be a formal system with G\"{o}del sentence $G_{\mathcal{F}}$ (asserting ``$G_{\mathcal{F}}$ is unprovable in $\mathcal{F}$''). Consider modeling the proof-checking process of $\mathcal{F}$ as an audit operator $\AuditOp$. Then:
 
 \begin{enumerate}[label=(\alph*), leftmargin=*]
-    \item $G_{\mathcal{F}}$  $n$ “”“”——
-    
-    \item “”consistency strength hierarchy \Cfour\  $\alpha > 1$
-    
-    \item G\"{o}del  $\mathrm{Con}(\mathcal{F})$$\mathcal{F}$  \Cfour\ \textbf{——Model AModel B  $\sigma_*^2 > 0$}
+    \item The undecidability of $G_{\mathcal{F}}$ corresponds to the compactness bound of recursive audit: after $n$ layers of recursive audit, the system cannot distinguish between ``true but unprovable'' and ``false'' propositions---this is equivalent to audit noise drowning out the signal.
+
+    \item The ``consistency strength hierarchy'' in metamathematics corresponds to \Cfour's recursive audit depth: each meta-level ascent introduces new uncertainty (noise amplification $\alpha > 1$), eventually reaching the information-theoretic limit.
+
+    \item G\"{o}del's second incompleteness theorem states that a system cannot prove $\mathrm{Con}(\mathcal{F})$ (the consistency of $\mathcal{F}$). In the \Cfour\ framework, this corresponds to: \textbf{an audit system cannot verify its own unbiasedness through recursive self-audit---the recursive chain either diverges (Model A) or converges to a non-zero residual bias (Model B's $\sigma_*^2 > 0$).}
 \end{enumerate}
 \end{theorem}
 
-\begin{proof}[ / Proof Sketch]
-(a)  $\mathcal{P}$  $M = 2^{|\mathcal{P}|}$G\"{o}del  $G_{\mathcal{F}}$  $\mathcal{F}$  $\mathcal{F}$  $G_{\mathcal{F}}$  $G_{\mathcal{F}}$  \Cfour\  Gaussian  $I(G_{\mathcal{F}}; \AuditOp_n(G_{\mathcal{F}})) < 1$ ~(\ref{eq:compactness_bound}) $n > n_{\text{eff}}$ 
+\begin{proof}[Proof Sketch]
+(a) Let the size of the proposition set $\mathcal{P}$ be $M = 2^{|\mathcal{P}|}$. The truth value of the G\"{o}del sentence $G_{\mathcal{F}}$ is undecidable within $\mathcal{F}$, meaning any audit process based on $\mathcal{F}$ cannot distinguish $G_{\mathcal{F}}$ being true from $G_{\mathcal{F}}$ being false. In \Cfour's Gaussian channel model, this corresponds to $I(G_{\mathcal{F}}; \AuditOp_n(G_{\mathcal{F}})) < 1$ bit (unable to distinguish two possibilities). By the compactness bound~(\ref{eq:compactness_bound}), when $n > n_{\text{eff}}$, the mutual information falls below threshold and the audit fails.
 
-(b)  $n$  $n$ ——
+(b) In metamathematics, $n$-th order arithmetic corresponds to $n$ layers of audit recursion. Each meta-level ascent requires a stronger system (more axioms), which corresponds to noise amplification in auditing---higher-level auditors must understand more complex meta-reasoning, introducing more uncertainty.
 
-(c) $\mathrm{Con}(\mathcal{F})$  $\mathcal{F}$  $\mathcal{F}$ “” \Cfour\ ——Model B  $\sigma_*^2 = (\alpha-1)/\alpha > 0$ $\alpha > 1$\hfill$\square$
+(c) $\mathrm{Con}(\mathcal{F})$ is unprovable within $\mathcal{F}$, meaning $\mathcal{F}$ itself cannot ``audit'' its own consistency. In \Cfour, the auditor cannot eliminate all bias through recursive self-audit---Model B's fixed point $\sigma_*^2 = (\alpha-1)/\alpha > 0$ (when $\alpha > 1$) is the quantitative expression of this fact. \hfill$\square$
 \end{proof}
 
-\begin{remark}[ / Deeper Meaning]
-G\"{o}del-\Cfour\ self-reference/ $C(E) \leq O(\log M)$ ——
+\begin{remark}[Deeper Meaning]
+The G\"{o}del-\Cfour\ correspondence is not a surface analogy but a deep structural correspondence grounded in information theory. Both arise from a fundamental limitation of self-reference: a system cannot fully understand itself without introducing new information (new axioms/new auditors). The compactness bound $C(E) \leq O(\log M)$ is the quantitative expression of this limitation---it tells us that even with new auditors, the length of the recursive chain is bounded by the information capacity of the entity space.
 \end{remark}
 
 % ============================================================================
-
 \section{Practical Implications for Consciousness Auditing}
 % ============================================================================
-
 
 \subsection{Practical Limits on Recursion Depth}
 
 \noindent
-\begin{enumerate}[leftmargin=*, label=\textbf{•}]
-    \item  $M \sim 100$--$1000$$\alpha \sim 1.2$--$1.5$ $n_{\text{eff}} \leq 3$--$7$ 
-
-    \item \textbf{Bayesian }  $\alpha \geq 1$  Bayesian 
-
-    \item \textbf{ vs. } 
-
-    \item   $\sigma_n^2$  $\sigma_*^2$ SNR 
-\end{enumerate}
-
-\vspace{0.5em}
-\noindent
 \Cfour\ analysis has direct implications for practical audit system design:
 
-\begin{enumerate}[leftmargin=*, label=\textbf{•}]
+\begin{enumerate}[leftmargin=*, label=\textbf{---}]
     \item \textbf{Maximum effective recursion depth:} For typical audit scenarios ($M \sim 100$--$1000$, $\alpha \sim 1.2$--$1.5$), the effective recursion depth is $n_{\text{eff}} \leq 3$--$7$ layers. Beyond this depth, information gain is negative.
 
     \item \textbf{Bayesian fusion is necessary:} Pure additive audit without information sharing diverges for any $\alpha \geq 1$. Bayesian information fusion (prior sharing, comprehensive use of historical audit logs) must be implemented to contain noise below the fixed point.
@@ -700,49 +609,50 @@ G\"{o}del-\Cfour\ self-reference/ $C(E) \leq O(\log M)$ ——
     \item \textbf{Recursion termination criterion:} When $\sigma_n^2$ approaches the fixed point $\sigma_*^2$ (difference below a preset threshold), recursion should stop. The marginal SNR gain of further recursion is negative.
 \end{enumerate}
 
-
 \subsection{Integration with Meta-Audit Protocol}
 
-\begin{protocol}[ \Cfour\ Audit Protocol]\label{prot:c4_audit}
-\textbf{ (Initialization).}
+\begin{protocol}[\Cfour\ Audit Protocol]\label{prot:c4_audit}
+\textbf{Initialization.}
 \begin{enumerate}[leftmargin=*, label=\textbf{I\arabic*}]
-    \item  $M$ $\log_2 M$
-    \item  $\alpha$
-    \item  $\alpha$  $M$~(\ref{eq:compactness_bound})  $n_{\max}$
-    \item  Bayesian  $\tau_0^2$
+    \item Set the audit entity space size $M$, compute the information capacity requirement $\log_2 M$.
+    \item Calibrate the noise amplification factor $\alpha$ (via variance analysis of historical audit data).
+    \item Based on $\alpha$ and $M$, use the compactness bound~(\ref{eq:compactness_bound}) to compute the maximum safe recursion depth $n_{\max}$.
+    \item Initialize the Bayesian prior $\tau_0^2$ (based on domain knowledge or historical audit precision).
 \end{enumerate}
 
-\textbf{ (Per-Layer Operation).}  $k$ $k = 1, 2, \ldots, n_{\max}$
+\noindent
+\textbf{Per-Layer Operation.} For layer $k$ ($k = 1, 2, \ldots, n_{\max}$):
 \begin{enumerate}[leftmargin=*, label=\textbf{L\arabic*}]
-    \item
+    \item \textbf{Receive Input.} Obtain the layer $k-1$ audit output $Y_{k-1}$ and its variance estimate $\hat{\sigma}_{k-1}^2$.
+    \item \textbf{Bayesian Update.} Compute the posterior mean and variance:
     \begin{equation*}
-        \mu_k = \frac{\tau_0^{-2} \mu_0 + (\alpha \hat{\sigma}_{k-1}^2)^{-1} Y_{k-1}}{\tau_0^{-2} + (\alpha \hat{\sigma}_{k-1}^2)^{-1}}, \quad 
+        \mu_k = \frac{\tau_0^{-2} \mu_0 + (\alpha \hat{\sigma}_{k-1}^2)^{-1} Y_{k-1}}{\tau_0^{-2} + (\alpha \hat{\sigma}_{k-1}^2)^{-1}}, \quad
         \sigma_k^2 = \frac{\tau_0^2 \cdot \alpha \hat{\sigma}_{k-1}^2}{\tau_0^2 + \alpha \hat{\sigma}_{k-1}^2}.
     \end{equation*}
+    \item \textbf{Termination Check.} If $|\sigma_k^2 - \sigma_{k-1}^2| < \varepsilon_{\text{tol}}$ (approaching fixed point), or $k = n_{\max}$, stop recursion. Output $\mu_k$ as the final audit result.
+    \item \textbf{Multi-Auditor Consensus (Optional).} For the current layer, launch $m \geq 3$ independent auditors and perform $k$-of-$n$ consensus aggregation to reduce the risk of single-point audit bias.
 \end{enumerate}
 \end{protocol}
 
 % ============================================================================
-
 \section{Numerical Verification Script}
 % ============================================================================
 
-
 \subsection{Script Overview}
 
-\vspace{0.5em}
 \noindent
 The following Python script implements the core numerical verification of this paper: noise propagation in recursive audit, Model A exponential divergence, Model B Bayesian fixed point, compactness constant computation, and visualization of the G\"{o}del analogy. Running the script reproduces all table data in this paper.
 
+\subsection{Python Verification Script}
 
-\subsection{Python  / Python Verification Script}
-
-\begin{lstlisting}[language=Python, caption={ verify\_c4.py / Verification Script}, label={lst:verify}, basicstyle=\ttfamily\small, breaklines=true, numbers=left, numberstyle=\tiny]
+\begin{lstlisting}[language=Python, caption={Verification Script verify\_c4.py}, label={lst:verify}, basicstyle=\ttfamily\small, breaklines=true, numbers=left, numberstyle=\tiny]
 #!/usr/bin/env python3
-C4 Consciousness Audit Boundary — Verification Script
-Bayesian
+"""
+C4 Consciousness Audit Boundary --- Verification Script
+Verify recursive audit noise divergence, Bayesian fixed point, compactness bound
 
 Usage: python verify_c4.py
+"""
 
 import numpy as np
 from scipy.special import logsumexp
@@ -826,7 +736,7 @@ def effective_depth(alpha, M, sigma0_sq=sigma0_sq, P=P, n_max=500):
         cumul += C_n
         if cumul >= logM:
             return n
-    return n_max  # never reaches — capacity insufficient
+    return n_max  # never reaches --- capacity insufficient
 
 # ============================================================
 # Monte Carlo Simulation
@@ -836,26 +746,26 @@ def mc_simulate_model_b(alpha, n_trials=N_trials, n_max=n_max,
     """Monte Carlo simulation of Model B noise propagation."""
     # True value (zero-mean signal)
     true_vals = np.random.randn(n_trials) * np.sqrt(P)
-    
+
     # Initialize
     current = true_vals + np.random.randn(n_trials) * np.sqrt(sigma0_sq)
     variances = [np.var(current - true_vals)]
-    
+
     for k in range(1, n_max + 1):
         # Observation noise with amplification
         obs_noise = np.random.randn(n_trials) * np.sqrt(alpha * variances[-1])
         observation = current + obs_noise
-        
+
         # Bayesian posterior mean
         prior_prec = 1.0 / tau0_sq
         obs_prec = 1.0 / (alpha * variances[-1])
         post_var = 1.0 / (prior_prec + obs_prec)
         post_mean = (prior_prec * 0.0 + obs_prec * observation) / (prior_prec + obs_prec)
-        
+
         # Update
         current = post_mean
         variances.append(np.var(current - true_vals))
-    
+
     return np.array(variances)
 
 # ============================================================
@@ -863,10 +773,10 @@ def mc_simulate_model_b(alpha, n_trials=N_trials, n_max=n_max,
 # ============================================================
 def main():
     print("=" * 70)
-    print("C4 Consciousness Audit Boundary — Verification")
+    print("C4 Consciousness Audit Boundary --- Verification")
     print("=" * 70)
     print()
-    
+
     # ---- Model A Variance ----
     print("--- Model A: Noise Variance vs. Depth ---")
     print(f"{'n':>4}  {'alpha=1.0':>12}  {'alpha=1.5':>12}  {'alpha=2.0':>12}  {'alpha=3.0':>12}")
@@ -875,7 +785,7 @@ def main():
         vals = [f"{model_a_variance(a, n):>12.3f}" for a in alphas]
         print(f"{n:>4}  " + "  ".join(vals))
     print()
-    
+
     # ---- Model B Variance ----
     print("--- Model B: Bayesian Variance vs. Depth ---")
     print(f"{'n':>4}  {'alpha=1.0':>12}  {'alpha=1.5':>12}  {'alpha=2.0':>12}  {'alpha=3.0':>12}")
@@ -887,7 +797,7 @@ def main():
         for n in [1, 2, 3, 5, 10, 20]:
             print(f"    n={n:>2}: sigma^2 = {sigmas[n]:.3f}")
         print()
-    
+
     # ---- Fixed Points ----
     print("--- Bayesian Fixed Points ---")
     print(f"{'alpha':>10}  {'sigma_*^2':>12}  {'SNR_*':>12}  {'Phase':>15}")
@@ -905,7 +815,7 @@ def main():
             phase = "COLLAPSE"
         print(f"{a:>10.1f}  {fp:>12.3f}  {snr:>12.3f}  {phase:>15}")
     print()
-    
+
     # ---- Compactness ----
     print("--- Compactness Constants ---")
     print(f"{'Model':>15}  {'alpha':>8}  {'C(E) bits':>12}  {'Effective n_eff':>15}")
@@ -915,12 +825,14 @@ def main():
         C_A = compactness_constant(a)
         n_eff_A = effective_depth(a, M)
         print(f"{'Model A (pure)':>15}  {a:>8.1f}  {C_A:>12.2f}  {str(n_eff_A):>15}")
-    
+
     for a in alphas:
         # Model B: use Bayesian variances for capacity
         sigmas_B = model_b_variance(a)
+        C_B = 0.0
         for k in range(n_max):
             C_k = 0.5 * np.log2(1 + P / sigmas_B[k])
+            C_B += C_k
         # Effective depth for Model B
         cumul = 0.0
         n_eff_B = n_max
@@ -932,7 +844,7 @@ def main():
                 break
         print(f"{'Model B (Bayes)':>15}  {a:>8.1f}  {C_B:>12.2f}  {str(n_eff_B):>15}")
     print()
-    
+
     # ---- Monte Carlo for Model B ----
     print("--- Monte Carlo Verification (Model B, N=10000) ---")
     np.random.seed(42)
@@ -946,7 +858,7 @@ def main():
         print(f"    Simulated sigma^2 at n=5         = {sim_vars[5]:.3f}")
         print(f"    Simulated sigma^2 at n=10        = {sim_vars[10]:.3f}")
         print()
-    
+
     # ---- Godel Analogy ----
     print("--- Godel-C4 Correspondence ---")
     for a in [1.0, 1.5, 2.0, 3.0]:
@@ -960,7 +872,7 @@ def main():
                 break
         if n_conv == 0:
             n_conv = n_max
-        
+
         # Can the system verify its own consistency?
         self_consistent = fp < 0.5
         print(f"  alpha={a:.1f}:")
@@ -969,7 +881,7 @@ def main():
         print(f"    Residual uncertainty: sigma^2={fp:.3f}")
         print(f"    Godel analog: {'Provable' if self_consistent else 'Unprovable'} consistency")
         print()
-    
+
     # ---- Summary ----
     print("=" * 70)
     print("VERIFICATION COMPLETE")
@@ -991,27 +903,16 @@ if __name__ == "__main__":
 \end{lstlisting}
 
 % ============================================================================
-
 \section{Related Work}
 % ============================================================================
 
-\noindent
-\begin{enumerate}[leftmargin=*, label=\arabic*.]
-    \item \textbf{ (Recursive Self-Improvement).} Yudkowsky (2008)Bostrom (2014)  AI  \Cfour\ ——
-
-
-    \item \textbf{ (Proof Theory \& Ordinal Analysis).} Gentzen (1936)  $\varepsilon_0$  PA “”\Cfour\  Bayesian  $\tau_0^2$ 
-
-
-\end{enumerate}
-
-\vspace{0.5em}
 \noindent
 The Consciousness Audit Boundary intersects with the following areas:
 
 \begin{enumerate}[leftmargin=*, label=\arabic*.]
     \item \textbf{Recursive Self-Improvement.} Analyses of AI recursive self-improvement (Yudkowsky 2008, Bostrom 2014) focus on capability explosion, while \Cfour\ focuses on information decay of audit capability under recursion---the two form a symmetric perspective.
 
+    \item \textbf{Metacognition.} Flavell's (1979) metacognition theory distinguishes cognitive and meta-cognitive levels. \Cfour\ formalizes this psychological concept in an information-theoretic framework, quantifying noise accumulation in metacognitive recursion.
 
     \item \textbf{Proof Theory \& Ordinal Analysis.} Gentzen (1936) proved PA's consistency using $\varepsilon_0$-induction, essentially breaking incompleteness via meta-level axiomatic strengthening. The Bayesian prior $\tau_0^2$ in \Cfour\ corresponds to this meta-level information injection.
 
@@ -1021,42 +922,31 @@ The Consciousness Audit Boundary intersects with the following areas:
 \end{enumerate}
 
 % ============================================================================
-
 \section{Open Problems and Future Work}
 % ============================================================================
 
 \begin{enumerate}[leftmargin=*, label=\textbf{OP\arabic*}]
+    \item \textbf{Non-Gaussian noise.} This paper assumes Gaussian noise (supported by the central limit theorem and maximum entropy principle). Real audit noise may have heavy-tailed distributions (e.g., Student-$t$) or skewness. Fixed point properties under non-Gaussian noise require further analysis.
 
+    \item \textbf{Adaptive $\alpha$.} This paper assumes constant $\alpha$. In practice, auditors may reduce $\alpha$ through learning and experience (adaptive noise suppression). This introduces a dynamical system---$\alpha_k = f(k, \sigma_{k-1}^2)$---whose stability and convergence rate require investigation.
 
+    \item \textbf{Multi-entity parallel audit.} This paper analyzes single-entity recursive audit. How does the compactness bound change when multiple entities are audited simultaneously with cross-entity information leakage?
 
+    \item \textbf{Quantum audit.} If the audit process uses quantum information processing (quantum Bayesian updating), can the lower bound on noise amplification be broken? Does quantum Fisher information provide a tighter bound?
 
+    \item \textbf{Empirical calibration.} In real audit systems (e.g., academic peer review, security audit, AI alignment evaluation), what are the empirical values of $\alpha$? Large-scale meta-analysis of audit data is needed.
 
-    \item \textbf{G\"{o}del-\Cfour\ .} 
+    \item \textbf{Strict G\"{o}del-\Cfour\ correspondence.} This paper establishes only an analogical connection. Does there exist a strict mathematical isomorphism mapping formal system incompleteness to the capacity constraint of the recursive audit channel?
 \end{enumerate}
 
 % ============================================================================
-
 \section{Conclusion}
 % ============================================================================
 
 \noindent
-\begin{enumerate}[leftmargin=*, label=\textbf{•}]
-
-
-
-
-
-
-    \item \textbf{G\"{o}del-\Cfour\ .} “…”
-\end{enumerate}
-
-Bayesian 
-
-\vspace{0.8em}
-\noindent
 This paper rigorously formalizes the \Cfour\ extension of the \SCX\ Equality Framework---the Consciousness Audit Boundary. Core contributions include:
 
-\begin{enumerate}[leftmargin=*, label=\textbf{•}]
+\begin{enumerate}[leftmargin=*, label=\textbf{---}]
     \item \textbf{Formalization of recursive self-audit.} Defining the audit operator $\AuditOp_n(E) = \AuditOp_1(\AuditOp_{n-1}(E))$, structuring reflexive auditing as an analyzable recursive system.
 
     \item \textbf{Model A exponential divergence theorem.} Proving that under pure additive noise, $\sigma_n^2 = \sigma_0^2 \cdot \alpha^n/(\alpha-1)$, noise diverges exponentially, and $\SNR_n \propto \alpha^{-n}$.
@@ -1065,6 +955,7 @@ This paper rigorously formalizes the \Cfour\ extension of the \SCX\ Equality Fra
 
     \item \textbf{Three-regime critical threshold classification.} $\alpha < 2$ stable, $\alpha = 2$ critical, $\alpha > 2$ collapse. At the critical point, the system undergoes a phase transition in the information-theoretic sense.
 
+    \item \textbf{Compactness bound.} Via Gaussian channel capacity analysis, proving effective recursion depth $n_{\text{eff}} \leq O(\log M)$---the information-carrying capacity of recursive audit is strictly bounded by the entity-space entropy.
 
     \item \textbf{Numerical verification.} Toy simulation confirms: pure additive noise at $\alpha>1$ has cumulative capacity converging far below $\log_2 M$ ($C=1.72$ bits at $\alpha=1.5$, never distinguishing all entities); Bayesian audit at $\alpha=1.5$ achieves $C=18.69$ bits (far exceeding $\log_2 M = 6$), with fixed point $\sigma_*^2 = 0.333$ never collapsing. Simulation and theory are in close agreement.
 
@@ -1074,38 +965,38 @@ This paper rigorously formalizes the \Cfour\ extension of the \SCX\ Equality Fra
 The Consciousness Audit Boundary is not merely a mathematical theorem but a foundational limit on any recursive audit system. It tells us: \textbf{the price of reflexivity is noise, and the accumulation of noise has an insurmountable upper bound.} Within this boundary, Bayesian fusion provides the optimal information-preservation strategy; beyond this boundary, any recursive audit is doomed to fail.
 
 % ============================================================================
-%  A:  / Appendix A: Key Notation
+% Appendix A: Key Notation
 % ============================================================================
 
-\section*{ A:  / Appendix A: Key Notation}
+\section*{Appendix A: Key Notation}
 
 \begin{table}[htbp]
 \centering
-\caption{ / Key Notation}
+\caption{Key Notation}
 \label{tab:notation}
-\begin{tabular}{@{}cll@{}}
+\begin{tabular}{@{}cl@{}}
 \toprule
- & \textbf{ ()} & \textbf{Meaning (English)} \\
+\textbf{Symbol} & \textbf{Meaning} \\
 \midrule
-$\AuditOp_n$ & $n$- & $n$-layer recursive audit operator \\
-$E$ &  & Entity being audited \\
-$\sigma_n^2$ & $n$- & Noise variance at layer $n$ \\
-$\sigma_0^2$ &  & Initial noise variance \\
-$\alpha$ &  & Noise amplification factor \\
-$\tau_0^2$ & Bayesian  & Bayesian prior variance \\
-$\sigma_*^2$ &  & Noise fixed point \\
-$\SNR$ &  & Signal-to-noise ratio \\
-$M$ &  & Number of distinguishable entities \\
-$C(E)$ &  & Compactness constant \\
-$C_k$ &  $k$  & Channel capacity at layer $k$ \\
-$n_{\text{eff}}$ &  & Effective recursion depth \\
-$P$ &  & Signal power constraint \\
+$\AuditOp_n$ & $n$-layer recursive audit operator \\
+$E$ & Entity being audited \\
+$\sigma_n^2$ & Noise variance at layer $n$ \\
+$\sigma_0^2$ & Initial noise variance \\
+$\alpha$ & Noise amplification factor \\
+$\tau_0^2$ & Bayesian prior variance \\
+$\sigma_*^2$ & Noise fixed point \\
+$\SNR$ & Signal-to-noise ratio \\
+$M$ & Number of distinguishable entities \\
+$C(E)$ & Compactness constant \\
+$C_k$ & Channel capacity at layer $k$ \\
+$n_{\text{eff}}$ & Effective recursion depth \\
+$P$ & Signal power constraint \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 % ============================================================================
-%  / References
+% References
 % ============================================================================
 
 \begin{thebibliography}{99}
