@@ -1,235 +1,298 @@
-# GAUGE_FORMALIZED AUDIT
+# gauge_formalized 理论从第一性原理严格审计报告
 
-**Files audited:**
-- `papers/scx_gauge_formalized/gauge_formalized.tex` (1659 lines)
-- `papers/scx_gauge_formalized/viewpoint4_correction.tex` (375 lines)
-
-**Date:** 2026-07-03
-**Auditor:** Hermes Agent
-**Branch:** main
+> **审计日期**: 2026-07-03
+> **审计范围**: `papers/scx_gauge_formalized/gauge_formalized.tex` (1662行), `papers/supplementary/analysis/gauge_domain_formalization.md` (708行), `papers/supplementary/analysis/gauge_domain_analysis.md` (553行)
+> **交叉参照**: `papers/scx_fiber_bundle/fiber_bundle.tex`
+> **已验证的修复提交**: f3140eb, c7218ef, 3c20a35, 3102301
 
 ---
 
-## 1. CHINESE CHARACTERS — PASS
+## 一、审计总览
 
-- `gauge_formalized.tex`: **0 Chinese characters** (verified via python unicode regex `[\u4e00-\u9fff\u3400-\u4dbf]`)
-- `viewpoint4_correction.tex`: **0 Chinese characters**
-
----
-
-## 2. FORMAT COMPLIANCE
-
-### 2.1 `\author{SCX}`
-- `gauge_formalized.tex` line 167: `\author{SCX}` ✓
-- `viewpoint4_correction.tex` line 49: `\author{SCX}` ✓
-
-### 2.2 `\pdfoutput=1`
-- `gauge_formalized.tex` line 2: `\pdfoutput=1` ✓
-- `viewpoint4_correction.tex` line 2: `\pdfoutput=1` ✓
-
-### 2.3 `\documentclass` — `article`
-- `gauge_formalized.tex` line 4: `\documentclass[12pt,a4paper]{article}` ✓
-- `viewpoint4_correction.tex` line 13: `\documentclass{article}` ✓ (no `12pt,a4paper` options — minor deviation, not required)
-
-### 2.4 No `physics` or `inputenc` packages
-- `gauge_formalized.tex`: **0 matches** for `inputenc` or `physics` ✓
-- `viewpoint4_correction.tex`: **0 matches** ✓
-
-### 2.5 FORMAT ISSUE — Bare `pdfoutput=1` on line 1
-- **BOTH files** have `pdfoutput=1` (without leading backslash) on line 1 before any LaTeX commands.
-- This causes a `Missing \begin{document}` error and 12+ "Missing character" warnings as LaTeX tries to typeset it as text.
-- **FIX**: Delete line 1 (bare `pdfoutput=1`) from both files, since line 2 has the correct `\pdfoutput=1`.
+| 审计项 | 结论 | 严重性 |
+|--------|------|--------|
+| DW 配分函数 `|G|^{β₁}→|G|^{β₁−1}` 修复 | **部分修复，阿贝尔/非阿贝尔区分正确，但主定理公式歧义未消** | 中 |
+| Gauss-Newton 收敛性(quadratic→linear) | **修复不完整 — 命题陈述仍称"quadratic"，与证明文字矛盾** | 高 |
+| 同伦等价缺口 | **证明框架正确但存在技术缺口，诚实承认不充分** | 中 |
+| 向量丛定义 | **正确 — 使用格点规范理论(非向量丛)，适合离散设定** | 无 |
+| 规范群形式化 | **正确 — O(d)^{|V|} 作用、右作用约定、双不变距离均正确** | 无 |
+| `\Stab`/`\face` 定义 | **存在 LaTeX 编译错误 — `\face` 重复定义且第二处缺失反斜杠** | 高 |
+| 全部形式定理 | **9 个定理中 2 个有数学错误，2 个证明草稿不严谨** | 中-高 |
 
 ---
 
-## 3. PDFLATEX COMPILE — CONDITIONAL PASS (with errors)
+## 二、逐项详细审计
 
-### 3.1 `gauge_formalized.tex`
-- **Compiles** to 33-page PDF (485,119 bytes) ✓
-- **1 error:** `Missing \begin{document}` (caused by bare `pdfoutput=1` on line 1)
-- **111 warnings** (mostly undefined references — normal on first pass)
-- **35 `Undefined control sequence` errors** — see §3.3 below
+### 2.1 DW 配分函数 `|G|^{β₁}→|G|^{β₁−1}` 修复
 
-### 3.2 `viewpoint4_correction.tex`
-- **Compiles** to 6-page PDF (245,313 bytes) ✓
-- **3 errors:**
-  - `Missing \begin{document}` (bare `pdfoutput=1` on line 1)
-  - `Unicode character ⚠ (U+26A0)` — the ⚠ symbol used in the review verdict table on line 66
-  - `Unicode character ️ (U+FE0F)` — variation selector 16, used with ⚠ emoji
+**目标文件**: `gauge_formalized.tex` Theorem 3 (`thm:dw_partition`, 第684-716行), Corollary 3 (`cor:dw_abelian`, 第718-736行)
 
-### 3.3 CRITICAL: Undefined `\Stab` and `\face` in `gauge_formalized.tex`
-- **`\Stab`** is used 7 times (lines 315, 318, 324, 704, 707, 708, 709) but never declared with `\DeclareMathOperator`. It was intended to represent the stabilizer subgroup operator.
-- **`\face`** (singular) is used 18 times (lines 191, 333, 338, 346, 350, 351, 357, 359, 369, 615, 655, 675, 677, 685, 697, 707, 1215, 1217) but only `\faces` (plural, `\mathcal{F}`) is defined at line 90.
-- All 35 undefined-control-sequence errors trace to these two missing declarations.
-- **FIX**: Add `\DeclareMathOperator{\Stab}{Stab}` and `\newcommand{\face}{\mathcal{f}}` (or similar) to the preamble operators section.
+**发现**:
 
-### 3.4 `viewpoint4_correction.tex` Unicode issue
-- The ⚠ emoji (U+26A0) + variation selector (U+FE0F) at line 66 causes pdflatex errors (pdflatex doesn't support 4-byte Unicode without `\usepackage[utf8]{inputenc}` — but inputenc is deliberately excluded per format requirements).
-- **FIX**: Replace `⚠️` with `\textbf{!!}` or `$\triangleright$` or similar ASCII-safe marker.
+1. **非阿贝尔群公式正确**: 对于非阿贝尔有限群 $G$ 和自由基本群 $\pi_1 \cong F_{b_1}$:
+   $$|\mathcal{F}/\mathcal{G}| = \frac{|\mathrm{Hom}(F_{b_1}, G)|}{|G|} = |G|^{b_1-1}$$
+   这是正确的。`gauge_domain_formalization.md` Theorem 2.1(b) 给出同样结果。
+
+2. **阿贝尔群公式正确**: Corollary `cor:dw_abelian` (第724-735行) 正确给出:
+   $$Z_{DW}(\mathcal{K}_{SCX}, G) = |G|^{\beta_1}$$
+   理由是共轭作用平凡，所以 $|\mathrm{Hom}/G| = |\mathrm{Hom}| = |G|^{b_1}$。
+
+3. **但主定理与推论之间存在张力**: Theorem `thm:dw_partition` 声称通用公式:
+   $$Z_{DW} = \frac{|\mathrm{Hom}(\pi_1, G)|}{|G|}$$
+   这个公式对非阿贝尔 $G$ 有效，但对阿贝尔 $G$ 会错误地给出 $|G|^{b_1-1}$。论文通过单独写一个推论来处理阿贝尔情况，但在主定理中没有限定条件。**主定理应当在陈述中注明此公式仅适用于非阿贝尔群（或更精确地，适用于共轭作用非平凡的情形）**。
+
+4. **稳定子假设问题**: `thm:dw_partition` 的证明草稿(第711行)说 "provided $\mathrm{Stab}(A) = Z(G)$ for all flat $A$"。这是**不成立的**——平凡联络的稳定子是整个 $G$（见 Proposition `prop:od_stabilizer`，第327行）。对于带有非平凡稳定子的联络，轨道大小小于 $|G|$，计数公式需要 Burnside 引理修正。然而对于**一般的(generic)**平坦联络，$\mathrm{Stab}(A) \cong Z(G)$ 成立，因此 $Z_{DW}$ 公式对于大多数平坦联络是正确的。在有限群情况下，平凡联络只是一个点，对计数影响 $1/|G|$ vs $1/|Z(G)|$，修正因子为 $|Z(G)|$。对于 $O(d)$，$Z(O(d)) = \{\pm I\} \cong \mathbb{Z}_2$，这个修正是有限的。
+
+5. **`gauge_domain_formalization.md` 的严谨处理**: 该文件 Theorem 2.1(b)-(c) 对阿贝尔/非阿贝尔情况做了清晰区分，并在阻塞声明 B2.1.1 中诚实标记了中心修正问题。这比 `gauge_formalized.tex` 更严谨。
+
+**裁决**: 修复方向正确，但主定理公式存在歧义，需要加限定词。
 
 ---
 
-## 4. MATHEMATICAL AUDIT
+### 2.2 Gauss-Newton 收敛性 (quadratic→linear)
 
-### 4.1 O(d) Lattice Gauge Theory (Section 2, ~330 lines)
+**目标文件**: `gauge_formalized.tex` Proposition `prop:od_convergence` (第547-561行)
 
-**Correctly applied:**
+**发现**: **修复不完整 — 存在内部矛盾**。
 
-| Concept | Assessment |
-|---------|-----------|
-| O(d)-valued vertex frames & edge connections | ✓ Standard lattice gauge definition |
-| Non-abelian gauge transformation `A_e → g_v A_e g_u^{-1}` | ✓ Correct |
-| Face Wilson loop as curvature | ✓ Correct |
-| Gauge invariance of trace of Wilson loop | ✓ Correct |
-| Flatness ⇔ exact (Theorem 2.3) | ✓ Valid on 2-complex where faces generate all loops |
-| Compactness argument for global minimum existence | ✓ `O(d)^{|V|}` is compact, continuous function attains minimum |
-| Semidirect product `SE(d) = R^d ⋊ O(d)` decoupling | ✓ Correct — the Lie algebra is a semidirect sum, Hessian is block-diagonal |
-| Riemannian Gauss-Newton algorithm | ✓ Standard approach for group-valued optimization |
+第551行（命题陈述）:
+> Algorithm ... converges **quadratically** to the global minimum
 
-**Issues identified:**
+第560行（证明草稿）:
+> and **linear convergence (quadratic only in the zero-residual limit)** follows from standard optimization theory
 
-1. **BCH linearization in Lemma 4.3 (Cartan) is sketchy.** The derivation jumps from `Log(g_v^{-1} A_e g_u)` to the claimed expansion without explicit BCH computation. The key step:
+**这是残留的矛盾。** 命题声称二次收敛，但证明承认是线性收敛。
+
+**独立分析**:
+- Gauss-Newton 方法的收敛率取决于残差在最优解处是否为零：
+  - **零残差问题** (residual = 0 at optimum): 二次收敛
+  - **非零残差问题** (residual ≠ 0 at optimum): 线性收敛
+- $O(d)$ 规范固定问题的最小残差是 Cercis 得分。一般情况下 $\mathrm{Cercis} > 0$（因为调和分量 $r_{\mathrm{harm}}$ 非零），因此这是**非零残差问题**。
+- **收敛率应为线性，而非二次**。
+
+**提交 c7218ef 只修改了证明草稿的文字**（从"quadratic convergence"改为"linear convergence (quadratic only in the zero-residual limit)"），但**未修改命题陈述中的"quadratically"**。
+
+**示例对照**: 在 `gauge_domain_formalization.md` 中，非阿贝尔 Hodge 问题 (Theorem 1.2) 诚实声明"该问题是...非凸优化。不存在闭式解。"并标记 Riemannian 优化收敛率为阻塞 (B1.2.2)。这种诚实程度远高于 `gauge_formalized.tex` 的命题陈述。
+
+**裁决**: **必须修复**。将命题陈述中的 "quadratically" 改为 "linearly"（或 "linearly, with quadratic convergence only when the residual at the optimum vanishes"）。
+
+---
+
+### 2.3 同伦等价缺口
+
+**目标文件**: `gauge_formalized.tex` Theorem `thm:scx_homotopy` (第624-662行)
+
+**发现**:
+
+1. **证明框架方向正确**: 收缩参数边使 SCX 2-复形退化到 $K_M$ 的思路是正确的。Betti 数公式 $\beta_1 = (M-1)(M-2)/2$ 确实等于完全图 $K_M$ 的第一 Betti 数，这可以独立验证：
+   - $K_M$ 有 $\binom{M}{2}$ 条边，$M$ 个顶点
+   - $\beta_1 = |E| - |V| + 1 = \binom{M}{2} - M + 1 = \frac{(M-1)(M-2)}{2}$ ✓
+
+2. **证明中的技术缺口**:
+   - **第645行**: "Contracting each parameter edge (continuously deforming the edge to a point)" — 收缩边需要同伦等价论证，当前描述过于粗略。
+   - **第646行**: "quadrilateral faces provide homotopies from the slice at configuration $k$ to the slice at configuration $k-1$" — 这是核心主张但未给出具体构造。四边形面 $(k,i) \to (k,j) \to (k+1,j) \to (k+1,i)$ 确实连接了两个切片，但需要验证它们确实提供形变收缩所需的同伦。
+   - **第658-660行**: 论文自己承认 "the interiors of the triangles are not filled by faces. Therefore $H_1$ is freely generated by the cycles in $K_M$." 这实际上是说——在收缩后，四边形面退化为三角形，但这些三角形的**内部没有被2-胞腔填充**。这意味着 $H_2 = 0$，且 $H_1$ 不受四边形面的关系约束。这是自洽的。
+
+3. **`gauge_domain_formalization.md` 的阻塞声明 B2.2.1 更诚实**: "SCX 专家图的 2-复形结构需要精确定义...面的粘合映射是什么？需要先完成 2-复形构造。"
+
+**裁决**: 结论($\beta_1 = (M-1)(M-2)/2$)是正确的，但证明的严格性不足。同伦等价声明($K_{SCX} \simeq K_M$)需要更严格的形变收缩构造，或者降级为"组合论证表明"。论文在开放问题中未明确将同伦等价证明列为缺口——这是一个遗漏。
+
+---
+
+### 2.4 向量丛定义
+
+**目标文件**: `gauge_formalized.tex` Section 2 (第283-594行)
+
+**发现**: **论文不使用向量丛，使用格点规范理论**。
+
+- Definition `def:od_gauge` (第288-311行) 定义的是格点规范理论的标架空间 $\Omega^0(\mathcal{G}; O(d))$ 和联络空间 $\Omega^1(\mathcal{G}; O(d))$。这是标准的离散规范场设定。
+- 与 `fiber_bundle.tex` 的对比表（第1202-1244行）正确地指出：`fiber_bundle.tex` 使用 $\mathbb{R}^d$（向量丛），本论文使用 $O(d)$（主丛/格点规范）。
+- 论文在第1261行指出 "All objects remain discrete (no continuum limit or smooth structure is introduced)" — 这实际上意味着向量丛的连续纤维结构在离散设定中不适用，格点规范理论是正确的选择。
+
+**一个微妙的点**: Section 2.5 (Mixed $O(d)$-Translation Gauge, Theorem `thm:se_gauge`) 将平移($\mathbb{R}^d$)和旋转($O(d)$)组合为半直积 $\mathrm{SE}(d) = \mathbb{R}^d \rtimes O(d)$。这个组合是正确的——平移是阿贝尔正规子群，旋转通过其自然表示作用于平移。
+
+**裁决**: 无问题。格点规范理论定义完全正确，适合离散图设定。
+
+---
+
+### 2.5 规范群形式化
+
+**目标文件**: `gauge_formalized.tex` Definition `def:od_gauge` (第288-328行)
+
+**发现**: **正确**。
+
+1. 规范群定义: $\mathcal{G} = \{g: V \to O(d)\} \cong O(d)^{|V|}$ — 正确
+2. 规范作用: $A_e \mapsto g_v \circ A_e \circ g_u^{-1}$ — 正确的非阿贝尔格点规范变换
+3. 右作用约定: $(A^{g_1})^{g_2} = A^{g_2 g_1}$ — 正确（注意是右作用，群乘法顺序反转）
+4. 双不变距离: $\mathrm{dist}_{O(d)}(X,Y) = \|\mathrm{Log}(X^{-1}Y)\|_F$ — 正确（矩阵对数的双不变性）
+5. 稳定子分析 (Proposition `prop:od_stabilizer`):
+   - 一般联络: $\mathrm{Stab}(A) \cong Z(O(d)) = \{\pm I_d\} \cong \mathbb{Z}_2$ — 正确
+   - 平凡联络: $\mathrm{Stab}(\mathrm{triv}) \cong O(d)$（对角嵌入）— 正确
+   - 注: 对于偶数 $d$，$Z(O(d)) = \{\pm I\}$；对于奇数 $d$，也是 $\{\pm I\}$，因为 $-I \in SO(d)$ 对奇数 $d$ 也成立。论文说两者都是 $\mathbb{Z}_2$，正确。
+
+**裁决**: 无问题。
+
+---
+
+### 2.6 `\Stab`/`\face` 定义
+
+**目标文件**: `gauge_formalized.tex` 第90行和第147-149行
+
+**发现**: **存在 LaTeX 编译错误**。
+
+1. **第90行** (由 commit `3c20a35` 添加):
+   ```latex
+   \newcommand{\face}{\ensuremath{\mathit{f}}}
    ```
-   Log(g_v^{-1} A_e g_u) = Ad_{g_u^{-1}}(a_e) + h_v - Ad_{g_v g_u^{-1}}(h_u) + O(...)
+   这是正确的定义。
+
+2. **第147-149行** (由 commit `3102301` 添加):
+   ```latex
+   \DeclareMathOperator{\Stab}{Stab}
+
+   ewcommand{\face}{\mathit{f}}
    ```
-   is plausible but the commutator terms `[a_e, h_v]`, `[a_e, h_u]`, etc. (which arise from BCH at second order) are captured only as `O(||a||², ||h||²)`. This is acceptable for the small-connection limit but should be noted as derivable from the full BCH formula.
+   - `\DeclareMathOperator{\Stab}{Stab}` — 正确。
+   - `ewcommand{\face}{\mathit{f}}` — **错误**。缺失反斜杠，应为 `\newcommand`。这会导致 LaTeX 编译失败（"Undefined control sequence: enewcommand"）。
 
-2. **Quadratic convergence claim (Proposition 4.5) is overstated.** The proof appeals to "strong convexity" of the energy functional in a neighborhood of the optimum, but the Hessian `B^T B ⊗ I + O(||a||)` is only guaranteed positive-definite when the residual at the optimum is small. Near the Cartan radius boundary, convergence may degrade.
+3. **\face 被定义两次**: 第90行和第149行都定义了 `\face`。第149行的错误定义如果被修复，会导致 "Command \face already defined" 错误。第149行的 `\face` 定义应该被删除。
 
-3. **`\dist_{O(d)}(A_e, g_v g_u^{-1})` vs `\Log(g_v^{-1} A_e g_u)` discrepancy:** The lemma computes `Log(g_v^{-1} A_e g_u)` but the energy functional uses `dist(A_e, g_v g_u^{-1}) = ||Log(A_e^{-1} g_v g_u^{-1})||`. These differ by a sign (which Frobenius norm absorbs), but the step connecting them is implicit. Not a mathematical error, but a clarity issue.
+**修复方案**: 删除第149行（`ewcommand{\face}{\mathit{f}}`），保留第90行的正确定义。
 
-### 4.2 Dijkgraaf-Witten Discrete TQFT (Section 3, ~250 lines)
-
-**Correctly applied:**
-
-| Concept | Assessment |
-|---------|-----------|
-| SCX 2-complex construction | ✓ Well-defined combinatorial structure |
-| Homotopy equivalence `K_SCX ≃ K_M` | ✓ Contraction via parameter edges with face homotopies is valid |
-| Betti number `β₁ = (M-1)(M-2)/2` | ✓ Standard for complete graph K_M |
-| `β₁` independent of N | ✓ Follows from homotopy equivalence |
-| DW partition function `Z_DW = |Hom(π₁, G)/G|` | ✓ Standard Dijkgraaf-Witten result |
-| `Z_DW = |G|^{β₁}` for abelian G | ✓ Correct |
-| Tangent space `T_{[triv]} M_flat ≅ ker(Δ₁) ⊗ g` | ✓ Standard deformation theory |
-
-**Issues identified:**
-
-1. **Homotopy equivalence proof (Theorem 3.2) has a subtle gap.** The quadrilateral faces connect expert edges between consecutive configurations (k → k+1). While contracting each parameter edge individually is well-defined, the simultaneous contraction and the claim that face-degenerated triangles don't fill 2-cells that kill H₁ classes need more rigorous justification. The statement that "the interiors of the triangles are not filled by faces" requires checking that no linear combination of quadrilateral faces produces each triangle with the same orientation twice. This is likely true but unverified.
-
-2. **Stabilizer analysis in Theorem 3.4 (DW partition function):** The proof assumes `Stab(A) = Z(G)` for all flat connections A to conclude `|Hom(π₁, G)/G| = |Gflat/G|`. For non-abelian finite groups, some representations `ρ: π₁ → G` may have larger stabilizers (e.g., if the image is abelian). The formula `|Hom/G|` counts orbits weighted by `1/|Stab|`, not `1/|G|`, so the identity `Z_DW = |Hom/G|` holds as a Burnside-type counting, but the stated equality `Z_DW = |Hom/G|` requires all stabilizers to equal Z(G), which is only generic. The standard DW formula is `Z_DW = Σ_{[ρ]} 1/|Stab(ρ)|`, not simply `|Hom/G|`.
-
-   - **Severity:** Minor. The paper correctly identifies this as requiring `Stab(A) = Z(G)` for all flat A (line 708), and this holds generically. But the statement is presented as unconditional which is technically incorrect.
-
-3. **Example 3.6 (M=3, DW for O(d)):** Claims `M_flat ≅ O(d)/O(d) ≅ {pt}`. This is incorrect. For M=3 (β₁=1), `Hom(F₁, O(d)) ≅ O(d)`, and the conjugation action gives `Hom(F₁, O(d))/O(d) ≅ O(d)/Ad(O(d))` which is the space of conjugacy classes of O(d), not a point. The moduli space is parametrized by the angle of rotation (for SO(3): [0,π]).
-
-### 4.3 Information-Geometric Bulk-Boundary Correspondence (Section 4, ~290 lines)
-
-**Correctly applied:**
-
-| Concept | Assessment |
-|---------|-----------|
-| Fisher information metric definition | ✓ Standard |
-| Exponential family definition | ✓ Standard |
-| KL divergence as Bregman divergence (Lemma 4.3) | ✓ Correct proof |
-| Local equivalence `GeoDist² = 2KL + O(Δ³)` (Theorem 4.4) | ✓ Correct under stated assumptions |
-| Cercis as Fisher geodesic distance to pure-gauge submanifold | ✓ Definitionally sound |
-| KL-regularized Cercis | ✓ Interesting variational extension |
-| Corrigendum (viewpoint4_correction.tex) acknowledging 8 assumptions | ✓ Honest self-correction |
-
-**Issues identified:**
-
-1. **"Bulk-boundary" framing is metaphorical, not physical.** The "boundary" is observed expert distributions; the "bulk" is the pure-gauge submanifold `im(d₀)`. This is a geometric interpretation using the language of holography, not an actual AdS/CFT-type duality. The paper correctly marks the holographic interpretation as "currently speculative" (Open Problem 6.5), but the framing throughout Section 4 may mislead readers into expecting physical content.
-
-2. **Edge assignments `a_e` to distribution parameters `θ`:** Theorem 4.6 maps the Hodge decomposition `a_e = d₀h* + r_harm + d₁^†β` to the information manifold by interpreting `a_e ≈ θ_v - θ_u`. This interpretation requires that edge assignment vectors correspond to parameter differences on the Situs manifold. The paper doesn't explicitly construct this correspondence — it's asserted rather than derived. The claim is plausible (if expert outputs are parameterized by `θ`, then pairwise differences are `θ_i - θ_j`), but the Fisher metric is defined on `θ`-space, not on `a`-space.
-
-3. **Degenerate Fisher metric case (H7 in corrigendum):** The Cercis computation `||P^⊥ A||²` uses Euclidean norm, while `GeoDist` uses Fisher metric. The corrigendum correctly identifies that these coincide only when `I_ij = δ_ij` (Euclidean Fisher metric). In practice, this never holds for non-trivial statistical models. So the original claim that "Cercis = Fisher geodesic distance" requires the degenerate Fisher assumption — a strong restriction correctly noted in the corrigendum.
-
-### 4.4 Overall Assessment
-
-The three mathematical frameworks are applied correctly at the level of formal definitions, theorem statements, and proof sketches. No fundamental mathematical errors were found. The corrigendum (`viewpoint4_correction.tex`) appropriately walks back overstated claims about "natural emergence" to "conditional equivalence." The `\Stab` and `\face` undefined-command bugs (LaTeX, not math) and the O(d)/O(d) ≅ {pt} error in Example 3.6 are the only concrete errors found.
+**裁决**: **必须修复** — 这是一个会导致编译失败的 LaTeX 语法错误。
 
 ---
 
-## 5. CORE CONTRIBUTION
+## 三、全部形式定理逐一审计
 
-The paper extends `fiber_bundle.tex`'s abelian graph Hodge theory in three directions:
+### 3.1 定理审计表
 
-1. **Non-abelian gauge (O(d)).** Introduces O(d)-valued edge connections for expert rotational frame alignment, with a Riemannian Gauss-Newton algorithm and SE(d) semidirect product decomposition. This is a genuine extension beyond the R^d framework.
+| 定理/引理 | 结论是否正确 | 证明是否严谨 | 问题 |
+|-----------|:----------:|:----------:|------|
+| **Lemma `lem:cartan`** (Cartan 分解) | ⚠️ 部分 | ⚠️ 有疑点 | 一般情况的 Ad 公式（第414行）方向可能有问题；$g\approx I$ 的线性化正确 |
+| **Theorem `thm:od_flat_char`** (平坦性等价) | ✅ | ✅ | 标准结果，证明有效 |
+| **Theorem `thm:od_hodge_fix`** (非阿贝尔 Hodge) | ✅ | ⚠️ | (c) 部分依赖于 `lem:cartan` 的正确性 |
+| **Prop `prop:od_convergence`** (收敛性) | ❌ 命题陈述 | ❌ | 命题声称二次收敛，但证明承认线性收敛 — **矛盾** |
+| **Theorem `thm:scx_homotopy`** (同伦型) | ✅ 结论 | ❌ 草稿 | 形变收缩构造未严格证明 |
+| **Theorem `thm:dw_partition`** (DW 配分函数) | ⚠️ 非阿贝尔正确 | ❌ | 轨道计数论证使用错误的 $\mathrm{Stab}(A) = Z(G)$ 假设；阿贝尔群需单独处理 |
+| **Corollary `cor:dw_abelian`** (阿贝尔 DW) | ✅ | ✅ | 正确区分了阿贝尔/非阿贝尔情况 |
+| **Theorem `thm:dw_cercis_correspondence`** (DW-Cercis 对应) | ✅ | ✅ | 标准结果：$T_{[\mathrm{triv}]}\mathcal{M}_{\mathrm{flat}} \cong H^1(\mathcal{K}; \mathfrak{g})$ |
+| **Theorem `thm:harmonic_moduli_geometry`** (调和模空间) | ⚠️ | — | 描述性定理；全局结构声明缺乏严格推导 |
+| **Lemma `lem:kl_bregman`** (KL=Bregman) | ✅ | ✅ | 指数族的标准结果 |
+| **Theorem `thm:fisher_kl_equivalence`** (Fisher-KL 等价) | ✅ | ✅ | 标准结果；论文诚实地加了条件说明(caveat, 第981行) |
+| **Theorem `thm:cercis_bulk_boundary`** (Cercis=体边界) | ⚠️ 建模选择 | N/A | 这主要是重新解释/建模，而非可独立验证的定理 |
+| **Example `ex:dw_m3`** ($M=3$ DW) | ❌ 第808行 | — | $\mathcal{M}_{\mathrm{flat}} \cong O(d)/O(d) \cong \{\mathrm{pt}\}$ **错误** — 共轭商非平凡 |
+| **Example `ex:dw_m4`** ($M=4$ DW) | ✅ | — | $\mathbb{Z}_2$ 计数 $2^3 = 8$ 正确 |
 
-2. **DW TQFT moduli space.** Identifies the Cercis harmonic component as tangent vectors to the flat connection moduli space, with explicit Betti number `β₁ = (M-1)(M-2)/2`. Provides topological interpretation of "how many essentially different inconsistency modes exist."
+### 3.2 关键错误详析
 
-3. **Information-geometric interpretation.** Maps Cercis from Euclidean residual to Fisher geodesic distance, with KL divergence equivalence under exponential families. With the corrigendum, this is correctly presented as conditional.
+#### 3.2.1 Example `ex:dw_m3` — $O(d)$ 模空间错误 (第808行)
 
-The central invariant `β₁ = (M-1)(M-2)/2` unifies all three domains and is a genuinely novel result for the SCX framework.
+**错误陈述**:
+> For $G = O(d)$ (continuous group): the moduli space $\mathcal{M}_{\mathrm{flat}} \cong O(d)/O(d) \cong \{\mathrm{pt}\}$
 
-**Assessment:** The contributions are real and non-trivial, though the information-geometric "bulk-boundary" framing overstates the physics connection (corrected in corrigendum). The paper succeeds in formalizing concepts previously treated as analogies into theorems with explicit proofs.
+**为什么错误**: 对于 $\beta_1 = 1$（圆），$\mathcal{M}_{\mathrm{flat}} = \mathrm{Hom}(\mathbb{Z}, O(d))/O(d)$，其中 $O(d)$ 通过**共轭**作用于 $\mathrm{Hom}(\mathbb{Z}, O(d)) \cong O(d)$。共轭作用的商不是 $\{\mathrm{pt}\}$，而是 $O(d)$ 的**共轭类空间**。
 
----
+- 对于 $O(2)$: 共轭类由旋转角 $\theta \in [0, \pi]$ 参数化 + 反射类
+- 对于 $SO(3)$: 共轭类由旋转角 $\theta \in [0, \pi]$ 参数化（同构于球体 $B^3$ 模对径点等同）
+- 只有 $O(1) = \{\pm 1\}$（阿贝尔）时商才是 $\{\pm 1\}$，而非单点
 
-## 6. OVERLAP WITH fiber_bundle
+**矛盾**: 第809行紧接着说 "the harmonic component can take any value in $[0, 2\pi)$"，这与第808行的 $\{\mathrm{pt}\}$ 矛盾——如果模空间是单点，调和分量只能取一个值。第809行的直觉实际上是正确的（共轭类由角度参数化），但与第808行的错误公式相冲突。
 
-### 6.1 Explicitly acknowledged overlap (Section 5)
+**修复**: 应改为:
+> $\mathcal{M}_{\mathrm{flat}} \cong \mathrm{Conj}(O(d))$ (the space of conjugacy classes of $O(d)$), parameterized by eigenvalues.
 
-Section 5 provides a detailed 4-page comparison with `fiber_bundle.tex`, including:
-- S1-S4: Strengths retained (graph Hodge foundation, zero-mode ≠ Coulomb gauge, topological triviality, Cercis = residual norm)
-- E1-E5: Errors/omissions addressed (only translation group, no moduli space, missing Betti number, no probabilistic interpretation, empty non-abelian generalization)
-- Full correspondence table (lines 1199-1241)
+#### 3.2.2 Gauss-Newton 收敛命题自相矛盾
 
-### 6.2 Analysis
+如 2.2 节详述，命题 `prop:od_convergence` 声称二次收敛，但证明承认线性收敛。需要统一。
 
-| Aspect | fiber_bundle.tex | gauge_formalized.tex |
-|--------|-----------------|---------------------|
-| Gauge group | R^d only | O(d) + SE(d) = R^d ⋊ O(d) |
-| Curvature | `d₁A` (vector sum) | Wilson loop `Hol(face)` |
-| Moduli space | `ker(Δ₁)` as vector space | Flat connection moduli space `M_flat` |
-| Harmonic dimension | Unspecified | Explicit `β₁ = (M-1)(M-2)/2` |
-| TQFT | None | DW TQFT |
-| Probabilistic | None | Fisher metric + KL |
-| Numerical algorithm | Linear least squares (closed form) | Riemannian Gauss-Newton |
+#### 3.2.3 Theorem `thm:dw_partition` 轨道计数
 
-The papers are complementary: `fiber_bundle.tex` establishes the discrete Hodge foundation; `gauge_formalized.tex` extends it to non-abelian groups, adds topological moduli space structure, and provides probabilistic interpretation. There is minimal redundancy — `gauge_formalized.tex` assumes the reader knows the Hodge decomposition and builds upward.
+证明草稿 (第710-711行):
+> After gauge averaging, the net contribution per orbit is: $\frac{1}{|G|^{|V|}} \sum_{g} \prod_{f} \delta(\mathrm{Hol}_{A^g}(f), 1_G) = 1/|\mathrm{Stab}(A)|$.
+> Summing over all orbits yields $|\mathcal{M}_{\mathrm{flat}}|$, provided $\mathrm{Stab}(A) = Z(G)$ for all flat $A$.
 
-**Verdict:** Overlap is constructive, not duplicative. The comparison section makes the relationship explicit.
-
----
-
-## 7. SUMMARY OF ISSUES
-
-### Critical (must fix)
-1. **Missing `\Stab` and `\face` declarations** → 35 undefined control sequence errors in pdflatex
-2. **Bare `pdfoutput=1` on line 1** in both files → Missing `\begin{document}` error
-3. **Unicode ⚠ emoji** in `viewpoint4_correction.tex` → pdflatex error
-
-### Mathematical concerns (should address)
-4. **Example 3.6: `O(d)/O(d) ≅ {pt}`** is incorrect for M=3 with β₁=1 — moduli space is conjugacy classes of O(d)
-5. **DW partition function equality** `Z_DW = |Hom/G|` assumes all flat connections have stabilizer Z(G) — accurate only generically, should state as equality `Z_DW = Σ_{[ρ]} 1/|Stab(ρ)|`
-6. **"Bulk-boundary" terminology** is metaphorical — the corrigendum doesn't address this specifically
-
-### Minor/Clarity
-7. **BCH derivation in Lemma 4.3** skips intermediate steps — acceptable for proof sketch but could be expanded
-8. **Quadratic convergence proof** for Gauss-Newton relies on unverified strong convexity near Cartan boundary
-9. **Edge assignment `a_e` ↔ parameter `θ` mapping** in Theorem 4.6 is asserted without explicit construction
-10. `viewpoint4_correction.tex` uses `\documentclass{article}` without `[12pt,a4paper]` — minor inconsistency
+问题: "provided $\mathrm{Stab}(A) = Z(G)$ for all flat $A$" 是一个不成立的假设。平凡联络的稳定子是整个 $G$，某些对称联络也有更大的稳定子。正确的计数应使用 Burnside 引理或直接使用已知结果 $|\mathrm{Hom}(\pi_1, G)/G|$ 作为定义，而非从配分函数求和推导。
 
 ---
 
-## 8. RECOMMENDED FIXES (minimum for clean compile)
+## 四、与 fiber_bundle.tex 交叉参照审计
 
-```latex
-% In gauge_formalized.tex preamble (~line 148, after \DeclareMathOperator{\Log}{Log}):
+`gauge_formalized.tex` Section 5 (第1142-1286行) 对 `fiber_bundle.tex` 做了系统比较。逐条验证：
 
-\DeclareMathOperator{\Stab}{Stab}        % ADD: stabilizer operator
-\newcommand{\face}{\mathcal{f}}          % ADD: singular face symbol (or \mathit{f})
+| gauge_formalized 的声称 | 验证结论 |
+|-------------------------|---------|
+| **S1**: "Correct foundation of graph Hodge theory" | ✅ fiber_bundle.tex 的离散 Hodge 框架确实是正确的 |
+| **S2**: "Zero-mode fixing ≠ Coulomb gauge" | ✅ 这个区分是正确且重要的 |
+| **S3**: "Honest acknowledgment of topological triviality" | ✅ fiber_bundle.tex 承认了底空间和结构群可缩 |
+| **S4**: "Cercis = residual norm" | ✅ 正确 |
+| **E1**: "Only translation group ℝᵈ" | ✅ fiber_bundle.tex 确实限于阿贝尔平移 |
+| **E2**: "Moduli space not described" | ✅ fiber_bundle.tex 只给出 $\dim \ker(L_1)$，未解释模空间结构 |
+| **E3**: "Betti number unspecified" | ⚠️ 部分正确 — fiber_bundle.tex 未给出 SCX 图的 $\beta_1$ 具体值 |
+| **E4**: "No probabilistic interpretation" | ✅ fiber_bundle.tex 是纯确定性的 |
+| **E5**: "Non-abelian generalization is empty" | ✅ fiber_bundle.tex 的 §9.2 只有概念描述，无定理/证明 |
 
-% Delete line 1 (bare "pdfoutput=1") from both files
-```
-
-```latex
-% In viewpoint4_correction.tex line 66:
-% Change: ⚠️ Mathematically correct but "natural emergence" is overstated
-% To:     $\rhd$ Mathematically correct but "natural emergence" is overstated
-```
+需要补充的遗漏:
+- **gauge_formalized 未提及 fiber_bundle.tex 的 Theorem 3 错误**: fiber_bundle.tex 的 Theorem 3 声称"曲率为零 ⟺ 联络正合 ⟺ Cercis = 0"，这在有环路的图上不成立（因为 $\ker(d_1) = \operatorname{im}(d_0) \oplus \ker(L_1)$，平坦但非零调和分量使得 Cercis ≠ 0）。gauge_formalized 隐式修正了这个错误（通过引入调和分量 $r_{\mathrm{harm}}$），但 Section 5 的比较中未明确指出 fiber_bundle.tex Theorem 3 是错误的。`gauge_domain_formalization.md` 则在 Theorem 2.3 的注记中明确指出了这一点。
 
 ---
 
-*End of audit.*
+## 五、gauge_domain_formalization.md 与 gauge_domain_analysis.md 补充审计
+
+### 5.1 gauge_domain_formalization.md
+
+- **Theorem 1.1(c)** — O(d) 模空间维数公式: $\dim O(d) \cdot \max(b_1-1, 0)$。**微妙**: 这是非阿贝尔情况的公式。论文在注 1.1 中讨论了阿贝尔 $\mathbb{R}^d$ 情况下的维数差异($d\cdot b_1$ vs $d(b_1-1)$)。正确。
+- **Theorem 1.3(d) — 面积律**: 被诚实降级为 Conjecture。阻塞声明 B1.3.1 指出面积律严格证明是 Yang-Mills 质量间隙问题（千禧年难题）。**这是非常诚实的处理**。
+- **Theorem 2.1(c) — 阿贝尔群计数**: 正确给出 $|G|^{b_1}$，并通过具体例子验证。
+- **跨域 Theorem X.1**: 统一了 O(d) 平坦联络计数 ($|G|^{b_1-1}$) 和 BF 配分函数 ($|G|^{b_1}$)，差异来自共轭作用。**这是有价值的结构洞察**。
+
+### 5.2 gauge_domain_analysis.md
+
+- **域 3 (格点规范) 的裁决: "MUST FORMALIZE"** — 与 gauge_formalized.tex 的方向一致。分析中诚实指出 fiber_bundle.tex Theorem 3 的错误。
+- **域 4 (纤维丛+Chern类) 的裁决: "DEAD END"** — 正确分析：底空间和结构群可缩 → 所有示性类为零。
+- **域 9 (AdS/CFT) 的裁决: "DEAD END"** — 正确的冷酷分析。
+
+---
+
+## 六、汇总：需要修复的问题
+
+### 严重(P0 — 编译错误/数学错误):
+
+| # | 位置 | 问题 | 修复方案 |
+|---|------|------|---------|
+| 1 | `gauge_formalized.tex` 第149行 | `ewcommand{\face}{\mathit{f}}` 缺失反斜杠 | 删除此行（第90行已有正确定义） |
+| 2 | `gauge_formalized.tex` 第551行 | Proposition `prop:od_convergence` 声称 "converges quadratically" | 改为 "converges linearly (with quadratic convergence only in the zero-residual limit)" |
+| 3 | `gauge_formalized.tex` 第808行 | Example `ex:dw_m3`: $\mathcal{M}_{\mathrm{flat}} \cong O(d)/O(d) \cong \{\mathrm{pt}\}$ 错误 | 改为 $\mathcal{M}_{\mathrm{flat}} \cong \mathrm{Conj}(O(d))$，说明是共轭类空间，非单点 |
+
+### 重要(P1 — 严谨性问题):
+
+| # | 位置 | 问题 | 修复方案 |
+|---|------|------|---------|
+| 4 | `gauge_formalized.tex` 第694行 | Theorem `thm:dw_partition`: 公式 $Z_{DW} = |\mathrm{Hom}|/|G|$ 对阿贝尔群不正确 | 加限定词 "for non-abelian $G$" 或独立陈述阿贝尔情况 |
+| 5 | `gauge_formalized.tex` 第710-711行 | 证明假设 $\mathrm{Stab}(A) = Z(G)$ for all flat $A$，不成立 | 使用 Burnside 引理修正，或引用标准文献(Dijkgraaf-Witten 1990) |
+| 6 | `gauge_formalized.tex` 第638-661行 | 同伦等价证明过于粗略 | 增加形变收缩的严格构造，或在开放问题中诚实标记 |
+
+### 建议(P2 — 完善):
+
+| # | 位置 | 问题 |
+|---|------|------|
+| 7 | `gauge_formalized.tex` 第1107行 | Unified Structure Theorem 的交换图中的映射仅在平凡联络处有效，未注明 |
+| 8 | `gauge_formalized.tex` Section 5 | 未明确指出 fiber_bundle.tex Theorem 3 是关于调和分量的错误 |
+
+---
+
+## 七、总体裁决
+
+**`gauge_formalized.tex` 的主要数学结构是正确的**：$O(d)$ 格点规范理论、DW TQFT 框架、信息几何解释三者构成一个自洽的理论体系。$\beta_1 = (M-1)(M-2)/2$ 是核心拓扑不变量，正确且可独立验证。
+
+**但存在三处严重缺陷**: (1) LaTeX 编译错误在第149行，(2) Gauss-Newton 收敛性声称与证明矛盾，(3) $O(d)$ 共轭模空间在示例中错误地表述为单点。
+
+**`gauge_domain_formalization.md` 和 `gauge_domain_analysis.md` 的严谨性和诚实性均优于 `gauge_formalized.tex`**。前者在每个边界处标注了阻塞声明，后者虽然在结论中罗列了开放问题，但在具体定理陈述中仍有夸大之处。
+
+**核心数学结论（可独立验证为正确）**:
+- $\beta_1(\mathcal{K}_{SCX}) = (M-1)(M-2)/2$ ✓
+- 非阿贝尔 DW 配分函数: $|G|^{\beta_1-1}$（一般情况）✓
+- 阿贝尔 DW/BF 配分函数: $|G|^{\beta_1}$ ✓
+- $T_{[\mathrm{triv}]}\mathcal{M}_{\mathrm{flat}} \cong \ker(L_1) \otimes \mathfrak{g}$ ✓
+- Fisher-KL 局部等价需要指数族假设（已诚实注明）✓
+- $O(d)$ 规范固定在小联络极限下约化为 $\mathfrak{so}(d)$ 上的线性 Hodge 分解 ✓

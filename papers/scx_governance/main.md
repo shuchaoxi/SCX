@@ -304,7 +304,7 @@ We now prove that under sufficient auditor multiplicity, honest reporting strict
 > where $\delta_ = \min_{m \neq \theta^G} \norm{m - \theta^G}_\infty$ is the minimum meaningful misreporting magnitude. The implicit equation solves to:
 > 
 > $$
->     M^* = \left\lceil \frac{2\bar^2 \log(\kappa / (L_B \varepsilon))}{(\delta_ - \varepsilon)^2 - 2\bar^2 \bar \log(\kappa / (L_B \varepsilon))} \right\rceil,
+>     M^* = \left\lceil \frac{2\bar^2 (1-\bar\rho) \log(\kappa / (L_B \varepsilon))}{(\delta_\min - \varepsilon)^2 - 2\bar^2 \bar\rho \log(\kappa / (L_B \varepsilon))} \right\rceil,
 >     <!-- label: eq:M_star_explicit -->
 > $$
 > 
