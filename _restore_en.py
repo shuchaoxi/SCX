@@ -1,6 +1,4 @@
-import re, os
-
-cn_pattern = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+')
+import subprocess, os
 
 files = [
     'theory/definitions/01_state_conditioned_risk.tex',
@@ -19,12 +17,12 @@ files = [
     'theory/propositions/02_higherror_suboptimality.tex',
 ]
 
-for f in files:
-    if not os.path.exists(f):
-        print(f'MISSING: {f}')
-        continue
-    with open(f, 'r', encoding='utf-8') as fh:
-        content = fh.read()
-    segments = cn_pattern.findall(content)
-    total_cn = sum(len(s) for s in segments)
-    print(f'{f}: {len(segments)} segments, {total_cn} Chinese chars')
+for fpath in files:
+    try:
+        out = subprocess.check_output(['git', 'show', f'b4374e7:{fpath}'], 
+                                       cwd=r'F:\scx', text=True, stderr=subprocess.DEVNULL)
+        with open(fpath, 'w', encoding='utf-8') as f:
+            f.write(out)
+        print(f'✓ Restored: {os.path.basename(fpath)}')
+    except Exception as e:
+        print(f'✗ Failed: {os.path.basename(fpath)}: {e}')
