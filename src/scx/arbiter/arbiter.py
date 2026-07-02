@@ -94,11 +94,13 @@ class Arbiter:
 
         # Spring 多专家训练
         logger.info(f"Spring: training {self.experts} experts on {data.shape[0]} samples")
-        self._spring.evolve(data, labels)
+        # Initialize Spring with data as memory seed, then evolve with data as candidate pool
+        self._spring.initialize(feature_matrix=data)
+        self._spring.evolve(candidate_pool=data)
 
         # Yajie 审计（使用简单随机专家作为占位）
         logger.info("Yajie: auditing expert consensus")
-        dummy_experts = [lambda d, seed=i: np.random.randn(len(d)) for i in range(self.experts)]
+        dummy_experts = [lambda d, seed=i: np.random.randn(*d.shape) for i in range(self.experts)]
         self._yajie.scan(data, dummy_experts)
 
         # 生成 M_t（数据哈希共生绑定）
@@ -116,7 +118,8 @@ class Arbiter:
         )
 
         # Cercis 评分（简化：使用 Yajie 共识均值作为质量，默认新颖性）
-        quality = float(self._yajie.report_["consensus"].mean()) if hasattr(self._yajie, "report_") and self._yajie.report_ is not None else 0.5
+        report_exists = self._yajie.report_ is not None
+        quality = float(self._yajie.report_["consistency_score"].mean()) if report_exists else 0.5
         novelty = 0.5
         cercis_score = quality + self.eta * novelty
         cercis_score = max(0.0, min(1.0, cercis_score))
@@ -248,9 +251,9 @@ class Arbiter:
         labels: Optional[np.ndarray] = None,
     ) -> AuditReport:
         """独立审计模式：仅审计数据，不训练。"""
-        dummy_experts = [lambda d, seed=i: np.random.randn(len(d)) for i in range(self.experts)]
+        dummy_experts = [lambda d, seed=i: np.random.randn(*d.shape) for i in range(self.experts)]
         self._yajie.scan(data, dummy_experts)
-        consensus = self._yajie.report_["consensus"].mean() if hasattr(self._yajie, "report_") and self._yajie.report_ is not None else 0.5
+        consensus = self._yajie.report_["consistency_score"].mean() if self._yajie.report_ is not None else 0.5
         return AuditReport(
             answer="Audit complete",
             answer_type="text",

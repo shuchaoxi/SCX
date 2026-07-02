@@ -141,6 +141,10 @@ class Yajie:
         # Compute multi-expert consistency
         expert_errors = self._compute_expert_errors(data, experts)
 
+        # Binary threshold: errors above median per sample → expert "failed"
+        threshold = np.median(expert_errors) if expert_errors.size > 0 else 0.5
+        binary_errors = (expert_errors > threshold).astype(float)  # (N, M), {0,1}
+
         # Scan each sample
         records = []
         for i in range(N):
@@ -155,8 +159,8 @@ class Yajie:
             noise = float(noise)
             redundancy = 1.0 - consistency  # proxy for redundancy
 
-            # Consistency score (Theorem 1)
-            C_i = self._state_value.noise_consistency_score(expert_errors[i, :])
+            # Consistency score (Theorem 1) — uses binary indicators
+            C_i = self._state_value.noise_consistency_score(binary_errors[i, :])
 
             # Verdict
             if C_i > 0.8:

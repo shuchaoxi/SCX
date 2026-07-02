@@ -50,8 +50,8 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from src.scx.valuation.base import BaseQualityScore, ConsensusQualityScore
-from src.scx.valuation.noise_score import NoiseScore, NoveltyNoiseScore
+from scx.valuation.base import BaseQualityScore, ConsensusQualityScore
+from scx.valuation.noise_score import NoiseScore, NoveltyNoiseScore
 
 
 # ======================================================================

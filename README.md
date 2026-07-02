@@ -14,9 +14,10 @@
 | | |
 |:--|:--|
 | Papers 论文 | 92+ |
-| Review rounds 审查轮次 | 85+ |
+| Review rounds 审查轮次 | 100+ |
 | Tests 测试 | 678 passed |
-| Converged items 已收敛 | 23/24 |
+| Converged items 已收敛 | 24/24 |
+| P0 critical fixes | ✅ 全部清零 |
 
 → [Full audit status 完整审计状态](AUDIT_STATUS.md)
 
@@ -84,12 +85,12 @@ L5 协议与治理 Protocol & Governance
 
 | P | Item |
 |:--:|------|
-| P0 | NPE Theorem 1 algebra error |
-| P0 | Thm1 constant (one-sided vs two-sided) |
-| P1 | Thm3 preference domain construction |
-| P1 | Social inference env_gauge/med_gauge rewrite |
-| P2 | Entanglement/wormhole/relativity |
-| P3 | Protocol papers iteration |
+| P0 | ✅ NPE Theorem 1 — 从第一原理重建 |
+| P0 | ✅ Thm1 constant — 代码正确 |
+| P1 | ✅ Thm3 preference domain — 构造闭合 |
+| P2 | ⏳ Engineering code review — 进行中 |
+| P2 | 大统一 LaTeX — 待重做 |
+| P3 | 地缘政治 — 新国家章节 |
 
 → [Full attack surface 完整攻击面](ATTACK_SURFACE.md)
 

@@ -265,3 +265,8 @@ class StateDiscovery:
         if self._labels is None:
             raise RuntimeError("StateDiscovery has not been fitted yet.")
         return self._labels
+
+    @property
+    def is_fitted(self) -> bool:
+        """Return True if the model has been fitted."""
+        return self._centroids is not None

@@ -673,12 +673,8 @@ class Gatekeeper:
 
             if learning_rate is not None:
                 lr = float(np.clip(learning_rate, 0.0, 1.0))
-                self._alpha_s[s] = (1.0 - lr) * self._alpha_s[s] + lr * (
-                    self.prior_alpha + clean_evidence
-                )
-                self._beta_s[s] = (1.0 - lr) * self._beta_s[s] + lr * (
-                    self.prior_beta + noisy_evidence
-                )
+                self._alpha_s[s] = (1.0 - lr) * self._alpha_s[s] + lr * clean_evidence
+                self._beta_s[s] = (1.0 - lr) * self._beta_s[s] + lr * noisy_evidence
             else:
                 self._alpha_s[s] += clean_evidence
                 self._beta_s[s] += noisy_evidence
@@ -990,10 +986,11 @@ class Spring:
             # 5. Compute novelty bonuses
             novelty_bonuses = self.memory.compute_novelty_bonus(candidates)
 
-            # 6. Combined total score
+            # 6. Combined total score (incorporates gatekeeper, quality, and novelty)
             total_scores = (
-                (1.0 - self.config.novelty_weight) * quality_scores
-                + self.config.novelty_weight * novelty_bonuses
+                0.4 * gk_scores
+                + 0.3 * (1.0 - self.config.novelty_weight) * quality_scores
+                + 0.3 * self.config.novelty_weight * novelty_bonuses
             )
 
             # 7. Admit top-k structures above threshold
@@ -1099,8 +1096,9 @@ class Spring:
         )
         novelty_bonuses = self.memory.compute_novelty_bonus(candidates)
         total_scores = (
-            (1.0 - self.config.novelty_weight) * quality_scores
-            + self.config.novelty_weight * novelty_bonuses
+            0.4 * gk_scores
+            + 0.3 * (1.0 - self.config.novelty_weight) * quality_scores
+            + 0.3 * self.config.novelty_weight * novelty_bonuses
         )
 
         admittable = total_scores >= self.config.acceptance_threshold
@@ -1189,36 +1187,48 @@ class Spring:
     def prune_memory(
         self, prune_streak: int = 3
     ) -> tuple[set, set]:
-        """Prune low-scoring samples from active memory (噪声率衰减).
+        """Prune low-scoring samples from memory (噪声率衰减).
 
-        Samples that score below the current gatekeeper threshold for
-        ``prune_streak`` consecutive rounds are demoted from the active
-        training set to the archived audit record.  Spring never truly
-        forgets — archived samples remain permanently auditable.
+        Structures that score below the median gatekeeper score for
+        ``prune_streak`` consecutive rounds are marked dormant.
 
         Returns
         -------
         active : set
-            Sample indices remaining in the active training set.
-        archived : set
-            Sample indices demoted to the permanent audit archive.
+            Structure indices remaining active.
+        dormant : set
+            Structure indices newly marked dormant.
         """
-        g_t = self.gatekeeper.threshold
-        scores = self.gatekeeper.score(self._assign_states(self._features))
-        low = set(int(i) for i, s in enumerate(scores) if s < g_t)
+        if self.memory.size == 0:
+            return set(), set()
 
-        for idx in low:
-            self._prune_streak[idx] = self._prune_streak.get(idx, 0) + 1
+        # Initialise per-round tracking if needed
+        if not hasattr(self, "_prune_streak"):
+            self._prune_streak: dict[str, int] = {}
 
-        to_prune = {
-            idx for idx, cnt in self._prune_streak.items()
-            if cnt >= prune_streak
+        mem_features = self.memory.get_feature_matrix()
+        mem_state_labels = self._assign_states(mem_features)
+        scores = self.gatekeeper.score(mem_state_labels)
+        threshold = float(np.median(scores)) if scores.size > 0 else 0.5
+
+        newly_dormant: set[str] = set()
+        for i, entry in enumerate(self.memory.structures):
+            sid = entry["structure_id"]
+            if i < len(scores) and scores[i] < threshold:
+                self._prune_streak[sid] = self._prune_streak.get(sid, 0) + 1
+                if self._prune_streak[sid] >= prune_streak:
+                    entry["status"] = "dormant"
+                    newly_dormant.add(sid)
+                    self._prune_streak.pop(sid, None)
+            else:
+                self._prune_streak.pop(sid, None)
+
+        active_ids = {
+            e["structure_id"]
+            for e in self.memory.structures
+            if e["status"] == "active"
         }
-        self._active_memory -= to_prune
-        self._archived_memory |= to_prune
-        for idx in to_prune:
-            self._prune_streak.pop(idx, None)
-        return set(self._active_memory), set(self._archived_memory)
+        return active_ids, newly_dormant
 
     def convergence_diagnostic(self) -> Dict[str, Any]:
         """Compute convergence diagnostics from evolution history.
@@ -1298,7 +1308,7 @@ class Spring:
             features = features.reshape(1, -1)
 
         # Try fitted state discovery
-        if self.state_discovery._centroids is not None:
+        if self.state_discovery.is_fitted:
             try:
                 return self.state_discovery.predict(features)
             except Exception:
