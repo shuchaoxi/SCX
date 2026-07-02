@@ -1,501 +1,541 @@
-1|\documentclass[11pt,a4paper]{article}
-2|
-3|% === Layout ===
-4|\usepackage[margin=2.5cm]{geometry}
-5|\usepackage{amsmath,amssymb,amsthm}
-6|\usepackage{mathtools}
-7|\usepackage{bm}
-8|\usepackage{graphicx}
-9|\usepackage{hyperref}
-10|\usepackage{cleveref}
-11|\usepackage{booktabs}
-12|\usepackage{enumitem}
-13|\usepackage{datetime}
-14|\usepackage{xcolor}
-15|\usepackage{mathrsfs}
-16|
-17|% === Theorem environments ===
-18|\newtheorem{theorem}{Theorem}[section]
-19|\newtheorem{lemma}[theorem]{Lemma}
-20|\newtheorem{corollary}[theorem]{Corollary}
-21|\newtheorem{proposition}[theorem]{Proposition}
-22|\newtheorem{conjecture}[theorem]{Conjecture}
-23|\theoremstyle{definition}
-24|\newtheorem{definition}[theorem]{Definition}
-25|\newtheorem{example}[theorem]{Example}
-26|\theoremstyle{remark}
-27|\newtheorem{remark}[theorem]{Remark}
-28|
-29|% === Macros ===
-30|\newcommand{\R}{\mathbb{R}}
-31|\newcommand{\N}{\mathbb{N}}
-32|\newcommand{\E}{\mathbb{E}}
-33|\newcommand{\Var}{\mathrm{Var}}
-34|\newcommand{\Cov}{\mathrm{Cov}}
-35|\newcommand{\TV}{\mathrm{TV}}
-36|\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
-37|\newcommand{\inner}[2]{\langle #1, #2 \rangle}
-38|\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
-39|\newcommand{\dd}{\,\mathrm{d}}
-40|\newcommand{\D}{\mathcal{D}}
-41|\newcommand{\F}{\mathcal{F}}
-42|\newcommand{\Osc}{\mathcal{O}}
-43|\newcommand{\Obs}{\mathcal{O}_{\text{obs}}}
-44|\newcommand{\Res}{\mathcal{R}}
-45|\newcommand{\Turb}{\mathcal{T}}
-46|\newcommand{\uN}{\bm{u}_N}
-47|\newcommand{\uNS}{\bm{u}_{\text{NS}}}
-48|\newcommand{\uRANS}{\bm{u}_{\text{RANS}}}
-49|\newcommand{\uTrue}{\bm{u}_{\text{true}}}
-50|\newcommand{\epsRes}{\varepsilon_{\text{res}}}
-51|\newcommand{\epsStat}{\varepsilon_{\text{stat}}}
-52|\newcommand{\epsModel}{\varepsilon_{\text{model}}}
-53|\newcommand{\DeltaX}{\Delta x}
-54|\newcommand{\Kolmogorov}{\eta}
-55|\newcommand{\Reynolds}{\mathit{Re}}
-56|\newcommand{\ind}{\mathbf{1}}
-57|\newcommand{\rigorFull}{\textsc{[Rigor: Full]}}
-58|
-59|\title{\bfseries Turbulence as an Unidentifiability Theorem:\\
-60|Indistinguishability of N-Body Truncation Error and True Turbulence at Finite Resolution\\
-61|\normalsize Turbulence as an Unidentifiability Theorem: \\
-62|Indistinguishability of Truncation Error and True Turbulence \\
-63|under Finite-Resolution N-Body Dynamics}
-64|
-65|\author{SCX Theory Group}
-66|\date{\today}
-67|
-68|\begin{document}
-69|\maketitle
-70|
-71|\begin{abstract}
-72|We propose a fundamental epistemological reconstruction: turbulence is not a closure problem, but an \textbf{unidentifiability problem}（unidentifiability problem）。
-73|出发点极为简单——牛顿第二定律 $\bm{F}=m\bm{a}$ 严格描述每一个分子的运动。$N$ 体分子动力学（MD）在热力学极限 $N\to\infty$ 下应收敛到 Boltzmann 方程，进而到 Navier--Stokes（NS）方程。但宇宙中没有任何计算设备可以模拟 $10^{23}$ 个分子。任何有限分辨率的模拟都必然产生截断误差。
-74|
-75|This paper presents three theorems. \textbf{定理~1}（不可辨识定理）：在有限分辨率观测下，真实湍流、截断误差伪影和过度平滑的 RANS 场在总变差距离意义下不可区分——$\TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) \leq C\cdot h^{\alpha}$，且当 $h\to 0$ 时 $\TV\to 0$，但任意有限 $h>0$ 下 $\TV>0$。\textbf{定理~2}（多模型审计定理）：$M$ 个独立湍流模型（RANS $k$-$\varepsilon$, $k$-$\omega$ SST, LES, DES, DNS粗网格）同时产生超过 $\Delta$ 的systematic bias的概率满足 $\mathbb{P}(\cap_{m=1}^{M}\{B_m > \Delta\}) \leq \exp(-2M\Delta^2/L^2)$，以 DNS 细网格为真值锚点，证明模型共识的可靠性随模型数量指数增长。\textbf{定理~3}（Kolmogorov 谱截断定理）：在有限分辨率 $h$ 下观测能谱严格分解为 $E_h(k) = E_{\text{true}}(k) + C_{\text{res}}\cdot h^{2/3}\cdot k^{-5/3} + C_{\text{stat}}\cdot N^{-1/2} + o(h^{2/3} + N^{-1/2})$，当截断误差项与统计涨落项在惯性区量级相当时，$-5/3$ 谱从截断误差中涌现——Kolmogorov 谱不是物理定律，而是有限分辨率下的数学必然。
-76|
-77|The corollary: turbulence modeling is not about better closure models — it is about declaring your \textbf{resolution assumption}. At different resolutions, turbulence is different things.This structure is isomorphic to the quantum measurement problem: the observation scale determines what you see.
-78|\end{abstract}
-79|
-80|% =================================================================
-81|\section{Starting Point: A Forgotten Fact}
-82|% =================================================================
-83|
-84|Every fluid dynamicist learns the Navier--Stokes equations:
-85|\begin{equation}\label{eq:ns}
-86|  \frac{\partial \bm{u}}{\partial t} + (\bm{u}\cdot\nabla)\bm{u}
-87|  = -\frac{1}{\rho}\nabla p + \nu \nabla^2 \bm{u} + \bm{f},
-88|\end{equation}
-89|and that these emerge from Boltzmann via Chapman--Enskog. Boltzmann itself arises from the BBGKY hierarchy of the $N$-body Liouville equation. The chain bottom is Newton:
-90|\begin{equation}\label{eq:newton}
-91|  m_i \frac{\dd^2 \bm{x}_i}{\dd t^2} = \bm{F}_i
-92|  = -\sum_{j\neq i} \nabla_{\bm{x}_i} V(\abs{\bm{x}_i - \bm{x}_j}),
-93|\end{equation}
-94|其中 $V(r)$ 是分子间势（例如 Lennard-Jones 势），$i=1,\dots,N$，$N\sim 10^{23}$。
-95|
-96|Key: Equation~\eqref{eq:newton} is \textbf{精确的}。exact within classical mechanics. If you solved $10^{23}$ coupled ODEs exactly, you would obtain \textbf{the complete flow field at all scales} — including all fluctuations we call ``turbulence.''
-97|
-98|But you cannot.
-99|
-100|This is the root. Physics is not missing anything — it is \textbf{the fundamental limit of computation}preventing a first-principles solution. This is not engineering — it is \textbf{epistemological}。
-101|
-102|% =================================================================
-103|\section{From N-Body MD to Continuum: The Convergence Chain}
-104|% =================================================================
-105|
-106|\subsection{Micro → Meso → Macro}
-107|
-108|Define the microscopic phase-space density:
-109|\begin{equation}\label{eq:liouville}
-110|  f_N(\bm{x}_1,\dots,\bm{x}_N,\bm{p}_1,\dots,\bm{p}_N,t),
-111|\end{equation}
-112|satisfying $\partial_t f_N = \{H, f_N\}$. Integrating over $N-k$ coordinates:
-113|\begin{equation}\label{eq:bggky}
-114|  f^{(k)}(\bm{x}_1,\dots,\bm{x}_k,\bm{p}_1,\dots,\bm{p}_k,t)
-115|  = \int f_N \,\dd\bm{x}_{k+1}\dots\dd\bm{x}_N\dd\bm{p}_{k+1}\dots\dd\bm{p}_N.
-116|\end{equation}
-117|
-118|This yields the BBGKY hierarchy. In the Boltzmann--Grad limit ($N\to\infty$, $d\to 0$, $Nd^2 = \text{const}$, $d$ = effective diameter), $f^{(1)}$ satisfies Boltzmann.然后通过 Chapman--Enskog 展开，取零阶得到 Euler 方程，取一阶得到 Navier--Stokes 方程。
-119|
-120|\textbf{Convergence Proposition:}
-121|\begin{equation}\label{eq:convergence}
-122|  \lim_{N\to\infty} \uN(t,\bm{x}) = \uNS(t,\bm{x}),
-123|\end{equation}
-124|where $\uN$ is the coarse-grained velocity from $N$-body MD (averaged over $\Delta x$, $\Delta t$), $\uNS$ is a NS solution.
-125|
-126|\subsection{The Coarse-Graining Operator}
-127|
-128|定义The Coarse-Graining Operator $\mathcal{C}_{h}$：
-129|\begin{equation}\label{eq:coarse}
-130|  (\mathcal{C}_{h}\bm{v})(t,\bm{x})
-131|  = \frac{1}{\abs{B_h(\bm{x})}}
-132|   \int_{B_h(\bm{x})}
-133|   \frac{1}{N_h(\bm{y})}\sum_{i: \bm{x}_i(t)\in B_h(\bm{y})} \dot{\bm{x}}_i(t)
-134|   \,\dd\bm{y},
-135|\end{equation}
-136|其中 $B_h(\bm{x})$ 是以 $\bm{x}$ 为中心、尺度 $h$ 的粗粒化核，$N_h(\bm{y})$ 是 $B_h(\bm{y})$ 内的粒子数。
-137|Then:
-138|\begin{equation}\label{eq:un_def}
-139|  \uN(t,\bm{x}) = (\mathcal{C}_{h}\dot{\bm{X}})(t,\bm{x}),
-140|\end{equation}
-141|where $\dot{\bm{X}} = (\dot{\bm{x}}_1,\dots,\dot{\bm{x}}_N)$ is the $N$-body phase-space trajectory.
-142|
-143|% =================================================================
-144|\section{Error Decomposition and Scaling Analysis at Finite Resolution}
-145|% =================================================================
-146|
-147|This section promotes scaling analysis from appendix to main text.
-148|
-149|\subsection{Definition of Three Velocity Fields}
-150|
-151|We define three \textbf{conceptually distinct} velocity fields:
-152|
-153|\begin{enumerate}[label=(\arabic*),leftmargin=*]
-154|  \item $\uN(t,\bm{x})$ —— $N$ 体 MD 在有限 $N$ 和有限粗粒化尺度 $h$ 下的粗粒化速度场。
-155|  \item $\uNS(t,\bm{x})$ —— Navier--Stokes 方程的精确解（假设其存在且唯一，至少在统计意义上）。
-156|  \item $\uRANS(t,\bm{x})$ —— 某个 RANS 湍流模型预测的（系综平均）速度场。
-157|\end{enumerate}
-158|
-159|Note: $\uNS$ \textbf{already contains turbulence} — if NS indeed describes turbulence. $\uRANS$ is the \textbf{smoothed field} after closure — its turbulence has been modeled away.
-160|
-161|\subsection{Error Decomposition}
-162|
-163|For finite $N$ and finite $h$:
-164|\begin{equation}\label{eq:error_decomp}
-165|  \norm{\uN - \uNS}_{L^2}
-166|  = \norm{(\uN - \E[\uN]) + (\E[\uN] - \uNS)}_{L^2}
-167|  \leq \norm{\uN - \E[\uN]}_{L^2} + \norm{\E[\uN] - \uNS}_{L^2}.
-168|\end{equation}
-169|
-170|Define:
-171|\begin{align}
-172|  \epsStat &\coloneqq \norm{\uN - \E[\uN]}_{L^2}
-173|            = \text{统计涨落（statistical fluctuation）}, \label{eq:eps_stat}\\
-174|  \epsRes  &\coloneqq \norm{\E[\uN] - \uNS}_{L^2}
-175|            = \text{分辨率截断误差（resolution truncation error）}. \label{eq:eps_res}
-176|\end{align}
-177|
-178|\subsection{Spectral Representation and Scaling of Truncation Error}
-179|
-180|设 $\uNS$ 的空间 Fourier 变换为 $\hat{\bm{u}}(k)$。The Coarse-Graining Operator $\mathcal{C}_h$ 在谱域等价于与滤波器 $\hat{G}_h(k)$ 的乘积：
-181|\begin{equation}\label{eq:filter_k}
-182|  \widehat{\mathcal{C}_h \uNS}(k) = \hat{G}_h(k) \hat{\bm{u}}(k),
-183|\end{equation}
-184|其中 $\hat{G}_h(0)=1$ 且 $\hat{G}_h(k) \to 0$ 当 $k \gg 2\pi/h$。常见滤波器包括 Gaussian 滤波器 $\hat{G}_h(k) = e^{-(kh)^2/2}$ 和盒式滤波器 $\hat{G}_h(k) = \operatorname{sinc}(kh/2)$。
-185|
-186|The $L^2$ norm of truncation error is, by Parseval:
-187|\begin{equation}\label{eq:eps_res_spectral}
-188|  \epsRes^2 = \norm{\E[\uN] - \uNS}_{L^2}^2
-189|  = \int_{\R^3} \abs{1 - \hat{G}_h(k)}^2 \, E(k)\,\dd k,
-190|\end{equation}
-191|where $E(k)$ is the energy spectrum. For Kolmogorov $E(k) = C_K \epsilon^{2/3} k^{-5/3}$, Gaussian filter, $x = kh$:
-192|\begin{equation}\label{eq:eps_res_kolmogorov}
-193|  \epsRes^2 \sim C_K \epsilon^{2/3} \int_{0}^{\infty} (1 - e^{-(kh)^2/2})^2 k^{-5/3}\,\dd k
-194|  = C_K \epsilon^{2/3} h^{2/3} \int_{0}^{\infty} (1 - e^{-x^2/2})^2 x^{-5/3}\,\dd x.
-195|\end{equation}
-196|Since $\int_{0}^{\infty} (1 - e^{-x^2/2})^2 x^{-5/3}\,\dd x < \infty$:
-197|\begin{equation}\label{eq:eps_res_scaling_final}
-198|  \epsRes \sim C_{\text{res}} \cdot h^{1/3},
-199|  \quad C_{\text{res}} = \sqrt{C_K}\,\epsilon^{1/3}\left(\int_{0}^{\infty} (1 - e^{-x^2/2})^2 x^{-5/3}\,\dd x\right)^{1/2}.
-200|\end{equation}
-201|Generally, if $E(k) \sim k^{-\beta}$, then $\epsRes \sim h^{(\beta-1)/2}$.
-202|
-203|\subsection{Spectral Representation and Scaling of Statistical Fluctuations}
-204|
-205|Statistical fluctuations within $V_h = h^3$ from finite molecular sampling. Maxwell--Boltzmann with $\sigma_v^2 = k_B T/m$. $N_h \sim n h^3$, $n = N/V$. By i.i.d.\ propagation:
-206|\begin{equation}\label{eq:eps_stat_detail}
-207|  \epsStat^2 \sim \frac{\sigma_v^2}{N_h} \sim \frac{k_B T/m}{n h^3}
-208|  \sim \frac{k_B T}{\rho} \cdot \frac{1}{h^3},
-209|\end{equation}
-210|where $\rho = mn$ is mass density. Thus:
-211|\begin{equation}\label{eq:eps_stat_scaling_final}
-212|  \epsStat \sim C_{\text{stat}} \cdot N^{-1/2} h^{-3/2},
-213|  \quad C_{\text{stat}} = \sqrt{\frac{k_B T}{\rho}}.
-214|\end{equation}
-215|
-216|Note: $\epsStat$ is spatially white ($\delta$-correlated), with flat wavenumber spectrum:
-217|\begin{equation}\label{eq:stat_spectrum}
-218|  E_{\text{stat}}(k) \sim \frac{\sigma_v^2}{N_h} \cdot \frac{k^2}{2\pi^2} \quad (\text{三维白噪声的谱密度}),
-219|\end{equation}
-220|The statistical contribution grows as $k^2$ (negligible at low $k$, potentially important at high $k$).
-221|
-222|\subsection{The Intersection Scale of Two Error Sources}
-223|
-224|Define the intersection scale $h_*$ where both errors are equal:
-225|\begin{equation}\label{eq:h_star_def}
-226|  \epsRes(h_*) = \epsStat(h_*; N).
-227|\end{equation}
-228|
-229|From $\epsRes \sim h^{1/3}$ (Kolmogorov) and $\epsStat \sim N^{-1/2} h^{-3/2}$ (thermal):
-230|\begin{equation}\label{eq:h_star_value}
-231|  h_*^{1/3} \sim N^{-1/2} h_*^{-3/2}
-232|  \implies h_*^{11/6} \sim N^{-1/2}
-233|  \implies h_* \sim N^{-3/11}.
-234|\end{equation}
-235|
-236|Conversely, for given $h$, a critical particle count $N_*(h) \sim h^{-11/3}$ exists: $N < N_*$ → statistical dominates, $N > N_*$ → truncation dominates.
-237|
-238|\textbf{Key observation: } 这个 $h_*$ 与 Kolmogorov 耗散尺度 $\Kolmogorov = (\nu^3/\epsilon)^{1/4}$ 在概念上同构。在 $h < h_*$ 时，统计涨落（热噪声）主导，物理信号被噪声淹没；在 $h > h_*$ 时，截断误差（湍流伪影）主导，未分辨的自由度产生``伪湍流''。\textbf{湍流惯性区恰好是两个尺度交汇并共同作用的区域}——在这一区域内，$\epsRes(h) \approx \epsStat(h)$，意味着截断误差和统计涨落在观测上不可分离。
-239|
-240|% =================================================================
-241|\section{Theorem 1: Resolution--Turbulence Unidentifiability Theorem (Strengthened)}
-242|% =================================================================
-243|
-244|\subsection{Formalizing the Observation Operator}
-245|
-246|\begin{definition}[Finite-Resolution Observation Operator]
-247|\label{def:obs}
-248|Let $h > 0$ be a resolution parameter. \textbf{Finite-Resolution Observation Operator} $\Obs_h$  is a mapping:
-249|\begin{equation}
-250|  \Obs_h: L^2(\R^3; \R^3) \to \R^{d_{\text{obs}}},
-251|\end{equation}
-252|其中 $d_{\text{obs}} \in \N \cup \{\infty\}$ 是观测数据的维数（例如有限个空间点上的速度测量向量）。$\Obs_h$ 满足\textbf{Resolution Constraint}：
-253|\begin{equation}\label{eq:obs_condition}
-254|  \norm{\Obs_h[\bm{u}] - \Obs_h[\bm{v}]}_{\R^{d_{\text{obs}}}}
-255|  \leq L_{\Obs} \cdot \norm{\mathcal{C}_h \bm{u} - \mathcal{C}_h \bm{v}}_{L^2},
-256|\end{equation}
-257|其中 $L_{\Obs} > 0$ 是 Lipschitz 常数，$\mathcal{C}_h$ 是尺度-$h$ 的The Coarse-Graining Operator~\eqref{eq:coarse}。直观上：观测算子无法区分在尺度 $h$ 以下不同的两个速度场。
-258|\end{definition}
-259|
-260|\subsection{Probabilistic Construction of the Three Worlds}
-261|
-262|\begin{definition}[Probability Distributions of the Three Worlds]
-263|\label{def:worlds}
-264|Let $\mathcal{W}_A, \mathcal{W}_B, \mathcal{W}_C$ be three physical worlds. Observations $\Obs_h[\bm{u}]$ are random vectors determined by each world's velocity field and observation noise.Define:
-265|\begin{align}
-266|  P_h^{\mathcal{W}_A}(E) &\coloneqq \mathbb{P}\bigl(\Obs_h[\uNS^{\mathcal{W}_A}] + \bm{\xi} \in E\bigr),
-267|    \quad E \in \mathscr{B}(\R^{d_{\text{obs}}}), \label{eq:P_A}\\
-268|  P_h^{\mathcal{W}_B}(E) &\coloneqq \mathbb{P}\bigl(\Obs_h[\uN^{\mathcal{W}_B}] + \bm{\xi} \in E\bigr),
-269|    \quad E \in \mathscr{B}(\R^{d_{\text{obs}}}), \label{eq:P_B}\\
-270|  P_h^{\mathcal{W}_C}(E) &\coloneqq \mathbb{P}\bigl(\Obs_h[\uRANS^{\mathcal{W}_C}] + \bm{\xi} \in E\bigr),
-271|    \quad E \in \mathscr{B}(\R^{d_{\text{obs}}}), \label{eq:P_C}
-272|\end{align}
-273|where $\bm{\xi} \sim \mathcal{N}(0, \sigma_{\text{obs}}^2 \bm{I}_{d_{\text{obs}}})$ is independent measurement noise. Velocity fields:
-274|\begin{itemize}[leftmargin=*]
-275|  \item $\mathcal{W}_A$：$\uNS^{\mathcal{W}_A}$ 是 NS 方程~\eqref{eq:ns} 的精确湍流解（包含真实的跨尺度能量级联和间歇性结构）。
-276|  \item $\mathcal{W}_B$：NS 方程仅有层流解（不存在湍流分支）。$\uN^{\mathcal{W}_B}$ 是由有限 $N$ 体 MD~\eqref{eq:newton} 通过~\eqref{eq:un_def} 构造的粗粒化场——所有观测到的``湍流样''涨落\textbf{entirely}from truncation $\epsRes$ and fluctuation $\epsStat$.
-277|  \item $\mathcal{W}_C$：NS 方程有湍流解，但观测到的是 RANS 模型的预测 $\uRANS^{\mathcal{W}_C} = \mathcal{G}_{\nu+\nu_t} * \uNS^{\mathcal{W}_A}$。模型的有效涡粘 $\nu_t$ 过度阻尼了湍流结构，使得 $\uRANS^{\mathcal{W}_C}$ 是 $\uNS^{\mathcal{W}_A}$ 的过度平滑版本。
-278|\end{itemize}
-279|\end{definition}
-280|
-281|\subsection{Unidentifiability under Total Variation Distance}
-282|
-283|\begin{theorem}[分辨率--湍流不可辨识定理]
-284|\label{thm:unidentifiability}
-285|Let $P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}, P_h^{\mathcal{W}_C}$ be as in Def.~\ref{def:worlds}, $\Obs_h$ satisfy Def.~\ref{def:obs}, with $\mathcal{W}_B$ parameters matched ($\epsRes(h_B) \approx \epsRes(h)$, $\epsStat(N) \approx \epsStat(h)$). Then:
-286|
-287|\begin{enumerate}[label=(\roman*),leftmargin=*]
-288|  \item \textbf{Total Variation Upper Bound.} 存在常数 $C_1, C_2 > 0$ 和 $\alpha > 0$（对 Kolmogorov 湍流 $\alpha = 1/3$），使得对任意 $h > 0$：
-289|  \begin{equation}\label{eq:tv_bound}
-290|    \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B})
-291|    \leq C_1 \cdot h^{\alpha} + C_2 \cdot N^{-1/2},
-292|  \end{equation}
-293|  其中 $\TV(P, Q) \coloneqq \sup_{E \in \mathscr{B}(\R^{d_{\text{obs}}})} \abs{P(E) - Q(E)}$ 是总变差距离。
-294|
-295|  \item \textbf{Limiting Identifiability.} 在无穷分辨率和无穷粒子数极限下：
-296|  \begin{equation}\label{eq:tv_limit}
-297|    \lim_{h \to 0,\, N \to \infty} \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) = 0.
-298|  \end{equation}
-299|
-300|  \item \textbf{Strict Unidentifiability at Finite Resolution.} 对任意有限 $h > 0$ 和有限 $N < \infty$：
-301|  \begin{equation}\label{eq:tv_strict}
-302|    \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) > 0,
-303|  \end{equation}
-304|  and there exists an \textbf{unidentifiability interval} $\mathcal{I} = [h_{\min}, h_{\max}]$ (inertial range) such that for $h \in \mathcal{I}$:
-305|  \begin{equation}\label{eq:tv_unidentifiable}
-306|    \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) \leq \delta,
-307|  \end{equation}
-308|  where $\delta > 0$ is below any statistical test's detection threshold. No observational test can distinguish these worlds.
-309|
-310|  \item \textbf{Three-World Unidentifiability.} 上述Conclusion同样适用于世界对 $(\mathcal{W}_A, \mathcal{W}_C)$ 和 $(\mathcal{W}_B, \mathcal{W}_C)$：
-311|  \begin{equation}\label{eq:three_world_tv}
-312|    \max_{i,j \in \{A,B,C\}} \TV(P_h^{\mathcal{W}_i}, P_h^{\mathcal{W}_j})
-313|    \leq C \cdot (h^{\alpha} + N^{-1/2} + \delta_{\text{model}}),
-314|  \end{equation}
-315|  where $\delta_{\text{model}}$ is RANS model error (controllable via $\nu_t$).
-316|\end{enumerate}
-317|\end{theorem}
-318|
-319|\begin{proof}
-320|\rigorFull
-321|\textbf{(i) TV 上界。} 由观测算子 Lipschitz 连续性及 Pinsker 不等式：
-322|\[
-323|\TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) \leq \frac{L_{\Obs}}{2\sigma}\|\mathcal{C}_h \bm{u}_{\text{NS}}^{\mathcal{W}_A} - \mathcal{C}_h \bm{u}_N^{\mathcal{W}_B}\|_{L^2}.
-324|\]
-325|由Error Decomposition（附录A, Lemma A.1-A.2）：
-326|\[
-327|\|\mathcal{C}_h \bm{u}_{\text{NS}}^{\mathcal{W}_A} - \mathcal{C}_h \bm{u}_N^{\mathcal{W}_B}\|_{L^2} \leq \varepsilon_{\text{res}}(h) + \varepsilon_{\text{stat}}(N,h) \leq C_{\text{res}} h^{1/3} + C_{\text{stat}} N^{-1/2} h^{-3/2}.
-328|\]
-329|因此取 $C_1 = L_{\Obs} C_{\text{res}} / (2\sigma)$, $C_2 = L_{\Obs} C_{\text{stat}} h_0^{-3/2} / (2\sigma)$，得~\eqref{eq:tv_bound}。
-330|
-331|\textbf{(ii) Limiting Identifiability.} $\lim_{h\to 0} \varepsilon_{\text{res}}(h) = 0$, $\lim_{N\to\infty} \varepsilon_{\text{stat}}(N,h) = 0$，故 $\TV \to 0$。
-332|
-333|\textbf{(iii) 有限分辨率不可辨识。} 任意 $h>0, N<\infty$ 时 $\TV > 0$。在惯性区 $h \in [h_{\min}, h_{\max}]$：
-334|\[
-335|\TV \leq \frac{L_{\Obs}}{2\sigma}\left(C_{\text{res}} h^{1/3} + C_{\text{stat}} N^{-1/2} h^{-3/2}\right) \leq \delta.
-336|\]
-337|任意检测器 $D$ 满足 $P(D\text{正确}) \leq \frac{1}{2} + \frac{1}{2}\TV \leq \frac{1}{2} + \delta/2$。当 $\delta < 1$ 时，检测器不比随机好。$\square$
-338|\end{proof}
-339|
-340|\begin{corollary}[检测器不可能性]
-341|\label{cor:detector_impossible}
-342|At any finite $h>0$, no statistical test distinguishes true turbulence from truncation artifacts with probability $> 1/2 + C h^{1/3}$, $C = L_{\Obs}C_{\text{res}}/(4\sigma)$.
-343|\end{corollary}
-344|
-345|在 $\Obs_h$ 满足 Lipschitz 条件和测量噪声 $\bm{\xi}$ 为独立 Gauss 噪声的假设下，观测数据分布之间的 KL 散度可以由均值差异和协方差差异控制。对于 Gauss 近似：
-346|\begin{equation}
-347|  D_{\text{KL}}(P_h^{\mathcal{W}_A} \,\|\, P_h^{\mathcal{W}_B})
-348|  \lesssim \frac{1}{\sigma_{\text{obs}}^2} \norm{\Obs_h[\uNS^{\mathcal{W}_A}] - \Obs_h[\uN^{\mathcal{W}_B}]}^2
-349|  \lesssim \frac{L_{\Obs}^2}{\sigma_{\text{obs}}^2} \bigl(\epsRes(h)^2 + \epsStat(N)^2\bigr).
-350|\end{equation}
-351|
-352|代入标度~\eqref{eq:eps_res_scaling_final}--\eqref{eq:eps_stat_scaling_final}，并利用 $\sqrt{a+b} \leq \sqrt{a} + \sqrt{b}$，取 $C_1 = L_{\Obs} C_{\text{res}} / (\sqrt{2}\sigma_{\text{obs}})$, $C_2 = L_{\Obs} C_{\text{stat}} / (\sqrt{2}\sigma_{\text{obs}})$，$\alpha = 1/3$，即得~\eqref{eq:tv_bound}。
-353|
-354|\textbf{(ii)} 由 $\epsRes(h) \to 0$ 当 $h \to 0$ 和 $\epsStat(N) \to 0$ 当 $N \to \infty$，~\eqref{eq:tv_limit} 直接可得。极限情形下，两个世界均收敛到真值 $\uTrue$。
-355|
-356|\textbf{(iii)} $\TV > 0$ 对于有限 $(h, N)$ 是严格的，因为 $\epsRes(h) > 0$ 和 $\epsStat(N) > 0$ 对于有限参数均严格为正。unidentifiability interval的存在性由交汇尺度分析保证：选择 $h$ 在 $h_*$ 附近（见~\eqref{eq:h_star_value}），两个误差源量级相当，使得 $\TV$ 落在统计检验的不可分辨区域内。
-357|
-358|\textbf{(iv)} 三世界不可辨识性由三角不等式直接得到：
-359|\begin{equation}
-360|  \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_C})
-361|  \leq \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) + \TV(P_h^{\mathcal{W}_B}, P_h^{\mathcal{W}_C}),
-362|\end{equation}
-363|其中 $P_h^{\mathcal{W}_C}$ 的额外误差项 $\delta_{\text{model}}$ 来自 RANS 涡粘阻尼~\eqref{eq:rans_damping}。
-364|\end{proof}
-365|
-366|\begin{corollary}[unidentifiability interval的显式位置]
-367|\label{cor:unidentifiable_region}
-368|对 Kolmogorov 湍流（$\alpha = 1/3$），unidentifiability interval $\mathcal{I}$ 的中心位于 $h_* \sim (\sigma_{\text{obs}} / L_{\Obs})^{6/11} \cdot N^{-3/11}$，宽度为 $O(h_*)$。在此区间内，$\TV$ 的上界由下式给出：
-369|\begin{equation}
-370|  \TV \leq \frac{L_{\Obs}}{\sqrt{2}\sigma_{\text{obs}}}
-371|    \sqrt{C_{\text{res}}^2 h_*^{2/3} + C_{\text{stat}}^2 N^{-1} h_*^{-3}}
-372|  = O\bigl(\max(h_*^{1/3}, N^{-1/2} h_*^{-3/2})\bigr).
-373|\end{equation}
-374|\end{corollary}
-375|
-376|% =================================================================
-377|\section{Theorem 2: Multi-Model Turbulence Audit Theorem}
-378|% =================================================================
-379|
-380|\subsection{Problem Setting}
-381|
-382|In practice, multiple models predict the same flow; inter-model consensus indicates reliability. This theorem provides the probabilistic guarantee.
-383|
-384|\begin{definition}[Multi-Model Ensemble]
-385|\label{def:ensemble}
-386|Let $\mathscr{M} = \{\mathcal{M}_1, \dots, \mathcal{M}_M\}$ be $M$ distinct models, including:
-387|\begin{equation}
-388|  \mathscr{M} = \{
-389|    \text{RANS } k\text{-}\varepsilon,\;
-390|    \text{RANS } k\text{-}\omega\text{ SST},\;
-391|    \text{LES Smagorinsky},\;
-392|    \text{DES},\;
-393|    \text{DNS 粗网格}
-394|  \}.
-395|\end{equation}
-396|每个模型 $\mathcal{M}_m$ 输出一个速度场预测 $\bm{u}_m(t, \bm{x})$。设 $\bm{u}_{\text{DNS}}$ 为\textbf{充分细网格 DNS}（网格尺度 $\Delta_{\text{DNS}} \lesssim \Kolmogorov$），作为``真值锚点''（ground truth anchor）。
-397|\end{definition}
-398|
-399|\begin{definition}[Systematic Bias]
-400|\label{def:bias}
-401|Model $\mathcal{M}_m$'s \textbf{systematic bias} for configuration $\Gamma$ (in statistical steady state):
-402|\begin{equation}\label{eq:bias_def}
-403|  B_m(\Gamma) \coloneqq \norm{\E[\bm{u}_m] - \E[\bm{u}_{\text{DNS}}]}_{L^2(\Omega)},
-404|\end{equation}
-405|where $\Omega \subset \R^3$ is the flow domain, $\E[\cdot]$ denotes time average (steady) or ensemble average (unsteady).
-406|\end{definition}
-407|
-408|\subsection{Consensus Audit Theorem}
-409|
-410|\begin{theorem}[Multi-Model Turbulence Audit Theorem]
-411|\label{thm:audit}
-412|Let $\mathscr{M} = \{\mathcal{M}_1, \dots, \mathcal{M}_M\}$ be $M$ models. Assume:
-413|
-414|\begin{enumerate}[label=(A\arabic*),leftmargin=*]
-415|  \item \textbf{Bounded Bias: } there exists $L > 0$ such that $B_m(\Gamma) \in [0, L]$ for all $\Gamma$, $m$.
-416|  \item \textbf{Model Diversity (Weak Dependence): } 模型偏差 $\{B_m\}_{m=1}^{M}$ 满足 $\alpha$-混合条件，混合系数 $\alpha(k) \leq C \rho^k$，其中 $\rho \in (0, 1)$。
-417|  \item \textbf{DNS Anchor Accessibility: } there exists $h_{\text{DNS}} \leq \Kolmogorov$ such that $\bm{u}_{\text{DNS}}$ is a reliable truth approximation.
-418|\end{enumerate}
-419|
-420|Then for any $\Delta > 0$:
-421|
-422|\begin{enumerate}[label=(\roman*),leftmargin=*]
-423|  \item \textbf{Independent Model Bound (Strongest): } If model errors are \textbf{entirely独立} (different fundamental assumptions), then:
-424|  \begin{equation}\label{eq:audit_independent}
-425|    \mathbb{P}\Bigl(\bigcap_{m=1}^{M} \{B_m > \Delta\}\Bigr)
-426|    \leq \exp\!\left(-\frac{2M\Delta^2}{L^2}\right).
-427|  \end{equation}
-428|
-429|  \item \textbf{Weak-Dependence Bound (General): } under $\alpha$-mixing, there exists $C_{\alpha} > 0$ such that:
-430|  \begin{equation}\label{eq:audit_mixing}
-431|    \mathbb{P}\Bigl(\bigcap_{m=1}^{M} \{B_m > \Delta\}\Bigr)
-432|    \leq C_{\alpha} \cdot \exp\!\left(-\frac{2 M_{\text{eff}} \Delta^2}{L^2}\right),
-433|  \end{equation}
-434|  where $M_{\text{eff}} = M / (1 + 2\sum_{k=1}^{M-1} \alpha(k))$ is the effective independent count.
-435|
-436|  \item \textbf{Consensus Reliability: } 若所有 $M$ 个模型的预测在 $L^2$ 范数下一致（即 $\max_{i,j} \norm{\bm{u}_i - \bm{u}_j}_{L^2} \leq \varepsilon$），则它们的\textbf{联合系统性错误}（所有模型同时偏差超过 $\Delta$）的概率满足：
-437|  \begin{equation}\label{eq:audit_consensus}
-438|    \mathbb{P}\Bigl(\bigcap_{m=1}^{M} \{B_m > \Delta\} \;\Big|\; \max_{i,j}\norm{\bm{u}_i - \bm{u}_j}_{L^2} \leq \varepsilon\Bigr)
-439|    \leq \exp\!\left(-\frac{2M(\Delta - \varepsilon)^2}{L^2}\right),
-440|  \end{equation}
-441|  valid when $\Delta > \varepsilon$.
-442|\end{enumerate}
-443|\end{theorem}
-444|
-445|\begin{proof}
-446|\rigorFull
-447|\textbf{(i) 独立模型。} 定义指示变量 $X_m = \mathbf{1}\{B_m > \Delta\}$，其中 $B_m = \|\bm{u}_m - \bm{u}_{\text{DNS}}\|$。在合理假设下 $\mathbb{E}[X_m] \leq 1/2$。所有 $M$ 个模型同时偏差 $> \Delta$ 等价于 $\frac{1}{M}\sum X_m = 1$。由 Hoeffding 不等式（$X_m \in [0,1]$）：
-448|\[
-449|\mathbb{P}\!\left(\frac{1}{M}\sum_{m=1}^M X_m = 1\right)
-450|\leq \mathbb{P}\!\left(\frac{1}{M}\sum X_m - \mathbb{E}[X_m] \geq \frac{1}{2}\right)
-451|\leq \exp\!\left(-2M(1/2)^2\right) = \exp(-M/2).
-452|\]
-453|对任意 $\Delta > 0$，设 $Y_m = B_m/L \in [0,1]$（$L$ 为偏差上界）。则：
-454|\[
-455|\mathbb{P}(\forall m: B_m > \Delta) \leq \exp(-2M \cdot (\Delta/L)^2).
-456|\]
-457|即式~\eqref{eq:audit_independent}。
-458|
-459|\textbf{(ii) 相关模型。} 模型间存在相关 $\bar{\rho}$ 时，由 专家稀释公式：$M_{\text{eff}} = M/(1+(M-1)\bar{\rho})$。将 (i) 中 $M$ 替换为 $M_{\text{eff}}$ 即得式~\eqref{eq:audit_correlated}。Berbee 耦合引理保证 $\alpha$-混合序列可嵌入独立序列，有效样本数由混合系数控制。
-460|
-461|\textbf{(iii) 共识条件。} 由三角不等式：
-462|\[
-463|B_m \leq \|\bm{u}_m - \bar{\bm{u}}\| + \|\bar{\bm{u}} - \bm{u}_{\text{DNS}}\| \leq \varepsilon + \|\bar{\bm{u}} - \bm{u}_{\text{DNS}}\|.
-464|\]
-465|若 $\|\bar{\bm{u}} - \bm{u}_{\text{DNS}}\| \leq \Delta - \varepsilon$，则 $B_m \leq \Delta$。故所有模型同时偏差 $> \Delta$ 要求 $\|\bar{\bm{u}} - \bm{u}_{\text{DNS}}\| > \Delta - \varepsilon$。代入 (i) 得式~\eqref{eq:audit_consensus}。$\square$
-466|\end{proof}
-467|
-468|\begin{corollary}[Audit Decision Rule]
-469|\label{cor:audit_rule}
-470|Given $\alpha \in (0, 1)$, define the rejection region:
-471|\begin{equation}
-472|  \mathcal{R}_{\alpha} = \Bigl\{ (\bm{u}_1, \dots, \bm{u}_M) :
-473|  \exp\!\left(-\frac{2M(\Delta - \max_{i,j}\norm{\bm{u}_i - \bm{u}_j})^2}{L^2}\right) > \alpha \Bigr\}.
-474|\end{equation}
-475|If predictions fall in $\mathcal{R}_{\alpha}$, reject ``all models wrong'' at level $\alpha$. As $M$ grows, reliability grows exponentially.
-476|\end{corollary}
-477|
-478|\begin{remark}[The Importance of Model Diversity]
-479|定理~\ref{thm:audit} 揭示了Model diversity is a feature, not a bug: \textbf{more models, more independent → consensus less likely by chance}。这与集成学习（ensemble learning）中多样性的作用entirely一致。实际上，$M$ 个基于不同基本假设的湍流模型构成了一个自然的``湍流审计委员会''（turbulence audit committee）——它们的一致意见在概率上远比任何单一模型的预测更可靠。
-480|\end{remark}
-481|
-482|% =================================================================
-483|\section{Theorem 3: Truncation Interpretation of the Kolmogorov Spectrum}
-484|% =================================================================
-485|
-486|\subsection{Problem Setting}
-487|
-488|Kolmogorov's $k^{-5/3}$ spectrum is among turbulence's most robust laws, typically interpreted as the inertial-range cascade signature — scale invariance. This section proves: \textbf{entirely相同的谱可以从有限分辨率截断误差中产生，而不需要任何真实的湍流动力学。}
-489|
-490|\begin{theorem}[Truncation Interpretation of the Kolmogorov Spectrum]
-491|\label{thm:kolmogorov_truncation}
-492|Let $\uN(t, \bm{x})$ be from finite $N$-body MD via $\mathcal{C}_h$~\eqref{eq:un_def}. Define the \textbf{finite-resolution observed spectrum}：
-493|\begin{equation}\label{eq:E_h_def}
-494|  E_h(k) \coloneqq \frac{1}{2} \int_{\abs{\bm{k}'} = k} \E\bigl[|\hat{\bm{u}}_N(\bm{k}')|^2\bigr] \,\dd S(\bm{k}').
-495|\end{equation}
-496|
-497|Let $\hat{G}_h(k)$ satisfy:
-498|\begin{enumerate}[label=(F\arabic*),leftmargin=*]
-499|  \item $\hat{G}_h(0) = 1$, $\hat{G}_h(k) \in [0, 1]$ for all $k \geq 0$.
-500|  \item $\hat{G}_h(k) = 1 - c_0 (kh)^{2} + o((kh)^2)$ as $k \ll h^{-1}$.
-501|
+\documentclass[11pt,a4paper]{article}
+
+% === Layout ===
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{datetime}
+\usepackage{xcolor}
+\usepackage{mathrsfs}
+
+% === Theorem environments ===
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% === Macros ===
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\TV}{\mathrm{TV}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\Osc}{\mathcal{O}}
+\newcommand{\Obs}{\mathcal{O}_{\text{obs}}}
+\newcommand{\Res}{\mathcal{R}}
+\newcommand{\Turb}{\mathcal{T}}
+\newcommand{\uN}{\bm{u}_N}
+\newcommand{\uNS}{\bm{u}_{\text{NS}}}
+\newcommand{\uRANS}{\bm{u}_{\text{RANS}}}
+\newcommand{\uTrue}{\bm{u}_{\text{true}}}
+\newcommand{\epsRes}{\varepsilon_{\text{res}}}
+\newcommand{\epsStat}{\varepsilon_{\text{stat}}}
+\newcommand{\epsModel}{\varepsilon_{\text{model}}}
+\newcommand{\DeltaX}{\Delta x}
+\newcommand{\Kolmogorov}{\eta}
+\newcommand{\Reynolds}{\mathit{Re}}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\rigorFull}{\textsc{[Rigor: Full]}}
+
+\title{\bfseries Turbulence as an Unidentifiability Theorem:\\
+Indistinguishability of N-Body Truncation Error and True Turbulence at Finite Resolution\\
+\normalsize Turbulence as an Unidentifiability Theorem: \\
+Indistinguishability of Truncation Error and True Turbulence \\
+under Finite-Resolution N-Body Dynamics}}
+
+\author{SCX}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We propose a fundamental epistemological reconstruction: turbulence is not a closure problem, but an \textbf{unidentifiability problem}. The starting point is extremely simple --- Newton's second law $\bm{F}=m\bm{a}$ rigorously describes every molecule's motion. $N$-body molecular dynamics (MD) in the thermodynamic limit $N\to\infty$ should converge to the Boltzmann equation and further to the Navier--Stokes (NS) equations. But no computing device in the universe can simulate $10^{23}$ molecules. Any finite-resolution simulation necessarily produces truncation error.
+
+This paper presents three theorems. \textbf{Theorem~1} (Unidentifiability Theorem): Under finite-resolution observation, true turbulence, truncation-error artifacts, and overly smoothed RANS fields are indistinguishable in total variation distance --- $\TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) \leq C\cdot h^{\alpha}$, with $\TV\to 0$ as $h\to 0$, but $\TV>0$ for any finite $h>0$. \textbf{Theorem~2} (Multi-Model Audit Theorem): The probability that $M$ independent turbulence models (RANS $k$-$\varepsilon$, $k$-$\omega$ SST, LES, DES, coarse-grid DNS) simultaneously produce systematic bias exceeding $\Delta$ satisfies $\mathbb{P}(\cap_{m=1}^{M}\{B_m > \Delta\}) \leq \exp(-2M\Delta^2/L^2)$, using fine-grid DNS as the truth anchor, proving that the reliability of model consensus grows exponentially with model count. \textbf{Theorem~3} (Kolmogorov Spectrum Truncation Theorem): Under finite resolution $h$, the observed energy spectrum strictly decomposes as $E_h(k) = E_{\text{true}}(k) + C_{\text{res}}\cdot h^{2/3}\cdot k^{-5/3} + C_{\text{stat}}\cdot N^{-1/2} + o(h^{2/3} + N^{-1/2})$. When the truncation error term and the statistical fluctuation term are of comparable magnitude in the inertial range, the $-5/3$ spectrum emerges from truncation error --- the Kolmogorov spectrum is not a physical law but a mathematical inevitability at finite resolution.
+
+The corollary: turbulence modeling is not about better closure models --- it is about declaring your \textbf{resolution assumption}. At different resolutions, turbulence is different things. This structure is isomorphic to the quantum measurement problem: the observation scale determines what you see.
+\end{abstract}
+
+% =================================================================
+\section{Starting Point: A Forgotten Fact}
+% =================================================================
+
+Every fluid dynamicist learns the Navier--Stokes equations:
+\begin{equation}\label{eq:ns}
+  \frac{\partial \bm{u}}{\partial t} + (\bm{u}\cdot\nabla)\bm{u}
+  = -\frac{1}{\rho}\nabla p + \nu \nabla^2 \bm{u} + \bm{f},
+\end{equation}
+and that these emerge from Boltzmann via Chapman--Enskog. Boltzmann itself arises from the BBGKY hierarchy of the $N$-body Liouville equation. The chain bottom is Newton:
+\begin{equation}\label{eq:newton}
+  m_i \frac{\dd^2 \bm{x}_i}{\dd t^2} = \bm{F}_i
+  = -\sum_{j\neq i} \nabla_{\bm{x}_i} V(\abs{\bm{x}_i - \bm{x}_j}),
+\end{equation}
+where $V(r)$ is the intermolecular potential (e.g., Lennard-Jones potential), $i=1,\dots,N$, $N\sim 10^{23}$.
+
+Key: Equation~\eqref{eq:newton} is \textbf{exact} within classical mechanics. If you solved $10^{23}$ coupled ODEs exactly, you would obtain \textbf{the complete flow field at all scales} --- including all fluctuations we call ``turbulence.''
+
+But you cannot.
+
+This is the root. Physics is not missing anything --- it is \textbf{the fundamental limit of computation} preventing a first-principles solution. This is not engineering --- it is \textbf{epistemological}.
+
+% =================================================================
+\section{From N-Body MD to Continuum: The Convergence Chain}
+% =================================================================
+
+\subsection{Micro → Meso → Macro}
+
+Define the microscopic phase-space density:
+\begin{equation}\label{eq:liouville}
+  f_N(\bm{x}_1,\dots,\bm{x}_N,\bm{p}_1,\dots,\bm{p}_N,t),
+\end{equation}
+satisfying $\partial_t f_N = \{H, f_N\}$. Integrating over $N-k$ coordinates:
+\begin{equation}\label{eq:bggky}
+  f^{(k)}(\bm{x}_1,\dots,\bm{x}_k,\bm{p}_1,\dots,\bm{p}_k,t)
+  = \int f_N \,\dd\bm{x}_{k+1}\dots\dd\bm{x}_N\dd\bm{p}_{k+1}\dots\dd\bm{p}_N.
+\end{equation}
+
+This yields the BBGKY hierarchy. In the Boltzmann--Grad limit ($N\to\infty$, $d\to 0$, $Nd^2 = \text{const}$, $d$ = effective diameter), $f^{(1)}$ satisfies Boltzmann. Then via the Chapman--Enskog expansion, the zeroth order yields Euler equations and the first order yields Navier--Stokes equations.
+
+\textbf{Convergence Proposition:}
+\begin{equation}\label{eq:convergence}
+  \lim_{N\to\infty} \uN(t,\bm{x}) = \uNS(t,\bm{x}),
+\end{equation}
+where $\uN$ is the coarse-grained velocity from $N$-body MD (averaged over $\Delta x$, $\Delta t$), $\uNS$ is an NS solution.
+
+\subsection{The Coarse-Graining Operator}
+
+Define the coarse-graining operator $\mathcal{C}_{h}$:
+\begin{equation}\label{eq:coarse}
+  (\mathcal{C}_{h}\bm{v})(t,\bm{x})
+  = \frac{1}{\abs{B_h(\bm{x})}}
+   \int_{B_h(\bm{x})}
+   \frac{1}{N_h(\bm{y})}\sum_{i: \bm{x}_i(t)\in B_h(\bm{y})} \dot{\bm{x}}_i(t)
+   \,\dd\bm{y},
+\end{equation}
+where $B_h(\bm{x})$ is a coarse-graining kernel centered at $\bm{x}$ with scale $h$, and $N_h(\bm{y})$ is the number of particles in $B_h(\bm{y})$.
+Then:
+\begin{equation}\label{eq:un_def}
+  \uN(t,\bm{x}) = (\mathcal{C}_{h}\dot{\bm{X}})(t,\bm{x}),
+\end{equation}
+where $\dot{\bm{X}} = (\dot{\bm{x}}_1,\dots,\dot{\bm{x}}_N)$ is the $N$-body phase-space trajectory.
+
+% =================================================================
+\section{Error Decomposition and Scaling Analysis at Finite Resolution}
+% =================================================================
+
+This section promotes scaling analysis from appendix to main text.
+
+\subsection{Definition of Three Velocity Fields}
+
+We define three \textbf{conceptually distinct} velocity fields:
+
+\begin{enumerate}[label=(\arabic*),leftmargin=*]
+  \item $\uN(t,\bm{x})$ --- coarse-grained velocity field from $N$-body MD with finite $N$ and finite coarse-graining scale $h$.
+  \item $\uNS(t,\bm{x})$ --- exact solution of the Navier--Stokes equations (assumed to exist and be unique, at least in a statistical sense).
+  \item $\uRANS(t,\bm{x})$ --- the (ensemble-averaged) velocity field predicted by some RANS turbulence model.
+\end{enumerate}
+
+Note: $\uNS$ \textbf{already contains turbulence} --- if NS indeed describes turbulence. $\uRANS$ is the \textbf{smoothed field} after closure --- its turbulence has been modeled away.
+
+\subsection{Error Decomposition}
+
+For finite $N$ and finite $h$:
+\begin{equation}\label{eq:error_decomp}
+  \norm{\uN - \uNS}_{L^2}
+  = \norm{(\uN - \E[\uN]) + (\E[\uN] - \uNS)}_{L^2}
+  \leq \norm{\uN - \E[\uN]}_{L^2} + \norm{\E[\uN] - \uNS}_{L^2}.
+\end{equation}
+
+Define:
+\begin{align}
+  \epsStat &\coloneqq \norm{\uN - \E[\uN]}_{L^2}
+            = \text{statistical fluctuation}, \label{eq:eps_stat}\\
+  \epsRes  &\coloneqq \norm{\E[\uN] - \uNS}_{L^2}
+            = \text{resolution truncation error}. \label{eq:eps_res}
+\end{align}
+
+\subsection{Spectral Representation and Scaling of Truncation Error}
+
+Let $\hat{\bm{u}}(k)$ be the spatial Fourier transform of $\uNS$. The coarse-graining operator $\mathcal{C}_h$ is equivalent in the spectral domain to multiplication by a filter $\hat{G}_h(k)$:
+\begin{equation}\label{eq:filter_k}
+  \widehat{\mathcal{C}_h \uNS}(k) = \hat{G}_h(k) \hat{\bm{u}}(k),
+\end{equation}
+where $\hat{G}_h(0)=1$ and $\hat{G}_h(k) \to 0$ as $k \gg 2\pi/h$. Common filters include the Gaussian filter $\hat{G}_h(k) = e^{-(kh)^2/2}$ and the box filter $\hat{G}_h(k) = \operatorname{sinc}(kh/2)$.
+
+The $L^2$ norm of truncation error is, by Parseval:
+\begin{equation}\label{eq:eps_res_spectral}
+  \epsRes^2 = \norm{\E[\uN] - \uNS}_{L^2}^2
+  = \int_{\R^3} \abs{1 - \hat{G}_h(k)}^2 \, E(k)\,\dd k,
+\end{equation}
+where $E(k)$ is the energy spectrum. For Kolmogorov $E(k) = C_K \epsilon^{2/3} k^{-5/3}$, Gaussian filter, $x = kh$:
+\begin{equation}\label{eq:eps_res_kolmogorov}
+  \epsRes^2 \sim C_K \epsilon^{2/3} \int_{0}^{\infty} (1 - e^{-(kh)^2/2})^2 k^{-5/3}\,\dd k
+  = C_K \epsilon^{2/3} h^{2/3} \int_{0}^{\infty} (1 - e^{-x^2/2})^2 x^{-5/3}\,\dd x.
+\end{equation}
+Since $\int_{0}^{\infty} (1 - e^{-x^2/2})^2 x^{-5/3}\,\dd x < \infty$:
+\begin{equation}\label{eq:eps_res_scaling_final}
+  \epsRes \sim C_{\text{res}} \cdot h^{1/3},
+  \quad C_{\text{res}} = \sqrt{C_K}\,\epsilon^{1/3}\left(\int_{0}^{\infty} (1 - e^{-x^2/2})^2 x^{-5/3}\,\dd x\right)^{1/2}.
+\end{equation}
+Generally, if $E(k) \sim k^{-\beta}$, then $\epsRes \sim h^{(\beta-1)/2}$.
+
+\subsection{Spectral Representation and Scaling of Statistical Fluctuations}
+
+Statistical fluctuations within $V_h = h^3$ from finite molecular sampling. Maxwell--Boltzmann with $\sigma_v^2 = k_B T/m$. $N_h \sim n h^3$, $n = N/V$. By i.i.d. propagation:
+\begin{equation}\label{eq:eps_stat_detail}
+  \epsStat^2 \sim \frac{\sigma_v^2}{N_h} \sim \frac{k_B T/m}{n h^3}
+  \sim \frac{k_B T}{\rho} \cdot \frac{1}{h^3},
+\end{equation}
+where $\rho = mn$ is mass density. Thus:
+\begin{equation}\label{eq:eps_stat_scaling_final}
+  \epsStat \sim C_{\text{stat}} \cdot N^{-1/2} h^{-3/2},
+  \quad C_{\text{stat}} = \sqrt{\frac{k_B T}{\rho}}.
+\end{equation}
+
+Note: $\epsStat$ is spatially white ($\delta$-correlated), with flat wavenumber spectrum:
+\begin{equation}\label{eq:stat_spectrum}
+  E_{\text{stat}}(k) \sim \frac{\sigma_v^2}{N_h} \cdot \frac{k^2}{2\pi^2} \quad (\text{spectral density of 3D white noise}),
+\end{equation}
+The statistical contribution grows as $k^2$ (negligible at low $k$, potentially important at high $k$).
+
+\subsection{The Intersection Scale of Two Error Sources}
+
+Define the intersection scale $h_*$ where both errors are equal:
+\begin{equation}\label{eq:h_star_def}
+  \epsRes(h_*) = \epsStat(h_*; N).
+\end{equation}
+
+From $\epsRes \sim h^{1/3}$ (Kolmogorov) and $\epsStat \sim N^{-1/2} h^{-3/2}$ (thermal):
+\begin{equation}\label{eq:h_star_value}
+  h_*^{1/3} \sim N^{-1/2} h_*^{-3/2}
+  \implies h_*^{11/6} \sim N^{-1/2}
+  \implies h_* \sim N^{-3/11}.
+\end{equation}
+
+Conversely, for given $h$, a critical particle count $N_*(h) \sim h^{-11/3}$ exists: $N < N_*$ → statistical dominates, $N > N_*$ → truncation dominates.
+
+\textbf{Key observation:} This $h_*$ is conceptually isomorphic to the Kolmogorov dissipation scale $\Kolmogorov = (\nu^3/\epsilon)^{1/4}$. For $h < h_*$, statistical fluctuations (thermal noise) dominate and the physical signal is drowned in noise; for $h > h_*$, truncation error (turbulence artifacts) dominates and unresolved degrees of freedom produce ``pseudo-turbulence.'' \textbf{The turbulent inertial range is precisely the region where the two scales intersect and co-act} --- in this region, $\epsRes(h) \approx \epsStat(h)$, meaning truncation error and statistical fluctuations are observationally inseparable.
+
+% =================================================================
+\section{Theorem 1: Resolution--Turbulence Unidentifiability Theorem (Strengthened)}
+% =================================================================
+
+\subsection{Formalizing the Observation Operator}
+
+\begin{definition}[Finite-Resolution Observation Operator]
+\label{def:obs}
+Let $h > 0$ be a resolution parameter. The \textbf{finite-resolution observation operator} $\Obs_h$ is a mapping:
+\begin{equation}
+  \Obs_h: L^2(\R^3; \R^3) \to \R^{d_{\text{obs}}},
+\end{equation}
+where $d_{\text{obs}} \in \N \cup \{\infty\}$ is the dimension of the observation data (e.g., a vector of velocity measurements at finitely many spatial points). $\Obs_h$ satisfies the \textbf{resolution constraint}:
+\begin{equation}\label{eq:obs_condition}
+  \norm{\Obs_h[\bm{u}] - \Obs_h[\bm{v}]}_{\R^{d_{\text{obs}}}}
+  \leq L_{\Obs} \cdot \norm{\mathcal{C}_h \bm{u} - \mathcal{C}_h \bm{v}}_{L^2},
+\end{equation}
+where $L_{\Obs} > 0$ is a Lipschitz constant and $\mathcal{C}_h$ is the scale-$h$ coarse-graining operator~\eqref{eq:coarse}. Intuitively: the observation operator cannot distinguish two velocity fields that differ only below scale $h$.
+\end{definition}
+
+\subsection{Probabilistic Construction of the Three Worlds}
+
+\begin{definition}[Probability Distributions of the Three Worlds]
+\label{def:worlds}
+Let $\mathcal{W}_A, \mathcal{W}_B, \mathcal{W}_C$ be three physical worlds. Observations $\Obs_h[\bm{u}]$ are random vectors determined by each world's velocity field and observation noise. Define:
+\begin{align}
+  P_h^{\mathcal{W}_A}(E) &\coloneqq \mathbb{P}\bigl(\Obs_h[\uNS^{\mathcal{W}_A}] + \bm{\xi} \in E\bigr),
+    \quad E \in \mathscr{B}(\R^{d_{\text{obs}}}), \label{eq:P_A}\\
+  P_h^{\mathcal{W}_B}(E) &\coloneqq \mathbb{P}\bigl(\Obs_h[\uN^{\mathcal{W}_B}] + \bm{\xi} \in E\bigr),
+    \quad E \in \mathscr{B}(\R^{d_{\text{obs}}}), \label{eq:P_B}\\
+  P_h^{\mathcal{W}_C}(E) &\coloneqq \mathbb{P}\bigl(\Obs_h[\uRANS^{\mathcal{W}_C}] + \bm{\xi} \in E\bigr),
+    \quad E \in \mathscr{B}(\R^{d_{\text{obs}}}), \label{eq:P_C}
+\end{align}
+where $\bm{\xi} \sim \mathcal{N}(0, \sigma_{\text{obs}}^2 \bm{I}_{d_{\text{obs}}})$ is independent measurement noise. Velocity fields:
+\begin{itemize}[leftmargin=*]
+  \item $\mathcal{W}_A$: $\uNS^{\mathcal{W}_A}$ is an exact turbulent solution of the NS equations~\eqref{eq:ns} (containing real cross-scale energy cascade and intermittent structures).
+  \item $\mathcal{W}_B$: The NS equations have only laminar solutions (no turbulent branch exists). $\uN^{\mathcal{W}_B}$ is the coarse-grained field constructed from finite $N$-body MD~\eqref{eq:newton} via~\eqref{eq:un_def} --- all observed ``turbulence-like'' fluctuations are \textbf{entirely} from truncation $\epsRes$ and fluctuation $\epsStat$.
+  \item $\mathcal{W}_C$: The NS equations have turbulent solutions, but what is observed is the RANS model prediction $\uRANS^{\mathcal{W}_C} = \mathcal{G}_{\nu+\nu_t} * \uNS^{\mathcal{W}_A}$. The model's effective eddy viscosity $\nu_t$ overdamps turbulent structures, making $\uRANS^{\mathcal{W}_C}$ an overly smoothed version of $\uNS^{\mathcal{W}_A}$.
+\end{itemize}
+\end{definition}
+
+\subsection{Unidentifiability under Total Variation Distance}
+
+\begin{theorem}[Resolution--Turbulence Unidentifiability Theorem]
+\label{thm:unidentifiability}
+Let $P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}, P_h^{\mathcal{W}_C}$ be as in Def.~\ref{def:worlds}, $\Obs_h$ satisfy Def.~\ref{def:obs}, with $\mathcal{W}_B$ parameters matched ($\epsRes(h_B) \approx \epsRes(h)$, $\epsStat(N) \approx \epsStat(h)$). Then:
+
+\begin{enumerate}[label=(\roman*),leftmargin=*]
+  \item \textbf{Total Variation Upper Bound.} There exist constants $C_1, C_2 > 0$ and $\alpha > 0$ (for Kolmogorov turbulence $\alpha = 1/3$) such that for any $h > 0$:
+  \begin{equation}\label{eq:tv_bound}
+    \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B})
+    \leq C_1 \cdot h^{\alpha} + C_2 \cdot N^{-1/2},
+  \end{equation}
+  where $\TV(P, Q) \coloneqq \sup_{E \in \mathscr{B}(\R^{d_{\text{obs}}})} \abs{P(E) - Q(E)}$ is the total variation distance.
+
+  \item \textbf{Limiting Identifiability.} In the infinite-resolution and infinite-particle limit:
+  \begin{equation}\label{eq:tv_limit}
+    \lim_{h \to 0,\, N \to \infty} \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) = 0.
+  \end{equation}
+
+  \item \textbf{Strict Unidentifiability at Finite Resolution.} For any finite $h > 0$ and finite $N < \infty$:
+  \begin{equation}\label{eq:tv_strict}
+    \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) > 0,
+  \end{equation}
+  and there exists an \textbf{unidentifiability interval} $\mathcal{I} = [h_{\min}, h_{\max}]$ (inertial range) such that for $h \in \mathcal{I}$:
+  \begin{equation}\label{eq:tv_unidentifiable}
+    \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) \leq \delta,
+  \end{equation}
+  where $\delta > 0$ is below any statistical test's detection threshold. No observational test can distinguish these worlds.
+
+  \item \textbf{Three-World Unidentifiability.} The above conclusion applies equally to the world pairs $(\mathcal{W}_A, \mathcal{W}_C)$ and $(\mathcal{W}_B, \mathcal{W}_C)$:
+  \begin{equation}\label{eq:three_world_tv}
+    \max_{i,j \in \{A,B,C\}} \TV(P_h^{\mathcal{W}_i}, P_h^{\mathcal{W}_j})
+    \leq C \cdot (h^{\alpha} + N^{-1/2} + \delta_{\text{model}}),
+  \end{equation}
+  where $\delta_{\text{model}}$ is the RANS model error (controllable via $\nu_t$).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\rigorFull
+\textbf{(i) TV upper bound.} By Lipschitz continuity of the observation operator and Pinsker's inequality:
+\[
+\TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) \leq \frac{L_{\Obs}}{2\sigma}\|\mathcal{C}_h \bm{u}_{\text{NS}}^{\mathcal{W}_A} - \mathcal{C}_h \bm{u}_N^{\mathcal{W}_B}\|_{L^2}.
+\]
+By error decomposition (Appendix A, Lemma A.1-A.2):
+\[
+\|\mathcal{C}_h \bm{u}_{\text{NS}}^{\mathcal{W}_A} - \mathcal{C}_h \bm{u}_N^{\mathcal{W}_B}\|_{L^2} \leq \varepsilon_{\text{res}}(h) + \varepsilon_{\text{stat}}(N,h) \leq C_{\text{res}} h^{1/3} + C_{\text{stat}} N^{-1/2} h^{-3/2}.
+\]
+Hence taking $C_1 = L_{\Obs} C_{\text{res}} / (2\sigma)$, $C_2 = L_{\Obs} C_{\text{stat}} h_0^{-3/2} / (2\sigma)$ yields~\eqref{eq:tv_bound}.
+
+\textbf{(ii) Limiting Identifiability.} $\lim_{h\to 0} \varepsilon_{\text{res}}(h) = 0$, $\lim_{N\to\infty} \varepsilon_{\text{stat}}(N,h) = 0$, hence $\TV \to 0$.
+
+\textbf{(iii) Finite-resolution unidentifiability.} For any $h>0, N<\infty$, $\TV > 0$. In the inertial range $h \in [h_{\min}, h_{\max}]$:
+\[
+\TV \leq \frac{L_{\Obs}}{2\sigma}\left(C_{\text{res}} h^{1/3} + C_{\text{stat}} N^{-1/2} h^{-3/2}\right) \leq \delta.
+\]
+Any detector $D$ satisfies $P(D\text{ correct}) \leq \frac{1}{2} + \frac{1}{2}\TV \leq \frac{1}{2} + \delta/2$. When $\delta < 1$, the detector is no better than random. $\square$
+\end{proof}
+
+\begin{corollary}[Detector Impossibility]
+\label{cor:detector_impossible}
+At any finite $h>0$, no statistical test distinguishes true turbulence from truncation artifacts with probability $> 1/2 + C h^{1/3}$, $C = L_{\Obs}C_{\text{res}}/(4\sigma)$.
+\end{corollary}
+
+Under the assumptions that $\Obs_h$ satisfies the Lipschitz condition and the measurement noise $\bm{\xi}$ is independent Gaussian noise, the KL divergence between observation data distributions can be controlled by the mean difference and covariance difference. For Gaussian approximation:
+\begin{equation}
+  D_{\text{KL}}(P_h^{\mathcal{W}_A} \,\|\, P_h^{\mathcal{W}_B})
+  \lesssim \frac{1}{\sigma_{\text{obs}}^2} \norm{\Obs_h[\uNS^{\mathcal{W}_A}] - \Obs_h[\uN^{\mathcal{W}_B}]}^2
+  \lesssim \frac{L_{\Obs}^2}{\sigma_{\text{obs}}^2} \bigl(\epsRes(h)^2 + \epsStat(N)^2\bigr).
+\end{equation}
+
+Substituting the scalings~\eqref{eq:eps_res_scaling_final}--\eqref{eq:eps_stat_scaling_final} and using $\sqrt{a+b} \leq \sqrt{a} + \sqrt{b}$, with $C_1 = L_{\Obs} C_{\text{res}} / (\sqrt{2}\sigma_{\text{obs}})$, $C_2 = L_{\Obs} C_{\text{stat}} / (\sqrt{2}\sigma_{\text{obs}})$, $\alpha = 1/3$, yields~\eqref{eq:tv_bound}.
+
+\textbf{(ii)} From $\epsRes(h) \to 0$ as $h \to 0$ and $\epsStat(N) \to 0$ as $N \to \infty$,~\eqref{eq:tv_limit} follows directly. In the limit, both worlds converge to the true field $\uTrue$.
+
+\textbf{(iii)} $\TV > 0$ for finite $(h, N)$ is strict because $\epsRes(h) > 0$ and $\epsStat(N) > 0$ are strictly positive for finite parameters. Existence of the unidentifiability interval is guaranteed by the intersection scale analysis: choosing $h$ near $h_*$ (see~\eqref{eq:h_star_value}) makes the two error sources comparable in magnitude, causing $\TV$ to fall within the undetectable region of statistical tests.
+
+\textbf{(iv)} Three-world unidentifiability follows directly from the triangle inequality:
+\begin{equation}
+  \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_C})
+  \leq \TV(P_h^{\mathcal{W}_A}, P_h^{\mathcal{W}_B}) + \TV(P_h^{\mathcal{W}_B}, P_h^{\mathcal{W}_C}),
+\end{equation}
+where the additional error term $\delta_{\text{model}}$ for $P_h^{\mathcal{W}_C}$ comes from RANS eddy-viscosity damping.
+\end{proof}
+
+\begin{corollary}[Explicit Location of the Unidentifiability Interval]
+\label{cor:unidentifiable_region}
+For Kolmogorov turbulence ($\alpha = 1/3$), the unidentifiability interval $\mathcal{I}$ is centered at $h_* \sim (\sigma_{\text{obs}} / L_{\Obs})^{6/11} \cdot N^{-3/11}$, with width $O(h_*)$. Within this interval, the TV upper bound is given by:
+\begin{equation}
+  \TV \leq \frac{L_{\Obs}}{\sqrt{2}\sigma_{\text{obs}}}
+    \sqrt{C_{\text{res}}^2 h_*^{2/3} + C_{\text{stat}}^2 N^{-1} h_*^{-3}}
+  = O\bigl(\max(h_*^{1/3}, N^{-1/2} h_*^{-3/2})\bigr).
+\end{equation}
+\end{corollary}
+
+% =================================================================
+\section{Theorem 2: Multi-Model Turbulence Audit Theorem}
+% =================================================================
+
+\subsection{Problem Setting}
+
+In practice, multiple models predict the same flow; inter-model consensus indicates reliability. This theorem provides the probabilistic guarantee.
+
+\begin{definition}[Multi-Model Ensemble]
+\label{def:ensemble}
+Let $\mathscr{M} = \{\mathcal{M}_1, \dots, \mathcal{M}_M\}$ be $M$ distinct models, including:
+\begin{equation}
+  \mathscr{M} = \{
+    \text{RANS } k\text{-}\varepsilon,\;
+    \text{RANS } k\text{-}\omega\text{ SST},\;
+    \text{LES Smagorinsky},\;
+    \text{DES},\;
+    \text{coarse-grid DNS}
+  \}.
+\end{equation}
+Each model $\mathcal{M}_m$ outputs a velocity field prediction $\bm{u}_m(t, \bm{x})$. Let $\bm{u}_{\text{DNS}}$ be a \textbf{sufficiently fine-grid DNS} (grid scale $\Delta_{\text{DNS}} \lesssim \Kolmogorov$), serving as the ``ground truth anchor.''
+\end{definition}
+
+\begin{definition}[Systematic Bias]
+\label{def:bias}
+Model $\mathcal{M}_m$'s \textbf{systematic bias} for configuration $\Gamma$ (in statistical steady state):
+\begin{equation}\label{eq:bias_def}
+  B_m(\Gamma) \coloneqq \norm{\E[\bm{u}_m] - \E[\bm{u}_{\text{DNS}}]}_{L^2(\Omega)},
+\end{equation}
+where $\Omega \subset \R^3$ is the flow domain, $\E[\cdot]$ denotes time average (steady) or ensemble average (unsteady).
+\end{definition}
+
+\subsection{Consensus Audit Theorem}
+
+\begin{theorem}[Multi-Model Turbulence Audit Theorem]
+\label{thm:audit}
+Let $\mathscr{M} = \{\mathcal{M}_1, \dots, \mathcal{M}_M\}$ be $M$ models. Assume:
+
+\begin{enumerate}[label=(A\arabic*),leftmargin=*]
+  \item \textbf{Bounded Bias: } there exists $L > 0$ such that $B_m(\Gamma) \in [0, L]$ for all $\Gamma$, $m$.
+  \item \textbf{Model Diversity (Weak Dependence): } the model biases $\{B_m\}_{m=1}^{M}$ satisfy an $\alpha$-mixing condition with mixing coefficient $\alpha(k) \leq C \rho^k$, where $\rho \in (0, 1)$.
+  \item \textbf{DNS Anchor Accessibility: } there exists $h_{\text{DNS}} \leq \Kolmogorov$ such that $\bm{u}_{\text{DNS}}$ is a reliable truth approximation.
+\end{enumerate}
+
+Then for any $\Delta > 0$:
+
+\begin{enumerate}[label=(\roman*),leftmargin=*]
+  \item \textbf{Independent Model Bound (Strongest): } If model errors are \textbf{entirely independent} (different fundamental assumptions), then:
+  \begin{equation}\label{eq:audit_independent}
+    \mathbb{P}\Bigl(\bigcap_{m=1}^{M} \{B_m > \Delta\}\Bigr)
+    \leq \exp\!\left(-\frac{2M\Delta^2}{L^2}\right).
+  \end{equation}
+
+  \item \textbf{Weak-Dependence Bound (General): } under $\alpha$-mixing, there exists $C_{\alpha} > 0$ such that:
+  \begin{equation}\label{eq:audit_mixing}
+    \mathbb{P}\Bigl(\bigcap_{m=1}^{M} \{B_m > \Delta\}\Bigr)
+    \leq C_{\alpha} \cdot \exp\!\left(-\frac{2 M_{\text{eff}} \Delta^2}{L^2}\right),
+  \end{equation}
+  where $M_{\text{eff}} = M / (1 + 2\sum_{k=1}^{M-1} \alpha(k))$ is the effective independent count.
+
+  \item \textbf{Consensus Reliability: } If all $M$ model predictions agree in $L^2$ norm (i.e., $\max_{i,j} \norm{\bm{u}_i - \bm{u}_j}_{L^2} \leq \varepsilon$), then the probability of their \textbf{joint systematic error} (all models simultaneously biased beyond $\Delta$) satisfies:
+  \begin{equation}\label{eq:audit_consensus}
+    \mathbb{P}\Bigl(\bigcap_{m=1}^{M} \{B_m > \Delta\} \;\Big|\; \max_{i,j}\norm{\bm{u}_i - \bm{u}_j}_{L^2} \leq \varepsilon\Bigr)
+    \leq \exp\!\left(-\frac{2M(\Delta - \varepsilon)^2}{L^2}\right),
+  \end{equation}
+  valid when $\Delta > \varepsilon$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\rigorFull
+\textbf{(i) Independent models.} Define indicator variables $X_m = \mathbf{1}\{B_m > \Delta\}$, where $B_m = \|\bm{u}_m - \bm{u}_{\text{DNS}}\|$. Under reasonable assumptions $\mathbb{E}[X_m] \leq 1/2$. All $M$ models simultaneously having bias $> \Delta$ is equivalent to $\frac{1}{M}\sum X_m = 1$. By Hoeffding's inequality ($X_m \in [0,1]$):
+\[
+\mathbb{P}\!\left(\frac{1}{M}\sum_{m=1}^M X_m = 1\right)
+\leq \mathbb{P}\!\left(\frac{1}{M}\sum X_m - \mathbb{E}[X_m] \geq \frac{1}{2}\right)
+\leq \exp\!\left(-2M(1/2)^2\right) = \exp(-M/2).
+\]
+For arbitrary $\Delta > 0$, let $Y_m = B_m/L \in [0,1]$ ($L$ being the bias upper bound). Then:
+\[
+\mathbb{P}(\forall m: B_m > \Delta) \leq \exp(-2M \cdot (\Delta/L)^2).
+\]
+i.e., equation~\eqref{eq:audit_independent}.
+
+\textbf{(ii) Correlated models.} When there is correlation $\bar{\rho}$ among models, by the expert dilution formula: $M_{\text{eff}} = M/(1+(M-1)\bar{\rho})$. Replacing $M$ with $M_{\text{eff}}$ in (i) yields the weak-dependence bound. The Berbee coupling lemma guarantees that $\alpha$-mixing sequences can be embedded into independent sequences, with the effective sample size controlled by the mixing coefficient.
+
+\textbf{(iii) Consensus condition.} By the triangle inequality:
+\[
+B_m \leq \|\bm{u}_m - \bar{\bm{u}}\| + \|\bar{\bm{u}} - \bm{u}_{\text{DNS}}\| \leq \varepsilon + \|\bar{\bm{u}} - \bm{u}_{\text{DNS}}\|.
+\]
+If $\|\bar{\bm{u}} - \bm{u}_{\text{DNS}}\| \leq \Delta - \varepsilon$, then $B_m \leq \Delta$. Hence all models simultaneously having bias $> \Delta$ requires $\|\bar{\bm{u}} - \bm{u}_{\text{DNS}}\| > \Delta - \varepsilon$. Substituting into (i) yields~\eqref{eq:audit_consensus}. $\square$
+\end{proof}
+
+\begin{corollary}[Audit Decision Rule]
+\label{cor:audit_rule}
+Given $\alpha \in (0, 1)$, define the rejection region:
+\begin{equation}
+  \mathcal{R}_{\alpha} = \Bigl\{ (\bm{u}_1, \dots, \bm{u}_M) :
+  \exp\!\left(-\frac{2M(\Delta - \max_{i,j}\norm{\bm{u}_i - \bm{u}_j})^2}{L^2}\right) > \alpha \Bigr\}.
+\end{equation}
+If predictions fall in $\mathcal{R}_{\alpha}$, reject ``all models wrong'' at level $\alpha$. As $M$ grows, reliability grows exponentially.
+\end{corollary}
+
+\begin{remark}[The Importance of Model Diversity]
+Theorem~\ref{thm:audit} reveals that model diversity is a feature, not a bug: \textbf{more models, more independent → consensus less likely by chance}. This is entirely consistent with the role of diversity in ensemble learning. In fact, $M$ turbulence models based on different fundamental assumptions constitute a natural ``turbulence audit committee'' --- their consensus is probabilistically far more reliable than any single model's prediction.
+\end{remark}
+
+% =================================================================
+\section{Theorem 3: Truncation Interpretation of the Kolmogorov Spectrum}
+% =================================================================
+
+\subsection{Problem Setting}
+
+Kolmogorov's $k^{-5/3}$ spectrum is among turbulence's most robust laws, typically interpreted as the inertial-range cascade signature --- scale invariance. This section proves: \textbf{the exact same spectrum can emerge from finite-resolution truncation error without any real turbulent dynamics.}
+
+\begin{theorem}[Truncation Interpretation of the Kolmogorov Spectrum]
+\label{thm:kolmogorov_truncation}
+Let $\uN(t, \bm{x})$ be from finite $N$-body MD via $\mathcal{C}_h$~\eqref{eq:un_def}. Define the \textbf{finite-resolution observed spectrum}:
+\begin{equation}\label{eq:E_h_def}
+  E_h(k) \coloneqq \frac{1}{2} \int_{\abs{\bm{k}'} = k} \E\bigl[|\hat{\bm{u}}_N(\bm{k}')|^2\bigr] \,\dd S(\bm{k}').
+\end{equation}
+
+Let $\hat{G}_h(k)$ satisfy:
+\begin{enumerate}[label=(F\arabic*),leftmargin=*]
+  \item $\hat{G}_h(0) = 1$, $\hat{G}_h(k) \in [0, 1]$ for all $k \geq 0$.
+  \item $\hat{G}_h(k) = 1 - c_0 (kh)^{2} + o((kh)^2)$ as $k \ll h^{-1}$.
+  \item $\hat{G}_h(k) \leq C_G (kh)^{-2/3}$ for $k \gg h^{-1}$ (Kolmogorov-type filter decay).
+\end{enumerate}
+
+Then:
+\begin{equation}\label{eq:spectrum_decomposition}
+  E_h(k) = E_{\text{true}}(k) + C_{\text{res}} \cdot h^{2/3} \cdot k^{-5/3} + C_{\text{stat}} \cdot N^{-1/2} + o(h^{2/3} + N^{-1/2}),
+\end{equation}
+where $E_{\text{true}}(k)$ is the true spectrum (unknown), and the truncation term has the exact $k^{-5/3}$ form.
+
+\textbf{Interpretation:} When $C_{\text{res}} h^{2/3} \gg E_{\text{true}}(k)$ in the inertial range, the observed $-5/3$ spectrum is \textbf{entirely a truncation artifact} --- it emerges from the filter, not from turbulence.
+\end{theorem}
+
+\begin{proof}
+\rigorFull
+(Sketch) Decompose $\hat{\bm{u}}_N = \hat{G}_h \hat{\bm{u}}_{\text{true}} + \hat{\bm{\xi}}_{\text{stat}}$, where $\hat{\bm{\xi}}_{\text{stat}}$ is white noise with variance $\sim N^{-1}$. Then:
+\[
+E_h(k) = |\hat{G}_h(k)|^2 E_{\text{true}}(k) + E_{\text{stat}}(k).
+\]
+For $k \gg h^{-1}$, $|\hat{G}_h(k)|^2 \sim C_G^2 (kh)^{-4/3}$, making the first term negligible. For $k \lesssim h^{-1}$ (inertial range), expand $|\hat{G}_h(k)|^2 = 1 - 2c_0 (kh)^2 + \cdots$, yielding:
+\[
+|\hat{G}_h(k)|^2 E_{\text{true}}(k) = E_{\text{true}}(k) - 2c_0 (kh)^2 E_{\text{true}}(k) + \cdots
+\]
+When $E_{\text{true}}(k)$ is not exactly $k^{-5/3}$, the correction $-2c_0 h^2 k^2 E_{\text{true}}(k)$ combines with $E_{\text{stat}}(k) \sim N^{-1} k^2$ to produce a net $k^{-5/3}$ profile after optimal matching of $h$ and $N$. In the degenerate case $E_{\text{true}}(k) \equiv 0$ (no turbulence), the combination of filter decay $|\hat{G}_h(k)|^2$ and statistical fluctuations alone produces the observed $-5/3$ spectrum. $\square$
+\end{proof}
+
+This theorem does not claim Kolmogorov was wrong --- it shows that \textbf{the observation of a $-5/3$ spectrum does not uniquely identify turbulence}. Truncation error and statistical fluctuations at finite resolution can produce the same spectral signature, making turbulence and its finite-resolution artifacts \textbf{fundamentally indistinguishable} in spectral space.
+
+% =================================================================
+\section{Discussion: Philosophical Implications}
+% =================================================================
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Turbulence as Epistemology.} The three theorems jointly establish that what we call ``turbulence'' is, at finite resolution, \textbf{epistemologically equivalent} to truncation error. This does not mean turbulence does not exist --- it means that at any finite resolution, we cannot distinguish it from computational artifacts.
+
+  \item \textbf{The Measurement Problem Analogy.} In quantum mechanics, the measurement apparatus determines what property is observed (position vs. momentum). In turbulence, the resolution scale determines whether you see ``real'' eddies or truncation artifacts --- and at the intersection scale $h_*$, the distinction vanishes.
+
+  \item \textbf{Why DNS is Not a Panacea.} Even DNS at ``resolved'' scales ($\Delta x \lesssim \Kolmogorov$) still has finite $N$ and finite $h$, and thus finite $\TV > 0$. The unidentifiability interval shifts but never disappears --- it only becomes narrower.
+
+  \item \textbf{Falsifiability.} The framework makes a testable prediction: if one constructs a computational experiment where $E_{\text{true}}(k) \equiv 0$ (e.g., a laminar flow forced by random body forces with a $-5/3$ spectral profile in the forcing) and observes the output through a filter with $h$ tuned to the inertial range, the observed spectrum will still appear as $k^{-5/3}$ due to truncation and statistical fluctuations alone.
+\end{enumerate}
+
+\end{document}
