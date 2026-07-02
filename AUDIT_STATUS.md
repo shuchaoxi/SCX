@@ -70,9 +70,9 @@
 | 项目 | 状态 |
 |------|:--:|
 | Spring→Yajie→Arbiter→Cercis | ✅ 代码就位 |
-| 测试 | ✅ 678 passed |
+| 测试 | ✅ 676 passed |
 | 验证脚本 (gauge/quantum/singularity/tda) | ✅ 4套全PASS |
-| 工程代码审查 | ⏳ 3轮审查进行中 (首次系统性代码审查) |
+| 工程代码审查 | ✅ 3轮审查完成 (工程审查已完成) |
 | GitHub CI | ✅ Actions就绪 |
 | 分支保护 | ✅ main保护中 |
 
@@ -80,9 +80,9 @@
 
 ## 审查存档位置 (全部公开)
 
-- **审查报告**: `docs/reviews/` (30+份)
+- **审查报告**: `docs/reviews/` (37+份)
 - **历史审查**: `papers/supplementary/history/` (193+份文件)
-- **分析文档**: `docs/analysis/` (10+份)
+- **分析文档**: `docs/analysis/` (15份)
 - **审计状态**: `AUDIT_STATUS.md`
 - **攻击面**: `ATTACK_SURFACE.md`
 
@@ -96,10 +96,107 @@
 
 ---
 
-## 剩余缺口
+## 剩余缺口 · Remaining Gaps
 
-| 缺口 | 优先级 |
+| 缺口 | 优先级 | 状态 |
+|------|:--:|:--:|
+| 工程代码审查 (3轮) | P2 | ✅ 已完成 |
+| 大统一 LaTeX 重做 | P2 | ⏳ 进行中 |
+| 地缘政治 新国家章节 | P3 | ⏳ 进行中 |
+| unified_field 统一场论验证脚本 | P3 | ⏳ 待生成 |
+| community 社区方案验证脚本 | P3 | ⏳ 待生成 |
+| geopolitics 地缘政治验证脚本 | P3 | ⏳ 待生成 |
+| industry 行业分析验证脚本 | P3 | ⏳ 待生成 |
+| ACAD/MDTA/ILH 验证脚本 | P3 | ⏳ 待生成 |
+| open_problems 开放问题验证脚本 | P3 | ⏳ 待生成 |
+
+### 脚本进展 · Script Progress
+
+| 类别 | 数量 |
+|:--|:--:|
+| 已完成验证脚本 | 25 |
+| 待生成脚本 | 5 |
+| **总计脚本文件** | **30** |
+
+> 详见 [PAPER_SCRIPT_INDEX.md](PAPER_SCRIPT_INDEX.md) — deleg_d769e4f7 生成的完整索引
+
+### 猜想进展 · Conjecture Progress
+
+| 猜想 | 状态 |
 |------|:--:|
-| 工程代码审查 (0轮→3轮) | P2—进行中 |
-| 大统一 R2.2.3-R2.2.7 LaTeX修复重做 | P2 |
-| 地缘政治 新国家章节写入 | P3 |
+| C2 (大统一) | ✅ 完成 |
+| C3 (世界审计) | ✅ 完成 |
+| C6 (行业分析) | ✅ 完成 |
+| C4 (意识) | ⏳ 进行中 |
+| C7 (文明度量) | ⏳ 进行中 |
+| C8 (文明演化) | ⏳ 进行中 |
+
+---
+
+## 审查报告清单 · Review File Index (37 份)
+
+### docs/reviews/
+
+| # | 文件 | 主题 |
+|---|------|------|
+| 1 | `THEOREM_1_4_REVIEW.md` | 核心定理1-4审查 |
+| 2 | `thm1_bound_analysis.md` | Thm1 Hoeffding界分析 |
+| 3 | `thm3_fix.md` | Thm3 偏好域修复 |
+| 4 | `theorem_rounds_2_5.md` | 定理审查 R2-R5 |
+| 5 | `GAUGE_REVIEW_3.md` | 规范理论审查 R3 |
+| 6 | `GAUGE_VIEWPOINTS_REVIEW.md` | 规范理论五观点审查 |
+| 7 | `GAUGE_5VIEWPOINTS_FINAL.md` | 规范理论五观点终稿 |
+| 8 | `audit_instanton_review.md` | 审计瞬子审查 |
+| 9 | `AUDIT_INSTANTON_REVIEWS_2_3.md` | 审计瞬子 R2-R3 |
+| 10 | `SINGULARITY_REVIEWS.md` | 奇点理论审查 |
+| 11 | `quantum_rounds_3_5.md` | 量子审计 R3-R5 |
+| 12 | `social7_review.md` | 社会推论7方向审查 |
+| 13 | `social7_rounds_3_5.md` | 社会推论 R3-R5 |
+| 14 | `game_theory_review.md` | 博弈论审查 |
+| 15 | `review_audit_economics.md` | 审计经济学审查 |
+| 16 | `review_company_valuation.md` | 公司估值审查 |
+| 17 | `review_company_valuation_C3.md` | 公司估值 C3 |
+| 18 | `review_protocol_governance.md` | 协议治理审查 |
+| 19 | `review_protocol_governance_C3.md` | 协议治理 C3 |
+| 20 | `review_grand_unification.md` | 大统一审查 |
+| 21 | `review_world_government.md` | 世界审计审查 |
+| 22 | `review_world_government_C3.md` | 世界审计 C3 |
+| 23 | `review_industry.md` | 行业分析审查 |
+| 24 | `review_industry_C3.md` | 行业分析 C3 |
+| 25 | `review_geopolitical.md` | 地缘政治审查 |
+| 26 | `review_geopolitical_C3.md` | 地缘政治 C3 |
+| 27 | `review_maintainer_analysis.md` | 维护者分析审查 |
+| 28 | `review_candidates.md` | 候选人分析审查 |
+| 29 | `review_community_plan.md` | 社区方案审查 |
+| 30 | `review_resistance_paradox.md` | 反抗悖论审查 |
+| 31 | `review_resistance_C3.md` | 反抗悖论 C3 |
+| 32 | `review_auditability_principle.md` | 可审计性原理审查 |
+| 33 | `review_auditability_C3.md` | 可审计性原理 C3 |
+| 34 | `p0_meta_review.md` | P0元审查 |
+| 35 | `补5轮_rounds_2_5.md` | 缺口补5轮 R2-R5 |
+| 36 | `new4_rounds_1_3.md` | 新4项 R1-R3 |
+| 37 | `engineering_review.md` | 工程代码审查 |
+
+---
+
+## 分析文档清单 · Analysis File Index (15 份)
+
+### docs/analysis/
+
+| # | 文件 | 主题 |
+|---|------|------|
+| 1 | `gauge_domain_analysis.md` | 规范域分析 |
+| 2 | `gauge_domain_reexam.md` | 规范域再检验 |
+| 3 | `gauge_domain_formalization.md` | 规范域形式化 |
+| 4 | `string_theory_exploration.md` | 弦理论探索 |
+| 5 | `navier_stokes_audit.md` | Navier-Stokes审计 |
+| 6 | `navier_stokes_rounds_2_5.md` | Navier-Stokes R2-R5 |
+| 7 | `entanglement_wormhole_relativity.md` | 纠缠/虫洞/相对论 |
+| 8 | `entanglement_rounds_3_5.md` | 纠缠 R3-R5 |
+| 9 | `industry_analysis.md` | 行业分析 |
+| 10 | `maintainer_candidates.md` | 维护者候选人 |
+| 11 | `community_plan.md` | 社区方案 |
+| 12 | `geopolitical_analysis.md` | 地缘政治分析 |
+| 13 | `conjectures_C2_C3_C6.md` | 猜想 C2/C3/C6 (已完成) |
+| 14 | `conjecture_C4_consciousness.md` | 猜想 C4 意识 |
+| 15 | `conjectures_C7_C8.md` | 猜想 C7/C8 文明 |

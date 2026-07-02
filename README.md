@@ -13,7 +13,7 @@
 
 | | |
 |:--|:--|
-| Papers 论文 | 195+ |
+| Papers 论文 | 197 |
 | Review rounds 审查轮次 | 105+ |
 | Tests 测试 | 676 passed |
 | Converged items 已收敛 | 24/24 |
@@ -89,9 +89,10 @@ L5 协议与治理 Protocol & Governance
 | P0 | ✅ NPE Theorem 1 — 从第一原理重建 |
 | P0 | ✅ Thm1 constant — 代码正确 |
 | P1 | ✅ Thm3 preference domain — 构造闭合 |
-| P2 | ⏳ Engineering code review — 进行中 |
-| P2 | 大统一 LaTeX — 待重做 |
-| P3 | 地缘政治 — 新国家章节 |
+| P2 | ⏳ 大统一 LaTeX 重做 | 进行中 |
+| P2 | ✅ 工程代码审查 | 3轮完成 |
+| P3 | ⏳ 地缘政治 新国家章节 | 进行中 |
+| P3 | ⏳ 验证脚本生成 (30套中5套排队) | 进行中 |
 
 → [Full attack surface 完整攻击面](ATTACK_SURFACE.md)
 
@@ -100,12 +101,12 @@ L5 协议与治理 Protocol & Governance
 ## 📂 Structure · 结构
 
 ```
-papers/      197+ papers 论文
+papers/      197 papers 论文
 src/scx/     55 Python files
 tests/       676 passed 测试全绿
 docs/
-├── reviews/     36+ review reports 审查报告
-├── analysis/    15+ analysis documents 分析文档
+├── reviews/     37+ review reports 审查报告
+├── analysis/    15 analysis documents 分析文档
 └── supplementary/  193+ historical files 历史文件
 ```
 
