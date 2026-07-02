@@ -183,8 +183,9 @@ unproven computational assumptions.
 
 \textbf{(2) Audit Entanglement} (Section~\ref{sec:entanglement}): We introduce
 the concept of \emph{audit entanglement}, where two auditors (e.g., Spring and
-Yajie) share entangled quantum states. Measuring one auditor's state instantly
-determines the other's outcome. We prove an \textbf{Entanglement Audit Theorem}:
+Yajie) share entangled quantum states. Measuring one auditor's state
+reveals perfect correlations with the other's outcome (a non-signaling
+quantum effect). We prove an \textbf{Entanglement Audit Theorem}:
 if the two auditors share a maximally entangled Bell pair and an adversary
 tampers with one half, the fidelity of the shared state drops as
 $\cF \leq 1 - \delta_{\text{tamper}}$, making the tampering detectable with
@@ -229,8 +230,8 @@ information-theoretic security
 而非未经证明的计算假设。
 
 \textbf{(2) 审计纠缠}（第\ref{sec:entanglement}节）：我们引入\emph{审计纠缠}概念，
-即两个审计者（如Spring和Yajie）共享纠缠量子态。测量一个审计者的状态会立即决定
-另一个审计者的结果。我们证明\textbf{纠缠审计定理}：如果两个审计者共享一个最大纠缠
+即两个审计者（如Spring和Yajie）共享纠缠量子态。测量一个审计者的状态
+揭示了与另一个审计者结果的完美关联（非信号的量子效应）。我们证明\textbf{纠缠审计定理}：如果两个审计者共享一个最大纠缠
 Bell对且对手篡改其中一半，共享态的保真度下降为
 $\cF \leq 1 - \delta_{\text{tamper}}$，使得篡改在经过
 $\cO(1/\delta_{\text{tamper}})$ 次独立测量后以任意接近1的概率被检测到。
@@ -451,8 +452,9 @@ channel. The classical authenticated channel is used for basis reconciliation.}
 \textbf{Input:} \Mt\ parameter vector, quantized to $n$-bit string
 $m = (m_1,\ldots,m_n) \in \{0,1\}^n$.
 
-\textbf{Output:} Shared key $k \in \{0,1\}^{\ell}$ ($\ell \leq n/2$ expected)
-that encodes \Mt, or $\bot$ (abort on detected eavesdropping).
+\textbf{Output:} Shared secret key $k \in \{0,1\}^{\ell}$ ($\ell \leq n/2$ expected)
+used to encrypt $\Mt$ for subsequent secure classical transmission,
+or $\bot$ (abort on detected eavesdropping).
 
 \medskip
 \noindent\textbf{Phase 1: Quantum Transmission}
@@ -557,6 +559,14 @@ exponentially by Hoeffding:
 \]
 For $s = 1000$, this probability is $\approx 10^{-17}$.
 
+\textbf{Caveat:} This guarantee assumes full intercept-resend on all qubits.
+A more subtle adversary may attack only a fraction $\alpha$ of the qubits,
+inducing an expected QBER of $0.25\alpha$. For $\alpha = 0.4$, the expected
+QBER is only $10\%$, which may fall below the abort threshold
+$Q_{\max} \approx 11\%$ while still extracting partial information.
+Full security requires the Shor--Preskill bound to quantify the information
+leakage vs.\ QBER trade-off (Theorem~\ref{thm:unconditional}).
+
 \subsubsection{General Attacks and Unconditional Security}
 
 The full security proof of BB84 against arbitrary attacks (collective,
@@ -576,6 +586,16 @@ $1 - 2H_2(Q) > 0$ for $Q < 11.0\%$. With two-way classical post-processing
 (this is the commonly cited $\sim$11\% threshold), higher $Q$ values can still
 yield positive key rate (up to $\sim$12.4\% for BB84 under Cascade-type
 reconciliation).
+
+\begin{remark}[Finite-Key Considerations]
+The security bounds above are asymptotic. In practical implementations with
+finite block lengths, the $\epsilon$-security framework of
+Renner~\cite{renner2005} must be applied, which introduces a small security
+parameter $\epsilon$ and reduces the effective key rate by
+$\mathcal{O}(1/\sqrt{n})$. For $n = 10^4$ photons and $\epsilon = 10^{-10}$,
+the finite-key overhead is approximately $5\%$--$10\%$ of the asymptotic
+key rate.
+\end{remark}
 \end{theorem}
 
 \begin{bilingual}
@@ -766,7 +786,11 @@ $\bell = (\ket{00} + \ket{11})/\sqrt{2}$. They independently measure each
 copy in the computational basis $\{\ket{0}, \ket{1}\}$. Then:
 \begin{enumerate}[label=(\roman*)]
   \item \textbf{Perfect Correlation:}
-        $\Pbb(\text{outcome}_S = \text{outcome}_Y) = 1$ for each copy.
+        $\Pbb(\text{outcome}_S = \text{outcome}_Y) = 1$ for each copy.\footnote{%
+        In practical implementations, detector inefficiencies ($\eta < 1$) and
+        dark counts cause deviations from perfect correlation; the CHSH-based
+        protocol (Protocol~\ref{prot:ent_tamper}) accounts for these
+        imperfections via the statistical threshold $\varepsilon_{\text{stat}}$.}
   
   \item \textbf{Shared Randomness Generation:} The auditors can generate
         a shared random string of length $N$ with perfect agreement.
@@ -1039,14 +1063,16 @@ E_2 = \sqrt{p/3}\,\pauliY, \quad
 E_3 = \sqrt{p/3}\,\pauliZ.
 \]
 
-\textbf{Audit interpretation:} $p$ is the probability that an adversary
-successfully randomizes a transmitted qubit without being detected.
-The depolarizing channel is the ``worst-case'' noise model for BB84
-security analysis.
+\textbf{Audit interpretation:} $p$ is the probability that the channel
+randomizes the transmitted qubit (modeling combined noise and adversarial
+interference). The depolarizing channel serves as a tractable symmetric
+noise model commonly used in capacity analysis, though it does not
+capture all adversarial strategies.
 
 \subsubsection{Phase Damping Channel}
 
-Models decoherence without energy loss (relevant for fiber transmission):
+Models pure dephasing (relevant for fiber transmission alongside
+amplitude damping; real fiber exhibits both mechanisms):
 \[
 \cN_{\gamma}^{\text{phase}}(\rho) = (1-\gamma)\rho + \gamma\pauliZ\rho\pauliZ.
 \]
@@ -1913,7 +1939,7 @@ C(\cN_p) = \chi(\cN_p) = 1 - H_2\!\left(\frac{2p}{3}\right).
 \textbf{Numerical check} (using our $p$-parametrization):
 \begin{itemize}
   \item $p = 0$: $C_Q = 1 - H_2(0) = 1.000$ (noiseless, 1 bit/qubit).
-  \item $p = 0.11$: $C_Q = 1 - H_2(0.0733) \approx 0.633$ bits/qubit.
+  \item $p = 0.11$: $C_Q = 1 - H_2(0.0733) \approx 0.622$ bits/qubit.
   \item $p = 0.25$: $C_Q = 1 - H_2(0.1667) \approx 0.350$ bits/qubit.
   \item $p = 0.75$: $C_Q = 1 - H_2(0.5) = 0.000$ (capacity zero).
 \end{itemize}
