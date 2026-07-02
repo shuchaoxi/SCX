@@ -321,8 +321,8 @@ SGD）在 \(T\) 步后的期望梯度范数满足：
 \(x_{t+1} = x_t - \alpha_t \nabla f(x_t) + \sigma \cdot \epsilon_t\)（\(\epsilon_t \sim \mathcal{N}(0,1)\)）的分析可用扩散过程近似。
 
 对于 \(T\) 步，噪声引起的位移量为
-\(\sigma \sqrt{\sum \alpha_t^2} \approx \sigma \cdot O(T^{1/4})\)（当
-\(\alpha_t = 1/\sqrt{t}\) 时）。梯度信号 \(\nabla f\) 的最大值为
+\(\sigma \sqrt{\sum \alpha_t^2} \approx \sigma \cdot O(\sqrt{\log T})\)（当
+\(\alpha_t = 1/\sqrt{t}\) 时，\(\sum 1/t \approx \log T\)）。梯度信号 \(\nabla f\) 的最大值为
 \(O(K)\)，信号累积为 \(O(K \sum \alpha_t) = O(K\sqrt{T})\)。
 
 当 \(\sigma^2 / \sqrt{T}\)

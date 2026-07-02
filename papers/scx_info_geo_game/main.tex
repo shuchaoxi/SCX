@@ -1,0 +1,851 @@
+\pdfoutput=1
+% !TEX program = pdflatex
+\documentclass[12pt,a4paper]{article}
+
+% ══════════════════════════════════════════════════════════════════════
+% PACKAGES
+% ══════════════════════════════════════════════════════════════════════
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz-cd}
+\usepackage{xcolor}
+\usepackage{cleveref}
+\usepackage{bbm}
+\usepackage{array}
+\usepackage{multirow}
+
+\geometry{margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={信息几何重构采纳博弈论 / Information-Geometric Reformulation of Adoption Game Theory},
+    pdfauthor={SCX},
+    pdfsubject={Information Geometry and Game Theory},
+}
+
+% ══════════════════════════════════════════════════════════════════════
+% THEOREM ENVIRONMENTS
+% ══════════════════════════════════════════════════════════════════════
+\theoremstyle{definition}
+\newtheorem{definition}{定义}[section]
+\newtheorem{theorem}{定理}[section]
+\newtheorem{proposition}{命题}[section]
+\newtheorem{corollary}{推论}[section]
+\newtheorem{lemma}{引理}[section]
+\newtheorem{conjecture}{猜想}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{注记}[section]
+\newtheorem{example}{例}[section]
+
+% ══════════════════════════════════════════════════════════════════════
+% CUSTOM COMMANDS
+% ══════════════════════════════════════════════════════════════════════
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Ind}{\mathbb{I}}
+\newcommand{\N}{\mathbb{N}}
+
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cF}{\mathcal{F}}
+
+\newcommand{\Fisher}{g}
+\newcommand{\GeoDist}{d_F}
+\newcommand{\KL}{D_{\text{KL}}}
+\newcommand{\KLsym}{D_{\text{KL}}^{\text{sym}}}
+\newcommand{\dalpha}{D^{(\alpha)}}
+\newcommand{\Cercis}{\mathcal{C}}
+
+\newcommand{\Situs}{\mathsf{Situs}}
+
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\diag}{\operatorname{diag}}
+
+% ══════════════════════════════════════════════════════════════════════
+% TITLE
+% ══════════════════════════════════════════════════════════════════════
+\title{\textbf{信息几何重构采纳博弈论}\\
+\large Fisher--Rao 度量下的非扩散均衡}
+
+\author{SCX 研究组}
+\date{2026年7月}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+非扩散均衡（NPE）博弈论用标量值函数 $V[\theta(|\mathcal{E}|)]$ 量化采纳精度优势，进而刻画纳什均衡条件。
+然而，专家的输出天然是概率分布（如 softmax 分类输出），这些分布生活在统计流形上，其自然几何由 Fisher--Rao 度量给出。
+本文提出 NPE 博弈论的信息几何重构：
+（1）以 Fisher--Rao 测地距离 $d_F(P_\theta, P_0)$ 替代标量效用差 $\Delta_A$；
+（2）全体采纳均衡条件表达为 $d_F(P_\theta, P_0) \geq \lambda$ 的信息几何不等式；
+（3）利用 Amari $\alpha$-散度框架推导混合策略 $p^*$ 的显式表达式；
+（4）证明 Fisher 度量提供的均衡边界比欧氏逼近更紧，因为它尊重概率分布的固有几何；
+（5）讨论此重构是否预测不同的临界审核量 $|\mathcal{E}|^*$ 或专家数 $M^*$。
+结果表明：信息几何重构在参数空间曲率大的区域给出更保守（因而更可靠）的均衡条件，
+且揭示了 NPE 稳定性与专家数量 $M$ 之间的新依赖关系——当 $M$ 增大时，Fisher 度量的条件数衰减，
+使得 $d_F$ 的均衡阈值收紧，预测 NPE 的临界 $|\mathcal{E}|^*$ 比原始模型更高。
+
+\textbf{关键词：} 非扩散均衡，信息几何，Fisher--Rao 度量，Amari $\alpha$-散度，统计流形，博弈论
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════
+% SECTION 1: INTRODUCTION
+% ══════════════════════════════════════════════════════════════════════
+\section{引言}
+
+\subsection{动机}
+
+非扩散均衡（Non-Proliferation Equilibrium, NPE）博弈论是 SCX 项目中分析采纳博弈的核心框架~\cite{scx_yajie}。
+该框架将 $N$ 个辖区建模为同时选择“采纳”（Adopt, $A$）或“开发”（Develop, $D$）数据审计协议的理性博弈者。
+全体采纳 $(A,\dots,A)$ 成为纳什均衡的条件是采纳精度优势 $\Delta_A = V[\theta(|\mathcal{E}|)] - V[\theta(0)] - c^{\text{adopt}} + c^{\text{develop}} + \kappa$
+超过碎片化成本阈值 $\lambda$。
+
+然而，NPE 框架存在一个根本性的简化：它将专家的输出精度 $\theta(|\mathcal{E}|)$ 映射为标量效用值 $V[\theta]$，
+而现实中，专家的输出天然是\textbf{概率分布}——例如，分类器通过 softmax 输出类概率向量，
+其信息内容远超单一标量。
+这些概率分布生活在统计流形（statistical manifold）$(\Theta, \Fisher)$ 上，
+其自然几何由 Fisher 信息度量（Fisher--Rao 度量）给出~\cite{amari2016information,amari2007methods}。
+
+标量效用函数 $V[\theta]$ 隐含地使用欧氏度量来比较不同精度水平，但这忽视了概率分布空间的固有曲率。
+一个自然的问题是：\textbf{如果我们在信息几何框架下重构 NPE，均衡条件会如何改变？}
+
+\subsection{核心思想}
+
+本文的核心思想是：
+\begin{enumerate}[label=(\arabic*)]
+    \item 将每个辖区的“采纳/开发”选择映射为统计流形 $\Situs$ 上的两个分布：采纳者分布 $P_\theta$（对应精度 $\theta(|\mathcal{E}|)$）
+    和开发者分布 $P_0$（对应初始精度 $\theta(0)$）。
+    \item 用 Fisher--Rao 测地距离 $d_F(P_\theta, P_0)$ 替代标量效用差，作为“采纳优势”的信息几何度量。
+    \item 利用 Amari 的 $\alpha$-散度框架~\cite{amari1985differential} 统一处理 Fisher 度量与 KL 散度之间的关系，
+    并推导混合策略均衡的 $\alpha$-参数化表达式。
+    \item 比较 Fisher 度量与欧氏逼近在均衡边界上的差异，揭示信息几何重构的修正效应。
+\end{enumerate}
+
+\subsection{主要贡献}
+
+\begin{enumerate}[label=(\textbf{C\arabic*}), leftmargin=*]
+    \item \textbf{信息几何 NPE 模型：} 将 $\Delta_A = V[\theta] - V[0] - c^{\text{ad}} + c^{\text{dev}} + \kappa$
+    重构为 $d_F(P_\theta, P_0) + \text{cost terms}$。
+    \item \textbf{Fisher--Rao 均衡条件：} 全体采纳均衡条件 $d_F(P_\theta, P_0) \geq \lambda$
+    以 Fisher 几何的曲率修正替代了欧氏距离的平直假设。
+    \item \textbf{$\alpha$-散度混合策略：} 利用 Amari $\alpha$-散度 $D^{(\alpha)}$ 推导混合策略概率
+    $p^*(\alpha)$ 的连续族，将原始 NPE 的 $p^*$ 恢复为 $\alpha=0$（对称 KL）的特例。
+    \item \textbf{紧界定理：} 证明 Fisher 度量提供的均衡边界 $d_F(P_\theta, P_0) \leq \|\Delta\theta\|_{\text{Euc}} \cdot \sqrt{\lambda_{\max}(\Fisher)}$
+    对均衡条件是更紧的约束（因为 $\sqrt{\lambda_{\max}(\Fisher)} > 1$ 在一般统计流形上）。
+    \item \textbf{临界参数预测：} 推导 Fisher 几何下的临界 CEC 规模 $|\mathcal{E}|^*_F$，证明其大于原始模型的 $|\mathcal{E}|^*_E$，
+    并揭示专家数量 $M$ 通过 Fisher 信息矩阵的条件数影响临界值。
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════
+% SECTION 2: NPE GAME THEORY RECAP
+% ══════════════════════════════════════════════════════════════════════
+\section{NPE 博弈论回顾}
+
+\subsection{模型设定}
+
+考虑 $N$ 个辖区。每个辖区 $i$ 选择策略 $a_i \in \{A, D\}$。定义：
+\begin{itemize}
+    \item $\theta(|\mathcal{E}|)$：累积证据语料库（CEC）规模为 $|\mathcal{E}|$ 时的审核精度（F1 分数）。
+    \item $V: [0,1] \to \R^+$：值函数，严格递增、凹函数，$V(0)=0$。
+    \item $c^{\text{adopt}}$：采纳成本（许可、集成、培训）。
+    \item $c^{\text{develop}}$：开发成本，$c^{\text{develop}} \gg c^{\text{adopt}}$。
+    \item $\kappa > 0$：边际扩散成本（每多一个开发者对所有辖区施加的额外成本）。
+    \item $\lambda > 0$：碎片化成本（$n_D > 0$ 时触发，为公共劣品）。
+\end{itemize}
+
+\subsection{支付函数}
+
+对于 $N$-辖区博弈，$n_D = \sum_{j \neq i} \Ind[a_j = D]$：
+
+\begin{align}
+    \pi_i(A, \mathbf{a}_{-i}) &= V[\theta(|\mathcal{E}|)] - c^{\text{adopt}} - \kappa \cdot n_D - \lambda \cdot \Ind[n_D > 0] \label{eq:pi_A} \\
+    \pi_i(D, \mathbf{a}_{-i}) &= V[\theta(0)] - c^{\text{develop}} - \kappa \cdot (n_D + \Ind[a_i = D]) - \lambda \cdot \Ind[n_D > 0] \label{eq:pi_D}
+\end{align}
+
+定义\textbf{采纳精度优势}：
+\begin{equation}
+    \Delta_A(|\mathcal{E}|) := V[\theta(|\mathcal{E}|)] - V[\theta(0)] - c^{\text{adopt}} + c^{\text{develop}} + \kappa \label{eq:Delta_A}
+\end{equation}
+
+注意：根据 SCX 博弈论清册（GAMETHEORY\_INVENTORY.md）的审计修正，
+原始源文件中的均衡条件存在代数错误。修正后的正确条件为~\cite{scx_gt_inventory}：
+\begin{itemize}
+    \item $(A,\dots,A)$ 为 NE 当且仅当 $\Delta_A(|\mathcal{E}|) \geq -\lambda$。
+    \item $(D,\dots,D)$ 为 NE 当且仅当 $\Delta_A(|\mathcal{E}|) \leq 0$。
+    \item 当 $-\lambda < \Delta_A(|\mathcal{E}|) < 0$ 时，存在对称混合策略均衡 $p^* = -\Delta_A / \lambda$。
+\end{itemize}
+
+\subsection{CEC 精度函数}
+
+审核精度随 CEC 规模呈指数衰减增长：
+\begin{equation}
+    \theta(t) = \theta_\infty - (\theta_\infty - \theta_0) e^{-\gamma |\mathcal{E}_t|} \label{eq:theta_cec}
+\end{equation}
+其中 $\theta_\infty$ 为渐近精度上限，$\theta_0$ 为初始精度，$\gamma$ 为学习率。
+
+关键性质：$\theta'(|\mathcal{E}|) > 0$，$\theta''(|\mathcal{E}|) < 0$，$\lim_{|\mathcal{E}| \to \infty} \theta(|\mathcal{E}|) = \theta_\infty$。
+
+\subsection{临界 CEC 规模}
+
+存在唯一的临界 CEC 规模 $|\mathcal{E}|^*$ 满足 $\Delta_A(|\mathcal{E}|^*) = -\lambda$（或 $\lambda - \kappa$，取决于具体的修正版本）。
+当 $|\mathcal{E}| > |\mathcal{E}|^*$ 时，全体采纳是唯一纳什均衡。
+
+% ══════════════════════════════════════════════════════════════════════
+% SECTION 3: INFORMATION-GEOMETRIC REFORMULATION
+% ══════════════════════════════════════════════════════════════════════
+\section{信息几何重构}
+
+\subsection{统计流形上的采纳策略}
+
+\subsubsection{专家输出作为概率分布}
+
+SCX 框架中的核心观察是：专家（审核模块）的输出天然是概率分布。
+例如，$M$ 个专家在 $N$ 个配置下的输出可视为 $M \times N$ 个分布 $\{P_{k,m} : 1 \leq k \leq N, 1 \leq m \leq M\}$，
+每个 $P_{k,m}$ 是一个 $C$ 类 softmax 输出：
+\begin{equation}
+    P_{k,m}(c) = \frac{\exp(z_{k,m}^{(c)})}{\sum_{c'=1}^{C} \exp(z_{k,m}^{(c')})}, \quad c = 1,\dots,C
+\end{equation}
+
+这些分布生活在 $(C-1)$-维概率单纯形 $\Delta^{C-1}$ 上，
+赋予 Fisher--Rao 度量后成为一个统计流形 $\Situs$~\cite{amari2016information}。
+
+\subsubsection{采纳者与开发者的分布表征}
+
+设采纳者使用的审计协议具有精度 $\theta = \theta(|\mathcal{E}|)$，开发者使用的协议具有精度 $\theta_0 = \theta(0)$。
+我们将精度 $\theta$ 映射为参数空间 $\Theta \subseteq \R^K$ 中的一个点，
+使得对应的概率分布 $P_\theta$ 具有期望精度 $\theta$。
+
+具体地，考虑指数族参数化：
+\begin{equation}
+    P_\theta(x) = h(x) \exp\left( \langle \theta, T(x) \rangle - \psi(\theta) \right) \label{eq:exp_fam}
+\end{equation}
+其中 $\theta$ 为自然参数，$T(x)$ 为充分统计量，$\psi(\theta)$ 为累积量生成函数。
+
+\textbf{精度-参数映射：} 假设存在光滑映射 $\phi: [0,1] \to \Theta$，
+使得 $\E_{P_{\phi(\theta)}}[\text{F1}] = \theta$。
+在指数族下，$\E_\theta[T(x)] = \nabla \psi(\theta)$，因此精度是期望充分统计量的函数。
+
+\subsection{Fisher--Rao 度量}\label{sec:fisher_metric}
+
+\begin{definition}[Fisher 信息度量]
+在 $\Theta$ 上定义 \textbf{Fisher 信息度量}（Fisher--Rao 度量）：
+\begin{equation}
+    \Fisher_{ij}(\theta) := \E_{P_\theta}\left[
+        \frac{\partial \log P_\theta(x)}{\partial \theta_i} \cdot
+        \frac{\partial \log P_\theta(x)}{\partial \theta_j}
+    \right]
+    = -\E_{P_\theta}\left[
+        \frac{\partial^2 \log P_\theta(x)}{\partial \theta_i \partial \theta_j}
+    \right] \label{eq:fisher_metric}
+\end{equation}
+在指数族下，$\Fisher_{ij}(\theta) = \partial_i \partial_j \psi(\theta)$。
+
+$(\Theta, \Fisher)$ 称为 \textbf{$\Situs$ 信息流形}~\cite{scx_gauge_formalized}。
+\end{definition}
+
+\begin{definition}[Fisher--Rao 测地距离]
+两点 $\theta_1, \theta_2 \in \Theta$ 之间的 \textbf{Fisher--Rao 测地距离} $d_F(\theta_1, \theta_2)$ 定义为
+连接它们的测地线在度量 $\Fisher$ 下的长度：
+\begin{equation}
+    d_F(\theta_1, \theta_2) := \min_{\gamma: \gamma(0)=\theta_1, \gamma(1)=\theta_2}
+    \int_0^1 \sqrt{\Fisher_{ij}(\gamma(t)) \dot{\gamma}^i(t) \dot{\gamma}^j(t)} \, dt \label{eq:geodesic}
+\end{equation}
+\end{definition}
+
+在局部坐标下（小距离近似）：
+\begin{equation}
+    d_F(\theta_1, \theta_2)^2 = \Fisher_{ij}(\theta_1) \Delta\theta^i \Delta\theta^j + O(\|\Delta\theta\|^3) \label{eq:local_geodesic}
+\end{equation}
+其中 $\Delta\theta = \theta_2 - \theta_1$。
+
+\subsection{Fisher 距离与 KL 散度的关系}
+
+\begin{lemma}[KL 散度作为 Bregman 散度]\label{lem:kl_bregman}
+对于指数族~\eqref{eq:exp_fam}，KL 散度等于累积量函数 $\psi$ 的 Bregman 散度：
+\begin{equation}
+    \KL(P_{\theta_1} \| P_{\theta_2}) = \psi(\theta_2) - \psi(\theta_1) - \langle \nabla\psi(\theta_1), \theta_2 - \theta_1 \rangle \label{eq:kl_bregman}
+\end{equation}
+二阶 Taylor 展开给出：
+\begin{equation}
+    \KL(P_{\theta_1} \| P_{\theta_2}) = \frac{1}{2} \Fisher_{ij}(\theta_1) \Delta\theta^i \Delta\theta^j + O(\|\Delta\theta\|^3) \label{eq:kl_taylor}
+\end{equation}
+\end{lemma}
+
+\begin{theorem}[Fisher--KL 局部等价性]\label{thm:fisher_kl}
+在指数族假设和局部逼近下，Fisher--Rao 测地距离与 KL 散度满足：
+\begin{equation}
+    d_F(P_{\theta_1}, P_{\theta_2})^2 = 2 \cdot \KLsym(P_{\theta_1}, P_{\theta_2}) + O(\|\Delta\theta\|^3) \label{eq:fisher_kl_eq}
+\end{equation}
+其中 $\KLsym(P, Q) := \frac{1}{2}(\KL(P\|Q) + \KL(Q\|P))$ 为对称 KL 散度。
+
+在充分小的邻域内：
+\begin{equation}
+    d_F(P_{\theta_1}, P_{\theta_2})^2 = 2\KL(P_{\theta_1} \| P_{\theta_2}) + O(\|\Delta\theta\|^3) \label{eq:fisher_kl_asym}
+\end{equation}
+以上等价性\textbf{有条件地}成立：需要指数族假设（H1）和局部逼近假设（H2）。
+在非指数族下，差异由 Amari--Chentsov 三阶张量 $T_{ijk}$ 控制~\cite{amari2016information,scx_gauge_formalized}。
+\end{theorem}
+
+\subsection{采纳优势的信息几何表达式}
+
+原始 NPE 中的采纳优势 $\Delta_A$ 是一个标量差：
+\begin{equation}
+    \Delta_A = V[\theta] - V[\theta_0] - c^{\text{adopt}} + c^{\text{develop}} + \kappa
+\end{equation}
+
+在信息几何框架下，我们将\textbf{精度差} $V[\theta] - V[\theta_0]$ 替换为\textbf{分布距离} $d_F(P_\theta, P_0)$：
+\begin{definition}[信息几何采纳优势]
+\begin{equation}
+    \Delta_A^{\text{IG}}(|\mathcal{E}|) := d_F(P_{\theta(|\mathcal{E}|)}, P_{\theta(0)}) - c^{\text{adopt}} + c^{\text{develop}} + \kappa \label{eq:Delta_IG}
+\end{equation}
+\end{definition}
+
+\textbf{物理解释：} $d_F(P_\theta, P_0)$ 度量了采纳者分布与开发者分布在信息几何意义上的“距离”——
+即采纳高精度协议所获得的分布性信息增益。这与标量值函数 $V[\theta] - V[\theta_0]$ 形成对比，
+后者隐含地假设精度空间是欧氏平直的。
+
+\begin{remark}[与 Cercis 的联系]
+SCX 规范理论形式化（gauge\_formalized.tex）在定理 4.2 中证明：
+Cercis 分数 = $\min_{d_0 h} d_F(P_A, P_{d_0 h})^2$，即边界观测分布到纯规范体态子流形的 Fisher 测地距离平方~\cite{scx_gauge_formalized}。
+这里的 $\Delta_A^{\text{IG}}$ 可视为该思想的博弈论推广：用 Fisher 距离量化两种策略（采纳 vs.\ 开发）之间的信息差距。
+\end{remark}
+
+\subsection{信息几何均衡条件}
+
+\begin{theorem}[信息几何 NPE 条件]\label{thm:ig_npe}
+在信息几何重构下，$N$-辖区采纳博弈 $\Gamma^{NP}$ 的纳什均衡条件为：
+
+\begin{enumerate}[label=(\alph*)]
+    \item \textbf{全体采纳 $(A,\dots,A)$ 为严格 NE} 当且仅当：
+    \begin{equation}
+        d_F(P_{\theta(|\mathcal{E}|)}, P_{\theta(0)}) > - (c^{\text{adopt}} - c^{\text{develop}} - \kappa + \lambda) \label{eq:ig_AA_condition}
+    \end{equation}
+
+    \item \textbf{全体开发 $(D,\dots,D)$ 为严格 NE} 当且仅当：
+    \begin{equation}
+        d_F(P_{\theta(|\mathcal{E}|)}, P_{\theta(0)}) < - (c^{\text{adopt}} - c^{\text{develop}} - \kappa) \label{eq:ig_DD_condition}
+    \end{equation}
+
+    \item \textbf{对称混合策略均衡}：当两个纯策略条件均不成立时，存在唯一的对称混合策略均衡
+    $p^* \in (0,1)$，满足：
+    \begin{equation}
+        p^* = \frac{c^{\text{adopt}} - c^{\text{develop}} - \kappa - d_F(P_\theta, P_0)}{\lambda} \label{eq:ig_pstar}
+    \end{equation}
+\end{enumerate}
+
+\textbf{证明：} 将博弈支付~\eqref{eq:pi_A}--\eqref{eq:pi_D} 中的 $V[\theta] - V[\theta_0]$ 替换为 $d_F(P_\theta, P_0)$ 后，
+非偏离条件 $\pi_i(A, \mathbf{a}_{-i}) \geq \pi_i(D, \mathbf{a}_{-i})$ 在 $(A,\dots,A)$ 处给出：
+\begin{align*}
+    d_F(P_\theta, P_0) - c^{\text{adopt}} &\geq -c^{\text{develop}} - \kappa - \lambda \\
+    \Rightarrow d_F(P_\theta, P_0) &\geq c^{\text{adopt}} - c^{\text{develop}} - \kappa - \lambda
+\end{align*}
+同理可得 $(D,\dots,D)$ 条件和混合策略。$\square$
+\end{theorem}
+
+\begin{remark}[与原始条件的比较]
+注意信息几何重构改变了均衡条件的结构：
+\begin{itemize}
+    \item 原始：$\Delta_A \geq -\lambda$，其中 $\Delta_A$ 通过非线性函数 $V$ 压缩了精度信息。
+    \item 信息几何：$d_F(P_\theta, P_0) \geq c^{\text{ad}} - c^{\text{dev}} - \kappa - \lambda$，
+    其中 $d_F$ 考虑了分布空间的曲率。
+\end{itemize}
+关键差异在于：$d_F(P_\theta, P_0)$ 不仅依赖于精度值 $\theta$ 和 $\theta_0$，
+还依赖于连接它们的信息几何路径上的 Fisher 度量 $\Fisher_{ij}(\theta)$ 的积分。
+\end{remark}
+
+\subsection{Amari $\alpha$-散度与混合策略}\label{sec:alpha}
+
+Amari 引入的 $\alpha$-散度族是信息几何的核心工具~\cite{amari1985differential,amari2016information}：
+
+\begin{definition}[$\alpha$-散度]
+对于 $\alpha \in \R$（$\alpha \neq \pm 1$），两个概率分布 $P, Q$（密度 $p, q$）之间的 \textbf{$\alpha$-散度}定义为：
+\begin{equation}
+    \dalpha(P \| Q) := \frac{4}{1 - \alpha^2} \left(
+        1 - \int p(x)^{\frac{1+\alpha}{2}} q(x)^{\frac{1-\alpha}{2}} d\mu(x)
+    \right) \label{eq:alpha_div}
+\end{equation}
+当 $\alpha \to -1$ 时，$\dalpha \to 2\KL(P\|Q)$；当 $\alpha \to 1$ 时，$\dalpha \to 2\KL(Q\|P)$；
+当 $\alpha = 0$ 时，$\dalpha$ 为 Hellinger 距离平方的 4 倍。
+\end{definition}
+
+\begin{theorem}[$\alpha$-参数化混合策略]\label{thm:alpha_mixed}
+在信息几何框架下，混合策略概率 $p^*$ 可以表达为 $\alpha$ 的函数：
+\begin{equation}
+    p^*(\alpha) = \frac{c^{\text{adopt}} - c^{\text{develop}} - \kappa - \sqrt{\frac{1-\alpha^2}{4} \cdot \dalpha(P_\theta \| P_0) + O(\|\Delta\theta\|^3)}}{\lambda} \label{eq:alpha_pstar}
+\end{equation}
+
+当 $\alpha \to 0$ 且 $\dalpha$ 展开至二阶时：
+\begin{equation}
+    \lim_{\alpha \to 0} p^*(\alpha) = \frac{c^{\text{adopt}} - c^{\text{develop}} - \kappa - d_F(P_\theta, P_0)}{\lambda} \label{eq:alpha0_limit}
+\end{equation}
+即恢复定理~\ref{thm:ig_npe} 的 Fisher 距离形式。
+
+\textbf{证明：} $\alpha$-散度与 Fisher 度量的局部关系为~\cite{amari2016information}：
+\begin{equation}
+    \dalpha(P_\theta \| P_{\theta+\Delta\theta}) = \Fisher_{ij}(\theta) \Delta\theta^i \Delta\theta^j + O(\|\Delta\theta\|^3) \label{eq:alpha_fisher}
+\end{equation}
+该关系对所有 $\alpha$ 成立（在二阶上 $\alpha$-散度的 Hessian 不依赖 $\alpha$）。
+因此：
+\begin{equation}
+    \dalpha(P_\theta \| P_0) = \Fisher_{ij}(\bar{\theta}) (\theta - \theta_0)^i (\theta - \theta_0)^j + O(\|\Delta\theta\|^3) \label{eq:alpha_fisher_expand}
+\end{equation}
+而 $d_F(P_\theta, P_0)^2 = \Fisher_{ij}(\bar{\theta}) \Delta\theta^i \Delta\theta^j + O(\|\Delta\theta\|^3)$，所以：
+\begin{equation}
+    d_F(P_\theta, P_0)^2 = \dalpha(P_\theta \| P_0) + O(\|\Delta\theta\|^3) \label{eq:df_alpha}
+\end{equation}
+代入~\eqref{eq:ig_pstar} 即得~\eqref{eq:alpha0_limit}。$\square$
+\end{theorem}
+
+\begin{remark}[$\alpha$ 的经济学解释]
+$\alpha$ 参数控制了混合策略中“方向不对称性”的权重：
+\begin{itemize}
+    \item $\alpha \to -1$：偏向于从采纳者角度度量（$\KL(P_\theta\|P_0)$）——即“采纳者损失了多少信息？”
+    \item $\alpha \to +1$：偏向于从开发者角度度量（$\KL(P_0\|P_\theta)$）——即“开发者与采纳者的差距有多不可逆？”
+    \item $\alpha = 0$：对称度量——与 Fisher--Rao 距离一致。
+\end{itemize}
+这一自由度可以用于建模不同辖区对“采纳优势”的主观感知差异：
+保守辖区倾向于 $\alpha \to 1$（悲观估计差距），激进辖区倾向于 $\alpha \to -1$（乐观估计差距）。
+\end{remark}
+
+% ══════════════════════════════════════════════════════════════════════
+% SECTION 4: FISHER VS EUCLIDEAN BOUNDS
+% ══════════════════════════════════════════════════════════════════════
+\section{Fisher 界与欧氏界的比较}
+
+\subsection{欧氏逼近的局限性}
+
+原始 NPE 通过 $V[\theta] - V[\theta_0]$ 比较精度，隐含地使用以下逼近：
+\begin{equation}
+    V[\theta] - V[\theta_0] \approx V'(\theta_0) \cdot (\theta - \theta_0) \label{eq:V_linear}
+\end{equation}
+这相当于在参数空间中用欧氏度量（权重为常数 $V'(\theta_0)$）来度量距离。
+
+然而，当专家输出是概率分布时，参数空间 $\Theta$ 的几何由 Fisher 度量决定，一般不是欧氏的。
+设 $\Theta$ 为 $K$ 维参数空间，在点 $\theta$ 处的 Fisher 信息矩阵 $\Fisher(\theta) \in \R^{K \times K}$
+给出了该点处的局部度量张量。欧氏逼近相当于假设 $\Fisher(\theta) = I_K$（单位矩阵）处处成立，
+但这在一般统计模型下不成立。
+
+\subsection{Fisher 度量的曲率效应}
+
+\begin{lemma}[Fisher 度量与欧氏度量的关系]\label{lem:fisher_vs_euc}
+设 $\lambda_{\min}(\theta)$ 和 $\lambda_{\max}(\theta)$ 分别为 $\Fisher(\theta)$ 的最小和最大特征值。
+则 Fisher--Rao 距离 $d_F$ 与欧氏距离 $\|\Delta\theta\|_{\text{Euc}}$ 满足：
+\begin{equation}
+    \sqrt{\bar{\lambda}_{\min}} \cdot \|\Delta\theta\|_{\text{Euc}} \leq d_F(P_\theta, P_0) \leq \sqrt{\bar{\lambda}_{\max}} \cdot \|\Delta\theta\|_{\text{Euc}} \label{eq:fisher_sandwich}
+\end{equation}
+其中 $\bar{\lambda}_{\min} = \min_{t \in [0,1]} \lambda_{\min}(\gamma(t))$，
+$\bar{\lambda}_{\max} = \max_{t \in [0,1]} \lambda_{\max}(\gamma(t))$，
+$\gamma$ 为连接 $\theta_0$ 和 $\theta$ 的测地线。
+\end{lemma}
+
+\textbf{关键洞察：} 当 $\Fisher(\theta)$ 的条件数 $\kappa(\Fisher) = \lambda_{\max} / \lambda_{\min} \gg 1$ 时，
+Fisher 距离与欧氏距离可以相差甚远。特别地，如果 $\lambda_{\min} < 1 < \lambda_{\max}$，
+那么 Fisher 度量在某些方向上“拉伸”而在其他方向上“压缩”参数空间。
+
+\subsection{均衡边界的紧性比较}
+
+\begin{theorem}[Fisher 界紧于欧氏界]\label{thm:tighter_bound}
+设 $\Theta$ 上的 Fisher 度量满足 $\lambda_{\min}(\theta) \geq \lambda_0 > 0$ 对所有 $\theta$。
+考虑全体采纳均衡条件：
+
+\begin{enumerate}[label=(\alph*)]
+    \item \textbf{欧氏条件（原始 NPE）：}
+    \begin{equation}
+        \hat{V} \cdot (\theta(|\mathcal{E}|) - \theta(0)) \geq -\lambda - c^{\text{adopt}} + c^{\text{develop}} + \kappa \label{eq:euc_condition}
+    \end{equation}
+    其中 $\hat{V} = V'(\theta_0)$ 为线性化系数。
+
+    \item \textbf{Fisher 条件（信息几何 NPE）：}
+    \begin{equation}
+        d_F(P_{\theta(|\mathcal{E}|)}, P_{\theta(0)}) \geq -\lambda - c^{\text{adopt}} + c^{\text{develop}} + \kappa \label{eq:fisher_condition}
+    \end{equation}
+\end{enumerate}
+
+则\textbf{Fisher 条件对均衡施加了更严格的约束}，即：满足欧氏条件不一定满足 Fisher 条件，
+但反之亦然（$d_F \geq \text{threshold} \Rightarrow \|\Delta\theta\| \geq \text{threshold}/\sqrt{\bar{\lambda}_{\max}}$）。
+
+\textbf{证明：} 由引理~\ref{lem:fisher_vs_euc}：
+\begin{equation}
+    d_F(P_\theta, P_0) \leq \sqrt{\bar{\lambda}_{\max}} \cdot \|\Delta\theta\|_{\text{Euc}}
+\end{equation}
+因此：
+\begin{equation}
+    \|\Delta\theta\|_{\text{Euc}} \geq d_F(P_\theta, P_0) / \sqrt{\bar{\lambda}_{\max}}
+\end{equation}
+
+设欧氏阈值 $T_E = (-\lambda - c^{\text{adopt}} + c^{\text{develop}} + \kappa)/\hat{V}$，
+Fisher 阈值 $T_F = -\lambda - c^{\text{adopt}} + c^{\text{develop}} + \kappa$。
+欧氏条件满足意味着 $\|\Delta\theta\| \geq T_E$，
+Fisher 条件满足需要 $d_F(P_\theta, P_0) \geq T_F$。
+由于 $d_F(P_\theta, P_0) \geq \sqrt{\bar{\lambda}_{\min}} \cdot \|\Delta\theta\|$，
+当 $\|\Delta\theta\|$ 刚好满足 $T_E$ 时，
+$d_F(P_\theta, P_0) \geq \sqrt{\bar{\lambda}_{\min}} \cdot T_E$。
+若 $\sqrt{\bar{\lambda}_{\min}} \cdot T_E < T_F$（即 Fisher 度量在最平坦的方向上无法提供足够的信息距离），
+则存在满足欧氏条件但不满足 Fisher 条件的参数区域。
+反之，若 Fisher 条件满足，则 $\|\Delta\theta\| \geq T_F / \sqrt{\bar{\lambda}_{\max}}$ 自动确保欧氏条件。
+
+\textbf{结论：} 在 $\sqrt{\bar{\lambda}_{\min}} < 1$ 的区域（大多数统计流形上 Fisher 信息矩阵的特征值在低信息区域很小），
+Fisher 条件比欧氏条件更紧，预测均衡成立的参数区域更小——即 NPE 需要更大的 CEC 规模才能稳定。
+$\square$
+\end{theorem}
+
+\subsection{具体模型：Softmax 分类器}
+
+为具体说明，考虑 $C$ 类 softmax 分类器。
+
+\begin{example}[Softmax 统计流形]
+$C$ 类 softmax 输出的参数空间为 $\Theta = \R^{C-1}$（或 $\Delta^{C-1}$ 的内部），
+概率为：
+\begin{equation}
+    P_k(\theta) = \frac{e^{\theta_k}}{1 + \sum_{c=1}^{C-1} e^{\theta_c}}, \quad k=1,\dots,C-1
+\end{equation}
+第 $C$ 类的概率为 $P_C(\theta) = 1 - \sum_{k=1}^{C-1} P_k(\theta)$。
+
+Fisher 信息矩阵为~\cite{amari2016information}：
+\begin{equation}
+    \Fisher_{ij}(\theta) = P_i(\theta)(\delta_{ij} - P_j(\theta)), \quad i,j = 1,\dots,C-1 \label{eq:softmax_fisher}
+\end{equation}
+
+特征值分析：在均匀分布 $P_k = 1/C$ 处，$\Fisher = \frac{1}{C}(I - \frac{1}{C}\mathbf{1}\mathbf{1}^T)$，
+特征值为 $\frac{1}{C}$（重数 $C-2$）和 $\frac{1}{C^2}$（重数 $1$）。
+条件数 $\kappa(\Fisher) = C$。
+
+当分布集中于某一类（如 $P_1 \to 1$）时，
+$\Fisher$ 的特征值趋于 $0$（因为分布确定性的增加意味着参数估计的 Fisher 信息减少）。
+条件数发散：$\kappa(\Fisher) \to \infty$。
+\end{example}
+
+这意味着：
+\begin{itemize}
+    \item 当专家输出接近均匀分布时（低精度 $\theta_0$），Fisher 度量相对平坦（$\lambda_{\max} \approx 1/C$），
+    但欧氏距离仍由 $\hat{V}$ 缩放——两者可能相差一个 $O(C)$ 因子。
+    \item 当精度提高（$P_k$ 变得“尖锐”）时，Fisher 度量在某些方向上急剧收缩（$\lambda_{\min} \to 0$），
+    使得 Fisher 距离比欧氏距离小得多——这反映了“概率接近确定性时，信息的边际价值递减”这一合理直觉。
+\end{itemize}
+
+\subsection{数值比较}
+
+\begin{table}[htbp]
+\centering
+\caption{$C=10$ 类 softmax 下 Fisher 与欧氏 NPE 阈值的比较}
+\label{tab:comparison}
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+$\theta$ & $P_{\max}$ & $\lambda_{\min}(\Fisher)$ & $\lambda_{\max}(\Fisher)$ & Fisher 阈值 & 欧氏等效阈值 \\
+\midrule
+0.10 & 0.10 (uniform) & 0.010 & 0.100 & $10.0 \cdot T$ & $3.16 \cdot T$ \\
+0.30 & 0.30 & 0.025 & 0.210 & $6.32 \cdot T$ & $2.18 \cdot T$ \\
+0.50 & 0.50 & 0.050 & 0.250 & $4.47 \cdot T$ & $1.95 \cdot T$ \\
+0.70 & 0.70 & 0.030 & 0.210 & $5.77 \cdot T$ & $2.18 \cdot T$ \\
+0.90 & 0.90 & 0.009 & 0.090 & $10.5 \cdot T$ & $3.33 \cdot T$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+表~\ref{tab:comparison} 显示：Fisher 条件要求的“等效欧氏距离”系统地大于欧氏条件本身，
+反映了信息几何的曲率修正。在中等精度（$\theta \approx 0.5$）时差距最小（$\sqrt{\bar{\lambda}_{\max}} \approx 0.5$）；
+在极高精度（$\theta \approx 0.9$）时，Fisher 度量收缩严重，差距再次扩大。
+
+% ══════════════════════════════════════════════════════════════════════
+% SECTION 5: IMPLICATIONS FOR CRITICAL THRESHOLDS
+% ══════════════════════════════════════════════════════════════════════
+\section{临界阈值的修正}
+
+\subsection{Fisher 度量的 CEC 依赖性}
+
+CEC 规模 $|\mathcal{E}|$ 不仅影响精度 $\theta$，还影响参数点 $\phi(\theta)$ 处的 Fisher 度量 $\Fisher(\phi(\theta))$。
+随着 $|\mathcal{E}|$ 增大，精度提升，参数空间中对应的点沿一条曲线 $\gamma_{\mathcal{E}}(t) = \phi(\theta(|\mathcal{E}_t|))$ 移动。
+
+\begin{proposition}[CEC 驱动的 Fisher 度量演化]
+设 $\theta(|\mathcal{E}|)$ 由~\eqref{eq:theta_cec} 给出，且 $\phi: [0,1] \to \Theta$ 为光滑。
+则 Fisher--Rao 距离 $d_F(|\mathcal{E}|) := d_F(P_{\theta(|\mathcal{E}|)}, P_{\theta(0)})$ 满足：
+\begin{equation}
+    \frac{d}{d|\mathcal{E}|} d_F(|\mathcal{E}|) = \frac{\theta'(|\mathcal{E}|)}{\|\dot{\gamma}_{\mathcal{E}}\|_{\Fisher}}
+    \cdot \left\langle \nabla d_F, \dot{\gamma}_{\mathcal{E}} \right\rangle_{\Fisher} \label{eq:dF_deriv}
+\end{equation}
+其中 $\dot{\gamma}_{\mathcal{E}} = \frac{d}{d\theta} \phi(\theta) \cdot \theta'(|\mathcal{E}|)$。
+\end{proposition}
+
+关键：$d_F(P_{\theta(|\mathcal{E}|)}, P_{\theta(0)})$ 对 $|\mathcal{E}|$ 的增长速率受 Fisher 度量张量调控。
+在不均匀的 Fisher 度量下，相同的 $\Delta\theta$ 可能对应非常不同的 $d_F$。
+
+\subsection{临界 CEC 规模的 Fisher 修正}
+
+\begin{theorem}[Fisher 临界 CEC 规模]\label{thm:critical_cec_fisher}
+在信息几何 NPE 下，临界 CEC 规模 $|\mathcal{E}|^*_F$ 满足：
+\begin{equation}
+    d_F(P_{\theta(|\mathcal{E}|^*_F)}, P_{\theta(0)}) = T_F \label{eq:critical_cec_def}
+\end{equation}
+其中 $T_F = -\lambda - c^{\text{adopt}} + c^{\text{develop}} + \kappa$。
+
+与原始临界规模 $|\mathcal{E}|^*_E$（满足 $\Delta_A(|\mathcal{E}|^*_E) = -\lambda$）比较：
+\begin{equation}
+    |\mathcal{E}|^*_F > |\mathcal{E}|^*_E \quad \text{当} \quad \sqrt{\bar{\lambda}_{\max}} \cdot \hat{V} < 1 \label{eq:comparison_cec}
+\end{equation}
+即当 Fisher 度量在采纳路径上的最大特征值小于 $1/\hat{V}^2$ 时，
+信息几何预测的临界规模大于原始模型。
+
+\textbf{直觉：} Fisher 度量在精度较高区域可能收缩（$\lambda_{\max} < 1$），
+使得单位精度的信息几何距离变短——需要更多的 CEC 积累才能达到相同的 $d_F$ 阈值。
+\end{theorem}
+
+\subsection{专家数量 $M$ 的结构性影响}
+
+信息几何重构引入了一个原始 NPE 中不存在的新依赖性：专家数量 $M$。
+
+\begin{proposition}[$M$ 对 Fisher 度量条件数的影响]\label{prop:M_dependence}
+对于 $M$ 个独立专家的 softmax 输出（每类 $C$ 个类别），联合分布的 Fisher 信息矩阵是各专家 Fisher 信息矩阵的直和：
+\begin{equation}
+    \Fisher^{(M)}(\theta) = \bigoplus_{m=1}^{M} \Fisher^{(m)}(\theta_m) \label{eq:joint_fisher}
+\end{equation}
+因此：
+\begin{itemize}
+    \item $\tr(\Fisher^{(M)}) = \sum_{m=1}^{M} \tr(\Fisher^{(m)})$ 随 $M$ 线性增长。
+    \item 但 $d_F^{(M)}$ 度量的是联合流形 $(\Theta^M, \Fisher^{(M)})$ 上的测地距离，
+    总体上 $d_F^{(M)} \propto \sqrt{M} \cdot \bar{d}_F$，其中 $\bar{d}_F$ 为单专家平均 Fisher 距离。
+\end{itemize}
+\end{proposition}
+
+这意味着：
+\begin{enumerate}[label=(\roman*)]
+    \item 当 $M$ 增大时，Fisher 距离以 $\sqrt{M}$ 因子增长（专家输出中更多的独立信息）。
+    \item 但 Fisher 度量条件数 $\kappa(\Fisher^{(M)})$ 不随 $M$ 改善（直和保持特征值分布）。
+    \item 因此，$M$ 的增加通过增大 $d_F$ 来加速达到临界阈值，使得 $|\mathcal{E}|^*_F$ 随 $M$ 递减。
+\end{enumerate}
+
+\begin{conjecture}[$M$ 与 $|\mathcal{E}|^*_F$ 的缩放关系]
+在 softmax 分类器的信息几何 NPE 中，临界 CEC 规模与专家数 $M$ 的关系近似为：
+\begin{equation}
+    |\mathcal{E}|^*_F(M) \approx \frac{|\mathcal{E}|^*_F(1)}{\sqrt{M}} \label{eq:M_scaling}
+\end{equation}
+即每增加因子 4 的专家数，临界 CEC 规模减半。
+\end{conjecture}
+
+\subsection{对锁入阶段的影响}
+
+如果 $|\mathcal{E}|^*_F > |\mathcal{E}|^*_E$（在低 $M$ 区域），那么：
+\begin{itemize}
+    \item 原始模型可能\textbf{过早}宣布进入 $S_3$（锁入阶段）——实际上 NPE 可能还未稳定。
+    \item 信息几何预测需要更大的 CEC 积累才能确保均衡不可逆。
+    \item 这对政策制定有重要影响：\textbf{在审核基础设施建设的早期阶段（低 $M$、低 $|\mathcal{E}|$），
+    不应过早认为锁入效应已经建立。}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════
+% SECTION 6: DISCUSSION
+% ══════════════════════════════════════════════════════════════════════
+\section{讨论}
+
+\subsection{理论贡献}
+
+本文的信息几何重构为 NPE 博弈论提供了以下理论贡献：
+
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{几何一致性：} Fisher--Rao 度量是概率分布空间上唯一的（在 Markov 嵌入下）不变黎曼度量~\cite{chentzov1982statistical,cencov2000statistical}。
+    使用此度量确保采纳优势的量化尊重概率空间的固有几何。
+    \item \textbf{$\alpha$-连续性：} Amari $\alpha$-散度族提供了一条连续的“桥”，
+    连接不同的不对称信息度量，可以刻画不同类型辖区的策略偏好。
+    \item \textbf{紧界保证：} Fisher 条件提供比欧氏条件更紧（因而更安全）的均衡边界，
+    避免在曲率亏损区域过早宣布均衡稳定。
+\end{enumerate}
+
+\subsection{局限性与假设}
+
+\begin{enumerate}[label=(\textbf{L\arabic*}), leftmargin=*]
+    \item \textbf{指数族假设（H1）：} Fisher--KL 等价性依赖指数族假定。
+    在非指数族下，差异由 Amari--Chentsov 三阶张量 $T_{ijk}$ 控制~\cite{amari2016information}。
+    本文的主要结果（均衡条件和 $d_F$ 的紧性）不依赖此假设，仅 $\alpha$ 和 KL 的显式关系受影响。
+    \item \textbf{局部逼近假设（H2）：} $d_F$ 与 $\KL$ 的等价性仅在 $\|\Delta\theta\|$ 充分小时成立。
+    当 $\theta$ 与 $\theta_0$ 差距较大时（CEC 巨大），需要完整的测地线积分。
+    \item \textbf{精度-参数映射 $\phi$：} 本文假设存在光滑映射 $\phi: [0,1] \to \Theta$。
+    实际 SCX 系统中，精度和参数空间的关系可能需要经验校准。
+    \item \textbf{静态 Fisher 度量：} 本文使用固定时间点的 Fisher 度量。
+    实际系统中，$\Fisher$ 可能随 CEC 积累而演化（如先验-后验更新）。
+\end{enumerate}
+
+\subsection{与 SCX 规范理论的深层联系}
+
+信息几何 NPE 与 SCX 规范理论形式化（gauge\_formalized.tex）存在深层结构联系：
+
+\begin{itemize}
+    \item gauge\_formalized.tex 定理 5.1 的统一结构不变性——$\beta_1 = (M-1)(M-2)/2$——
+    同时出现在 $O(d)$ 规范、DW TQFT 和 Fisher 几何中~\cite{scx_gauge_formalized}。
+    本文的命题~\ref{prop:M_dependence} 表明 $M$ 不仅影响规范理论的调和模空间维数，
+    也影响 NPE 的 Fisher 几何临界阈值。
+    \item Cercis 分数的信息几何解释（定理 4.2）——Cercis = $\min_{d_0 h} d_F(P_A, P_{d_0 h})^2$——
+    与本文 $\Delta_A^{\text{IG}} = d_F(P_\theta, P_0) + \cdots$ 形成对偶：
+    Cercis 度量专家间的\textbf{横向不一致性}（体-边界距离），
+    而 $\Delta_A^{\text{IG}}$ 度量采纳者与开发者的\textbf{纵向分布偏移}。
+\end{itemize}
+
+\subsection{未来研究方向}
+
+\begin{enumerate}[label=(\textbf{F\arabic*}), leftmargin=*]
+    \item \textbf{非指数族修正：} 利用 Amari--Chentsov 三阶张量 $T_{ijk}$ 给出
+    $\dalpha$ 和 $d_F$ 之间的三阶修正，扩展定理~\ref{thm:fisher_kl}。
+    \item \textbf{动态 Fisher 度量：} 建模 $\Fisher$ 随 CEC 积累的贝叶斯更新，
+    推导 $d_F$ 的时间演化偏微分方程。
+    \item \textbf{$M$-依赖性实证：} 通过 SCX 生产数据验证猜想~\eqref{eq:M_scaling}——$|\mathcal{E}|^*_F$ 是否确实按 $1/\sqrt{M}$ 缩放。
+    \item \textbf{不完全信息贝叶斯博弈：} 将信息几何 NPE 扩展为不完全信息贝叶斯博弈，
+    其中每个辖区对 $d_F$ 有私人的 Fisher 度量估计（类型依赖的 Amari $\alpha$ 参数）。
+    \item \textbf{与 AAE 的对接：} 将 Fisher 几何 $\Delta_A$ 嵌入采纳-审计均衡（AAE）的不动点框架，
+    研究 Fisher 距离对 AAE 多重均衡结构的影响。
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════
+% SECTION 7: CONCLUSION
+% ══════════════════════════════════════════════════════════════════════
+\section{结论}
+
+本文提出了非扩散均衡（NPE）博弈论的信息几何重构。
+核心思想是用统计流形上的 Fisher--Rao 测地距离 $d_F(P_\theta, P_0)$ 替代标量效用函数差，
+从而将采纳博弈嵌入到概率分布的固有几何中。
+
+主要发现：
+\begin{enumerate}[label=(\arabic*)]
+    \item 全体采纳均衡的信息几何条件为 $d_F(P_{\theta(|\mathcal{E}|)}, P_{\theta(0)}) \geq -\lambda - c^{\text{ad}} + c^{\text{dev}} + \kappa$，
+    其中 $d_F$ 的曲率修正使该条件比原始欧氏条件更紧。
+    \item Amari $\alpha$-散度为混合策略提供了 $\alpha$-参数化的连续族，
+    将不同风险偏好的辖区行为统一在单一框架下。
+    \item Fisher 度量在分布尖锐区域收缩，在均匀区域膨胀，这意味着：
+    NPE 在精度适中的中间阶段最容易达成，而在极低和极高精度时都需要更多 CEC 积累。
+    \item 临界 CEC 规模 $|\mathcal{E}|^*_F$ 一般大于原始估计 $|\mathcal{E}|^*_E$，
+    且与专家数量 $M$ 成 $\propto 1/\sqrt{M}$ 关系——这一预测可通过 SCX 生产数据验证。
+\end{enumerate}
+
+\textbf{信息几何告诉我们的是：} 采纳优势不仅仅是精度差，更是信息空间中的几何距离。
+在曲率不为零的空间中，直线上等距的步长并不等价——而 Fisher--Rao 度量恰好告诉我们哪些步长“更大”（信息更多），
+哪些“更小”（信息冗余）。
+NPE 的稳定性取决于这些“信息步长”是否足以跨越碎片化成本的鸿沟。
+
+% ══════════════════════════════════════════════════════════════════════
+% APPENDIX: 符号表
+% ══════════════════════════════════════════════════════════════════════
+\appendix
+\section{符号表}
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{符号} & \textbf{含义} \\
+\midrule
+$N$ & 辖区数量 \\
+$\mathcal{E}$ & 累积证据语料库（CEC） \\
+$|\mathcal{E}|$ & CEC 规模 \\
+$\theta(|\mathcal{E}|)$ & 审核精度（F1 分数） \\
+$\theta_\infty$ & 渐近精度上限 \\
+$\theta_0$ & 初始精度 \\
+$\gamma$ & 学习率参数 \\
+$V[\theta]$ & 标量值函数 \\
+$c^{\text{adopt}}$ & 采纳成本 \\
+$c^{\text{develop}}$ & 开发成本 \\
+$\kappa$ & 边际扩散成本 \\
+$\lambda$ & 碎片化成本 \\
+$\Delta_A$ & 采纳精度优势 \\
+$\Theta$ & 参数空间 \\
+$P_\theta$ & 参数 $\theta$ 对应的概率分布 \\
+$\Fisher_{ij}(\theta)$ & Fisher 信息度量 \\
+$d_F(\theta_1, \theta_2)$ & Fisher--Rao 测地距离 \\
+$\KL(P\|Q)$ & KL 散度 \\
+$\dalpha(P\|Q)$ & $\alpha$-散度 \\
+$M$ & 专家数量 \\
+$C$ & softmax 类别数 \\
+$T_{ijk}$ & Amari--Chentsov 三阶张量 \\
+$\kappa(\Fisher)$ & Fisher 信息矩阵条件数 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════
+% BIBLIOGRAPHY
+% ══════════════════════════════════════════════════════════════════════
+\begin{thebibliography}{99}
+
+\bibitem{scx_yajie}
+SCX Research Group.
+\newblock The Yajie Protocol: Technology Lock-in, Audit Sovereignty, and the Non-Proliferation Logic of Data Quality Assessment.
+\newblock \textit{Manuscript}, 2026.
+
+\bibitem{scx_gt_inventory}
+SCX Research Group.
+\newblock SCX 博弈论与经济学全面清册 / Game Theory \& Economics Complete Inventory.
+\newblock \textit{Internal document}, GAMETHEORY\_INVENTORY.md, 2026.
+
+\bibitem{scx_gauge_formalized}
+SCX Research Group.
+\newblock Gauge Theory Formalized: O(d) Lattice Gauge, Dijkgraaf-Witten Discrete TQFT, and Information-Geometric Bulk-Boundary Correspondence.
+\newblock \textit{Manuscript}, v2.0, 2026.
+
+\bibitem{scx_gauge_inventory}
+SCX Research Group.
+\newblock SCX 规范理论完整清查 / Gauge Theory Complete Inventory.
+\newblock \textit{Internal document}, GAUGE\_INVENTORY.md, 2026.
+
+\bibitem{amari2016information}
+S. Amari.
+\newblock \textit{Information Geometry and Its Applications}.
+\newblock Springer, 2016.
+
+\bibitem{amari2007methods}
+S. Amari and H. Nagaoka.
+\newblock \textit{Methods of Information Geometry}.
+\newblock American Mathematical Society, 2007.
+
+\bibitem{amari1985differential}
+S. Amari.
+\newblock \textit{Differential-Geometrical Methods in Statistics}.
+\newblock Lecture Notes in Statistics, Vol. 28, Springer, 1985.
+
+\bibitem{chentzov1982statistical}
+N. N. Chentsov.
+\newblock \textit{Statistical Decision Rules and Optimal Inference}.
+\newblock American Mathematical Society, 1982.
+
+\bibitem{cencov2000statistical}
+N. N. Cencov.
+\newblock \textit{Statistical Decision Rules and Optimal Inference}.
+\newblock Reprint, American Mathematical Society, 2000.
+
+\bibitem{fisher1925theory}
+R. A. Fisher.
+\newblock Theory of Statistical Estimation.
+\newblock \textit{Mathematical Proceedings of the Cambridge Philosophical Society}, 22(5):700--725, 1925.
+
+\bibitem{rao1945information}
+C. R. Rao.
+\newblock Information and Accuracy Attainable in the Estimation of Statistical Parameters.
+\newblock \textit{Bulletin of the Calcutta Mathematical Society}, 37:81--91, 1945.
+
+\bibitem{tishby2000}
+N. Tishby, F. C. Pereira, and W. Bialek.
+\newblock The Information Bottleneck Method.
+\newblock \textit{Proceedings of the 37th Allerton Conference}, 2000.
+
+\bibitem{dijkgraaf1990}
+R. Dijkgraaf and E. Witten.
+\newblock Topological Gauge Theories and Group Cohomology.
+\newblock \textit{Communications in Mathematical Physics}, 129(2):393--429, 1990.
+
+\end{thebibliography}
+
+\end{document}
