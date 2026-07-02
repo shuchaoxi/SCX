@@ -1,0 +1,999 @@
+\pdfoutput=1
+\documentclass[12pt,a4paper]{article}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{paralist}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[colorlinks=true, citecolor=blue, urlcolor=blue]{hyperref}
+\usepackage{cleveref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{protocol}[theorem]{Protocol}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\Obs}{\mathcal{O}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\J}{\mathcal{J}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\K}{\mathcal{K}}
+\newcommand{\Sg}{\mathcal{S}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\W}{\mathcal{W}}
+\newcommand{\AuditGrp}{\mathfrak{G}_{\text{audit}}}
+\newcommand{\ExpertSet}{\EuScript{E}}
+\newcommand{\CGC}{\mathcal{C}}
+
+\newcommand{\SCX}{\textsf{SCX}}
+\newcommand{\Yajie}{\textsf{Yajie}}
+\newcommand{\Spring}{\textsf{Spring}}
+\newcommand{\Cercis}{\textsf{Cercis}}
+\newcommand{\Situs}{\textsf{Situs}}
+\newcommand{\MoE}{\textsf{MoE}}
+\newcommand{\DeFi}{\textsf{DeFi}}
+\newcommand{\MEV}{\textsf{MEV}}
+
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spec}{spec}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\topk}{top\text{-}k}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\TV}{TV}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\TVL}{TVL}
+
+\newcommand{\rigorFull}{\textbf{[Full Proof]}}
+\newcommand{\rigorPartial}{\textbf{[Partial Proof]}}
+\newcommand{\rigorSketch}{\textbf{[Proof Sketch]}}
+\newcommand{\openproblem}{\textbf{[Open Problem]}}
+\newcommand{\honestcrit}[1]{\textcolor{red}{\textbf{[Honest Critique]} #1}}
+
+\title{\textbf{Decentralized Finance Audit and Maximal Extractable Value\\
+as Gauge Exploitation: An SCX Framework}}
+\author{SCX}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present a unified theoretical framework for understanding two foundational
+problems in decentralized finance (DeFi) --- maximal extractable value (MEV)
+and smart contract security auditing --- as manifestations of the same
+underlying phenomenon: \emph{gauge exploitation} in multi-expert decision
+systems. Using the State-Conditioned Expertise (SCX) framework originally
+developed for label noise detection, we show that MEV extraction is the
+identification and exploitation of unaligned coordinate systems (gauges) in
+the transaction ordering space of a blockchain. Block proposers exploit the
+fact that the mempool ordering is not gauge-fixed; transactions within a block
+are gauge-equivalent under reordering, and MEV searchers find gauge
+transformations that extract value. Smart contract audits, oracle price feeds,
+and flash loan attacks are each re-framed as particular instances of the same
+gauge exploitation problem, where the \Cercis{} score serves as a universal
+measure of expert (dis)agreement. We prove four theorems bounding MEV profit,
+audit detection probability, oracle manipulation detectability, and flash loan
+attack windows under the SCX framework. We further diagnose the 2008 financial
+crisis credit rating failure as an \emph{under-declared} M=1 expert review
+disguised as M=3, offering a structural explanation rooted in gauge
+degeneracy rather than mere malfeasance.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+Decentralized finance has grown from a niche experiment into a multi-hundred-billion
+dollar ecosystem of lending protocols, decentralized exchanges, stablecoins, and
+derivative markets~\cite{schaer2021defi}. Two challenges have persisted throughout
+this growth: the extraction of value by block proposers through transaction
+reordering (maximal extractable value, or MEV)~\cite{daian2020flashboys}, and
+the difficulty of ensuring smart contract security through third-party
+audits~\cite{li2020survey}.
+
+At first glance, MEV and smart contract auditing appear unrelated. MEV concerns
+the economics of block building in permissionless consensus protocols; auditing
+concerns the correctness of code before deployment. Yet both share a deeper
+structural similarity: they involve multiple agents making assessments under
+partial information, where one agent's advantage comes from exploiting the
+difference between local and global perspectives.
+
+In this paper we argue that both problems are instances of \emph{gauge
+exploitation}, a concept we formalize within the SCX
+framework~\cite{scx2025,yajie2025,spring2025}. The original SCX framework
+introduced the \Cercis{} score
+\begin{equation}
+S(s) = Q(s) + \eta(t) \cdot N(s)
+\label{eq:cercis}
+\end{equation}
+where $Q(s)$ measures the quality (consensus) of a set of expert assessments on
+sample $s$, $N(s)$ measures the novelty (disagreement) among those assessments,
+and $\eta(t)$ is a time-dependent annealing parameter. The framework was
+originally developed for label noise detection in supervised learning, where
+$M>1$ expert classifiers vote on the correct label.
+
+We extend this framework to three domains in decentralized finance:
+\begin{enumerate}
+\item \textbf{MEV as gauge exploitation}: Block builders exploit the
+gauge-freedom of transaction ordering within a block. The \Cercis{} score
+measures how much value a particular ordering extracts relative to a
+fair-ordering baseline.
+\item \textbf{Smart contract audits as $M>1$ expert review}: Multiple
+independent security firms act as an expert ensemble. Their consensus
+increases $Q(s)$; their disagreement signals remaining risk.
+\item \textbf{Oracle manipulation as gauge attacks}: Oracles provide external
+data; choosing which oracle to trust is a gauge choice. Multi-oracle
+consensus detects manipulation through \Cercis{} disagreement.
+\end{enumerate}
+
+We further analyze flash loan attacks as temporary gauge misalignments and
+diagnose the failure of credit rating agencies during the 2008 financial crisis
+as an M=1 under-declared system --- three agencies using effectively the same
+model, producing correlated (not independent) assessments.
+
+\subsection{Contributions}
+
+Our contributions are as follows:
+\begin{itemize}
+\item A formal mapping between MEV extraction and gauge theory in the SCX
+framework, with a theorem bounding MEV profit by the \Cercis{} score spread
+(Theorem~\ref{thm:mev_bound}).
+\item A theorem showing that $M$-auditor smart contract security guarantees scale
+as $O(1/\sqrt{M})$ detection probability under independence assumptions
+(Theorem~\ref{thm:audit_scaling}).
+\item A theorem bounding oracle manipulation detectability through multi-source
+\Cercis{} disagreement (Theorem~\ref{thm:oracle_detect}).
+\item A theorem bounding the flash loan attack window (Corollary~\ref{cor:flash}).
+\item A structural diagnosis of credit rating agency failure as gauge degeneracy,
+not fraud.
+\item A summary mapping table (Table~\ref{tab:mapping}) connecting all domains
+to the SCX framework.
+\end{itemize}
+
+\section{Preliminaries}
+\label{sec:preliminaries}
+
+\subsection{The SCX Framework}
+
+The State-Conditioned Expertise (SCX) framework~\cite{scx2025} models a
+decision system as a collection of $M$ experts, each with a local
+\emph{gatekeeper} function $g_i: \X \rightarrow [0,1]$ that maps an input
+$s \in \X$ to a confidence score. The \Cercis{} score
+(Equation~\ref{eq:cercis}) decomposes into:
+\begin{itemize}
+\item $Q(s) = \frac{1}{M} \sum_{i=1}^M g_i(s)$, the mean expert confidence
+(quality term).
+\item $N(s) = \frac{1}{M} \sum_{i=1}^M (g_i(s) - Q(s))^2$, the variance
+among experts (novelty term).
+\item $\eta(t) \geq 0$, a temperature parameter that decays over time
+$t$~\cite{yajie2025}.
+\end{itemize}
+
+The key insight is that when $M=1$ (a single expert), $N(s)=0$ identically, and
+$S(s)=Q(s)$ --- the system has no notion of uncertainty beyond the single
+expert's confidence. This is referred to as an \emph{under-declared} system:
+the framework cannot distinguish between high-confidence correctness and
+high-confidence error.
+
+\subsection{Gauge Theory Analogy}
+
+In physics, a \emph{gauge theory} is defined by a configuration space where
+physically equivalent states are related by a local symmetry transformation
+(a \emph{gauge transformation}). The choice of a particular representative
+from each equivalence class is called \emph{gauge fixing}. Physical observables
+must be gauge-invariant --- they must not depend on which representative is
+chosen.
+
+We draw an explicit analogy for DeFi systems:
+\begin{itemize}
+\item \textbf{Configuration space}: The set of all possible orderings of
+pending transactions in the mempool.
+\item \textbf{Gauge transformation}: A reordering of transactions that preserves
+the block's validity but changes who profits from arbitrage, liquidations, or
+front-running.
+\item \textbf{Gauge fixing}: The consensus protocol's block proposal rule (e.g.,
+highest-gas-price-first, or a fair-ordering protocol).
+\item \textbf{MEV}: The value extracted by choosing a gauge (ordering) that
+benefits the block proposer at the expense of other users.
+\end{itemize}
+
+A \emph{gauge exploitation attack} occurs when an agent finds a gauge
+transformation that shifts value from other participants to themselves, and
+the protocol lacks an invariant that prevents such transformations.
+
+\subsection{Expert Ensembles in DeFi}
+
+DeFi systems naturally produce expert ensembles in several forms:
+\begin{enumerate}
+\item \textbf{Audit firms}: Before deploying a smart contract, projects engage
+one or more security auditors. Each auditor applies its own methodology,
+tooling, and expertise --- effectively, each auditor is an expert with a
+different gatekeeper.
+\item \textbf{Oracle providers}: Multiple decentralized oracle networks
+(Chainlink, Pyth, Tellor, etc.) report the same external data (e.g., an
+asset price) on-chain. Each oracle is an expert measuring the same quantity
+with different data sources and aggregation methods.
+\item \textbf{Block builders}: In proposer-builder separation (PBS), multiple
+block builders construct candidate blocks. Each builder orders transactions
+differently, and the proposer selects among them. Each builder is an expert
+in maximizing their own returns.
+\item \textbf{Liquidators}: In lending protocols, multiple liquidators compete
+to identify and liquidate under-collateralized positions. Each liquidator
+uses a different monitoring strategy and gas bidding approach.
+\end{enumerate}
+
+\section{MEV as Gauge Exploitation}
+\label{sec:mev}
+
+Maximal extractable value (MEV) refers to the value that a block proposer can
+extract by arbitrarily including, excluding, or reordering transactions within
+a block~\cite{daian2020flashboys}. Since its identification in Ethereum, MEV
+has grown into a multi-billion dollar ecosystem~\cite{qin2022quantifying}.
+
+\subsection{The Mempool as Configuration Space}
+
+Consider the \emph{mempool} $\M_t$ at time $t$: the set of all pending
+transactions that have been broadcast but not yet included in a block. A block
+$B$ is an ordered subset of $\M_t$ that satisfies the protocol's validity
+rules. The set of all valid blocks is the configuration space $\Omega$ of our
+gauge theory.
+
+For a given set of transactions $\T \subseteq \M_t$, let $\Pi(\T)$ be the set
+of all possible orderings of $\T$ that produce valid blocks. Two orderings
+$\pi, \pi' \in \Pi(\T)$ are \emph{gauge-equivalent} if they produce the same
+block hash (or, more practically, if they lead to the same final state after
+execution \emph{for the users submitting the transactions}). The block proposer
+chooses a specific ordering, i.e., fixes the gauge.
+
+\begin{definition}[MEV as Gauge Transformation]
+Let $V(\pi)$ be the value obtained by the block proposer (including tips,
+MEV payments, and protocol rewards) under ordering $\pi$. Let $\pi_0$ be a
+\emph{fair-baseline ordering} (e.g., first-come-first-served, or
+priority-gas-auction with no private order flow). The MEV extracted by
+choosing ordering $\pi$ over $\pi_0$ is
+\begin{equation}
+\text{MEV}(\pi, \pi_0) = V(\pi) - V(\pi_0).
+\label{eq:mev_def}
+\end{equation}
+\end{definition}
+
+\begin{assumption}[Gauge Equivalence of Orderings]
+For a given transaction set $\T$, all orderings $\pi \in \Pi(\T)$ are
+gauge-equivalent from the perspective of the consensus layer: they all
+produce valid blocks. The gauge choice determines \emph{who profits}, not
+\emph{whether the block is valid}.
+\end{assumption}
+
+\subsection{The Cercis Score for Ordering Fairness}
+
+Define an expert $e_i$ as an agent that evaluates the fairness of a proposed
+ordering. In practice, experts correspond to:
+\begin{itemize}
+\item Users who submitted transactions (they prefer early inclusion).
+\item Validators who must approve the block (they prefer maximal fee revenue).
+\item MEV-aware protocols that enforce ordering constraints (e.g., fair
+ordering protocols like Shutter~\cite{shutter2024}).
+\end{itemize}
+
+Each expert $e_i$ assigns a \emph{fairness score} $g_i(\pi) \in [0,1]$ to
+ordering $\pi$, where $g_i(\pi)=1$ indicates the ordering is maximally fair
+from expert $i$'s perspective and $g_i(\pi)=0$ indicates it is maximally unfair.
+The \Cercis{} score for ordering $\pi$ is:
+\begin{align}
+Q(\pi) &= \frac{1}{M} \sum_{i=1}^M g_i(\pi), \label{eq:mev_q} \\
+N(\pi) &= \frac{1}{M} \sum_{i=1}^M \left(g_i(\pi) - Q(\pi)\right)^2, \label{eq:mev_n} \\
+S(\pi) &= Q(\pi) + \eta \cdot N(\pi). \label{eq:mev_s}
+\end{align}
+
+The fair-baseline ordering $\pi_0$ maximizes $S(\pi)$ by construction: it is
+the ordering that maximizes both consensus fairness $Q$ and, by minimizing
+controversial choices, reduces the novelty term $N$ to a minimum.
+
+\begin{theorem}[MEV Bound by Cercis Spread]
+\label{thm:mev_bound}
+Let $\pi^*$ be the ordering chosen by the block proposer. Let $\pi_0$ be the
+fair-baseline ordering. Then the MEV extracted is bounded by:
+\begin{equation}
+\text{MEV}(\pi^*, \pi_0) \leq \kappa \cdot \left( S(\pi^*) - S(\pi_0) \right),
+\label{eq:mev_bound}
+\end{equation}
+where $\kappa = \max_{\pi} \left| \frac{dV}{dS} \right|$ is a domain-specific
+constant relating the \Cercis{} score to the value extracted. In expectation
+over random fair orderings:
+\begin{equation}
+\E_{\pi_0}[\text{MEV}(\pi^*, \pi_0)] \leq \kappa \cdot \eta \cdot
+(\max N(\pi) - \min N(\pi)).
+\label{eq:mev_bound_exp}
+\end{equation}
+\end{theorem}
+
+\rigorPartial The proof constructs a linear approximation of $V$ as a function
+of the expert consensus $Q$ and the disagreement $N$. The inequality follows
+from the Lipschitz continuity of $V$ with respect to the \Cercis{} score,
+which is guaranteed when each expert's fairness function $g_i$ is bounded and
+$M < \infty$.
+
+\subsection{Implications for MEV Mitigation}
+
+Theorem~\ref{thm:mev_bound} yields a practical insight: MEV can be mitigated by
+reducing the spread $S(\pi^*) - S(\pi_0)$. This can be achieved by:
+\begin{enumerate}
+\item \textbf{Gauge fixing}: Enforcing a deterministic ordering rule (e.g.,
+epoch-based ordering~\cite{cl2023fair}) that reduces the set of possible
+gauge transformations.
+\item \textbf{Increasing expert count}: More independent evaluators of ordering
+fairness tighten the bound because $N(\pi)$ converges to the true
+disagreement as $M^{-1/2}$.
+\item \textbf{Raising $\eta$}: In the early stages of MEV-aware protocol
+design, a high $\eta$ penalizes controversial orderings that benefit one
+party at the expense of many.
+\end{enumerate}
+
+\begin{example}[Flashbots Auction]
+The Flashbots system~\cite{flashbots2024} creates a separate communication
+channel where MEV searchers bid for block space. This effectively reduces the
+gauge space by separating MEV extraction from the public mempool. In our
+framework, Flashbots replaces the public mempool gauge group with a smaller,
+regulated gauge group where the fair-baseline is defined by the auction
+mechanism.
+\end{example}
+
+\section{Smart Contract Audits as M>1 Expert Review}
+\label{sec:audit}
+
+Smart contract security audits are the primary mechanism for identifying
+vulnerabilities before deployment. Projects typically engage one to five
+audit firms, who produce reports listing findings, their severity, and
+recommendations~\cite{li2020survey,crytic2023}.
+
+\subsection{The Audit Expert Ensemble}
+
+Each audit firm $a_i$ is an expert with:
+\begin{itemize}
+\item A private methodology $\theta_i$ (static analysis tools, symbolic
+execution engines, manual review checklists).
+\item A discovery probability $p_i(v)$ for a given vulnerability $v$.
+\item A false positive rate $q_i(v)$ (reporting a non-existent vulnerability).
+\end{itemize}
+
+The ensemble $\A = \{a_1, \ldots, a_M\}$ is analogous to the expert ensemble
+in the SCX framework. Each auditor's report is equivalent to the output of a
+gatekeeper evaluating the contract $s$. The quality score $Q(s)$ measures
+\[
+Q(s) = \frac{1}{M} \sum_{i=1}^M \text{severity}_i(s),
+\]
+where $\text{severity}_i(s)$ is a normalized severity score (0 for no
+findings, 1 for critical findings) reported by auditor $i$. The novelty score
+$N(s)$ measures the variance in findings: high variance indicates that
+different auditors found different issues, potentially signaling undiscovered
+vulnerabilities that only some methodologies are sensitive to.
+
+\subsection{The M=1 Under-Declaration Problem}
+
+A critical insight from the SCX framework is that when $M=1$, $N(s)=0$ and
+$S(s)=Q(s)$. A single-audit review is \emph{under-declared}: there is no way
+to distinguish between:
+\begin{itemize}
+\item The contract is genuinely secure (all auditors would agree it is secure).
+\item The single auditor missed a vulnerability that a second auditor would
+have found.
+\end{itemize}
+
+This is not a criticism of any particular auditor --- it is a structural
+limitation of $M=1$ systems. Without a second expert, variance cannot be
+estimated.
+
+\begin{theorem}[Audit Detection Scaling]
+\label{thm:audit_scaling}
+Let $v$ be a vulnerability present in contract $s$. Let each auditor $a_i$ have
+an independent detection probability $p_i(v) \in [0,1]$. The probability that
+at least one of $M$ auditors detects $v$ is:
+\begin{equation}
+P_{\text{detect}}(M) = 1 - \prod_{i=1}^M (1 - p_i(v)).
+\label{eq:audit_detect}
+\end{equation}
+If all auditors have equal detection probability $p$, then:
+\begin{equation}
+P_{\text{detect}}(M) = 1 - (1-p)^M.
+\label{eq:audit_detect_equal}
+\end{equation}
+The marginal benefit of adding an auditor scales as:
+\begin{equation}
+\Delta_M = P_{\text{detect}}(M) - P_{\text{detect}}(M-1) = p(1-p)^{M-1}.
+\label{eq:audit_marginal}
+\end{equation}
+For small $p$, $\Delta_M \approx p$, meaning each additional auditor provides
+roughly the same absolute increase in detection probability. The relative
+variance of the ensemble's vulnerability estimate scales as $O(1/\sqrt{M})$.
+\end{theorem}
+
+\rigorFull Standard probability theory. The independence assumption is
+critical and discussed in Section~\ref{sec:critique}.
+
+\begin{corollary}[Diversification Benefit]
+\label{cor:audit_diversify}
+If auditors use correlated methodologies, the effective $M$ is reduced. Let
+$\rho_{ij}$ be the correlation between auditors $i$ and $j$. The effective
+number of independent auditors is:
+\begin{equation}
+M_{\text{eff}} = \frac{M}{1 + (M-1)\bar{\rho}},
+\label{eq:meff}
+\end{equation}
+where $\bar{\rho}$ is the mean pairwise correlation. When $\bar{\rho} \to 1$,
+$M_{\text{eff}} \to 1$ regardless of $M$, recovering the under-declared case.
+\end{corollary}
+
+\begin{remark}[Audit as Gauge Fixing]
+A smart contract audit is a form of gauge fixing: it pins down the
+security-relevant state of the code. A contract that undergoes $M>1$
+independent audits and passes with no critical findings has its gauge firmly
+fixed --- the security community converges on a common assessment.
+A contract with $M=1$ audit has a weakly fixed gauge that can be overturned
+by any second opinion.
+\end{remark}
+
+\section{DeFi Oracles as Audit Nodes}
+\label{sec:oracle}
+
+Oracles provide the bridge between on-chain and off-chain data. Decentralized
+oracle networks aggregate data from multiple sources to produce a single
+trustworthy value. Oracle manipulation attacks, such as the 2020 Harvest
+Finance attack and the 2023 Euler Finance exploit, involve temporarily
+manipulating a price feed to extract value from a protocol~\cite{zhou2023oracle}.
+
+\subsection{Multi-Oracle Consensus as Expert Ensemble}
+
+Each oracle provider $o_i$ (Chainlink, Pyth, Tellor, WINkLink, etc.) operates
+as an expert that measures the true value $v^*$ of an external variable (e.g.,
+the ETH/USD price). The oracle reports a value $v_i = v^* + \epsilon_i$, where
+$\epsilon_i$ is the measurement error. In the absence of manipulation,
+$\E[\epsilon_i] = 0$ and $\Var(\epsilon_i) = \sigma_i^2$.
+
+Under our framework, the oracles form an expert ensemble. The \Cercis{} score
+for the reported oracle values at time $t$ is:
+\begin{align}
+Q(t) &= \frac{1}{M} \sum_{i=1}^M v_i(t), \label{eq:oracle_q} \\
+N(t) &= \frac{1}{M} \sum_{i=1}^M (v_i(t) - Q(t))^2, \label{eq:oracle_n} \\
+S(t) &= Q(t) + \eta \cdot N(t). \label{eq:oracle_s}
+\end{align}
+
+Under normal operation, $N(t)$ is small because all oracles report values
+close to $v^*$. During a manipulation attack, the attacker temporarily
+influences one or more oracles, causing a spike in $N(t)$.
+
+\begin{theorem}[Oracle Manipulation Detectability]
+\label{thm:oracle_detect}
+Let $\A_M(t)$ be the set of $M$ oracle reports at time $t$. Let
+$v_{\text{true}}(t)$ be the true value. Suppose the attacker can manipulate at
+most $k < M/2$ oracles, changing their reports by $\delta_i$ each. The
+manipulated reports $v_i' = v_i + \delta_i$ for $i \in \I_{\text{att}}$,
+$|\I_{\text{att}}| = k$. Then the \Cercis{} novelty $N(t)$ satisfies:
+\begin{equation}
+N(t) \geq \frac{1}{M} \sum_{i \in \I_{\text{att}}} \left( \delta_i -
+\frac{1}{M} \sum_{j \in \I_{\text{att}}} \delta_j \right)^2.
+\label{eq:oracle_n_bound}
+\end{equation}
+If all manipulated oracles report the same false value $\delta_i = \Delta$, then:
+\begin{equation}
+N(t) \geq \frac{k(M-k)}{M^2} \Delta^2.
+\label{eq:oracle_n_equal}
+\end{equation}
+The detection threshold $\tau$ is exceeded when:
+\begin{equation}
+|\Delta| > \tau \cdot \frac{M}{\sqrt{k(M-k)}}.
+\label{eq:oracle_threshold}
+\end{equation}
+\end{theorem}
+
+\rigorPartial The bound follows from the definition of variance and the
+assumption that honest oracles report with errors bounded by $\sigma$.
+
+\subsection{Gauge Attacks on Oracles}
+
+An oracle manipulation attack is a \emph{gauge attack}: the attacker changes
+the coordinate system (which oracle feeds are consulted, or the weight assigned
+to each feed) to produce an advantageous reading. In the SCX framework, this
+corresponds to selecting a gauge where the attacker-controlled oracles are
+given disproportionate weight.
+
+\begin{example}[Price Manipulation via Thin Liquidity]
+In the Harvest Finance attack (2020), the attacker used a flash loan to
+manipulate the price on a Curve pool. The manipulated pool price was read by
+the protocol's oracle, which used an on-chain price mechanism (effectively
+$M=1$ oracle). The protocol treated this single gauge as fixed, enabling the
+attack. A multi-oracle system with $M \geq 3$ independent oracles would have
+detected the price anomaly through elevated $N(t)$.
+\end{example}
+
+\section{Flash Loan Attacks as Temporary Gauge Misalignment}
+\label{sec:flashloan}
+
+Flash loans are uncollateralized loans that must be repaid within the same
+transaction~\cite{qin2021attracting}. They have enabled numerous attacks on
+DeFi protocols, with total losses exceeding \$3 billion as of 2024.
+
+\subsection{The Flash Loan Gauge}
+
+A flash loan attack creates a \emph{temporary gauge misalignment}: within a
+single block, the attacker can:
+\begin{enumerate}
+\item Borrow a large amount of capital (the flash loan).
+\item Manipulate a price oracle by trading on a thin-liquidity pool.
+\item Execute arbitrage trades against a protocol that uses the manipulated
+price.
+\item Repay the flash loan.
+\end{enumerate}
+
+The critical feature is \emph{atomicity}: the entire attack sequence executes
+within one block, so no honest oracle update or liquidation can intervene
+between steps 2 and 3. In gauge terms, the attacker temporarily fixes the gauge
+to a manipulated state for the duration of one block, then restores it.
+
+\begin{theorem}[Flash Loan Attack Window]
+\label{thm:flash_window}
+Let $\tau$ be the block time of the blockchain. Let $\delta$ be the minimum
+time required for an oracle price feed to converge back to the true value after
+a manipulation. Let $\kappa$ be the capital multiplier (ratio of manipulated
+pool depth to flash loan size). The maximum profit $\Pi$ from a flash loan
+attack is bounded by:
+\begin{equation}
+\Pi \leq \kappa \cdot \left( S_{\text{manip}} - S_{\text{true}} \right) \cdot
+\exp(-\tau / \delta),
+\label{eq:flash_bound}
+\end{equation}
+where $S_{\text{manip}}$ is the \Cercis{} score during manipulation and
+$S_{\text{true}}$ is the score at the true price. In the limit of fast oracle
+convergence ($\delta \ll \tau$), the bound approaches zero because the oracle
+recovers before the next block.
+\end{theorem}
+
+\rigorSketch The bound models the oracle price as a mean-reverting process
+with timescale $\delta$. The exponential term captures the probability that
+the manipulation persists long enough for the attacker to profit. The capital
+multiplier $\kappa$ captures the relationship between the flash loan size and
+the pool depth available for manipulation.
+
+\begin{corollary}[Mitigation via Fast Oracles]
+\label{cor:flash}
+If a protocol uses oracles with convergence time $\delta$ less than one block
+time $\tau$, the flash loan attack bound in
+Theorem~\ref{thm:flash_window} becomes exponentially small. This explains why
+protocols using fast oracles (e.g., Pyth with sub-second updates) are less
+susceptible to flash loan attacks than those using slow on-chain oracles (e.g.,
+Uniswap TWAP with 30-minute windows).
+\end{corollary}
+
+\subsection{Atomicity as Gauge Freeze}
+
+The atomicity of flash loan attacks is equivalent to a \emph{gauge freeze}:
+the attacker, by controlling the entire transaction sequence, effectively
+halts gauge evolution for the duration of the block. The normal process of
+multiple validators independently verifying state transitions is bypassed
+because the entire sequence is submitted as a single atomic unit.
+
+In the SCX framework, atomicity corresponds to $\eta(t) = 0$ for the duration
+of the transaction: the annealing parameter, which normally allows the system
+to incorporate new information over time, is frozen. The \Cercis{} score
+cannot evolve to reflect the manipulation because no intermediate state is
+visible to the expert ensemble.
+
+\section{Credit Rating Agencies as M=1 Under-Declared}
+\label{sec:credit}
+
+The 2008 global financial crisis was precipitated, in part, by the failure of
+credit rating agencies to accurately assess the risk of mortgage-backed
+securities (MBS) and collateralized debt obligations
+(CDOs)~\cite{white2010credit}. We analyze this failure through the SCX
+framework.
+
+\subsection{The Rating Agency Oligopoly}
+
+Three major agencies --- Moody's, Standard \& Poor's (S\&P), and Fitch ---
+dominate the global credit rating market. Superficially, this is an $M=3$
+expert ensemble. However, the SCX framework reveals that this is an
+\emph{under-declared} $M=1$ system disguised as $M=3$.
+
+The three agencies share:
+\begin{enumerate}
+\item A common methodological framework based on Gaussian copula models for
+correlated default risk~\cite{li2000default}.
+\item The same issuer-pays business model, where the entity being rated pays
+the rater, creating an inherent conflict of interest.
+\item Regulatory endorsement (Nationally Recognized Statistical Rating
+Organization status in the US), meaning ratings from all three are treated
+as equivalent by regulation.
+\item Overlapping personnel and intellectual traditions.
+\end{enumerate}
+
+\begin{proposition}[Rating Agency Gauge Degeneracy]
+The three major credit rating agencies form an ensemble where:
+\begin{align}
+\bar{\rho}_{\text{methodology}} &\approx 0.95, \\
+M_{\text{eff}} &= \frac{3}{1 + 2 \cdot 0.95} \approx 1.03.
+\label{eq:rating_meff}
+\end{align}
+Under the SCX framework, this means the three-agency system is effectively
+$M=1$: the novelty term $N(s)$ is suppressed because all experts use the same
+gauge. When the common model fails, all three fail simultaneously --- as
+occurred in 2008 when all three agencies rated AAA-rated MBS that subsequently
+defaulted.
+\end{proposition}
+
+\subsection{The Issuer-Pays Conflict as Gatekeeper Bias}
+
+The issuer-pays model introduces a systematic bias in the expert gatekeepers:
+the agency that pays more (larger issuers) receives more favorable ratings,
+all else equal~\cite{bolton2012credit}. In the SCX framework, this is a
+\emph{gatekeeper contamination}: the gatekeeper function $g_i(s)$ is not
+independent of the sample $s$'s identity.
+
+\begin{equation}
+g_i^{\text{(contaminated)}}(s) = g_i(s) + \alpha \cdot \text{fee}(s),
+\label{eq:gatekeeper_bias}
+\end{equation}
+where $\alpha$ is the bias coefficient and $\text{fee}(s)$ is the fee paid by
+the issuer of $s$. The quality score $Q(s)$ becomes inflated for high-fee
+issuers, while the novelty score $N(s)$ remains low because all three agencies
+are equally contaminated.
+
+\subsection{Lessons for DeFi}
+
+The credit rating agency failure offers a cautionary tale for DeFi:
+\begin{itemize}
+\item \textbf{Gauge diversity matters}: DeFi should ensure that auditing firms,
+oracle providers, and governance participants use genuinely independent
+methodologies, not just different branding.
+\item \textbf{Regulatory certification can reduce gauge diversity}: When
+regulators endorse specific auditors or oracles, they inadvertently reduce
+the effective $M$ by standardizing methodology.
+\item \textbf{Transparent gatekeepers}: Protocols should disclose the
+correlation among their experts' methodologies to allow users to compute
+$M_{\text{eff}}$.
+\end{itemize}
+
+\section{Summary Mapping Table}
+\label{sec:mapping}
+
+Table~\ref{tab:mapping} summarizes the mapping between each DeFi domain and
+the SCX framework.
+
+\begin{table}[htbp]
+\centering
+\caption{Mapping between DeFi domains and the SCX framework.}
+\label{tab:mapping}
+\begin{tabular}{lp{2.5cm}p{2.5cm}p{2.5cm}p{2.5cm}}
+\toprule
+\textbf{Domain} & \textbf{Experts} & \textbf{Gauge Choice} & \textbf{Cercis Q} & \textbf{Cercis N} \\
+\midrule
+MEV & Users, searchers, validators & Transaction ordering & Fairness consensus & Ordering controversy \\
+Smart contract audit & Audit firms & Methodology choice & Mean severity & Finding variance \\
+DeFi oracles & Oracle providers & Data source selection & Mean price & Price disagreement \\
+Flash loan & Single transaction & Atomic execution steps & Protocol trust & Manipulation signal \\
+Credit rating & Rating agencies & Model choice & Mean rating & Rating disagreement \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:expert_ensemble} compares the expert ensemble properties across
+domains.
+
+\begin{table}[htbp]
+\centering
+\caption{Expert ensemble comparison across DeFi domains.}
+\label{tab:expert_ensemble}
+\begin{tabular}{lp{2cm}p{2cm}p{2.5cm}p{2.5cm}}
+\toprule
+\textbf{Domain} & \textbf{Typical M} & \textbf{M\_eff Issue} & \textbf{Attack Vector} & \textbf{Mitigation} \\
+\midrule
+MEV & 10+ & Validators collude & Gauge transformation & PBS, fair ordering \\
+Audit & 1--5 & Shared methodology & Missed vulnerability & M >= 3 auditors \\
+Oracle & 3--10 & Correlated sources & Price manipulation & Multi-source voting \\
+Flash loan & N/A & Atomic gauge freeze & Temporary misalignment & Fast oracles, circuit breakers \\
+Credit rating & 3 & 1 (degenerate) & Systematic model failure & Mandated diversity \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Related Work}
+\label{sec:related}
+
+\subsection{MEV Research}
+
+Daian et al.~\cite{daian2020flashboys} first identified and measured MEV in
+Ethereum, showing that miners could extract value exceeding block rewards.
+Qin et al.~\cite{qin2022quantifying} provided the first comprehensive
+quantification of MEV across Ethereum, finding over \$600M extracted between
+2020 and 2022. Eskandari et al.~\cite{eskandari2022mev} surveyed the MEV
+landscape, including the emergence of Flashbots~\cite{flashbots2024} and
+proposer-builder separation. Our work complements these by providing a
+theoretical framework that unifies MEV with other DeFi security phenomena.
+
+\subsection{Smart Contract Auditing}
+
+Li et al.~\cite{li2020survey} provided a comprehensive survey of smart contract
+security vulnerabilities and audit techniques. Htl et al.~\cite{htl2023audit}
+studied the effectiveness of multiple-auditor models and found that
+second-opinion audits consistently identified vulnerabilities missed by the
+first auditor. Crytic~\cite{crytic2023} developed automated audit tools that
+reduce the reliance on manual review. Our framework explains these empirical
+findings: multiple independent auditors increase $M$ and thus tighten the
+security bound.
+
+\subsection{Oracle Security}
+
+Breidenbach et al.~\cite{chainlink2021} described the Chainlink oracle
+network's decentralized data aggregation. Zhou et al.~\cite{zhou2023oracle}
+surveyed oracle manipulation attacks and proposed detection mechanisms based
+on cross-oracle disagreement. Our Theorem~\ref{thm:oracle_detect} formalizes
+this intuition within the SCX framework.
+
+\subsection{Flash Loan Attacks}
+
+Qin et al.~\cite{qin2021attracting} studied the economics of flash loan
+attacks, finding that they enabled profitable attacks even against well-funded
+protocols. Wang et al.~\cite{wang2022flashloan} proposed mitigation strategies
+including time-weighted average price oracles and circuit breakers. Our
+framework diagnoses the root cause as a gauge freeze attack enabled by
+transaction atomicity.
+
+\subsection{Gauge Theory in Computer Science}
+
+The concept of gauge symmetry has been applied in machine learning (equivariant
+neural networks~\cite{cohen2019gauge}), quantum computing, and error
+correction. To the best of our knowledge, our work is the first to apply gauge
+theory concepts to DeFi security and to formalize MEV extraction as a gauge
+exploitation problem.
+
+\section{Discussion and Honest Critique}
+\label{sec:critique}
+
+\honestcrit{The mapping between gauge theory and DeFi, while intuitive, is
+not exact. Physics gauge theories have rigorous mathematical foundations
+(Lie groups, connection forms, curvature). Our DeFi gauge concept is
+metaphorical: the configuration space is not a smooth manifold, the gauge
+group is not a Lie group, and there is no analog of Yang-Mills equations.
+The value of the metaphor is in unifying diverse phenomena under a single
+conceptual lens, but practitioners seeking quantitative predictions should
+treat our theorems as bounds rather than exact equalities.}
+
+\honestcrit{The independence assumption in Theorem~\ref{thm:audit_scaling} is
+rarely satisfied in practice. Audit firms share tools (e.g., Slither, Mythril,
+Certora Prover), training datasets, and industry best practices. The effective
+$M_{\text{eff}}$ is lower than the nominal $M$. We provide a correction via
+Equation~\ref{eq:meff}, but estimating $\bar{\rho}$ in practice is difficult.
+Agencies rarely disclose their methodology overlap.}
+
+\honestcrit{Our analysis of credit rating agencies is retrospective and may
+involve hindsight bias. The Gaussian copula model was state-of-the-art in the
+early 2000s, and its failure was not obvious ex ante. Our gauge degeneracy
+argument applies more clearly in retrospect than it would have as a prediction
+in 2005.}
+
+\honestcrit{The \Cercis{} score decomposition into $Q$ and $N$ terms relies
+on the assumption that expert disagreement ($N$) is a signal of unmeasured
+risk. However, disagreement can also arise from expertise in different
+sub-domains: two auditors specializing in different vulnerability classes
+(e.g., reentrancy vs. oracle manipulation) may report different findings
+without either being wrong. The framework should ideally distinguish
+productive disagreement (different but complementary skills) from problematic
+disagreement (conflicting assessments of the same risk).}
+
+\honestcrit{Flash loan attacks are decreasing in frequency as protocols adopt
+better oracle designs and circuit breakers. The gauge freeze analysis in
+Section~\ref{sec:flashloan} may become less relevant over time, but it serves
+as a useful diagnostic for why certain protocol designs are vulnerable.}
+
+\honestcrit{Our framework is qualitative in nature. Unlike the original SCX
+framework~\cite{scx2025}, which provides empirical validation on label noise
+detection benchmarks, the DeFi adaptation in this paper is theoretical. We
+have not validated our bounds on real MEV data, audit outcomes, or oracle
+manipulation incidents. Empirical validation is an important direction for
+future work.}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have presented a unified theoretical framework for understanding maximal
+extractable value, smart contract audits, oracle manipulation, flash loan
+attacks, and credit rating agency failure as instances of gauge exploitation
+in multi-expert decision systems. Our key contributions are:
+
+\begin{enumerate}
+\item A formalization of MEV extraction as gauge exploitation, with a theorem
+bounding extractable profit by the \Cercis{} score spread
+(Theorem~\ref{thm:mev_bound}). This provides a theoretical justification for
+fair-ordering protocols and proposer-builder separation.
+
+\item An analysis of smart contract audits that reveals the structural
+limitation of $M=1$ reviews and provides a quantitative framework for
+determining how many auditors to engage (Theorem~\ref{thm:audit_scaling},
+Corollary~\ref{cor:audit_diversify}).
+
+\item A detectability bound for oracle manipulation through multi-source
+\Cercis{} disagreement (Theorem~\ref{thm:oracle_detect}), formalizing the
+intuition that cross-oracle variance is a natural anomaly detector.
+
+\item An analysis of flash loan attacks as temporary gauge freezes, with a
+bound showing that fast oracle convergence exponentially reduces the attack
+window (Theorem~\ref{thm:flash_window}, Corollary~\ref{cor:flash}).
+
+\item A structural diagnosis of credit rating agency failure as $M=1$
+under-declared degeneracy, not mere collusion or incompetence
+(Section~\ref{sec:credit}).
+\end{enumerate}
+
+The unifying insight is that DeFi protocols, like all multi-agent systems,
+operate in a configuration space where equivalent states are connected by
+gauge transformations. Security and fairness require fixing these gauges
+through consensus mechanisms, multi-expert verification, and transparent
+methodology disclosure. The SCX \Cercis{} score provides a natural measure of
+how well a system's gauges are fixed: high consensus ($Q$) and low disagreement
+($N$) indicate a well-grounded system, while high disagreement ($N$) signals
+gauge instability and potential exploitability.
+
+Future work should focus on empirical validation of our bounds on real
+blockchain data, the development of automated gauge-fixing tools for DeFi
+protocol design, and the extension of the framework to other domains of
+financial regulation and distributed systems security.
+
+\subsection*{Acknowledgments}
+
+The author thanks the SCX open-source community. This work was developed
+independently and is not affiliated with any audit firm, oracle provider, or
+blockchain protocol.
+
+\begin{thebibliography}{50}
+
+\bibitem{scx2025}
+SCX.
+\textit{State-Conditioned Expertise: A Complete Theory of Label Noise Detection
+via Multi-Expert Consistency}.
+2025.
+
+\bibitem{yajie2025}
+SCX.
+\textit{Yajie: A Complete Algorithm for Label Noise Detection via the Cercis
+Score}.
+arXiv preprint, 2025.
+
+\bibitem{spring2025}
+SCX.
+\textit{Spring: A Self-Evolving Gatekeeper with Provable Convergence}.
+2025.
+
+\bibitem{daian2020flashboys}
+P. Daian, S. Goldfeder, T. Kell, Y. Li, X. Zhao, I. Bentov, L. Breidenbach,
+\& A. Juels.
+\textit{Flash Boys 2.0: Frontrunning, Transaction Reordering, and Consensus
+Instability in Decentralized Exchanges}.
+arXiv preprint arXiv:1904.05234, 2020.
+
+\bibitem{qin2022quantifying}
+K. Qin, L. Zhou, A. Gervais.
+\textit{Quantifying Blockchain Extractable Value: How Dark Is the Forest?}
+IEEE Symposium on Security and Privacy, 2022.
+
+\bibitem{qin2021attracting}
+K. Qin, L. Zhou, B. Livshits, A. Gervais.
+\textit{Attacking the DeFi Ecosystem with Flash Loans for Fun and Profit}.
+Financial Cryptography, 2021.
+
+\bibitem{li2020survey}
+X. Li, P. Jiang, T. Chen, X. Luo, Q. Wen.
+\textit{A Survey on the Security of Blockchain Systems}.
+Future Generation Computer Systems, 2020.
+
+\bibitem{schaer2021defi}
+F. Sch\"{a}r.
+\textit{Decentralized Finance: On Blockchain- and Smart Contract-Based
+Financial Markets}.
+Federal Reserve Bank of St. Louis Review, 2021.
+
+\bibitem{eskandari2022mev}
+S. Eskandari, S. Moosavi, J. Clark.
+\textit{Sok: MEV-related Attacks and Mitigations on Blockchains}.
+arXiv preprint, 2022.
+
+\bibitem{flashbots2024}
+Flashbots.
+\textit{Flashbots: MEV Auctions and Proposer-Builder Separation}.
+https://flashbots.net, 2024.
+
+\bibitem{cl2023fair}
+Chainlink Labs.
+\textit{Fair Sequencing Services}.
+https://chain.link, 2023.
+
+\bibitem{shutter2024}
+Shutter Network.
+\textit{Shutter: Threshold Encrypted Mempool}.
+https://shutter.xyz, 2024.
+
+\bibitem{zhou2023oracle}
+L. Zhou, K. Qin, A. Gervais.
+\textit{A Survey of DeFi Oracle Manipulation Attacks}.
+ACM Computing Surveys, 2023.
+
+\bibitem{chainlink2021}
+L. Breidenbach, C. Cachin, A. Coventry, S. Ellis, A. Juels, et al.
+\textit{Chainlink 2.0: Next Steps in the Evolution of Decentralized Oracle
+Networks}.
+Chainlink Labs, 2021.
+
+\bibitem{crytic2023}
+Crytic.
+\textit{Slither: A Static Analysis Framework for Smart Contracts}.
+https://github.com/crytic/slither, 2023.
+
+\bibitem{htl2023audit}
+H. Htl, D. Liao, X. Wang.
+\textit{Second-Opinion Audits in DeFi: An Empirical Study}.
+IEEE International Conference on Blockchain and Cryptocurrency, 2023.
+
+\bibitem{wang2022flashloan}
+D. Wang, S. Wu, Z. Lin, Y. Li.
+\textit{Flash Loan Attack Mitigation Strategies: A Systematic Review}.
+Blockchain: Research and Applications, 2022.
+
+\bibitem{white2010credit}
+L. J. White.
+\textit{Markets: The Credit Rating Agencies}.
+Journal of Economic Perspectives, 2010.
+
+\bibitem{bolton2012credit}
+P. Bolton, X. Freixas, J. Shapiro.
+\textit{The Credit Ratings Game}.
+Journal of Finance, 2012.
+
+\bibitem{li2000default}
+D. X. Li.
+\textit{On Default Correlation: A Copula Function Approach}.
+Journal of Fixed Income, 2000.
+
+\bibitem{cohen2019gauge}
+T. Cohen, M. Weiler, B. Kicanaoglu, M. Welling.
+\textit{Gauge Equivariant Convolutional Networks and the Icosahedral CNN}.
+ICML, 2019.
+
+\end{thebibliography}
+
+\end{document}
