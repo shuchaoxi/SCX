@@ -100,14 +100,29 @@ L5 协议与治理 Protocol & Governance
 ## 📂 Structure · 结构
 
 ```
-papers/      92+ papers 论文
-src/scx/     55 Python files (Spring, Yajie, Arbiter, Cercis, Situs, M-Registry)
-tests/       678 tests passed 测试全绿
+papers/      197+ papers 论文
+src/scx/     55 Python files
+tests/       676 passed 测试全绿
 docs/
-├── reviews/     30+ review reports 审查报告
-├── analysis/    10+ analysis documents 分析文档
+├── reviews/     36+ review reports 审查报告
+├── analysis/    15+ analysis documents 分析文档
 └── supplementary/  193+ historical files 历史文件
 ```
+
+## 🙏 Acknowledgments · 致谢
+
+This work was audited by multiple independent AI systems through rigorous hostile review.  
+本工作经过多个独立 AI 系统的严格敌对审查。
+
+| 致谢 | Why |
+|------|-----|
+| **Claude Code** (Anthropic) | Powered multi-round hostile review, parallel paper-writing, and 105+ review rounds converging 24/24 items. |
+| **Hermes Agent** (Nous Research) | Orchestrated the audit pipeline, sub-agent delegation, theorem review and paper generation. |
+| **DeepSeek API** | Compute backbone at 1/20th the cost of alternatives — made 105+ rounds of hostile review economically feasible. |
+| **All AI Reviewers** | Claude, DeepSeek, Codex — M>1 independent models, different architectures, genuine multi-expert audit. |
+
+> 不解释。有代码。自己跑。审计我。  
+> No explanations. Code is here. Run it yourself. Audit me.
 
 ## Author · 作者
 
