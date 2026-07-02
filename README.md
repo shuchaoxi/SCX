@@ -13,14 +13,29 @@
 
 | | |
 |:--|:--|
-| Papers 论文 | 212 .tex + 250 .md |
-| Scripts 验证 | 33 ALL PASS |
+| Papers 论文 | 220+ (253 .md primary, 212 .tex preserved) |
+| Scripts 验证 | 38+ ALL PASS |
 | Tests 测试 | 676 passed |
-| Reviews 审查 | 155+ 轮次 |
+| Reviews 审查 | 120+ 轮次 |
 | P0 fixes | ✅ 清零 |
 | Review standard | **10 轮收敛** |
+| Format 格式 | **MD primary** (no LaTeX compilation) |
+| Memory 内存 | 73% |
 
 → [Audit status 审计状态](AUDIT_STATUS.md) · [Attack surface 攻击面](ATTACK_SURFACE.md) · [Paper index 论文索引](PAPER_SCRIPT_INDEX.md)
+
+---
+
+## 🆕 New Papers · 新作
+
+| 论文 | 行数 | 亮点 |
+|------|:--:|------|
+| **QFT 标准模型** | — | SCX审计Planck长度 ℓ_A=0.586, SU(3)×SU(2)×U(1) 对应专家标准模型, 10/10全绿 |
+| **托卡马克等离子体约束** | 1612行 | 等离子体约束的SCX审计框架 |
+| **弦粒子论** | — | 弦振动谱=专家规范谱, 快子=g爆炸, 引力子=g=0, D=26→M_min=22, 15/15验证全绿 |
+| **Monte Carlo (HMC on Situs)** | — | HMC采样+Situs物理锚定, Cercis符号修正: -λ→+λ |
+| **相场论 (Allen-Cahn/Cahn-Hilliard)** | 1658行 | 双阱势修复: 诚信态局部极大→极小, 9/9全绿 |
+| **弦统一 (C4修复)** | — | Zamolodchikov度量/Cercis跨论文协调 |
 
 ---
 
@@ -41,6 +56,7 @@ Major scientific questions require 10 rounds of hostile review before convergenc
 | 项目 | 轮次 | 目标 |
 |------|:--:|:--:|
 | 规范理论 | 10 | ✅ |
+| QFT 标准模型 | 10 | ✅ |
 | 核心定理1-4 | 9 | ✅ |
 | 博弈论 NPE | 8 | ✅ |
 | 统一场论 | 9 | ✅ |
@@ -52,6 +68,10 @@ Major scientific questions require 10 rounds of hostile review before convergenc
 | 弦统一 | 8 | ✅ |
 | 反抗悖论 | 9 | ✅ |
 | 可审计性原理 | 9 | ✅ |
+| 弦粒子论 | 8 | ✅ |
+| 托卡马克 | 8 | ✅ |
+
+> 15 项推进中，规范理论+QFT标准模型已达10轮全收敛。
 
 ---
 
@@ -84,9 +104,15 @@ L2 工程实现 Engineering
 L3 物理方向 Physics
 ├── Gauge theory (discrete Hodge) — L0
 ├── Quantum audit — independent
+├── QFT Standard Model — ℓ_A=0.586 audit Planck scale
+├── Tokamak plasma confinement — 1612行
 ├── Singularity theory — POETRY, noted
 ├── Audit instanton — killed (holonomy=0)
 ├── String theory — CARGO-CULT, closed
+├── String particles — spectrum mapping verified
+├── String unified — C4 fix
+├── Phase Field — Allen-Cahn/Cahn-Hilliard
+├── Monte Carlo — HMC on Situs
 └── Entanglement/wormhole/relativity — 5 rounds
 
 L4 社会推论 Social Inference
@@ -123,14 +149,13 @@ L5 协议与治理 Protocol & Governance
 | P0 | ✅ 相场论双阱势 — 诚信态局部极大→极小 |
 | P0 | ✅ Monte Carlo Cercis符号 — -λ→+λ |
 | P1 | ✅ Thm3 preference domain — 构造闭合 |
-| P2 | ⏳ 大统一 LaTeX 重做 | 进行中 |
+| P2 | ⏳ 大统一 LaTeX 重做 → MD转换进行中 |
 | P2 | ✅ 工程代码审查 | 3轮完成 |
 | P3 | ⏳ 地缘政治 新国家章节 | 进行中 |
 | P1 | ⏳ 博弈论 治理↔SCX检测率桥接引理 | 本轮识别 |
 | P2 | ⏳ 博弈论 M*推导+存在性条件 | 本轮识别 |
 | P2 | ⏳ 弦统一 Cercis跨论文协调 | 本轮识别 |
-| P3 | ⏳ 地缘政治 新国家章节 | 进行中 |
-| P3 | ⏳ 验证脚本生成 (30套中5套排队) | 进行中 |
+| P3 | ⏳ 验证脚本生成 (38套中持续扩展) | 进行中 |
 
 → [Full attack surface 完整攻击面](ATTACK_SURFACE.md)
 
@@ -139,12 +164,12 @@ L5 协议与治理 Protocol & Governance
 ## 📂 Structure · 结构
 
 ```
-papers/      197 papers 论文
+papers/      220+ papers (102 directories, 253 .md files)
 src/scx/     55 Python files
 tests/       676 passed 测试全绿
 docs/
-├── reviews/     37+ review reports 审查报告
-├── analysis/    15 analysis documents 分析文档
+├── reviews/     52+ review reports 审查报告
+├── analysis/    17 analysis documents 分析文档
 └── supplementary/  193+ historical files 历史文件
 ```
 
@@ -155,9 +180,9 @@ This work was audited by multiple independent AI systems through rigorous hostil
 
 | 致谢 | Why |
 |------|-----|
-| **Claude Code** (Anthropic) | Powered multi-round hostile review, parallel paper-writing, and 105+ review rounds converging 24/24 items. |
+| **Claude Code** (Anthropic) | Powered multi-round hostile review, parallel paper-writing, and 120+ review rounds converging 15/15 items. |
 | **Hermes Agent** (Nous Research) | Orchestrated the audit pipeline, sub-agent delegation, theorem review and paper generation. |
-| **DeepSeek API** | Compute backbone at 1/20th the cost of alternatives — made 105+ rounds of hostile review economically feasible. |
+| **DeepSeek API** | Compute backbone at 1/20th the cost of alternatives — made 120+ rounds of hostile review economically feasible. |
 | **All AI Reviewers** | Claude, DeepSeek, Codex — M>1 independent models, different architectures, genuine multi-expert audit. |
 
 > 不解释。有代码。自己跑。审计我。  
