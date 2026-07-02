@@ -707,7 +707,7 @@ There is a deep philosophical parallel between tokamak confinement and SCX audit
 We acknowledge several limitations:
 
 1. **Toy data only:** The `verify_tokamak.py` uses synthetic data based on scaling laws. Real multi-machine databases are proprietary.
-2. **NN simplicity** Our neural networks are simple feedforward architectures. Real plasma surrogates use physics-informed neural networks (PINNs), graph neural networks, or Fourier neural operators.
+**NN simplicity** Our neural networks are simple feedforward architectures. Real plasma surrogates use physics-informed neural networks (PINNs), graph neural networks, or Fourier neural operators.
 3. **No real-time plasma control:** We do not address the use of SCX for real-time disruption prediction, though this is a natural extension.
 4. **The "expert" analogy is not literal** Plasma particles do not literally "form opinions." The analogy is structural, not literal.
 
