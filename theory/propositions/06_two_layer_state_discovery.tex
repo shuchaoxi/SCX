@@ -3,7 +3,7 @@
 \PassOptionsToPackage{hyphens}{url}
 \documentclass[
   12pt,
-]{ctexart}
+]{article}
 \usepackage{xcolor}
 \usepackage{amsmath,amssymb}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
@@ -66,133 +66,132 @@
 Discovery}\label{proposition-6-error-driven-state-discovery}
 
 \begin{quote}
-最优状态划分不是由人类预设的，而是在误差相关特征子空间中自动发现的。状态应由''模型在哪里失败''来定义，而非''人类觉得什么重要''。
+The optimal state partition is not pre-specified by humans, but is automatically discovered in the error-relevant feature subspace. States should be defined by ``where the model fails,'' not by ``what humans think is important.''
 \end{quote}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{1 Statement}\label{statement}
 
-\subsubsection{1.1 正式陈述}\label{ux6b63ux5f0fux9648ux8ff0}
+\subsubsection{1.1 Formal Statement}\label{formal-statement-prop6}
 
-最优状态划分 \(\mathcal{S}^*\)
-不是由人类预设的，而是在误差相关特征子空间中自动发现的。
+The optimal state partition \(\mathcal{S}^*\)
+is not pre-specified by humans, but is automatically discovered in the error-relevant feature subspace.
 
-具体地，给定 Layer 1 编码 \(\varphi_1\) 和 residual vector
-\(r\)，状态应该在与 \(r\) 最相关的 \(\varphi_1\) 维度子集中聚类：
+Specifically, given a Layer 1 encoding \(\varphi_1\) and residual vector
+\(r\), states should be clustered in the subset of \(\varphi_1\) dimensions most correlated with \(r\):
 
 \[\mathcal{S}^* = \text{Cluster}(\varphi_1[:, \text{top\_dims}], K)\]
 
-其中：
+where:
 
 \[\text{top\_dims} = \text{argsort}(\text{MI}(\varphi_1[:, j], r))\]
 
-即选择与残差 \(r\) 互信息最大的 \(\varphi_1\) 维度子集作为聚类空间。
+i.e., select the subset of \(\varphi_1\) dimensions with the highest mutual information with residual \(r\) as the clustering space.
 
-\subsubsection{1.2
-两层描述符体系}\label{ux4e24ux5c42ux63cfux8ff0ux7b26ux4f53ux7cfb}
+\subsubsection{1.2 Two-Layer Descriptor System}\label{two-layer-descriptor-system}
 
-\textbf{第一层描述符（研究人员提供）}：材料的''身份标签'' -
-元素种类、化学计量比、晶体结构 -
-温度/压力范围、结构类型（bulk/surface/defect/interface） -
-这些描述符定义了\textbf{初始采样空间}
+\textbf{Layer 1 descriptors (provided by researchers)}: The material's ``identity label'' ---
+element type, stoichiometric ratio, crystal structure ---
+temperature/pressure range, structure type (bulk/surface/defect/interface) ---
+these descriptors define the \textbf{initial sampling space}
 
-\textbf{第二层描述符（算法发现）}：误差分析揭示的失败模式 - 配位数
-(CN)、最大键拉伸、局域应变 - sp2/sp3 比例、原子位移范数、局部配位变化 -
-ACE basis 残差分量、力误差的角向分布 -
-这些描述符\textbf{不是研究人员手动指定的}------由算法在误差分析阶段自动计算、筛选、组合
+\textbf{Layer 2 descriptors (discovered by algorithm)}: Failure modes revealed by error analysis ---
+coordination number (CN), maximum bond stretch, local strain ---
+sp2/sp3 ratio, atomic displacement norm, local coordination changes ---
+ACE basis residual components, angular distribution of force errors ---
+these descriptors are \textbf{not manually specified by researchers}---they are automatically computed, filtered, and combined by the algorithm during error analysis
 
-\subsubsection{1.3 核心思想}\label{ux6838ux5fc3ux601dux60f3}
+\subsubsection{1.3 Core Idea}\label{core-idea-prop6}
 
 \begin{quote}
-人类定义的描述符可能不捕捉模型的真实失败模式。
+Human-defined descriptors may fail to capture the model's true failure modes.
 
-状态应该由''模型在哪里失败''来定义，而非''人类觉得什么重要''。
+States should be defined by ``where the model fails,'' not by ``what humans think is important.''
 \end{quote}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{2 Formal Statement}\label{formal-statement}
+\subsection{2 Formal Statement}\label{formal-statement-detail}
 
-\subsubsection{2.1 数学形式化}\label{ux6570ux5b66ux5f62ux5f0fux5316}
+\subsubsection{2.1 Mathematical Formalization}\label{mathematical-formalization}
 
-令 \(\varphi_1(x)\) 为 Layer 1 编码（如 SCXStateEncoder
-的嵌入输出），\(r(x) = |f_{\text{model}}(x) - f_{\text{true}}(x)|\)
-为残差。
+Let \(\varphi_1(x)\) be the Layer 1 encoding (e.g., the embedding output of SCXStateEncoder),
+\(r(x) = |f_{\text{model}}(x) - f_{\text{true}}(x)|\)
+be the residual.
 
-定义 error-relevant subspace：
+Define the error-relevant subspace:
 
 \[D^* = \{j: \text{MI}(\varphi_1[:, j], r) > \tau\}\]
 
-即在第一层编码的各维度中，与残差 \(r\) 的互信息超过阈值 \(\tau\)
-的维度索引集。
+i.e., among the dimensions of the Layer 1 encoding, the set of dimension indices whose mutual information with residual \(r\) exceeds threshold \(\tau\).
 
-则在 \(D^*\) 上的聚类 \(\mathcal{S}^*\) 满足：
+Then the clustering \(\mathcal{S}^*\) on \(D^*\) satisfies:
 
 \[\mathbb{E}[\text{Var}(r \mid s \in \mathcal{S}^*)] \leq \mathbb{E}[\text{Var}(r \mid s \in \mathcal{S}_{\text{human}})]\]
 
-即 error-driven states 的组内残差方差不超过人类定义状态的组内残差方差。
+i.e., the within-group residual variance of error-driven states does not exceed the within-group residual variance of human-defined states.
 
-\subsubsection{2.2 算法工作流}\label{ux7b97ux6cd5ux5de5ux4f5cux6d41}
+\subsubsection{2.2 Algorithm Workflow}\label{algorithm-workflow}
 
-\textbf{Phase A: 初始训练}
+\textbf{Phase A: Initial Training}
 
 \begin{verbatim}
-输入: 第一层描述符定义的初始 DFT 数据集 D₀
-过程: 训练 Single ACE baseline M₀
-输出: M₀, 测试集误差分布
+Input: Initial DFT dataset D_0 defined by Layer 1 descriptors
+Process: Train Single ACE baseline M_0
+Output: M_0, test set error distribution
 \end{verbatim}
 
-\textbf{Phase B: 误差景观分析}
+\textbf{Phase B: Error Landscape Analysis}
 
 \begin{verbatim}
-输入: M₀, 测试集
-过程:
-  1. 对每个测试结构计算 per-atom force error 和 per-structure error
-  2. 为每个原子计算候选第二层描述符:
-     - CN（不同截断半径）、最大/平均键拉伸
-     - 局域应变张量不变量、键角分布统计
-     - Voronoi 体积、ACE basis 各分量贡献
-  3. 用互信息 / SHAP / permutation importance 筛选与误差最相关的描述符
-  4. 在选中的描述符空间中做 UMAP/PCA 降维
-  5. HDBSCAN 聚类发现误差簇
-输出:
-  - 误差簇地图 (cluster_id → 描述符范围 → 平均误差 → 样本数)
-  - 高误差区域的定义（描述符空间中的凸包或区间）
+Input: M_0, test set
+Process:
+  1. Compute per-atom force error and per-structure error for each test structure
+  2. Compute candidate Layer 2 descriptors for each atom:
+     - CN (at different cutoff radii), max/average bond stretch
+     - Local strain tensor invariants, bond angle distribution statistics
+     - Voronoi volume, ACE basis component contributions
+  3. Filter descriptors most correlated with error using MI / SHAP / permutation importance
+  4. UMAP/PCA dimensionality reduction in the selected descriptor space
+  5. HDBSCAN clustering to discover error clusters
+Output:
+  - Error cluster map (cluster_id → descriptor range → average error → sample count)
+  - Definition of high-error regions (convex hull or interval in descriptor space)
 \end{verbatim}
 
-\textbf{Phase C: 结构建议}
+\textbf{Phase C: Structure Proposal}
 
 \begin{verbatim}
-输入: 高误差区域定义
-过程:
-  1. 在高误差描述符区域中生成候选结构
-  2. 去重（与已有训练集比较结构指纹）
-  3. 排序（优先添加误差最大、信息量最大的结构）
-输出: 结构建议文件 + 预期误差改善估计
+Input: High-error region definitions
+Process:
+  1. Generate candidate structures within high-error descriptor regions
+  2. Deduplicate (compare structural fingerprints with existing training set)
+  3. Rank (prioritize structures with largest error, highest information content)
+Output: Structure proposal file + expected error improvement estimate
 \end{verbatim}
 
-\textbf{Phase D: 迭代增强}
+\textbf{Phase D: Iterative Enhancement}
 
 \begin{verbatim}
-输入: 新增 DFT 数据 D_new
-过程:
-  1. 合并 D = D_old ∪ D_new
-  2. 重新训练或增量训练
-  3. 回到 Phase B 重新评估误差景观
-  4. 如果出现新的高误差簇 → Phase C
-  5. 如果误差景观平坦化 → 结束
+Input: New DFT data D_new
+Process:
+  1. Merge D = D_old ∪ D_new
+  2. Retrain or incrementally train
+  3. Return to Phase B to reassess error landscape
+  4. If new high-error clusters appear → Phase C
+  5. If error landscape flattens → terminate
 \end{verbatim}
 
-\textbf{Phase E（可选）: Expert 化}
+\textbf{Phase E (Optional): Expertization}
 
 \begin{verbatim}
-输入: 最终的误差簇定义
-过程:
-  1. 每个误差簇自动定义一个 expert domain
-  2. 为每个 domain 训练 residual expert
-  3. 用 Expert Algebra 管理 expert 模块
-  4. 导出为可部署的势函数
+Input: Final error cluster definitions
+Process:
+  1. Each error cluster automatically defines an expert domain
+  2. Train residual expert for each domain
+  3. Manage expert modules with Expert Algebra
+  4. Export as deployable potential function
 \end{verbatim}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -200,68 +199,64 @@ ACE basis 残差分量、力误差的角向分布 -
 \subsection{3 Theorem: Error-Driven States Dominate Human-Defined
 States}\label{theorem-error-driven-states-dominate-human-defined-states}
 
-\textbf{定理 6.1（误差驱动状态的优势）}：令
+\textbf{Theorem 6.1 (Advantage of Error-Driven States)}: Let
 \(\mathcal{S}_{\text{human}}\)
-为由人类先验知识定义的状态划分（如按晶体结构、化学组分等分类），\(\mathcal{S}^*\)
-为通过误差驱动发现的状态划分。在相同的状态数 \(K = |\mathcal{S}|\) 下：
+be a state partition defined by human prior knowledge (e.g., classification by crystal structure, chemical composition, etc.), and \(\mathcal{S}^*\)
+be the state partition discovered via error-driven discovery. Under the same number of states \(K = |\mathcal{S}|\):
 
 \[\mathbb{E}_{s \sim \mathcal{S}^*}[\text{Var}(r \mid s)] \leq \mathbb{E}_{s \sim \mathcal{S}_{\text{human}}}[\text{Var}(r \mid s)]\]
 
-\textbf{证明概要}：由互信息的数据处理不等式，误差相关子空间 \(D^*\)
-保留了最多关于 \(r\) 的信息。K-means 或 HDBSCAN 在 \(D^*\)
-上的聚类目标等价于最小化组内方差：
+\textbf{Proof sketch}: By the data processing inequality of mutual information, the error-relevant subspace \(D^*\)
+retains the most information about \(r\). The clustering objective of K-means or HDBSCAN on \(D^*\)
+is equivalent to minimizing within-group variance:
 
 \[\min_{\mathcal{S}} \sum_{s \in \mathcal{S}} \sum_{x \in s} \|\varphi_1(x)[D^*] - \mu_s\|^2\]
 
-而 \(\mathcal{S}_{\text{human}}\) 是在原始空间 \(\varphi_1\)（可能包含与
-\(r\) 无关的维度）上定义的。因此 \(\mathcal{S}^*\) 在 \(r\)
-上的条件方差至少不劣于 \(\mathcal{S}_{\text{human}}\)。\(\square\)
+Whereas \(\mathcal{S}_{\text{human}}\) is defined on the original space \(\varphi_1\) (which may contain dimensions unrelated to
+\(r\)). Therefore \(\mathcal{S}^*\) has conditional variance on \(r\) that is at least no worse than \(\mathcal{S}_{\text{human}}\). \(\square\)
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{4 Connection to SCX Core}\label{connection-to-scx-core}
 
-\subsubsection{4.1 架构映射}\label{ux67b6ux6784ux6620ux5c04}
+\subsubsection{4.1 Architecture Mapping}\label{architecture-mapping}
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Layer 1} = SCXStateEncoder.encode() --- 初始嵌入映射
+  \textbf{Layer 1} = SCXStateEncoder.encode() --- initial embedding mapping
 \item
   \textbf{Layer 2} = ErrorDrivenEncoder.fit\_error\_states() ---
-  误差条件状态发现
+  error-conditioned state discovery
 \item
-  \textbf{两层整合} = TwoLayerStateDiscovery --- 完整的自动状态发现管线
+  \textbf{Two-layer integration} = TwoLayerStateDiscovery --- the complete automated state discovery pipeline
 \end{itemize}
 
-\subsubsection{4.2 为什么一层 encoder
-不够}\label{ux4e3aux4ec0ux4e48ux4e00ux5c42-encoder-ux4e0dux591f}
+\subsubsection{4.2 Why a Single-Layer Encoder is Insufficient}\label{why-single-layer-insufficient}
 
-单纯的一层 encoder（如 12 维 MLIP encoder）的失败原因：
+Why a single-layer encoder (e.g., 12-dimensional MLIP encoder) fails:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{通用嵌入与误差无关}：预训练嵌入可能编码了大量与专家失败模式无关的全局结构信息
+  \textbf{Generic embeddings are error-agnostic}: Pre-trained embeddings may encode extensive global structural information unrelated to expert failure modes
 \item
-  \textbf{固定维度容量有限}：12
-  维嵌入可能无法同时编码化学环境信息和误差模式信息
+  \textbf{Fixed dimensionality has limited capacity}: 12-dimensional embeddings may not simultaneously encode chemical environment information and error pattern information
 \item
-  \textbf{缺乏误差反馈}：没有将误差信号反向传播到状态构造过程
+  \textbf{Lack of error feedback}: The error signal is not backpropagated into the state construction process
 \end{enumerate}
 
-两层描述符体系通过误差条件投影解决了这些问题。
+The two-layer descriptor system resolves these issues through error-conditioned projection.
 
-\subsubsection{4.3
-与信息瓶颈的关系}\label{ux4e0eux4fe1ux606fux74f6ux9888ux7684ux5173ux7cfb}
+\subsubsection{4.3 Relationship to the Information Bottleneck}\label{relationship-info-bottleneck}
 
-两层状态发现对应于\textbf{条件信息瓶颈}的迭代求解：
+Two-layer state discovery corresponds to an iterative solution of the \textbf{conditional information bottleneck}:
 
 \[\min_{\Pi} I(\varphi_1; \tilde{X} \mid \mathcal{F}) - \beta I(\tilde{X}; r \mid \mathcal{F})\]
 
-其中 \(\mathcal{F} = \{f_1, \dots, f_M\}\) 为专家集合，\(r\)
-为残差，\(\tilde{X}\) 为状态表示。
+where \(\mathcal{F} = \{f_1, \dots, f_M\}\) is the expert set, \(r\)
+is the residual, and \(\tilde{X}\) is the state representation.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -270,76 +265,69 @@ States}\label{theorem-error-driven-states-dominate-human-defined-states}
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  \textbf{状态划分不是固定的}------随模型改进而演化。随着模型误差景观变平坦，状态边界需要重新定义。
+  \textbf{State partitions are not fixed}---they evolve as the model improves. As the model error landscape flattens, state boundaries need to be redefined.
 \item
-  \textbf{第二层描述符 = 第一层特征的 error-conditioned
-  subset}------自动筛选出与模型失败最相关的特征维度，排除无关的''背景''维度。
+  \textbf{Layer 2 descriptors = error-conditioned subset of Layer 1 features}---automatically filter out the feature dimensions most relevant to model failure, excluding irrelevant ``background'' dimensions.
 \item
-  \textbf{这使 SCX 区别于所有基于人类特征的聚类方法}：
+  \textbf{This distinguishes SCX from all human-feature-based clustering methods}:
 
   \begin{itemize}
   \tightlist
   \item
-    传统方法：研究人员定义状态（``bulk'', ``surface'',
-    ``defect''），但这些可能不反映模型的真实失败模式
+    Traditional approach: researchers define states (``bulk'', ``surface'',
+    ``defect''), but these may not reflect the model's true failure modes
   \item
-    SCX + 两层描述符：算法从误差分布中自动发现状态
+    SCX + two-layer descriptors: the algorithm automatically discovers states from the error distribution
   \end{itemize}
 \item
-  \textbf{专家分区的涌现性}：专家分区不应由人凭经验定义，而应由算法从误差分布中涌现。
+  \textbf{Emergence of expert partitioning}: Expert partitions should not be empirically defined by humans, but should emerge from the error distribution via the algorithm.
 \item
-  \textbf{与 Expert Governance Protocol 的整合}：
+  \textbf{Integration with Expert Governance Protocol}:
 
 \begin{verbatim}
-两层描述符框架（上层：自动发现 expert 边界）
+Two-layer descriptor framework (upper layer: auto-discover expert boundaries)
      │
      ▼
-Expert Algebra 框架（下层：管理 expert 模块）
+Expert Algebra framework (lower layer: manage expert modules)
 \end{verbatim}
 \end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{6 关键验证实验}\label{ux5173ux952eux9a8cux8bc1ux5b9eux9a8c}
+\subsection{6 Key Validation Experiments}\label{key-validation-experiments}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2727}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2727}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4545}}@{}}
+\begin{longtable}[]{@{}p{0.25\linewidth}p{0.25\linewidth}p{0.42\linewidth}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-实验
+Experiment
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-假设
+Hypothesis
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-成功标准
+Success Criterion
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Error vs CN & CN\textless3.5 区域误差 \textgreater{} CN≈4 区域 &
-p\textless0.01, effect size\textgreater2x \\
-Error vs bond stretch & stretch\textgreater10\% 区域误差显著增大 &
-p\textless0.01 \\
-描述符分离度 & 不同 batch 在描述符空间中可分离 & silhouette score
-\textgreater{} 0.3 \\
-Targeted vs uniform & error-guided 采样用更少 DFT 达到同精度 & 等预算下
-RMSE 降低 \textgreater{} 20\% \\
-自动 expert vs 手动 expert & 算法发现的 expert 分区不差于手动 & 等
-expert 数下 metrics 相当 \\
+Error vs CN & CN<3.5 region error > CN≈4 region &
+p<0.01, effect size>2x \\
+Error vs bond stretch & stretch>10\% region error significantly larger &
+p<0.01 \\
+Descriptor separability & Different batches separable in descriptor space & silhouette score > 0.3 \\
+Targeted vs uniform & error-guided sampling achieves same accuracy with fewer DFT & RMSE reduction > 20\% at equal budget \\
+Auto expert vs manual expert & Algorithm-discovered expert partition no worse than manual & metrics comparable at equal expert count \\
 \end{longtable}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{参考文献}\label{ux53c2ux8003ux6587ux732e}
+\subsection{References}\label{references-prop6}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  EGP 两层描述符框架.
-  \texttt{EGP\_两层描述符\_算法驱动专家分区\_2026-06-24.md}
+  EGP Two-Layer Descriptor Framework.
+  \texttt{EGP\_TwoLayer\_Descriptors\_AlgorithmDriven\_Expert\_Partition\_2026-06-24.md}
 \item
   Tishby, N., Pereira, F. C., \& Bialek, W. (1999). The information
   bottleneck method. \emph{Allerton Conference}.
@@ -347,8 +335,8 @@ expert 数下 metrics 相当 \\
   Gauge-Normalized Residual ACE Expert Algebra Framework.
   \texttt{CodexKnowledge/}
 \item
-  SCX State-Conditioned eXpertise 核心框架.
-  \texttt{01\_SCX\_核心框架\_数学分析.md}
+  SCX State-Conditioned eXpertise Core Framework.
+  \texttt{01\_SCX\_Core\_Framework\_Math\_Analysis.md}
 \end{enumerate}
 
 \end{document}
