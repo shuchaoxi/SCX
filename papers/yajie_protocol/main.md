@@ -169,25 +169,23 @@ $$
 > 在假设A1--A7下，考虑非扩散博弈 $\Gamma^{NP}$，设 $N = \{1, ..., n\}$ 且 $n \geq 2$。以下命题成立。
 > 
 > 
-1. **均衡存在性：** 纯策略纳什均衡始终存在。若 $\Delta(|\mathcal{E}|) \geq -\lambda$，则 $(A, ..., A)$ 是纯策略纳什均衡；若 $\Delta(|\mathcal{E}|) \leq 0$，则 $(D, ..., D)$ 是纯策略纳什均衡；在中间区域 $-\lambda < \Delta(|\mathcal{E}|) < 0$，两纯策略均衡共存，且存在对称混合策略纳什均衡。<!-- label: item:existence -->
-2. **全体采纳均衡：** 策略组合 $s^* = (A, A, ..., A)$ 是纳什均衡，当且仅当：
-3. **全体开发均衡：** 策略组合 $s^{D} = (D, D, ..., D)$ 是纳什均衡，当且仅当：
-4. **非对称均衡的不可能性：** 在任何纯策略纳什均衡中，所有辖区必须选择相同策略。不存在"部分采纳、部分开发"的非对称纯策略均衡。<!-- label: item:no-asym -->
-5. **对称混合策略均衡：** 当条件( [ref])和( [ref])均不满足时——即 $-\lambda < \Delta(|\mathcal{E}|) < 0$——两纯策略均衡共存，且存在唯一的对称混合策略纳什均衡。在该均衡中，每个辖区以相同概率 $p^* \in (0,1)$ 选择 $A$，$p^*$ 由以下无差异条件唯一确定：
+> 1. **均衡存在性与唯一性：** 策略组合 $s^* = (A, A, ..., A)$ 始终是博弈 $\Gamma^{NP}$ 的**唯一严格纯策略纳什均衡**。不存在其他纯策略均衡，也不存在混合策略均衡。<!-- label: item:existence -->
+> 2. **全体采纳均衡条件：** $s^*$ 是纳什均衡的充要条件为 $\Delta(|\mathcal{E}|) \geq -\lambda$，而由A1--A2保证 $\Delta(|\mathcal{E}|) > 0$ 对任意 $|\mathcal{E}| \geq 0$ 均成立，故该条件始终满足。事实上，$\Delta(|\mathcal{E}|)$ 在 $|\mathcal{E}|=0$ 达到其最小值，且 $\Delta(0) = V[\theta_0] - V[\theta_0] - c^{adopt} + c^{develop} + \kappa = c^{develop} - c^{adopt} + \kappa > 0$（由A3: $c^{develop} > c^{adopt}$ 和A4: $\kappa > 0$），因此 $\Delta(|\mathcal{E}|) > 0$ 恒成立。
+> 3. **非对称均衡的不可能性：** 在任何纯策略纳什均衡中，所有辖区必须选择相同策略。不存在"部分采纳、部分开发"的非对称纯策略均衡。<!-- label: item:no-asym -->
 
 > **Proof:** 在假设A1--A7下逐项证明。
 > 
-> **(i) 存在性。** 由假设A1--A7，博弈 $\Gamma^{NP}$ 是有限博弈（$|S| = 2^n < \infty$）。由纳什(1951)定理，任何有限博弈存在混合策略纳什均衡。纯策略均衡的存在性由以下构造性论证保证：支付矩阵的全部 $2^n$ 个纯策略组合构成有限集；每个辖区的支付在他人策略固定时是其自身策略的仿射函数（方程(4)--(5)），因此最优反应对应是上半连续的且具有凸值；或者更直接地，如下文将展示的，均衡条件( [ref])和( [ref])覆盖了全部参数区域，两者至少其一在 $\Delta(|\mathcal{E}|)$ 充分大或充分小时成立，且当两者均不成立时对称混合策略均衡由不动点论证保证存在。
+> **(i) 存在性与唯一性。** 由假设A1--A7，博弈 $\Gamma^{NP}$ 是有限博弈（$|S| = 2^n < \infty$）。由纳什(1951)定理，任何有限博弈存在混合策略纳什均衡。纯策略均衡的存在性与唯一性由以下构造性论证保证。
 > 
-> **(ii) 全体采纳均衡。** 考虑策略组合 $s^* = (A, ..., A)$。在 $s^*$ 下，$n_D(s^*) = 0$，碎片化指标 $\mathbb{I}[n_D > 0] = 0$。对任意辖区 $i \in N$：
+> **(ii) 全体采纳均衡的唯一性。** 首先验证 $(A, ..., A)$ 是纳什均衡。在 $s^* = (A, ..., A)$ 下，$n_D(s^*) = 0$，碎片化指标 $\mathbb{I}[n_D > 0] = 0$。对任意辖区 $i \in N$：
 > 
 > $$
 > u_i(A, \mathbf{A}_{-i}) &= V[\theta(|\mathcal{E}|)] - c^{adopt} <!-- label: eq:uA -->
-
+> 
 > u_i(D, \mathbf{A}_{-i}) &= V[\theta(0)] - c^{develop} - \kappa - \lambda <!-- label: eq:uD -->
 > $$
 > 
-> 方程( [ref])的推导：当 $i$ 单边偏离至 $D$，$n_D = 1 > 0$，碎片化被触发（$-\lambda$），且 $i$ 自身的开发行为给 $i$ 自身施加 $\kappa$（因为 $i$ 是唯一的开发者，其开发带来的边际扩散成本由方程(5)中的 $\kappa \cdot (n_D(s_{-i}) + 1)$ 项捕获，其中 $n_D(s_{-i}) = 0$）。
+> 方程( [ref])的推导：当 $i$ 单边偏离至 $D$，$n_D = 1 > 0$，碎片化被触发（$-\lambda$），且 $i$ 自身的开发行为给 $i$ 自身施加 $\kappa$。
 > 
 > $s^*$ 是纳什均衡当且仅当对所有 $i$，$u_i(A, \mathbf{A}_{-i}) \geq u_i(D, \mathbf{A}_{-i})$。代入( [ref])和( [ref])：
 > 
@@ -195,122 +193,46 @@ $$
 > V[\theta(|\mathcal{E}|)] - c^{adopt} &\geq V[\theta(0)] - c^{develop} - \kappa - \lambda
 > $$
 > 
-> 由定义( [ref])代入：$\Delta(|\mathcal{E}|) = V[\theta(|\mathcal{E}|)] - V[\theta(0)] - c^{adopt} + c^{develop} + \kappa$，得 $\Delta(|\mathcal{E}|) \geq -\lambda$，即条件( [ref])。当严格不等式成立时，偏离的收益严格小于均衡收益，均衡是严格的——这保证了均衡在微小支付扰动下的稳健性（\`{a} la Kohlberg \& Mertens, 1986）。
+> 由定义( [ref])代入：$\Delta(|\mathcal{E}|) = V[\theta(|\mathcal{E}|)] - V[\theta(0)] - c^{adopt} + c^{develop} + \kappa$，得 $\Delta(|\mathcal{E}|) \geq -\lambda$，即条件( [ref])。
 > 
-> **(iii) 全体开发均衡。** 考虑 $s^{D} = (D, ..., D)$。在 $s^{D}$ 下，$n_D = n$，碎片化指标恒为1。对任意 $i$：
+> 现验证此条件始终成立。在 $|\mathcal{E}| = 0$ 处，$\Delta(0) = V[\theta_0] - V[\theta_0] - c^{adopt} + c^{develop} + \kappa = c^{develop} - c^{adopt} + \kappa$。由A3：$c^{develop} > c^{adopt}$，由A4：$\kappa > 0$，故 $\Delta(0) > 0$。由A1和A2，$\Delta(|\mathcal{E}|)$ 在 $[0, \infty)$ 上严格递增（$\frac{d\Delta}{d|\mathcal{E}|} = V'[\theta(|\mathcal{E}|)] \cdot \theta'(|\mathcal{E}|) > 0$），因此对任意 $|\mathcal{E}| \geq 0$，$\Delta(|\mathcal{E}|) \geq \Delta(0) > 0 > -\lambda$。不等式严格成立，故 $s^*$ 是严格纳什均衡。
+> 
+> 唯一性：需排除 $(D, ..., D)$ 和混合策略均衡。$(D, ..., D)$ 成为均衡的条件为 $\Delta(|\mathcal{E}|) \leq 0$（见下文(iii)），而 $\Delta(|\mathcal{E}|) > 0$ 恒成立，故该条件决不满足。混合策略均衡要求无差异条件 $\Psi(p^*) = -\Delta(|\mathcal{E}|)$，但 $-\Delta(|\mathcal{E}|) < 0$ 而 $\Psi(p) = \lambda \cdot p^{n-1} \geq 0$（对所有 $p \in [0,1]$），故无差异方程无解——不存在混合策略均衡。
+> 
+> 因此 $(A, ..., A)$ 是博弈 $\Gamma^{NP}$ 的唯一纳什均衡（纯策略或混合策略）。
+> 
+> **(iii) 全体开发非均衡（补证）。** 为完备性，验证 $(D, ..., D)$ 不是均衡。在 $s^{D} = (D, ..., D)$ 下，$n_D = n$，碎片化指标恒为1。对任意 $i$：
 > 
 > $$
 > u_i(D, \mathbf{D}_{-i}) &= V[\theta(0)] - c^{develop} - \kappa \cdot n - \lambda <!-- label: eq:uDD -->
-
+> 
 > u_i(A, \mathbf{D}_{-i}) &= V[\theta(|\mathcal{E}|)] - c^{adopt} - \kappa \cdot (n-1) - \lambda <!-- label: eq:uAD -->
 > $$
 > 
-> 方程( [ref])中，$n_D(s_{-i}) = n-1$（除 $i$ 外全部开发），加上 $i$ 自身的开发使扩散总数为 $n$，故扩散成本项为 $\kappa \cdot n$。方程( [ref])中，$i$ 单边偏离至 $A$，此时 $n_D(s_{-i}) = n-1$，碎片化仍为1。
+> 偏离至 $A$ 更优当且仅当 $u_i(A, \mathbf{D}_{-i}) > u_i(D, \mathbf{D}_{-i})$，即 $\Delta(|\mathcal{E}|) > 0$。由(ii)已证 $\Delta(|\mathcal{E}|) > 0$ 恒成立，故每个辖区均可通过单边偏离至 $A$ 严格提高收益——$(D, ..., D)$ 不是纳什均衡。
 > 
-> $s^{D}$ 是纳什均衡当且仅当对所有 $i$，$u_i(D, \mathbf{D}_{-i}) \geq u_i(A, \mathbf{D}_{-i})$：
-> 
-> $$
-> V[\theta(0)] - c^{develop} - n\kappa - \lambda &\geq V[\theta(|\mathcal{E}|)] - c^{adopt} - (n-1)\kappa - \lambda
-> $$
-> 
-> 消去 $-\lambda$ 并整理：
-> 
-> $$
-> V[\theta(|\mathcal{E}|)] - V[\theta(0)] - c^{adopt} + c^{develop} + \kappa &\leq 0
-> $$
-> 
-> 左端即为 $\Delta(|\mathcal{E}|)$，得条件 $\Delta(|\mathcal{E}|) \leq 0$。
-> 
-> **(iv) 非对称均衡的不可能性。** 假设存在纯策略均衡 $s^*$ 满足 $\exists i, j: s_i^* = A, s_j^* = D$。令 $n_D^* = |\{k: s_k^* = D\}| \in \{1, ..., n-1\}$。考虑一个类型为 $A$ 的辖区 $i$ 和一个类型为 $D$ 的辖区 $j$。由纳什均衡的必要条件：
-> 
-> $$
-> u_i(A, s_{-i}^*) &\geq u_i(D, s_{-i}^*) <!-- label: eq:condA -->
+> **(iv) 非对称均衡的不可能性。** 假设存在纯策略均衡 $s^*$ 满足 $\exists i, j: s_i^* = A, s_j^* = D$。令 $n_D^* = |\{k: s_k^* = D\}| \in \{1, ..., n-1\}$。由纳什均衡的必要条件，$A$ 类型辖区 $i$ 和 $D$ 类型辖区 $j$ 的支付差异符号必须相反。具体计算得该条件要求 $\Delta(|\mathcal{E}|) + \kappa \geq 0$ 且 $-\Delta(|\mathcal{E}|) - \kappa \geq 0$，两式同时成立仅当 $\Delta(|\mathcal{E}|) = -\kappa$。但 $\Delta(|\mathcal{E}|) > 0$ 且 $\kappa > 0$（A4），此等式无解。因此非对称纯策略均衡不存在。
 
-> u_j(D, s_{-j}^*) &\geq u_j(A, s_{-j}^*) <!-- label: eq:condD -->
-> $$
-> 
-> 
-> 计算 $i$ 的支付差异。在 $s^*$ 中，$n_D(s_{-i}^*) = n_D^*$（因为 $i$ 选择 $A$，不影响 $n_D$ 计数），碎片化指标为1（因 $n_D^* > 0$）：
-> 
-> $$
-> u_i(A, s_{-i}^*) - u_i(D, s_{-i}^*) &= \Delta(|\mathcal{E}|) - \kappa \cdot n_D^* - \lambda - (-\kappa \cdot (n_D^* + 1) - \lambda) 
-
-> &= \Delta(|\mathcal{E}|) + \kappa
-> $$
-> 
-> 
-> 类似地，对 $j$（$s_j^* = D$），$n_D(s_{-j}^*) = n_D^* - 1$：
-> 
-> $$
-> u_j(D, s_{-j}^*) - u_j(A, s_{-j}^*) &= -\Delta(|\mathcal{E}|) - \kappa
-> $$
-> 
-> 
-> 条件( [ref])要求 $\Delta(|\mathcal{E}|) + \kappa \geq 0$，条件( [ref])要求 $-\Delta(|\mathcal{E}|) - \kappa \geq 0$。两条件同时成立仅当 $\Delta(|\mathcal{E}|) = -\kappa$，这是一个勒贝格测度为零的参数配置。在此零测集上，非对称均衡可能存在（所有辖区在 $A$ 和 $D$ 间无差异），但它不是严格的，在支付微小扰动下将崩溃。因此，对几乎所有参数值，非对称纯策略均衡不存在。
-> 
-> **(v) 混合策略均衡。** 在区域 $-\lambda < \Delta(|\mathcal{E}|) < 0$ 内，全体采纳和全体开发均为纯策略纳什均衡（多重均衡）。设每个辖区以概率 $p \in (0,1)$ 独立选择 $A$。则除 $i$ 外选择 $D$ 的辖区数量服从二项分布：$n_D(s_{-i}) \sim Binomial(n-1, 1-p)$。
-> 
-> 辖区 $i$ 选择 $A$ 的期望支付：
-> 
-> $$
-> \mathbb{E}[u_i(A, s_{-i})] &= V[\theta(|\mathcal{E}|)] - c^{adopt} - \kappa \cdot \mathbb{E}[n_D] - \lambda \cdot \mathbb{P}[n_D > 0] 
-
-> &= V[\theta(|\mathcal{E}|)] - c^{adopt} - \kappa (n-1)(1-p) - \lambda\left[1 - p^{n-1}\right]
-> $$
-> 
-> 
-> 选择 $D$ 的期望支付：
-> 
-> $$
-> \mathbb{E}[u_i(D, s_{-i})] &= V[\theta(0)] - c^{develop} - \kappa(\mathbb{E}[n_D] + 1) - \lambda 
-
-> &= V[\theta(0)] - c^{develop} - \kappa[(n-1)(1-p) + 1] - \lambda
-> $$
-> 
-> 
-> 在对称混合策略均衡中，两期望支付相等（无差异条件）。相减消去 $\kappa(n-1)(1-p)$ 项，得：
-> 
-> $$
-> V[\theta(|\mathcal{E}|)] - c^{adopt} - \lambda\left[1 - p^{n-1}\right] = V[\theta(0)] - c^{develop} - \kappa - \lambda
-> $$
-> 
-> 整理得方程( [ref])。令：
-> 
-> $$
-> \Psi(p) = \lambda \cdot p^{n-1} \quad 和 \quad \Gamma = -\Delta(|\mathcal{E}|)
-> $$
-> 
-> 则无差异条件等价于 $\Psi(p^*) = \Gamma$。由于 $\Psi: [0,1] \to [0,\lambda]$ 是严格递增的连续函数（$n \geq 2, \lambda > 0$），且在该参数区域内有 $\Gamma \in (0, \lambda)$，由中值定理存在唯一的 $p^* = \Psi^{-1}(\Gamma) \in (0,1)$。由Glicksberg(1952)（连续支付下混合策略均衡存在性）或直接由纳什的构造，此 $p^*$ 对应于一个对称混合策略纳什均衡。
-
-> **Remark:** [大群体近似]
-> 当 $n$ 较大时（如全球超过190个主权国家），$p^{n-1} \to 0$ 对任意 $p < 1$ 成立。此时混合策略概率近似为：
-> 
-> $$
-> p^* \approx \frac{V[\theta(0)] - c^{develop} - \kappa - V[\theta(|\mathcal{E}|)] + c^{adopt}} + 1
-> $$
-> 
-> 在大群体极限 $n \to \infty$ 下，单个辖区对其他辖区策略的影响消失（竞争性极限），对称混合策略退化为"原子化辖区"面对给定采纳环境的个体最优化。
-
-> **Theorem:** [非扩散均衡的渐近唯一性与CEC临界值]
+> **Theorem:** [非扩散均衡的全局唯一性与CEC临界值]
 > <!-- label: thm:asymptotic-uniqueness -->
 > 在假设A1--A7下：
 > 
 > 
-1. 存在唯一的**CEC临界规模** $|\mathcal{E}|^*$，定义为：
-2. 对所有 $|\mathcal{E}| > |\mathcal{E}|^*$，$s^* = (A, ..., A)$ 是博弈 $\Gamma^{NP}$ 的**唯一**纳什均衡——既不存在其他纯策略均衡，也不存在混合策略均衡。
-3. CEC临界值的显式解为：
+> 1. **CEC临界值为零：** 唯一的**CEC临界规模** $|\mathcal{E}|^* = 0$。即在CEC为空的初始时刻（$|\mathcal{E}| = 0$），$\Delta(0) = c^{develop} - c^{adopt} + \kappa > 0 > -\lambda$，全体采纳均衡条件已严格成立。
+> 2. 对所有 $|\mathcal{E}| \geq 0$，$s^* = (A, ..., A)$ 是博弈 $\Gamma^{NP}$ 的**唯一严格纳什均衡**——不存在其他纯策略均衡（$(D, ..., D)$ 从不满足均衡条件），也不存在混合策略均衡（无差异方程 $-\Delta(|\mathcal{E}|) = \lambda \cdot p^{n-1}$ 要求非正右端等于非负左端，仅当 $\Delta(|\mathcal{E}|) = 0$ 且 $p = 0$ 可能成立，但 $\Delta(|\mathcal{E}|) = 0$ 在 A1--A7 下无解）。
+> 3. **采纳的必然性：** 从博弈开始的第一时刻，理性辖区的最优策略便是采纳（Adopt）。不存在任何参数区域（包括 $|\mathcal{E}| = 0$）使开发（Develop）成为最优反应。非扩散不是"逐渐形成的均衡"——它是博弈的初始均衡。
 
 > **Proof:** **(i)** 函数 $\Delta(|\mathcal{E}|)$ 在 $[0, \infty)$ 上连续（A1--A2保证 $V \circ \theta$ 连续）且严格递增：
 > 
 > $$
-> \frac{d\Delta}{d|\mathcal{E}|} = V'[\theta(|\mathcal{E}|)] \cdot \theta'(|\mathcal{E}|) = V'[\theta(|\mathcal{E}|)] \cdot \gamma(\theta_ - \theta_0) e^{-\gamma |\mathcal{E}|} > 0
+> \frac{d\Delta}{d|\mathcal{E}|} = V'[\theta(|\mathcal{E}|)] \cdot \theta'(|\mathcal{E}|) = V'[\theta(|\mathcal{E}|)] \cdot \gamma(\theta_\infty - \theta_0) e^{-\gamma |\mathcal{E}|} > 0
 > $$
 > 
-> 其中 $V' > 0$（A1）且 $\theta' > 0$（A2）。下确界$\inf$定义给出唯一的临界值。
+> 其中 $V' > 0$（A1）且 $\theta' > 0$（A2）。在 $|\mathcal{E}| = 0$ 处，$\Delta(0) = c^{develop} - c^{adopt} + \kappa$。由A3（$c^{develop} > c^{adopt}$）和A4（$\kappa > 0$），$\Delta(0) > 0$。由严格单调性，对任意 $|\mathcal{E}| \geq 0$，$\Delta(|\mathcal{E}|) \geq \Delta(0) > 0$。
 > 
-> **(ii)** 当 $|\mathcal{E}| > |\mathcal{E}|^*$，由定义 $\Delta(|\mathcal{E}|) > -\lambda$（严格不等式）。定理 [ref]之(ii)确保 $(A, ..., A)$ 是严格纳什均衡。全体开发均衡的条件 $\Delta(|\mathcal{E}|) \leq 0$ 不成立（由A1 $\Delta(|ℰ|) > 0$ 在 $|ℰ| > 0$ 时成立，且 $|ℰ|^* > 0$）。混合策略均衡要求无差异条件成立，而严格纳什均衡下偏离的期望收益严格小于均衡收益，无差异条件无法满足。因此 $(A, ..., A)$ 是唯一均衡。
+> **(ii)** 由于 $\Delta(|\mathcal{E}|) > 0 > -\lambda$ 恒成立，定理 [ref]之(ii)确保 $(A, ..., A)$ 在所有 $|\mathcal{E}| \geq 0$ 处均为严格纳什均衡。$(D, ..., D)$ 成为均衡的条件 $\Delta(|\mathcal{E}|) \leq 0$ 决不成立。混合策略均衡的无差异条件 $\lambda \cdot p^{n-1} = -\Delta(|\mathcal{E}|)$ 要求左端（$\geq 0$）等于右端（$< 0$），无解。故 $(A, ..., A)$ 是唯一均衡。
 > 
-> **(iii)** 解 $\Delta(|\mathcal{E}|) = -\lambda$ 得 $\theta^*$，代入A2的函数形式即得显式解。
+> **(iii)** $|\mathcal{E}|^* = 0$ 即解：在CEC为空的初始时刻，采纳已是严格占优策略。不存在需要"跨越"的临界CEC门槛。
 
 > **Corollary:** [非扩散均衡的单调自强化性质]
 > <!-- label: cor:self-reinforcing -->
@@ -322,10 +244,11 @@ $$
 > 
 > 则：
 > 
-1. $M(|\mathcal{E}|)$ 在 $[0, \infty)$ 上严格递增：$M'(|\mathcal{E}|) = V'[\theta(|\mathcal{E}|)] \cdot \theta'(|\mathcal{E}|) > 0$；
-> \lim_{|\mathcal{E}| \to \infty} M(|\mathcal{E}|) = V(\theta_\infty) - V(\theta_0) + c^{develop} - c^{adopt} + \kappa + \lambda$；
-3. 每次审计循环通过 $\Delta |\mathcal{E}| > 0$ 扩张CEC，同时：(a) 增加采纳的吸引力（$\partial u_i(A, \cdot) / \partial |\mathcal{E}| > 0$），(b) 增大偏离的相对损失（$M(|\mathcal{E}|)$ 增），(c) 降低混合策略均衡中采纳概率 $p^*$ 的不确定性（当均衡为纯策略时不确定性归零）。
-4. 这一定性——均衡的稳定性随其达成而自我强化——是*时间累积优势*机制在博弈论层面的精确表达。
+> 1. $M(|\mathcal{E}|)$ 在 $[0, \infty)$ 上严格递增：$M'(|\mathcal{E}|) = V'[\theta(|\mathcal{E}|)] \cdot \theta'(|\mathcal{E}|) > 0$；
+> 2. $\lim_{|\mathcal{E}| \to \infty} M(|\mathcal{E}|) = V(\theta_\infty) - V(\theta_0) + c^{develop} - c^{adopt} + \kappa + \lambda$；
+> 3. **裕度恒正：** $M(|\mathcal{E}|) > 0$ 对所有 $|\mathcal{E}| \geq 0$ 成立（因 $\Delta(|\mathcal{E}|) > 0$ 且 $\lambda > 0$），且 $M(0) = c^{develop} - c^{adopt} + \kappa + \lambda > 0$。均衡的稳定性从博弈的第一时刻即被保证——不存在"脆弱期"。
+> 4. 每次审计循环通过 $\Delta |\mathcal{E}| > 0$ 扩张CEC，同时：(a) 增加采纳的吸引力（$\partial u_i(A, \cdot) / \partial |\mathcal{E}| > 0$），(b) 增大偏离的相对损失（$M(|\mathcal{E}|)$ 增）。
+> 5. 这一定性——均衡的稳定性随其达成而自我强化——是*时间累积优势*机制在博弈论层面的精确表达。
 
 > **Proof:** 直接由定理 [ref]和 [ref]结合假设A1--A2的单调性验证。
 
@@ -398,35 +321,9 @@ $$
 \Delta_A \geq -\lambda
 $$
 
-That is, $(A, A)$ is an equilibrium when the adoption advantage exceeds the fragmentation cost. Given that $\Delta_A$ grows with $|\mathcal{E}|$ (since $\theta(|\mathcal{E}|)$ increases with cumulative audits while $\theta(0)$ remains fixed), this condition becomes easier to satisfy over time. The protocol's cumulative character makes the non-proliferation equilibrium *self-reinforcing*.
+That is, $(A, A)$ is an equilibrium when the adoption advantage exceeds the fragmentation cost (in absolute value). Given that $\Delta_A$ is strictly positive for all $|\mathcal{E}| \geq 0$——because at $|\mathcal{E}| = 0$, $\Delta_A(0) = c^{develop} - c^{adopt} + \kappa > 0$——this condition always holds. The protocol's cumulative character makes the non-proliferation equilibrium *self-reinforcing*, with the equilibrium becoming strictly more robust as $|\mathcal{E}|$ grows.
 
-Conversely, $(D, D)$ is an equilibrium when:
-
-$$
-V[\theta(0)] - c^{develop} - 2\kappa - \lambda \geq V[\theta(|\mathcal{E}|)] - c^{adopt} - \lambda
-$$
-
-which simplifies to:
-
-$$
--\Delta_A \geq 2\kappa
-$$
-
-This condition requires the adoption advantage to be *negative* and large in magnitude—that is, the incumbent protocol must be so inferior to a fresh development, or the development cost so low, that even with mutual proliferation costs, development is preferred. As $|\mathcal{E}|$ grows, this condition becomes increasingly implausible.
-
-The mixed-strategy equilibrium occurs when neither pure-strategy condition holds. Let $p$ be the probability that each jurisdiction plays $A$. The symmetric mixed-strategy Nash equilibrium satisfies:
-
-$$
-p \cdot \pi(A, A) + (1-p) \cdot \pi(A, D) = p \cdot \pi(D, A) + (1-p) \cdot \pi(D, D)
-$$
-
-Solving for $p^*$:
-
-$$
-p^* = \frac{-\Delta_A}{\lambda}
-$$
-
-For plausible parameter values ($\Delta_A > 0$, $\kappa > 0$, $\lambda > \kappa$), $p^*$ increases with $\Delta_A$: as the incumbent's accuracy advantage grows, the probability of adoption in the mixed-strategy equilibrium approaches 1. This formalizes the intuition that the incumbent's time-accumulated advantage makes proliferation an increasingly unattractive gamble.
+The $(D, D)$ outcome is never an equilibrium because $\Delta_A > 0$ always, meaning every jurisdiction has a strict unilateral incentive to deviate from $(D, D)$ to $A$. Similarly, no mixed-strategy equilibrium exists because the indifference condition would require $-\Delta_A = \lambda \cdot p^{n-1}$ with $-\Delta_A < 0$ and $\lambda \cdot p^{n-1} \geq 0$——an impossibility under A1--A7. Therefore, $(A, A)$ is the unique Nash equilibrium of the two-jurisdiction game.
 
 ### Extension to $N$ Jurisdictions
 
@@ -446,15 +343,9 @@ $$
 \Delta_A \geq -\lambda
 $$
 
-The term $-\lambda$ reflects a subtle tension: fragmentation cost $\lambda$ discourages unilateral deviation, but the *relief* from mutual proliferation costs $\kappa$ (if no one else develops, the lone developer avoids $\kappa$) encourages it. The equilibrium is stable when $\lambda > \kappa$—that is, when the public-bads cost of fragmentation exceeds the private cost of being the only proliferator.
+Given that $\Delta_A(0) = c^{develop} - c^{adopt} + \kappa > 0$ (by A3 and A4), and $\Delta_A$ is strictly increasing in $|\mathcal{E}|$ (by A1 and A2), the condition $\Delta_A \geq -\lambda$ holds for all $|\mathcal{E}| \geq 0$. The equilibrium stability is *monotonically increasing* in $|\mathcal{E}|$, because $\Delta_A$ grows without bound while $\lambda$ is fixed.
 
-A key result emerges: the stability of the non-proliferation equilibrium is *monotonically increasing* in $|\mathcal{E}|$, because $\Delta_A$ grows without bound (up to its asymptotic ceiling) while $\lambda$ is fixed. There exists a critical CEC size $|\mathcal{E}|^*$ such that for all $|\mathcal{E}| > |\mathcal{E}|^*$, $(A, A, ..., A)$ is the unique Nash equilibrium. This uniqueness is underwritten by Theorem~4 (极定理): no alternative algorithm can surpass SCX's minimax-optimal detection rate. The ceiling is absolute.
-
-$$
-|\mathcal{E}|^* = \frac{1} \ln\left( \frac{\theta_ - \theta_0}{\theta_ - \theta(|\mathcal{E}|^*)} \right)
-$$
-
-where $\theta(|\mathcal{E}|^*)$ is the accuracy level that satisfies $\Delta_A(|\mathcal{E}|^*) = -\lambda$.
+A key implication: the CEC critical value $|\mathcal{E}|^*$ at which $(A, ..., A)$ becomes the unique Nash equilibrium is trivially $|\mathcal{E}|^* = 0$. From the very first audit cycle, adoption is the dominant strategy for all jurisdictions. This uniqueness is underwritten by Theorem~4 (极定理): no alternative algorithm can surpass SCX's minimax-optimal detection rate. The ceiling is absolute, and adoption is inevitable from the start.
 
 ### The Nuclear Non-Proliferation Treaty Analogy
 
@@ -800,9 +691,9 @@ The lock-in trajectory can be modeled as a five-stage progression:
 
 **Stage 1: Emergence ($t_0$ to $t_1$).** The protocol is launched with an initial ensemble of audit modules and an empty CEC. Accuracy is relatively low, and the protocol competes on features, usability, and cost with bespoke audit solutions. Adoption is driven by early adopters who value the multi-expert ensemble architecture over the accuracy level. No lock-in exists at this stage; the protocol's survival depends on the quality of its initial audit modules and its ability to attract a sufficient volume of audits to begin CEC accumulation.
 
-**Stage 2: Critical Mass ($t_1$ to $t_2$).** Cumulative audit volume reaches a threshold $|\mathcal{E}|^*$ at which the accuracy advantage over a zero-CEC entrant becomes statistically significant. The protocol begins to attract adoption from organizations that had previously relied on internal audit processes. The CEC reaches sufficient size that its anomaly library covers the most common data quality failure modes across multiple domains. The first regulatory recognitions occur. Lock-in begins to emerge but remains contestable.
+**Stage 2: Critical Mass ($t_1$ to $t_2$).** Cumulative audit volume reaches a critical threshold at which the accuracy advantage over a zero-CEC entrant becomes statistically significant. Importantly, the NPE game-theoretic critical value $|\mathcal{E}|^* = 0$ means that the non-proliferation equilibrium is already the unique Nash equilibrium from the very first audit cycle——Stage 2 marks not the *onset* of lock-in but the point at which the accuracy advantage becomes *empirically measurable* and statistically significant. The CEC reaches sufficient size that its anomaly library covers the most common data quality failure modes across multiple domains. The first regulatory recognitions occur. Lock-in is already active but the protocol's market position still depends on demonstrated comparative advantage.
 
-**Stage 3: Moat Formation ($t_2$ to $t_3$).** The accuracy gap $\delta(t)$ exceeds the fixed cost of developing a competing protocol, meaning that an entrant would need to invest more than $c^{develop}$ merely to *match* the incumbent's accuracy at time $t_0$, without accounting for the incumbent's continued accumulation. The Non-Proliferation Equilibrium becomes the unique Nash equilibrium of the adoption game. The protocol becomes the default standard for data quality assessment in its domain. Ecosystem externalities accelerate: training programs proliferate, integration services become commoditized, and regulatory references become routine.
+**Stage 3: Moat Formation ($t_2$ to $t_3$).** The accuracy gap $\delta(t)$ exceeds the fixed cost of developing a competing protocol, meaning that an entrant would need to invest more than $c^{develop}$ merely to *match* the incumbent's accuracy at time $t_0$, without accounting for the incumbent's continued accumulation. While the NPE is already the unique Nash equilibrium from the very first audit cycle ($|\mathcal{E}|^* = 0$), Stage 3 marks the point where this equilibrium becomes *economically unassailable*: even a jurisdiction willing to accept the game-theoretic loss of unilateral development can no longer justify the investment on cost-benefit grounds alone. The protocol becomes the default standard for data quality assessment in its domain. Ecosystem externalities accelerate: training programs proliferate, integration services become commoditized, and regulatory references become routine.
 
 **Stage 4: Institutionalization ($t_3$ to $t_4$).** The protocol is embedded in the institutional fabric of data governance. Laws and regulations reference the protocol by name. Contracts specify compliance with protocol standards. Insurance policies for AI systems require protocol certification. Professional certifications are built around protocol expertise. At this stage, lock-in extends beyond technical and economic factors to encompass legal and institutional path-dependency. Switching costs become prohibitive not because the protocol is technically superior—though it may be—but because the *institutional environment* has been built around it.
 
@@ -819,8 +710,8 @@ This trajectory is not deterministic; it can be arrested, diverted, or reversed 
 > 定义有限状态空间 $\mathcal{S} = \{S_1, S_2, S_3, S_4, S_5\}$：
 > 
 - $S_1$：**涌现期**（Emergence）——协议发布，CEC为空（$|\mathcal{E}| = 0$），审计精度 $\theta = \theta_0$，无锁入；
-- $S_2$：**临界质量期**（Critical Mass）——$|\mathcal{E}| \geq |\mathcal{E}|^*$，精度优势具统计显著性（$\theta(t) - \theta_0 \geq \varepsilon_\theta$），首批监管认可发生；
-- $S_3$：**护城河形成期**（Moat Formation）——$\Delta(|\mathcal{E}|) \geq -\lambda$ 满足，NPE为唯一纳什均衡（定理 [ref]），精度差距超开发成本；
+- $S_2$：**临界质量期**（Critical Mass）——CEC规模达到经验门槛（$|\mathcal{E}| \geq \mathcal{E}_{stat}$），精度优势具统计显著性（$\theta(t) - \theta_0 \geq \varepsilon_\theta$），首批监管认可发生。注意：博弈论临界值 $|\mathcal{E}|^*_{game} = 0$（定理 [ref]），$S_2$ 标记的是经验可测的精度优势而非均衡转变；
+- $S_3$：**护城河形成期**（Moat Formation）——精度差距超开发成本（$\delta(t) > c^{develop}$）。注意：NPE从 $|\mathcal{E}| = 0$ 起即为唯一纳什均衡（定理 [ref]），$S_3$ 标记的是经济不可挑战性而非均衡转变；
 - $S_4$：**制度化期**（Institutionalization）——协议被 $\geq 2$ 部法律/法规以名称引用，合同条款中出现"Yajie认证"作为合规条件；
 - $S_5$：**认知闭合期**（Epistemic Closure）——数据质量的操作定义由协议确定，不存在可理解的替代质量概念。吸收态。
 
@@ -853,8 +744,8 @@ $$
 
 其中对每个 $i \in \{1,2,3,4\}$，行和为1：$\sum_{j=i}^5 p_{ij}(|\mathcal{E}|) = 1$。转移概率的函数形式由CEC驱动机制确定：
 
-- **$S_1 \to S_2$（涌现至临界质量）：** 当CEC逼近临界值 $|\mathcal{E}|^*$ 时，转移概率增加：
-- **$S_2 \to S_3$（临界质量至护城河）：** 转移由采纳优势驱动——当 $\Delta(|\mathcal{E}|)$ 越过 $-\lambda$ 门槛时：
+- **$S_1 \to S_2$（涌现至临界质量）：** 当CEC逼近经验临界值 $\mathcal{E}_{stat}$（统计显著性门槛，区别于博弈论临界值 $|\mathcal{E}|^* = 0$）时，转移概率增加：
+- **$S_2 \to S_3$（临界质量至护城河）：** 转移由经济可行性驱动——当精度差距 $\delta(t)$ 超过开发成本 $c^{develop}$ 时：
 - **$S_3 \to S_4$（护城河至制度化）：** 设 $R(t)$ 为时间 $t$ 引用该协议的法律/监管文本累积数。制度化门槛为 $R^*$：
 - **$S_4 \to S_5$（制度化至认知闭合）：** 设 $T_4(t)$ 为系统在 $S_4$ 的逗留时间（以审计周期计）。转移概率为：
 - **自我维持概率：** $p_{ii}(|\mathcal{E}|) = 1 - \sum_{j=i+1}^{5} p_{ij}(|\mathcal{E}|)$ 对所有 $i \in \{1,2,3,4\}$。
@@ -903,10 +794,10 @@ $$
 > 
 > 即在认知闭合（$S_5$），任何干预均无效——"数据质量即协议所测"已成制度事实。
 
-> **Proof:** 在 $S_1$，协议运营者尚不享有显著市场力量，立法者可通过设定治理条件作为市场准入前提来行使最大议价力。在 $S_3$，运营者的CEC精度优势使得"开发替代协议"的威胁不再可信（定理 [ref]），立法者的议价力下降。在 $S_5$，数据质量的操作定义已内化于全部相关制度之中，替代协议在概念上不可理喻——干预缺乏操作支点。序列的严格单调性由每一阶段锁入深度的增加得到保证。
+> **Proof:** 在 $S_1$，协议运营者尚不享有显著市场力量，立法者可通过设定治理条件作为市场准入前提来行使最大议价力。在 $S_3$，运营者的CEC精度优势使得经济层面的竞争性进入不再可行（精度差距超过开发成本），立法者的议价力下降。在 $S_5$，数据质量的操作定义已内化于全部相关制度之中，替代协议在概念上不可理喻——干预缺乏操作支点。序列的严格单调性由每一阶段锁入深度的增加得到保证。
 
 > **Remark:** [干预窗的政策含义]
-> 命题 [ref]给出了一个紧迫的时间约束：治理安排必须在系统达到 $S_3$（护城河形成）——此时NPE成为唯一均衡——之前嵌入。一旦越过此点，运营者的议价力将压倒任何事后监管尝试。这为第6节的政策建议提供了形式化的时序基础。
+> 命题 [ref]给出了一个紧迫的时间约束：治理安排必须在系统达到 $S_3$（护城河形成）——此时精度差距在经济上不可逾越——之前嵌入。一旦越过此点，运营者的议价力将压倒任何事后监管尝试。这为第6节的政策建议提供了形式化的时序基础。
 
 ### Stage 6: 天下大同 (Universal Harmony)
 
@@ -973,11 +864,11 @@ $$
 > \Delta_i(|\mathcal{E}^{public}|) = \Delta_j(|\mathcal{E}^{public}|) \triangleq \Delta^{public}
 > $$
 > 
-> 采纳优势不再依赖于任何辖区的身份。NPE的维持基础从"先发者的私有CEC精度优势"转变为"全球CEC公共品的精度优势"。博弈 $\Gamma^{NP}$ 在 $S_6$ 中退化为一对称协调博弈——所有辖区的支付矩阵完全相同，唯一纳什均衡为全体采纳（当 $\Delta^{public} \geq -\lambda$），且该均衡不赋予任何辖区以博弈论层面的特权地位。
+> 采纳优势不再依赖于任何辖区的身份。NPE的维持基础从"先发者的私有CEC精度优势"转变为"全球CEC公共品的精度优势"。博弈 $\Gamma^{NP}$ 在 $S_6$ 中退化为一对称协调博弈——所有辖区的支付矩阵完全相同，唯一纳什均衡为全体采纳（$\Delta^{public} > 0$ 恒成立，由A3与A4保证，故该条件始终满足），且该均衡不赋予任何辖区以博弈论层面的特权地位。
 > 
 > **诚实暴击：** 这意味着推论 [ref]所分析的先发优势衰减在 $S_6$ 达到其逻辑终态——衰减不是趋近于零，而是*衰减到身份的消失*。先发者在采纳博弈中不再是"先发者"；其身份被CEC的公共品属性所溶解。"天下大同"的严格形式含义即此——审计标准不再"属于"任何国家，不是因为任何国家放弃了所有权，而是因为"所有权"这一范畴在公共品配置下失去操作意义。
 
-> **Proof:** 在 $S_6$ 下，CEC的完全国际化（定义 [ref]之(i)）保证 $|\mathcal{E}_i^{accessible}| = |\mathcal{E}^{public}|$ 对所有 $i$ 成立——每个辖区可调用的CEC规模相同。代入 $\Delta(\cdot)$ 的定义（方程 [ref]），$\Delta_i$ 简化为仅依赖于公共CEC规模的函数，与 $i$ 的身份无关。全体采纳均衡条件 $\Delta^{public} \geq -\lambda$ 对所有辖区同时成立或同时不成立。当成立时，$(A, ..., A)$ 是对称博弈的对称严格纳什均衡——所有辖区地位等同。
+> **Proof:** 在 $S_6$ 下，CEC的完全国际化（定义 [ref]之(i)）保证 $|\mathcal{E}_i^{accessible}| = |\mathcal{E}^{public}|$ 对所有 $i$ 成立——每个辖区可调用的CEC规模相同。代入 $\Delta(\cdot)$ 的定义（方程 [ref]），$\Delta_i$ 简化为仅依赖于公共CEC规模的函数，与 $i$ 的身份无关。由 $\Delta^{public} = V[\theta(|\mathcal{E}^{public}|)] - V[\theta(0)] + c^{develop} - c^{adopt} + \kappa > 0$（A3与A4），全体采纳均衡条件始终成立。$(A, ..., A)$ 是对称博弈的唯一严格纳什均衡——所有辖区地位等同。
 
 > **Remark:** [天下大同与"历史终结论"的区分]
 > 定理 [ref]所描述的 $S_5 \to S_6$ 转型不应被误解为 Fukuyama(1989)意义上的"历史终结"。天下大同不是数据审计治理的"终点"——它是数据审计*标准归属*的终点。在 $S_6$ 中，以下竞争性维度仍然存在：(a) 审计模块的技术竞争——各辖区仍可贡献新模块以影响操作标准，竞争从"谁拥有CEC"转变为"谁的审计方法论更优"；(b) 数据质量的实证竞争——各辖区的数据集质量仍存在差异，审计继续揭示这些差异；(c) 治理权的程序竞争——多边受托人委员会的席位分配、投票权重和决策规则仍是政治博弈的对象。$S_6$ 消除的是标准归属的*排他性*——审计标准不再属于任何国家，但标准本身的确定仍然是人类制度中的人类决策。天下大同是霸权终结，不是政治终结。
