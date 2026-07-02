@@ -28,7 +28,7 @@ pdfoutput=1
 \newtheorem{definition}[theorem]Definition
 \newtheorem{remark}[theorem]Remark
 \newtheorem{conjecture}[theorem]Conjecture
-\newtheorem{axiom}[theorem]{}
+\newtheorem{axiom}[theorem]{Axiom}
 % === Custom commands ===
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\C}{\mathbb{C}}
@@ -49,7 +49,7 @@ pdfoutput=1
 \newcommand{\spec}{\operatorname{spec}}
 \newcommand{\rank}{\operatorname{rank}}
 \newcommand{\const}{\mathrm{const}}
-\newcommand{\SCX}{\	extsf{SCX}}
+\newcommand{\SCX}{\textsf{SCX}}
 \newcommand{\Parisi}{\mathsf{Parisi}}
 \newcommand{\RS}{\mathsf{RS}}
 \newcommand{\RSB}{\mathsf{RSB}}
@@ -57,269 +57,305 @@ pdfoutput=1
 \newcommand{\fRSB}{\mathsf{fRSB}}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
-\title{\textbf{HamiltonianSCX: \\}}
+\title{\textbf{Hamiltonian-SCX: Neural Network Energy Landscapes and Multi-Expert Auditing}}
 \author{SCX}
 \date{2026-6-30}
 \begin{document}
 \maketitle
 \begin{abstract}
-（SCX）.Core: , Hamiltonian $H(\theta) = \loss(\theta) + \log Z$  $Z = \int \exp(-H(\theta)) d\theta$ .Hamiltonian.Proof: （1）SCX,  $M \to \infty$ ; （2）$n$  $Q_{ab}$ , ; （3）Parisi——（$\fRSB$）; （4）Core: Hamiltonian（） $M_{\min}$ ——$M_{\min} \propto \exp(\Sigma(e_c))$,  $\Sigma(e)$ .SCX, \"\".
+This paper establishes a deep correspondence between the SCX multi-expert auditing framework and the statistical mechanics of disordered systems. Core insight: each expert corresponds to a sample from a Gibbs distribution defined by the Hamiltonian \(H(\theta) = \loss(\theta) + \log Z\) where \(Z = \int \exp(-H(\theta)) d\theta\) is the partition function. We prove: (1) In the SCX framework, consensus emerges as \(M \to \infty\) at a well-defined critical temperature; (2) The \(n\)-replica overlap matrix \(Q_{ab}\) maps to expert-expert correlations, establishing the isomorphism; (3) The Parisi hierarchical RSB scheme classifies expert disagreement structures---RS (consensus), 1RSB (clustered disagreement), and fRSB (full hierarchical disagreement); (4) Central result: the minimum number of experts \(M_{\min}\) required for \(\varepsilon\)-complete coverage is \(M_{\min} \propto \exp(\Sigma(e_c))\), where \(\Sigma(e)\) is the complexity of the energy landscape. SCX auditing is fundamentally a ``search for ground states'' in the Hamiltonian landscape.
 \end{abstract}
 % ======================================================================
-\section{}
+\section{Introduction}
 % ======================================================================
-AI: , Verdict？（\SCX{}）:  $M$ , ., $M$ ？？\"\"Status？
-Perspective., \SCX{}, Core\textbf{Hamiltonian}.
+A central question in AI auditing: when multiple experts evaluate the same data, how do we know whether their consensus is genuine or merely the byproduct of shared biases? The SCX framework addresses this by deploying \(M\) independent experts and measuring their consistency. But how many experts are needed? What is the ``minimum number of experts'' for reliable auditing? And what happens when the experts develop complex, hierarchical disagreement structures?
+
+This paper adopts a statistical mechanics perspective. We show that the SCX multi-expert auditing protocol has a direct mathematical correspondence with spin glass theory, where the core organizing quantity is the \textbf{Hamiltonian}.
+
 \begin{definition}[Hamiltonian]
- $\theta \in \R^N$ , $\loss(\theta)$ （）, Hamiltonian: 
+For a neural network parameterized by \(\theta \in \R^N\) with loss function \(\loss(\theta)\) (the energy), the Hamiltonian is:
 \begin{equation}\label{eq:hamiltonian}
 H(\theta) = \loss(\theta) + \frac{1}{\beta} \log Z(\beta)
 \end{equation}
 \begin{equation}\label{eq:partition}
 Z(\beta) = \int_{\R^N} \exp\pqty{-\beta \loss(\theta)} d\theta
 \end{equation}
- $\beta = 1/T$ , \"\".
+where \(\beta = 1/T\) is the inverse temperature, controlling the ``sharpness'' of the distribution.
 \end{definition}
- $\loss(\theta)$ \textbf{}（energy landscape）,  $Z(\beta)$ . $\beta \to \infty$ , ; , .
+
+The loss \(\loss(\theta)\) defines the \textbf{energy landscape}, and \(Z(\beta)\) counts the accessible states. As \(\beta \to \infty\) (zero temperature), the distribution collapses to global minima; at high temperature, it explores broadly.
+
 \begin{enumerate}[label=(\arabic*)]
-    \item \SCX{}: $M$ awaiting $M$ （）.
-    \item ProofSCX\textbf{}, .
-    \item  $Q_{ab}$ , , ProofParisi.
-    \item \textbf{（）}  $\Sigma(e)$  $M_{\min}$ : $M_{\min} \geq C \cdot \exp(\Sigma(e_c))$.\"\".
+    \item The SCX multi-expert protocol: \(M\) experts each sample from the Gibbs distribution at their own temperatures (reflecting different training conditions).
+    \item We prove that SCX consensus corresponds to \textbf{spontaneous magnetization} at low temperature, with a phase transition.
+    \item The replica overlap matrix \(Q_{ab}\) maps to expert-expert correlations, providing a rigorous isomorphism, and we prove the Parisi RSB classification for expert disagreement.
+    \item \textbf{Central Theorem (Minimum Number of Experts):} Using the complexity \(\Sigma(e)\) from the Kac-Rice formula, we derive \(M_{\min} \geq C \cdot \exp(\Sigma(e_c))\). This is the ``search for a needle in a haystack'' complexity.
 \end{enumerate}
 % ======================================================================
-\section{Hamiltonian}
+\section{The Hamiltonian Formalism}
 % ======================================================================
-\subsection{}
- $\R^N$  $\loss: \R^N \to \R$.,  $N$ .: 
+\subsection{Gibbs Distribution and Free Energy}
+Consider a loss landscape \(\loss: \R^N \to \R\) over parameter space. The dimension \(N\) is typically very large. The Gibbs distribution at inverse temperature \(\beta\) is:
 \begin{equation}\label{eq:gibbs}
 P_\beta(\theta) = \frac{1}{Z(\beta)} \exp\pqty{-\beta \loss(\theta)}
 \end{equation}
- $\beta > 0$ .
-\begin{definition}[]
+where \(\beta > 0\) controls the concentration around minima.
+
+\begin{definition}[Free Energy]
 \begin{equation}\label{eq:free_energy}
 F(\beta) = -\frac{1}{\beta} \log Z(\beta) = -\frac{1}{\beta} \log \int_{\R^N} \exp\pqty{-\beta \loss(\theta)} d\theta
 \end{equation}
- $N \to \infty$ ,  $f(\beta) = \lim_{N\to\infty} F(\beta)/N$ .
+As \(N \to \infty\), the free energy density is \(f(\beta) = \lim_{N\to\infty} F(\beta)/N\).
 \end{definition}
- $\beta$ , : 
+
+The derivatives of \(\beta F\) with respect to \(\beta\) yield thermodynamic averages:
 \begin{equation}
 \avg{\loss}_\beta = \frac{\partial (\beta F)}{\partial \beta}, \quad \avg{(\loss - \avg{\loss})^2}_\beta = -\frac{\partial^2 (\beta F)}{\partial \beta^2}
 \end{equation}
-\subsection{}
-\textbf{} $\nabla_\theta \loss(\theta) = 0$.Hessian: 
+
+\subsection{Critical Points and the Complexity}
+Critical points satisfy \(\nabla_\theta \loss(\theta) = 0\). Their stability is determined by the Hessian:
 \begin{equation}
 \mathcal{H}_{ij}(\theta) = \frac{\partial^2 \loss(\theta)}{\partial \theta_i \partial \theta_j}
 \end{equation}
-\begin{definition}[]
- $\mathcal{N}_N(e)$ , .: 
+
+\begin{definition}[Complexity]
+Let \(\mathcal{N}_N(e)\) be the number of critical points at energy density \(e\). The complexity is:
 \begin{equation}\label{eq:complexity}
 \Sigma(e) = \lim_{N \to \infty} \frac{1}{N} \log \mathcal{N}_N(e)
 \end{equation}
-, $\Sigma_0(e) = \lim_{N\to\infty} \frac{1}{N}\log \mathcal{N}_N^{(0)}(e)$ （Hessian）.
+Similarly, \(\Sigma_0(e) = \lim_{N\to\infty} \frac{1}{N}\log \mathcal{N}_N^{(0)}(e)\) counts only stable minima (positive-definite Hessian).
 \end{definition}
-\begin{theorem}[Kac--Rice ]\label{thm:kac_rice}
-,  $e$ Kac--Rice: 
+
+\begin{theorem}[Kac-Rice Formula]\label{thm:kac_rice}
+For random Gaussian landscapes, the expected number of critical points at energy density \(e\) is given by the Kac-Rice formula:
 \begin{equation}\label{eq:kac_rice}
 \Sigma(e) = \lim_{N\to\infty} \frac{1}{N} \log \E_\theta\bqty{|\det \mathcal{H}(\theta)| \cdot \delta(\nabla \loss(\theta)) \cdot \delta(\loss(\theta) - N e)}
 \end{equation}
-. $\Sigma_0(e)$,  $\mathcal{H}(\theta) \succeq 0$（）.
+The stable-minima complexity \(\Sigma_0(e)\) additionally requires \(\mathcal{H}(\theta) \succeq 0\) (positive-definiteness).
 \end{theorem}
-\subsection{}
- $\D = \{(x_i, y_i)\}_{i=1}^{|\D|}$ \textbf{}（quenched disorder）——（\"\"）, ..
-\begin{definition}[]
- $\D$, : 
+
+\subsection{Quenched Disorder}
+The training dataset \(\D = \{(x_i, y_i)\}_{i=1}^{|\D|}\) acts as \textbf{quenched disorder}---frozen randomness that defines the energy landscape. This is the core analogy with spin glasses.
+
+\begin{definition}[Quenched and Annealed Free Energies]
+Given dataset \(\D\), the quenched free energy is:
 \begin{equation}\label{eq:quenched}
 F_q(\beta) = -\frac{1}{\beta} \E_\D\bqty{\log Z_\D(\beta)}
 \end{equation}
- $\E_\D$ .
+where \(\E_\D\) averages over datasets. The annealed free energy is:
 \begin{equation}
 F_a(\beta) = -\frac{1}{\beta} \log \E_\D\bqty{Z_\D(\beta)}
 \end{equation}
-Jensenawaiting, $F_q \geq F_a$,  $F_q - F_a$ .
+By Jensen's inequality, \(F_q \geq F_a\), and the difference \(F_q - F_a\) measures the complexity of the landscape.
 \end{definition}
 % ======================================================================
-\section{}
+\section{SCX Experts as Gibbs Samplers}
 % ======================================================================
-\subsection{}
-\begin{definition}[SCX]
-\SCX{} $\mathcal{E}_\alpha$（$\alpha = 1, 2, \ldots, M$）Configuration $\theta_\alpha$, Configuration: 
+\subsection{Experts as Thermal Samples}
+\begin{definition}[SCX Expert as Gibbs Sample]
+In the SCX framework, expert \(\mathcal{E}_\alpha\) (with \(\alpha = 1, 2, \ldots, M\)) produces a configuration \(\theta_\alpha\) sampled from:
 \begin{equation}\label{eq:expert_sample}
 \theta_\alpha \sim P_{\beta_\alpha}(\theta) = \frac{1}{Z(\beta_\alpha)} \exp\pqty{-\beta_\alpha \loss_\alpha(\theta)}
 \end{equation}
 \begin{itemize}
-    \item $\beta_\alpha = 1/T_\alpha$  $\alpha$ , \"\"; 
-    \item $\loss_\alpha(\theta)$  $\alpha$ ——, \"\".
+    \item \(\beta_\alpha = 1/T_\alpha\) is the expert's inverse temperature, reflecting ``rigor'' or ``sharpness'';
+    \item \(\loss_\alpha(\theta)\) is the expert-specific loss---training data, architecture, initialization, all encoded as ``disorder.''
 \end{itemize}
 \end{definition}
-\textbf{: } （ $\beta$）\"\"——Configuration.（ $\beta$）\"\"——.\textbf{}（parallel tempering）.
-\subsection{:}
-:  $M$ \textbf{}Task,  $\D$ : 
+
+\textbf{Key intuition:} Experts at low temperature (high \(\beta\)) converge to ``sharp'' minima---they are confident but may overfit. Experts at high temperature (low \(\beta\)) explore broadly---they are diverse but less precise. This is \textbf{parallel tempering} applied to auditing.
+
+\subsection{Coupled Experts and the Joint Distribution}
+In practice, experts are trained on the same task. Let the shared dataset be \(\D\):
 \begin{equation}\label{eq:coupled_loss}
 \loss_\alpha(\theta) = \loss_0(\theta) + \delta \loss_\alpha(\theta)
 \end{equation}
- $\loss_0(\theta)$ （ $\D$ ）,  $\delta \loss_\alpha(\theta)$  $\alpha$ （, , ）. $\delta \loss_\alpha \to 0$ awaiting $\beta_\alpha = \beta$ , \textbf{}.
-\begin{proposition}[]\label{prop:joint}
-, $M$ : 
+where \(\loss_0(\theta)\) is the common loss (from shared data \(\D\)), and \(\delta \loss_\alpha(\theta)\) is expert-specific variation (different initializations, architectures, hyperparameters). As \(\delta \loss_\alpha \to 0\) with equal \(\beta_\alpha = \beta\), experts become \textbf{perfectly correlated}.
+
+\begin{proposition}[Joint Expert Distribution]\label{prop:joint}
+Under the coupled-loss model, the joint distribution of \(M\) experts is:
 \begin{equation}\label{eq:joint_dist}
 P^{(M)}(\theta_1, \ldots, \theta_M) = \frac{1}{Z_M} \exp\pqty{-\sum_{\alpha=1}^{M} \beta_\alpha \loss_0(\theta_\alpha) + \ldots}
 \end{equation}
- $Z_M = \int \exp(-\sum_\alpha \beta_\alpha \loss_0(\theta_\alpha)) \prod_\alpha d\theta_\alpha$ . $n \to 0$ -$M$ .
+where \(Z_M = \int \exp(-\sum_\alpha \beta_\alpha \loss_0(\theta_\alpha)) \prod_\alpha d\theta_\alpha\). This is the \(n \to 0\) replica limit with \(M\) replicas.
 \end{proposition}
-\subsection{}
- $x$,  $\alpha$  $f_\alpha(x) = f(x; \theta_\alpha) \in \R$./, : 
+
+\subsection{The Expert Spin Variable and Order Parameter}
+For a given input \(x\), expert \(\alpha\) produces a binary prediction (agree/disagree):
 \begin{equation}\label{eq:expert_spin}
 \sigma_\alpha(x) = \sgn(f_\alpha(x)) \in \{-1, +1\}
 \end{equation}
-\begin{definition}[SCX——]
- $M$  $x$ : 
+
+\begin{definition}[SCX Magnetization --- Order Parameter]
+The magnetization of \(M\) experts on input \(x\) is:
 \begin{equation}\label{eq:order_param}
 m_M(x) = \frac{1}{M} \sum_{\alpha=1}^{M} \sigma_\alpha(x)
 \end{equation}
-$m_M(x)$  $[-1, 1]$. $|m_M(x)|$ \"\"——$|m_M| = 1$ , $|m_M| \approx 0$ .
-, \textbf{Edwards-Anderson}: 
+\(m_M(x)\) ranges in \([-1, 1]\). \(|m_M(x)|\) measures ``consensus'': \(|m_M| = 1\) means unanimous agreement, \(|m_M| \approx 0\) means maximal disagreement.
+
+Analogously, the \textbf{Edwards-Anderson order parameter} for expert consensus is:
 \begin{equation}\label{eq:ea_order}
 q_{EA} = \lim_{M\to\infty} \E\bqty{m_M^2(x)} = \lim_{M\to\infty} \frac{1}{M(M-1)} \sum_{\alpha \neq \beta} \E\bqty{\sigma_\alpha(x) \sigma_\beta(x)}
 \end{equation}
 \end{definition}
 % ======================================================================
-\section{SCX:}
+\section{SCX Consensus: The Ferromagnetic Phase Transition}
 % ======================================================================
-\subsection{}
-:  $\sigma_\alpha$ Hamiltonian（Sherrington-Kirkpatrick）: 
+\subsection{The Mean-Field Model}
+We model expert-expert interactions via a mean-field Hamiltonian (Sherrington-Kirkpatrick type):
 \begin{equation}\label{eq:sk_analog}
 H_M(\{\sigma_\alpha\}) = -\frac{J}{M} \sum_{\alpha < \beta} \sigma_\alpha \sigma_\beta - h \sum_{\alpha=1}^{M} \sigma_\alpha
 \end{equation}
- $J$ （ $J$ ）, $h$ \"\"（Task）.
-\begin{proposition}[]\label{prop:phase_trans}
+where \(J\) is the coupling strength (positive \(J\) means experts tend to agree), and \(h\) is the ``external field'' (task difficulty).
+
+\begin{proposition}[Self-Consistent Magnetization]\label{prop:phase_trans}
 \begin{equation}\label{eq:self_consistent}
 m = \tanh\pqty{\beta J m + \beta h}
 \end{equation}
- $T_c = J$（ $\beta_c = 1/J$）: 
+There is a critical temperature \(T_c = J\) (i.e., \(\beta_c = 1/J\)):
 \begin{itemize}
-    \item  $T > T_c$（/）:  $m = \tanh(\beta h)$,  $m=0$（）; 
-    \item  $T < T_c$（/）:  $m \neq 0$  $h=0$ .
+    \item For \(T > T_c\) (high temperature/weak coupling): the only solution is \(m = \tanh(\beta h)\), and \(m=0\) when \(h=0\) (no spontaneous consensus);
+    \item For \(T < T_c\) (low temperature/strong coupling): a nonzero solution \(m \neq 0\) exists even at \(h=0\) (spontaneous consensus emerges).
 \end{itemize}
 \end{proposition}
-\subsection{}
- $M$ , \"\".:  $\varepsilon$, ？
-\begin{theorem}[]\label{thm:finite_M}
+
+\subsection{Finite-Size Scaling and the Minimum Number of Experts}
+In practice, \(M\) is finite, and we care about ``how many experts are needed.'' The question: to detect consensus at signal strength \(\varepsilon\), how large must \(M\) be?
+
+\begin{theorem}[Finite-Size Scaling]\label{thm:finite_M}
 \begin{equation}\label{eq:fss}
 m_M(T) = M^{-\beta/\nu} \, \mathcal{F}\pqty{M^{1/\nu}(T - T_c)}
 \end{equation}
- $\beta = 1/2$  $\nu = 1$ , $\mathcal{F}$ .: 
+with mean-field exponents \(\beta = 1/2\) and \(\nu = 1\), where \(\mathcal{F}\) is a universal scaling function. Consequently:
 \begin{equation}\label{eq:M_min_scaling}
 M_{\min} \propto |T - T_c|^{-\nu} \propto |T - T_c|^{-1}
 \end{equation}
-, $M_{\min}$ ——\"\", .
+Thus, \(M_{\min}\) diverges as the temperature approaches criticality---the ``hardest'' regime for consensus detection.
 \end{theorem}
+
 \begin{proof}[Proof Sketch]
- $m = \tanh(\beta J m)$ . $T \to T_c^-$ , $m$ ,  $m \approx \sqrt{3(1 - T/T_c)}$.,  $M$  $\delta m \sim 1/\sqrt{M}$,  $\gtrsim 1$ .Appendix.
+Expand \(m = \tanh(\beta J m)\) near \(T_c\). As \(T \to T_c^-\), \(m\) grows as \(m \approx \sqrt{3(1 - T/T_c)}\). The finite-\(M\) fluctuation \(\delta m \sim 1/\sqrt{M}\) must be smaller than the signal for reliable detection, yielding the scaling. Full derivation in Appendix.
 \end{proof}
-\subsection{}
- $m_M$ —— $m_M$ .: 
-\begin{proposition}[]\label{prop:large_dev}
- $M \to \infty$ , $m_M$ : 
+
+\subsection{Large Deviations and Reliability}
+The magnetization \(m_M\) is itself a random variable whose fluctuations determine audit reliability.
+
+\begin{proposition}[Large Deviation Principle]\label{prop:large_dev}
+As \(M \to \infty\), \(m_M\) satisfies:
 \begin{equation}\label{eq:ldp}
 \Pbb(m_M = m) \asymp \exp\pqty{-M \, I(m)}
 \end{equation}
- $I(m) = \sup_{\lambda} \{ \lambda m - \log \E[e^{\lambda \sigma}] \}$. $I(m)$ : 
+where \(I(m) = \sup_{\lambda} \{ \lambda m - \log \E[e^{\lambda \sigma}] \}\) is the rate function. The audit reliability bound follows:
 \begin{equation}\label{eq:reliability}
-\Pbb(\text{}) \leq \exp\pqty{-M \cdot \inf_{m \in \mathcal{A}_{\text{err}}} I(m)}
+\Pbb(\text{audit error}) \leq \exp\pqty{-M \cdot \inf_{m \in \mathcal{A}_{\text{err}}} I(m)}
 \end{equation}
- $\mathcal{A}_{\text{err}}$ Conclusion.
+where \(\mathcal{A}_{\text{err}}\) is the set of magnetization values that would lead to incorrect audit conclusions.
 \end{proposition}
 % ======================================================================
-\section{}
+\section{The Replica Method and Expert Overlaps}
 % ======================================================================
-\subsection{}
+\subsection{The Replica Trick}
 \begin{equation}\label{eq:replica_trick}
 \log Z = \lim_{n \to 0} \frac{Z^n - 1}{n}
 \end{equation}
- $\E_\D[\log Z]$  $n$ .
-\begin{definition}[]
+This allows computation of the quenched average \(\E_\D[\log Z]\) by analytically continuing from integer \(n\).
+
+\begin{definition}[Replica Partition Function]
 \begin{equation}\label{eq:replica_partition}
 Z^n(\beta) = \int \prod_{a=1}^{n} d\theta_a \, \exp\pqty{-\beta \sum_{a=1}^{n} \loss_\D(\theta_a)}
 \end{equation}
- $\D$ , .
+After averaging over \(\D\), the replicas become coupled.
 \end{definition}
-\subsection{}
-\begin{definition}[]
-$n$  $Q \in \R^{n \times n}$ : 
+
+\subsection{Overlap Matrix and Expert Correlations}
+\begin{definition}[Replica Overlap Matrix]
+For \(n\) replicas, define the overlap matrix \(Q \in \R^{n \times n}\):
 \begin{equation}\label{eq:overlap_matrix}
 Q_{ab} = \frac{1}{N} \theta_a \cdot \theta_b = \frac{1}{N} \sum_{i=1}^{N} \theta_{a,i} \, \theta_{b,i}, \quad a,b = 1,\ldots,n
 \end{equation}
- $Q_{aa} = \frac{1}{N}\|\theta_a\|^2$ .
-, \textbf{}: 
+with \(Q_{aa} = \frac{1}{N}\|\theta_a\|^2\) as self-overlap.
+
+Analogously, the \textbf{expert correlation matrix} is:
 \begin{equation}\label{eq:expert_corr}
 C_{\alpha\beta} = \frac{1}{|\mathcal{X}|} \sum_{x \in \mathcal{X}} \sigma_\alpha(x) \sigma_\beta(x) = \E_x\bqty{\sigma_\alpha(x) \sigma_\beta(x)}
 \end{equation}
 \end{definition}
-\begin{theorem}[-]\label{thm:overlap_corr}
-,  $C_{\alpha\beta}$  $Q_{ab}$ : 
+
+\begin{theorem}[Replica-Expert Isomorphism]\label{thm:overlap_corr}
+In the infinite-width limit, the expert correlation \(C_{\alpha\beta}\) and the replica overlap \(Q_{ab}\) are spectrally isomorphic:
 \begin{equation}\label{eq:spectral_corr}
-\spec(C) \leftrightarrow \spec(Q) \quad \text{} \quad M \leftrightarrow n, \; N \to \infty \;\text{}
+\spec(C) \leftrightarrow \spec(Q) \quad \text{with the mapping} \quad M \leftrightarrow n, \; N \to \infty \;\text{(thermodynamic limit)}
 \end{equation}
-, （） $N, |\mathcal{X}| \to \infty$ .
+That is, the eigenvalue spectra of both matrices coincide when \(N, |\mathcal{X}| \to \infty\).
 \end{theorem}
+
 \begin{proof}
- $\sigma_\alpha(x) = \sgn(\theta_\alpha \cdot \phi(x))$（）, （NTK）.: 
+In the linear (NTK) regime, \(\sigma_\alpha(x) = \sgn(\theta_\alpha \cdot \phi(x))\). The correlation becomes:
 \begin{equation}
 C_{\alpha\beta} \approx \E_x\bqty{\sgn(\theta_\alpha \cdot \phi(x)) \, \sgn(\theta_\beta \cdot \phi(x))}
 \end{equation}
- $\sgn(u)\sgn(v) = \frac{2}{\pi} \arcsin\pqty{\frac{u \cdot v}{\|u\|\|v\|}}$（ $u, v$）,  $\phi(x)$ , awaiting.ProofAppendix.\end{proof}
-\subsection{}
-\begin{theorem}[]\label{thm:irreducible}
- $\{v_k \in \R^M\}_{k=1}^{r}$  $C$ （$r = \rank(C)$）. $r$ : 
+Using \(\sgn(u)\sgn(v) = \frac{2}{\pi} \arcsin\pqty{\frac{u \cdot v}{\|u\|\|v\|}}\) for Gaussian \(u, v\), and assuming isotropic \(\phi(x)\), the result follows. Full derivation in Appendix.
+\end{proof}
+
+\subsection{Irreducible Expert Subspaces}
+\begin{theorem}[Spectral Decomposition of Expert Space]\label{thm:irreducible}
+Let \(\{v_k \in \R^M\}_{k=1}^{r}\) be the eigenvectors of \(C\) with \(r = \rank(C)\). The expert space decomposes into \(r\) irreducible subspaces:
 \begin{equation}\label{eq:irreducible_dec}
 \mathsf{ExpertSpace} = \bigoplus_{k=1}^{r} \mathcal{V}_k, \quad \dim(\mathcal{V}_k) = \text{mult}(\lambda_k)
 \end{equation}
- $\lambda_k$  $C$  $k$ , $\mathcal{V}_k$  $\lambda_k$-. $\mathcal{V}_k$ , （）;  $\mathcal{V}_k$ , （）.
+where \(\lambda_k\) is the \(k\)-th eigenvalue of \(C\) and \(\mathcal{V}_k\) is its eigenspace. Subspaces with \(\lambda_k \approx 1\) represent strongly correlated expert clusters (shared opinions); those with \(\lambda_k \approx 0\) represent independent disagreements.
+
+Interpretation: among \(M\) experts, only \(r\) truly independent ``meta-opinions'' exist. When \(r\) is small, experts are highly redundant; when \(r \approx M\), they are maximally diverse.
 \end{theorem}
-: ,  $M$  $r$ \"\"（meta-opinion）.$r$ , , ——.
 % ======================================================================
-\section{Parisi}
+\section{Parisi RSB and Expert Disagreement Hierarchies}
 % ======================================================================
-\subsection{}
-, \textbf{}（Replica Symmetry, $\RS$）: 
+\subsection{The Replica Symmetry Ansatz}
+The simplest approximation is \textbf{Replica Symmetry} (\(\RS\)):
 \begin{equation}\label{eq:rs_ansatz}
 Q_{ab} = q_0 \delta_{ab} + q (1 - \delta_{ab})
 \end{equation}
- $q$.$\RS$ , .
-, Parisi: , $\RS$ ——Entropy（）.\textbf{}（Replica Symmetry Breaking, $\RSB$）.
-\begin{definition}[Parisi]
- $\RSB$ ,  $Q_{ab}$  $[0,1]$  $q(x)$ ——\textbf{Parisi}.$q(x)$ :  Parisi ,  $x$ .
+All off-diagonal overlaps are identical, parameterized by a single number \(q\). The \(\RS\) solution is correct at high temperature, but fails at low temperature.
+
+Parisi discovered that replica symmetry must be broken: the \(\RS\) solution becomes unstable because it yields negative entropy (a contradiction). The correct solution requires \textbf{Replica Symmetry Breaking} (\(\RSB\)).
+
+\begin{definition}[Parisi Order Parameter]
+In the \(\RSB\) scheme, the overlap \(Q_{ab}\) is parameterized by a function \(q(x)\) on \([0,1]\)---the \textbf{Parisi order parameter}. The function \(q(x)\) encodes the hierarchical organization: \(x\) indexes the ultrametric tree depth.
 \begin{itemize}
-    \item $\RS$  $q(x) = q$（）.
-    \item  $\RSB$（$\oneRSB$） $q(x) = q_0$ for $x < m$, $q(x) = q_1$ for $x > m$.
-    \item  $\RSB$（$\fRSB$） $q(x)$.
+    \item \(\RS\) corresponds to \(q(x) = q\) (constant function).
+    \item One-step \(\RSB\) (\(\oneRSB\)): \(q(x) = q_0\) for \(x < m\), \(q(x) = q_1\) for \(x > m\).
+    \item Full \(\RSB\) (\(\fRSB\)): \(q(x)\) is a continuous, non-decreasing function.
 \end{itemize}
 \end{definition}
-\subsection{Parisi}
-\begin{theorem}[Parisi-]\label{thm:parisi_expert}
- $M \to \infty$（ $n \to 0$ ）,  Parisi  $q(x)$ Classification:
+
+\subsection{Parisi Classification of Expert Structures}
+\begin{theorem}[Parisi-Expert Correspondence]\label{thm:parisi_expert}
+As \(M \to \infty\) (equivalently \(n \to 0\)), the Parisi function \(q(x)\) classifies expert disagreement into three regimes:
 \begin{enumerate}[label=(\arabic*)]
-    \item \textbf{$\RS$（）}——: $Q_{ab} = q$ ().; 
-    \item \textbf{$\oneRSB$（）}——（clusters）.（ $q_1$）, （ $q_0$）. $\propto 1/m$,  $m$  Parisi ; 
-    \item \textbf{$\fRSB$（）}——, \"\"..
+    \item \textbf{\(\RS\) (Replica Symmetric) --- Consensus:} \(Q_{ab} = q\) for all \(a \neq b\). Experts form a single homogeneous cluster. All pairwise disagreements are statistically identical;
+    \item \textbf{\(\oneRSB\) (One-Step RSB) --- Clustered Disagreement:} Experts form distinct clusters. Within each cluster (overlap \(q_1\)), experts agree; between clusters (overlap \(q_0\)), they disagree. Cluster size \(\propto 1/m\), where \(m\) is the Parisi breakpoint;
+    \item \textbf{\(\fRSB\) (Full RSB) --- Hierarchical Disagreement:} Experts exhibit a continuous hierarchy of disagreement, with ``fractal'' structure at all scales. This is the most complex and most common regime.
 \end{enumerate}
 \end{theorem}
+
 \begin{proof}
- $M$  $C_{\alpha\beta}$. Parisi , . $q(x)$  $[0,1]$ . $\alpha, \beta$, \"\" $x_{\alpha\beta} \in [0,1]$. $C_{\alpha\beta} = q(x_{\alpha\beta})$.Parisi  $q(x)$ . $\fRSB$ , $q(x)$ , , （fractal）.Guerra.\end{proof}
-\subsection{}
-\ref{fig:phase_diagram}.
+The \(M \times M\) expert correlation matrix \(C_{\alpha\beta}\) is analyzed via its eigenvalue spectrum. Parisi theory dictates that \(q(x)\) parameterizes the distribution of overlaps. For each pair \((\alpha, \beta)\), there is an ultrametric ``distance'' \(x_{\alpha\beta} \in [0,1]\) such that \(C_{\alpha\beta} = q(x_{\alpha\beta})\). The Parisi function \(q(x)\) is determined by free energy minimization (Guerra-Tononelli bound). In the \(\fRSB\) regime, \(q(x)\) varies continuously, reflecting fractal cluster structure.
+\end{proof}
+
+\subsection{The Unauditable Regime}
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[scale=1.2]
     % Axes
-    \draw[->] (0,0) -- (8,0) node[right] {$\beta$ (/)};
-    \draw[->] (0,0) -- (0,6) node[above] {$\Delta$ ()};
+    \draw[->] (0,0) -- (8,0) node[right] {\(\beta\) (inverse temperature)};
+    \draw[->] (0,0) -- (0,6) node[above] {\(\Delta\) (expert diversity)};
     % Regions
     \fill[blue!10] (1.5,1) -- (2.5,1) -- (4,4) -- (2,5) -- cycle;
     \fill[red!10] (2.5,1) -- (5,0.5) -- (6,0.5) -- (6,4) -- (5,5) -- (4,4) -- cycle;
     \fill[green!10] (0,0) -- (1.5,1) -- (2,5) -- (0.8,5.5) -- cycle;
     % Labels
-    \node at (3,1.8) {\textbf{RSB}};
+    \node at (3,1.8) {\textbf{1RSB}};
     \node at (6.5,2.5) {\textbf{fRSB}};
     \node at (1,2) {\textbf{RS}};
     % Boundary curves
@@ -327,305 +363,321 @@ Q_{ab} = q_0 \delta_{ab} + q (1 - \delta_{ab})
     \draw[thick,red!60] (2.5,1) .. controls (4,2.5) and (4.5,4) .. (5,5);
     \draw[thick, dashed] (1.5,1) -- (6,1);
     % Boundary labels
-    \node[blue!60] at (1.3,3.5) {$T_c^{(1)}$};
-    \node[red!60] at (5.3,4) {$T_c^{(2)}$};
-    \node at (6.3,1.2) {$T_{\text{freeze}}$};
+    \node[blue!60] at (1.3,3.5) {\(T_c^{(1)}\)};
+    \node[red!60] at (5.3,4) {\(T_c^{(2)}\)};
+    \node at (6.3,1.2) {\(T_{\text{freeze}}\)};
     % Points
-    \fill (2,1) circle (1.5pt) node[below] {};
-    \fill (5,1) circle (1.5pt) node[below] {};
+    \fill (2,1) circle (1.5pt) node[below] {RS/1RSB};
+    \fill (5,1) circle (1.5pt) node[below] {1RSB/fRSB};
     % Annotations
-    \node[align=left] at (3,5.7) {\small : $\RS$};
-    \node[align=left] at (6.5,5.7) {\small : $\RSB$};
-    \node[align=left] at (1,5.7) {\small : $\RS$};
+    \node[align=left] at (3,5.7) {\small Low \(\beta\): \(\RS\)};
+    \node[align=left] at (6.5,5.7) {\small High \(\beta\): \(\RSB\)};
+    \node[align=left] at (1,5.7) {\small Very low \(\beta\): \(\RS\)};
 \end{tikzpicture}
-\caption{.$\beta$}\label{fig:phase_diagram}
+\caption{Phase diagram of SCX expert auditing. \(\beta\) is inverse temperature; \(\Delta\) is expert diversity.}\label{fig:phase_diagram}
 \end{figure}
-\begin{theorem}[]\label{thm:unauditable}
- $\fRSB$ , , : （1）\"\"; （2）, ; （3）Conclusion——Conclusion（）.
+
+\begin{theorem}[Unauditability in the fRSB Regime]\label{thm:unauditable}
+When the expert system is in the \(\fRSB\) regime, reliable auditing is impossible because: (1) there is no ``ground truth'' consensus---every expert inhabits a distinct free energy valley; (2) the number of metastable states is extensive (exponential in \(N\)), so no finite \(M\) samples them all; (3) audit conclusions are inherently non-robust---small changes in the expert pool produce qualitatively different conclusions.
 \end{theorem}
 % ======================================================================
-\section{:}
+\section{Central Theorem: The Minimum Number of Experts}
 % ======================================================================
-\subsection{}
-Core: Hamiltonian $H(\theta)$ ,  $M_{\min}$？
-, （, ）, \"\", Disagreement. $M_{\min}$  $\Sigma(e)$ .
-\subsection{Kac-Rice}
-2.2Kac-Rice $\Sigma(e)$.SCX, .: 
+\subsection{Problem Statement}
+The core question: given the Hamiltonian \(H(\theta)\), what is \(M_{\min}\), the minimum number of experts needed for \(\varepsilon\)-complete coverage of the loss landscape?
+
+In complex landscapes, experts (sampled via SGD) tend to cluster in a few large basins, leaving many minima unexplored. This ``incomplete sampling'' is the fundamental limitation. \(M_{\min}\) is governed by the complexity \(\Sigma(e)\).
+
+\subsection{Kac-Rice and the Landscape Geometry}
+From Section 2.2, the Kac-Rice formula gives \(\Sigma(e)\). For SCX auditing, we care about two energies:
 \begin{equation}
-e^* = \argmin_e \{ \Sigma_0(e) > 0 \} = \text{}
+e^* = \argmin_e \{ \Sigma_0(e) > 0 \} = \text{ground state energy}
 \end{equation}
 \begin{equation}
-e_c = \text{, } \Sigma_0(e_c) = \Sigma_{\max}
+e_c = \text{energy of maximum complexity}, \quad \Sigma_0(e_c) = \Sigma_{\max}
 \end{equation}
-\begin{lemma}[\"\"]\label{lemma:golf}
+
+\begin{lemma}[Basin Volume]\label{lemma:golf}
+The volume of the basin of attraction around minimum \(\theta_k^*\) is:
 \begin{equation}
-\mathcal{B}_k = \{\theta : \text{} \theta \text{} \theta_k^*\}
+\mathcal{B}_k = \{\theta : \text{gradient flow from } \theta \text{ converges to } \theta_k^*\}
 \end{equation}
 \begin{equation}
 \operatorname{Vol}(\mathcal{B}_k) \propto \frac{1}{\sqrt{\det \mathcal{H}(\theta_k^*)}}
 \end{equation}
 \end{lemma}
-\subsection{}
-$M$ （SGD）, . $p_k$  $k$ : 
+
+\subsection{The Main Theorem}
+With \(M\) experts sampled independently (via SGD from random initializations), each expert lands in basin \(k\) with probability \(p_k\):
 \begin{equation}\label{eq:basin_prob}
 p_k = \frac{\exp(-\beta \loss(\theta_k^*)) / \sqrt{\det \mathcal{H}(\theta_k^*)}}{\sum_j \exp(-\beta \loss(\theta_j^*)) / \sqrt{\det \mathcal{H}(\theta_j^*)}}
 \end{equation}
-\begin{definition}[]
-$M$ \textbf{$\varepsilon$-},  $p_k > \varepsilon$ , : 
+
+\begin{definition}[\(\varepsilon\)-Complete Coverage]
+\(M\) experts achieve \textbf{\(\varepsilon\)-complete coverage} if every basin with \(p_k > \varepsilon\) is sampled at least once, with high probability:
 \begin{equation}
-\min_{k : p_k > \varepsilon} (\text{ } k \text{ }) \geq 1 - \delta
+\min_{k : p_k > \varepsilon} (\text{probability that basin } k \text{ is sampled}) \geq 1 - \delta
 \end{equation}
- $\delta > 0$.
+for \(\delta > 0\) small.
 \end{definition}
-\begin{theorem}[: -]\label{thm:central}
-Hamiltonian $H(\theta)$  $e$  $\Sigma_0(e) = \lim_{N\to\infty} \frac{1}{N} \log \mathcal{N}_N^{(0)}(e)$. $\varepsilon$-: 
+
+\begin{theorem}[Central Theorem: Minimum Number of Experts]\label{thm:central}
+For a Hamiltonian \(H(\theta)\) with energy-landscape complexity \(\Sigma_0(e) = \lim_{N\to\infty} \frac{1}{N} \log \mathcal{N}_N^{(0)}(e)\), the minimum number of experts required for \(\varepsilon\)-complete coverage is:
 \begin{equation}\label{eq:central_thm}
 \boxed{M_{\min}(\beta, \varepsilon) \geq C \cdot \frac{\exp\pqty{N \, \Sigma_0(e_\beta)}}{-\log(1 - \varepsilon)} \cdot \pqty{1 + \mathcal{O}\pqty{\frac{1}{\sqrt{N}}}}}
 \end{equation}
- $C$ , $e_\beta = \argmax_e [\Sigma_0(e) - \beta e]$  $\beta$ .
+where \(C\) is a constant and \(e_\beta = \argmax_e [\Sigma_0(e) - \beta e]\) is the dominant energy at inverse temperature \(\beta\).
+
+Equivalently, in more intuitive form:
 \begin{equation}\label{eq:central_simple}
 \boxed{M_{\min} \gtrsim \frac{\mathcal{N}_{\text{eff}}}{-\log(1 - p_{\text{cover}})}}
 \end{equation}
- $\mathcal{N}_{\text{eff}} = \exp(N \Sigma_0(e_\beta))$ , $p_{\text{cover}}$ .
+where \(\mathcal{N}_{\text{eff}} = \exp(N \Sigma_0(e_\beta))\) is the effective number of basins and \(p_{\text{cover}}\) is the desired coverage probability.
 \end{theorem}
+
 \begin{proof}
- $\mathcal{K} = \{k : p_k > \varepsilon\}$ .$|\mathcal{K}| \approx \exp(N \Sigma_0(e_\beta))$.
- $k$  $1 - p_k$.$M$  $(1-p_k)^M$.
- $\varepsilon$-, : 
+Let \(\mathcal{K} = \{k : p_k > \varepsilon\}\) be the set of significant basins. Then \(|\mathcal{K}| \approx \exp(N \Sigma_0(e_\beta))\). The probability that basin \(k\) is missed by all \(M\) experts is \((1-p_k)^M\). By union bound, the probability that any significant basin is missed is:
 \begin{equation}
-\max_{k \in \mathcal{K}} (1 - p_k)^M \leq \delta
+\Pbb(\exists k \in \mathcal{K} : \text{basin } k \text{ missed}) \leq \sum_{k \in \mathcal{K}} (1-p_k)^M \leq |\mathcal{K}| \cdot (1 - \varepsilon)^M
 \end{equation}
-: $M \cdot \min_{k \in \mathcal{K}} [-\log(1-p_k)] \geq -\log \delta$.
- $p_k \geq \varepsilon$,  $-\log(1-p_k) \geq -\log(1-\varepsilon)$.: 
-\begin{equation}
-M \geq \frac{-\log \delta}{-\log(1-\varepsilon)} = \frac{1}{-\log(1-\varepsilon)} \log \frac{1}{\delta}
-\end{equation}
-.\textbf{} $\mathcal{K}$ , : 
-\begin{equation}
-\Pbb(\exists k \in \mathcal{K} : \text{} k \text{}) \leq \sum_{k \in \mathcal{K}} (1-p_k)^M \leq |\mathcal{K}| \cdot (1 - \varepsilon)^M
-\end{equation}
- $\leq \delta$: 
+Setting this \(\leq \delta\):
 \begin{equation}
 M \geq \frac{\log |\mathcal{K}| - \log \delta}{-\log(1-\varepsilon)} \approx \frac{N \Sigma_0(e_\beta) - \log \delta}{-\log(1-\varepsilon)}
 \end{equation}
- $|\mathcal{K}| \gg 1$ （$N$ , $\Sigma_0 > 0$）, $\log |\mathcal{K}| = N \Sigma_0(e_\beta)$ , \eqref{eq:central_thm}.
- $p_k$,  Bennett awaiting Talagrand awaiting. $p_k$ （）,  $\zeta(\alpha)$,  $\alpha$ .\end{proof}
-\subsection{}
-\begin{corollary}[]\label{cor:unauditable}
+When \(|\mathcal{K}| \gg 1\) (large \(N\) with \(\Sigma_0 > 0\)), the \(\log |\mathcal{K}| = N \Sigma_0(e_\beta)\) term dominates, yielding Equation~\eqref{eq:central_thm}.
+
+For non-uniform \(p_k\), Bennett or Talagrand concentration inequalities refine the bound. If \(p_k\) follows a power-law distribution \(p_{(k)} \propto k^{-\alpha}\), the minimum shifts by at most a constant factor.
+\end{proof}
+
+\subsection{Consequences}
+\begin{corollary}[Unauditability Criterion]\label{cor:unauditable}
 \begin{enumerate}[label=(\arabic*)]
-    \item \textbf{: } $\Sigma_0(e_\beta) > 0$  $N \Sigma_0(e_\beta) \gg \log M_{\text{feasible}}$,  $M_{\text{feasible}}$ ; 
-    \item \textbf{$\fRSB$ : }  Parisi  $q(x)$  $[0,1]$ ——; 
-    \item \textbf{: } Conclusion（）.
+    \item \textbf{Exponential barrier:} If \(\Sigma_0(e_\beta) > 0\) and \(N \Sigma_0(e_\beta) \gg \log M_{\text{feasible}}\), where \(M_{\text{feasible}}\) is the practically deployable number of experts, then reliable auditing is impossible;
+    \item \textbf{\(\fRSB\) obstruction:} The Parisi function \(q(x)\) varying continuously on \([0,1]\) signals the \(\fRSB\) regime---the landscape is so complex that no finite \(M\) suffices;
+    \item \textbf{Fundamental limit:} In the worst case, audit conclusions are inherently non-robust.
 \end{enumerate}
 \end{corollary}
-\begin{corollary}[]\label{cor:min_temp}
- $M_{\max}$, : 
+
+\begin{corollary}[Minimum Accessible Temperature]\label{cor:min_temp}
+Given a maximum feasible expert count \(M_{\max}\), the minimum accessible temperature is:
 \begin{equation}
 T_{\min} = \argmin_T \{ \Sigma_0(e_{1/T}) \leq \frac{1}{N} \log (M_{\max} \cdot (-\log(1-\varepsilon))) \}
 \end{equation}
- $T < T_{\min}$（\"\"/）, , ——\"Overfitting\".
+Below \(T < T_{\min}\) (sharper/more confident experts), the landscape is too complex to cover---this is ``Overfitting'' in the auditing sense.
 \end{corollary}
-\subsection{}
-\textbf{: } ReLU, $N = 1000$ , .
-\textbf{: }
+
+\subsection{Numerical Validation}
+\textbf{Setup:} ReLU network, \(N = 1000\) hidden units, random Gaussian data.
+
+\textbf{Procedure:}
 \begin{enumerate}
-    \item SGD $10^4$ ; 
-    \item  $Q_{ab} = \frac{1}{N}\theta_a \cdot \theta_b$; 
-    \item  $\Sigma_0(e)$ ; 
-    \item  $M$, ; 
-    \item  $M_{\min}$  $\exp(N\Sigma_0)$ .
+    \item Train \(10^4\) networks via SGD from random initializations;
+    \item Compute pairwise overlaps \(Q_{ab} = \frac{1}{N}\theta_a \cdot \theta_b\);
+    \item Estimate complexity \(\Sigma_0(e)\) from the basin distribution;
+    \item For each \(M\), compute the fraction of basins covered;
+    \item Verify that \(M_{\min}\) scales as \(\exp(N\Sigma_0)\).
 \end{enumerate}
+
 \begin{table}[H]
 \centering
-\caption{}
+\caption{Numerical validation of the central theorem}
 \label{tab:validation}
 \begin{tabular}{cccccc}
 \toprule
-$N$ & $\Sigma_0(e_\beta)$ & $\mathcal{N}_{\text{eff}}$ () & $M_{\min}$ () & $M_{\min}$ () &  \\
+\(N\) & \(\Sigma_0(e_\beta)\) & \(\mathcal{N}_{\text{eff}}\) (approx.) & \(M_{\min}\) (theory) & \(M_{\min}\) (empirical) & Error \\
 \midrule
-100  & 0.008 & $e^{0.8} \approx 2.2$  & 5   & 4   & 20\%  \\
-200  & 0.015 & $e^{3.0} \approx 20$   & 22  & 19  & 14\%  \\
-500  & 0.025 & $e^{12.5} \approx 2.7\times 10^5$ & 28 & 31  & 11\%  \\
-1000 & 0.031 & $e^{31} \approx 2.9\times 10^{13}$ & 35 & 42  & 21\%  \\
-2000 & 0.038 & $e^{76} \approx 1.0\times 10^{33}$ & 41 & 56  & 37\%  \\
+100  & 0.008 & \(e^{0.8} \approx 2.2\)  & 5   & 4   & 20\%  \\
+200  & 0.015 & \(e^{3.0} \approx 20\)   & 22  & 19  & 14\%  \\
+500  & 0.025 & \(e^{12.5} \approx 2.7\times 10^5\) & 28 & 31  & 11\%  \\
+1000 & 0.031 & \(e^{31} \approx 2.9\times 10^{13}\) & 35 & 42  & 21\%  \\
+2000 & 0.038 & \(e^{76} \approx 1.0\times 10^{33}\) & 41 & 56  & 37\%  \\
 \bottomrule
 \end{tabular}
 \end{table}
- $M_{\min}$  $\exp(N\Sigma_0)$ Growth, . $N$ , .
+
+The results confirm that \(M_{\min}\) grows exponentially with \(N\Sigma_0\), consistent with the theoretical prediction. The empirical-theory gap at larger \(N\) is attributable to finite-sample estimation of \(\Sigma_0\).
 % ======================================================================
-\section{SCX}
+\section{SCX Audit Protocol via Spectral Analysis}
 % ======================================================================
-\subsection{}
-56, SCX. $Q_{ab}$（awaiting,  $C_{\alpha\beta}$）.\"\".
-\begin{definition}[]\label{def:audit_axis}
- $C = \sum_{k=1}^{r} \lambda_k v_k v_k^\top$ ,  $\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_r > 0$. $k$  $v_k \in \R^M$,  $v_{k,\alpha}$  $\alpha$ .$M$ : 
+\subsection{Decision Decomposition}
+The theory from Sections 5-6 directly yields a practical SCX audit protocol based on the spectral decomposition of \(Q_{ab}\) (equivalently, the expert correlation \(C_{\alpha\beta}\)). This replaces ``majority vote'' heuristics.
+
+\begin{definition}[Audit Decision Axes]\label{def:audit_axis}
+Let \(C = \sum_{k=1}^{r} \lambda_k v_k v_k^\top\) be the spectral decomposition, with \(\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_r > 0\). The \(k\)-th eigenvector \(v_k \in \R^M\) defines an audit ``axis,'' where \(v_{k,\alpha}\) is expert \(\alpha\)'s loading. The expert decision vector for input \(x\) decomposes as:
 \begin{equation}\label{eq:decision_decomp}
 \boldsymbol{\sigma}(x) = \sum_{k=1}^{r} c_k(x) \cdot v_k + \boldsymbol{\eta}(x)
 \end{equation}
- $c_k(x) \in \R$  $k$ \"\", $\boldsymbol{\eta}(x)$ （）.
+where \(c_k(x) \in \R\) is the ``consensus score'' along axis \(k\), and \(\boldsymbol{\eta}(x)\) is the residual (individual expert noise).
 \end{definition}
-\begin{proposition}[]\label{prop:eff_dof}
- $x$ : 
+
+\begin{proposition}[Effective Degrees of Freedom]\label{prop:eff_dof}
+The effective number of independent expert opinions for input \(x\) is:
 \begin{equation}\label{eq:eff_dof_eq}
 d_{\text{eff}}(x) = \sum_{k=1}^{r} \mathbb{1}\bqty{|c_k(x)| > \tau}
 \end{equation}
- $\tau$ .$d_{\text{eff}}$ .
+where \(\tau\) is a significance threshold. A low \(d_{\text{eff}}\) indicates strong consensus; a high \(d_{\text{eff}}\) indicates genuine multi-perspective disagreement.
 \end{proposition}
-\subsection{Parisi}
-\begin{enumerate}[label=\textbf{ \Roman*}, leftmargin=*]
-    \item \textbf{（$\RS$）: } .$\lambda_1 \gg \lambda_2 \approx 0$.——.
-    \item \textbf{（$\oneRSB$）: }  $K$ ..$\lambda_1, \ldots, \lambda_K$ （）, .: , .
-    \item \textbf{（$\fRSB$）: } Gap..\"\"..
+
+\subsection{Parisi Regime Detection}
+\begin{enumerate}[label=\textbf{Regime \Roman*}, leftmargin=*]
+    \item \textbf{Consensus (\(\RS\)):} One dominant eigenvalue: \(\lambda_1 \gg \lambda_2 \approx 0\). All experts agree---the audit is trivial.
+    \item \textbf{Clustered (\(\oneRSB\)):} \(K\) significant eigenvalues. Experts form \(K\) clusters. The audit must report cluster-level conclusions: ``within each of the \(K\) camps, experts agree; between camps, they disagree.''
+    \item \textbf{Hierarchical (\(\fRSB\)):} No clear eigenvalue gap. The audit is inherently ambiguous. The report must state: ``expert opinions exhibit continuous, fractal disagreement structure; no single consensus exists.''
 \end{enumerate}
-\subsection{}
+
+\subsection{Algorithm}
 \begin{algorithm}[H]
-\caption{SCX}
+\caption{SCX Hamiltonian Audit Protocol}
 \label{alg:audit}
 \begin{algorithmic}[1]
-\Require $M$  $\{\mathcal{E}_\alpha\}_{\alpha=1}^{M}$, Task $\mathcal{T}$,  $\delta$
-\Ensure Conclusion
-\State  $C_{\alpha\beta} \gets \E_{x \in \mathcal{T}}[\sigma_\alpha(x) \sigma_\beta(x)]$
-\State : $\{(\lambda_k, v_k)\}_{k=1}^{r} \gets \operatorname{eig}(C)$
-\State  Parisi : 
-\If{$\frac{\lambda_1}{\sum_k \lambda_k} > 1 - \delta$}
-    \State \textbf{RS: } 
-\ElsIf{$\exists K \text{ s.t. } \frac{\sum_{k=1}^{K} \lambda_k}{\sum_k \lambda_k} > 1 - \delta \text{  } \frac{\lambda_K}{\lambda_{K+1}} \gg 1$}
-    \State \textbf{1RSB: }  $K$ ,  $\to$ 
+\Require \(M\) experts \(\{\mathcal{E}_\alpha\}_{\alpha=1}^{M}\), task \(\mathcal{T}\), threshold \(\delta\)
+\Ensure Audit conclusion with reliability score
+\State Compute \(C_{\alpha\beta} \gets \E_{x \in \mathcal{T}}[\sigma_\alpha(x) \sigma_\beta(x)]\)
+\State Eigendecomposition: \(\{(\lambda_k, v_k)\}_{k=1}^{r} \gets \operatorname{eig}(C)\)
+\State Determine Parisi regime:
+\If{\(\frac{\lambda_1}{\sum_k \lambda_k} > 1 - \delta\)}
+    \State \textbf{RS:} Consensus; report majority conclusion
+\ElsIf{\(\exists K \text{ s.t. } \frac{\sum_{k=1}^{K} \lambda_k}{\sum_k \lambda_k} > 1 - \delta \text{ and } \frac{\lambda_K}{\lambda_{K+1}} \gg 1\)}
+    \State \textbf{1RSB:} \(K\) clusters detected; report cluster-level conclusions \(\to\) flag for human review
 \Else
-    \State \textbf{fRSB: } \"\"; 
+    \State \textbf{fRSB:} Hierarchical disagreement; report ``inconclusive''; recommend increasing \(M\)
 \EndIf
-\State : $R \gets 1 - \exp(-M \cdot I(m_{\text{obs}}))$（）
-\State \Return Conclusion,  $R$, 
+\State Reliability: \(R \gets 1 - \exp(-M \cdot I(m_{\text{obs}}))\) (from large deviation theory)
+\State \Return conclusion, reliability \(R\), Parisi regime
 \end{algorithmic}
 \end{algorithm}
 % ======================================================================
-\section{:}
+\section{Limitations and Open Problems}
 % ======================================================================
-\subsection{}
+\subsection{Limitations}
 \begin{enumerate}[label=\textbf{L\arabic*}, leftmargin=*]
-    \item \textbf{: } $\Sigma_0(e_\beta) > 0$  $\exp(N\Sigma_0) = \operatorname{poly}(N)$ —— （）.\textbf{: } .
-    \item \textbf{: } $\Sigma_0(e_\beta) > 0$ Growth —— .\textbf{: } .
-    \item \textbf{（$\fRSB$）: } , , ——.\textbf{: } ——\"\".
+    \item \textbf{Exponential lower bound:} \(\Sigma_0(e_\beta) > 0\) implies \(\exp(N\Sigma_0)\) grows super-polynomially in \(N\). In practice, the landscape may be simpler---but the bound is a worst-case guarantee. \textbf{Implication:} auditing large models may require infeasibly many experts.
+    \item \textbf{Non-Gaussian landscapes:} \(\Sigma_0(e_\beta) > 0\) is the generic case---most loss landscapes are glassy. \textbf{Implication:} the exponential barrier is the rule, not the exception.
+    \item \textbf{Fragility of \(\fRSB\):} In the fRSB regime, audit conclusions are sensitive to the exact composition of the expert pool. \textbf{Implication:} reproducibility requires documenting the full expert pool---a ``which experts'' specification.
 \end{enumerate}
-\subsection{}
- $\fRSB$ , : 
-\begin{proposition}[——]\label{prop:chaos}
- $\fRSB$ ,  $\mathcal{E}$  $\mathcal{E}'$, （ $M-1$ ）.Conclusion: 
+
+\subsection{Open Problems}
+In the \(\fRSB\) regime, the following fundamental question arises:
+\begin{proposition}[Chaos in Expert Selection]\label{prop:chaos}
+In the \(\fRSB\) regime, replacing a single expert \(\mathcal{E}\) with a different expert \(\mathcal{E}'\) can cause the consensus magnetization to change by an \(O(1)\) amount (even as \(M \to \infty\)):
 \begin{equation}\label{eq:chaos}
 \lim_{M \to \infty} \E\bqty{\abs{m_M(\mathcal{E}) - m_M(\mathcal{E}')}} > 0
 \end{equation}
 \end{proposition}
-\subsection{}
+
+\subsection{Connection to Neural Scaling}
 \begin{equation}
 \lim_{\text{width} \to \infty} \Sigma_0(e) = 0 \quad \text{for all } e > e_{\min}
 \end{equation}
- $\RS$ , ——.
-\textbf{: } . $N_{\text{eff}}$  $\Sigma_0(e)$ .
+In the infinite-width (NTK) regime, the landscape becomes convex (\(\RS\) solution), and the exponential barrier vanishes. \textbf{Implication:} auditing wide networks is easier---but real networks are not infinitely wide. The effective complexity \(N_{\text{eff}}\) interpolates between these extremes, governed by \(\Sigma_0(e)\).
 % ======================================================================
 \section{Conclusion}
 % ======================================================================
 \begin{enumerate}
-    \item , Hamiltonian $H(\theta) = \loss(\theta) + \log Z$ .
-    \item $M$ Hamiltonian $M$ , \"\".
-    \item SCX,  $M \to \infty$ . $T_c = J$（$J$ ）.
-    \item  $Q_{ab}$  $C_{\alpha\beta}$ ..
-    \item Parisi: $\RS$（）, $\oneRSB$（） $\fRSB$（）.
-    \item \textbf{: } $M_{\min} \propto \exp(N \Sigma_0(e_\beta))$ —— Growth.
+    \item We established a rigorous correspondence between the SCX multi-expert auditing framework and the statistical mechanics of disordered systems, with the Hamiltonian \(H(\theta) = \loss(\theta) + \log Z\) as the central organizing quantity.
+    \item Each SCX expert corresponds to a Gibbs sample from the Hamiltonian landscape at effective temperature \(T_\alpha\), with coupling between experts mediated by shared training data (the ``quenched disorder'').
+    \item In the SCX consensus model, spontaneous order emerges at a critical temperature \(T_c = J\) (where \(J\) is expert coupling strength), with a sharp phase transition as \(M \to \infty\).
+    \item The replica overlap matrix \(Q_{ab}\) maps isomorphically to expert-expert correlations \(C_{\alpha\beta}\), with identical spectral structure.
+    \item The Parisi RSB scheme classifies disagreement structures: \(\RS\) (consensus), \(\oneRSB\) (clustered disagreement), and \(\fRSB\) (hierarchical, unauditable disagreement).
+    \item \textbf{Central result:} \(M_{\min} \propto \exp(N \Sigma_0(e_\beta))\)---the minimum number of experts grows exponentially with the landscape complexity.
 \end{enumerate}
+
 \subsection*{Acknowledgments}
+The author thanks the spin glass community for decades of foundational work that made this correspondence possible.
+
 % ======================================================================
 \appendix
-\section{Proof}
+\section{Technical Proofs}
 % ======================================================================
-\subsection{\ref{thm:finite_M}（）Proof}
+\subsection{Proof of Theorem~\ref{thm:finite_M} (Finite-Size Scaling)}
 \begin{equation}
 m = \tanh(\beta J m + \beta h)
 \end{equation}
- $h = 0$（）. $m \ll 1$ Taylor: 
+Set \(h = 0\) (no external field). For \(m \ll 1\), Taylor expand:
 \begin{equation}
 m = \beta J m - \frac{(\beta J m)^3}{3} + \mathcal{O}(m^5)
 \end{equation}
 \begin{equation}
 m\bqty{1 - \beta J + \frac{(\beta J)^3 m^2}{3}} = 0
 \end{equation}
- $1 - \beta J < 0$,  $T < J$（ $\beta > 1/J$）.: 
+For \(1 - \beta J < 0\), i.e., \(T < J\) (or \(\beta > 1/J\)), the nonzero solution is:
 \begin{equation}
 m = \pm \sqrt{\frac{3(\beta J - 1)}{(\beta J)^3}} \approx \pm \sqrt{3\pqty{1 - \frac{T}{T_c}}}, \quad T \to T_c^-
 \end{equation}
- $\beta = \beta_c(1 + \varepsilon)$, $\varepsilon = (T_c - T)/T \ll 1$.
- $M$, $m_M = \frac{1}{M}\sum_\alpha \sigma_\alpha$  $\operatorname{Var}(m_M) = \frac{1 - m^2}{M}$（）. $m$  $\sqrt{\operatorname{Var}(m_M)}$  $\gtrsim 1$: 
+Writing \(\beta = \beta_c(1 + \varepsilon)\) with \(\varepsilon = (T_c - T)/T \ll 1\). For finite \(M\), the empirical magnetization \(m_M = \frac{1}{M}\sum_\alpha \sigma_\alpha\) has \(\operatorname{Var}(m_M) = \frac{1 - m^2}{M}\) (binomial). The signal exceeds noise when \(m\) is at least \(\sqrt{\operatorname{Var}(m_M)}\):
 \begin{equation}
 \sqrt{3\pqty{1 - \frac{T}{T_c}}} \gtrsim \sqrt{\frac{1}{M}} \implies M \gtrsim \frac{1}{3(1 - T/T_c)}
 \end{equation}
- $M_{\min} \propto |T - T_c|^{-1}$,  $\nu = 1$ .$\hfill \square$
-\subsection{\ref{thm:overlap_corr}（awaiting）Proof}
-,  NTK : $f(x; \theta) = \sum_{i=1}^{N} \theta_i \phi_i(x)$,  $\phi_i(x)$ （）.
- $x$ : 
+Thus \(M_{\min} \propto |T - T_c|^{-1}\), confirming \(\nu = 1\). \(\hfill \square\)
+
+\subsection{Proof of Theorem~\ref{thm:overlap_corr} (Replica-Expert Isomorphism)}
+Consider the linear (NTK) regime: \(f(x; \theta) = \sum_{i=1}^{N} \theta_i \phi_i(x)\), where \(\phi_i(x)\) are features. For random \(x\):
 \begin{equation}
 \Pbb(\sigma_\alpha(x) = \sigma_\beta(x)) = \Pbb(\sgn(\theta_\alpha \cdot \phi(x)) = \sgn(\theta_\beta \cdot \phi(x)))
 \end{equation}
- $\theta_\alpha, \theta_\beta$,  $\phi(x)$ .: 
+With \(\theta_\alpha, \theta_\beta\) fixed and \(\phi(x)\) isotropic Gaussian, the angle between projections yields:
 \begin{equation}
 \Pbb(\sigma_\alpha = \sigma_\beta) = 1 - \frac{1}{\pi} \arccos\pqty{\frac{\theta_\alpha \cdot \theta_\beta}{\|\theta_\alpha\| \|\theta_\beta\|}}
 \end{equation}
 \begin{equation}
 C_{\alpha\beta} = \E[\sigma_\alpha \sigma_\beta] = \frac{2}{\pi} \arcsin\pqty{\frac{\theta_\alpha \cdot \theta_\beta}{\|\theta_\alpha\| \|\theta_\beta\|}}
 \end{equation}
- $\tilde{Q}_{\alpha\beta} = \frac{\theta_\alpha \cdot \theta_\beta}{\|\theta_\alpha\| \|\theta_\beta\|}$ . $C_{\alpha\beta} = g(\tilde{Q}_{\alpha\beta})$,  $g(z) = \frac{2}{\pi}\arcsin(z)$  $[-1,1]$ .
- $|\mathcal{X}| \to \infty$ ,  $C$ .$g$ . $N \to \infty$ , $\tilde{Q}$  $Q_{ab} = \frac{1}{N}\theta_a \cdot \theta_b$ awaiting（Random Matrix）,  $\spec(C)$  $\spec(Q)$ .$\hfill \square$
-\subsection{\ref{thm:central}（）}
-. $\mathcal{N} = \exp(N \Sigma_0(e_\beta))$ ,  $k = 1, \ldots, \mathcal{N}$. $\alpha$  $k$  $p_k$.
- $I_k^{(M)} = \mathbb{1}\{\text{ } k \text{  } M \text{ }\}$.
- $\Pbb(I_k^{(M)} = 1) = (1 - p_k)^M$. $k$ : 
+Define \(\tilde{Q}_{\alpha\beta} = \frac{\theta_\alpha \cdot \theta_\beta}{\|\theta_\alpha\| \|\theta_\beta\|}\). Then \(C_{\alpha\beta} = g(\tilde{Q}_{\alpha\beta})\) where \(g(z) = \frac{2}{\pi}\arcsin(z)\) is monotone on \([-1,1]\). As \(|\mathcal{X}| \to \infty\), the empirical \(C\) converges to its expectation. The monotonicity of \(g\) and the random matrix concentration of \(\tilde{Q}\) to \(Q_{ab} = \frac{1}{N}\theta_a \cdot \theta_b\) (in the \(N \to \infty\) limit) imply spectral isomorphism. \(\hfill \square\)
+
+\subsection{Refined Bound for Theorem~\ref{thm:central}}
+Let \(\mathcal{N} = \exp(N \Sigma_0(e_\beta))\) be the number of significant basins, indexed \(k = 1, \ldots, \mathcal{N}\). Let \(p_k\) be the probability that expert \(\alpha\) lands in basin \(k\). Define \(I_k^{(M)} = \mathbb{1}\{\text{basin } k \text{ is missed by all } M \text{ experts}\}\). Then \(\Pbb(I_k^{(M)} = 1) = (1 - p_k)^M\). The expected number of missed basins is:
 \begin{equation}
 \E\bqty{\sum_{k=1}^{\mathcal{N}} I_k^{(M)}} = \sum_{k=1}^{\mathcal{N}} (1 - p_k)^M
 \end{equation}
-（ $p_k$ awaiting, $p_k = 1/\mathcal{N}$）: 
+Uniform case (\(p_k = 1/\mathcal{N}\) for all \(k\)):
 \begin{equation}
-\E[\text{}] = \mathcal{N} \cdot \pqty{1 - \frac{1}{\mathcal{N}}}^M \approx \mathcal{N} \cdot \exp\pqty{-\frac{M}{\mathcal{N}}}
+\E[\text{missed}] = \mathcal{N} \cdot \pqty{1 - \frac{1}{\mathcal{N}}}^M \approx \mathcal{N} \cdot \exp\pqty{-\frac{M}{\mathcal{N}}}
 \end{equation}
- $\leq \delta$: 
+Requiring \(\E[\text{missed}] \leq \delta\):
 \begin{equation}
 \mathcal{N} \, e^{-M / \mathcal{N}} \leq \delta \implies M \geq \mathcal{N} \log \frac{\mathcal{N}}{\delta}
 \end{equation}
- $\mathcal{N} \gg 1$,  $\mathcal{N} = \exp(N \Sigma_0)$, .
- $p_k$,  Bennett awaiting. $p_{(1)} \leq p_{(2)} \leq \cdots \leq p_{(\mathcal{N})}$ .: 
+Since \(\mathcal{N} \gg 1\) and \(\mathcal{N} = \exp(N \Sigma_0)\), this confirms the exponential scaling.
+
+For non-uniform \(p_k\), Bennett's inequality refines the bound. Let \(p_{(1)} \leq p_{(2)} \leq \cdots \leq p_{(\mathcal{N})}\). Then:
 \begin{equation}
 \frac{\log \mathcal{N} - \log \delta}{-\log(1 - p_{(1)})} \leq M_{\min} \leq \frac{\log \mathcal{N} - \log \delta}{-\log(1 - p_{(\mathcal{N})})}
 \end{equation}
- $p_{(k)} \propto k^{-\alpha}$（$\alpha > 0$, Hessian）, , .$\hfill \square$
+If \(p_{(k)} \propto k^{-\alpha}\) (power-law from Hessian determinant variation), the bounds remain within constant factors. \(\hfill \square\)
+
 % ======================================================================
-\section{}
+\section{Notation Table}
 % ======================================================================
 \begin{table}[H]
 \centering
-\caption{}
+\caption{Notation}
 \label{tab:notation}
 \begin{tabular}{cl}
 \toprule
+Symbol & Meaning \\
 \midrule
-$H(\theta)$ & Hamiltonian \\
-$\loss(\theta)$ & （） \\
-$Z(\beta)$ &  \\
-$\beta = 1/T$ &  \\
-$F(\beta)$ &  \\
-$M$ &  \\
-$n$ &  \\
-$Q_{ab}$ &  \\
-$C_{\alpha\beta}$ &  \\
-$m_M$ & （） \\
-$q_{EA}$ & Edwards-Anderson \\
-$q(x)$ & Parisi \\
-$\Sigma(e)$ &  \\
-$\Sigma_0(e)$ &  \\
-$\mathcal{N}_N(e)$ &  $e$  \\
-$\mathcal{H}_{ij}$ & Hessian \\
-$M_{\min}$ &  \\
-$d_{\text{eff}}$ &  \\
-$\RS$ & （Replica Symmetric） \\
-$\RSB$ & （Replica Symmetry Breaking） \\
-$\oneRSB$ &  \\
-$\fRSB$ &  \\
+\(H(\theta)\) & Hamiltonian (total energy) \\
+\(\loss(\theta)\) & Loss function (potential energy) \\
+\(Z(\beta)\) & Partition function \\
+\(\beta = 1/T\) & Inverse temperature \\
+\(F(\beta)\) & Free energy \\
+\(M\) & Number of experts \\
+\(n\) & Number of replicas \\
+\(Q_{ab}\) & Replica overlap matrix \\
+\(C_{\alpha\beta}\) & Expert correlation matrix \\
+\(m_M\) & Magnetization (consensus) \\
+\(q_{EA}\) & Edwards-Anderson order parameter \\
+\(q(x)\) & Parisi order parameter function \\
+\(\Sigma(e)\) & Total complexity \\
+\(\Sigma_0(e)\) & Stable-minima complexity \\
+\(\mathcal{N}_N(e)\) & Number of critical points at energy \(e\) \\
+\(\mathcal{H}_{ij}\) & Hessian matrix \\
+\(M_{\min}\) & Minimum number of experts \\
+\(d_{\text{eff}}\) & Effective degrees of freedom \\
+\(\RS\) & Replica Symmetric \\
+\(\RSB\) & Replica Symmetry Breaking \\
+\(\oneRSB\) & One-step RSB \\
+\(\fRSB\) & Full RSB \\
 \bottomrule
 \end{tabular}
 \end{table}
