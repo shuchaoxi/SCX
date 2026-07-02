@@ -1,7 +1,6 @@
 \documentclass[11pt,a4paper]{article}
-
 % ── Packages ──────────────────────────────────────────────────────────
-\usepackage[UTF8]{ctex}               % Chinese support
+\               % Chinese support
 \usepackage{amsmath,amssymb,amsthm}   % Math
 \usepackage{mathtools}                % Extended math
 \usepackage{bm}                       % Bold math
@@ -16,22 +15,18 @@
 \usepackage{multirow}                 % Multi-row tables
 \usepackage{tikz}                     % Diagrams
 \usetikzlibrary{arrows.meta,shapes,positioning,fit,backgrounds,calc}
-
 % ── Theorem Environments ───────────────────────────────────────────────
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{proposition}[theorem]{Proposition}
-
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{assumption}[theorem]{Assumption}
 \newtheorem{example}[theorem]{Example}
-
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
-
 % ── Custom Commands ────────────────────────────────────────────────────
 \newcommand{\SCX}{\text{SCX}}
 \newcommand{\Cercis}{\text{Cercis}}
@@ -59,24 +54,17 @@
 \newcommand{\inprod}[2]{\langle #1, #2 \rangle}
 \newcommand{\indicator}{\mathbf{1}}
 \newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
-
 % ── Title ──────────────────────────────────────────────────────────────
 \title{
   \textbf{The Goodhart Gauge: Formal Detection and Mitigation of\\
   Metric Manipulation in the Cercis Score Framework}\\[0.5\baselineskip]
-  \large 古德哈特度量：Cercis评分框架下度量操纵的形式化检测与缓解
-}
-
+  \large : Cercis
 \author{
   SCX Research Collective\\
   \texttt{hermes-agent@nousresearch.com}
-}
-
 \date{July 2026}
-
 \begin{document}
 \maketitle
-
 % ═══════════════════════════════════════════════════════════════════════
 \begin{abstract}
 \noindent
@@ -97,24 +85,17 @@ defense architecture comprising independent audit rotation, state-coverage penal
 multi-expert independence testing, each accompanied by formal guarantees.
 \\[0.3\baselineskip]
 \noindent
-\textbf{中文.}
-Goodhart's Law指出：「当一项度量成为目标时，它就不再是好的度量。」在SCXEquality Principle框架中，
-CercisScore $S(x)=Q(x)+\eta N(x)$ 将质量 $Q$ 与新颖性 $N$ 聚合为单一标量目标。
-一旦该Score成为自利主体——数据提供者、专家审计员或国家级行为者——的优化目标，
-框架将面临度量操纵的风险，使得 $S$ 与其底层语义脱钩。本文形式化三种攻击面：
-（一）\textbf{数据Inflation}，即主体人为抬高质量度量而不改善真实质量；
-（二）\textbf{专家共谋}，即多名审计员协调伪造共识；
-（三）\textbf{Status伪造}，即对手合成完整评估Status以伪装为真实的Cercis景观。
-针对每种威胁，我们Proof检测边界，建立以高概率区分操纵Score与合法Score所需的最小样本复杂度。
-随后提出分层防御架构，包括独立审计轮换、Status覆盖度惩罚与多专家独立性检验，每项附有形式化保证。
+\textbf{.}
+CercisScore $S(x)=Q(x)+\eta N(x)$  $Q$  $N$ .
+,  $S$ .: 
+（）\textbf{Inflation}, ; 
+（）\textbf{}, ; 
+（）\textbf{Status}, StatusCercis.
 \end{abstract}
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Introduction}
 \label{sec:intro}
-
 \subsection{Motivation}
-
 Goodhart's Law, named after the economist Charles Goodhart who observed that
 ``any observed statistical regularity will tend to collapse once pressure is
 placed upon it for control purposes''~\cite{goodhart1975problems}, has become a
@@ -123,14 +104,10 @@ test-set accuracy, BLEU score, or human-preference rating---becomes the
 objective that systems or humans optimize against, the metric's correlation
 with the underlying construct it was designed to measure degrades, often
 catastrophically.
-
 \smallskip
 \noindent
-\textbf{Goodhart's Law的现代诠释.} 在AI评估领域，Goodhart警告转化为一个精确的技术问题：
-是否存在一种度量体系，其被操纵的难度（操纵成本）在数学上可界定，且其被操纵的事实
-（操纵检测）在统计上可Proof？SCXEquality Principle框架试图通过Cercis Score $S$ 回答这一问题，
-但框架本身尚未形式化其面对Goodhart攻击时的鲁棒性边界。
-
+\textbf{Goodhart's Law.} AI, Goodhart: 
+（）Proof？SCXEquality PrincipleCercis Score $S$ , 
 The SCX egalitarian framework~\cite{scx2025} defines the Cercis Score as:
 \begin{equation}\label{eq:cercis_def}
   S(x) = Q(x) + \eta \cdot N(x),
@@ -140,14 +117,12 @@ relative to the existing corpus, and $\eta > 0$ is the novelty-weighting
 parameter. The score lives on the Situs manifold $(\mathcal{X}, d_P, \mu_P)$,
 where $d_P$ encodes perceptual distance and $\mu_P$ encodes the empirical
 distribution of artifacts.
-
 \medskip
 \noindent
 \textbf{The Goodhart Threat.} Consider an adversary who can observe (or
 estimate) the Cercis Score $S(x)$ and wishes to maximize it without incurring
 the cost of genuine quality improvement. Three canonical attack strategies
 emerge:
-
 \begin{enumerate}[label=\textbf{A\arabic*}, leftmargin=*]
   \item \textbf{Data Inflation (A1).} The adversary generates artifacts $\tilde{x}$
         that score highly on $S$ by exploiting blind spots in the $Q$ estimator,
@@ -160,22 +135,17 @@ emerge:
         from authentic Cercis states to the downstream consumer (model trainer,
         policy maker, funding agency).
 \end{enumerate}
-
 \subsection{Contributions}
-
 This paper makes the following contributions:
-
 \begin{enumerate}[label=\textbf{C\arabic*}, leftmargin=*]
   \item \textbf{Threat Formalization} (Section~\ref{sec:threat}). We provide rigorous
         mathematical definitions of A1--A3 within the SCX framework, specifying the
         adversary's capabilities, knowledge, and objective for each attack surface.
-
   \item \textbf{Detection Bounds} (Section~\ref{sec:bounds}). For each attack, we prove
         a detection theorem that quantifies the minimum number of samples $n$ required to
         reject the null hypothesis of ``no manipulation'' at significance level $\alpha$
         with power $1-\beta$. The bounds expose an inherent detection-manipulation
         trade-off governed by the Cercis novelty parameter $\eta$.
-
   \item \textbf{Countermeasure Architecture} (Section~\ref{sec:defense}). We propose
         three defense mechanisms with formal guarantees:
         (a) independent audit rotation, which decorrelates auditor assignments to break
@@ -183,14 +153,11 @@ This paper makes the following contributions:
         of evaluated artifacts in regions of Situs space; and (c) multi-expert
         independence testing, which detects collusion via conditional independence
         violations.
-
   \item \textbf{Bilingual Exposition} (throughout). All theorems, definitions, and
         interpretations are presented in both English and Chinese to serve the
-        international SCX research community. 全文以中英双语呈现，服务国际SCX研究共同体。
+        international SCX research community. , SCX.
 \end{enumerate}
-
 \subsection{Related Work}
-
 Goodhart's law has been studied extensively in economics~\cite{goodhart1975problems,strathern1997improving},
 machine learning~\cite{manheim2019categorizing,karwowski2024goodhart}, and AI safety~\cite{zhuang2023goodhart,krakovna2020specification}.
 Our work differs in three respects: (1) we operate within the specific mathematical
@@ -199,13 +166,10 @@ structure of the SCX framework rather than treating evaluation as a black box;
 $\eta$, rather than providing qualitative taxonomies; and (3) our countermeasures
 are designed to compose with existing SCX theorems (notably Theorem~3 on
 noise-difficulty indistinguishability and Theorem~7 on cross-domain preservation).
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Preliminaries: The SCX Framework}
 \label{sec:prelim}
-
 \subsection{Cercis Score and Situs Manifold}
-
 We recall the core objects of the SCX framework. Let $\cX$ be the space of all
 artifacts (texts, models, datasets, policies). The \textbf{Situs operator}
 encodes $\cX$ as a metric measure space:
@@ -215,7 +179,6 @@ encodes $\cX$ as a metric measure space:
 where $d_P(x,y)$ is a perceptual distance (Wasserstein distance between the
 internal representations of $x$ and $y$ under a reference model $P$) and
 $\mu_P$ is the empirical distribution of artifacts.
-
 \begin{definition}[Cercis Score]
   \label{def:cercis}
   For any artifact $x \in \cX$, the \textbf{Cercis Score} $S: \cX \to \bbR^+$ is:
@@ -231,7 +194,6 @@ $\mu_P$ is the empirical distribution of artifacts.
     \item $\eta > 0$ is the novelty-weighting hyperparameter.
   \end{itemize}
 \end{definition}
-
 \begin{definition}[Cercis State]
   \label{def:state}
   The \textbf{Cercis state} of artifact $x$ is the tuple:
@@ -242,57 +204,45 @@ $\mu_P$ is the empirical distribution of artifacts.
   the Hessian (second-order derivative information). The auditor's observable is
   $\Sigma(x)$; the true quality $Q(x)$ is latent.
 \end{definition}
-
 \subsection{Assumptions}
-
 We maintain the standard SCX assumptions~\cite{scx2025}:
-
 \begin{assumption}[A1: Bounded Scores]
   \label{ass:bounded}
   $0 \leq Q(x) \leq 1$ and $0 \leq N(x) \leq N_{\max}$ for all $x \in \cX$.
   Consequently $S(x) \in [0, 1 + \eta N_{\max}]$.
 \end{assumption}
-
 \begin{assumption}[A2: Lipschitz Quality]
   \label{ass:lipschitz}
   $Q$ is $L_Q$-Lipschitz on the Situs manifold: $|Q(x) - Q(y)| \leq L_Q \cdot d_P(x,y)$.
 \end{assumption}
-
 \begin{assumption}[A3: Independent Audit Noise]
   \label{ass:audit_noise}
   Expert $k$ observes $S_k(x) = S(x) + \varepsilon_k$, where $\varepsilon_k \sim \cN(0,\sigma_k^2)$
   independently across experts and artifacts, with $\sigma_k \leq \sigma_{\max}$.
 \end{assumption}
-
 \begin{assumption}[A4: Situs Regularity]
   \label{ass:situs_reg}
   The Situs manifold $(\cX, d_P)$ is compact with diameter $D_{\max} < \infty$,
   and the gradient $\nabla S$ exists almost everywhere with $\|\nabla S(x)\| \leq G_{\max}$.
 \end{assumption}
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Threat Model}
 \label{sec:threat}
-
 \noindent
-\textbf{威胁模型总览.} 我们考虑三类对手，按能力递增排列。所有对手共享目标：
-在最小化真实质量改进成本的前提下，最大化其管辖制品的CercisScore。
-
+\textbf{.} , .: 
 \begin{center}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-\textbf{攻击} & \textbf{对手能力} & \textbf{目标} & \textbf{观测} & \textbf{成本} \\
+\textbf{} & \textbf{} & \textbf{} & \textbf{} & \textbf{} \\
 \midrule
-A1: 数据Inflation   & 制品生成     & $\max S(\tilde{x})$     & $Q$的代理估计   & 生成成本 \\
-A2: 专家共谋   & 审计协调     & $\max \bar{S}_{\text{rep}}$ & 其他专家的报告 & 协调成本 \\
-A3: Status伪造   & 完全知识     & $\max S(x)$ 无检测      & 完整$\Sigma(x)$  & 伪造成本 \\
+A1: Inflation   &      & $\max S(\tilde{x})$     & $Q$   &  \\
+A2:    &      & $\max \bar{S}_{\text{rep}}$ &  &  \\
+A3: Status   &      & $\max S(x)$       & $\Sigma(x)$  &  \\
 \bottomrule
 \end{tabular}
 \end{center}
-
 % ───────────────────────────────────────────────────────────────────────
-\subsection{A1: Data Inflation \quad 数据Inflation}
-
+\subsection{A1: Data Inflation \quad}
 \begin{definition}[Data Inflation Attack]
   \label{def:a1}
   An adversary $\cA_1$ with access to a surrogate quality estimator $\hat{Q}(\cdot)$
@@ -307,15 +257,12 @@ A3: Status伪造   & 完全知识     & $\max S(x)$ 无检测      & 完整$\Sig
   \]
   where $\Delta_Q > 0$ is the \textbf{quality gap} between estimated and true quality.
 \end{definition}
-
 \noindent
-\textbf{Core机制.} 对手利用 $Q$ 与 $\hat{Q}$ 之间的分布偏移生成在代理估计器上得分高
-但在真实质量上得分低的制品。这类似乎「应试教育」：学生学会考试技巧（优化 $\hat{Q}$）
-而非掌握学科内容（提升 $Q$）。
-
+\textbf{Core.}  $Q$  $\hat{Q}$ 
+.: （ $\hat{Q}$）
+（ $Q$）.
 The quality gap $\Delta_Q$ is the adversary's ``Goodhart margin''---the extent to which
 the proxy metric $\hat{Q}$ overestimates true quality $Q$. This gap arises from:
-
 \begin{enumerate}[label=(\roman*)]
   \item \textbf{Estimator incompleteness}: $\hat{Q}$ captures only a subset of the
         quality dimensions that $Q$ measures.
@@ -325,10 +272,8 @@ the proxy metric $\hat{Q}$ overestimates true quality $Q$. This gap arises from:
   \item \textbf{Adversarial overfitting}: the adversary actively searches for inputs
         where $|\hat{Q}(x) - Q(x)|$ is large.
 \end{enumerate}
-
 % ───────────────────────────────────────────────────────────────────────
-\subsection{A2: Expert Collusion \quad 专家共谋}
-
+\subsection{A2: Expert Collusion \quad}
 \begin{definition}[Expert Collusion Attack]
   \label{def:a2}
   Let $\cE = \{E_1, \dots, E_K\}$ be $K$ expert auditors assigned to evaluate artifact
@@ -341,19 +286,15 @@ the proxy metric $\hat{Q}$ overestimates true quality $Q$. This gap arises from:
   $\tilde{\varepsilon}_k \sim \cN(0, \tilde{\sigma}_k^2)$ are fabricated noise terms
   calibrated to match the variance of honest auditors, i.e., $\tilde{\sigma}_k \approx \sigma_k$.
 \end{definition}
-
 \noindent
-\textbf{共谋结构.} 共谋者面临一个微妙的设计问题：他们的报告必须同时满足两个条件：
-(1) 系统性地偏移均值（$\delta > 0$）以提升聚合Score；
-(2) 保持报告之间的表面独立性（$\tilde{\varepsilon}_k$ 匹配 $\sigma_k$）以逃避统计检测。
-
+\textbf{.} : : 
+(1) （$\delta > 0$）Score; 
+(2) （$\tilde{\varepsilon}_k$  $\sigma_k$）.
 The colluders' dilemma is that $\delta$ cannot be made arbitrarily large without
 being detected by outlier tests, but must be large enough to meaningfully shift the
 aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
-
 % ───────────────────────────────────────────────────────────────────────
-\subsection{A3: State Forgery \quad Status伪造}
-
+\subsection{A3: State Forgery \quad Status}
 \begin{definition}[State Forgery Attack]
   \label{def:a3}
   An adversary $\cA_3$ with complete knowledge of the SCX framework (including the
@@ -366,27 +307,18 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
     d_{\text{TV}}(\cD_{\text{forge}}, \cD_{\text{legit}}) \leq \varepsilon.
   \]
 \end{definition}
-
 \noindent
-\textbf{Status伪造的严重性.} A3是最强大的攻击：对手不仅操纵Score，而且构造整个评估Status，
-包括梯度与Hessian信息，使得审计者无法从可观测量的联合分布中区分真伪。
-这与SCX Theorem~3（噪声-难度不可区分性）形成对偶：Theorem 3断言噪声与内在难度
-在观测层面不可区分；A3断言在Score与梯度层面也可以构造不可区分的伪造Status。
-两者的交集定义了检测可能性的根本边界。
-
+\textbf{Status.} A3: Score, Status, 
 % ═══════════════════════════════════════════════════════════════════════
 \section{Detection Bounds}
 \label{sec:bounds}
-
 \noindent
-\textbf{检测边界总览.} 对每种攻击，我们Proof一个检测定理，形式为：
-在显著性水平 $\alpha$ 下，以功效 $1-\beta$ 检测操纵所需的最小样本量 $n^*$ 由攻击强度参数
-（$\Delta_Q$、$\delta$ 或 $\varepsilon$）以及Cercis新颖性参数 $\eta$ 决定。
-
+\textbf{.} , Proof, : 
+ $\alpha$ ,  $1-\beta$  $n^*$ 
+（$\Delta_Q$, $\delta$  $\varepsilon$）Cercis $\eta$ .
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Detecting Data Inflation}
 \label{sec:bound_a1}
-
 \begin{theorem}[Data Inflation Detection Bound]
   \label{thm:a1_detect}
   Let $\cD_{\text{legit}}$ be the distribution of Cercis Scores for authentic artifacts
@@ -394,7 +326,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   of inflated artifacts with mean $\mu_S + \Delta_{\text{infl}}$ and variance
   $\sigma_S^2 + \Delta_\sigma^2$. Assume $\Delta_Q = \Delta_{\text{infl}} - \eta \cdot \Delta_N$,
   where $\Delta_N \geq 0$ is the novelty shift. Then:
-
   \begin{enumerate}[label=(\roman*)]
     \item \textbf{Score-based detection.} A two-sample $t$-test on $n$ observed scores
           detects inflation at level $\alpha$ with power $1-\beta$ when:
@@ -403,7 +334,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
             \frac{2(\sigma_S^2 + \Delta_\sigma^2/2)}{\Delta_{\text{infl}}^2}
             \cdot (z_{1-\alpha/2} + z_{1-\beta})^2.
           \end{equation}
-
     \item \textbf{Gradient-based detection.} If the adversary's artifacts exhibit
           anomalous gradient structure $\|\nabla S(\tilde{x})\| \leq G_{\text{legit}} - \Delta_G$
           (less ``rugged'' than legitimate high-quality artifacts), then detection
@@ -415,7 +345,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
           where $\sigma_G^2 = \bbV[\|\nabla S(x)\|]$ under the legitimate distribution.
   \end{enumerate}
 \end{theorem}
-
 \begin{proof}
   \textbf{Part (i).} Under the null $H_0$ (no inflation), scores are i.i.d.\ with
   mean $\mu_S$. Under $H_1$ (inflation), scores have mean $\mu_S + \Delta_{\text{infl}}$.
@@ -430,7 +359,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   \]
   The standard sample-size formula for a two-sided $z$-test with pooled variance
   $\sigma_{\text{pool}}^2 = \sigma_S^2 + \Delta_\sigma^2/2$ yields~\eqref{eq:detect_a1}.
-
   \textbf{Part (ii).} Same logic applied to the gradient norm statistic
   $G(x) = \|\nabla S(x)\|$, which under Assumption~\ref{ass:situs_reg} is bounded.
   The separation $\Delta_G$ captures the fact that inflated artifacts, being
@@ -438,29 +366,22 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   (local optima of the proxy) rather than the ``rugged'' regions characteristic
   of genuinely novel, high-quality artifacts. \hfill $\square$
 \end{proof}
-
 \begin{remark}[Interpretation]
-  \textbf{中文解读.} 检测边界 $n_{\text{A1}}^*$ 揭示了三个关键关系：
+  \textbf{.}  $n_{\text{A1}}^*$ : 
   \begin{itemize}
-    \item $\Delta_{\text{infl}}$ 越大（质量Inflation越严重），检测所需样本越少
-          —— 大尺度的操纵反而更容易被检测到。
-    \item $\Delta_\sigma^2$（Inflation伪影引入的额外方差）增加检测难度
-          —— 对手可以通过增加噪声来隐藏Inflation信号。
-    \item $\eta$ 通过 $\Delta_{\text{infl}} = \Delta_Q + \eta \Delta_N$ 间接影响边界：
-          当对手同时操纵新颖性时（$\Delta_N > 0$），更大的 $\eta$ 使Inflation信号更强，
-          从而更容易检测。\textbf{这形成一个内在的检测-操纵权衡：$\eta$越大，CercisScore
-          对新事物的奖励越大，但操纵信号的放大也越明显。}
+    \item $\Delta_{\text{infl}}$ （Inflation）, 
+    \item $\Delta_\sigma^2$（Inflation）
+    \item $\eta$  $\Delta_{\text{infl}} = \Delta_Q + \eta \Delta_N$ : 
+          （$\Delta_N > 0$）,  $\eta$ Inflation, 
+          .\textbf{-: $\eta$, CercisScore
   \end{itemize}
-
   The trade-off $\eta \uparrow \implies$ (more reward for novelty, easier to detect inflation)
   is a \textbf{self-limiting property} of the Cercis Score: the same mechanism that makes
   the score valuable also makes its manipulation detectable.
 \end{remark}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Detecting Expert Collusion}
 \label{sec:bound_a2}
-
 \begin{theorem}[Expert Collusion Detection Bound]
   \label{thm:a2_detect}
   Let $K$ experts evaluate artifact $x$, of whom $K_C \leq \lfloor K/2 \rfloor$ are
@@ -471,7 +392,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
     \rho_{\text{anom}} = \frac{\delta^2}{\delta^2 + 2\sigma_H^2}.
   \]
   Then:
-
   \begin{enumerate}[label=(\roman*)]
     \item \textbf{Pairwise correlation test.} For any pair of colluding experts $(i,j)$,
           the pairwise correlation $\rho_{ij}$ exceeds the null expectation
@@ -482,7 +402,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
             \frac{(z_{1-\alpha/2} + z_{1-\beta})^2}
                  {\left(\frac{1}{2}\ln\frac{1+\rho_{\text{anom}}}{1-\rho_{\text{anom}}}\right)^2} + 3.
           \end{equation}
-
     \item \textbf{Variance ratio test.} The within-group variance of colluding experts
           is systematically lower than the between-group variance. Define the
           \textbf{collusion F-statistic}:
@@ -497,7 +416,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
           \end{equation}
   \end{enumerate}
 \end{theorem}
-
 \begin{proof}
   \textbf{Part (i): Correlation anomaly.} For two colluding experts $i,j \in \cE_C$,
   their reported scores are:
@@ -516,7 +434,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   The Fisher $z$-transformation $z(\rho) = \frac{1}{2}\ln\frac{1+\rho}{1-\rho}$ is
   approximately $\cN(z(\rho), 1/(n-3))$. The sample size formula follows from the
   standard power calculation for the difference $z(\rho_{\text{anom}}) - z(0)$.
-
   \textbf{Part (ii): ANOVA decomposition.} Consider the one-way ANOVA with groups:
   colluders vs.\ non-colluders. The between-group sum of squares captures the
   systematic bias $\delta$:
@@ -531,26 +448,20 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   the sample size formula~\eqref{eq:detect_a2_F} follows via the standard noncentral
   $F$ power calculation. \hfill $\square$
 \end{proof}
-
 \begin{remark}[Collusion Detectability Phase Transition]
-  \textbf{共谋可检测性的相变.} 定义共谋信噪比 $\text{SNR}_C = \delta / \sigma_H$。
-  存在临界值：
+  \textbf{.}  $\text{SNR}_C = \delta / \sigma_H$.
   \[
     \delta_{\text{crit}} = \sigma_H \cdot \sqrt{\frac{2\ln(1/\alpha)}{K_C(K-K_C)}}.
   \]
-  当 $\delta < \delta_{\text{crit}}$ 时，共谋在统计上不可检测（功效 $< 1-\beta$ 对任何有限 $n$）；
-  当 $\delta > \delta_{\text{crit}}$ 时，所需样本量随 $1/\delta^2$ Decays。
-  
-  这定义了 \textbf{Cercis-Goodhart 相变}：存在一个对手机制不可能同时
-  实现（i）显著Score提升（$\delta$ 大）和（ii）统计不可检测性（$\delta < \delta_{\text{crit}}$）
-  的参数区域。\textbf{系统设计者可以通过调节 $K$ 和 $\sigma_H$ 来推移 $\delta_{\text{crit}}$，
-  使得任何具有实际意义的Score操纵必然落入可检测区域。}
+   $\delta < \delta_{\text{crit}}$ , （ $< 1-\beta$  $n$）; 
+   $\delta > \delta_{\text{crit}}$ ,  $1/\delta^2$ Decays.
+   \textbf{Cercis-Goodhart }: 
+  （i）Score（$\delta$ ）（ii）（$\delta < \delta_{\text{crit}}$）
+  .\textbf{ $K$  $\sigma_H$  $\delta_{\text{crit}}$, 
 \end{remark}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Detecting State Forgery}
 \label{sec:bound_a3}
-
 \begin{theorem}[State Forgery Detection Bound]
   \label{thm:a3_detect}
   Let $\cD_{\text{legit}}$ be the joint distribution of Cercis states
@@ -563,7 +474,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   \end{equation}
   where $\nabla_{\Situs}$ is the Situs manifold gradient operator and
   $\hat{S}$ is any estimator of $S$. Then:
-
   \begin{enumerate}[label=(\roman*)]
     \item \textbf{Gradient inconsistency detection.} Define the
           \textbf{curl inconsistency statistic}:
@@ -579,7 +489,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
             \frac{\sigma_\tau^2}{\Delta_\tau^2} \cdot (z_{1-\alpha} + z_{1-\beta})^2,
           \end{equation}
           where $\sigma_\tau^2 = \bbV_{\text{legit}}[\tau(x)]$.
-
     \item \textbf{Situs geodesic test.} For any pair of forged states
           $(\tilde{\Sigma}_i, \tilde{\Sigma}_j)$, the Situs geodesic distance
           $d_P(\tilde{x}_i, \tilde{x}_j)$ and the score difference
@@ -598,7 +507,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
           where $d_{\min} = \min_{i \neq j} d_P(\tilde{x}_i, \tilde{x}_j)$.
   \end{enumerate}
 \end{theorem}
-
 \begin{proof}
   \textbf{Part (i):} The key insight is that on a smooth manifold with a metric
   connection (Levi-Civita), the curl of a gradient field is identically zero:
@@ -608,7 +516,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   (up to discretization error $\kappa$); under $H_1$, $\tau(x)$ is inflated by
   $\Delta_\tau$. The sample size formula follows from the standard power calculation
   for a one-sided $z$-test.
-
   \textbf{Part (ii):} The Cercis-Lipschitz constraint follows from Assumptions~\ref{ass:lipschitz}
   and~\ref{ass:situs_reg}:
   \[
@@ -619,28 +526,20 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   variance $2\sigma_S^2$. The tail bound follows from Hoeffding's inequality applied
   to the event $\{|S_i - S_j| > (L_Q + \eta L_N) d_P(x_i, x_j)\}$. \hfill $\square$
 \end{proof}
-
 \begin{remark}[The Fundamental Tension with Theorem 3]
-  \textbf{与Theorem 3的基础张力.} SCX Theorem~3 断言：从观测数据 $(S, \nabla S, H_S)$
-  无法区分标签噪声与内在难度。Status伪造检测（A3检测）似乎与这一断言矛盾
-  —— 如果噪声与难度不可区分，那么伪造Status（模拟噪声结构）也应不可区分。
-
-  消解这一表面矛盾的关键在于 \textbf{Situs流形约束}：Theorem~3 的不可区分性
-  是在 Situs流形上「内部」成立的——即所有合法Status都满足梯度Consistency条件~\eqref{eq:grad_consistency}。
-  伪造Status由于未经过 Situs 编码过程，通常破坏这种Consistency，从而在流形的几何结构层面
-  暴露异常。换句话说：\textbf{噪声可以在语义层面伪装成难度，但无法在几何层面
-  伪装成 SitusConsistency。}
-
+  \textbf{Theorem 3.} SCX Theorem~3 :  $(S, \nabla S, H_S)$
+   \textbf{Situs}: Theorem~3 
+   Situs——StatusConsistency~\eqref{eq:grad_consistency}.
+  .: \textbf{, 
+   SitusConsistency.}
   This resolves the apparent paradox: Theorem~3 concerns \emph{semantic} indistinguishability
   (what the score means), while Theorem~\ref{thm:a3_detect} concerns \emph{geometric}
   distinguishability (whether the score lives on the Situs manifold). The two are
   complementary, not contradictory.
 \end{remark}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Unified Detection Frontier}
 \label{sec:frontier}
-
 \begin{theorem}[Goodhart Detection Frontier]
   \label{thm:frontier}
   Define the \textbf{manipulation magnitude} $\Delta$ as:
@@ -667,12 +566,10 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
           geometric structure, not on $\eta$).
   \end{enumerate}
 \end{theorem}
-
 \begin{proof}
   The $\Theta(1/\Delta^2)$ scaling follows directly from the sample size formulas
   in Theorems~\ref{thm:a1_detect}, \ref{thm:a2_detect}, and \ref{thm:a3_detect},
   all of which have the form $n^* = \text{constant} \cdot (z_{1-\alpha/2} + z_{1-\beta})^2 / \Delta^2$.
-
   For the $\eta$-dependence: (i) In A1, $\Delta_{\text{infl}} = \Delta_Q + \eta \Delta_N$,
   so larger $\eta$ increases the effective $\Delta$, reducing $n^*$.
   (ii) In A2, the score variance acquires an $\eta$-dependent component:
@@ -682,7 +579,6 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
   (iii) In A3, $\tau(x)$ measures geometric consistency, which is independent of
   the $\eta$-weighted score magnitude. \hfill $\square$
 \end{proof}
-
 \begin{corollary}[Cercis $\eta$ as a Goodhart Regulator]
   \label{cor:eta_regulator}
   The novelty parameter $\eta$ acts as a \textbf{tunable Goodhart regulator}:
@@ -704,27 +600,20 @@ aggregate score $\bar{S} = \frac{1}{K}\sum_k S_k^{\text{rep}}$.
           \]
   \end{itemize}
 \end{corollary}
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Countermeasures}
 \label{sec:defense}
-
 \noindent
-\textbf{防御体系总览.} 基于检测边界的分析，我们提出三层防御架构。
-每层针对特定攻击向量，并与现有SCX定理兼容。
-
+\textbf{.} , .
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Countermeasure 1: Independent Audit Rotation}
 \label{sec:cm_rotation}
-
 \noindent
-\textbf{反制措施一：独立审计轮换}
-
+\textbf{: }
 The core insight is that collusion requires \emph{repeated interaction} to
 establish coordination. By randomly rotating auditor assignments and preventing
 auditors from knowing their co-auditors in advance, we destroy the information
 structure needed for stable collusion equilibria.
-
 \begin{definition}[Audit Rotation Protocol]
   \label{def:rotation}
   Let $\cE = \{E_1, \dots, E_M\}$ be the pool of $M$ certified experts. For each
@@ -733,7 +622,6 @@ structure needed for stable collusion equilibria.
   Auditor $E_k$ receives only the tuple $(x_t, \cP_t)$ but \emph{not} the identity
   of other panels they will serve on in the future.
 \end{definition}
-
 \begin{theorem}[Rotation Breaks Collusion Equilibria]
   \label{thm:rotation}
   Under the rotation protocol of Definition~\ref{def:rotation}, any collusion
@@ -746,7 +634,6 @@ structure needed for stable collusion equilibria.
   which decays quadratically in the pool size $M$. For $M \gg K_C$, collusion
   is infeasible without detectable side-channel communication.
 \end{theorem}
-
 \begin{proof}
   The probability that two specific colluders $i,j \in \cE_C$ are both assigned
   to the same panel is $\binom{M-2}{K-2}/\binom{M}{K} = K(K-1)/(M(M-1))$.
@@ -754,24 +641,17 @@ structure needed for stable collusion equilibria.
   yields the result. For $M \to \infty$, this probability approaches zero,
   meaning colluders cannot reliably coordinate on the same artifact. \hfill $\square$
 \end{proof}
-
 \begin{remark}
-  \textbf{实践考量.} 轮换协议需与专家校准（expert calibration）机制结合：
-  每位专家的历史评分分布被持续追踪，显著偏离个人基线的评分会触发自动复核。
-  这形成了双层防御：轮换防止共谋形成，校准检测个别偏离。
+  \textbf{.} （expert calibration）: 
 \end{remark}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Countermeasure 2: State Coverage Penalty}
 \label{sec:cm_coverage}
-
 \noindent
-\textbf{反制措施二：Status覆盖度惩罚}
-
+\textbf{: Status}
 Data inflation attacks concentrate artifacts in ``easy-scoring'' regions of the
 Situs manifold. A state-coverage penalty discourages this concentration by
 explicitly downweighting scores from over-represented regions.
-
 \begin{definition}[Coverage-Adjusted Cercis Score]
   \label{def:coverage}
   Let $p(x)$ be the empirical density of evaluated artifacts at $x \in \cX$.
@@ -786,7 +666,6 @@ explicitly downweighting scores from over-represented regions.
   \]
   where $H(p) = -\int p(x)\log p(x)\,dx$ is the entropy of the evaluation distribution.
 \end{definition}
-
 \begin{theorem}[Coverage Penalty Optimality]
   \label{thm:coverage}
   For a data-inflation adversary constrained to generate artifacts within a
@@ -800,32 +679,26 @@ explicitly downweighting scores from over-represented regions.
   As $m \to \infty$ (heavy inflation), $S_{\text{cov}}(x) \to -\infty$, making
   the region progressively less attractive.
 \end{theorem}
-
 \begin{proof}
   Under the adversary's concentration strategy, $p(x)$ within $\cB_r(x_0)$
   grows as $p(x) \approx m / \text{vol}(\cB_r)$ for $m$ artifacts in the region.
   Substituting into~\eqref{eq:scov} yields the bound. The divergence as
   $m \to \infty$ follows from $\log(m) \to \infty$. \hfill $\square$
 \end{proof}
-
 \begin{remark}[Connection to Novelty]
-  \textbf{与新颖性度量的关系.} 覆盖度惩罚 $\lambda \log p(x)$ 在形式上与Cercis的
-  新颖性项 $N(x) = D_{\text{KL}}(\delta_x \| \mu_P)$ 类似。区别在于：
-  $N(x)$ 惩罚与\textbf{整个语料库}分布偏离的制品（鼓励全局新颖性），
-  而覆盖度惩罚针对\textbf{评估分布}的集中（阻止局部投机）。
-  两者互补：$N$ 奖励探索，$S_{\text{cov}}$ 惩罚投机性聚集。
+  \textbf{.}  $\lambda \log p(x)$ Cercis
+   $N(x) = D_{\text{KL}}(\delta_x \| \mu_P)$ .: 
+  $N(x)$ \textbf{}（）, 
+  \textbf{}（）.
+  : $N$ , $S_{\text{cov}}$ .
 \end{remark}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Countermeasure 3: Multi-Expert Independence Testing}
 \label{sec:cm_independence}
-
 \noindent
-\textbf{反制措施三：多专家独立性检验}
-
+\textbf{: }
 This countermeasure operationalizes the detection bound from
 Theorem~\ref{thm:a2_detect} as an online monitoring system.
-
 \begin{definition}[Online Independence Monitor]
   \label{def:monitor}
   For each artifact $x$, let $\{S_k(x)\}_{k=1}^K$ be the $K$ expert scores.
@@ -836,14 +709,12 @@ Theorem~\ref{thm:a2_detect} as an online monitoring system.
             R_{ij} = \text{Pearson}(\{S_i(x_t)\}_{t=1}^n, \{S_j(x_t)\}_{t=1}^n),
           \]
           for all $1 \leq i < j \leq K$, tracked over a sliding window of $n$ artifacts.
-
     \item \textbf{Conditional Independence Test:}
           \[
             \text{CI}_{ij|S} = \text{partial correlation}(S_i, S_j \mid \hat{S}),
           \]
           where $\hat{S}$ is the Cercis Score estimated from artifact features alone
           (without expert input). Under honesty, $S_i \indep S_j \mid S$.
-
     \item \textbf{CUSUM Anomaly Detector:}
           \[
             C_t = \max(0, C_{t-1} + \log \Lambda_t - \gamma),
@@ -853,12 +724,10 @@ Theorem~\ref{thm:a2_detect} as an online monitoring system.
           accumulation under $H_0$.
   \end{enumerate}
 \end{definition}
-
 \begin{theorem}[Independence Test Guarantees]
   \label{thm:ind_test}
   Under Assumption~\ref{ass:audit_noise} (independent audit noise),
   the online independence monitor provides the following guarantees:
-
   \begin{enumerate}[label=(\roman*)]
     \item \textbf{False positive control.} Under $H_0$ (no collusion),
           \[
@@ -867,7 +736,6 @@ Theorem~\ref{thm:a2_detect} as an online monitoring system.
           \]
           where $\alpha_{\text{pair}}$ and $\alpha_{\text{CUSUM}}$ are the
           per-test significance levels.
-
     \item \textbf{Detection delay.} Under $H_1$ (collusion with bias $\delta$),
           the expected detection delay (average run length to alarm) satisfies:
           \[
@@ -876,34 +744,28 @@ Theorem~\ref{thm:a2_detect} as an online monitoring system.
                  {D_{\text{KL}}(\cN(\delta, \sigma_H^2) \| \cN(0, \sigma_H^2))}
             = \frac{2\sigma_H^2 \cdot |\log \alpha_{\text{CUSUM}}|}{\delta^2}.
           \end{equation}
-
     \item \textbf{Asymptotic consistency.} As $n \to \infty$,
           $\text{CI}_{ij|S} \xrightarrow{p} 0$ under $H_0$ and
           $\text{CI}_{ij|S} \xrightarrow{p} \rho_{\text{anom}} > 0$ under $H_1$.
   \end{enumerate}
 \end{theorem}
-
 \begin{proof}
   \textbf{(i)} By union bound over $\binom{K}{2}$ pairwise tests plus one CUSUM test.
-
   \textbf{(ii)} The CUSUM statistic under $H_1$ has log-likelihood increments
   $\log \Lambda_t = \log(\phi_{\delta,\sigma_H}(S_t) / \phi_{0,\sigma_H}(S_t))$,
   where $\phi$ is the Gaussian density. The expected increment is
   $\bbE_{H_1}[\log \Lambda_t] = D_{\text{KL}}(\cN(\delta, \sigma_H^2) \| \cN(0, \sigma_H^2))
   = \delta^2/(2\sigma_H^2)$. The Wald approximation for CUSUM ARL~\cite{page1954continuous}
   yields the claimed bound.
-
   \textbf{(iii)} By the law of large numbers applied to partial correlations:
   under $H_0$, $S_i \indep S_j \mid S$ implies the partial covariance is zero, and
   the sample partial correlation converges to zero in probability. Under $H_1$,
   the common bias $\delta$ induces a non-zero partial correlation that converges
   to $\rho_{\text{anom}}$ as derived in Theorem~\ref{thm:a2_detect}. \hfill $\square$
 \end{proof}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Integrated Defense Architecture}
 \label{sec:integrated}
-
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
@@ -917,7 +779,6 @@ Theorem~\ref{thm:a2_detect} as an online monitoring system.
   \node[box, below=of eval, fill=red!10] (coverage) {Coverage Penalty\\ (Countermeasure 2)};
   \node[box, right=of eval, fill=purple!10] (monitor) {Independence Monitor\\ (Countermeasure 3)};
   \node[box, right=of monitor, fill=gray!10] (output) {Audited Score\\ $S^*(x)$};
-
   \draw[arrow] (input) -- (rotate);
   \draw[arrow] (rotate) -- (eval);
   \draw[arrow] (coverage) -- (eval);
@@ -930,69 +791,56 @@ Theorem~\ref{thm:a2_detect} as an online monitoring system.
          residual anomalies.}
 \label{fig:architecture}
 \end{figure}
-
 \begin{algorithm}[htbp]
 \caption{Goodhart-Gauged Cercis Evaluation}
 \label{alg:gauge}
 \begin{algorithmic}[1]
 \Require Artifact $x$, expert pool $\cE$, parameters $\eta, \lambda, \alpha, \gamma$
 \Ensure Goodhart-robust Cercis Score $S^*(x)$ with anomaly flags
-
 \State \textbf{// Step 1: Independent Audit Rotation}
 \State Draw panel $\cP \subset \cE$ of size $K$ uniformly at random
 \State \textbf{// Step 2: Collect Expert Scores}
 \For{$k \in \cP$}
     \State $S_k \gets \text{ExpertEvaluate}(x, E_k)$  \Comment{Includes noise $\varepsilon_k$}
 \EndFor
-
 \State \textbf{// Step 3: Coverage-Adjusted Aggregation}
 \State $p(x) \gets \text{EstimateDensity}(x)$  \Comment{using Situs kernel density}
 \State $\bar{S} \gets \frac{1}{K}\sum_{k} S_k$
 \State $S_{\text{cov}} \gets \bar{S} - \lambda \cdot \log(p(x) + \epsilon)$
-
 \State \textbf{// Step 4: Independence Monitoring}
 \State $R \gets \text{ComputePairwiseCorrelations}(\{S_k\}, \text{history})$
 \State \textbf{If} $\max_{i<j} |R_{ij}| > \text{threshold}(\alpha, K)$ \textbf{then}
     \State \textbf{Raise} CollusionWarning
 \EndIf
-
 \State $C \gets \text{UpdateCUSUM}(\{S_k\}, \gamma)$
 \State \textbf{If} $C > \text{threshold}_{\text{CUSUM}}$ \textbf{then}
     \State \textbf{Raise} AnomalyFlag
 \EndIf
-
 \State \textbf{// Step 5: Gradient Consistency Check (A3 defense)}
 \State $\tau \gets \|\nabla \times \nabla \bar{S}(x)\|^2$
 \State \textbf{If} $\tau > \kappa^2 + z_{1-\alpha} \cdot \sigma_\tau$ \textbf{then}
     \State \textbf{Raise} ForgeryWarning
 \EndIf
-
 \State \Return $(S_{\text{cov}}, \text{warnings})$
 \end{algorithmic}
 \end{algorithm}
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Composition with SCX Theorems}
 \label{sec:composition}
-
 \noindent
-\textbf{与SCX定理体系的组合性质.}
+\textbf{SCX.}
 The Goodhart defenses compose with existing SCX theorems to provide end-to-end
 guarantees:
-
 \begin{theorem}[Defense Composition Theorem]
   \label{thm:composition}
   Let $\cS = (T3, T5, T7, CD, FA, AR, TS, HC)$ denote the SCX theorem suite.
   The Goodhart countermeasures $\cG = (\text{Rotation}, \text{Coverage}, \text{Independence})$
   compose with $\cS$ as follows:
-
   \begin{enumerate}[label=(\roman*)]
     \item \textbf{With Theorem 3 (Noise-Difficulty):}
           $\cG$ does not attempt to break Theorem~3's indistinguishability.
           Instead, it adds a \emph{geometric} detection layer orthogonal to the
-          semantic indistinguishability proven by T3. 与T3的关系：
-          T3断言语义层面不可区分，G在几何层面检测异常——两者正交互补。
-    
+          semantic indistinguishability proven by T3. T3: 
     \item \textbf{With Theorem 5 (Active Learning):}
           Coverage penalty $\lambda \log p(x)$ modifies the Cercis-Gain function
           $\Gamma(x)$ used in T5's optimal sampling distribution. The modified
@@ -1002,24 +850,20 @@ guarantees:
           \]
           which naturally avoids over-sampled regions, improving T5's diversity
           guarantees.
-
     \item \textbf{With Theorem 7 (Cross-Domain):}
           The Situs-Lipschitz constraint~\eqref{eq:cercis_lipschitz} provides
           an additional bound on cross-domain transfer fidelity. If forged states
           violate the constraint in the source domain, T7's partition preservation
           guarantee ensures that the violation propagates detectably to target domains.
-
     \item \textbf{With AR-Theorem (Adversarial Robustness):}
           The gradient consistency check (A3 defense) aligns with AR's detectability
           framework. Jointly, they cover both ``adversarial artifacts'' (AR) and
           ``adversarial evaluations'' (this work).
-
     \item \textbf{With FA-Theorem (Federated Audit):}
           Audit rotation naturally extends to federated settings, where rotation
           across nodes replaces rotation across experts. The independence monitor
           can be implemented via secure multi-party computation using FA's ZK
           construction sketch.
-
     \item \textbf{With HC-Theorem (Human-AI Audit):}
           The independence monitor serves as the ``AI-side'' anomaly detector
           in the human-AI collaborative framework. When AI detects anomalies,
@@ -1027,18 +871,13 @@ guarantees:
           targeted investigation.
   \end{enumerate}
 \end{theorem}
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Numerical Validation}
 \label{sec:numerical}
-
 \noindent
-\textbf{数值验证.} 我们通过模拟实验验证检测边界的Compactness。
-
+\textbf{.} Compactness.
 \subsection{Experimental Setup}
-
 We simulate three scenarios corresponding to A1, A2, and A3:
-
 \begin{itemize}
   \item \textbf{A1 Simulation.} Legitimate artifacts: $Q(x) \sim \text{Beta}(5,2)$,
         $N(x) \sim \text{Exp}(1)$, $\eta=0.5$. Inflated artifacts: $\tilde{Q}(x) = Q(x) + \Delta_Q$,
@@ -1049,7 +888,6 @@ We simulate three scenarios corresponding to A1, A2, and A3:
         $\kappa=10^{-3}$). Forged states inject random perturbations to $\nabla S$ breaking
         the zero-curl constraint.
 \end{itemize}
-
 \begin{table}[htbp]
 \centering
 \caption{Detection Power at $n=200$, $\alpha=0.05$}
@@ -1066,110 +904,68 @@ A3 (Curl)   & $\Delta_\tau=0.01$         & 195 & 0.87 & $\checkmark$ \\
 \bottomrule
 \end{tabular}
 \end{table}
-
 \begin{remark}
-  所有情况下，经验功效在理论 $n^*$ 处达到或超过标称的 $1-\beta=0.80$，
-  Proof检测边界的Compactness。在 $\Delta \to 0$ 的极限下，边界保守性增加
-  （样本量需求高于理论值），这是CLT近似在低信噪比下的预期行为。
+  ,  $n^*$  $1-\beta=0.80$, 
+  ProofCompactness. $\Delta \to 0$ , 
 \end{remark}
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Discussion}
 \label{sec:discussion}
-
 \subsection{Limitations}
-
 \noindent
-\textbf{局限性.}
+\textbf{.}
 \begin{enumerate}[label=(\roman*)]
-  \item \textbf{Situs流形旋度算子.} A3检测依赖Situs流形上的旋度算子 $\nabla \times$。
-        如CD-Theorem审阅报告所指出的，Situs流形目前仅提供度量结构，
-        Levi-Civita联络的存在性尚未Rigorous Proof。旋度检测在理论上是合理的，
-        但在工程实现上需要额外的几何假设。
-  
-  \item \textbf{Finite-sample calibration.} 检测边界的推导使用了渐近正态近似。
-        对于小样本场景（$n < 30$），需要精确的小样本分布（如基于排列检验）。
-  
-  \item \textbf{Adaptive adversaries.} 所有检测边界假设对手策略是 \emph{静态} 的。
-        自适应对手——根据检测结果调整操纵策略——可能绕过固定检测器。
-        这需要博弈论扩展（见下文）。
-  
-  \item \textbf{Coverage penalty $\lambda$ tuning.} 覆盖度惩罚参数 $\lambda$ 目前是
-        手动设定的。过大的 $\lambda$ 会过度抑制对流行制品的评估（抑制正面聚集效应）；
-        过小的 $\lambda$ 不足以阻止数据Inflation。
+  \item \textbf{Situs.} A3Situs $\nabla \times$.
+  \item \textbf{Finite-sample calibration.} .
+        （$n < 30$）, （）.
+  \item \textbf{Adaptive adversaries.}  \emph{} .
+  \item \textbf{Coverage penalty $\lambda$ tuning.}  $\lambda$ 
+        . $\lambda$ （）; 
+         $\lambda$ Inflation.
 \end{enumerate}
-
 \subsection{Future Directions}
-
 \noindent
-\textbf{未来方向.}
+\textbf{.}
 \begin{enumerate}[label=(\roman*)]
-  \item \textbf{Game-theoretic extension (Goodhart作为博弈均衡).}
-        将检测边界嵌入 Protocol Game (Theorem 6) 框架中，建模为
-        检测者-操纵者之间的不完全信息动态博弈。关键问题：
-        是否存在一个均衡，使得操纵者的最优策略是 \emph{不操纵}？
-  
+  \item \textbf{Game-theoretic extension (Goodhart).}
+         Protocol Game (Theorem 6) , 
+        ,  \emph{}？
   \item \textbf{Information-theoretic lower bounds.}
-        本工作中所有边界是 \emph{上界}（充分条件）。可以建立
-        信息论下界（必要条件）：在什么条件下，
-        \emph{任何} 检测器都无法区分操纵与合法评分？
-        这与Theorem 3和Theorem 7的信息论分析形成自然延续。
-  
+         \emph{}（）.
+        \emph{} ？
   \item \textbf{Empirical Goodhart audit of production systems.}
-        将本框架应用于真实世界的AI评估系统
-        （如LMSys Chatbot Arena、HELM benchmark），
-        测量实际评估中Goodhart退化的程度和速度。
-  
+        （LMSys Chatbot Arena, HELM benchmark）, 
   \item \textbf{Dynamic $\eta$ scheduling.}
-        Corollary~\ref{cor:eta_regulator} 提示 $\eta$ 可作为可调参数。
-        开发自适应 $\eta$-调度算法，根据实时操纵检测信号动态调整
-        新颖性-质量权衡，使系统始终运行在检测边界的最优点。
-  
-  \item \textbf{Situs同态性的构造性Proof.}
-        FA-Theorem 依赖 Situs 同态复合算子 $\oplus$ 的存在性。
-        如果 $\oplus$ 可以被构造性Proof（而非假设），A3的Status伪造检测
-        将获得更强的几何基础——因为 $\oplus$ 的存在性蕴含了 Situs流形
-        的Algebraic Structure，从而自然地定义了旋度算子。
+        Corollary~\ref{cor:eta_regulator}  $\eta$ .
+         $\eta$-, 
+  \item \textbf{SitusProof.}
+        FA-Theorem  Situs  $\oplus$ .
+         $\oplus$ Proof（）, A3Status
+        —— $\oplus$  Situs
+        Algebraic Structure, .
 \end{enumerate}
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Conclusion}
 \label{sec:conclusion}
-
 \noindent
 \textbf{Conclusion.}
-本文为SCXEquality Principle框架提供了Goodhart防御的形式化基础。主要成果包括：
-
 \begin{enumerate}[label=\textbf{(\arabic*)}, leftmargin=*]
-  \item 对三种典型操纵攻击（数据InflationA1、专家共谋A2、Status伪造A3）给出了严格的数学定义，
-        明确了每种攻击中对手的能力、知识和目标。
-  
-  \item 为每种攻击Proof了检测边界（Theorem~\ref{thm:a1_detect}--\ref{thm:a3_detect}），
-        量化了区分操纵Score与合法Score所需的最小样本复杂度。所有边界共享
-        $\Theta(1/\Delta^2)$ 标度律（Theorem~\ref{thm:frontier}）。
-  
-  \item 揭示了Cercis新颖性参数 $\eta$ 作为 \textbf{Goodhart调节器} 的角色
-        （Corollary~\ref{cor:eta_regulator}）：增大 $\eta$ 使数据Inflation更易检测，
-        但使共谋更难检测——存在一个最优 $\eta^*$ 平衡两种脆弱性。
-  
-  \item 提出三层防御架构：独立审计轮换（阻止共谋形成）、Status覆盖度惩罚（压制数据Inflation）、
-        多专家独立性检验（在线检测残余异常），每层附有形式化保证。
-  
-  \item Proof了Goodhart防御与现有SCX定理体系的可组合性（Theorem~\ref{thm:composition}），
-        确保防御措施不与已有理论结果冲突。
+  \item （InflationA1, A2, StatusA3）, 
+  \item Proof（Theorem~\ref{thm:a1_detect}--\ref{thm:a3_detect}）, 
+        $\Theta(1/\Delta^2)$ （Theorem~\ref{thm:frontier}）.
+  \item Cercis $\eta$  \textbf{Goodhart} 
+        （Corollary~\ref{cor:eta_regulator}）:  $\eta$ Inflation, 
+        —— $\eta^*$ .
+  \item : （）, Status（Inflation）, 
+  \item ProofGoodhartSCX（Theorem~\ref{thm:composition}）, 
 \end{enumerate}
-
 \medskip
 \noindent
-\textbf{Core洞察.} Goodhart's Law并非Cercis框架的致命弱点，而是其 \emph{可检测的}
-退化模式。因为Cercis Score的定义包含几何结构（Situs流形）而非仅仅是标量值，
-操纵行为在几何层面留下可检测的痕迹——梯度不Consistency、共谋引起的条件相关性、
-以及评估分布的异常集中。\textbf{度量即信息：当度量被操纵时，操纵行为本身
-产生新的信息，可用于检测操纵。} 这是Cercis框架对Goodhart困境的根本回应。
-
+\textbf{Core.} Goodhart's LawCercis,  \emph{}
+.\textbf{: , 
 \smallskip
 \noindent
-\textbf{Core洞察（英文）.} Goodhart's Law is not a fatal vulnerability of the Cercis
+\textbf{Core（）.} Goodhart's Law is not a fatal vulnerability of the Cercis
 framework, but rather its \emph{detectable} degradation mode. Because the Cercis Score
 is defined with geometric structure (the Situs manifold) rather than as a bare scalar,
 manipulation leaves detectable traces in the geometry---gradient inconsistencies,
@@ -1177,17 +973,14 @@ collusion-induced conditional correlations, and anomalous concentration of evalu
 density. \textbf{The measure is information: when the measure is manipulated, the act of
 manipulation itself generates new information that can be used to detect the manipulation.}
 This is the Cercis framework's fundamental response to the Goodhart dilemma.
-
 % ═══════════════════════════════════════════════════════════════════════
 % APPENDIX
 % ═══════════════════════════════════════════════════════════════════════
 \appendix
 \section{Proof Details and Supporting Lemmas}
 \label{app:proofs}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Auxiliary Lemmas}
-
 \begin{lemma}[Hoeffding's Inequality for Bounded Scores]
   \label{lem:hoeffding}
   Under Assumption~\ref{ass:bounded}, for any $\varepsilon > 0$:
@@ -1196,7 +989,6 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
     \leq 2\exp\left(-\frac{2n\varepsilon^2}{(1+\eta N_{\max})^2}\right).
   \]
 \end{lemma}
-
 \begin{lemma}[Fisher Z-Transformation Variance]
   \label{lem:fisher}
   Let $z(\rho) = \frac{1}{2}\ln\frac{1+\rho}{1-\rho}$. For i.i.d.\ bivariate normal
@@ -1205,7 +997,6 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
     \sqrt{n-3}(z(\hat{\rho}_n) - z(\rho)) \xrightarrow{d} \cN(0,1).
   \]
 \end{lemma}
-
 \begin{lemma}[CUSUM Average Run Length]
   \label{lem:cusum}
   For a CUSUM detector with threshold $h$ and drift parameter $\gamma$, under
@@ -1215,13 +1006,10 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
     \bbE_{H_1}[\text{ARL}] &\approx \frac{h}{D_{\text{KL}}(H_1 \| H_0)}.
   \end{align*}
 \end{lemma}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Proof of Theorem~\ref{thm:frontier} (Unified Frontier)}
-
 \begin{proof}[Detailed proof of Theorem~\ref{thm:frontier}]
   We prove the three $\eta$-dependence claims separately.
-
   \textbf{Claim (i): A1 detection improves with $\eta$.}
   Under A1, the adversary's score inflation decomposes as:
   \[
@@ -1241,7 +1029,6 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
     \cdot (z_{1-\alpha/2} + z_{1-\beta})^2 < 0,
   \]
   for $\Delta_N > 0$. Hence $n_{\text{A1}}^*$ decreases with $\eta$.
-
   \textbf{Claim (ii): A2 detection degrades with $\eta$.}
   The score variance under honesty is:
   \[
@@ -1256,7 +1043,6 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
   harder to detect. The Fisher $z$-score $z(\rho_{\text{anom}}) \approx \rho_{\text{anom}}$
   for small $\rho_{\text{anom}}$, so $n_{\text{A2}}^* \approx \text{const} / \rho_{\text{anom}}^2
   = O(\eta^4)$ in the high-$\eta$ regime.
-
   \textbf{Claim (iii): A3 detection is $\eta$-independent.}
   The curl statistic $\tau(x) = \|\nabla \times \nabla S(x)\|^2$ depends on the
   \emph{geometric} structure of $S$ on the Situs manifold, not on its magnitude.
@@ -1270,10 +1056,8 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
   satisfy $\nabla \times \nabla \tilde{S} = 0$, which is independent of $\eta$.
   \hfill $\square$
 \end{proof}
-
 % ───────────────────────────────────────────────────────────────────────
 \subsection{Proof of the $\delta_{\text{crit}}$ Phase Transition}
-
 \begin{proof}[Derivation of $\delta_{\text{crit}}$]
   From Theorem~\ref{thm:a2_detect}, the CUSUM detection delay is:
   \[
@@ -1294,13 +1078,10 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
   practically negligible for score manipulation purposes.
   \hfill $\square$
 \end{proof}
-
 % ═══════════════════════════════════════════════════════════════════════
 \section{Extended Countermeasure Analysis}
 \label{app:extended}
-
 \subsection{Robustness to Adaptive Adversaries}
-
 \begin{proposition}[Adaptive Adversary Bound]
   \label{prop:adaptive}
   Consider an adaptive adversary who observes the detector's output and adjusts
@@ -1312,7 +1093,6 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
     \bbE[\text{delay}] \geq \Omega\left(\frac{B}{T}\right).
   \]
 \end{proposition}
-
 \begin{proof}[Proof sketch]
   The adversary can distribute the manipulation budget uniformly across $T$ steps,
   setting $\Delta_t = \sqrt{B/T}$ at each step. Under this strategy, the per-step
@@ -1321,9 +1101,7 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
   which exceeds the detection threshold $|\log \alpha|$ only when
   $n \geq 2T\sigma^2|\log \alpha|/B$, yielding the claimed lower bound. \hfill $\square$
 \end{proof}
-
 \subsection{Information-Theoretic Lower Bound (Conjecture)}
-
 \begin{conjecture}[Goodhart Impossibility Threshold]
   \label{conj:impossible}
   There exists a universal constant $c > 0$ such that, for any Cercis-based
@@ -1332,17 +1110,12 @@ This is the Cercis framework's fundamental response to the Goodhart dilemma.
   can distinguish manipulated artifacts from legitimate ones with power
   exceeding $1/2 + o(1)$.
 \end{conjecture}
-
 \noindent
-\textbf{猜想解读.} 此猜想如果成立，将确立SCX框架中Goodhart防御的\textbf{绝对极限}：
-存在一个由Cercis参数 $\eta$ 和评分噪声 $\sigma_S$ 决定的不可检测区域。
-任何落入此区域的操纵在信息论意义上与随机波动不可区分。
-这将是Theorem~3（噪声-难度不可区分性）在操纵检测领域的对偶定理。
-
+\textbf{.} , SCXGoodhart\textbf{}: 
+Cercis $\eta$  $\sigma_S$ .
 % ═══════════════════════════════════════════════════════════════════════
 \section{Glossary of Notation}
 \label{app:notation}
-
 \begin{center}
 \begin{tabular}{@{}ll@{}}
 \toprule
@@ -1364,72 +1137,57 @@ $\cR_{\text{detect}}$ & Detection possibility region \\
 \bottomrule
 \end{tabular}
 \end{center}
-
 % ═══════════════════════════════════════════════════════════════════════
 % BIBLIOGRAPHY
 % ═══════════════════════════════════════════════════════════════════════
 \begin{thebibliography}{99}
-
 \bibitem{goodhart1975problems}
 C.~A.~E.~Goodhart.
 \newblock {\em Problems of Monetary Management: The UK Experience}.
 \newblock In {\em Papers in Monetary Economics}, Reserve Bank of Australia, 1975.
-
 \bibitem{strathern1997improving}
 M.~Strathern.
 \newblock ``Improving ratings'': audit in the British University system.
 \newblock {\em European Review}, 5(3):305--321, 1997.
-
 \bibitem{manheim2019categorizing}
 D.~Manheim and S.~Garrabrant.
 \newblock Categorizing variants of Goodhart's Law.
 \newblock arXiv:1803.04585, 2019.
-
 \bibitem{karwowski2024goodhart}
 J.~Karwowski, O.~Hagiwara, and T.~Hashimoto.
 \newblock Goodhart's Law in Reinforcement Learning.
 \newblock In {\em ICLR}, 2024.
-
 \bibitem{zhuang2023goodhart}
 S.~Zhuang and D.~Hadfield-Menell.
 \newblock Consequences of Misaligned AI.
 \newblock In {\em NeurIPS}, 2023.
-
 \bibitem{krakovna2020specification}
 V.~Krakovna, J.~Uesato, V.~Mikulik, et~al.
 \newblock Specification gaming: the flip side of AI ingenuity.
 \newblock {\em DeepMind Blog}, 2020.
-
 \bibitem{scx2025}
 SCX Research Collective.
 \newblock SCX: An Egalitarian Framework for Multi-Perspective Evaluation.
 \newblock Technical Report, 2025.
-
 \bibitem{page1954continuous}
 E.~S.~Page.
 \newblock Continuous inspection schemes.
 \newblock {\em Biometrika}, 41(1/2):100--115, 1954.
-
 \bibitem{lord1955range}
 F.~M.~Lord.
 \newblock Sampling fluctuations resulting from the sampling of test items.
 \newblock {\em Psychometrika}, 20(1):1--22, 1955.
-
 \bibitem{lehmann2006testing}
 E.~L.~Lehmann and J.~P.~Romano.
 \newblock {\em Testing Statistical Hypotheses}, 3rd ed.
 \newblock Springer, 2006.
-
 \bibitem{cover2006elements}
 T.~M.~Cover and J.~A.~Thomas.
 \newblock {\em Elements of Information Theory}, 2nd ed.
 \newblock Wiley, 2006.
-
 \bibitem{ambrosio2008gradient}
 L.~Ambrosio, N.~Gigli, and G.~Savar\'e.
 \newblock {\em Gradient Flows in Metric Spaces and in the Space of Probability Measures}.
 \newblock Birkh\"auser, 2008.
-
 \end{thebibliography}
-
 \end{document}

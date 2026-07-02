@@ -5,9 +5,7 @@
 %  Target: Journal of Climate / GMD
 %  SCX, June 2026
 % ===========================================================================
-
-\documentclass[11pt,a4paper]{ctexart}
-
+\documentclass[11pt,a4paper]{article}
 % ─── Packages ───────────────────────────────────────────────────────────
 \usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{bm}
@@ -20,7 +18,6 @@
 \usepackage{xcolor}
 \usepackage{setspace}
 \onehalfspacing
-
 % ─── Theorem Environments ──────────────────────────────────────────────
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}[section]
@@ -28,16 +25,13 @@
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{conjecture}[theorem]{Conjecture}
-
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{assumption}[theorem]{Assumption}
-
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{example}[theorem]{Example}
 \newtheorem{openproblem}[theorem]{Open Problem}
-
 % ─── Rigor Status Labels ────────────────────────────────────────────────
 \definecolor{rigorFull}{RGB}{0,100,0}
 \definecolor{rigorPartial}{RGB}{180,120,0}
@@ -45,7 +39,6 @@
 \newcommand{\rigorFull}{{\color{rigorFull}$\blacksquare$\,\textbf{[Rigor: FULL $\star\star\star$]}}}
 \newcommand{\rigorPartial}{{\color{rigorPartial}$\blacksquare$\,\textbf{[Rigor: PARTIAL $\star\star\;$]}}}
 \newcommand{\rigorSketch}{{\color{rigorSketch}$\blacksquare$\,\textbf{[Rigor: SKETCH $\star\;\,$]}}}
-
 % ─── Math Operators ─────────────────────────────────────────────────────
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -56,7 +49,6 @@
 \DeclareMathOperator{\Cov}{Cov}
 \DeclareMathOperator{\RMSE}{RMSE}
 \DeclareMathOperator{\Corr}{Corr}
-
 % ─── Custom Commands ────────────────────────────────────────────────────
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\N}{\mathbb{N}}
@@ -74,20 +66,16 @@
 \newcommand{\Yajie}{\textsc{Yajie}}
 \newcommand{\Spring}{\textsc{Spring}}
 \newcommand{\Cercis}{\textsc{Cercis}}
-
 % ===========================================================================
 % TITLE
 % ===========================================================================
 \title{\textbf{SCX-Audited Climate Modeling: Certified Uncertainty Quantification\\
        in Coupled Earth System Prediction}\\[4pt]
-       {\large —— SCX审计气候建模：耦合地球系统预测中的可认证不确定性量化 ——}}
-
+       {\large —— SCX:}}
 \author{SCX}
 \date{June 30, 2026}
-
 \begin{document}
 \maketitle
-
 % ===========================================================================
 % ABSTRACT
 % ===========================================================================
@@ -111,7 +99,6 @@ $S = Q + \eta N$, where $Q$ is multi-model hindcast skill and $N$ is
 novelty-weighted exploration bonus, provides a principled ranking of climate
 projections that balances fidelity to observations against the epistemic value
 of unprecedented regimes (Theorem~3, \rigorPartial).
-
 We operationalize these results through four SCX components: \Yajie{} consensus
 for multi-model ensemble auditing, \Spring{} gating for detecting climate regime
 shifts (tipping points), \Situs{} encoding for spherical geometry of climate
@@ -122,363 +109,7 @@ characterize the conditions under which each guarantee fails and identify the
 precise additional information required to restore certified bounds. All proofs
 are provided with rigor-level annotations. The framework does not predict
 climate---it certifies the epistemic status of predictions already made.
-
 \bigskip
-\noindent\textbf{中文Abstract。}
-Earth System Models（ESM）是预测Anthropogenic Forcing下Future Climate的主要工具，但其Uncertainty Estimation依
-赖于Informal Conventions而非Mathematical Guarantees。本文将Coupled Climate System形式化为SCX框架下的多专家预测
-问题，并Proof三个基本定理：（1）\textbf{Systematic Bias Detection}：对于$M$个Structurally Independent的ESM，
-Missing超过Gap$\Delta$的系统偏差的概率按$\exp(-2M_{\mathrm{eff}}\Delta^2)$Decays
-（定理1，\rigorFull）；（2）\textbf{Attribution Unidentifiability}：当多个ESM在Regional Climate Response（如北极
-放大效应）上存在Disagreement时，在Mathematically Impossible在不Declare Explicit Structural Assumptions的情况下将Disagreement归因
-于任何特定的Sub-Grid Parameterization Error（定理2，\rigorFull）；（3）\textbf{Cercis评分最优性}：
-Composite Quality Metric$S = Q + \eta N$，其中$Q$为Multi-Model Hindcast Skill，$N$为新意加权探索奖
-励，提供了一种Principled Climate Prediction Ranking Method，平衡Fidelity to Observations与前所未有Status的认
-识价值（定理3，\rigorPartial）。
-
-\textbf{Keywords:} Earth System Models, uncertainty quantification, multi-model ensemble,
-CMIP6, SCX auditing, climate sensitivity, tipping points, spherical geometry
-\end{abstract}
-
-\tableofcontents
-
-% ===========================================================================
-% SECTION 1: INTRODUCTION
-% ===========================================================================
-\section{Introduction}
-
-\subsection{The Certification Gap in Climate Prediction}
-
-Coupled Earth System Models (ESMs) are the computational backbone of climate
-science. Models such as CESM2~\cite{danabasoglu2020}, NorESM2~\cite{seland2020},
-MIROC6~\cite{tatebe2019}, and HadGEM3~\cite{kuhlbrodt2018} numerically integrate
-the primitive equations of atmospheric and oceanic dynamics coupled to
-biogeochemical cycles, ice sheets, and land-surface processes. Their projections
-inform the IPCC Assessment Reports~\cite{ipcc2021} and underpin trillions of
-dollars of infrastructure and policy decisions.
-
-Yet the uncertainty quantification (UQ) in these projections remains
-mathematically informal. The CMIP6 multi-model ensemble~\cite{eyring2016} is
-interpreted through conventions---equally weighted averaging, ``model democracy,''
-and qualitative assessments of ``robustness''---that lack rigorous certification.
-The following gap is the central concern of this paper:
-
-\begin{quote}
-\textbf{The Certification Gap.} No existing framework provides a \emph{mathematical
-guarantee} that the ensemble of climate projections bounds the true climate
-trajectory with a specified probability, \emph{nor} a proof of why such a
-guarantee is impossible without additional assumptions.
-\end{quote}
-
-We address this gap by applying the SCX auditing framework~\cite{xi2025scx} to
-the coupled climate prediction problem. The approach is \emph{not} to build a
-better climate model, but to certify the epistemic status of predictions from
-existing models. This paper provides the mathematical foundations; companion work
-treats the computational implementation.
-
-\subsection{Climate as a Multi-Expert System}
-
-The mapping from the SCX framework to climate modeling is natural and structural.
-Table~\ref{tab:mapping} summarizes the correspondence.
-
-\begin{table}[htbp]
-\centering
-\caption{SCX--Climate Modeling Correspondence}
-\label{tab:mapping}
-\begin{tabular}{@{}lll@{}}
-\toprule
-\textbf{SCX Concept} & \textbf{Climate Modeling Analog} & \textbf{Example} \\
-\midrule
-Expert $f_m$        & Earth System Model           & CESM2, NorESM2, MIROC6 \\
-State $s \in \Sstates$ & Climate regime             & Pre-industrial, glacial, SSP5-8.5 \\
-Label $y$           & Observable climate variable  & GMST, precipitation, sea ice extent \\
-Noise $\eta$        & Systematic model bias        & Cloud feedback bias, ocean mixing error \\
-Consensus $C(x)$    & Multi-model agreement score   & Fraction of ESMs within $\tau$ of observation \\
-Sub-expert          & Sub-grid parameterization     & Cloud scheme, convection scheme, albedo \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Critically, each ESM contains \emph{sub-grid parameterizations}---for cloud
-microphysics, moist convection, boundary layer turbulence, sea ice rheology,
-and terrestrial carbon uptake---that function as ``experts within experts.''
-The SCX framework's treatment of nested expertise~\cite{taxonomic_nn} provides the
-machinery to analyze this hierarchical structure.
-
-\subsection{Related Work}
-
-Climate model UQ has developed along several lines. Bayesian model
-averaging~\cite{hoeting1999} weights models by posterior probability. Emergent
-constraints~\cite{hall2019} use observable relationships to narrow distributions
-of climate sensitivity. Statistical emulation~\cite{castruccio2019} builds Gaussian
-process surrogates over the model parameter space. Multi-model
-ensembles~\cite{tebaldi2005} are evaluated through the ``REA'' (Reliability
-Ensemble Averaging) framework.
-
-Our work differs fundamentally from all of these. We do not estimate climate
-sensitivity, weight models, or produce a single ``best'' projection. We instead
-prove \emph{what can and cannot be certified} about any ensemble of climate
-models, under explicitly stated assumptions. The theorems are epistemological,
-not climatological.
-
-% ===========================================================================
-% SECTION 2: MATHEMATICAL FORMALIZATION
-% ===========================================================================
-\section{Mathematical Formalization of Coupled Climate Prediction}
-
-\subsection{Climate State as a Dynamical System}
-
-We model the Earth system as a coupled system of ordinary and partial
-differential equations evolving a state vector
-$\mathbf{X}(t) \in \R^{d}$ on a spatial domain $\Omega \subset \R^3$ (the
-atmosphere--ocean--land--ice column):
-
-\begin{equation}\label{eq:climate-pde}
-\frac{\partial \mathbf{X}}{\partial t}
-= \mathcal{L}(\mathbf{X}, \nabla \mathbf{X}, \nabla^2 \mathbf{X}, \dots)
-+ \mathcal{F}_{\mathrm{forcing}}(t) + \mathcal{R}(\mathbf{X}),
-\end{equation}
-
-where:
-\begin{itemize}[nosep]
-  \item $\mathcal{L}$ is the resolved-scale dynamics operator (primitive
-    equations of atmospheric and oceanic motion);
-  \item $\mathcal{F}_{\mathrm{forcing}}(t)$ is the external radiative forcing
-    (solar, volcanic, anthropogenic GHGs);
-  \item $\mathcal{R}(\mathbf{X})$ represents sub-grid scale processes requiring
-    parameterization: cloud microphysics, convection, turbulence, etc.
-\end{itemize}
-
-For a given ESM $m$, the system is discretized at resolution $\Delta x_m$ and
-integrated with parameterization scheme $\mathcal{R}_m$:
-
-\begin{equation}\label{eq:esm-discrete}
-\mathbf{X}_{m}(t+\Delta t) = \Phi_m(\mathbf{X}_m(t); \bm{\theta}_m, \mathcal{R}_m),
-\end{equation}
-
-where $\bm{\theta}_m$ are tunable parameters and $\Phi_m$ is the discrete
-propagator. The ESM ensemble is
-$\mathcal{E} = \{(\Phi_m, \bm{\theta}_m, \mathcal{R}_m)\}_{m=1}^M$.
-
-\subsection{Climate Variables as Prediction Targets}
-
-For a climate variable of interest $Y \in \mathcal{Y}$ (e.g., global mean surface
-temperature anomaly $T_{\mathrm{GMST}}$, Arctic sea ice extent $S_{\mathrm{Arctic}}$,
-regional precipitation $P(r)$), we define the observation operator
-$g: \R^d \to \mathcal{Y}$ that maps the full state to the target quantity:
-
-\begin{equation}\label{eq:observation-operator}
-Y(t) = g(\mathbf{X}(t)) + \varepsilon_{\mathrm{obs}}(t),
-\end{equation}
-
-where $\varepsilon_{\mathrm{obs}}(t) \sim \mathcal{N}(0, \sigma_{\mathrm{obs}}^2)$
-represents observational uncertainty. Each ESM $m$ produces a prediction
-$f_m(\mathbf{X}_0, t) = g(\Phi_m^t(\mathbf{X}_0))$, where $\Phi_m^t$ denotes
-$t$-step integration from initial condition $\mathbf{X}_0$.
-
-\subsection{Sub-grid Parameterizations as Nested Experts}
-
-\rigorFull
-
-The total model error for ESM $m$ decomposes as:
-
-\begin{equation}\label{eq:error-decomp}
-e_m(\mathbf{x}, t) = e_m^{\mathrm{dyn}}(\mathbf{x}, t)
-+ \sum_{k=1}^{K_m} e_{m,k}^{\mathrm{param}}(\mathbf{x}, t)
-+ e_m^{\mathrm{res}}(\mathbf{x}, t),
-\end{equation}
-
-where $e_m^{\mathrm{dyn}}$ is resolved-scale dynamical error (discretization,
-numerical diffusion), $e_{m,k}^{\mathrm{param}}$ is the error from the $k$-th
-sub-grid parameterization scheme (clouds $k=1$, convection $k=2$, boundary layer
-$k=3$, etc.), and $e_m^{\mathrm{res}}$ is residual interaction error.
-
-\begin{definition}[Nested Expert Consensus]
-For ESM $m$, the internal consensus on sub-grid process $k$ at climate state $s$
-is:
-\begin{equation}
-C_{m,k}(s) = 1 - \frac{1}{|\mathcal{T}_s|}\sum_{t \in \mathcal{T}_s}
-\ind{ \ell(g(\mathbf{X}_m(t)), Y_{\mathrm{reanalysis}}(t)) > \tau_k },
-\end{equation}
-where $\mathcal{T}_s$ is the set of time indices in climate state $s$,
-$Y_{\mathrm{reanalysis}}$ is the reanalysis product used as reference, and
-$\tau_k$ is a process-specific tolerance.
-\end{definition}
-
-% ===========================================================================
-% SECTION 3: ASSUMPTIONS
-% ===========================================================================
-\section{Structural Assumptions for Certified Climate Auditing}
-
-\rigorFull
-
-The following assumptions are the \textbf{minimal sufficient set} required for
-the theorems that follow. Each is stated explicitly, motivated physically, and
-accompanied by the consequences of its violation.
-
-\begin{assumption}[C1: Independent Model Development]
-\label{asm:C1}
-The $M$ ESMs in the ensemble are developed by structurally independent research
-groups, with disjoint code bases, discretization schemes, and sub-grid
-parameterizations. Formally, the model outputs satisfy
-$\mathbf{X}_m(t) \indep \mathbf{X}_{m'}(t) \mid \mathbf{X}_0, \mathcal{F}(t)$
-for $m \neq m'$, where the conditioning is on the shared initial condition and
-forcing history.
-\end{assumption}
-
-\begin{remark}
-This is the climate analog of SCX Assumption A1 (disjoint training). Violated
-when models share dynamical cores (e.g., CESM2 and NorESM2 share the Community
-Atmosphere Model). In such cases, the effective number of independent models
-$M_{\mathrm{eff}} < M$, computed in \S\ref{sec:yajie-consensus}.
-\end{remark}
-
-\begin{assumption}[C2: Conditional Independence of Residual Errors]
-\label{asm:C2}
-For any climate state $s$ and any target variable $Y$, the residual errors
-$e_m^{\mathrm{res}}$ of independent models are conditionally independent:
-$\Cov(e_m^{\mathrm{res}}, e_{m'}^{\mathrm{res}} \mid s) = 0$ for $m \neq m'$.
-\end{assumption}
-
-\begin{assumption}[C3: Bounded Observational Error]
-\label{asm:C3}
-The loss function $\ell(f_m, Y_{\mathrm{obs}})$ is bounded:
-$\ell(\cdot, \cdot) \in [0, B]$ with $B < \infty$. For climate variables, this is
-satisfied by using a truncated RMSE or a bounded skill score (e.g., the
-anomaly correlation coefficient mapped to $[0, B]$ via the transformation
-$B \cdot (1 - \mathrm{ACC})/2$).
-\end{assumption}
-
-\begin{assumption}[C4: State-Conditioned Bias Homogeneity]
-\label{asm:C4}
-Within each climate state $s \in \Sstates$, the expected multi-model error on
-observationally well-sampled periods satisfies a state-level bound:
-\begin{equation}
-\sup_{\text{hindcast period } t \in \mathcal{T}_s^{\mathrm{hind}}}
-\E[C(\mathbf{X}(t)) \mid s] \leq \mu_s,
-\end{equation}
-where $C(\mathbf{X})$ is the consensus score (fraction of ESMs exceeding error
-threshold) and $\mu_s$ is a state-specific constant estimated from the
-historical hindcast record.
-\end{assumption}
-
-\begin{assumption}[C5: Balanced Multi-Model Error Distribution]
-\label{asm:C5}
-The probability that ESMs err in the same directional sense (all warm-biased
-or all cold-biased) is bounded. There exists $C_{\mathrm{bal}} \geq 1$ such that
-the maximum concentration of model errors in any single error direction satisfies:
-\begin{equation}
-\max_{d \in \mathcal{E}_{\mathrm{dir}}} \Pbb(\text{all ESMs err in direction } d \mid s)
-\leq C_{\mathrm{bal}} \cdot \frac{\mu_s}{|\mathcal{E}_{\mathrm{dir}}|},
-\end{equation}
-where $\mathcal{E}_{\mathrm{dir}}$ is the set of possible error directions
-(e.g., $\{\text{warm}, \text{cold}, \text{wet}, \text{dry}\}$).
-\end{assumption}
-
-\begin{assumption}[C6: Hindcast Period Stationarity]
-\label{asm:C6}
-The relationship between model error and climate state, as estimated from the
-hindcast period (typically 1850--2014), extends to the projection period
-(2015--2100) \emph{provided} the climate state $s$ has been observed in the
-hindcast record. For novel climate states $s \notin \Sstates^{\mathrm{hind}}$,
-this assumption does \emph{not} apply (see Assumption C7).
-\end{assumption}
-
-\begin{assumption}[C7: Regime Separability for Novel States]
-\label{asm:C7}
-There exists a discriminator $D: \X \to \{0,1\}$ that can distinguish climate
-states observed in the hindcast record ($D=0$) from novel, unprecedented
-states ($D=1$), with error bounded by $\varepsilon_D$. This is the \Spring{}
-gating condition (Section~\ref{sec:spring-gating}).
-\end{assumption}
-
-\begin{assumption}[C8: Spherical Geometry Preservation]
-\label{asm:C8}
-Climate fields on the sphere $S^2$ admit a representation in which
-geodesic distance in physical space is monotonically related to similarity in
-error structure. Formally, for spatial locations $p, q \in S^2$ and ESM errors
-$e(p), e(q)$:
-\begin{equation}
-\Corr(e(p), e(q)) \geq \kappa \cdot \exp(-\alpha \cdot d_{S^2}(p, q)),
-\end{equation}
-where $d_{S^2}$ is the great-circle distance and $\kappa, \alpha > 0$ are
-empirically determined constants. This assumption enables \Situs{} encoding
-(Section~\ref{sec:situs-climate}).
-\end{assumption}
-
-\begin{assumption}[C9: Forcing Scenario Well-Posedness]
-\label{asm:C9}
-For each SSP scenario $\mathcal{F}(t)$ under consideration, the forcing
-trajectory is sufficiently smooth and bounded: $\|\mathcal{F}\|_{\infty} \leq F_{\max}$
-and $\|\dot{\mathcal{F}}\|_{\infty} \leq \dot{F}_{\max}$, ensuring that the
-coupled ODE/PDE system~\eqref{eq:climate-pde} admits unique solutions on
-$[t_0, t_{\mathrm{end}}]$ for all ESMs in the ensemble.
-\end{assumption}
-
-\begin{assumption}[C10: Paleoclimate Constraint Validity]
-\label{asm:C10}
-Paleoclimate proxy reconstructions (LGM, mid-Pliocene, etc.) provide
-state-level constraints on ESM performance for climate states substantially
-different from the instrumental period. The relation between proxy uncertainty
-$\sigma_{\mathrm{proxy}}$ and ESM error tolerance $\tau$ satisfies
-$\sigma_{\mathrm{proxy}} < \tau / 2$, ensuring that the observational constraint
-is tighter than the detection threshold.
-\end{assumption}
-
-% ===========================================================================
-% SECTION 4: THEOREM 1 — SYSTEMATIC BIAS DETECTION
-% ===========================================================================
-\section{Theorem 1: Yajie Consensus for Systematic Bias Detection}
-\label{sec:yajie-consensus}
-
-\rigorFull
-
-\subsection{Statement}
-
-\begin{theorem}[Systematic Bias Detection Guarantee —— Systematic Bias Detection定理]
-\label{thm:bias-detection}
-Let Assumptions C1--C6 hold. Let $M$ structurally independent ESMs produce
-predictions $\{f_m(\mathbf{x}, t)\}_{m=1}^M$ for climate variable $Y$ at state
-$s$. Define the consensus score:
-\begin{equation}
-C(\mathbf{x}) = \frac{1}{M}\sum_{m=1}^M \ind{\ell(f_m(\mathbf{x}), Y_{\mathrm{obs}}) > \tau}.
-\end{equation}
-
-Let $\rho_s = \Pbb(\mathbf{X} \in s)$ be the climate state probability,
-$\mu_s$ the state-level clean error bound (Assumption C4), and define the
-detection gap $\Delta_s(\theta) = \min(\theta - \mu_s,\; 1 - C_{\mathrm{bal}}\frac{\mu_s}{|\mathcal{E}_{\mathrm{dir}}|} - \theta)$
-for threshold $\theta$. Let $M_{\mathrm{eff}} = M / (1 + (M-1)\bar{\rho})$
-be the effective number of independent models, where $\bar{\rho}$ is the mean
-pairwise correlation of residual errors across models.
-
-Then the probability that a systematic model bias exceeding gap $\Delta$ is
-\emph{not} detected by the SCX auditing procedure satisfies:
-
-\begin{equation}\label{eq:thm1-main}
-\boxed{\;
-\Pbb(\text{miss systematic bias} > \Delta \mid s)
-\leq \sum_{s \in \Sstates} \rho_s \cdot
-\exp\!\bigl(-2M_{\mathrm{eff}} \Delta_s^2\bigr)
-\;}
-\end{equation}
-
-Equivalently, the F1 score of the bias detection procedure satisfies:
-
-\begin{equation}\label{eq:thm1-f1}
-\mathrm{F1}_{\mathrm{SCX}} \geq 1 - \frac{1}{\eta_{\mathrm{bias}}}
-\sum_{s \in \Sstates} \rho_s \cdot \exp\!\bigl(-2M_{\mathrm{eff}} \Delta_s^2\bigr),
-\end{equation}
-
-where $\eta_{\mathrm{bias}}$ is the fraction of climate variable--state pairs
-affected by systematic bias.
-\end{theorem}
-
-\subsection{Proof of Theorem 1}
-
-\begin{proof}
-The proof follows the same structure as the SCX noise detection theorem
-(Theorem~1 in~\cite{xi2025scx}), adapted to the climate ensemble setting.
-
 \medskip\noindent\textbf{Step 1: Effective independence.}
 By Assumption C1, the ESMs are developed independently. However, shared
 components (dynamical cores, forcing datasets) introduce correlation.
@@ -491,7 +122,6 @@ M_{\mathrm{eff}} = \frac{M}{1 + (M-1)\bar{\rho}}.
 \end{equation}
 When $\bar{\rho} = 0$, $M_{\mathrm{eff}} = M$; when $\bar{\rho} \to 1$,
 $M_{\mathrm{eff}} \to 1$, reflecting total redundancy.
-
 \medskip\noindent\textbf{Step 2: Mean separation.}
 For a climate state $s$ where models are unbiased, the expected consensus score
 is bounded by $\mu_s$ (Assumption C4):
@@ -507,23 +137,19 @@ and the analog of Lemma~1 in~\cite{xi2025scx}:
 \end{equation}
 The separation gap exists whenever
 $\mu_s < |\mathcal{E}_{\mathrm{dir}}| / (|\mathcal{E}_{\mathrm{dir}}| + C_{\mathrm{bal}})$.
-
 \medskip\noindent\textbf{Step 3: Concentration.}
 The consensus score is the mean of $M_{\mathrm{eff}}$ conditionally independent
 (indicator) random variables, each bounded in $[0,1]$. By Hoeffding's inequality:
-
 \begin{align}
 \Pbb(C(\mathbf{X}) > \theta \mid \text{unbiased}, s)
 &\leq \exp\!\bigl(-2M_{\mathrm{eff}}(\theta - \mu_s)^2\bigr), \label{eq:hoeffding-fpr} \\
 \Pbb(C(\mathbf{X}) \leq \theta \mid \text{biased}, s)
 &\leq \exp\!\Bigl(-2M_{\mathrm{eff}}\bigl(1 - C_{\mathrm{bal}}\frac{\mu_s}{|\mathcal{E}_{\mathrm{dir}}|} - \theta\bigr)^2\Bigr). \label{eq:hoeffding-fnr}
 \end{align}
-
 \medskip\noindent\textbf{Step 4: F1 aggregation.}
 Let the detection rule be $R(\mathbf{x}) = \ind{C(\mathbf{x}) > \theta}$.
 The F1 score aggregates the false positive rate (FPR) from~\eqref{eq:hoeffding-fpr}
 and false negative rate (FNR) from~\eqref{eq:hoeffding-fnr} across states:
-
 \begin{align}
 \mathrm{F1} &= \frac{2 \cdot \mathrm{TP}}{2 \cdot \mathrm{TP} + \mathrm{FP} + \mathrm{FN}} \\
 &\geq 1 - \frac{1}{\eta_{\mathrm{bias}}}\sum_{s} \rho_s
@@ -533,19 +159,15 @@ and false negative rate (FNR) from~\eqref{eq:hoeffding-fnr} across states:
 &\geq 1 - \frac{1}{\eta_{\mathrm{bias}}}\sum_{s} \rho_s
 \exp(-2M_{\mathrm{eff}}\Delta_s^2),
 \end{align}
-
 where the last inequality uses the definition
 $\Delta_s = \min(\theta - \mu_s,\; 1 - C_{\mathrm{bal}}\frac{\mu_s}{|\mathcal{E}_{\mathrm{dir}}|} - \theta)$
 and the fact that both exponential terms are bounded by
 $\exp(-2M_{\mathrm{eff}}\Delta_s^2)$. This establishes~\eqref{eq:thm1-f1}.
-
 The miss probability bound~\eqref{eq:thm1-main} follows from the same
 concentration argument applied to the event
 $\{\exists s: C(\mathbf{X}) \leq \theta \mid \text{bias exists in } s\}$.
 \end{proof}
-
 \subsection{Corollaries}
-
 \begin{corollary}[Asymptotic Perfection]
 \label{cor:asymptotic-climate}
 As $M_{\mathrm{eff}} \to \infty$, for all states satisfying
@@ -556,7 +178,6 @@ $\mu_s < |\mathcal{E}_{\mathrm{dir}}| / (|\mathcal{E}_{\mathrm{dir}}| + C_{\math
 \end{equation}
 where $\Delta_{\min} = \min_s \Delta_s$.
 \end{corollary}
-
 \begin{corollary}[CMIP6 Numerical Illustration]
 \label{cor:cmip6-numerical}
 For the CMIP6 ensemble, $M \approx 20$--$40$ models depending on the variable.
@@ -574,23 +195,18 @@ ensemble and is \emph{empirically honest}---the framework does not overpromise.
 Improving $M_{\mathrm{eff}}$ through model diversity initiatives directly
 improves this guarantee.
 \end{corollary}
-
 % ===========================================================================
 % SECTION 5: THEOREM 2 — ATTRIBUTIONAL UNIDENTIFIABILITY
 % ===========================================================================
 \section{Theorem 2: Attributional Unidentifiability in Climate Disagreement}
 \label{sec:unidentifiability}
-
 \rigorFull
-
 \subsection{Motivation: The Arctic Amplification Puzzle}
-
 Arctic surface temperatures are warming at approximately 3--4 times the global
 mean rate~\cite{rantanen2022}. CMIP6 models span a factor-of-2 range in
 projected Arctic amplification (AA) by 2100 under SSP5-8.5, from $\sim$2$\times$
 to $\sim$4$\times$ the global warming rate. The disagreement could arise from
 any of:
-
 \begin{enumerate}[label=(\roman*)]
   \item Cloud phase feedback error (underestimated supercooled liquid water);
   \item Ocean vertical mixing error (misrepresented Atlantic Water heat
@@ -600,42 +216,34 @@ any of:
     response);
   \item A combination of (i)--(iv) in unknown proportions.
 \end{enumerate}
-
 Without additional structural assumptions, these sources are \emph{observationally
 indistinguishable} from the multi-model ensemble output alone.
-
 \subsection{Formal Statement}
-
 \begin{theorem}[Attributional Unidentifiability in Climate Systems
-—— Climate Attribution不可区分定理]
+—— Climate Attribution]
 \label{thm:climate-unidentifiability}
 Let $\mathcal{E} = \{f_m\}_{m=1}^M$ be an ensemble of ESMs producing predictions
 for climate variable $Y$ (e.g., Arctic amplification factor) across climate
 states $s \in \Sstates$. Suppose the ensemble exhibits disagreement:
 $\Var_m[f_m(s)] > \tau_{\mathrm{disagree}}$.
-
 For any two candidate error sources $\mathcal{E}_A$ and $\mathcal{E}_B$
 (e.g., $\mathcal{E}_A$ = cloud parameterization error, $\mathcal{E}_B$ = ocean
 mixing error), there exist two distinct ``worlds'':
-
 \begin{enumerate}[label=(\textbf{W\arabic*}), leftmargin=*]
   \item \textbf{World A} (\emph{Cloud-dominated}): the inter-model spread in
     $Y$ is dominated by differences in cloud parameterization, with ocean
     mixing contributing negligible variance:
     $\Var[f_m(s) \mid \mathcal{E}_A] \gg \Var[f_m(s) \mid \mathcal{E}_B]$.
-
   \item \textbf{World B} (\emph{Ocean-dominated}): the same inter-model spread
     is dominated by ocean mixing differences, with cloud parameterization
     contributing negligible variance:
     $\Var[f_m(s) \mid \mathcal{E}_B] \gg \Var[f_m(s) \mid \mathcal{E}_A]$.
 \end{enumerate}
-
 \textbf{If} the model developers have not declared which parameterization
 schemes differ systematically across models (\emph{i.e.}, if the attribution
 basis is not stated), \textbf{then} the observable joint distribution
 $\mathcal{P}(s, \{f_m(s)\}_{m=1}^M)$ is identical in World A and World B.
 Consequently:
-
 \begin{equation}\label{eq:unidentifiability-bound}
 \boxed{\;
 \max\!\bigl(\mathrm{Error}_{\text{World A}}(\mathcal{A}),\;
@@ -643,25 +251,20 @@ Consequently:
 \geq \frac{\eta_{\mathrm{misattr}} \cdot \rho_{\mathrm{disagree}}}{2}
 \;},
 \end{equation}
-
 where $\mathcal{A}$ is any attribution algorithm, $\eta_{\mathrm{misattr}}$ is
 the proportion of model divergence attributable to misattribution, and
 $\rho_{\mathrm{disagree}}$ is the proportion of climate states where disagreement
 exceeds the threshold. The bound is strictly positive whenever
 $\eta_{\mathrm{misattr}} > 0$ and $\rho_{\mathrm{disagree}} > 0$.
-
 In particular, from multi-model output alone, it is \textbf{mathematically
 impossible} to determine whether Arctic amplification spread is caused by cloud
 error, ocean error, ice-albedo error, or any combination thereof---without
 declaring explicit structural assumptions.
 \end{theorem}
-
 \subsection{Proof of Theorem 2}
-
 \begin{proof}
 We construct two observationally equivalent worlds and apply Le Cam's
 two-point argument.
-
 \medskip\noindent\textbf{Construction of World A (Cloud-dominated).}
 Let there be $M$ ESMs. For each model $m$, decompose its Arctic amplification
 prediction as:
@@ -682,7 +285,6 @@ In World A, set:
 \end{align}
 The observables are the model outputs $\{f_m(s_{\mathrm{AA}})\}_{m=1}^M$ and
 the hindcast validation scores on well-observed periods.
-
 \medskip\noindent\textbf{Construction of World B (Ocean-dominated).}
 Maintain the same decomposition but reverse the variance allocation:
 \begin{align}
@@ -693,7 +295,6 @@ Maintain the same decomposition but reverse the variance allocation:
 \varepsilon_m^{\mathrm{ice}} &\sim \mathcal{N}(0, \delta^2),
 \quad \delta^2 \to 0.
 \end{align}
-
 \medskip\noindent\textbf{Observational equivalence.}
 In both worlds, the marginal distribution of $\{f_m(s_{\mathrm{AA}})\}$ is:
 \begin{equation}
@@ -709,7 +310,6 @@ The pairwise correlation between models is:
 Since the decomposition of $\sigma_A^2$ into cloud vs. ocean components is
 \emph{not observable} in the model outputs (only the total variance is), the
 joint distribution $\mathcal{P}(\{f_m\})$ is identical across worlds.
-
 \medskip\noindent\textbf{Impossibility of attribution.}
 Let $\mathcal{A}$ be any algorithm that uses the observable ensemble to assign
 attribution fractions $\hat{w}_A, \hat{w}_B$ (cloud fraction, ocean fraction)
@@ -730,15 +330,11 @@ over the two worlds is:
 scaled by the proportion $\eta_{\mathrm{misattr}} \cdot \rho_{\mathrm{disagree}}$
 of cases where misattribution is possible, yielding~\eqref{eq:unidentifiability-bound}.
 \end{proof}
-
 \subsection{The Path Out: Declared Attribution Assumptions}
-
 \rigorPartial
-
 Theorem~2 is \emph{constructive}: it identifies precisely what information
 breaks the unidentifiability. The following ``attribution basis'' must be
 declared:
-
 \begin{definition}[Attribution Basis for Climate Disagreement]
 \label{def:attribution-basis}
 A declared attribution basis for a climate variable $Y$ is a tuple
@@ -754,14 +350,12 @@ $\mathcal{B} = (\mathcal{P}_1, \dots, \mathcal{P}_K, \mathbf{W})$ where:
     $\Var[f_m \mid \mathcal{P}_k]$.
 \end{itemize}
 \end{definition}
-
 A climate modeling center that declares $\mathcal{B}$ makes an auditable claim:
 ``We assert that Arctic amplification spread in our ensemble is attributable to
 processes $\mathcal{P}_1, \dots, \mathcal{P}_K$ in proportions
 $W_1, \dots, W_K$, supported by observational constraints $O_1, \dots, O_K$.''
 This claim is verifiable by any third party with access to the same observations.
-
-\begin{corollary}[Universal Equality定理 for Climate Science]
+\begin{corollary}[Universal Equality for Climate Science]
 \label{cor:climate-equality}
 Any claim about the source of inter-model climate disagreement that does not
 declare an attribution basis $\mathcal{B}$ is mathematically empty. Conversely,
@@ -770,24 +364,19 @@ specified observational constraints, without privileged access to model code
 or developer expertise. This establishes epistemic equality among climate
 scientists, modeling centers, and external auditors.
 \end{corollary}
-
 % ===========================================================================
 % SECTION 6: THEOREM 3 — CERCIS SCORE FOR CLIMATE MODELS
 % ===========================================================================
 \section{Theorem 3: Cercis Score for Climate Model Quality Assessment}
 \label{sec:cercis-score}
-
 \rigorPartial
-
 \subsection{The Cercis Score Construction}
-
 The \Cercis{} Score~\cite{taxonomic_nn} provides a unified metric for ranking
 predictive models that balances two competing objectives: fidelity to
 observations ($Q$, the quality component) and the epistemic value of predicting
 novel, unprecedented regimes ($N$, the novelty component). For climate models,
 this maps naturally to the tension between hindcast skill and the exploration
 of high-forcing futures.
-
 \begin{definition}[Cercis Score for Climate Models]
 \label{def:cercis-climate}
 For ESM $m$ producing predictions across climate states $\{s\}_{s \in \Sstates}$,
@@ -807,28 +396,23 @@ N_m(t) &= \KL\!\bigl(\mathcal{P}_m(\mathbf{X}(t)) \;\big\|\;
 \quad \text{(exploration decay)}. \label{eq:eta-decay}
 \end{align}
 \end{definition}
-
 Here, $\mathrm{skill}(f_m(\tau), Y_{\mathrm{obs}}(\tau))$ is a dimension-specific
 skill score (e.g., anomaly correlation for temperature, Brier skill score for
 sea ice binary masks, Kling-Gupta efficiency for precipitation). The quality
 weights $w(\tau)$ emphasize recent observations:
 $w(\tau) \propto \exp(-\lambda(t - \tau))$.
-
 The novelty component $N_m(t)$ measures the Kullback-Leibler divergence between
 the model's predicted climate state distribution and a reference distribution
 (typically the historical climatology). When $N_m(t)$ is large, the model
 predicts a regime with no historical analog---precisely the conditions under
 which conventional skill scores are unreliable.
-
 The exploration rate $\eta(t)$ decays exponentially from $\eta_0$ (the initial
 willingness to credit novel predictions) toward zero. This ensures that as
 observations accumulate in new regimes, the score eventually converges to pure
 skill.
-
 \subsection{Ranking Optimality}
-
 \begin{theorem}[Cercis Consistency for Climate Ensembles
-—— Cercis评分Consistency定理]
+—— CercisConsistency]
 \label{thm:cercis-consistency}
 Let $\mathcal{E} = \{f_1, \dots, f_M\}$ be an ensemble of ESMs with known hindcast
 skill scores $Q_m$ and novelty scores $N_m$. Under Assumptions C1--C6, the
@@ -837,18 +421,15 @@ Cercis ranking
 R_{\Cercis} = \arg\max_{m \in \{1,\dots,M\}} S_m
 \end{equation}
 satisfies the following properties:
-
 \begin{enumerate}[label=(\alph*)]
   \item \textbf{Hindcast consistency:} For climate states $s$ with
     $N_m(s) < \varepsilon$ (well-observed regimes), the Cercis ranking converges
     to the hindcast-skill ranking: $R_{\Cercis} \to \arg\max_m Q_m$ as
     $\eta \to 0$ and $\varepsilon \to 0$.
-
   \item \textbf{Novelty protection:} For any two models $m, m'$ with
     $|Q_m - Q_{m'}| < \eta \cdot (N_m - N_{m'})$, the ranking favors the model
     exploring greater novelty, preventing premature convergence to a model that
     is accurate on the past but irrelevant to the future.
-
   \item \textbf{Conservatism under ignorance:} If the climate state $s$ is
     novel ($N_m(s) > \tau_N$) and no model achieves hindcast skill above a
     baseline $Q_{\mathrm{base}}$ in related states, the Cercis score
@@ -856,10 +437,8 @@ satisfies the following properties:
     signaling that the ensemble provides no certified guidance for this regime.
 \end{enumerate}
 \end{theorem}
-
 \begin{proof}[Proof Sketch]
 \rigorPartial
-
 \noindent\textbf{(a) Hindcast consistency.}
 When $N_m(s) < \varepsilon$, we have:
 \begin{equation}
@@ -874,7 +453,6 @@ Since $|N_{m'} - N_m| < 2\varepsilon$, the condition $Q_m - Q_{m'} > 2\eta\varep
 is sufficient. Taking $\eta \to 0$ (as $t \to \infty$) and $\varepsilon \to 0$
 (as the reference distribution expands to cover observed states), the ranking
 converges to the pure skill ordering.
-
 \noindent\textbf{(b) Novelty protection.}
 The condition $|Q_m - Q_{m'}| < \eta(N_m - N_{m'})$ implies directly that
 $S_m > S_{m'}$, since:
@@ -885,7 +463,6 @@ S_m - S_{m'} = (Q_m - Q_{m'}) + \eta(N_m - N_{m'})
 This property prevents a model that is marginally better on hindcast but
 predicts nothing novel from dominating a model that explores unprecedented
 regimes.
-
 \noindent\textbf{(c) Conservatism under ignorance.}
 When no model achieves $Q_m > Q_{\mathrm{base}}$ and all $N_m(s) > \tau_N$,
 the maximum Cercis score is:
@@ -898,16 +475,13 @@ the framework correctly declines to rank. This is a feature, not a bug: it
 prevents overconfident projections in regimes where no model has demonstrated
 competence.
 \end{proof}
-
 \subsection{Application to CMIP6 Scenarios}
-
 \begin{example}[Cercis Scoring for CMIP6 SSP Scenarios]
 \label{ex:cercis-cmip6}
 Consider three climate states: (i) historical 1980--2014 ($N \approx 0$),
 (ii) mid-century SSP2-4.5 ($N \approx 0.3$), (iii) late-century SSP5-8.5
 ($N \approx 0.8$). With $\eta_0 = 0.5$ and $\gamma$ chosen so $\eta(2024) = 0.4$,
 $\eta(2050) = 0.25$, $\eta(2100) \approx 0.05$:
-
 \medskip
 \begin{tabular}{@{}lcccc@{}}
 \toprule
@@ -918,7 +492,6 @@ SSP2-4.5 2050 & 0.60 & 0.30 & 0.25 & $0.60 + 0.075 = 0.68$ \\
 SSP5-8.5 2100 & 0.35 & 0.80 & 0.05 & $0.35 + 0.040 = 0.39$ \\
 \bottomrule
 \end{tabular}
-
 \medskip
 The Cercis framework correctly penalizes the extremely novel SSP5-8.5 state
 with low $\eta$, while rewarding the moderately novel SSP2-4.5 state. The
@@ -926,21 +499,16 @@ historical state's score is dominated by pure skill. If $S_{\min} = 0.40$, the
 SSP5-8.5 state falls below the certification threshold---an honest reflection
 of epistemic limits.
 \end{example}
-
 % ===========================================================================
 % SECTION 7: SPRING GATING FOR CLIMATE REGIME SHIFTS
 % ===========================================================================
 \section{Spring Gating for Detecting Climate Regime Shifts}
 \label{sec:spring-gating}
-
 \rigorPartial
-
 \subsection{Climate Tipping Points as Regime Boundaries}
-
 Climate tipping points---thresholds beyond which the Earth system undergoes
 qualitative, often irreversible, change---represent the most consequential
 uncertainty in climate prediction. Candidates include:
-
 \begin{itemize}[nosep]
   \item Atlantic Meridional Overturning Circulation (AMOC) collapse;
   \item Greenland ice sheet disintegration;
@@ -948,27 +516,22 @@ uncertainty in climate prediction. Candidates include:
   \item Permafrost carbon release;
   \item West Antarctic ice sheet collapse.
 \end{itemize}
-
 Each tipping element defines a \textbf{regime boundary} in the climate state
 space. The \Spring{} gating mechanism~\cite{spring_config} provides a framework
 for detecting when a climate trajectory crosses such a boundary, triggering a
 change in the auditing regime.
-
 \subsection{Spring Formalism for Climate States}
-
 \begin{definition}[Climate Spring Gate]
 \label{def:spring-climate}
 A Spring gate for climate regime $r$ is a discriminator
 $D_r: \X \to [0,1]$ trained to distinguish climate states belonging to regime
 $r$ from those not belonging to $r$. The gate's memory bank $\mathcal{M}_t^{(r)}$
 accumulates climate states visited by any ESM trajectory:
-
 \begin{equation}
 \mathcal{M}_t^{(r)} = \bigcup_{\tau=0}^t \bigcup_{m=1}^M
 \{(\mathbf{X}_m(\tau), \, \ind{\mathbf{X}_m(\tau) \in \text{regime } r})\}.
 \end{equation}
 \end{definition}
-
 The Spring self-evolution theorem~\cite{spring_config} guarantees almost-sure
 convergence of the discriminator accuracy:
 \begin{equation}
@@ -976,14 +539,12 @@ convergence of the discriminator accuracy:
 = 0,
 \end{equation}
 under the Robbins-Monro conditions satisfied by the Spring update rule.
-
 \begin{proposition}[Regime-Shift Detection via Spring]
 \label{prop:spring-regime}
 Let $\mathcal{T}_{\mathrm{shift}}$ be the (unknown) time at which the climate
 system crosses a tipping threshold. Under Assumptions C1--C7 and the Spring
 convergence theorem, for any $\varepsilon > 0$ there exists $T_\varepsilon$ such
 that for all $t > T_\varepsilon$:
-
 \begin{equation}
 \Pbb\!\bigl(|\hat{\mathcal{T}}_{\mathrm{shift}} - \mathcal{T}_{\mathrm{shift}}| > \varepsilon\bigr)
 \leq C \cdot \exp(-\gamma_{\Spring} \cdot |\mathcal{M}_t|),
@@ -991,10 +552,8 @@ that for all $t > T_\varepsilon$:
 where $|\mathcal{M}_t|$ is the accumulated memory size and $\gamma_{\Spring} > 0$
 is the Spring convergence rate.
 \end{proposition}
-
 \begin{proof}[Proof Sketch]
 \rigorSketch
-
 The Spring convergence theorem (SE-1 in~\cite{spring_config}) establishes that
 the fixed-point of the gate's scoring function $S_t$ converges to the true
 regime indicator with rate $O(t^{-a})$ for $a \in (0, 1/2]$ under convexity or
@@ -1004,11 +563,8 @@ the convergence time of the discriminator. Exponential concentration follows fro
 the Hoeffding bound applied to the i.i.d. arrivals of regime member states into
 $\mathcal{M}_t$.
 \end{proof}
-
 \subsection{Implications for Auditing}
-
 When a Spring gate detects a regime shift, the SCX auditing procedure adjusts:
-
 \begin{enumerate}[label=(\roman*)]
   \item \textbf{Assumption C6 is suspended}: hindcast stationarity no longer
     applies, and the Cercis score's $\eta$ is temporarily elevated to
@@ -1020,17 +576,13 @@ When a Spring gate detects a regime shift, the SCX auditing procedure adjusts:
     structure (Assumption C8) may differ in the new regime, requiring
     recomputation of the \Situs{} positional encoding.
 \end{enumerate}
-
 % ===========================================================================
 % SECTION 8: SITUS ENCODING FOR SPHERICAL CLIMATE FIELDS
 % ===========================================================================
 \section{Situs Encoding for Spherical Climate Geometry}
 \label{sec:situs-climate}
-
 \rigorPartial
-
 \subsection{The Spherical Encoding Problem}
-
 Climate fields are fundamentally defined on $S^2$ (the sphere) with a radial
 component in the vertical. Standard Cartesian positional encodings fail to
 respect the spherical topology, treating distant points across the Pacific as
@@ -1038,7 +590,6 @@ equivalent (they wrap on a longitude--latitude grid) and distorting polar
 regions. The \Situs{} framework~\cite{situs_theory} provides physics-anchored
 positional encoding where the encoding function respects the geometry of the
 underlying physical space.
-
 \begin{definition}[Situs Spherical Encoding for Climate]
 \label{def:situs-spherical}
 For a point $p \in S^2 \times [0, H]$ (longitude $\phi$, latitude $\theta$,
@@ -1058,7 +609,6 @@ where:
     Bochner theorem on $S^2$ (spherical harmonics spectrum).
 \end{itemize}
 \end{definition}
-
 \begin{proposition}[Spherical Encoding Error Bound]
 \label{prop:situs-error}
 Under Assumption C8 (spherical correlation structure), the \Situs{} encoding
@@ -1071,10 +621,8 @@ approximates the spatial error correlation with error:
 where $C_{\Situs}$ depends on the smoothness of the error field and $L$ is the
 number of anchor points.
 \end{proposition}
-
 \begin{proof}[Proof Sketch]
 \rigorSketch
-
 The proof follows the Situs theory~\cite{situs_theory}, Theorem 1.2.2, which
 establishes $O(1/d)$ convergence of the Laplace kernel approximation under
 Bochner's theorem, modified for $S^2$ using the spherical harmonics addition
@@ -1085,9 +633,7 @@ stated $O(L^{-1/2})$ rate (the exponent changes from $1/d$ to $1/\sqrt{L}$
 because the spherical harmonics degeneracy grows as $\sim 2\ell + 1$ per degree
 $\ell$).
 \end{proof}
-
 \subsection{Climate Field State Discovery}
-
 The \Situs{} encoding enables state discovery on spherical climate fields
 through the condition~\cite{situs_theory}:
 \begin{equation}
@@ -1097,35 +643,28 @@ where $Y$ is the target climate variable, $P$ is the spatial position, and $S$
 is the climate state. When this mutual information is positive, spatial position
 carries irreducible information about model error beyond what the state alone
 provides. This is the case for:
-
 \begin{itemize}[nosep]
   \item Regional precipitation biases (strongly location-dependent);
   \item Sea ice edge position errors (spatially localized);
   \item Coastal upwelling errors (boundary-condition sensitive);
   \item Mountain snowpack errors (elevation-dependent).
 \end{itemize}
-
 When $I(Y; P \mid S) = 0$, the climate field error is spatially stationary
 (given the state), and \Situs{} provides no additional benefit---a diagnostic
 that prevents unnecessary computational overhead.
-
 % ===========================================================================
 % SECTION 9: BENCHMARKS AND EMPIRICAL FRAMEWORK
 % ===========================================================================
 \section{Benchmark Suite for Certified Climate Auditing}
 \label{sec:benchmarks}
-
 We specify a three-tier benchmark hierarchy for validating the SCX climate
 auditing framework. No empirical results are presented in this theoretical
 paper; the benchmarks are specified as the protocol for future computational
 validation.
-
 \subsection{Tier 1: CMIP6 Historical (1850--2014)}
-
 \textbf{Models}: CESM2, NorESM2-LM, MIROC6, HadGEM3-GC31-LL, MPI-ESM1.2-HR,
 CanESM5, IPSL-CM6A-LR, EC-Earth3, GFDL-ESM4, MRI-ESM2.0, ACCESS-ESM1.5,
 UKESM1-0-LL, CNRM-ESM2-1, BCC-CSM2-MR ($M = 14$--$20$ models, variable-dependent).
-
 \textbf{Variables}:
 \begin{itemize}[nosep]
   \item Global mean surface temperature (GMST, $Y \in \R$): scalar, directly
@@ -1137,7 +676,6 @@ UKESM1-0-LL, CNRM-ESM2-1, BCC-CSM2-MR ($M = 14$--$20$ models, variable-dependent
   \item AMOC strength at 26.5\textdegree N ($Y \in \R$): tests Spring gating
     for potential regime shifts (Section~7).
 \end{itemize}
-
 \textbf{Metrics}:
 \begin{itemize}[nosep]
   \item F1 score of bias detection (Theorem 1 bound vs. empirical);
@@ -1146,11 +684,8 @@ UKESM1-0-LL, CNRM-ESM2-1, BCC-CSM2-MR ($M = 14$--$20$ models, variable-dependent
   \item Spring gate accuracy for distinguishing historical vs. paleoclimate
     states (cross-validation on the instrumental record).
 \end{itemize}
-
 \subsection{Tier 2: SSP Scenario Projections (2015--2100)}
-
 \textbf{Scenarios}: SSP1-2.6, SSP2-4.5, SSP3-7.0, SSP5-8.5.
-
 \textbf{Tests}:
 \begin{itemize}[nosep]
   \item \textbf{Novelty quantification}: $N_m(t)$ computed via KL divergence
@@ -1162,9 +697,7 @@ UKESM1-0-LL, CNRM-ESM2-1, BCC-CSM2-MR ($M = 14$--$20$ models, variable-dependent
   \item \textbf{Spring gating for emergence}: detection of the time at which
     each SSP scenario's climate state becomes ``novel'' ($N_m(t) > \tau_N$).
 \end{itemize}
-
 \subsection{Tier 3: Paleoclimate Validation}
-
 \textbf{Intervals}:
 \begin{itemize}[nosep]
   \item Last Glacial Maximum (LGM, $\sim$21 ka, $\Delta$GMST $\approx -4$ to $-6$ K,
@@ -1173,7 +706,6 @@ UKESM1-0-LL, CNRM-ESM2-1, BCC-CSM2-MR ($M = 14$--$20$ models, variable-dependent
     CO$_2 \approx 400$ ppm);
   \item Mid-Holocene ($\sim$6 ka, orbital forcing different from present).
 \end{itemize}
-
 \textbf{Tests}:
 \begin{itemize}[nosep]
   \item \textbf{Theorem 1 extrapolation}: does the F1 bound hold when states
@@ -1184,22 +716,16 @@ UKESM1-0-LL, CNRM-ESM2-1, BCC-CSM2-MR ($M = 14$--$20$ models, variable-dependent
   \item \textbf{Spring memory transfer}: does the Spring gate trained on LGM
     states improve regime-shift detection for future warming?
 \end{itemize}
-
 % ===========================================================================
 % SECTION 10: LIMITATIONS AND HONEST ASSESSMENT
 % ===========================================================================
 \section{Limitations: What This Framework Cannot Do}
 \label{sec:limitations}
-
 \rigorFull
-
 An honest assessment of limitations is essential to the SCX methodology. We
 state the following explicitly.
-
 \subsection{What the Theorems Do Not Prove}
-
 \begin{enumerate}[label=\textbf{L\arabic*}, leftmargin=*]
-
   \item \textbf{Climate sensitivity is not bounded.}
     Theorem~1 bounds the detection probability of \emph{systematic biases}
     (consistent errors across an ensemble), not the magnitude of \emph{climate
@@ -1207,7 +733,6 @@ state the following explicitly.
     (equilibrium climate sensitivity), TCR (transient climate response), or any
     other feedback parameter. It certifies \emph{consistency}, not
     \emph{accuracy}.
-
   \item \textbf{Structural model error is not quantified.}
     If \emph{all} ESMs share a missing process (e.g., permafrost carbon
     dynamics before it was included in CMIP6), the SCX framework cannot detect
@@ -1215,7 +740,6 @@ state the following explicitly.
     insufficient when the entire community converges on the same omission.
     This is the \textbf{unknown unknown} problem: the framework certifies only
     against \emph{detectable} biases among \emph{existing} models.
-
   \item \textbf{Observational reference is imperfect.}
     Theorem~1 and Theorem~3 depend on observational products (reanalyses,
     satellite retrievals, station data) that themselves contain errors. The
@@ -1223,7 +747,6 @@ state the following explicitly.
     uncertainty. When $\sigma_{\mathrm{obs}}$ is large relative to the
     inter-model spread, the detection gap $\Delta_s$ shrinks to zero, and the
     framework certifies nothing.
-
   \item \textbf{Stationarity is unverifiable for the future.}
     Assumption C6 (hindcast stationarity) is a \emph{working hypothesis}, not a
     theorem. No amount of historical data can verify that future climate states
@@ -1231,13 +754,11 @@ state the following explicitly.
     (Section~\ref{sec:spring-gating}) mitigates this by detecting regime shifts,
     but \emph{after} a shift occurs, the auditing framework must restart from a
     state of greater ignorance.
-
   \item \textbf{Paleoclimate constraints are proxy-limited.}
     Assumption C10 requires $\sigma_{\mathrm{proxy}} < \tau/2$, which is
     violated for many paleoclimate variables of interest (tropical
     precipitation, cloud cover, aerosol loading). For such variables, the
     paleoclimate tier of validation cannot achieve certified status.
-
   \item \textbf{The exponential bound is asymptotic.}
     Theorem~1's guarantee $\exp(-2M_{\mathrm{eff}}\Delta_s^2)$ requires
     $M_{\mathrm{eff}}$ to be reasonably large. For the CMIP6 ensemble,
@@ -1245,7 +766,6 @@ state the following explicitly.
     $0.40$--$0.65$ for typical parameters. The guarantee is real but modest;
     transformative improvements require either larger $M_{\mathrm{eff}}$ (more
     independent models) or larger $\Delta_s$ (better model accuracy).
-
   \item \textbf{Cercis $\eta(t)$ is a hyperparameter.}
     The decay rate $\gamma$ in $\eta(t) = \eta_0 e^{-\gamma t}$ and the initial
     novelty bonus $\eta_0$ are \emph{choices}, not derived quantities. Different
@@ -1253,7 +773,6 @@ state the following explicitly.
     scientists) may legitimately choose different $\eta$ schedules, leading to
     different rankings. The framework certifies that the ranking is consistent
     \emph{given} the chosen $\eta$, but does not uniquely determine $\eta$.
-
   \item \textbf{The attribution basis $\mathcal{B}$ is incomplete.}
     Theorem~2 shows that attribution requires a declared basis, but does not
     guarantee that any particular basis is correct. A modeling center could
@@ -1261,14 +780,10 @@ state the following explicitly.
     clouds when ocean mixing is the true driver). The framework makes this
     \emph{auditable}---the basis can be tested against process-resolving
     observations---but does not make it \emph{true}.
-
 \end{enumerate}
-
 \subsection{Assumption Violation Consequences}
-
 Table~\ref{tab:assumption-violations} summarizes the consequence of violating
 each assumption.
-
 \begin{table}[htbp]
 \centering
 \caption{Consequences of Assumption Violations}
@@ -1290,17 +805,13 @@ C10 & Proxy uncertainty too large & Paleoclimate validation inconclusive \\
 \bottomrule
 \end{tabular}
 \end{table}
-
 % ===========================================================================
 % SECTION 11: DISCUSSION
 % ===========================================================================
 \section{Discussion: Toward Certified Climate Services}
-
 \subsection{The Epistemic Division of Labor}
-
 The SCX climate auditing framework enforces a clean separation of
 responsibilities:
-
 \begin{enumerate}[label=(\roman*)]
   \item \textbf{Climate modeling centers} produce ESMs and declare their
     attribution basis $\mathcal{B}$, training data provenance, and
@@ -1311,13 +822,10 @@ responsibilities:
     certified, flag what cannot, and decompose uncertainty into identifiable
     components (detectable bias, attributional ambiguity, regime novelty).
 \end{enumerate}
-
 No party needs to trust any other. The certification is a mathematical
 consequence of the declared assumptions and the observed multi-model ensemble
 statistics.
-
 \subsection{Policy Implications}
-
 For climate services that inform adaptation investment ($10^{11}$--$10^{12}$
 USD/year globally), the difference between ``the ensemble mean projects X'' and
 ``we certify at confidence $1-\alpha$ that the true value lies in $[X-\delta,
@@ -1325,9 +833,7 @@ X+\delta]$'' is operationally enormous. The SCX framework provides the latter
 form of statement, with the crucial caveat that $\alpha$ and $\delta$ may be
 disappointingly large for many variables of interest---an honest assessment is
 preferable to a precise but unfounded one.
-
 \subsection{Relationship to IPCC Assessment}
-
 The IPCC AR6~\cite{ipcc2021} uses ``likelihood'' and ``confidence'' language
 defined by convention: ``likely'' means $>66\%$ probability, ``very likely''
 means $>90\%$, etc. The SCX framework provides a mathematical foundation for
@@ -1335,9 +841,7 @@ these assignments: under Assumptions C1--C10, the probability bounds in
 Theorem~1 translate directly to IPCC likelihood categories, with the
 additional property that the derivation of the bound is fully transparent and
 reproducible.
-
 \subsection{Open Problems}
-
 \begin{openproblem}[Dependent Concentration for Climate Ensembles]
 \label{op:1}
 Theorem~1 uses Hoeffding's inequality under Assumption C2 (conditional
@@ -1347,7 +851,6 @@ dependent Bernoulli trials with known correlation structure that improves the
 bound beyond the naive variance-inflation factor.
 \rigorSketch
 \end{openproblem}
-
 \begin{openproblem}[Optimal Attribution Basis Selection]
 \label{op:2}
 Given $M$ ESMs with known parameterization differences, what is the
@@ -1357,7 +860,6 @@ over the space of process partitions, coupled to the mutual information between
 process-resolving observations and model outputs.
 \rigorSketch
 \end{openproblem}
-
 \begin{openproblem}[Paleoclimate Prior Elicitation]
 \label{op:3}
 How should paleoclimate constraints be formally incorporated as priors in the
@@ -1367,35 +869,29 @@ the novelty component $N_m$, rather than treating paleoclimate as a binary
 ``constrained/unconstrained'' gate.
 \rigorSketch
 \end{openproblem}
-
 % ===========================================================================
 % SECTION 12: CONCLUSION
 % ===========================================================================
 \section{Conclusion}
-
 We have presented a mathematical framework for auditing Earth System Model
 ensembles that provides certified uncertainty bounds rather than informal
 consensus. The framework rests on 10 explicitly stated assumptions and three
 theorems with proofs.
-
 \textbf{Theorem~1} (Systematic Bias Detection) establishes that multi-model
 consensus provides exponentially convergent detection of systematic biases,
 with the rate governed by the effective number of independent models
 $M_{\mathrm{eff}}$. The bound is honest: for the CMIP6 ensemble,
 certification is modest but real.
-
 \textbf{Theorem~2} (Attributional Unidentifiability) proves that without
 declared structural assumptions, it is mathematically impossible to attribute
 inter-model climate disagreement to specific physical processes. This
 establishes an epistemic standard: attribution claims must be accompanied by
 declared and auditable attribution bases.
-
 \textbf{Theorem~3} (Cercis Consistency) provides a principled ranking of
 climate projections that balances hindcast skill against the epistemic value
 of exploring unprecedented regimes. The Cercis Score correctly degrades as
 models enter novel territory and refuses to rank when no model demonstrates
 competence.
-
 The SCX framework does not predict the climate. It certifies the epistemic
 status of predictions made by others. This is a deliberate design choice:
 certification is separable from modeling, auditable by third parties, and
@@ -1403,102 +899,80 @@ updatable as new models and observations become available. In a domain where
 trillions of dollars and millions of lives depend on projections that remain
 fundamentally uncertain, honest certification is the most valuable contribution
 that mathematical rigor can offer.
-
 % ===========================================================================
 % REFERENCES
 % ===========================================================================
 \begin{thebibliography}{30}
-
 \bibitem{xi2025scx}
 SCX. A Fundamental Impossibility in Data Quality: Distinguishing Label Noise
 from Sample Difficulty is Provably Unsolvable Without Explicit Assumptions.
 arXiv preprint (2025).
-
 \bibitem{spring_config}
 SCX. Spring: A Self-Evolving Gatekeeper with Provable Convergence.
 Working paper (2026).
-
 \bibitem{situs_theory}
 SCX. Situs: Physics-Anchored Positional Encoding for State-Conditioned
 Expertise. Working paper (2026).
-
 \bibitem{taxonomic_nn}
 SCX. A Taxonomic Theory of Neural Networks: Derivation of Known Machine
 Learning Phenomena from the SCX Axiom System. Working paper (2026).
-
 \bibitem{eyring2016}
 Eyring, V., Bony, S., Meehl, G. A., Senior, C. A., Stevens, B., Stouffer,
 R. J., \& Taylor, K. E. Overview of the Coupled Model Intercomparison Project
 Phase 6 (CMIP6) experimental design and organization.
 \textit{Geoscientific Model Development} \textbf{9}(5), 1937--1958 (2016).
-
 \bibitem{ipcc2021}
 IPCC. Climate Change 2021: The Physical Science Basis. Contribution of
 Working Group I to the Sixth Assessment Report. Cambridge University Press
 (2021).
-
 \bibitem{danabasoglu2020}
 Danabasoglu, G., et al. The Community Earth System Model Version 2 (CESM2).
 \textit{Journal of Advances in Modeling Earth Systems} \textbf{12}(2) (2020).
-
 \bibitem{seland2020}
 Seland, \O{}., et al. Overview of the Norwegian Earth System Model (NorESM2)
 and key climate response of CMIP6 DECK, historical, and scenario simulations.
 \textit{Geoscientific Model Development} \textbf{13}(12), 6165--6200 (2020).
-
 \bibitem{tatebe2019}
 Tatebe, H., et al. Description and basic evaluation of simulated mean state,
 internal variability, and climate sensitivity in MIROC6.
 \textit{Geoscientific Model Development} \textbf{12}(7), 2727--2765 (2019).
-
 \bibitem{kuhlbrodt2018}
 Kuhlbrodt, T., et al. The Low-Resolution Version of HadGEM3 GC3.1:
 Development and Evaluation for Global Climate.
 \textit{Journal of Advances in Modeling Earth Systems} \textbf{10}(11),
 2865--2888 (2018).
-
 \bibitem{rantanen2022}
 Rantanen, M., et al. The Arctic has warmed nearly four times faster than the
 globe since 1979. \textit{Communications Earth \& Environment} \textbf{3},
 168 (2022).
-
 \bibitem{hall2019}
 Hall, A., Cox, P., Huntingford, C., \& Klein, S. Progressing emergent
 constraints on future climate change. \textit{Nature Climate Change}
 \textbf{9}, 269--278 (2019).
-
 \bibitem{hoeting1999}
 Hoeting, J. A., Madigan, D., Raftery, A. E., \& Volinsky, C. T. Bayesian
 model averaging: a tutorial. \textit{Statistical Science} \textbf{14}(4),
 382--401 (1999).
-
 \bibitem{castruccio2019}
 Castruccio, S., et al. An updated suite of statistical models for emulating
 Earth system model output. \textit{Journal of Climate} (2019).
-
 \bibitem{tebaldi2005}
 Tebaldi, C., Smith, R. L., Nychka, D., \& Mearns, L. O. Quantifying
 uncertainty in projections of regional climate change: A Bayesian approach
 to the analysis of multimodel ensembles. \textit{Journal of Climate}
 \textbf{18}(10), 1524--1540 (2005).
-
 \bibitem{liang1986}
 Liang, K. Y. \& Zeger, S. L. Longitudinal data analysis using generalized
 linear models. \textit{Biometrika} \textbf{73}(1), 13--22 (1986).
-
 \bibitem{hoeffding1963}
 Hoeffding, W. Probability inequalities for sums of bounded random variables.
 \textit{Journal of the American Statistical Association} \textbf{58}(301),
 13--30 (1963).
-
 \bibitem{cover2006}
 Cover, T. M. \& Thomas, J. A. \textit{Elements of Information Theory}.
 Wiley, 2nd ed. (2006).
-
 \bibitem{bahadur1960}
 Bahadur, R. R. \& Rao, R. R. On deviations of the sample mean.
 \textit{Annals of Mathematical Statistics} \textbf{31}(4), 1015--1027 (1960).
-
 \end{thebibliography}
-
 \end{document}

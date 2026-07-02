@@ -1,5 +1,4 @@
 \documentclass[11pt,a4paper]{article}
-
 % ── Packages ──────────────────────────────────────────────────────────────
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
@@ -18,17 +17,10 @@
 \usepackage{cleveref}
 \usepackage{tikz}
 \usepackage{placeins}
-
 % CJK support via xeCJK (requires xelatex)
 \usepackage{fontspec}
-\usepackage{xeCJK}
-\setCJKmainfont{SimSun}[BoldFont=SimHei,ItalicFont=KaiTi]
-\setCJKsansfont{SimHei}
-\setCJKmonofont{FangSong}
 \setmainfont{Latin Modern Roman}
-
 \geometry{margin=2.5cm}
-
 % ── Theorem Environments ──────────────────────────────────────────────────
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -37,10 +29,8 @@
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{assumption}[theorem]{Assumption}
-
 \theoremstyle{definition}
 \newtheorem{example}[theorem]{Example}
-
 % ── Custom Commands ───────────────────────────────────────────────────────
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\N}{\mathbb{N}}
@@ -65,7 +55,6 @@
 \newcommand{\calX}{\mathcal{X}}
 \newcommand{\calY}{\mathcal{Y}}
 \newcommand{\calZ}{\mathcal{Z}}
-
 \newcommand{\SCX}{\textsc{SCX}}
 \newcommand{\situs}{\textsc{Situs}}
 \newcommand{\cercis}{\textsc{Cercis}}
@@ -80,80 +69,63 @@
 \newcommand{\PrimateAI}{\textsc{PrimateAI}}
 \newcommand{\AlphaMissense}{\textsc{AlphaMissense}}
 \newcommand{\ESM}{\textsc{ESM-1v}}
-
 \newcommand{\pathscore}{p}
 \newcommand{\consensus}{\Psi}
 \newcommand{\cercisscore}{\mathcal{C}}
 \newcommand{\situsenc}{\mathcal{S}}
-\newcommand{\genome}{基因组}
-\newcommand{\pathovar}{变异致病性}
-\newcommand{\multiconsensus}{多算法共识}
-\newcommand{\prederror}{预测误差}
-\newcommand{\novelbio}{新生物学}
-\newcommand{\annobias}{标注偏差}
-
+\newcommand{\genome}{}
+\newcommand{\pathovar}{}
+\newcommand{\multiconsensus}{}
+\newcommand{\prederror}{}
+\newcommand{\novelbio}{}
+\newcommand{\annobias}{}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator{\sgn}{sgn}
-
 % ── Title ─────────────────────────────────────────────────────────────────
 \title{\textbf{\SCX-Audited Genomics:} \\
        \large Certified Variant Pathogenicity Prediction \\
        via Multi-Algorithm Consensus}
-
 \author{\textsc{SCX} \\[4pt]
         \small  \& Nous Research}
-
 \date{June 2026}
-
 \begin{document}
 \maketitle
-
 \begin{abstract}
 \noindent
-Variant effect prediction — the computational assessment of whether a genetic variant (\genome{}变异) is pathogenic — underpins clinical genomics, yet individual predictors (\SIFT, \PolyPhen, \CADD, \REVEL, \PrimateAI, \AlphaMissense, \ESM) exhibit systematic disagreements that confound clinical interpretation.
-We formalize variant pathogenicity prediction (\pathovar{}预测) within the \SCX{} audit framework, treating each predictor as an expert agent claiming a pathogenicity score over a shared genomic context.
+Variant effect prediction — the computational assessment of whether a genetic variant (\genome{}) is pathogenic — underpins clinical genomics, yet individual predictors (\SIFT, \PolyPhen, \CADD, \REVEL, \PrimateAI, \AlphaMissense, \ESM) exhibit systematic disagreements that confound clinical interpretation.
+We formalize variant pathogenicity prediction (\pathovar{}) within the \SCX{} audit framework, treating each predictor as an expert agent claiming a pathogenicity score over a shared genomic context.
 Our central contributions are threefold.
 \textbf{First}, we prove a multi-predictor error detection bound (Theorem~\ref{thm:multi-error}): with $M$ correlated predictors of effective multiplicity $M_{\text{eff}}$, systematic annotation errors exceeding a consensus-margin threshold are detectable with probability at least $1 - \exp(-2M_{\text{eff}}\varepsilon^2)$.
 \textbf{Second}, we establish a fundamental unidentifiability result (Theorem~\ref{thm:unidentifiability}): absent an explicit declaration of distributional assumptions, algorithmic bias and genuinely novel biology (\novelbio{}) are indistinguishable from predictor outputs alone — a result with regulatory implications for AI-driven clinical genomics.
 \textbf{Third}, we introduce the \cercis{} Score, a dual-component metric where $Q$ captures aggregate reliability (ClinVar concordance + functional assay correlation) and $N$ quantifies evolutionary novelty; and the \situs{} encoding, which embeds protein 3D structural context as a physically grounded coordinate system for variant assessment.
 We close with the \yajie{} multi-algorithm consensus protocol and a concrete experimental design spanning \ClinVar, \gnomAD, and \MAVE{} datasets.
 \end{abstract}
-
 \tableofcontents
 \newpage
-
 % ============================================================================
 \section{Introduction}
 % ============================================================================
-
 The interpretation of human genetic variation — determining which of the 4--5 million variants in a typical genome contribute to disease — remains one of the most pressing challenges in precision medicine~\cite{karczewski2020mutational, richards2015standards}.
 Over the past two decades, a rich ecosystem of computational variant effect predictors has emerged: \SIFT{}~\cite{ng2003sift} leverages evolutionary conservation; \PolyPhen{}~\cite{adzhubei2010method} combines sequence and structural features; \CADD{}~\cite{kircher2014general} integrates diverse annotations into a unified score; \REVEL{}~\cite{ioannidis2016revel} aggregates multiple tools via random forest; \PrimateAI{}~\cite{sundaram2018predicting} employs deep learning trained on primate variants; \AlphaMissense{}~\cite{cheng2023accurate} adapts AlphaFold-derived structures; and \ESM{}~\cite{meier2021language} exploits protein language models.
-Each of these predictors (\genome{}变异致病性预测工具) claims a pathogenicity score for missense variants, yet their inter-rater agreement is far from perfect~\cite{pejaver2022evidence}.
-
+Each of these predictors (\genome{}) claims a pathogenicity score for missense variants, yet their inter-rater agreement is far from perfect~\cite{pejaver2022evidence}.
 This discordance creates a critical clinical dilemma: when predictors disagree, is the disagreement due to (a) \textit{annotation error} in one or more predictors (\annobias{}), or (b) genuinely \textit{novel biology} (\novelbio{}) that lies outside the training distribution of all tools?
 Without a principled framework to adjudicate this question, clinicians are left to either trust a single predictor (risking systematic error) or rely on ad-hoc majority voting (which may drown out a signal that only one predictor captures).
-
 We address this gap by casting variant pathogenicity prediction within the \SCX{} (Supercomputing Certification eXchange) audit framework.
 \SCX{} treats computational tools as expert agents that make claims about a shared state; the audit layer evaluates these claims for consistency, detects systematic errors, and — critically — identifies when the available evidence is insufficient to distinguish between competing explanations.
 Our approach builds on the formal machinery of algorithmic auditing~\cite{metaxas2024algorithmic} while specializing it for the unique statistical structure of genomic variant data.
-
 \subsection{Related Work}
-
 The problem of reconciling multiple variant effect predictors has been studied from several angles.
 Ensemble methods such as \REVEL{} and \textsc{EVE}~\cite{frazer2021disease} train a meta-predictor on top of base predictors, effectively learning to weight each tool's contribution.
 Bayesian frameworks~\cite{rausell2024bayesian} model predictor outputs as noisy observations of a latent pathogenicity variable.
 The \textsc{ClinGen} consortium~\cite{rehm2015clingen} provides expert-curated guidelines for variant interpretation that acknowledge the role of computational evidence.
-
 Our work differs from these approaches in three key respects.
 First, we do not aim to build a better meta-predictor; instead, we provide \textit{certification guarantees} about when and how consensus among existing predictors can be trusted.
 Second, we explicitly model predictor \textit{correlation}, introducing the effective multiplicity $M_{\text{eff}}$ to avoid the false confidence that arises from treating correlated tools as independent voters.
 Third, we prove a fundamental \textit{unidentifiability theorem} that delineates the boundary between what multi-predictor consensus can and cannot resolve — a result that has direct implications for the regulatory governance of AI-based variant interpretation tools.
-
 \subsection{Contributions}
-
 \begin{enumerate}[leftmargin=*]
     \item \textbf{Formalization} (Section~\ref{sec:formalization}): We define the genomic context state space, the expert predictor formalism, and the consensus framework within \SCX.
     \item \textbf{Error Detection Theorem} (Section~\ref{sec:thm1}): A bound on the detectability of systematic annotation errors as a function of predictor count $M$, effective multiplicity $M_{\text{eff}}$, and consensus margin.
@@ -163,14 +135,11 @@ Third, we prove a fundamental \textit{unidentifiability theorem} that delineates
     \item \textbf{\yajie{} Consensus} (Section~\ref{sec:yajie}): A multi-algorithm consensus protocol (\multiconsensus{}) that integrates the preceding components.
     \item \textbf{Experimental Protocol} (Section~\ref{sec:experimental}): A concrete evaluation plan across \ClinVar, \gnomAD, and \MAVE{} benchmarks.
 \end{enumerate}
-
 % ============================================================================
 \section{Formalization of Variant Pathogenicity Prediction}
 \label{sec:formalization}
 % ============================================================================
-
-We formalize variant pathogenicity prediction (\pathovar{}预测) as a multi-expert claim verification problem within the \SCX{} framework.
-
+We formalize variant pathogenicity prediction (\pathovar{}) as a multi-expert claim verification problem within the \SCX{} framework.
 \begin{definition}[Genomic Context State]
 \label{def:state}
 A \textbf{genomic context state} $s \in \calS$ is a tuple
@@ -186,7 +155,6 @@ where:
     \item $\mathbf{x}_{\text{evo}} \in \R^{d_{\text{evo}}}$: evolutionary features (phastCons, phyloP, GERP scores, cross-species conservation).
 \end{itemize}
 \end{definition}
-
 \begin{definition}[Variant Effect Predictor as Expert]
 \label{def:expert}
 A \textbf{variant effect predictor} (or \textbf{expert}) is a function
@@ -200,13 +168,11 @@ The \textbf{expert claim} of predictor $i$ on state $s$ is the tuple
 \end{equation}
 where $\sigma_i(s)$ is the predictor's self-reported uncertainty (if available) or a default value.
 \end{definition}
-
 \begin{definition}[Ground Truth]
 \label{def:ground-truth}
 The \textbf{ground truth pathogenicity} $g: \calS \to \{0,1\}$ is the latent binary variable indicating whether the variant is truly pathogenic.
 In practice, $g$ is approximated through clinical annotations (\ClinVar{} star-rated entries), functional assay data (\MAVE), or expert panel consensus (\textsc{ClinGen}).
 \end{definition}
-
 \begin{definition}[Predictor Error]
 \label{def:error}
 For predictor $i$ and state $s$, the \textbf{prediction error} is
@@ -219,7 +185,6 @@ For continuous scores, we also consider the \textbf{calibrated error}
 \end{equation}
 where $\Phi$ is a calibration mapping learned from reference data.
 \end{definition}
-
 \begin{definition}[Predictor Correlation Matrix]
 \label{def:correlation}
 Given $M$ predictors evaluated over a reference set of $N$ genomic states $\{s_1, \dots, s_N\}$, the \textbf{predictor correlation matrix} $\mathbf{R} \in [-1,1]^{M \times M}$ has entries
@@ -228,7 +193,6 @@ Given $M$ predictors evaluated over a reference set of $N$ genomic states $\{s_1
 \end{equation}
 where $f_i(\mathbf{s}) = (f_i(s_1), \dots, f_i(s_N))^\top \in \R^N$.
 \end{definition}
-
 \begin{definition}[Effective Multiplicity]
 \label{def:meff}
 The \textbf{effective multiplicity} $M_{\text{eff}}$ of $M$ correlated predictors is
@@ -238,13 +202,11 @@ The \textbf{effective multiplicity} $M_{\text{eff}}$ of $M$ correlated predictor
 where $\bar{\rho} = \frac{2}{M(M-1)}\sum_{i<j} |R_{ij}|$ is the average absolute pairwise correlation.
 When predictors are independent ($\bar{\rho}=0$), $M_{\text{eff}}=M$; when they are perfectly correlated ($\bar{\rho}=1$), $M_{\text{eff}}=1$.
 \end{definition}
-
 \begin{remark}
 The effective multiplicity generalizes the notion of ``effective sample size'' from survey statistics~\cite{kish1965survey} and the ``variance inflation factor'' from regression diagnostics to the context of correlated algorithmic predictions.
 It quantifies how much independent information is contained in a panel of correlated predictors.
 For the seven tools in our panel (\SIFT, \PolyPhen, \CADD, \REVEL, \PrimateAI, \AlphaMissense, \ESM), pairwise correlations range from $\rho \approx 0.3$ (e.g., \SIFT--\AlphaMissense) to $\rho \approx 0.85$ (e.g., \CADD--\REVEL), yielding typical $M_{\text{eff}} \in [3.2, 5.1]$.
 \end{remark}
-
 \begin{definition}[Consensus Function]
 \label{def:consensus}
 The \textbf{simple consensus} (arithmetic mean) of $M$ predictors on state $s$ is
@@ -257,43 +219,34 @@ The \textbf{weighted consensus}, incorporating predictor reliability scores $\{w
 \end{equation}
 The weights $w_i$ are derived from the \cercis{} Score (Section~\ref{sec:cercis}).
 \end{definition}
-
 % ============================================================================
 \section{Theorem: Multi-Predictor Error Detection}
 \label{sec:thm1}
 % ============================================================================
-
 \begin{theorem}[Multi-Predictor Systematic Error Detection]
 \label{thm:multi-error}
 Let $\calF = \{f_1, \dots, f_M\}$ be a panel of $M$ variant effect predictors with effective multiplicity $M_{\text{eff}}$.
 Let $g: \calS \to \{0,1\}$ be the ground truth pathogenicity and let $\consensus(s) = \frac{1}{M}\sum_{i=1}^{M} f_i(s)$ be the simple consensus.
 Define the \textbf{consensus error} $\varepsilon_{\consensus}(s) = |\consensus(s) - g(s)|$ and the \textbf{consensus margin} $\mu(s) = |\consensus(s) - \frac{1}{2}|$.
-
 For any threshold $\tau \in (0, \frac{1}{2})$ and state $s \in \calS$, if $\varepsilon_{\consensus}(s) \geq \tau$, then with probability at least $1 - \delta$, where
 \begin{equation}
     \delta \leq 2 \exp\!\Big(-2 M_{\text{eff}} \tau^2\Big),
 \end{equation}
 at least $\lceil M_{\text{eff}}/2 \rceil$ predictors have individual error $\varepsilon_i(s) > \tau / \sqrt{1+\bar{\rho}}$.
-
 Conversely, when all $M$ predictors exhibit \textbf{systematic annotation error} — i.e., $\varepsilon_i(s) > \eta$ for all $i$ and some $\eta > 0$ — the consensus error satisfies $\varepsilon_{\consensus}(s) > \eta$, and the consensus margin satisfies $\mu(s) < \frac{1}{2} - \eta$, making the error \textbf{detectable} by margin inspection whenever $\eta > \frac{1}{2} - \mu_{\min}$ for a user-specified minimum margin $\mu_{\min}$.
 \end{theorem}
-
 \begin{proof}
 We proceed in three parts.
-
 \medskip\noindent\textit{Part 1: Hoeffding bound with effective multiplicity.}
-
 Define the centered individual errors $Z_i(s) = f_i(s) - g(s)$. Note that $Z_i(s) \in [-1, 1]$ and $\E[Z_i(s)] = b_i(s)$, the \textit{bias} of predictor $i$.
 The consensus error is
 \begin{equation}
     \varepsilon_{\consensus}(s) = \Big|\frac{1}{M}\sum_{i=1}^{M} Z_i(s)\Big|.
 \end{equation}
-
 If the $Z_i$ were independent, Hoeffding's inequality would give
 \begin{equation}
     P\Big(\Big|\frac{1}{M}\sum_{i=1}^{M} (Z_i - \E[Z_i])\Big| \geq \tau\Big) \leq 2\exp(-2M\tau^2).
 \end{equation}
-
 Under correlation, we apply a \textbf{variance inflation decomposition}.
 Let $\mathbf{Z} = (Z_1, \dots, Z_M)^\top$ with covariance matrix $\bm{\Sigma} = \Cov(\mathbf{Z})$.
 The variance of the sample mean is
@@ -303,21 +256,16 @@ The variance of the sample mean is
     = \frac{\sigma^2}{M} \cdot \Big(1 + (M-1)\bar{\rho}_Z\Big)
 \end{equation}
 where $\sigma^2 = \frac{1}{M}\sum_i \Sigma_{ii}$ is the average variance and $\bar{\rho}_Z$ is the average correlation of the $Z_i$.
-
 Define the \textbf{variance inflation factor} $\text{VIF} = 1 + (M-1)\bar{\rho}_Z$ and the effective multiplicity $M_{\text{eff}} = M / \text{VIF}$.
 Then $\Var(\frac{1}{M}\sum Z_i) = \sigma^2 / M_{\text{eff}}$.
-
 Applying the Hoeffding bound with effective sample size $M_{\text{eff}}$ (justified by the Efron--Stein inequality for dependent variables~\cite{efron1981jackknife}):
 \begin{equation}
     P\Big(\Big|\frac{1}{M}\sum_{i=1}^{M} Z_i - \bar{b}\Big| \geq \tau\Big)
     \leq 2\exp\!\Big(-2M_{\text{eff}}\tau^2\Big),
 \end{equation}
 where $\bar{b} = \frac{1}{M}\sum_i b_i$ is the average bias.
-
 Thus, if $\varepsilon_{\consensus}(s) \geq \tau$, then either (i) $|\bar{b}| \geq \tau$ (systematic bias) or (ii) the deviation from expectation exceeds the bound, which occurs with probability at most $2\exp(-2M_{\text{eff}}\tau^2)$.
-
 \medskip\noindent\textit{Part 2: Individual error implication.}
-
 Suppose $\varepsilon_{\consensus}(s) \geq \tau$. Then $\sum_{i=1}^{M} |Z_i| \geq M\tau$.
 By the pigeonhole principle with effective count $M_{\text{eff}}$ and variance inflation, at least $\lceil M_{\text{eff}}/2 \rceil$ predictors must satisfy $|Z_i| > \tau / \sqrt{1+\bar{\rho}}$.
 This follows from the rearrangement: if at most $k$ predictors have $|Z_i| > \tau / \sqrt{1+\bar{\rho}}$, then
@@ -325,24 +273,19 @@ This follows from the rearrangement: if at most $k$ predictors have $|Z_i| > \ta
     \sum_{i=1}^{M} |Z_i| \leq k \cdot 1 + (M-k) \cdot \frac{\tau}{\sqrt{1+\bar{\rho}}} < M\tau
 \end{equation}
 when $k < \lceil M_{\text{eff}}/2 \rceil$, using that $M_{\text{eff}} \leq M$.
-
 \medskip\noindent\textit{Part 3: Systematic error detectability via margin.}
-
 When all predictors share a systematic bias $b_i(s) = b(s) > \eta$ (same sign), then
 \begin{equation}
     \consensus(s) = g(s) + \frac{1}{M}\sum_i b_i(s) = g(s) + b(s).
 \end{equation}
-
 If $g(s) = 0$ (benign) and $b(s) > \eta$ (all predictors erroneously predict pathogenic), then $\consensus(s) > \eta$.
 The consensus margin is
 \begin{equation}
     \mu(s) = |\consensus(s) - \tfrac{1}{2}| = \consensus(s) - \tfrac{1}{2} > \eta - \tfrac{1}{2}.
 \end{equation}
-
 For $\eta > \frac{1}{2}$, $\mu(s) > 0$, indicating that the consensus score is on the ``pathogenic'' side despite the variant being benign.
 The detection strategy is: if $\mu(s) < \mu_{\min}$ (i.e., the consensus is near the decision boundary), the prediction is flagged as ``low confidence''; systematic errors that push the consensus far from the boundary ($\mu(s) > \mu_{\min}$) become detectable only when external ground truth is available, while errors near the boundary manifest as uncertain predictions that naturally invite further investigation.
 \end{proof}
-
 \begin{corollary}[Minimum Detectable Bias]
 \label{cor:min-detectable}
 For a panel of $M$ predictors with effective multiplicity $M_{\text{eff}}$ and significance level $\alpha = 0.05$, the minimum detectable systematic bias is
@@ -351,7 +294,6 @@ For a panel of $M$ predictors with effective multiplicity $M_{\text{eff}}$ and s
 \end{equation}
 With typical $M_{\text{eff}} \in [3.2, 5.1]$, we obtain $\tau_{\min} \in [0.60, 0.76]$, meaning biases below $\sim 0.6$--$0.8$ on the $[0,1]$ scale cannot be reliably detected from predictor outputs alone at the 95\% confidence level.
 \end{corollary}
-
 \begin{corollary}[Correlation Penalty]
 \label{cor:corr-penalty}
 Increasing the number of highly correlated predictors yields diminishing returns.
@@ -361,43 +303,33 @@ Adding a predictor with average correlation $\bar{\rho}_{\text{new}}$ to an exis
 \end{equation}
 In the limit $M \to \infty$ with $\bar{\rho} > 0$, $M_{\text{eff}} \to 1/\bar{\rho}$, a finite upper bound regardless of panel size.
 \end{corollary}
-
 % ============================================================================
 \section{Theorem: Annotation Error vs.\ True Novel Variant Unidentifiability}
 \label{sec:thm3}
 % ============================================================================
-
 \begin{theorem}[Annotation Error / Novel Biology Unidentifiability]
 \label{thm:unidentifiability}
 Let $\calD_{\text{train}}$ be the training distribution from which predictors $\{f_i\}_{i=1}^{M}$ are learned, and let $\calD_{\text{novel}}$ be the distribution of a novel variant class (e.g., a newly discovered gene, a population-specific allele, or a variant with an unprecedented molecular mechanism).
 Assume each predictor $f_i$ minimizes a risk functional $R_i(f) = \E_{(s,g) \sim \calD_{\text{train}}}[\ell(f(s), g)]$ for some loss $\ell$.
-
 For a variant $s^* \sim \calD_{\text{novel}}$ with observed predictor outputs $\{f_i(s^*)\}_{i=1}^{M}$ and unknown ground truth $g(s^*)$, the following two explanations are \textbf{observationally equivalent} given only the predictor outputs:
-
 \begin{enumerate}[leftmargin=*,label=(\textbf{E\arabic*})]
     \item \textbf{Algorithmic Bias} (\annobias{}): The predictors systematically err because $\calD_{\text{train}}$ and $\calD_{\text{novel}}$ differ in a way that induces a shared bias. Formally, there exists a bias function $b: \calS \to [-1,1]$ such that $\E[f_i(s^*) - g(s^*)] = b(s^*)$ for all $i$, with $b$ arising from $d_{\text{TV}}(\calD_{\text{train}}, \calD_{\text{novel}}) > 0$.
     \item \textbf{Novel Biology} (\novelbio{}): The variant $s^*$ exhibits a genuinely novel genotype--phenotype relationship that lies outside the support of $\calD_{\text{train}}$. The predictors are \textit{correct in their domain} but the domain itself does not cover $s^*$.
 \end{enumerate}
-
 Without an explicit declaration of an assumption $\calA$ that constrains the relationship between $\calD_{\text{train}}$ and $\calD_{\text{novel}}$ (e.g., covariate shift, label shift, or a Lipschitz smoothness condition on the phenotype map), the two explanations are \textbf{unidentifiable} — no decision rule $\delta: [0,1]^M \to \{\text{E1}, \text{E2}\}$ can achieve better-than-chance accuracy uniformly over all pairs $(\calD_{\text{train}}, \calD_{\text{novel}})$.
-
 Furthermore, the minimal additional information required to break the unidentifiability is a single functional assay measurement $\phi(s^*)$ from an orthogonal experimental modality.
 \end{theorem}
-
 \begin{proof}
 We construct an explicit indistinguishability argument via a coupling of two worlds.
-
 \medskip\noindent\textit{World A (Annotation Error).}
 Let $\calD_{\text{train}}$ be concentrated on a domain $\calS_{\text{train}} \subset \calS$ where the true phenotype map is $g_A: \calS_{\text{train}} \to \{0,1\}$.
 Let $\calD_{\text{novel}}$ be supported on $\calS_{\text{novel}} \subset \calS \setminus \calS_{\text{train}}$, where the true map is $g_A': \calS_{\text{novel}} \to \{0,1\}$.
 Train predictors $\{f_i\}$ on $\calD_{\text{train}}$ so that $f_i(s) \approx g_A(s)$ for $s \in \calS_{\text{train}}$.
 Suppose the predictors share an inductive bias (e.g., conservation-based features) that leads to $f_i(s^*) \approx p$ for all $i$ on a particular $s^* \in \calS_{\text{novel}}$, but $g_A'(s^*) = 1-p$.
 This is annotation error: the predictors are biased on $s^*$.
-
 \medskip\noindent\textit{World B (Novel Biology).}
 Let $\calD_{\text{train}}$ and predictors be identical to World A, but now define $g_B'(s^*) = p$ (i.e., the predictors are correct).
 The variant $s^*$ exhibits a novel molecular mechanism — say, a gain-of-function mutation via a previously uncharacterized protein interaction interface — such that its pathogenicity score $p$ is correct even though the mechanism is absent from $\calD_{\text{train}}$.
-
 \medskip\noindent\textit{Indistinguishability.}
 By construction, the observable data — the tuple of predictor outputs $(f_1(s^*), \dots, f_M(s^*))$ — is identical in World A and World B: all $f_i(s^*) = p$.
 The likelihood of observing these outputs under World A is
@@ -408,7 +340,6 @@ and under World B is
 \begin{equation}
     \calL_B = \prod_{i=1}^{M} P(f_i(s^*) \mid g_B'(s^*) = p, s^* \in \calS_{\text{novel}}).
 \end{equation}
-
 Since the predictors' conditional output distributions given the ground truth depend on the training regime, and we are free to choose training regimes that make $\calL_A = \calL_B$, the likelihood ratio is non-identifying.
 Formally, for any decision rule $\delta: [0,1]^M \to \{\text{E1}, \text{E2}\}$, there exists a pair of worlds $(A, B)$ such that the observable distributions are identical:
 \begin{equation}
@@ -416,7 +347,6 @@ Formally, for any decision rule $\delta: [0,1]^M \to \{\text{E1}, \text{E2}\}$, 
 \end{equation}
 and yet E1 holds in A while E2 holds in B.
 The probability of correct classification is then bounded by $\frac{1}{2} + \frac{1}{2}d_{\text{TV}}(P_A, P_B) = \frac{1}{2}$.
-
 \medskip\noindent\textit{Breaking the symmetry.}
 An orthogonal measurement $\phi(s^*)$ (e.g., a multiplexed assay of variant effect, a structural biology experiment, or a functional complementation assay) provides an independent channel:
 \begin{equation}
@@ -424,26 +354,21 @@ An orthogonal measurement $\phi(s^*)$ (e.g., a multiplexed assay of variant effe
 \end{equation}
 because $\phi$ does not share the predictors' training distribution.
 A single such measurement with effect size $\Delta = |\E[\phi \mid \text{E1}] - \E[\phi \mid \text{E2}]| > 0$ and variance $\sigma_\phi^2$ reduces the Bayes error by $\Theta(\Delta^2 / \sigma_\phi^2)$.
-
 \medskip\noindent\textit{The assumption declaration requirement.}
 To prefer E1 over E2 (or vice versa) using only predictor outputs, one must explicitly assert an assumption about the relationship between $\calD_{\text{train}}$ and $\calD_{\text{novel}}$.
 For example:
-
 \begin{itemize}[leftmargin=*]
     \item \textbf{Covariate shift assumption:} $P_{\text{train}}(g \mid s) = P_{\text{novel}}(g \mid s)$ for all $s$, i.e., the phenotype map is invariant.
     \item \textbf{Lipschitz phenotype assumption:} $|P(g=1 \mid s_1) - P(g=1 \mid s_2)| \leq L \cdot d(s_1, s_2)$ for some metric $d$ on $\calS$.
     \item \textbf{Conservation sufficiency:} Evolutionary conservation scores are sufficient statistics for pathogenicity in the novel domain.
 \end{itemize}
-
 Each such assumption is a substantive biological claim that must be justified on domain grounds, not derived from the predictor outputs themselves.
 \end{proof}
-
 \begin{remark}[Regulatory Implication]
 Theorem~\ref{thm:unidentifiability} has direct consequences for the regulatory approval of AI-based variant interpretation tools.
 If a tool is marketed as applicable to ``all missense variants'' without specifying the distributional assumptions under which its predictions are valid, then any disagreement between the tool and clinical judgment is formally irresolvable.
-Regulatory frameworks (FDA, IVDR, NMPA) should require explicit ``assumption declarations'' (类似于药物说明书的适应症声明) specifying the domain of applicability.
+Regulatory frameworks (FDA, IVDR, NMPA) should require explicit ``assumption declarations'' () specifying the domain of applicability.
 \end{remark}
-
 \begin{corollary}[Necessity of Functional Data]
 \label{cor:necessity-functional}
 For any variant class $\calV_{\text{novel}}$ with $d_{\text{TV}}(\calD_{\text{train}}, \calD_{\text{novel}}) > \varepsilon$, the minimum number of orthogonal functional assays needed to achieve classification error $\alpha$ between E1 and E2 scales as
@@ -452,14 +377,11 @@ For any variant class $\calV_{\text{novel}}$ with $d_{\text{TV}}(\calD_{\text{tr
 \end{equation}
 where $\Delta$ is the assay's discriminative effect size and $\sigma_\phi^2$ is its noise variance.
 \end{corollary}
-
 % ============================================================================
 \section{The Cercis Score for Variant Predictors}
 \label{sec:cercis}
 % ============================================================================
-
 The \cercis{} Score (named after \textit{Cercis}, the redbud genus, symbolizing reliable early indicators in biological systems) is a dual-component metric that jointly quantifies a predictor's reliability and its sensitivity to evolutionary novelty.
-
 \begin{definition}[Cercis Score]
 \label{def:cercis}
 For a variant effect predictor $f$, the \textbf{\cercis{} Score} is a pair
@@ -472,54 +394,43 @@ where:
     \item $N_f \in [0,1]$ is the \textbf{novelty sensitivity}: the predictor's responsiveness to evolutionarily novel variants.
 \end{itemize}
 \end{definition}
-
 \subsection{Reliability Quotient $Q_f$}
-
 \begin{definition}[Reliability Quotient]
 The reliability quotient decomposes as
 \begin{equation}
     Q_f = \alpha \cdot Q_f^{\ClinVar} + (1-\alpha) \cdot Q_f^{\text{func}}
 \end{equation}
 with $\alpha \in [0,1]$ balancing clinical and functional evidence.
-
 \medskip\noindent\textbf{ClinVar Concordance} $Q_f^{\ClinVar}$:
 \begin{equation}
     Q_f^{\ClinVar} = \frac{\sum_{s \in \calD_{\ClinVar}} w_{\text{star}}(s) \cdot \ind\{\hat{g}_f(s) = g_{\ClinVar}(s)\}}{\sum_{s \in \calD_{\ClinVar}} w_{\text{star}}(s)}
 \end{equation}
 where $w_{\text{star}}(s)$ weights variants by ClinVar review status (0.25 for 0--1 stars, 0.5 for 2 stars, 1.0 for 3+ stars), $\hat{g}_f(s) = \ind\{f(s) > \theta_f\}$ is the thresholded prediction, and $g_{\ClinVar}(s) \in \{0,1\}$ is the ClinVar clinical annotation.
-
 \medskip\noindent\textbf{Functional Assay Correlation} $Q_f^{\text{func}}$:
 \begin{equation}
     Q_f^{\text{func}} = \max_{\phi \in \Phi} \big| \text{Spearman-}\rho\big(f(\mathbf{s}_{\text{MAVE}}),\; \phi(\mathbf{s}_{\text{MAVE}})\big) \big|
 \end{equation}
 where $\Phi$ is the set of available MAVE (Multiplexed Assay of Variant Effect) readouts and $\mathbf{s}_{\text{MAVE}}$ are the assayed variants.
-
 The ROC-AUC variant for threshold-free evaluation is:
 \begin{equation}
     Q_f^{\text{AUC}} = \int_0^1 \text{TPR}_f(\text{FPR}^{-1}_f(t)) \, dt.
 \end{equation}
 \end{definition}
-
 \subsection{Evolutionary Novelty $N_f$}
-
 \begin{definition}[Evolutionary Novelty Score]
 The novelty sensitivity $N_f$ captures the predictor's capacity to assign extreme scores to evolutionarily unexpected variants:
 \begin{equation}
     N_f = 1 - \frac{\sum_{s \in \calD_{\text{novel}}} |f(s) - \bar{f}_{\text{cons}}|}{\sum_{s \in \calD_{\text{novel}}} \max(|\bar{f}_{\text{cons}} - 0|, |\bar{f}_{\text{cons}} - 1|)}
 \end{equation}
 where $\calD_{\text{novel}}$ is a curated set of variants with known novel molecular mechanisms (e.g., de novo mutations in ultra-conserved elements, variants at CpG hotspots with unusual methylation patterns, primate-specific accelerated regions), and $\bar{f}_{\text{cons}}$ is the average score of all predictors on $s$.
-
 A predictor that always outputs near-consensus scores ($f(s) \approx \bar{f}_{\text{cons}}$) has $N_f \approx 1$ (high novelty sensitivity — it agrees that the variant is unusual), while one that contradicts the consensus on known-novel variants has $N_f \approx 0$ (low novelty sensitivity — it fails to recognize the variant as unusual).
-
 An alternative formulation uses \textbf{information-theoretic novelty}:
 \begin{equation}
     N_f^{\text{info}} = \frac{D_{\text{KL}}\big(P_f(\cdot \mid \calD_{\text{novel}}) \;\|\; P_f(\cdot \mid \calD_{\text{background}})\big)}{H(P_f(\cdot \mid \calD_{\text{novel}}))}
 \end{equation}
 where $P_f(\cdot \mid \cdot)$ is the predictor's score distribution conditioned on the variant set and $D_{\text{KL}}$ is the Kullback--Leibler divergence.
 \end{definition}
-
 \subsection{Combined Cercis Weight}
-
 \begin{definition}[Cercis Weight for Consensus]
 For use in the weighted consensus (Definition~\ref{def:consensus}), the \textbf{\cercis{} weight} of predictor $f_i$ is
 \begin{equation}
@@ -528,7 +439,6 @@ For use in the weighted consensus (Definition~\ref{def:consensus}), the \textbf{
 where $\gamma > 0$ is a temperature parameter controlling the penalty for novelty insensitivity.
 Predictors with high reliability ($Q_i \uparrow$) and low novelty penalty ($N_i \downarrow$) receive higher weight.
 \end{definition}
-
 \begin{proposition}[Monotonicity of Cercis Weighting]
 \label{prop:cercis-monotone}
 Let $\consensus_{\mathbf{w}}$ be the weighted consensus using Cercis weights.
@@ -541,15 +451,12 @@ Then for any $\gamma > 0$:
 \end{enumerate}
 The proof follows directly from the derivative of the exponential weighting function.
 \end{proposition}
-
 % ============================================================================
 \section{Situs Encoding for Protein 3D Context}
 \label{sec:situs}
 % ============================================================================
-
 The \situs{} encoding (from Latin \textit{situs}, ``position, location, site'') provides a physically grounded representation of a variant's position within the three-dimensional structure of its protein product.
 Unlike sequence-based features that treat all positions as equidistant along the primary structure, \situs{} captures the spatial relationships that govern molecular function.
-
 \begin{definition}[Situs Encoding]
 \label{def:situs}
 For a protein of length $L$ with 3D coordinates $\{\mathbf{r}_j \in \R^3\}_{j=1}^{L}$ (obtained from experimental structures or AlphaFold predictions), the \textbf{\situs{} encoding} of a variant at residue position $k$ is a tuple
@@ -572,9 +479,7 @@ where:
     \item $\mathbf{D}_k \in \R^{d_{\text{dom}}}$: a \textbf{domain embedding} indicating which protein domain and secondary structure element contains residue $k$.
 \end{itemize}
 \end{definition}
-
 \subsection{Structural Feature Computation}
-
 \begin{definition}[Situs Feature Vector]
 The full situs feature vector $\mathbf{x}_{\text{situs}} \in \R^{d_{\text{situs}}}$ for a variant $(k, \text{ref}, \text{alt})$ is:
 \begin{equation}
@@ -590,11 +495,8 @@ The full situs feature vector $\mathbf{x}_{\text{situs}} \in \R^{d_{\text{situs}
     \end{bmatrix}.
 \end{equation}
 \end{definition}
-
 \subsection{Situs Distance Metric}
-
 To quantify the structural similarity between two variants, we define a \textbf{Situs-aware distance}:
-
 \begin{definition}[Situs Distance]
 For two genomic states $s_a, s_b$ with situs encodings $\situsenc_a, \situsenc_b$:
 \begin{equation}
@@ -602,13 +504,11 @@ For two genomic states $s_a, s_b$ with situs encodings $\situsenc_a, \situsenc_b
 \end{equation}
 where $d_{\text{dom}}$ is a domain-aware metric (e.g., whether the variants lie in the same Pfam domain, same secondary structure type, or same functional annotation).
 \end{definition}
-
 \begin{lemma}[Situs Metric Completeness]
 \label{lem:situs-complete}
 The situs distance $d_{\situs}$ is a proper pseudometric on $\calS$: it satisfies non-negativity, symmetry, and the triangle inequality.
 It is not strictly a metric because $d_{\situs}(s_a, s_b) = 0$ does not imply $s_a = s_b$ (two distinct variants at the same structural position with different amino acid substitutions are indistinguishable in the situs representation alone).
 \end{lemma}
-
 \begin{proof}
 Non-negativity and symmetry are immediate from the definition.
 For the triangle inequality:
@@ -621,22 +521,16 @@ For the triangle inequality:
 \end{align}
 where each inequality follows from the triangle inequality of the respective constituent metrics.
 \end{proof}
-
 \subsection{Integration with Predictor Input}
-
 Each predictor $f_i$ receives the full genomic context state including the situs encoding.
 For predictors that do not natively consume 3D structural information (\SIFT, \CADD), the situs features are \textbf{appended} as derived input features.
 For structure-aware predictors (\PolyPhen, \AlphaMissense, \ESM{} when fine-tuned), the situs encoding serves as a \textbf{canonical structural reference} against which the predictor's internal structural representation can be audited.
-
 % ============================================================================
 \section{Multi-Algorithm Yajie Consensus}
 \label{sec:yajie}
 % ============================================================================
-
-The \yajie{} consensus protocol (named after the ancient Chinese concept of 雅洁 — ``elegant purity,'' reflecting the aspiration for clean, interpretable consensus) implements a principled multi-algorithm voting mechanism (\multiconsensus{}) that integrates the \cercis{} Score, \situs{} encoding, and the theoretical guarantees of Sections~\ref{sec:thm1}--\ref{sec:thm3}.
-
+The \yajie{} consensus protocol (named after the ancient Chinese concept of  — ``elegant purity,'' reflecting the aspiration for clean, interpretable consensus) implements a principled multi-algorithm voting mechanism (\multiconsensus{}) that integrates the \cercis{} Score, \situs{} encoding, and the theoretical guarantees of Sections~\ref{sec:thm1}--\ref{sec:thm3}.
 \subsection{Protocol Definition}
-
 \begin{definition}[Yajie Consensus Protocol]
 Given:
 \begin{itemize}[leftmargin=*]
@@ -644,41 +538,32 @@ Given:
     \item $M$ predictors $\{f_i\}_{i=1}^{M}$ with Cercis scores $\{(Q_i, N_i)\}_{i=1}^{M}$;
     \item A reference dataset $\calD_{\text{ref}} \subset \calS \times \{0,1\}$ with ground truth;
 \end{itemize}
-
 The \yajie{} consensus $\consensus_{\yajie}(s)$ is computed in four stages:
-
 \medskip\noindent\textbf{Stage 1: Calibration.}
 Each predictor's raw score is calibrated to a probability using isotonic regression fitted on $\calD_{\text{ref}}$:
 \begin{equation}
     \tilde{f}_i(s) = \text{IsoReg}_i\big(f_i(s)\big) \in [0,1].
 \end{equation}
-
 \medskip\noindent\textbf{Stage 2: Weighting.}
 Cercis weights are computed:
 \begin{equation}
     w_i = Q_i \cdot \exp(-\gamma N_i), \quad \bar{w}_i = \frac{w_i}{\sum_{j=1}^{M} w_j}.
 \end{equation}
-
 \medskip\noindent\textbf{Stage 3: Consensus Aggregation.}
 The weighted consensus is:
 \begin{equation}
     \consensus_{\yajie}(s) = \sum_{i=1}^{M} \bar{w}_i \tilde{f}_i(s).
 \end{equation}
-
 \medskip\noindent\textbf{Stage 4: Certification.}
 The prediction is certified with one of three confidence levels:
-
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Certified} (绿色/Green): $\mu(s) = |\consensus_{\yajie}(s) - \frac{1}{2}| \geq \mu_{\text{high}}$ \textbf{and} $M_{\text{eff}} \geq M_{\min}$;
-    \item \textbf{Provisional} (黄色/Yellow): $\mu_{\text{low}} \leq \mu(s) < \mu_{\text{high}}$ \textbf{or} $M_{\text{eff}} < M_{\min}$ but $\consensus_{\yajie}(s)$ agrees with the situs-nearest annotated variant;
-    \item \textbf{Uncertain} (红色/Red): $\mu(s) < \mu_{\text{low}}$ (consensus near the decision boundary), triggering a recommendation for orthogonal assay.
+    \item \textbf{Certified} (/Green): $\mu(s) = |\consensus_{\yajie}(s) - \frac{1}{2}| \geq \mu_{\text{high}}$ \textbf{and} $M_{\text{eff}} \geq M_{\min}$;
+    \item \textbf{Provisional} (/Yellow): $\mu_{\text{low}} \leq \mu(s) < \mu_{\text{high}}$ \textbf{or} $M_{\text{eff}} < M_{\min}$ but $\consensus_{\yajie}(s)$ agrees with the situs-nearest annotated variant;
+    \item \textbf{Uncertain} (/Red): $\mu(s) < \mu_{\text{low}}$ (consensus near the decision boundary), triggering a recommendation for orthogonal assay.
 \end{itemize}
-
 Default thresholds: $\mu_{\text{high}} = 0.35$, $\mu_{\text{low}} = 0.15$, $M_{\min} = 3$, $\gamma = 1.0$.
 \end{definition}
-
 \subsection{Algorithm}
-
 \begin{algorithm}[ht]
 \caption{\yajie{} Multi-Algorithm Consensus (\multiconsensus{})}
 \label{alg:yajie}
@@ -713,9 +598,7 @@ Default thresholds: $\mu_{\text{high}} = 0.35$, $\mu_{\text{low}} = 0.15$, $M_{\
 \State \Return $(\consensus, \ell, \mu, M_{\text{eff}}, \Delta_{\situs})$
 \end{algorithmic}
 \end{algorithm}
-
 \subsection{Theoretical Properties}
-
 \begin{theorem}[Yajie Consensus Error Bound]
 \label{thm:yajie-error}
 Let $\consensus_{\yajie}$ be the Yajie consensus of $M$ predictors with Cercis weights $\{\bar{w}_i\}$.
@@ -725,12 +608,10 @@ If the calibration $\tilde{f}_i$ is $\varepsilon_c$-calibrated (i.e., $|\E[\tild
 \end{equation}
 where $\tilde{M}_{\text{eff}} = \big(\sum_i \bar{w}_i^2\big)^{-1}$ is the effective sample size under importance weighting and $(x)_+ = \max(x, 0)$.
 \end{theorem}
-
 \begin{proof}
 Under calibration, the weighted consensus can be written as $\consensus_{\yajie}(s) = \sum_i \bar{w}_i (g(s) + b_i + \eta_i)$ where $b_i$ is residual bias with $|b_i| \leq \varepsilon_c$, and $\eta_i$ is mean-zero noise.
 The result follows by applying Bernstein's inequality to the weighted sum with effective sample size $\tilde{M}_{\text{eff}}$, noting that the calibration bound $\varepsilon_c$ shifts the detectable deviation threshold.
 \end{proof}
-
 \begin{proposition}[Situs Nearest-Neighbor Guarantee]
 \label{prop:situs-guarantee}
 If the phenotype map $g: \calS \to \{0,1\}$ is $L$-Lipschitz with respect to $d_{\situs}$, then for any state $s$ with situs-nearest annotated neighbor $s^*$ at distance $\Delta_{\situs}$,
@@ -740,32 +621,23 @@ If the phenotype map $g: \calS \to \{0,1\}$ is $L$-Lipschitz with respect to $d_
 Consequently, when $\Delta_{\situs} < 1/(2L)$, the situs-nearest-neighbor label equals the true label $g(s)$.
 This provides a \textbf{structural consistency check} that is independent of predictor outputs, partially addressing the unidentifiability of Theorem~\ref{thm:unidentifiability}.
 \end{proposition}
-
 \begin{proof}
 Direct consequence of the Lipschitz condition: if $g$ is $L$-Lipschitz, then $|g(s_1) - g(s_2)| \leq L \cdot d_{\situs}(s_1, s_2)$ for all $s_1, s_2 \in \calS$.
 The binary constraint $g \in \{0,1\}$ implies that $|g(s) - g(s^*)| \in \{0, 1\}$.
 Thus, if $L \cdot \Delta_{\situs} < 1$, we must have $|g(s) - g(s^*)| = 0$, i.e., $g(s) = g(s^*)$.
 \end{proof}
-
 % ============================================================================
 \section{Experimental Protocol}
 \label{sec:experimental}
 % ============================================================================
-
 We outline a comprehensive experimental protocol to validate the \SCX{} genomic audit framework across three complementary data modalities.
-
 \subsection{Datasets}
-
 \begin{enumerate}[leftmargin=*,label=\textbf{D\arabic*}]
     \item \textbf{\ClinVar{} (Clinical Annotations)}: The NCBI ClinVar database~\cite{landrum2018clinvar}, filtered to missense variants with review status of at least 2 stars. Approx.\ 75,000 pathogenic and 120,000 benign variants after deduplication and quality filtering. Used for: (i) Cercis reliability quotient $Q_f^{\ClinVar}$, (ii) calibration set for isotonic regression, (iii) test set for consensus certification.
-    
     \item \textbf{\gnomAD{} (Population Frequencies)}: Genome Aggregation Database v4.1~\cite{chen2024genomic}, providing allele frequencies across diverse populations. Used for: (i) evolutionary novelty validation (variants absent from \gnomAD{} are candidates for novel biology), (ii) population-stratified calibration (detecting predictors that perform differently across ancestry groups).
-    
     \item \textbf{\MAVE{} (Functional Assays)}: Multiplexed Assays of Variant Effect~\cite{esposito2019mavedb, weile2017framework}, including: BRCA1 RING domain (389 variants), PTEN phosphatase domain (4,112 variants), TP53 DNA-binding domain (8,258 variants), and additional targets from MaveDB. Used for: (i) functional assay correlation $Q_f^{\text{func}}$, (ii) ground truth for novel variant classes, (iii) validation of the unidentifiability theorem via controlled domain shifts.
 \end{enumerate}
-
 \subsection{Predictors Evaluated}
-
 \begin{table}[ht]
 \centering
 \caption{Variant effect predictors evaluated in the \SCX{} genomics audit.}
@@ -784,52 +656,41 @@ We outline a comprehensive experimental protocol to validate the \SCX{} genomic 
 \bottomrule
 \end{tabular}
 \end{table}
-
 \subsection{Evaluation Metrics}
-
 \begin{definition}[SCX Genomics Audit Metrics]
 \label{def:metrics}
 The evaluation suite includes:
-
 \begin{enumerate}[leftmargin=*,label=\textbf{M\arabic*}]
     \item \textbf{Consensus Calibration Error (CCE)}:
     \begin{equation}
         \text{CCE} = \frac{1}{|\calD_{\text{test}}|} \sum_{s \in \calD_{\text{test}}} \big|\consensus_{\yajie}(s) - g(s)\big|.
     \end{equation}
-    
     \item \textbf{Certification Coverage}:
     \begin{equation}
         \text{Coverage} = \frac{|\{s \in \calD_{\text{test}} : \ell(s) = \text{Certified}\}|}{|\calD_{\text{test}}|}.
     \end{equation}
-    
     \item \textbf{Certified Accuracy}:
     \begin{equation}
         \text{Acc}_{\text{cert}} = \frac{|\{s : \ell(s) = \text{Certified} \land \hat{g}(s) = g(s)\}|}{|\{s : \ell(s) = \text{Certified}\}|}.
     \end{equation}
-    
     \item \textbf{Novel Biology Detection Rate}:
     \begin{equation}
         \text{NBDR} = \frac{|\{s \in \calD_{\text{novel}} : \ell(s) = \text{Uncertain}\}|}{|\calD_{\text{novel}}|}
     \end{equation}
     — the fraction of truly novel variants correctly flagged as uncertain.
-    
     \item \textbf{Effective Multiplicity Stability}:
     \begin{equation}
         \sigma_{M_{\text{eff}}} = \text{std}\big(M_{\text{eff}}(\calD_{\text{train}}), M_{\text{eff}}(\calD_{\text{test}})\big)
     \end{equation}
     — stability of effective multiplicity across data splits.
-    
     \item \textbf{Ancestry-Stratified Fairness}:
     \begin{equation}
         \Delta_{\text{pop}} = \max_{p,q \in \text{populations}} \big| \text{AUC}_f(\calD_p) - \text{AUC}_f(\calD_q) \big|.
     \end{equation}
 \end{enumerate}
 \end{definition}
-
 \subsection{Experiment 1: Multi-Predictor Error Detection Validation}
-
 \textbf{Objective:} Empirically validate Theorem~\ref{thm:multi-error} by injecting controlled annotation errors.
-
 \textbf{Protocol:}
 \begin{enumerate}[leftmargin=*]
     \item Select $N = 10,000$ ClinVar variants with high-confidence annotations (3+ stars).
@@ -838,11 +699,8 @@ The evaluation suite includes:
     \item For each $\eta$, compute: (a) whether the consensus error exceeds the theoretical bound, (b) the empirical detection rate, (c) the fraction of variants correctly flagged as ``Uncertain'' by the Yajie protocol.
     \item Compare empirical detection rates against the theoretical bound $2\exp(-2M_{\text{eff}}\tau^2)$.
 \end{enumerate}
-
 \subsection{Experiment 2: Unidentifiability Demonstration}
-
 \textbf{Objective:} Demonstrate Theorem~\ref{thm:unidentifiability} through a controlled domain-shift experiment.
-
 \textbf{Protocol:}
 \begin{enumerate}[leftmargin=*]
     \item Partition ClinVar variants by gene family: ``training genes'' (with known functional domains present in all predictors' training sets) and ``held-out genes'' (recently characterized gene families absent from training).
@@ -851,11 +709,8 @@ The evaluation suite includes:
     \item Quantify the empirical unidentifiability rate: the fraction of discordant variants where both explanations remain plausible.
     \item Demonstrate resolution via orthogonal assay by comparing classification accuracy with vs.\ without MAVE data.
 \end{enumerate}
-
 \subsection{Experiment 3: Cercis Score Calibration}
-
 \textbf{Objective:} Compute and validate Cercis scores for all seven predictors.
-
 \textbf{Protocol:}
 \begin{enumerate}[leftmargin=*]
     \item Compute $Q_f^{\ClinVar}$ on the ClinVar test set ($\alpha = 0.6$).
@@ -864,11 +719,8 @@ The evaluation suite includes:
     \item Scan $\gamma \in [0.1, 10.0]$ to determine optimal temperature for Cercis weighting.
     \item Report the Cercis score table and weight stability across $\gamma$ values.
 \end{enumerate}
-
 \subsection{Experiment 4: Situs Encoding Validation}
-
 \textbf{Objective:} Validate the structural consistency guarantee (Proposition~\ref{prop:situs-guarantee}).
-
 \textbf{Protocol:}
 \begin{enumerate}[leftmargin=*]
     \item Obtain AlphaFold2-predicted structures for all proteins in the ClinVar missense set.
@@ -881,11 +733,8 @@ The evaluation suite includes:
     \item Estimate the Lipschitz constant $L$ via logistic regression of label agreement on situs distance.
     \item Identify the situs distance threshold $\Delta_{\situs}^{\max}$ below which label transfer is reliable ($>95\%$ accuracy).
 \end{enumerate}
-
 \subsection{Experiment 5: End-to-End Yajie Consensus}
-
 \textbf{Objective:} Benchmark the full Yajie consensus protocol.
-
 \textbf{Protocol:}
 \begin{enumerate}[leftmargin=*]
     \item Run Algorithm~\ref{alg:yajie} on the full ClinVar + gnomAD + MAVE combined test set.
@@ -894,52 +743,39 @@ The evaluation suite includes:
     \item Stratify results by: variant type (missense, nonsense, splice-site), gene constraint (pLI score), population frequency bin, and structural context (core vs.\ surface, active site vs.\ peripheral).
     \item Measure ancestry-stratified fairness across gnomAD populations (AFR, AMR, EAS, EUR, SAS).
 \end{enumerate}
-
 % ============================================================================
 \section{Discussion}
 \label{sec:discussion}
 % ============================================================================
-
 \subsection{Summary of Contributions}
-
 We have presented \SCX-Audited Genomics, a formal framework for certifying variant pathogenicity predictions through multi-algorithm consensus (\multiconsensus{}).
 Our framework makes three foundational contributions at the intersection of computational genomics and algorithmic auditing.
-
 \textbf{Theoretical.}
 Theorem~\ref{thm:multi-error} provides a rigorous bound on the detectability of systematic annotation errors, accounting explicitly for predictor correlation through the effective multiplicity $M_{\text{eff}}$.
 The bound reveals that adding highly correlated predictors yields diminishing returns — a phenomenon well-known empirically~\cite{pejaver2022evidence} but not previously characterized with formal statistical guarantees.
 Theorem~\ref{thm:unidentifiability} establishes that, absent explicit distributional assumptions, computational predictors alone cannot distinguish their own biases from genuinely novel biology.
 This result has profound implications for the deployment of AI-based variant interpretation in clinical settings: it implies that any fully automated system must either (a) restrict its domain of applicability through an explicit assumption declaration, or (b) incorporate orthogonal experimental evidence.
-
 \textbf{Methodological.}
 The \cercis{} Score provides a principled, dual-axis evaluation of predictor quality.
 By separating \textit{reliability} (concordance with existing knowledge) from \textit{novelty sensitivity} (responsiveness to evolutionary innovation), the score avoids conflating two distinct aspects of predictor performance that are often collapsed into a single AUC metric.
 The \situs{} encoding offers a physically grounded representation of protein structural context that can serve as a ``structural consistency check'' — partially circumventing the unidentifiability result by leveraging orthogonal 3D information.
 The \yajie{} consensus protocol synthesizes these components into an actionable clinical decision support tool with three-tier certification.
-
 \textbf{Experimental.}
 Our experimental protocol is designed to provide rigorous empirical validation of all theoretical claims.
 The use of MAVE data as a ``ground truth bridge'' between computational predictions and biological reality is particularly important: MAVE experiments provide quantitative, high-throughput functional measurements that are orthogonal to all computational predictors, making them the ideal arbiter for unidentifiability resolution.
-
 \subsection{Clinical and Regulatory Implications}
-
 The unidentifiability theorem has direct regulatory consequences.
 Under the FDA's proposed framework for AI/ML-based Software as a Medical Device (SaMD)~\cite{fda2021aiml}, and the EU's In Vitro Diagnostic Regulation (IVDR), computational variant interpretation tools must demonstrate analytical and clinical validity.
 Theorem~\ref{thm:unidentifiability} implies that demonstrating validity requires either:
-
 \begin{enumerate}[leftmargin=*,label=(\roman*)]
-    \item \textbf{Assumption declaration} (假设声明): An explicit statement of the distributional conditions under which the tool's predictions are guaranteed to be valid, analogous to a drug's ``indications for use'' (适应症);
-    \item \textbf{Orthogonal evidence} (正交证据): Integration of experimental data (MAVE, functional assays) for variants that fall outside the declared domain;
-    \item \textbf{Uncertainty quantification} (不确定性量化): A principled method to flag variants for which the tool's predictions should not be trusted — which our Yajie ``Uncertain'' certification level provides.
+    \item \textbf{Assumption declaration} (): An explicit statement of the distributional conditions under which the tool's predictions are guaranteed to be valid, analogous to a drug's ``indications for use'' ();
+    \item \textbf{Orthogonal evidence} (): Integration of experimental data (MAVE, functional assays) for variants that fall outside the declared domain;
+    \item \textbf{Uncertainty quantification} (): A principled method to flag variants for which the tool's predictions should not be trusted — which our Yajie ``Uncertain'' certification level provides.
 \end{enumerate}
-
 We recommend that regulatory submissions for AI-based variant interpretation tools include a \textbf{Cercis Score report} and an \textbf{Assumption Declaration Document} (ADD), specifying the training distribution, the claimed domain of applicability, and the explicit assumptions that justify extrapolation beyond the training domain.
-
 \subsection{Connection to SCX Framework}
-
 This work instantiates the general \SCX{} audit framework~\cite{scxframework} for the specific domain of genomic variant interpretation.
 The mapping is as follows:
-
 \begin{table}[ht]
 \centering
 \caption{\SCX{} framework mapping for genomics audit.}
@@ -958,170 +794,134 @@ Structural Context & Situs encoding (Definition~\ref{def:situs}) \\
 \bottomrule
 \end{tabular}
 \end{table}
-
 This instantiation demonstrates the generality of the \SCX{} approach: the same formal machinery that audits code-generation models or financial models can be specialized to audit genomic variant interpretation, provided the domain-specific state space, expert functions, and reference data are appropriately defined.
-
 \subsection{Limitations and Future Work}
-
 Several limitations merit discussion.
 \textbf{First}, the effective multiplicity $M_{\text{eff}}$ depends on the choice of reference dataset for computing correlations; correlations estimated on ClinVar may not generalize to novel variant classes.
 Future work should explore Bayesian hierarchical models that allow $M_{\text{eff}}$ to vary across genomic contexts.
 \textbf{Second}, the situs encoding currently requires high-quality protein structures, which are unavailable for $\sim 15\%$ of human protein-coding genes; AlphaFold predictions partially address this gap but introduce their own uncertainty.
 \textbf{Third}, our experimental protocol uses existing MAVE datasets which are biased toward cancer-related genes; expanding to diverse functional assays (e.g., metabolic enzymes, ion channels, transcription factors) is essential for comprehensive validation.
 \textbf{Fourth}, the Yajie consensus three-tier system involves threshold parameters ($\mu_{\text{high}}$, $\mu_{\text{low}}$, $M_{\min}$, $\gamma$) that require domain-specific tuning; automated threshold optimization using cost-sensitive learning is a natural extension.
-
 \textbf{Future directions} include:
 \begin{itemize}[leftmargin=*]
     \item Extending the framework to non-coding variants (promoters, enhancers, splice sites), where predictors are less mature and the need for audit is even greater;
-    \item Incorporating population-specific \cercis{} Scores to address health equity (\genome{}公平性) — ensuring that variant interpretation performs equitably across ancestry groups;
+    \item Incorporating population-specific \cercis{} Scores to address health equity (\genome{}) — ensuring that variant interpretation performs equitably across ancestry groups;
     \item Developing a real-time \SCX{} audit dashboard for clinical genomics labs, integrating live predictor outputs with MAVE updates;
     \item Formalizing the ``assumption declaration document'' as a machine-readable specification that can be automatically verified against predictor behavior.
 \end{itemize}
-
 \subsection{Conclusion}
-
 The interpretation of human genetic variation stands at a critical juncture.
 Computational predictors have achieved remarkable accuracy on benchmark datasets, yet their deployment in clinical settings is hampered by unresolved questions about reliability, bias, and domain of applicability.
 The \SCX-Audited Genomics framework provides a rigorous, theoretically grounded approach to these questions, transforming variant pathogenicity prediction from a black-box exercise into a certifiable, auditable process.
 By acknowledging the fundamental limits of computational prediction (Theorem~\ref{thm:unidentifiability}) while providing tools to operate within those limits (Cercis Score, Situs encoding, Yajie consensus), we aim to accelerate the safe and equitable translation of genomic AI into clinical practice.
-
 % ============================================================================
 \FloatBarrier
 \bibliographystyle{plain}
 \begin{thebibliography}{99}
-
 \bibitem{karczewski2020mutational}
 K.~J.~Karczewski \textit{et al.},
 ``The mutational constraint spectrum quantified from variation in 141,456 humans,''
 \textit{Nature}, vol.~581, pp.~434--443, 2020.
-
 \bibitem{richards2015standards}
 S.~Richards \textit{et al.},
 ``Standards and guidelines for the interpretation of sequence variants,''
 \textit{Genetics in Medicine}, vol.~17, no.~5, pp.~405--424, 2015.
-
 \bibitem{ng2003sift}
 P.~C.~Ng and S.~Henikoff,
 ``SIFT: Predicting amino acid changes that affect protein function,''
 \textit{Nucleic Acids Research}, vol.~31, no.~13, pp.~3812--3814, 2003.
-
 \bibitem{adzhubei2010method}
 I.~A.~Adzhubei \textit{et al.},
 ``A method and server for predicting damaging missense mutations,''
 \textit{Nature Methods}, vol.~7, no.~4, pp.~248--249, 2010.
-
 \bibitem{kircher2014general}
 M.~Kircher \textit{et al.},
 ``A general framework for estimating the relative pathogenicity of human genetic variants,''
 \textit{Nature Genetics}, vol.~46, no.~3, pp.~310--315, 2014.
-
 \bibitem{ioannidis2016revel}
 N.~M.~Ioannidis \textit{et al.},
 ``REVEL: an ensemble method for predicting the pathogenicity of rare missense variants,''
 \textit{American Journal of Human Genetics}, vol.~99, no.~4, pp.~877--885, 2016.
-
 \bibitem{sundaram2018predicting}
 L.~Sundaram \textit{et al.},
 ``Predicting the clinical impact of human mutation with deep neural networks,''
 \textit{Nature Genetics}, vol.~50, no.~8, pp.~1161--1170, 2018.
-
 \bibitem{cheng2023accurate}
 J.~Cheng \textit{et al.},
 ``Accurate proteome-wide missense variant effect prediction with AlphaMissense,''
 \textit{Science}, vol.~381, no.~6664, 2023.
-
 \bibitem{meier2021language}
 J.~Meier \textit{et al.},
 ``Language models enable zero-shot prediction of the effects of mutations on protein function,''
 \textit{Advances in Neural Information Processing Systems}, vol.~34, 2021.
-
 \bibitem{pejaver2022evidence}
 V.~Pejaver \textit{et al.},
 ``Evidence-based calibration of computational tools for missense variant pathogenicity classification,''
 \textit{American Journal of Human Genetics}, vol.~109, no.~12, pp.~2163--2177, 2022.
-
 \bibitem{metaxas2024algorithmic}
 D.~Metaxas \textit{et al.},
 ``Algorithmic auditing: A systematic review and research agenda,''
 \textit{arXiv preprint}, 2024.
-
 \bibitem{frazer2021disease}
 J.~Frazer \textit{et al.},
 ``Disease variant prediction with deep generative models of evolutionary data,''
 \textit{Nature}, vol.~599, pp.~91--95, 2021.
-
 \bibitem{rausell2024bayesian}
 A.~Rausell \textit{et al.},
 ``Bayesian integration of variant effect predictors,''
 \textit{Bioinformatics}, 2024.
-
 \bibitem{rehm2015clingen}
 H.~L.~Rehm \textit{et al.},
 ``ClinGen — the clinical genome resource,''
 \textit{New England Journal of Medicine}, vol.~372, pp.~2235--2242, 2015.
-
 \bibitem{kish1965survey}
 L.~Kish,
 \textit{Survey Sampling}. Wiley, 1965.
-
 \bibitem{efron1981jackknife}
 B.~Efron and C.~Stein,
 ``The jackknife estimate of variance,''
 \textit{Annals of Statistics}, vol.~9, no.~3, pp.~586--596, 1981.
-
 \bibitem{landrum2018clinvar}
 M.~J.~Landrum \textit{et al.},
 ``ClinVar: improving access to variant interpretations and supporting evidence,''
 \textit{Nucleic Acids Research}, vol.~46, no.~D1, pp.~D1062--D1067, 2018.
-
 \bibitem{chen2024genomic}
 S.~Chen \textit{et al.},
 ``A genomic mutational constraint map based upon variation in 807,844 individuals,''
 \textit{Nature}, 2024.
-
 \bibitem{esposito2019mavedb}
 D.~Esposito \textit{et al.},
 ``MaveDB: an open-source platform to distribute and interpret data from multiplexed assays of variant effect,''
 \textit{Genome Biology}, vol.~20, no.~1, 2019.
-
 \bibitem{weile2017framework}
 J.~Weile \textit{et al.},
 ``A framework for exhaustively mapping functional missense variants,''
 \textit{Molecular Systems Biology}, vol.~13, no.~12, 2017.
-
 \bibitem{fda2021aiml}
 U.S.~Food and Drug Administration,
 ``Artificial Intelligence/Machine Learning (AI/ML)-Based Software as a Medical Device (SaMD) Action Plan,''
 2021.
-
 \bibitem{scxframework}
 \SCX{} Working Group,
 ``SCX: A Framework for Supercomputing Certification Exchange,''
 Technical Report, Nous Research \& , 2025.
-
 \bibitem{hoeffding1963probability}
 W.~Hoeffding,
 ``Probability inequalities for sums of bounded random variables,''
 \textit{Journal of the American Statistical Association}, vol.~58, no.~301, pp.~13--30, 1963.
-
 \bibitem{webb2020deep}
 B.~Webb and A.~Sali,
 ``Protein structure modeling with MODELLER,''
 \textit{Methods in Molecular Biology}, 2020.
-
 \bibitem{jumper2021highly}
 J.~Jumper \textit{et al.},
 ``Highly accurate protein structure prediction with AlphaFold,''
 \textit{Nature}, vol.~596, pp.~583--589, 2021.
-
 \end{thebibliography}
-
 \newpage
 \appendix
 \section{Supplementary Proofs}
-
 \subsection{Proof of Effective Multiplicity Bound (Corollary~\ref{cor:corr-penalty})}
-
 \begin{proof}
 Consider adding a new predictor $f_{M+1}$ with average correlation $\bar{\rho}_{\text{new}}$ to the existing $M$-predictor panel.
 The new effective multiplicity is
@@ -1136,9 +936,7 @@ From the definition of average correlation:
 The change $\Delta M_{\text{eff}} = M_{\text{eff}}' - M_{\text{eff}}$ can be bounded by Taylor expansion around the current value, yielding the stated bound.
 In the limit $M \to \infty$, $\bar{\rho}' \to \bar{\rho}$, so $M_{\text{eff}}' \to 1/\bar{\rho}$, confirming the finite asymptotic limit.
 \end{proof}
-
 \subsection{Calibration Details: Isotonic Regression}
-
 For completeness, we specify the isotonic regression procedure used in \yajie{} Stage~1.
 Given calibration data $\{(f_i(s_j), g(s_j))\}_{j=1}^{N_{\text{cal}}}$, isotonic regression solves:
 \begin{equation}
@@ -1146,9 +944,7 @@ Given calibration data $\{(f_i(s_j), g(s_j))\}_{j=1}^{N_{\text{cal}}}$, isotonic
 \end{equation}
 subject to monotonicity, where the $f_i(s_j)$ are sorted in ascending order.
 The resulting step function $\text{IsoReg}_i(\cdot)$ is applied to new scores via linear interpolation between steps.
-
 \subsection{Summary of Notation}
-
 \begin{table}[ht]
 \centering
 \caption{Notation glossary.}
@@ -1175,5 +971,4 @@ $\ell \in \{\text{Certified}, \text{Provisional}, \text{Uncertain}\}$ & Certific
 \bottomrule
 \end{tabular}
 \end{table}
-
 \end{document}
