@@ -112,7 +112,18 @@ ef{thm:od_hodge_fix}, where→Here)。编译通过33页PDF |
 | scx_info_geo_game | ✅ | 18页, Fisher-Rao重写NPE均衡, 编译通过 |
 | scx_lie_concentration | ✅ | 21页, O(d)上Lévy型集中不等式, 编译通过 |
 | THEORY_INVENTORY (3份) | ✅ | SCX理论/Gauge/博弈论完整盘点 |
-| THEORY_SYNTHESIS | ⏳ | 5方向交叉合成, 边界空隙+可推导数学, 进行中 |
+| THEORY_SYNTHESIS | ✅ | 5方向交叉合成, 边界空隙+可推导数学, 42KB |
+
+### 原型论文文件清单
+
+| 论文 | 主文件 | 编译输出 | 页数 |
+|------|------|------|:--:|
+| 拓扑采纳动力学 | `papers/scx_topological_adoption/main.tex` | `main.pdf` (137KB) | 15 |
+| 信息几何博弈论 | `papers/scx_info_geo_game/main.tex` | `main.pdf` (1MB) | 18 |
+| 流形集中不等式 | `papers/scx_lie_concentration/main.tex` | `main.pdf` (947KB) | 21 |
+
+> 注：上述目录中的 `.aux` `.log` `.out` `.toc` 为 LaTeX 编译中间文件，`.pdf` 为编译输出。
+> 所有文件直接纳入版本管理，不使用 .gitignore 排除。
 
 ## 本轮关键发现 · 2026-07-03
 
