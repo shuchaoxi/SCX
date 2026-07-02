@@ -2,7 +2,6 @@
 \documentclass[11pt,a4paper]{article}
 
 % ── SCX Framework Standard Packages ──────────────────────────
-\usepackage{fontspec}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
 \usepackage{bm}
@@ -18,8 +17,6 @@
 \usepackage{algpseudocode}
 
 % CJK support via fontspec (XeLaTeX/LuaLaTeX)
-\usepackage{xeCJK}
-\setCJKmainfont{SimSun}
 
 \geometry{margin=1in}
 
@@ -93,7 +90,7 @@
 % ── Info ──────────────────────────────────────────────────────
 \title{\textbf{SCX-Audited Legal Evidence:}\\[4pt]
 \large Multi-Witness Certification and the Mathematical Foundations of Cross-Examination\\[6pt]
-\small SCX审计法律证据：多证人认证与交叉质询的数学基础}
+\small SCX}
 
 \author{SCX}
 \date{\today}
@@ -104,16 +101,16 @@
 \begin{abstract}
 We formalize legal evidence evaluation as a multi-expert audit problem under the \SCX{} (Structured Causal eXamination) framework. In this formulation, each legal witness $w \in \witnessSet$ is an \textbf{expert} who produces a \textbf{testimony} $\tau_w = (m_w, \mathcal{A}_w)$ consisting of a factual claim $m_w$ and a set of declared assumptions $\mathcal{A}_w$ under which the claim holds. Cross-examination is modeled as an \textbf{audit procedure} $\crossexam$ that interrogates the internal consistency and assumption-coverage of each testimony. Corroborating testimonies across independent witnesses form a \Yajie{} \textbf{consensus} with bounded error probability; contradictory testimonies yield a \textbf{discrepancy signal} $\discrepancy$ whose source is unidentifiable without declared assumptions. The evidence chain is formalized as a \textbf{cryptographic hash chain} $\evidenceChain = (e_0, \ldots, e_K)$ where $h_i = \hashFunc(e_i \| h_{i-1})$, guaranteeing tamper-proof sequential integrity.
 
-We prove three core theorems. \textbf{Theorem~1 (Multi-Witness Corroboration 多证人佐证):} With $M$ conditionally independent witnesses each having credibility $\rho_w$, the probability that an incorrect fact survives unanimous corroboration decays as $\exp(-2M_{\mathrm{eff}}\,\rho_{\min}^2)$. \textbf{Theorem~2 (Hearsay as Self-Audit 传闻证据的Self-Audit不可辨识性):} When witness $A$ testifies about witness $B$'s statement, the fact asserted by $B$ is unidentifiable without $B$'s original declaration---hearsay is mathematically equivalent to a self-audit loop and provides zero independent corroboration. \textbf{Theorem~3 (Perjury Detection via Adversarial Cross-Examination 伪证检测与对抗性质询):} A perjurious witness---one who actively fabricates testimony ($\perjury$ regime)---is detected by adversarial cross-examination with probability approaching $1$ exponentially in the number of independent lines of questioning $Q$, while a truthful witness is falsely flagged with probability exponentially small in $Q$.
+We prove three core theorems. \textbf{Theorem~1 (Multi-Witness Corroboration ):} With $M$ conditionally independent witnesses each having credibility $\rho_w$, the probability that an incorrect fact survives unanimous corroboration decays as $\exp(-2M_{\mathrm{eff}}\,\rho_{\min}^2)$. \textbf{Theorem~2 (Hearsay as Self-Audit Self-Audit):} When witness $A$ testifies about witness $B$'s statement, the fact asserted by $B$ is unidentifiable without $B$'s original declaration---hearsay is mathematically equivalent to a self-audit loop and provides zero independent corroboration. \textbf{Theorem~3 (Perjury Detection via Adversarial Cross-Examination ):} A perjurious witness---one who actively fabricates testimony ($\perjury$ regime)---is detected by adversarial cross-examination with probability approaching $1$ exponentially in the number of independent lines of questioning $Q$, while a truthful witness is falsely flagged with probability exponentially small in $Q$.
 
 Beyond the theorems, we develop the \Yajie{} consensus protocol for weighted aggregation of witness testimonies under correlation, the \Cercis{} evidence score for ranking testimonies by accuracy and novelty, and the \Spring{} gating mechanism for detecting regime transitions from credible testimony to perjury. The framework provides a rigorous mathematical foundation for core legal doctrines---corroboration requirements, hearsay exclusion, chain-of-custody, and cross-examination---unifying them under a single audit-theoretic structure.
 
 \medskip
-\noindent\textbf{Keywords:} SCX auditing, legal evidence 法律证据, witness certification 证人认证, cross-examination 交叉质询, evidence chain 证据链, hearsay rule 传闻证据规则, perjury detection 伪证检测, multi-expert verification 多专家验证, cryptographic hash chain 加密哈希链, \Yajie{} consensus, \Cercis{} scoring, adversarial audit 对抗审计
+\noindent\textbf{Keywords:} SCX auditing, legal evidence , witness certification , cross-examination , evidence chain , hearsay rule , perjury detection , multi-expert verification , cryptographic hash chain , \Yajie{} consensus, \Cercis{} scoring, adversarial audit 
 \end{abstract}
 
 %=====================================================================
-\section{Introduction 引言}
+\section{Introduction }
 %=====================================================================
 
 Legal fact-finding is fundamentally an \textbf{information aggregation problem under adversarial conditions}. A tribunal must determine the truth of a proposition $\fact$ (``the defendant was at location $L$ at time $t$,'' ``the contract was signed on date $D$,'' ``the chemical composition of the sample is $X$'') based on testimonies $\{\tau_w\}_{w \in \witnessSet}$ from witnesses who may have imperfect perception, memory, or incentives. The legal system has developed elaborate procedural rules---cross-examination, corroboration requirements, hearsay exclusions, chain-of-custody doctrines---that encode centuries of practical wisdom about information quality. However, these rules lack a \textbf{unified mathematical foundation} that quantifies their individual and collective contribution to truth-finding accuracy.
@@ -121,9 +118,9 @@ Legal fact-finding is fundamentally an \textbf{information aggregation problem u
 Three developments motivate a formal treatment:
 
 \begin{enumerate}[label=(\roman*)]
-    \item \textbf{Multi-source evidence proliferation 多源证据扩散.} Modern litigation increasingly involves heterogeneous evidence types: eyewitness testimony, digital forensics (emails, metadata, server logs), forensic science (DNA, fingerprint, ballistics), financial records, surveillance footage, and expert analysis. Each source constitutes a distinct ``expert'' with its own error characteristics, detection power, and potential failure modes.
-    \item \textbf{Cryptographic integrity tools 加密完整性工具.} Hash-chain techniques from cryptography provide rigorous tools for establishing evidence chain integrity---ensuring that a piece of evidence has not been altered, inserted, or deleted between collection and presentation. These tools have a natural mathematical structure that maps directly to legal chain-of-custody requirements.
-    \item \textbf{Adversarial cross-examination 对抗性质询.} Cross-examination is an adversarial audit: the opposing party probes a witness's testimony for internal inconsistencies, contradictions with other evidence, and assumption violations. This is structurally identical to the \SCX{} audit procedure, where multiple independent auditors examine a claim under heterogeneous assumptions.
+    \item \textbf{Multi-source evidence proliferation .} Modern litigation increasingly involves heterogeneous evidence types: eyewitness testimony, digital forensics (emails, metadata, server logs), forensic science (DNA, fingerprint, ballistics), financial records, surveillance footage, and expert analysis. Each source constitutes a distinct ``expert'' with its own error characteristics, detection power, and potential failure modes.
+    \item \textbf{Cryptographic integrity tools .} Hash-chain techniques from cryptography provide rigorous tools for establishing evidence chain integrity---ensuring that a piece of evidence has not been altered, inserted, or deleted between collection and presentation. These tools have a natural mathematical structure that maps directly to legal chain-of-custody requirements.
+    \item \textbf{Adversarial cross-examination .} Cross-examination is an adversarial audit: the opposing party probes a witness's testimony for internal inconsistencies, contradictions with other evidence, and assumption violations. This is structurally identical to the \SCX{} audit procedure, where multiple independent auditors examine a claim under heterogeneous assumptions.
 \end{enumerate}
 
 The \SCX{} auditing framework~\cite{SCX2025} provides rigorous tools for this setting. Its core mechanisms---multi-expert consensus detection via the \Yajie{} protocol, error-source unidentifiability analysis, and regime-shift detection via \Spring{} gating---translate naturally to legal evidence evaluation. The central insight is that \textbf{witnesses are experts and cross-examination is an audit}: every legal doctrine about evidence quality can be expressed as a mathematical constraint on the expert audit protocol, and every such constraint has a provable effect on truth-detection probability.
@@ -139,14 +136,14 @@ The \SCX{} auditing framework~\cite{SCX2025} provides rigorous tools for this se
 \toprule
 \textbf{Legal Concept} & \textbf{SCX Analog} & \textbf{Chinese} \\
 \midrule
-Witness & Expert & 证人 $\leftrightarrow$ 专家 \\
-Testimony & Claim with declared assumptions & 证言 $\leftrightarrow$ 声明+假设 \\
-Cross-examination & Audit procedure $\crossexam$ & 交叉质询 $\leftrightarrow$ 审计 \\
-Corroboration & \Yajie{} consensus & 佐证 $\leftrightarrow$ 共识 \\
-Contradiction & Discrepancy signal $\discrepancy$ & 矛盾 $\leftrightarrow$ 差异 \\
-Evidence chain & Cryptographic hash chain & 证据链 $\leftrightarrow$ 哈希链 \\
-Hearsay & Self-audit loop (Theorem~2) & 传闻 $\leftrightarrow$ Self-Audit \\
-Perjury & Active evil / fabrication regime (Theorem~3) & 伪证 $\leftrightarrow$ 主动作恶 \\
+Witness & Expert &  $\leftrightarrow$  \\
+Testimony & Claim with declared assumptions &  $\leftrightarrow$ +assumption \\
+Cross-examination & Audit procedure $\crossexam$ &  $\leftrightarrow$  \\
+Corroboration & \Yajie{} consensus &  $\leftrightarrow$  \\
+Contradiction & Discrepancy signal $\discrepancy$ &  $\leftrightarrow$  \\
+Evidence chain & Cryptographic hash chain &  $\leftrightarrow$  \\
+Hearsay & Self-audit loop (Theorem~2) &  $\leftrightarrow$ Self-Audit \\
+Perjury & Active evil / fabrication regime (Theorem~3) &  $\leftrightarrow$  \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -158,9 +155,9 @@ Perjury & Active evil / fabrication regime (Theorem~3) & 伪证 $\leftrightarrow
     \item \textbf{Formalization} (Section~\ref{sec:formalization}): Legal evidence as a multi-expert claim system with witness testimonies, declared assumptions, evidence chains, and cross-examination operators. Eight explicit assumptions~\assumptionTag{1}--\assumptionTag{8}.
     \item \textbf{Three theorems with full proofs}:
     \begin{itemize}
-        \item \textbf{Theorem~\ref{thm:corroboration}} (Multi-Witness Corroboration 多证人佐证): With $M$ independent witnesses, the probability of a false fact surviving unanimous corroboration decays exponentially in $M$.
-        \item \textbf{Theorem~\ref{thm:hearsay}} (Hearsay as Self-Audit 传闻Self-Audit): A hearsay claim provides zero independent corroboration and is mathematically equivalent to a self-audit loop.
-        \item \textbf{Theorem~\ref{thm:perjury}} (Perjury Detection via Adversarial Audit 伪证检测): Adversarial cross-examination detects active perjury with probability exponentially close to 1 in the number of independent questions $Q$.
+        \item \textbf{Theorem~\ref{thm:corroboration}} (Multi-Witness Corroboration ): With $M$ independent witnesses, the probability of a false fact surviving unanimous corroboration decays exponentially in $M$.
+        \item \textbf{Theorem~\ref{thm:hearsay}} (Hearsay as Self-Audit Self-Audit): A hearsay claim provides zero independent corroboration and is mathematically equivalent to a self-audit loop.
+        \item \textbf{Theorem~\ref{thm:perjury}} (Perjury Detection via Adversarial Audit ): Adversarial cross-examination detects active perjury with probability exponentially close to 1 in the number of independent questions $Q$.
     \end{itemize}
     \item \textbf{Multi-Witness \Yajie{} Protocol} (Section~\ref{sec:yajie}): Weighted consensus aggregation across witnesses with heterogeneous credibility, precision, and correlation.
     \item \textbf{\Cercis{} Evidence Score} (Section~\ref{sec:cercis}): $S(\tau) = Q(\tau) + \eta \cdot N(\tau)$ ranking testimonies by factual accuracy and assumption-novelty.
@@ -171,25 +168,25 @@ Perjury & Active evil / fabrication regime (Theorem~3) & 伪证 $\leftrightarrow
 \textbf{What this paper is not.} This is a mathematical framework for evaluating the information content of legal evidence---not a normative theory of justice, not a proposal for replacing human judges with algorithms, and not a claim that mathematical formalism can capture all nuances of legal reasoning. We prove theorems about detection probabilities, information flow, and unidentifiability. We do not assert that mathematical certainty is achievable in legal fact-finding; we prove that under specified assumptions, certain evidence evaluation procedures have provable error bounds.
 
 %=====================================================================
-\section{Formalization: Legal Evidence as Multi-Expert Claims 法律证据作为多专家声明系统}
+\section{Formalization: Legal Evidence as Multi-Expert Claims }
 \label{sec:formalization}
 %=====================================================================
 
-\subsection{The Fact Space 事实空间}
+\subsection{The Fact Space }
 
-\begin{definition}[Fact 法律事实]
+\begin{definition}[Fact ]
 \label{def:fact}
 A \textbf{fact} $\fact \in \Phi$ is a proposition whose truth value is to be determined by the tribunal. The fact space $\Phi$ is a measurable space $(\Phi, \mathcal{F}_\Phi)$. Without loss of generality, we model $\fact$ as a binary indicator $\fact \in \{0, 1\}$ where $\fact = 1$ denotes that the proposition is true and $\fact = 0$ denotes that it is false. For graded facts (e.g., ``the defendant was within $r$ meters of location $L$''), we embed into $[0, 1]$ via a membership function $\mu_\fact: \Phi \to [0, 1]$.
 \end{definition}
 
-\begin{definition}[Compound Fact 复合事实]
+\begin{definition}[Compound Fact ]
 \label{def:compound}
 A \textbf{compound fact} $\Phi_{\mathrm{compound}} = (\fact_1, \fact_2, \ldots, \fact_K)$ is a $K$-tuple of atomic facts. The tribunal's task is to determine $\Pbb(\bigwedge_{k=1}^K \fact_k = 1 \mid \text{evidence})$.
 \end{definition}
 
-\subsection{Witnesses as Experts 证人即专家}
+\subsection{Witnesses as Experts i.e.}
 
-\begin{definition}[Witness 证人]
+\begin{definition}[Witness ]
 \label{def:witness}
 A \textbf{witness} $w \in \witnessSet$ is an entity capable of producing a \textbf{testimony} $\tau_w = (m_w, \mathcal{A}_w, \sigma_w^2, \rho_w)$ where:
 \begin{itemize}
@@ -200,7 +197,7 @@ A \textbf{witness} $w \in \witnessSet$ is an entity capable of producing a \text
 \end{itemize}
 \end{definition}
 
-\begin{definition}[Witness Independence 证人独立性]
+\begin{definition}[Witness Independence ]
 \label{def:independence}
 Two witnesses $w_i, w_j \in \witnessSet$ are \textbf{conditionally independent given the fact} $\fact$ if:
 \begin{equation}
@@ -210,9 +207,9 @@ Two witnesses $w_i, w_j \in \witnessSet$ are \textbf{conditionally independent g
 This holds when witnesses do not share information sources, have not colluded, and are not subject to common environmental biases.
 \end{definition}
 
-\subsection{Corroboration and Discrepancy 佐证与差异}
+\subsection{Corroboration and Discrepancy }
 
-\begin{definition}[Corroboration 佐证]
+\begin{definition}[Corroboration ]
 \label{def:corroboration}
 Two testimonies $\tau_{w_i}$ and $\tau_{w_j}$ \textbf{corroborate} each other with respect to fact $\fact$ at tolerance $\varepsilon > 0$ if:
 \begin{equation}
@@ -222,7 +219,7 @@ Two testimonies $\tau_{w_i}$ and $\tau_{w_j}$ \textbf{corroborate} each other wi
 For binary facts ($m_w \in \{0, 1\}$), $\varepsilon = 0$ and corroboration is exact agreement: $m_{w_i} = m_{w_j}$.
 \end{definition}
 
-\begin{definition}[Discrepancy 差异/矛盾]
+\begin{definition}[Discrepancy /]
 \label{def:discrepancy}
 A \textbf{discrepancy} between testimonies $\tau_{w_i}$ and $\tau_{w_j}$ occurs when $\abs{m_{w_i} - m_{w_j}} > \varepsilon$. The \textbf{discrepancy signal} $\discrepancy(i, j)$ is defined as:
 \begin{equation}
@@ -232,9 +229,9 @@ A \textbf{discrepancy} between testimonies $\tau_{w_i}$ and $\tau_{w_j}$ occurs 
 A discrepancy indicates that at least one witness's claim is inaccurate, but does not identify \textit{which} witness is incorrect or \textit{why} (see Theorem~\ref{thm:hearsay}).
 \end{definition}
 
-\subsection{Evidence Chain as Hash Chain 证据链即哈希链}
+\subsection{Evidence Chain as Hash Chain i.e.}
 
-\begin{definition}[Evidence Chain 证据链]
+\begin{definition}[Evidence Chain ]
 \label{def:evidencechain}
 An \textbf{evidence chain} $\evidenceChain = (e_0, e_1, \ldots, e_K)$ is a temporally ordered sequence of evidence items, where each $e_i$ is a data object (document, physical sample metadata, digital record, testimony transcript). The chain is \textbf{hash-linked} if:
 \begin{equation}
@@ -244,14 +241,14 @@ An \textbf{evidence chain} $\evidenceChain = (e_0, e_1, \ldots, e_K)$ is a tempo
 where $\hashFunc: \{0, 1\}^* \to \{0, 1\}^\lambda$ is a cryptographic hash function with output length $\lambda$ bits, and $\|$ denotes concatenation.
 \end{definition}
 
-\begin{definition}[Tamper Evidence 篡改检测]
+\begin{definition}[Tamper Evidence ]
 \label{def:tamper}
 An evidence chain $\evidenceChain$ is \textbf{tamper-evident} if any modification, insertion, or deletion of any $e_i$ causes at least one integrity certificate $(e_j, h_{j-1}, h_j)$ to fail verification for some $j \geq i$, i.e., $\hashFunc(e_j \| h_{j-1}) \neq h_j$.
 \end{definition}
 
-\subsection{Cross-Examination as Audit 交叉质询即审计}
+\subsection{Cross-Examination as Audit i.e.}
 
-\begin{definition}[Cross-Examination Operator 交叉质询算子]
+\begin{definition}[Cross-Examination Operator ]
 \label{def:crossexam}
 The \textbf{cross-examination operator} $\crossexam$ maps a witness $w$ and a set of $Q$ distinct lines of questioning $\{q_1, \ldots, q_Q\}$ to a sequence of responses:
 \begin{equation}
@@ -261,9 +258,9 @@ The \textbf{cross-examination operator} $\crossexam$ maps a witness $w$ and a se
 where $r_k = \perp$ indicates the witness declines to answer or the question exceeds $\mathcal{A}_w$. A cross-examination is \textbf{consistent} if there exists a fact $\fact$ compatible with all responses where $r_k \neq \perp$; it is \textbf{inconsistent} if $\exists k, \ell$ such that $r_k, r_\ell \neq \perp$ and no single fact $\fact$ is compatible with both.
 \end{definition}
 
-\subsection{Perjury: The Active Evil Regime 伪证：主动作恶制度}
+\subsection{Perjury: The Active Evil Regime }
 
-\begin{definition}[Perjury Regime 伪证制度]
+\begin{definition}[Perjury Regime ]
 \label{def:perjury}
 A witness operates in the \textbf{perjury regime} $\perjury$ if, instead of producing testimony $\tau_w$ drawn from the distribution $P_{\mathrm{true}}(\cdot \mid \fact)$ (honest testimony conditioned on the true fact), the witness \textit{actively constructs} a false narrative $\tilde{\tau}_w = (\tilde{m}_w, \tilde{\mathcal{A}}_w)$ designed to deceive the tribunal. Formally, $\perjury$ is characterized by:
 \begin{equation}
@@ -273,60 +270,60 @@ A witness operates in the \textbf{perjury regime} $\perjury$ if, instead of prod
 i.e., the perjurious witness \textit{never} asserts the true fact. This is a stronger condition than mere inaccuracy ($\rho_w < 1/2$): a witness with $\rho_w = 0.4$ is merely unreliable and sometimes gets the right answer by chance; a perjurious witness actively avoids the truth.
 \end{definition}
 
-\begin{remark}[Perjury vs. Error 伪证与错误的区别]
+\begin{remark}[Perjury vs. Error ]
 The critical distinction between perjury ($\perjury$) and error is intentionality: an erroneous witness has $\rho_w < 1$ but $\Pbb(m_w = \fact \mid \fact) > 0$; a perjurious witness satisfies $\Pbb(m_w = \fact \mid \perjury) = 0$. This maps to the SCX distinction between \textbf{honest noise} (unintentional errors, modeled by $\sigma_w^2$) and \textbf{active evil} (adversarial fabrication, modeled by $\perjury$). Detection of the former relies on precision-weighted consensus (Theorem~\ref{thm:corroboration}); detection of the latter requires adversarial cross-examination (Theorem~\ref{thm:perjury}).
 \end{remark}
 
-\subsection{Assumptions 假设}
+\subsection{Assumptions assumption}
 
-\begin{assumption}[A1: Fact Decomposability 事实可分解性]
+\begin{assumption}[A1: Fact Decomposability ]
 \label{ass:A1}
 The set of facts $\{\fact_1, \ldots, \fact_K\}$ is finite and each $\fact_k$ is well-defined (its truth conditions are unambiguous).
 \end{assumption}
 
-\begin{assumption}[A2: Witness Testimony Boundedness 证言有界性]
+\begin{assumption}[A2: Witness Testimony Boundedness ]
 \label{ass:A2}
 For each $w \in \witnessSet$, the claim $m_w$ lies in a compact set $\claimSpace \subset \R$ with known diameter $D_\claimSpace < \infty$.
 \end{assumption}
 
-\begin{assumption}[A3: Conditional Independence 条件独立性]
+\begin{assumption}[A3: Conditional Independence ]
 \label{ass:A3}
 For witnesses not sharing information sources and not colluding, the conditional independence of Definition~\ref{def:independence} holds. The set of such witnesses is $\witnessSet_{\mathrm{ind}} \subseteq \witnessSet$.
 \end{assumption}
 
-\begin{assumption}[A4: Credibility Lower Bound 可信度下界]
+\begin{assumption}[A4: Credibility Lower Bound lower bound]
 \label{ass:A4}
 Each witness $w \in \witnessSet_{\mathrm{ind}}$ has credibility $\rho_w \geq \rho_{\min} > 0$. The effective credibility for fact detection is $\rho_w^{\mathrm{eff}} = 2\abs{\rho_w - 1/2}$.
 \end{assumption}
 
-\begin{assumption}[A5: Cryptographic Hash Collision Resistance 哈希抗碰撞性]
+\begin{assumption}[A5: Cryptographic Hash Collision Resistance ]
 \label{ass:A5}
 $\hashFunc: \{0, 1\}^* \to \{0, 1\}^\lambda$ is collision-resistant: for any PPT adversary, $\Pbb(\hashFunc(x) = \hashFunc(x') \land x \neq x') \leq \varepsilon_{\mathrm{hash}}(\lambda)$, negligible in $\lambda$.
 \end{assumption}
 
-\begin{assumption}[A6: Cross-Examination Question Independence 问题独立性]
+\begin{assumption}[A6: Cross-Examination Question Independence ]
 \label{ass:A6}
 The $Q$ lines of questioning $\{q_1, \ldots, q_Q\}$ are sufficiently diverse that a fabricating witness cannot maintain consistent responses across all $Q$ queries with high probability.
 \end{assumption}
 
-\begin{assumption}[A7: Tribunal Bayesian Rationality 法庭贝叶斯理性]
+\begin{assumption}[A7: Tribunal Bayesian Rationality ]
 \label{ass:A7}
 The tribunal updates its belief about $\fact$ via Bayes' rule given observed testimonies and cross-examination outcomes.
 \end{assumption}
 
-\begin{assumption}[A8: Declared Assumption Verifiability 声明假设可验证性]
+\begin{assumption}[A8: Declared Assumption Verifiability assumptionverifiability]
 \label{ass:A8}
 Each declared assumption $a_w^{(i)} \in \mathcal{A}_w$ is falsifiable in principle: there exists a verification procedure to determine whether $a_w^{(i)}$ holds.
 \end{assumption}
 
 %=====================================================================
-\section{Theorem 1: Multi-Witness Corroboration Detection 多证人佐证检测}
+\section{Theorem 1: Multi-Witness Corroboration Detection }
 \label{sec:corroboration}
 %=====================================================================
 
 \subsection{Statement}
 
-\begin{theorem}[Multi-Witness Corroboration Bound 多证人佐证界]
+\begin{theorem}[Multi-Witness Corroboration Bound ]
 \label{thm:corroboration}
 Let $\fact \in \{0, 1\}$ be a binary fact and let $\witnessSet_{\mathrm{ind}} = \{w_1, \ldots, w_M\}$ be $M$ conditionally independent witnesses satisfying Assumptions~\ref{ass:A3} and~\ref{ass:A4}. Let $m_w \in \{0, 1\}$ be each witness's binary claim. Define the \textbf{unanimous corroboration event}:
 \begin{equation}
@@ -392,7 +389,7 @@ The tighter Hoeffding refinement uses the sum $S_M' = \sum_w (2Z_w - 1)$ under $
 completing the proof.
 \end{proof}
 
-\begin{corollary}[Corroboration Threshold 佐证阈值]
+\begin{corollary}[Corroboration Threshold ]
 \label{cor:threshold}
 For a desired confidence level $1 - \alpha$, the minimum number of independent witnesses required for unanimous corroboration to achieve $\Pbb(\fact = 0 \mid \mathcal{U}) \leq \alpha$ is:
 \begin{equation}
@@ -402,7 +399,7 @@ For a desired confidence level $1 - \alpha$, the minimum number of independent w
 For example, with $\rho_{\min}^{\mathrm{eff}} = 0.3$ and $\alpha = 0.01$, we require $M^* \geq \lceil \ln(100) / (2 \cdot 0.09) \rceil = \lceil 25.6 \rceil = 26$ independent witnesses.
 \end{corollary}
 
-\begin{corollary}[Partial Corroboration 部分佐证]
+\begin{corollary}[Partial Corroboration ]
 \label{cor:partial}
 The unanimous corroboration result extends to $k$-out-of-$M$ corroboration via the Chernoff bound:
 \begin{equation}
@@ -413,13 +410,13 @@ where $\KL(p \| q) = p \ln(p/q) + (1-p) \ln((1-p)/(1-q))$ is the Kullback-Leible
 \end{corollary}
 
 %=====================================================================
-\section{Theorem 2: Hearsay as Self-Audit 传闻证据的Self-Audit不可辨识性}
+\section{Theorem 2: Hearsay as Self-Audit Self-Audit}
 \label{sec:hearsay}
 %=====================================================================
 
 \subsection{Statement}
 
-\begin{theorem}[Hearsay Self-Audit Unidentifiability 传闻Self-Audit不可辨识性]
+\begin{theorem}[Hearsay Self-Audit Unidentifiability Self-Audit]
 \label{thm:hearsay}
 Let $w_A, w_B \in \witnessSet$ be two witnesses. Let $w_B$ possess direct knowledge of fact $\fact$ and produce testimony $\tau_B = (m_B, \mathcal{A}_B, \sigma_B^2, \rho_B)$. Let $w_A$ produce a \textbf{hearsay testimony} $\tau_A^{\hear}$ that asserts the content of $w_B$'s testimony: $m_A = \text{``}w_B \text{ claims } m_B\text{''}$. Then, without access to $w_B$'s original testimony $\tau_B$, the fact $\fact$ is \textbf{unidentifiable} from $\tau_A^{\hear}$ alone. Formally, for any two facts $\fact \neq \fact'$, there exist witness configurations such that:
 \begin{equation}
@@ -484,12 +481,12 @@ The hearsay situation is structurally identical to a \textbf{self-audit loop}: t
 When $\tau_B$ is unobserved, $I(\tau_A^{\hear}; \fact \mid \tau_B \text{ unobserved}) = 0$: $\tau_A^{\hear}$ provides no information about $\fact$ beyond the (unobserved) $\tau_B$. Thus hearsay provides zero \textit{independent} information.
 \end{proof}
 
-\begin{corollary}[Hearsay Exclusion Justification 传闻排除的数学理由]
+\begin{corollary}[Hearsay Exclusion Justification ]
 \label{cor:hearsay_exclusion}
 The legal hearsay exclusion rule has a rigorous mathematical justification: hearsay testimony provides zero additional Shannon information about the fact beyond the prior, unless the original declarant ($w_B$) is also presented for cross-examination. Cross-examination of $w_B$ recovers the missing parameter $\rho_B$ and restores identifiability.
 \end{corollary}
 
-\begin{corollary}[Multiple Hearsay 多重传闻]
+\begin{corollary}[Multiple Hearsay ]
 \label{cor:multiple_hearsay}
 For a chain of $L$ hearsay transmissions $w_1 \to w_2 \to \cdots \to w_L$, the mutual information about $\fact$ decays as:
 \begin{equation}
@@ -500,13 +497,13 @@ where $\kappa_\ell = 2\abs{\rho_{w_\ell}^{\mathrm{report}} - 1/2} \in [0, 1]$ is
 \end{corollary}
 
 %=====================================================================
-\section{Theorem 3: Perjury Detection via Adversarial Cross-Examination 伪证检测与对抗性质询}
+\section{Theorem 3: Perjury Detection via Adversarial Cross-Examination }
 \label{sec:perjury}
 %=====================================================================
 
 \subsection{Statement}
 
-\begin{theorem}[Perjury Detection via Adversarial Audit 对抗审计伪证检测]
+\begin{theorem}[Perjury Detection via Adversarial Audit ]
 \label{thm:perjury}
 Let witness $w$ undergo adversarial cross-examination $\crossexam(w, \{q_1, \ldots, q_Q\})$ with $Q$ independent lines of questioning, producing responses $r_1, \ldots, r_Q$. Define the \textbf{inconsistency indicator} for questions $k$ and $\ell$:
 \begin{equation}
@@ -579,27 +576,27 @@ For the missed detection rate $\beta$, require $\exp(-\frac{Q(Q-1)}{2} \abs{\ln 
 Since $\gamma < 1$ under Assumption~\ref{ass:A6}, both conditions are simultaneously satisfiable for finite $Q$, establishing the separation guarantee. As $Q \to \infty$, both error rates approach zero exponentially.
 \end{proof}
 
-\begin{corollary}[Evidence Chain Integrity 证据链完整性]
+\begin{corollary}[Evidence Chain Integrity ]
 \label{cor:hashchain_integrity}
 Theorem~\ref{thm:perjury} addresses the detection of \textit{testimonial} fabrication. The complementary guarantee for \textit{physical} evidence is the hash chain integrity property (Definitions~\ref{def:evidencechain}--\ref{def:tamper}, Assumption~\ref{ass:A5}): a hash-linked chain $\evidenceChain$ is tamper-evident with detection probability $1 - \abs{S} \cdot (\varepsilon_{\mathrm{hash}} + \varepsilon_{\mathrm{pre}})$, where $\abs{S}$ is the number of modified items and $\varepsilon_{\mathrm{hash}}, \varepsilon_{\mathrm{pre}}$ are the adversary's collision and preimage advantages. For SHA-256 ($\lambda = 256$), $\varepsilon_{\mathrm{hash}} \leq 2^{-128}$, making undetected tampering astronomically improbable for any practical $\abs{S}$. The proof is a direct application of the collision-resistance property: modifying $e_i$ requires finding $\tilde{e}_i \neq e_i$ with $\hashFunc(\tilde{e}_i \| h_{i-1}) = \hashFunc(e_i \| h_{i-1})$, which is a hash collision.
 \end{corollary}
 
-\begin{corollary}[Optimal Cross-Examination Strategy 最优质询策略]
+\begin{corollary}[Optimal Cross-Examination Strategy ]
 \label{cor:optimal_cross}
 The optimal cross-examination strategy under a fixed time budget $T$ maximizes the number of \textbf{independent lines of questioning} $Q$ rather than the depth of any single line. This follows from the $Q^2$ exponent in Eq.~\eqref{eq:detection_power}: doubling $Q$ quadruples the exponent in the detection probability. The cross-examiner should prioritize questions probing \textbf{orthogonal aspects} of the claimed fact to minimize $\gamma$.
 \end{corollary}
 
 %=====================================================================
-\section{Multi-Witness \Yajie{} Consensus Protocol 多证人Yajie共识协议}
+\section{Multi-Witness \Yajie{} Consensus Protocol Yajie}
 \label{sec:yajie}
 %=====================================================================
 
-\subsection{Correlated Witnesses and Effective Sample Size 相关证人与有效样本量}
+\subsection{Correlated Witnesses and Effective Sample Size }
 \label{sec:dependence}
 
 When witnesses are not conditionally independent (Assumption~\ref{ass:A3} violated for some subset), we apply correlation adjustment.
 
-\begin{definition}[Witness Correlation Matrix 证人相关矩阵]
+\begin{definition}[Witness Correlation Matrix ]
 \label{def:corrmat}
 Let $\Sigma \in \R^{M \times M}$ be the correlation matrix of witness claims:
 \begin{equation}
@@ -614,7 +611,7 @@ The \textbf{effective number of independent witnesses} is:
 where $\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_M \geq 0$ are the eigenvalues of $\Sigma$. Under perfect independence ($\Sigma = I_M$), $M_{\mathrm{eff}} = M$. Under perfect positive correlation, $M_{\mathrm{eff}} = 1$.
 \end{definition}
 
-\begin{definition}[\\Yajie{} Consensus for Witnesses Yajie证人共识]
+\begin{definition}[\\Yajie{} Consensus for Witnesses Yajie]
 \label{def:yajie_consensus}
 The \Yajie{} consensus across $M$ witnesses is the precision-weighted average:
 \begin{equation}
@@ -628,7 +625,7 @@ where $\omega_w$ combines effective credibility $\rho_w^{\mathrm{eff}}$ and inve
 \end{equation}
 \end{definition}
 
-\begin{proposition}[Consensus Accuracy 共识准确性]
+\begin{proposition}[Consensus Accuracy accuracy]
 \label{prop:consensus_accuracy}
 Under Assumptions~\ref{ass:A3}--\ref{ass:A4}, the \Yajie{} consensus $c_{\witnessSet}$ satisfies:
 \begin{equation}
@@ -643,11 +640,11 @@ Apply Hoeffding's inequality to the weighted sum after decorrelating via the eig
 \end{proof}
 
 %=====================================================================
-\section{\Cercis{} Evidence Score Cercis证据评分}
+\section{\Cercis{} Evidence Score Cercis}
 \label{sec:cercis}
 %=====================================================================
 
-\begin{definition}[\\Cercis{} Evidence Score Cercis证据评分]
+\begin{definition}[\\Cercis{} Evidence Score Cercis]
 \label{def:cercis}
 For a testimony $\tau = (m, \mathcal{A}, \sigma^2, \rho)$, the \Cercis{} evidence score is:
 \begin{equation}
@@ -674,23 +671,23 @@ The \Cercis{} evidence score satisfies:
 \end{proposition}
 
 %=====================================================================
-\section{\Spring{} Gating for Perjury Regime Detection Spring门控伪证制度检测}
+\section{\Spring{} Gating for Perjury Regime Detection Spring}
 \label{sec:spring}
 %=====================================================================
 
 The \Spring{} gating mechanism~\cite{SCX2025} detects regime shifts in witness behavior---specifically, transitions from \textbf{credible testimony} to \textbf{perjury} during cross-examination.
 
-\begin{definition}[Testimony Regime 证言制度]
+\begin{definition}[Testimony Regime ]
 \label{def:regime}
 A witness operates in one of two regimes:
 \begin{itemize}
-    \item \textbf{Regime 0 (Credible 可信):} $r_k \sim P_{\mathrm{true}}(\cdot \mid \fact)$, centered at the true answer with variance $\sigma_w^2$.
-    \item \textbf{Regime 1 (Perjurious 伪证):} $r_k \sim P_{\mathrm{fab}}(\cdot)$, inconsistent with $\fact$ and with prior responses (Definition~\ref{def:perjury}).
+    \item \textbf{Regime 0 (Credible ):} $r_k \sim P_{\mathrm{true}}(\cdot \mid \fact)$, centered at the true answer with variance $\sigma_w^2$.
+    \item \textbf{Regime 1 (Perjurious ):} $r_k \sim P_{\mathrm{fab}}(\cdot)$, inconsistent with $\fact$ and with prior responses (Definition~\ref{def:perjury}).
 \end{itemize}
 A \textbf{regime transition} occurs at question index $k^*$ if $r_1, \ldots, r_{k^*-1}$ are drawn from Regime 0 and $r_{k^*}, \ldots, r_Q$ from Regime 1.
 \end{definition}
 
-\begin{proposition}[\\Spring{} Detection of Perjury Transition Spring伪证转换检测]
+\begin{proposition}[\\Spring{} Detection of Perjury Transition Spring]
 \label{prop:spring_perjury}
 Under Assumption~\ref{ass:A6}, the \Spring{} gating statistic:
 \begin{equation}
@@ -712,15 +709,15 @@ The \Spring{} mechanism provides a \textbf{runtime complement} to Theorem~\ref{t
 \end{proof}
 
 %=====================================================================
-\section{Specific Formal Applications 具体形式化应用}
+\section{Specific Formal Applications }
 \label{sec:applications}
 %=====================================================================
 
-\subsection{Witness Credibility Calibration 证人可信度校准}
+\subsection{Witness Credibility Calibration }
 
 The credibility parameter $\rho_w$ is calibrated from verifiable questions---questions whose answers are known independently:
 
-\begin{definition}[Credibility Calibration 可信度校准]
+\begin{definition}[Credibility Calibration ]
 \label{def:calibration}
 Let $\mathcal{Q}_{\mathrm{cal}} = \{q_1^{\mathrm{cal}}, \ldots, q_{K_{\mathrm{cal}}}^{\mathrm{cal}}\}$ be calibration questions with known answers $\{a_1^*, \ldots, a_{K_{\mathrm{cal}}}^*\}$. The maximum-likelihood estimate of $\rho_w$ is:
 \begin{equation}
@@ -730,10 +727,10 @@ Let $\mathcal{Q}_{\mathrm{cal}} = \{q_1^{\mathrm{cal}}, \ldots, q_{K_{\mathrm{ca
 The estimation error satisfies $\abs{\hat{\rho}_w - \rho_w} \leq \sqrt{\frac{\ln(2/\alpha)}{2 K_{\mathrm{cal}}}}$ with probability $\geq 1 - \alpha$.
 \end{definition}
 
-\subsection{Evidence Chain Verification Protocol 证据链验证协议}
+\subsection{Evidence Chain Verification Protocol }
 
 \begin{algorithm}[ht]
-\caption{Evidence Chain Verification 证据链验证}
+\caption{Evidence Chain Verification }
 \label{alg:chain_verify}
 \begin{algorithmic}[1]
 \Require Evidence chain $\evidenceChain = \{(e_0, h_0), \ldots, (e_K, h_K)\}$, hash function $\hashFunc$
@@ -751,9 +748,9 @@ The estimation error satisfies $\abs{\hat{\rho}_w - \rho_w} \leq \sqrt{\frac{\ln
 
 The algorithm runs in $O(K \cdot T_{\hashFunc})$ time, requires $O(1)$ memory, and is \textbf{streaming} (processes items sequentially without storing the full chain). The localization property guarantees that the first verification failure $i^*$ identifies the earliest position of tampering, with all items $e_0, \ldots, e_{i^*-1}$ provably unmodified.
 
-\subsection{Cross-Examination Strategy Optimization 交叉质询策略优化}
+\subsection{Cross-Examination Strategy Optimization }
 
-\begin{proposition}[Optimal Question Allocation 最优问题分配]
+\begin{proposition}[Optimal Question Allocation ]
 \label{prop:optimal_questions}
 Given $M$ witnesses with heterogeneous credibility $\{\rho_w\}$ and precision $\{\sigma_w^2\}$, and a total question budget $Q_{\mathrm{total}}$, the optimal allocation to maximize perjury detection probability is:
 \begin{equation}
@@ -763,9 +760,9 @@ Given $M$ witnesses with heterogeneous credibility $\{\rho_w\}$ and precision $\
 Witnesses with low precision and moderate credibility receive \textit{more} questions (inconsistency is easier to detect); witnesses with extreme credibility (very high or very low) require fewer questions (their status is already clear).
 \end{proposition}
 
-\subsection{Hearsay-Contaminated Corroboration 传闻污染的佐证}
+\subsection{Hearsay-Contaminated Corroboration }
 
-\begin{proposition}[Hearsay Contamination Adjustment 传闻污染调整]
+\begin{proposition}[Hearsay Contamination Adjustment ]
 \label{prop:hearsay_contamination}
 Let $\witnessSet = \witnessSet_{\mathrm{direct}} \cup \witnessSet_{\mathrm{hearsay}}$. If the tribunal treats all witnesses as independent, the effective count $M_{\mathrm{eff}}$ in Theorem~\ref{thm:corroboration} is inflated, producing an \textbf{overconfident bound}. The correct adjustment is:
 \begin{equation}
@@ -776,7 +773,7 @@ since hearsay witnesses contribute zero independent information (Theorem~\ref{th
 \end{proposition}
 
 %=====================================================================
-\section{Experimental Protocol 实验协议}
+\section{Experimental Protocol }
 \label{sec:experiments}
 %=====================================================================
 
@@ -805,7 +802,7 @@ We propose the following protocol for empirically validating the theoretical bou
 \end{enumerate}
 
 %=====================================================================
-\section{Discussion 讨论}
+\section{Discussion }
 \label{sec:discussion}
 %=====================================================================
 
@@ -831,16 +828,16 @@ Table~\ref{tab:theorems} summarizes how the three theorems partition the problem
 \toprule
 \textbf{Theorem} & \textbf{Threat Model} & \textbf{Detection Mechanism} & \textbf{Chinese} \\
 \midrule
-Thm.~1 & Honest noise (error) & Multi-witness consensus & 多证人佐证 \\
-Thm.~2 & Information laundering (hearsay) & Self-audit identification & 传闻Self-Audit \\
-Thm.~3 & Active evil (perjury) & Adversarial cross-examination & 伪证对抗检测 \\
+Thm.~1 & Honest noise (error) & Multi-witness consensus &  \\
+Thm.~2 & Information laundering (hearsay) & Self-audit identification & Self-Audit \\
+Thm.~3 & Active evil (perjury) & Adversarial cross-examination &  \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Theorem~1 handles unintentional errors (a witness with $\rho_w = 0.7$ gets it wrong $30\%$ of the time). Theorem~2 handles informational dependency (hearsay launders a claim through an intermediary, breaking the independence assumption of Theorem~1). Theorem~3 handles active adversarial behavior (perjury, where $\Pbb(m_w = \fact) = 0$). Together they cover the three fundamental failure modes of legal testimony.
 
-\subsection{Limitations 局限性}
+\subsection{Limitations }
 
 \begin{enumerate}[label=\limitationTag{\arabic*}]
     \item \textbf{Dependence on declared assumptions.} All theorems are conditional on $\mathcal{A}_w$ being correct. If assumptions are violated (collusion, worse perceptual conditions), bounds may be invalid. The framework's contribution is making assumptions \textit{explicit and auditable}.

@@ -3,7 +3,7 @@
 \PassOptionsToPackage{hyphens}{url}
 \documentclass[
   12pt,
-]{ctexart}
+]{article}
 \usepackage{xcolor}
 \usepackage{amsmath,amssymb}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
@@ -62,85 +62,79 @@
 
 \begin{document}
 
-\section{DistillationDe-Virus化：数学根源与多场景推广}\label{ux84b8ux998fux53bbux75c5ux6bd2ux5316ux6570ux5b66ux6839ux6e90ux4e0eux591aux573aux666fux63a8ux5e7f}
+\section{Distillation De-Virus: Mathematical Roots and Multi-Scenario Generalization}\label{distillation-de-virus-mathematical-roots-and-multi-scenario-generalization}
 
 \begin{quote}
-日期：2026-06-26 \textbar{} SCX v4.0 \textbar{}
-从''Data防Poisoning''到''DistillationDe-Virus''的数学基础
+Date: 2026-06-26 \textbar{} SCX v4.0 \textbar{}
+From ``Data Poisoning Defense'' to ``Distillation De-Virus'': the mathematical foundations
 \end{quote}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{一、ProblemDefinition：Distillation为什么会被''Poisoning''？}\label{ux4e00ux95eeux9898ux5b9aux4e49ux84b8ux998fux4e3aux4ec0ux4e48ux4f1aux88abux4e2dux6bd2}
+\subsection{1. Problem Definition: Why Is Distillation ``Poisoned''?}\label{problem-definition-why-is-distillation-poisoned}
 
-\subsubsection{1.1 标准知识Distillation（Knowledge
-Distillation）Review}\label{ux6807ux51c6ux77e5ux8bc6ux84b8ux998fknowledge-distillationux56deux987e}
+\subsubsection{1.1 Standard Knowledge Distillation Review}\label{standard-knowledge-distillation-review}
 
-Hinton et al.~(2015) 的Framework：
+The framework of Hinton et al.~(2015):
 
-\textbf{Teacher} f\_T: X → Y，在Training集 D\_train = \{(x\_i, y\_i*)\}
-上Training得到。
+\textbf{Teacher} $f_T: X \to Y$, trained on training set $D_{\text{train}} = \{(x_i, y_i^*)\}$.
 
-\textbf{Distillation}：Teacher 对一组无标签Data \{x\_i\^{}distill\}
-生成软标签或硬标签：
+\textbf{Distillation}: Teacher generates soft or hard labels for a set of unlabeled data $\{x_i^{\text{distill}}\}$:
 
 \begin{verbatim}
 y_i^distill = f_T(x_i^distill)
 \end{verbatim}
 
-\textbf{Student} f\_S: X → Y，在 D\_distill = \{(x\_i\^{}distill,
-y\_i\^{}distill)\} 上Training。
+\textbf{Student} $f_S: X \to Y$, trained on $D_{\text{distill}} = \{(x_i^{\text{distill}}, y_i^{\text{distill}})\}$.
 
-\subsubsection{1.2
-Problem的数学本质}\label{ux95eeux9898ux7684ux6570ux5b66ux672cux8d28}
+\subsubsection{1.2 The Mathematical Essence of the Problem}\label{the-mathematical-essence-of-the-problem}
 
-核心Problem是：\textbf{Teacher 不是完美的}。Definition Teacher 的State条件风险：
+The core problem is: \textbf{the Teacher is not perfect}. Define the Teacher's state-conditioned risk:
 
 \begin{verbatim}
 R_T(s) = E_{x~P(·|s)} [ ℓ(f_T(x), f*(x)) ]
 \end{verbatim}
 
-其中 f*(x) 是真实标签（未知），s 是State。
+where $f^*(x)$ is the true label (unknown), and $s$ is the state.
 
-\textbf{Core观察}：R\_T(s) 随 s 变化很大。在 AlN v3 Training中：
+\textbf{Core observation}: $R_T(s)$ varies greatly with $s$. In AlN v3 training:
 
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
-State s（构型区域） & R\_T(s)（力 RMSE, eV/Å） \\
+State $s$ (configuration region) & $R_T(s)$ (force RMSE, eV/Å) \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Phonon 区 & 0.008 \\
-EOS 近平衡区 & 0.015 \\
-Elastic 变形区 & 0.011 \\
-\textbf{Thermal 1800K 区} & \textbf{0.077} \\
-\textbf{MLMD stress10 区} & \textbf{0.036} \\
+Phonon region & 0.008 \\
+EOS near-equilibrium region & 0.015 \\
+Elastic deformation region & 0.011 \\
+\textbf{Thermal 1800K region} & \textbf{0.077} \\
+\textbf{MLMD stress10 region} & \textbf{0.036} \\
 \end{longtable}
 
-Teacher 在 thermal 区的Error是 phonon 区的 \textbf{9.6 倍}。
+The Teacher's error in the thermal region is \textbf{9.6$\times$} that of the phonon region.
 
-\textbf{DistillationPoisoning机制}：
-
-\begin{verbatim}
-Teacher 在 thermal 1800K 区生成DistillationData
-    → Distillation标签 y_distill = f_T(x) = f*(x) + δ_T(s)  [δ_T 是 teacher 在State s 的偏差]
-    → Student 拟合: f_S(x) ≈ y_distill = f*(x) + δ_T(s)
-    → Student 在 thermal 区的Error ≥ δ_T(s)
-    → Student 从 Teacher 那里"继承"了系统偏差
-\end{verbatim}
-
-这和 VASP DataPoisoning的不同在于：
+\textbf{Distillation Poisoning Mechanism}:
 
 \begin{verbatim}
-VASP Poisoning：f*(x) 本身就错了（DFT 标签有Problem）
-DistillationPoisoning：f*(x) 是对的（DFT 标签正确），但 Teacher 没有正确学会 f*(x)
+Teacher generates distillation data in thermal 1800K region
+    → Distillation labels y_distill = f_T(x) = f*(x) + δ_T(s)  [δ_T is teacher bias in state s]
+    → Student fits: f_S(x) ≈ y_distill = f*(x) + δ_T(s)
+    → Student error in thermal region ≥ δ_T(s)
+    → Student "inherits" systematic bias from Teacher
 \end{verbatim}
 
-\textbf{两者的共同点}：都是State条件的------Poisoning只在特定构型区域发生。
+The difference from VASP data poisoning:
 
-\subsubsection{1.3 为什么DistillationPoisoning比 VASP
-Poisoning更难Diagnosis}\label{ux4e3aux4ec0ux4e48ux84b8ux998fux4e2dux6bd2ux6bd4-vasp-ux4e2dux6bd2ux66f4ux96beux8bcaux65ad}
+\begin{verbatim}
+VASP Poisoning: f*(x) itself is wrong (DFT labels have problems)
+Distillation Poisoning: f*(x) is correct (DFT labels are right), but Teacher did not correctly learn f*(x)
+\end{verbatim}
+
+\textbf{Commonality}: Both are state-conditioned---poisoning only occurs in specific configuration regions.
+
+\subsubsection{1.3 Why Distillation Poisoning Is Harder to Diagnose Than VASP Poisoning}\label{why-distillation-poisoning-is-harder-to-diagnose}
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
@@ -149,96 +143,71 @@ Poisoning更难Diagnosis}\label{ux4e3aux4ec0ux4e48ux84b8ux998fux4e2dux6bd2ux6bd4
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-VASP DataPoisoning
+VASP Data Poisoning
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-DistillationDataPoisoning
+Distillation Data Poisoning
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{Diagnosis信号} & fmax \textgreater{} 5 eV/Å（可直接观察） &
-无直接信号 \\
-\textbf{标签来源} & DFT（已知可靠度） & Teacher（可靠度未知） \\
-\textbf{可解释性} & 有------构型不对 → 力不对 &
-\textbf{无}------Distillation输出看起来''正常'' \\
-\textbf{所需的先验} & 知道物理上 fmax 应该 \textless{} 1 eV/Å & 需要知道
-Teacher 在各区域有多可靠 \\
-\textbf{SCX 的Role} & 自动发现异常 fmax & 用 Teacher 在Training集上的
-residual map 推断 \\
+\textbf{Diagnosis signal} & $f_{\max} > 5$ eV/Å (directly observable) & No direct signal \\
+\textbf{Label source} & DFT (known reliability) & Teacher (unknown reliability) \\
+\textbf{Interpretability} & Yes---wrong configuration → wrong forces & \textbf{No}---distillation outputs look ``normal'' \\
+\textbf{Prior knowledge needed} & Know that physically $f_{\max}$ should be $< 1$ eV/Å & Need to know how reliable Teacher is in each region \\
+\textbf{SCX's role} & Automatically detect anomalous $f_{\max}$ & Use Teacher's residual map on training set to infer \\
 \end{longtable}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{二、现有Method的数学Analysis}\label{ux4e8cux73b0ux6709ux65b9ux6cd5ux7684ux6570ux5b66ux5206ux6790}
+\subsection{2. Mathematical Analysis of Existing Methods}\label{mathematical-analysis-of-existing-methods}
 
-\subsubsection{2.1 Hinton
-KD（2015）------不提纯，全量Distillation}\label{hinton-kd2015ux4e0dux63d0ux7eafux5168ux91cfux84b8ux998f}
+\subsubsection{2.1 Hinton KD (2015)---No Purification, Full Distillation}\label{hinton-kd-2015-no-purification}
 
-\textbf{做法}：T → S，所有Distillation样本一视同仁。
+\textbf{Approach}: $T \to S$, all distillation samples treated equally.
 
-\textbf{隐式Assumption}：Teacher 在所有输入区域同样可靠。
+\textbf{Implicit assumption}: Teacher is equally reliable across all input regions.
 
-\textbf{数学上}：这等价于Assumption
-\texttt{Var{[}ℓ(f\_T(x),\ f*(x)){]}\ ≈\ 0}，即 teacher error
-的方差可以忽略。但在 MLIP 场景下，Teacher
-在不同构型区域的Error差异可达一个数量级------这个Assumption明显不成立。
+\textbf{Mathematically}: This is equivalent to assuming $\text{Var}[\ell(f_T(x), f^*(x))] \approx 0$, i.e., the variance of teacher error is negligible. But in MLIP scenarios, Teacher error across different configuration regions can differ by an order of magnitude---this assumption clearly does not hold.
 
-\subsubsection{2.2 置信度过滤（Confidence-based
-Filtering）}\label{ux7f6eux4fe1ux5ea6ux8fc7ux6ee4confidence-based-filtering}
+\subsubsection{2.2 Confidence-Based Filtering}\label{confidence-based-filtering}
 
-\textbf{做法}：用 Teacher 的输出熵 H(f\_T(x)) 或最大 softmax
-值作为''置信度''，过滤低置信度的Distillation样本。
+\textbf{Approach}: Use Teacher's output entropy $H(f_T(x))$ or maximum softmax value as ``confidence,'' filtering low-confidence distillation samples.
 
-\textbf{数学形式}：
+\textbf{Mathematical form}:
 
 \begin{verbatim}
 D_clean = {x_i | max_j f_T^{(j)}(x_i) > τ_confidence}
 \end{verbatim}
 
-\textbf{在 MLIP 场景的失败原因}：
+\textbf{Why it fails in MLIP scenarios}:
 
-Teacher（ACE 线性Model）输出的是能量 E 和力
-F，不是概率Distribution。没有''置信度''概念------E 和 F
-是确定性输出。\textbf{置信度过滤直接不适用。}
+Teacher (ACE linear model) outputs energy $E$ and forces $F$, not a probability distribution. There is no ``confidence'' concept---$E$ and $F$ are deterministic outputs. \textbf{Confidence filtering is directly inapplicable.}
 
-即使在分类场景下： - 高置信度 ≠
-低Error。一个Model可以对错误预测高度自信（overconfidence） - 置信度不反映
-state-conditioned 的可靠性结构
+Even in classification scenarios: high confidence $\neq$ low error. A model can be highly confident about a wrong prediction (overconfidence). Confidence does not reflect state-conditioned reliability structure.
 
-\subsubsection{2.3 集成不一致度过滤（Ensemble
-Disagreement）}\label{ux96c6ux6210ux4e0dux4e00ux81f4ux5ea6ux8fc7ux6ee4ensemble-disagreement}
+\subsubsection{2.3 Ensemble Disagreement Filtering}\label{ensemble-disagreement-filtering}
 
-\textbf{做法}：Training M 个
-Teacher（不同初始化/Data子集），用它们输出的方差作为不确定性：
+\textbf{Approach}: Train $M$ Teachers (different initializations/data subsets), use output variance as uncertainty:
 
 \begin{verbatim}
 σ²_ens(x) = Var[f_T1(x), f_T2(x), ..., f_TM(x)]
 D_clean = {x_i | σ²_ens(x_i) < τ_ens}
 \end{verbatim}
 
-\textbf{优点}：比置信度更可靠，捕捉到了Model在不同区域的不确定性。
+\textbf{Advantages}: More reliable than confidence; captures model uncertainty across regions.
 
-\textbf{局限}： - 需要Training M 个 Teacher → 成本高（MLIP 场景下 M 个 ACE
-Training = M × 40 epochs） - 集成方差反映的是''多个 Teacher
-之间的一致程度''，不是''Teacher 和真实标签之间的Error'' - 如果所有
-Teacher
-在同一个区域都犯同样的系统偏差（这是常见情况------Architecture限制导致的），集成方差会很低，但实际Error很大
+\textbf{Limitations}: Requires training $M$ Teachers → high cost ($M$ ACE trainings = $M \times 40$ epochs in MLIP). Ensemble variance reflects ``consistency among multiple Teachers,'' not ``error between Teacher and true labels.'' If all Teachers make the same systematic error in the same region (common---due to architectural limitations), ensemble variance will be low but actual error large.
 
-\subsubsection{2.4 Data Shapley / LOO 值}\label{data-shapley-loo-ux503c}
+\subsubsection{2.4 Data Shapley / LOO Values}\label{data-shapley-loo-values}
 
-\textbf{做法}：每个Training样本算 Shapley 值或 LOO
-Error，高价值样本保留，低价值丢弃。
+\textbf{Approach}: Compute Shapley values or LOO error for each training sample; retain high-value samples, discard low-value ones.
 
-\textbf{数学上}：Shapley 值在第 i
-个样本上计算的是''这个样本对Model性能的边际Contribution''。但这是\textbf{全局量}------它不区分在不同State上的Contribution。
+\textbf{Mathematically}: Shapley value for the $i$-th sample computes ``the marginal contribution of this sample to model performance.'' But this is a \textbf{global quantity}---it does not distinguish contributions across different states.
 
-\textbf{局限}：和置信度一样，Shapley 值不包含State条件信息。一个对 phonon
-区有Contribution的样本和一个对 thermal 区有Contribution的样本，Shapley 值可能相同，但
-Teacher 在 thermal 区的可靠性完全不一样。
+\textbf{Limitations}: Like confidence, Shapley values contain no state-conditioned information. A sample contributing to the phonon region and one contributing to the thermal region may have identical Shapley values, but Teacher reliability in the thermal region is completely different.
 
-\subsubsection{2.5
-各种Method的根本缺陷}\label{ux5404ux79cdux65b9ux6cd5ux7684ux6839ux672cux7f3aux9677}
+\subsubsection{2.5 Fundamental Deficiency of All Methods}\label{fundamental-deficiency}
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1875}}
@@ -250,260 +219,192 @@ Teacher 在 thermal 区的可靠性完全不一样。
 \begin{minipage}[b]{\linewidth}\raggedright
 Method
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-需要的信号
+Signal needed
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-MLIP 适用？
+MLIP applicable?
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-区分 Teacher 区域可靠度？
+Distinguishes Teacher regional reliability?
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-区分State条件？
+Distinguishes state conditions?
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Confidence filtering & softmax/logits & ❌（ACE 无概率输出） & ❌ &
-❌ \\
-Ensemble disagreement & M 个Model方差 & ⚠️（可做但成本高） & ⚠️ 部分 &
-❌ \\
-Data Shapley & 所有子集重训 & ❌（计算量不可行） & ❌ & ❌ \\
-\textbf{SCX De-Virus化} & \textbf{Teacher 在 D\_train 上的 residual +
-Encoder} & ✅ & ✅ & ✅ \\
+Confidence filtering & softmax/logits & ❌ (ACE has no probabilistic output) & ❌ & ❌ \\
+Ensemble disagreement & $M$-model variance & ⚠️ (feasible but costly) & ⚠️ Partial & ❌ \\
+Data Shapley & All-subset retraining & ❌ (computationally infeasible) & ❌ & ❌ \\
+\textbf{SCX De-Virus} & \textbf{Teacher's residual on $D_{\text{train}}$ + Encoder} & ✅ & ✅ & ✅ \\
 \end{longtable}
 
-\textbf{所有现有Method都不区分State}------它们把 Teacher
-的可靠性当作一个可以在样本级（而不是State级）解决的同质Problem。SCX
-的核心Contribution就是指出这个Assumption是错的。
+\textbf{All existing methods fail to distinguish states}---they treat Teacher reliability as a homogeneous problem solvable at the sample level (rather than state level). SCX's core contribution is pointing out that this assumption is wrong.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{三、SCX
-DistillationDe-Virus化的数学Framework}\label{ux4e09scx-ux84b8ux998fux53bbux75c5ux6bd2ux5316ux7684ux6570ux5b66ux6846ux67b6}
+\subsection{3. SCX Distillation De-Virus Mathematical Framework}\label{scx-distillation-de-virus-mathematical-framework}
 
-\subsubsection{3.1 核心思想}\label{ux6838ux5fc3ux601dux60f3}
+\subsubsection{3.1 Core Idea}\label{core-idea}
 
-\textbf{不是逐样本JudgmentDistillationData的质量，而是在State层面Judgment Teacher
-的可靠性。}
+\textbf{Not judging distillation data quality sample by sample, but judging Teacher reliability at the state level.}
 
-直觉： - 逐样本Judgment：这个Distillation帧的力标签对吗？→ 无法回答，因为没有 ground
-truth - State级Judgment：Teacher 在''thermal 1800K
-构型区域''的整体可靠性是多少？→ 可以回答，因为 Teacher 在原始Training集的
-thermal 测试帧上已经表现出高Error
+Intuition: Sample-level judgment: Is this distillation frame's force label correct? → Unanswerable, because there is no ground truth. State-level judgment: What is the overall reliability of the Teacher in the ``thermal 1800K configuration region''? → Answerable, because Teacher already shows high error on thermal test frames from the original training set.
 
-\subsubsection{3.2 形式化Definition}\label{ux5f62ux5f0fux5316ux5b9aux4e49}
+\subsubsection{3.2 Formal Definition}\label{formal-definition}
 
-\textbf{已知}（来自 Teacher Training）： - D\_train = \{(x\_i, y\_i*)\} ---
-原始Training集，有 DFT 标签 - Encoder φ: X → R\^{}d --- StateEncoder - Teacher
-f\_T 已Training
+\textbf{Known} (from Teacher training): $D_{\text{train}} = \{(x_i, y_i^*)\}$ --- original training set with DFT labels. Encoder $\varphi: \mathcal{X} \to \mathbb{R}^d$ --- State Encoder. Teacher $f_T$ already trained.
 
-\textbf{可计算}（无需额外 DFT）： - Teacher 在 D\_train 上每个样本的
-residual：r\_i = ℓ(f\_T(x\_i), y\_i*) - State发现：用 φ 聚类 → State划分 S
-= \{s\_1, \ldots, s\_K\} - 每个State的 Teacher reliability：
+\textbf{Computable} (no additional DFT needed): Teacher's residual on each sample in $D_{\text{train}}$: $r_i = \ell(f_T(x_i), y_i^*)$. State discovery: cluster with $\varphi$ → state partition $\mathcal{S} = \{s_1, \ldots, s_K\}$. Teacher reliability per state:
 
 \begin{verbatim}
-R_T(s_k) = (1/|s_k|) Σ_{x_i∈s_k} ℓ(f_T(x_i), y_i*)
+R_T(s_k) = (1/|s_k|) Σ_{x_i∈s_k} ℓ(f_T(x_i), y_i^*)
 \end{verbatim}
 
-这就是 \textbf{Teacher Reliability Map}------本质上是一张''Teacher
-在哪些构型区域不可靠''的地图。
+This is the \textbf{Teacher Reliability Map}---essentially a map of ``which configuration regions the Teacher is unreliable in.''
 
-\textbf{DistillationData评估}： - DistillationData D\_distill = \{(x\_j\^{}distill,
-f\_T(x\_j\^{}distill))\} - 对每个 x\_j\^{}distill，编码
-φ(x\_j\^{}distill)，分配到最近State s\_k - 如果 R\_T(s\_k) \textgreater{}
-τ，标记 x\_j\^{}distill 为''病毒帧''
+\textbf{Distillation data assessment}: $D_{\text{distill}} = \{(x_j^{\text{distill}}, f_T(x_j^{\text{distill}}))\}$. For each $x_j^{\text{distill}}$, encode $\varphi(x_j^{\text{distill}})$, assign to nearest state $s_k$. If $R_T(s_k) > \tau$, mark $x_j^{\text{distill}}$ as ``virus frame.''
 
-\textbf{过滤后Distillation}：
+\textbf{Filtered distillation}:
 
 \begin{verbatim}
 D_clean = {x_j^distill | R_T(state(x_j^distill)) ≤ τ}
 \end{verbatim}
 
-Training Student f\_S 在 D\_clean 上。
+Train Student $f_S$ on $D_{\text{clean}}$.
 
-\subsubsection{3.3
-数学保证（启发式）}\label{ux6570ux5b66ux4fddux8bc1ux542fux53d1ux5f0f}
+\subsubsection{3.3 Mathematical Guarantee (Heuristic)}\label{mathematical-guarantee}
 
-\textbf{Claim}：设 Teacher 在State s 上的偏差为 δ\_T(s) =
-\textbar E{[}f\_T(x) - f*(x) \textbar{} x∈s{]}\textbar。Student
-Training在过滤后的Distillation集上，其在State s 上的期望偏差满足：
+\textbf{Claim}: Let Teacher bias in state $s$ be $\delta_T(s) = |\mathbb{E}[f_T(x) - f^*(x) \mid x \in s]|$. Student trained on filtered distillation set satisfies, for expected bias in state $s$:
 
 \begin{verbatim}
 E[|f_S(x) - f*(x)| | x∈s] ≤ δ_S_clean(s) + λ · max(0, δ_T(s) - τ)
 \end{verbatim}
 
-其中 δ\_S\_clean(s) 是 Student 在清洁Data上的本征学习Error，第二项是
-teacher 偏差的泄漏。
+where $\delta_{S,\text{clean}}(s)$ is Student's intrinsic learning error on clean data, and the second term is the leakage of teacher bias.
 
-\textbf{解读}：通过设置 τ 过滤高偏差State，可以控制 Teacher 系统Error向
-Student 的传播。过滤越严格（τ 越小），泄漏越少，但DistillationData越少。
+\textbf{Interpretation}: By setting $\tau$ to filter high-bias states, we can control the propagation of Teacher's systematic error to the Student. Stricter filtering (smaller $\tau$) means less leakage but fewer distillation samples.
 
-\textbf{权衡}：
+\textbf{Trade-off}:
 
 \begin{verbatim}
-V_s(τ) = |D_clean(τ)| / |D_distill|  — 保留比例
-Q_s(τ) = 1 - (δ_T(s) - τ)_+ / δ_T(s)  — 质量提升比例
+V_s(τ) = |D_clean(τ)| / |D_distill|  — retention ratio
+Q_s(τ) = 1 - (δ_T(s) - τ)_+ / δ_T(s)  — quality improvement ratio
 \end{verbatim}
 
-最优 τ 的选择取决于：Teacher
-在不同State的可靠性Distribution、DistillationData的覆盖需求、以及 Student
-对Data量的敏感度。
+The optimal $\tau$ depends on: distribution of Teacher reliability across states, coverage requirements of distillation data, and Student sensitivity to data volume.
 
-\subsubsection{3.4
-为什么两层Descriptor在这里特别Core}\label{ux4e3aux4ec0ux4e48ux4e24ux5c42ux63cfux8ff0ux7b26ux5728ux8fd9ux91ccux7279ux522bux5173ux952e}
+\subsubsection{3.4 Why Two-Layer Descriptors Are Especially Critical Here}\label{why-two-layer-descriptors-are-critical}
 
-单层 Encoder（如 MLIPEncoder 12-dim）： - 粗粒度，50\% 帧挤在一个State -
-无法区分''EOS 近平衡帧''和''thermal 1800K
-帧''（它们可能被分到同一个粗State） - → 一个State内混杂着 Teacher
-可靠和不可靠的子区域 - → 过滤时要么''错杀''可靠帧，要么''漏网''不可靠帧
+Single-layer Encoder (e.g., MLIPEncoder 12-dim): Coarse granularity, 50\% of frames squeezed into one state. Cannot distinguish ``EOS near-equilibrium frames'' from ``thermal 1800K frames'' (they may be grouped into the same coarse state). → One state mixes Teacher-reliable and Teacher-unreliable sub-regions. → Filtering either ``wrongly kills'' reliable frames or ``lets through'' unreliable frames.
 
-两层 Encoder（Layer 1 + ErrorDrivenEncoder）： - Layer 1
-粗聚：大区域划分 - Layer 2 Error驱动细聚类：在每个 Layer 1 簇内，用与
-Teacher ErrorCorrelation的FeatureDimension再聚类 - → 把 Teacher
-不可靠的子区域从可靠区域中分离出来 - → 精确过滤：只丢弃 Teacher
-确实不可靠的子State
+Two-layer Encoder (Layer 1 + ErrorDrivenEncoder): Layer 1 coarse clustering: large-region partitioning. Layer 2 error-driven fine clustering: within each Layer 1 cluster, re-cluster using feature dimensions correlated with Teacher error. → Separates Teacher-unreliable sub-regions from reliable ones. → Precise filtering: only discard sub-states where Teacher is genuinely unreliable.
 
-\textbf{这就是两层Method在DistillationDe-Virus化中的独特价值------它能把''Teacher
-的可靠区''和''Teacher 的不可靠区''在同一个粗区域内分开。}
+\textbf{This is the unique value of the two-layer method in distillation de-virus---it can separate ``Teacher's reliable regions'' and ``Teacher's unreliable regions'' within the same coarse region.}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{四、不同场景的DistillationDe-Virus化}\label{ux56dbux4e0dux540cux573aux666fux7684ux84b8ux998fux53bbux75c5ux6bd2ux5316}
+\subsection{4. Distillation De-Virus Across Different Scenarios}\label{distillation-de-virus-scenarios}
 
-\subsubsection{4.1 场景 1：MLIP 势FunctionDistillation（ACE →
-ACE/NEP）}\label{ux573aux666f-1mlip-ux52bfux51fdux6570ux84b8ux998face-acenep}
+\subsubsection{4.1 Scenario 1: MLIP Potential Distillation (ACE → ACE/NEP)}\label{scenario-1-mlip-potential-distillation}
 
-\textbf{Distillation方式}：Teacher ACE 势Function对大量构型做单点能+力计算 → 生成
-(构型, 能量, 力) Data → Training Student NEP/轻量 ACE。
+\textbf{Distillation approach}: Teacher ACE potential computes single-point energy + forces on many configurations → generates (configuration, energy, force) data → trains Student NEP / lightweight ACE.
 
-\textbf{Poisoning风险}：Teacher 在 thermal 1800K/MLMD stress10
-等极端区域的高Error传播给 Student。
+\textbf{Poisoning risk}: Teacher's high error in extreme regions (thermal 1800K / MLMD stress10) propagates to Student.
 
-\textbf{SCX Solution}： 1. Teacher 在 D\_train (534 帧) 上Training 2. 用
-D\_train 计算 Teacher per-state 力 RMSE → Reliability Map 3. Distillation生成
-5000 帧（Teacher 对随机扰动构型做单点计算） 4. SCX Encoder 编码Distillation帧 →
-映射到State 5. 过滤 thermal 1800K 区、MLMD stress10 区的Distillation帧 6.
-用清洁Distillation集Training Student
+\textbf{SCX Solution}: 1. Teacher trained on $D_{\text{train}}$ (534 frames). 2. Compute Teacher per-state force RMSE from $D_{\text{train}}$ → Reliability Map. 3. Distillation generates 5000 frames (Teacher performs single-point calculations on ASE-rattled configurations). 4. SCX Encoder encodes distillation frames → maps to states. 5. Filter distillation frames from thermal 1800K and MLMD stress10 regions. 6. Train Student on clean distillation set.
 
-\textbf{Encoder 选择}：\texttt{MLIPEncoder}（12-dim
-手工Descriptor），用两层Method细化。
+\textbf{Encoder choice}: \texttt{MLIPEncoder} (12-dim handcrafted descriptors), refined with two-layer method.
 
-\subsubsection{4.2 场景 2：图像ModelDistillation（ResNet-50 →
-MobileNet）}\label{ux573aux666f-2ux56feux50cfux6a21ux578bux84b8ux998fresnet-50-mobilenet}
+\subsubsection{4.2 Scenario 2: Image Model Distillation (ResNet-50 → MobileNet)}\label{scenario-2-image-model-distillation}
 
-\textbf{Distillation方式}：Teacher ResNet-50 对无标签图像做推理 → (图像, soft
-label) → Training MobileNet。
+\textbf{Distillation approach}: Teacher ResNet-50 infers on unlabeled images → (image, soft label) → trains MobileNet.
 
-\textbf{Poisoning风险}：Teacher
-在特定图像子空间（如低光照、遮挡、模糊）的识别Error传播给 Student。
+\textbf{Poisoning risk}: Teacher recognition errors in specific image subspaces (e.g., low light, occlusion, blur) propagate to Student.
 
-\textbf{SCX Solution}： 1. Teacher 在 CIFAR/ImageNet Training集上Training 2.
-用Verification集计算 Teacher per-state 分类Error → Reliability Map 3.
-Distillation大量无标签图像 4. \texttt{VisionEncoder}（CNN backbone）编码 →
-映射到State 5. 过滤 Teacher 高ErrorState（如模糊图像区）的Distillation帧 6.
-用清洁Distillation集Training Student
+\textbf{SCX Solution}: 1. Teacher trained on CIFAR/ImageNet training set. 2. Compute Teacher per-state classification error from validation set → Reliability Map. 3. Distill many unlabeled images. 4. \texttt{VisionEncoder} (CNN backbone) encodes → maps to states. 5. Filter distillation frames from Teacher high-error states (e.g., blurry image regions). 6. Train Student on clean distillation set.
 
-\textbf{Encoder 选择}：\texttt{VisionEncoder}（simple\_cnn/resnet
-backbone）。
+\textbf{Encoder choice}: \texttt{VisionEncoder} (simple\_cnn/resnet backbone).
 
-\textbf{和置信度过滤的Core区别}：置信度过滤只看 Teacher 的 softmax
-输出（``Teacher 自己有没有把握''），SCX 看 Teacher
-在相似图像上的实际预测Error（``Teacher 在这个区域真的错得多不多''）。
+\textbf{Key difference from confidence filtering}: Confidence filtering only looks at Teacher's softmax output (``how confident is Teacher itself?''). SCX looks at Teacher's actual prediction error on similar images (``does Teacher really err a lot in this region?'').
 
-\subsubsection{4.3 场景 3：LLM Distillation（GPT →
-小Model）}\label{ux573aux666f-3llm-ux84b8ux998fgpt-ux5c0fux6a21ux578b}
+\subsubsection{4.3 Scenario 3: LLM Distillation (GPT → Small Model)}\label{scenario-3-llm-distillation}
 
-\textbf{Distillation方式}：Teacher LLM 生成大量 QA 对 → (prompt, response) →
-Training Student 小Model。
+\textbf{Distillation approach}: Teacher LLM generates many QA pairs → (prompt, response) → trains Student small model.
 
-\textbf{Poisoning风险}：Teacher
-在特定语义子空间（如推理类Problem、代码生成）的幻觉/错误被DistillationData放大传播。
+\textbf{Poisoning risk}: Teacher hallucinations/errors in specific semantic subspaces (e.g., reasoning problems, code generation) are amplified and propagated through distillation data.
 
-\textbf{SCX Solution}： 1. Teacher 在 benchmark Data集上评估 2.
-用评估Result建立 Teacher per-topic 可靠性 → Reliability Map 3.
-Distillation生成大量 QA 对 4. \texttt{LLMEncoder}（BERT/GPT embedding）编码
-prompt → 映射到语义State 5. 过滤 Teacher
-高Error语义State（如多步推理）的Distillation QA 对 6. 用清洁Distillation集Training Student
+\textbf{SCX Solution}: 1. Teacher evaluated on benchmark datasets. 2. Use evaluation results to build Teacher per-topic reliability → Reliability Map. 3. Distillation generates many QA pairs. 4. \texttt{LLMEncoder} (BERT/GPT embedding) encodes prompts → maps to semantic states. 5. Filter distillation QA pairs from Teacher high-error semantic states (e.g., multi-step reasoning). 6. Train Student on clean distillation set.
 
-\textbf{Encoder 选择}：需要Implementation新的 \texttt{LLMEncoder}------用 sentence
-embedding（如 BERT）将 prompt 编码为向量，在语义空间中聚类。
+\textbf{Encoder choice}: Needs implementation of new \texttt{LLMEncoder}---use sentence embeddings (e.g., BERT) to encode prompts as vectors, cluster in semantic space.
 
-\textbf{独特价值}：这是置信度过滤也难以做好的场景------LLM
-经常对错误答案高度自信（hallucination with high confidence）。SCX 不依赖
-Teacher 的自我评估，而是用外部 benchmark 上的实际表现来刻画可靠性。
+\textbf{Unique value}: This is a scenario where even confidence filtering struggles---LLMs are often highly confident about wrong answers (hallucination with high confidence). SCX does not rely on Teacher's self-assessment; it characterizes reliability using actual performance on external benchmarks.
 
-\subsubsection{4.4 场景 4：仿真保真度Distillation（Fine-mesh FEM → Coarse-mesh +
-Surrogate）}\label{ux573aux666f-4ux4effux771fux4fddux771fux5ea6ux84b8ux998ffine-mesh-fem-coarse-mesh-surrogate}
+\subsubsection{4.4 Scenario 4: Simulation Fidelity Distillation (Fine-mesh FEM → Coarse-mesh + Surrogate)}\label{scenario-4-simulation-fidelity-distillation}
 
-\textbf{Distillation方式}：精细网格 FEM 在Parameter空间采样 → (Parameter, 响应) →
-Training降阶Model/粗网格修正项。
+\textbf{Distillation approach}: Fine-mesh FEM samples parameter space → (parameter, response) → trains reduced-order model / coarse-mesh correction term.
 
-\textbf{Poisoning风险}：精细网格 FEM
-在特定Parameter区域（如近共振、近分叉）的数值精度下降时，DistillationData带着数值Error。
+\textbf{Poisoning risk}: When fine-mesh FEM's numerical accuracy degrades in specific parameter regions (e.g., near resonance, near bifurcation), distillation data carries numerical error.
 
-\textbf{SCX Solution}： 1. 精细 FEM 在Verification点上评估 2. 用VerificationError建立 FEM
-per-region 可靠性 → Reliability Map 3. FEM 在Parameter空间密集采样 4.
-\texttt{TabularEncoder}（仿真Parameter向量）编码 → 映射到ParameterState 5. 过滤 FEM
-高ErrorParameter区域（如近分叉区）的仿真点 6. 用清洁仿真集Training Student
-降阶Model
+\textbf{SCX Solution}: 1. Fine FEM evaluated on verification points. 2. Use verification error to build FEM per-region reliability → Reliability Map. 3. FEM densely samples parameter space. 4. \texttt{TabularEncoder} (simulation parameter vector) encodes → maps to parameter states. 5. Filter simulation points from FEM high-error parameter regions (e.g., near-bifurcation regions). 6. Train Student reduced-order model on clean simulation set.
 
-\textbf{Encoder 选择}：\texttt{TabularEncoder}（仿真Parameter向量，如 Re, Ma,
-载荷幅值\ldots）。
+\textbf{Encoder choice}: \texttt{TabularEncoder} (simulation parameter vector, e.g., Re, Ma, load amplitude...).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{五、和 SCX
-已有工作的关系}\label{ux4e94ux548c-scx-ux5df2ux6709ux5de5ux4f5cux7684ux5173ux7cfb}
+\subsection{5. Relationship to Existing SCX Work}\label{relationship-to-existing-scx-work}
 
 \begin{verbatim}
-SCX 四个能力的统一视角：
+Unified view of SCX's four capabilities:
 
 ┌─────────────────────────────────────────────────────────┐
-│           SCX = State条件Data价值JudgmentFramework                  │
+│           SCX = State-Conditioned Data Value Judgment Framework        │
 ├─────────────────────────────────────────────────────────┤
 │                                                          │
-│  ① Data防Poisoning (Data Poisoning Defense)                   │
-│     裁判：fmax（VASP 可直接观察）                         │
-│     输出：标记 VASP 坏帧                                  │
-│     AlN v3 Verification：F1=0.585, 100% 命中                     │
+│  ① Data Poisoning Defense                               │
+│     Judge: fmax (directly observable from VASP)          │
+│     Output: Flag bad VASP frames                         │
+│     AlN v3 Verification: F1=0.585, 100% hit rate         │
 │                                                          │
-│  ② 冗余压缩 (Redundancy Compression)                     │
-│     裁判：当前Model在State s 的Error                         │
-│     输出：低Error高密度区可压缩                            │
-│     AlN v3: phonon 可压缩 50-80%                         │
+│  ② Redundancy Compression                               │
+│     Judge: Current model error in state s                │
+│     Output: Low-error high-density regions compressible  │
+│     AlN v3: phonon region 50-80% compressible            │
 │                                                          │
-│  ③ DistillationDe-Virus化 (Distillation De-virus) ← 新             │
-│     裁判：Teacher 在State s 的可靠性（来自 D_train）       │
-│     输出：过滤 Teacher 不可靠State的DistillationData               │
-│     原理：① 的推广——从 VASP 坏帧到 Teacher 坏预测        │
+│  ③ Distillation De-Virus ← New                          │
+│     Judge: Teacher reliability in state s (from D_train) │
+│     Output: Filter distillation data from Teacher-unreliable states │
+│     Principle: Generalization of ①—from VASP bad frames  │
+│               to Teacher bad predictions                │
 │                                                          │
-│  ④ 专家路由 (Expert Routing)                             │
-│     裁判：多专家在State s 的可靠性差异                     │
-│     输出：每个State路由到最可靠专家                        │
-│     原理：③ 的推广——不止过滤，还要择优                   │
+│  ④ Expert Routing                                       │
+│     Judge: Reliability differences among multiple experts│
+│            in state s                                    │
+│     Output: Route each state to the most reliable expert │
+│     Principle: Generalization of ③—not just filtering,   │
+│               but also selecting the best               │
 │                                                          │
 └─────────────────────────────────────────────────────────┘
 \end{verbatim}
 
-\textbf{统一的数学核心}：所有四个能力都建立在对''State条件可靠性''的估计之上。唯一的差异是\textbf{裁判信号的来源}：
+\textbf{Unified mathematical core}: All four capabilities are built on estimating ``state-conditioned reliability.'' The only difference is the \textbf{source of the judgment signal}:
 
 \begin{longtable}[]{@{}lll@{}}
 \toprule\noalign{}
-能力 & 裁判信号 & 信号来源 \\
+Capability & Judgment Signal & Signal Source \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Data防Poisoning & fmax（VASP 输出） & DFT 计算 \\
-冗余压缩 & 当前ModelError & Training集 \\
-DistillationDe-Virus化 & Teacher 在 D\_train 上的Error & Teacher Training历史 \\
-专家路由 & 多专家可靠性差异 & 跨专家对比 \\
+Data Poisoning Defense & $f_{\max}$ (VASP output) & DFT calculation \\
+Redundancy Compression & Current model error & Training set \\
+Distillation De-Virus & Teacher error on $D_{\text{train}}$ & Teacher training history \\
+Expert Routing & Multi-expert reliability differences & Cross-expert comparison \\
 \end{longtable}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{六、文献调研：知识Distillation中的质量控制}\label{ux516dux6587ux732eux8c03ux7814ux77e5ux8bc6ux84b8ux998fux4e2dux7684ux8d28ux91cfux63a7ux5236}
+\subsection{6. Literature Survey: Quality Control in Knowledge Distillation}\label{literature-survey}
 
-\subsubsection{已有研究方向}\label{ux5df2ux6709ux7814ux7a76ux65b9ux5411}
+\subsubsection{Existing Research Directions}\label{existing-research-directions}
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2143}}
@@ -511,105 +412,82 @@ DistillationDe-Virus化 & Teacher 在 D\_train 上的Error & Teacher Training历
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4643}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-方向
+Direction
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-代表工作
+Representative Work
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-和 SCX 的区别
+Difference from SCX
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{Confidence-based} & Balan et al.~(2022), ``Confidence-Aware KD''
-& 置信度 ≠ 准确度；不适用于确定性Model（如 ACE） \\
-\textbf{Ensemble-based} & Malinin et al.~(2020), ``Ensemble
-Distillation'' & 需 M 个 Teacher；集成方差 ≠ 真实Error \\
-\textbf{Data valuation} & Ghorbani \& Zou (2019), ``Data Shapley'' &
-全局量；不区分State条件 \\
-\textbf{Curriculum KD} & Jin et al.~(2019), ``Curriculum KD'' &
-按难度排序，不按 Teacher 可靠性排序 \\
-\textbf{Contrastive KD} & Tian et al.~(2020), ``CRD'' & 对比学习改进
-representation，不解决 Teacher 局部不可靠 \\
-\textbf{Online KD} & Zhang et al.~(2018), ``Deep Mutual Learning'' &
-互相学习，不区分 Teacher 在哪个区域强 \\
-\textbf{SCX De-Virus化} & \textbf{本文} & \textbf{State条件 Teacher 可靠性
-→ 过滤不可靠区域 → 提纯DistillationData} \\
+\textbf{Confidence-based} & Balan et al.~(2022), ``Confidence-Aware KD'' & Confidence $\neq$ accuracy; inapplicable to deterministic models (e.g., ACE) \\
+\textbf{Ensemble-based} & Malinin et al.~(2020), ``Ensemble Distillation'' & Requires $M$ Teachers; ensemble variance $\neq$ true error \\
+\textbf{Data valuation} & Ghorbani \& Zou (2019), ``Data Shapley'' & Global quantity; does not distinguish state conditions \\
+\textbf{Curriculum KD} & Jin et al.~(2019), ``Curriculum KD'' & Sorted by difficulty, not by Teacher reliability \\
+\textbf{Contrastive KD} & Tian et al.~(2020), ``CRD'' & Contrastive learning improves representation, does not address local Teacher unreliability \\
+\textbf{Online KD} & Zhang et al.~(2018), ``Deep Mutual Learning'' & Mutual learning, does not distinguish which region Teacher is strong in \\
+\textbf{SCX De-Virus} & \textbf{This paper} & \textbf{State-conditioned Teacher reliability → filter unreliable regions → purify distillation data} \\
 \end{longtable}
 
-\subsubsection{Core空白}\label{ux5173ux952eux7a7aux767d}
+\subsubsection{Core Gap}\label{core-gap}
 
-所有现有 KD 质量控制的共同Assumption：\textbf{Teacher
-的可靠性是可以在样本级（per-sample）Judgment的}。SCX
-的独特Contribution是指出这个Assumption不成立------可靠性是State级的（per-state），因为
-Teacher 的Error是系统性集中在特定构型/Feature区域的。
+The common assumption of all existing KD quality control methods: \textbf{Teacher reliability can be judged at the sample level (per-sample)}. SCX's unique contribution is pointing out that this assumption is false---reliability is state-level (per-state), because Teacher error is systematically concentrated in specific configuration/feature regions.
 
-\textbf{SCX 是第一个将''State条件专家可靠性''概念引入知识Distillation的工作。}
+\textbf{SCX is the first work to introduce the concept of ``state-conditioned expert reliability'' into knowledge distillation.}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{七、Implementation路线图}\label{ux4e03ux5b9eux73b0ux8defux7ebfux56fe}
+\subsection{7. Implementation Roadmap}\label{implementation-roadmap}
 
-\subsubsection{Phase 1：MLIP Verification（AlN v3，2-3
-天）}\label{phase-1mlip-ux9a8cux8bc1aln-v32-3-ux5929}
+\subsubsection{Phase 1: MLIP Verification (AlN v3, 2--3 days)}\label{phase-1-mlip-verification}
 
 \begin{verbatim}
-1. 用 AlN v3 534 帧Training Teacher（Single ACE）
-2. 计算 Teacher per-state 力 RMSE → Reliability Map
-3. Teacher Distillation 5000 帧（对 ASE rattle 构型做单点能+力）
-4. SCX 两层AnalysisDistillationData
-5. 过滤 Teacher 高ErrorState（thermal 1800K, MLMD stress10）
-6. Training Student A（全量Distillation集）vs Student B（De-VirusDistillation集）
-7. 对比两者在 thermal/MLMD 测试集的力 RMSE
+1. Train Teacher (Single ACE) on AlN v3 534 frames
+2. Compute Teacher per-state force RMSE → Reliability Map
+3. Teacher distills 5000 frames (single-point energy+forces on ASE rattled configurations)
+4. SCX two-layer analysis of distillation data
+5. Filter Teacher high-error states (thermal 1800K, MLMD stress10)
+6. Train Student A (full distillation set) vs Student B (de-virus distillation set)
+7. Compare force RMSE of both on thermal/MLMD test sets
 \end{verbatim}
 
-\textbf{预期}：Student B 在 thermal 区力 RMSE 显著低于 Student A。
+\textbf{Expectation}: Student B has significantly lower force RMSE in the thermal region than Student A.
 
-\subsubsection{Phase 2：图像Verification（CIFAR-100，1
-周）}\label{phase-2ux56feux50cfux9a8cux8bc1cifar-1001-ux5468}
+\subsubsection{Phase 2: Image Verification (CIFAR-100, 1 week)}\label{phase-2-image-verification}
 
 \begin{verbatim}
-1. Teacher ResNet-50 → MobileNet-v2 Distillation
-2. SCX 用Verification集建立 Teacher per-class/per-feature-region 可靠性
-3. 过滤 Teacher 高Error区域的DistillationData
-4. 对比：Full KD vs Confidence-filtered KD vs SCX-filtered KD
+1. Teacher ResNet-50 → MobileNet-v2 distillation
+2. SCX uses validation set to establish Teacher per-class/per-feature-region reliability
+3. Filter distillation data from Teacher high-error regions
+4. Compare: Full KD vs Confidence-filtered KD vs SCX-filtered KD
 \end{verbatim}
 
-\subsubsection{Phase 3：LLM Verification（需要Implementation
-LLMEncoder）}\label{phase-3llm-ux9a8cux8bc1ux9700ux8981ux5b9eux73b0-llmencoder}
+\subsubsection{Phase 3: LLM Verification (Needs LLMEncoder Implementation)}\label{phase-3-llm-verification}
 
-\subsubsection{Phase
-4：公开Data集清洗（社区Contribution）}\label{phase-4ux516cux5f00ux6570ux636eux96c6ux6e05ux6d17ux793eux533aux8d21ux732e}
+\subsubsection{Phase 4: Public Dataset Cleaning (Community Contribution)}\label{phase-4-public-dataset-cleaning}
 
 \begin{verbatim}
-MPTraj / OC20 / ColabFit → SCX 两层Analysis → SCX-cleaned → GitHub Release
+MPTraj / OC20 / ColabFit → SCX two-layer analysis → SCX-cleaned → GitHub Release
 \end{verbatim}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{八、核心洞见总结}\label{ux516bux6838ux5fc3ux6d1eux89c1ux603bux7ed3}
+\subsection{8. Summary of Core Insights}\label{summary-of-core-insights}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  \textbf{DistillationPoisoning是State条件的}------Teacher
-  的Error不是均匀Distribution的，它集中在特定构型/Feature区域。这是 SCX
-  能解决Problem的根本原因。
+  \textbf{Distillation poisoning is state-conditioned}---Teacher error is not uniformly distributed; it concentrates in specific configuration/feature regions. This is the fundamental reason SCX can solve the problem.
 \item
-  \textbf{所有现有Method都在样本级做Judgment}------置信度、集成方差、Shapley
-  值都是 per-sample 的。它们不利用''Teacher 在State s
-  整体上不可靠''这个信息。
+  \textbf{All existing methods judge at the sample level}---confidence, ensemble variance, Shapley values are all per-sample. They do not leverage the information that ``Teacher is overall unreliable in state $s$.''
 \item
-  \textbf{SCX 的独特价值是把 KD 质量控制从样本级提升到State级}------用
-  Teacher 在Training集上的 per-state reliability map 代替 per-sample
-  confidence，做结构化的Data过滤。
+  \textbf{SCX's unique value is elevating KD quality control from sample-level to state-level}---using Teacher's per-state reliability map from the training set instead of per-sample confidence for structured data filtering.
 \item
-  \textbf{两层Descriptor是精确过滤的Core}------单层粗聚类会把 Teacher
-  可靠和不可靠的子区域混在一起；两层细化可以在Error子空间中把它们分开。
+  \textbf{Two-layer descriptors are the core of precise filtering}---single-layer coarse clustering mixes Teacher-reliable and unreliable sub-regions; two-layer refinement separates them in the error subspace.
 \item
-  \textbf{这是论文级的Contribution}------``State-Conditioned Knowledge
-  Distillation''可以成为 SCX-Theory (Paper 2) 的Important
-  subsection，或Independent的一篇 workshop paper。
+  \textbf{This is a paper-level contribution}---``State-Conditioned Knowledge Distillation'' can be an important subsection of SCX-Theory (Paper 2) or a standalone workshop paper.
 \end{enumerate}
 
 \end{document}
